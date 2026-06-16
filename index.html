@@ -4386,6 +4386,7 @@ setTimeout(autoCarryRecurring,500);
       document.getElementById('confirmMsg').textContent=opts.message||'';
       var okBtn=document.getElementById('confirmOk'), caBtn=document.getElementById('confirmCancel');
       okBtn.textContent=opts.confirmText||'אישור'; caBtn.textContent=opts.cancelText||'ביטול';
+      caBtn.style.display = opts.okOnly ? 'none' : '';
       box.classList.toggle('danger',!!opts.danger);
       ov.classList.add('show');
       if(typeof haptic==='function'){try{haptic(8);}catch(e){}}
@@ -4442,8 +4443,13 @@ setTimeout(autoCarryRecurring,500);
   }
   window.updateSettingsInstall=function(){ var btn=$('settingsInstallBtn'); if(btn) btn.style.display = installable() ? 'flex' : 'none'; };
   window.triggerInstall=function(){
-    if(deferred){ deferred.prompt(); deferred.userChoice.finally(function(){ deferred=null; hide(); if(window.updateSettingsInstall)updateSettingsInstall(); }); }
-    else if(isIOS){ if(typeof showToast==='function') showToast('📲 הקש על שיתוף ⤴ ואז "הוסף למסך הבית"'); }
+    if(deferred){ deferred.prompt(); deferred.userChoice.finally(function(){ deferred=null; hide(); if(window.updateSettingsInstall)updateSettingsInstall(); }); return; }
+    var ua=navigator.userAgent||'', msg;
+    if(isIOS){ msg='בדפדפן Safari: הקש על כפתור השיתוף ⬆️ בתחתית המסך (ריבוע עם חץ למעלה), גלול מטה ובחר "הוסף למסך הבית".'; }
+    else if(/android/i.test(ua)){ msg='בדפדפן Chrome: הקש על תפריט שלוש הנקודות ⋮ למעלה, ואז "התקן אפליקציה" / "הוסף למסך הבית".'; }
+    else { msg='במחשב (Chrome/Edge): לחץ על אייקון ההתקנה ⊕ בקצה שורת הכתובת, או תפריט ⋮ → "התקן".'; }
+    if(typeof confirmSheet==='function'){ confirmSheet({icon:'📲',title:'התקנת האפליקציה',message:msg,confirmText:'הבנתי',okOnly:true}); }
+    else if(typeof showToast==='function'){ showToast(msg); }
   };
   window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred=e; if(window.updateSettingsInstall)updateSettingsInstall(); waitAndShow(); });
   var _os=window.openSettings; if(typeof _os==='function'){ window.openSettings=function(){ var r=_os.apply(this,arguments); setTimeout(function(){ if(window.updateSettingsInstall)updateSettingsInstall(); },0); return r; }; }
