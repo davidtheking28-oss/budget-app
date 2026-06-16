@@ -4357,11 +4357,11 @@ setTimeout(autoCarryRecurring,500);
     });
   }
   var BK_KEYS=['budget_tx','budget_goals','budget_subs','budget_limits','budget_loans','budget_settings','budget_learned_cats','budget_learned_amts','budget_month_review'];
-  var WEEK=7*24*3600*1000;
+  var DAY=24*3600*1000;   /* daily silent auto-backup */
   function tick(){
     try{
       var last=+localStorage.getItem('budget_autobackup_ts')||0; var now=Date.now();
-      if(now-last < WEEK) return;
+      if(now-last < DAY) return;
       var snap={ts:now,data:{}};
       BK_KEYS.forEach(function(k){ var v=localStorage.getItem(k); if(v!=null) snap.data[k]=v; });
       var cur=localStorage.getItem('budget_autobackup'); if(cur){ try{ localStorage.setItem('budget_autobackup_prev',cur); }catch(e){} }
@@ -4416,7 +4416,18 @@ setTimeout(autoCarryRecurring,500);
 <script>
 (function(){
   if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
-    window.addEventListener('load', function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });
+    /* auto-reload once when a NEW service worker takes control (so updates reach the installed app) */
+    if(navigator.serviceWorker.controller){
+      var _swRefreshing=false;
+      navigator.serviceWorker.addEventListener('controllerchange', function(){ if(_swRefreshing)return; _swRefreshing=true; location.reload(); });
+    }
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js').then(function(reg){
+        try{ reg.update(); }catch(e){}
+        setInterval(function(){ try{ reg.update(); }catch(e){} }, 60*60*1000);
+      }).catch(function(){});
+    });
+    document.addEventListener('visibilitychange', function(){ if(!document.hidden && navigator.serviceWorker.controller){ navigator.serviceWorker.getRegistration().then(function(r){ if(r){ try{ r.update(); }catch(e){} } }).catch(function(){}); } });
   }
   var deferred=null;
   var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);

@@ -1,6 +1,7 @@
-/* Service worker — offline app shell + runtime caching of CDN deps.
+/* Service worker — offline app shell with auto-update.
+   HTML is network-first (always fresh when online), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v1';
+const CACHE = 'budget-app-v3';
 const SHELL = [
   './',
   './index.html',
@@ -31,6 +32,25 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
+
+  const accept = req.headers.get('accept') || '';
+  const isHTML = req.mode === 'navigate' || accept.includes('text/html');
+
+  if (isHTML) {
+    // network-first: always try to get the latest page, fall back to cache offline
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // static assets (icons, CDN libs, fonts): cache-first with runtime caching
   e.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
