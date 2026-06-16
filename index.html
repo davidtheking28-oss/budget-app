@@ -41,6 +41,9 @@
     /* Financial figures: tabular alignment everywhere */
     .card-amount,.metric-val,.hero-stat-val,.hero-balance-num,.tx-amount,.sub-price-amount,.upcoming-amount,.upcoming-day-num,.breakdown-amount,.sr-amount,.budget-avail-num,.goal-amounts-text,.prog-label,.budget-item-amounts,.budget-pct-label,#budgetSummaryTotal,#budgetSummaryPct{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:'tnum' 1,'lnum' 1;letter-spacing:var(--track-num);}
     header{position:sticky;top:0;z-index:200;height:var(--header-h);background:#1c1917;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 1px 0 rgba(255,255,255,0.06),0 4px 24px rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.05);padding-top:env(safe-area-inset-top,0);isolation:isolate;}
+    /* ── iOS standalone (home-screen) safe-area fixes — Tailwind py-3 was overriding the header inset ── */
+    header.sticky{padding-top:calc(0.75rem + env(safe-area-inset-top,0px))!important;height:auto!important;min-height:var(--header-h);}
+    #inlineMonthNav{top:calc(56px + env(safe-area-inset-top,0px))!important;}
     @supports(backdrop-filter:blur(1px)){header{backdrop-filter:blur(12px);}}
     .header-title{display:flex;align-items:center;gap:8px;}
     .header-title h1{font-size:1.15rem;font-weight:var(--fw-extra);color:white;letter-spacing:var(--track-normal);font-family:var(--font-sans);}
