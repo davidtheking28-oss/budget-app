@@ -261,8 +261,8 @@
     .wiz-sel-check{font-size:1.1rem;color:var(--accent);font-weight:800;opacity:0;transition:opacity 0.15s;margin-right:4px;}
     .wiz-cat-row.wiz-sel .wiz-sel-check{opacity:1;}
     .wiz-cat-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;background:var(--surface);border:1.5px solid var(--border);border-radius:11px;font-size:0.86rem;font-weight:600;color:var(--text);margin-bottom:14px;font-family:var(--font-sans);}
-    .wiz-fix-row{display:flex;background:var(--surface);border-radius:10px;border:1.5px solid var(--border);overflow:hidden;padding:3px;gap:3px;margin-bottom:12px;}
-    .wiz-fix-btn{flex:1;padding:9px 8px;text-align:center;cursor:pointer;font-size:0.85rem;font-weight:700;color:var(--text2);border:none;background:none;font-family:inherit;transition:background 0.15s,color 0.15s,box-shadow 0.15s;border-radius:7px;}
+    .wiz-fix-row{display:flex;align-items:stretch;background:var(--surface2);border-radius:13px;border:1.5px solid var(--border);overflow:hidden;padding:4px;gap:4px;margin-bottom:12px;}
+    .wiz-fix-btn{flex:1 1 0;min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;text-align:center;cursor:pointer;font-size:0.9rem;font-weight:700;color:var(--text2);border:none;background:var(--surface);font-family:inherit;transition:background 0.15s,color 0.15s,box-shadow 0.15s;border-radius:10px;line-height:1;white-space:nowrap;}
     .wiz-fix-btn.active{background:var(--accent);color:white;box-shadow:0 2px 8px rgba(29,78,216,0.3);}
     .wiz-rec-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;margin-bottom:14px;}
     .wiz-rec-row span{font-size:0.88rem;font-weight:600;color:var(--text);}
@@ -402,7 +402,7 @@
     body.dark .wiz-fix-btn{color:var(--text2);}
     body.dark .wiz-pill{background:var(--surface)!important;color:var(--text)!important;}
     body.dark .wiz-date-chip{background:var(--surface);border-color:var(--border);color:var(--text);}
-    body.dark .wiz-fix-row{background:var(--surface);border-color:var(--border);}
+    body.dark .wiz-fix-row{background:var(--surface2);border-color:var(--border);}
     body.dark .wiz-rec-row{background:var(--surface);border-color:var(--border);}
     body.dark .wiz-sec-ttl{color:var(--accent);}
     body.dark .wiz-amount-row{background:var(--surface);border-bottom-color:var(--border);}
@@ -1136,10 +1136,6 @@
           <button class="wiz-fix-btn" id="wiz-fix-variable" onclick="setFixedType('variable')" title="קניות, מסעדות, בילויים">משתנה 🔄</button>
         </div>
         <div style="font-size:0.75rem;color:var(--text3);margin-bottom:10px;padding:0 2px;">קבועה = אותו סכום כל חודש (שכירות, ביטוח) · משתנה = משתנה (קניות, בילויים)</div>
-        <div class="wiz-rec-row" onclick="document.getElementById('txRecurring').click()">
-          <span>עסקה חוזרת חודשית</span>
-          <input type="checkbox" id="txRecurring" onclick="event.stopPropagation()"/>
-        </div>
       </div>
       <div class="wiz-footer">
         <button class="btn btn-outline" onclick="closeSheet('addTxSheet')" style="flex:0 0 80px;">ביטול</button>
@@ -1924,7 +1920,7 @@ function openAddTx(){
   wizStep=1;
   document.getElementById('txDesc').value='';
   document.getElementById('txAmount').value='';
-  document.getElementById('txRecurring').checked=false;
+  (function(){var e=document.getElementById('txRecurring');if(e)e.checked=false;})();
   const today=new Date().toISOString().slice(0,10);
   document.getElementById('txDate').value=today;
   document.getElementById('wizDateLabel').textContent='היום';
@@ -2086,7 +2082,7 @@ function addTransaction(prefill){
   const desc     =prefill?prefill.desc    :document.getElementById('txDesc').value.trim();
   const amount   =prefill?prefill.amount  :parseFloat(document.getElementById('txAmount').value);
   const date     =prefill?prefill.date    :document.getElementById('txDate').value;
-  const recurring=prefill?false           :document.getElementById('txRecurring').checked;
+  const recurring=prefill?false           :(function(){var e=document.getElementById('txRecurring');return e?e.checked:false;})();
   const isFixed  =prefill?(prefill.fixed!==undefined?prefill.fixed:(prefill.type==='income'||prefill.recurring)):txFixedType==='fixed';
   if(!prefill){
     if(!desc)             {showToast('✏️ מה קנית? כתוב תיאור קצר');return;}
@@ -2099,7 +2095,7 @@ function addTransaction(prefill){
   if(!prefill){
     document.getElementById('txDesc').value='';
     document.getElementById('txAmount').value='';
-    document.getElementById('txRecurring').checked=false;
+    (function(){var e=document.getElementById('txRecurring');if(e)e.checked=false;})();
     closeSheet('addTxSheet');
     haptic(12);
     showGif(CHECK_GIF,1200);
