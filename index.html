@@ -4499,5 +4499,28 @@ setTimeout(autoCarryRecurring,500);
   harden('saveSettingsData','budget_settings');
 })();
 </script>
+<script>
+/* ════ Income/settings → keep the budget in sync (refresh on edit & on close) ════ */
+(function(){
+  /* refresh the budget whenever the settings sheet is closed (any way) */
+  var _cs=window.closeSheet;
+  if(typeof _cs==='function'){
+    window.closeSheet=function(id){
+      var r=_cs.apply(this,arguments);
+      if(id==='settingsSheet'){ setTimeout(function(){ try{ if(window.saveSettingsData)saveSettingsData(); if(window.refreshAll)refreshAll(); if(window.updateHeaderTitle)updateHeaderTitle(); }catch(e){} }, 240); }
+      return r;
+    };
+  }
+  /* live-update the budget while editing income sources in settings (debounced) */
+  var t=null;
+  document.addEventListener('input', function(e){
+    var box=document.getElementById('settingIncomeRows');
+    if(box && e.target && box.contains(e.target)){
+      clearTimeout(t);
+      t=setTimeout(function(){ try{ if(window.saveSettingsData)saveSettingsData(); if(window.refreshAll)refreshAll(); }catch(_){} }, 500);
+    }
+  });
+})();
+</script>
 </body>
 </html>
