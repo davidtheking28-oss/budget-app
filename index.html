@@ -1667,6 +1667,7 @@
             <button type="button" class="set-dd-opt" data-v="1" onclick="pickPrivacy(true)"><span>🙈</span> מסתיר (טשטוש)</button>
           </div>
         </div>
+        <button id="settingsInstallBtn" type="button" class="btn btn-outline btn-full" onclick="triggerInstall()" style="display:none;margin-top:8px;align-items:center;justify-content:center;gap:8px"><span style="font-size:1.1rem">📲</span> התקן אפליקציה</button>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">מקורות הכנסה קבועים</div>
@@ -4414,36 +4415,45 @@ setTimeout(autoCarryRecurring,500);
 </script>
 <script>
 (function(){
-  /* service worker — only on secure origins (won't run from file://) */
   if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
     window.addEventListener('load', function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });
   }
-  /* install banner */
   var deferred=null;
+  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
   function $(id){return document.getElementById(id);}
   function isStandalone(){ return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone===true; }
   function dismissed(){ try{return localStorage.getItem('budget_install_dismiss')==='1';}catch(e){return false;} }
+  function onboarded(){ try{return !!localStorage.getItem('budget_onboarded');}catch(e){return false;} }
+  function installable(){ return (!!deferred || isIOS) && !isStandalone(); }
   function hide(){ var b=$('installBanner'); if(b)b.classList.remove('show'); }
-  window.addEventListener('beforeinstallprompt', function(e){
-    e.preventDefault(); deferred=e;
-    if(!isStandalone() && !dismissed()){ var b=$('installBanner'); if(b)b.classList.add('show'); }
-  });
+  function paintIOS(){ var go=$('installBtn'); if(go)go.style.display='none'; var sub=$('installSub'); if(sub)sub.textContent='הקש על שיתוף ⤴ ואז "הוסף למסך הבית"'; }
+  function showBanner(){
+    if(isStandalone() || dismissed() || !onboarded()) return false;   /* only after onboarding */
+    if(!deferred && !isIOS) return false;
+    if(isIOS) paintIOS();
+    var b=$('installBanner'); if(b)b.classList.add('show');
+    return true;
+  }
+  var _iv=null;
+  function waitAndShow(){
+    if(showBanner()) return;
+    if(_iv) return;
+    _iv=setInterval(function(){ if(showBanner() || dismissed() || isStandalone()){ clearInterval(_iv); _iv=null; } }, 1500);
+  }
+  window.updateSettingsInstall=function(){ var btn=$('settingsInstallBtn'); if(btn) btn.style.display = installable() ? 'flex' : 'none'; };
+  window.triggerInstall=function(){
+    if(deferred){ deferred.prompt(); deferred.userChoice.finally(function(){ deferred=null; hide(); if(window.updateSettingsInstall)updateSettingsInstall(); }); }
+    else if(isIOS){ if(typeof showToast==='function') showToast('📲 הקש על שיתוף ⤴ ואז "הוסף למסך הבית"'); }
+  };
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred=e; if(window.updateSettingsInstall)updateSettingsInstall(); waitAndShow(); });
+  var _os=window.openSettings; if(typeof _os==='function'){ window.openSettings=function(){ var r=_os.apply(this,arguments); setTimeout(function(){ if(window.updateSettingsInstall)updateSettingsInstall(); },0); return r; }; }
   document.addEventListener('DOMContentLoaded', function(){
     var go=$('installBtn'), x=$('installX');
-    if(go) go.onclick=function(){ if(deferred){ deferred.prompt(); deferred.userChoice.finally(function(){ deferred=null; hide(); }); } };
-    if(x) x.onclick=function(){ hide(); try{localStorage.setItem('budget_install_dismiss','1');}catch(e){} };
-    /* iOS has no beforeinstallprompt — show a Share hint instead */
-    var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-    if(isIOS && !isStandalone() && !dismissed()){
-      setTimeout(function(){
-        var b=$('installBanner'); if(!b)return;
-        var go2=$('installBtn'); if(go2)go2.style.display='none';
-        var sub=$('installSub'); if(sub)sub.textContent='הקש על שיתוף ⤴ ואז "הוסף למסך הבית"';
-        b.classList.add('show');
-      }, 2500);
-    }
+    if(go) go.onclick=function(){ triggerInstall(); };
+    if(x) x.onclick=function(){ hide(); try{localStorage.setItem('budget_install_dismiss','1');}catch(e){} if(window.updateSettingsInstall)updateSettingsInstall(); };
+    if(isIOS) waitAndShow();
   });
-  window.addEventListener('appinstalled', function(){ hide(); try{localStorage.setItem('budget_install_dismiss','1');}catch(e){} });
+  window.addEventListener('appinstalled', function(){ hide(); deferred=null; try{localStorage.setItem('budget_install_dismiss','1');}catch(e){} if(window.updateSettingsInstall)updateSettingsInstall(); });
 })();
 </script>
 </body>
