@@ -43,7 +43,7 @@
     header{position:sticky;top:0;z-index:200;height:var(--header-h);background:#1c1917;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 1px 0 rgba(255,255,255,0.06),0 4px 24px rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.05);padding-top:env(safe-area-inset-top,0);isolation:isolate;}
     /* ── iOS standalone (home-screen) safe-area fixes — Tailwind py-3 was overriding the header inset ── */
     header.sticky{padding-top:calc(0.75rem + env(safe-area-inset-top,0px))!important;height:auto!important;min-height:var(--header-h);}
-    #inlineMonthNav{top:calc(56px + env(safe-area-inset-top,0px))!important;}
+    #inlineMonthNav{top:calc(8px + env(safe-area-inset-top,0px))!important;}
     @supports(backdrop-filter:blur(1px)){header{backdrop-filter:blur(12px);}}
     .header-title{display:flex;align-items:center;gap:8px;}
     .header-title h1{font-size:1.15rem;font-weight:var(--fw-extra);color:white;letter-spacing:var(--track-normal);font-family:var(--font-sans);}
@@ -1046,23 +1046,6 @@
   🎭 מצב הדגמה · הנתונים אינם אמיתיים
   <button onclick="exitDemo()">יציאה מהדמו</button>
 </div>
-<header class="sticky top-0 z-50 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border-b border-slate-100 dark:border-stone-800/60 px-4 py-3 flex items-center justify-between shadow-sm">
-  <div class="flex items-center gap-2">
-    <div class="bg-blue-600 text-white p-2 rounded-xl shadow-md shadow-blue-200 dark:shadow-none">
-      <i data-lucide="wallet" class="w-5 h-5"></i>
-    </div>
-    <div class="header-title">
-      <h1 class="text-md font-bold tracking-tight text-slate-800 dark:text-zinc-100">תקציב אישי</h1>
-    </div>
-  </div>
-  
-  <div class="flex items-center gap-2">
-
-    <button class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-200/60 dark:border-zinc-700/50 text-slate-600 dark:text-zinc-300 transition-all cursor-pointer icon-btn" onclick="openSearch()" aria-label="חיפוש">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    </button>
-  </div>
-</header>
 
 <div class="search-overlay" id="searchOverlay">
   <div class="search-bar-row">
@@ -1245,7 +1228,7 @@
 
 <main>
 
-  <div id="inlineMonthNav" style="display:flex;align-items:center;justify-content:center;gap:8px;position:sticky;z-index:40;top:56px;width:fit-content;margin:0 auto 14px;padding:5px 8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.10);">
+  <div id="inlineMonthNav" style="display:flex;align-items:center;justify-content:center;gap:8px;position:sticky;z-index:40;top:8px;width:fit-content;margin:0 auto 14px;padding:5px 8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.10);">
     <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(-1)" aria-label="חודש קודם" data-month-arrow><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="9 18 15 12 9 6"/></svg></button>
     <button class="bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-slate-200/60 dark:border-zinc-700/50 rounded-full px-4 py-1.5 text-sm font-medium flex items-center gap-2 transition-all cursor-pointer" onclick="openMonthSheet()">
       <i data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
@@ -4079,7 +4062,7 @@ setTimeout(autoCarryRecurring,500);
 <script>
 /* keep the floating month selector pinned just under the sticky header */
 (function(){
-  function pin(){ try{ var h=document.querySelector('header'); var n=document.getElementById('inlineMonthNav'); if(h&&n){ n.style.top=(h.offsetHeight+6)+'px'; } }catch(e){} }
+  function pin(){ try{ var n=document.getElementById('inlineMonthNav'); if(n){ n.style.top='8px'; } }catch(e){} }
   window.addEventListener('resize', pin);
   document.addEventListener('DOMContentLoaded', pin);
   setTimeout(pin, 300);
