@@ -3438,11 +3438,17 @@ function obRemoveIncome(i){obIncomes.splice(i,1);renderObIncomes();}
 function onboardNav(dir){
   if(dir===1&&onboardStep===2){finishOnboarding();return;}
   if(dir===1&&onboardStep===0){
-    // Save name before advancing
     const inp=document.getElementById('obNameInput');
     if(inp) userSettings.name=inp.value.trim();
     saveSettingsData();
     updateHeaderTitle();
+  }
+  if(dir===1&&onboardStep===1){
+    document.querySelectorAll('#obIncomeRows .onboard-row').forEach((row,i)=>{
+      const inputs=row.querySelectorAll('input');
+      if(obIncomes[i]&&inputs[0]) obIncomes[i].name=inputs[0].value;
+      if(obIncomes[i]&&inputs[1]) obIncomes[i].amount=inputs[1].value;
+    });
   }
   onboardStep=Math.max(0,Math.min(2,onboardStep+dir));
   renderOnboardStep();
