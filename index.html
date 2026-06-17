@@ -735,7 +735,7 @@
     main .rounded-2xl.p-4{padding:18px;}
 
     /* ── Gradient balance hero (main focal card) ── */
-    .balance-hero{background:linear-gradient(135deg,#3b82f6 0%,#2563eb 55%,#1d4ed8 100%);box-shadow:0 16px 36px -10px rgba(29,78,216,0.55);}
+    .balance-hero{background:linear-gradient(135deg,#3b82f6 0%,#2563eb 55%,#1d4ed8 100%);box-shadow:0 16px 36px -10px rgba(29,78,216,0.55);overflow:hidden;contain:layout paint;width:100%;max-width:100%;}
     body.dark .balance-hero{background:linear-gradient(140deg,#1e40af 0%,#1d4ed8 55%,#3b82f6 120%);box-shadow:0 16px 38px -14px rgba(0,0,0,0.65);}
     .balance-hero-bloom{position:absolute;height:0;border-radius:50%;background:radial-gradient(circle at center,rgba(255,255,255,0.22),transparent 70%);pointer-events:none;z-index:0;}
     .balance-hero #trendBalance,.balance-hero #trendBalance *{color:rgba(255,255,255,0.85)!important;}
@@ -908,10 +908,10 @@
     body.dark[data-daypart="night"]{background-image:radial-gradient(135% 95% at 50% -6%,rgba(99,102,241,.30),transparent 62%)!important;}
 
     /* hero is ALWAYS visibly alive — looping light sweep across the card */
-    #page-dashboard .balance-hero::before{content:'';position:absolute;inset:-2px;z-index:0;pointer-events:none;
+    #page-dashboard .balance-hero::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
       background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.22) 50%,transparent 68%);
-      transform:translateX(-70%);animation:aliveHeroSweep 5.5s ease-in-out infinite;}
-    @keyframes aliveHeroSweep{0%{transform:translateX(-70%);}62%,100%{transform:translateX(170%);}}
+      transform:translateX(-100%);animation:aliveHeroSweep 5.5s ease-in-out infinite;}
+    @keyframes aliveHeroSweep{0%{transform:translateX(-100%);}62%,100%{transform:translateX(100%);}}
 
     /* deeper "breathing" */
     .balance-hero-bloom{animation-duration:6s!important;}
