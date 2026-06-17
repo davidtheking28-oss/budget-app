@@ -1870,22 +1870,6 @@ function shiftMonth(d){
   if(currentMonth>11){currentMonth=0;currentYear++;}
   haptic(4);refreshAll();
 }
-// החלקה אופקית על הדשבורד מחליפה חודש
-(function(){
-  let sx=0,sy=0,st=0;
-  document.addEventListener('DOMContentLoaded',()=>{
-    const dash=document.getElementById('page-dashboard');
-    if(!dash)return;
-    dash.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();},{passive:true});
-    dash.addEventListener('touchend',e=>{
-      if(e.target.closest('canvas'))return; // לא להתנגש עם גרפים
-      const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
-      if(Date.now()-st<600 && Math.abs(dx)>70 && Math.abs(dx)>Math.abs(dy)*1.8){
-        shiftMonth(dx<0?1:-1);
-      }
-    },{passive:true});
-  });
-})();
 
 function openSheet(id){document.getElementById(id).classList.add('open');}
 function closeSheet(id){
