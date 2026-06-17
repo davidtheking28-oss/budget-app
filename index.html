@@ -83,7 +83,8 @@
     .fab.pulse{animation:fabPulse 1.8s ease-in-out 3;}
     @keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
     @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(29,78,216,0.5),0 0 0 0 rgba(29,78,216,0.4);}50%{box-shadow:0 8px 28px rgba(29,78,216,0.5),0 0 0 14px rgba(29,78,216,0);}}
-    main{padding:18px 16px calc(var(--nav-h) + var(--safe-bottom) + 88px);max-width:600px;margin:0 auto;}
+    main{padding:62px 16px calc(var(--nav-h) + var(--safe-bottom) + 88px);max-width:600px;margin:0 auto;}
+    #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:50%!important;transform:translateX(-50%)!important;z-index:200!important;margin:0!important;}
     .page{display:none;}.page.active{display:block;animation:pageEnter 0.24s cubic-bezier(0.22,1,0.36,1) both;}
     .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
     .cards-row.three{grid-template-columns:repeat(3,1fr);}
@@ -1226,17 +1227,17 @@
   </div>
 </div>
 
-<main>
+<div id="inlineMonthNav" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:5px 8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.10);">
+  <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(-1)" aria-label="חודש קודם" data-month-arrow><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="9 18 15 12 9 6"/></svg></button>
+  <button class="bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-slate-200/60 dark:border-zinc-700/50 rounded-full px-4 py-1.5 text-sm font-medium flex items-center gap-2 transition-all cursor-pointer" onclick="openMonthSheet()">
+    <i data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
+    <span id="headerMonthLabel">טוען...</span>
+    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+  </button>
+  <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(1)" aria-label="חודש הבא" data-month-arrow><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="15 18 9 12 15 6"/></svg></button>
+</div>
 
-  <div id="inlineMonthNav" style="display:flex;align-items:center;justify-content:center;gap:8px;position:sticky;z-index:40;top:8px;width:fit-content;margin:0 auto 14px;padding:5px 8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.10);">
-    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(-1)" aria-label="חודש קודם" data-month-arrow><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="9 18 15 12 9 6"/></svg></button>
-    <button class="bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-slate-200/60 dark:border-zinc-700/50 rounded-full px-4 py-1.5 text-sm font-medium flex items-center gap-2 transition-all cursor-pointer" onclick="openMonthSheet()">
-      <i data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
-      <span id="headerMonthLabel">טוען...</span>
-      <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
-    </button>
-    <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(1)" aria-label="חודש הבא" data-month-arrow><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="15 18 9 12 15 6"/></svg></button>
-  </div>
+<main>
   <div id="page-dashboard" class="page active">
     <!-- Greeting (prominent) -->
     <div id="heroEyebrow" style="margin:2px 2px 16px;line-height:1.15;">
@@ -4066,7 +4067,7 @@ setTimeout(autoCarryRecurring,500);
 <script>
 /* keep the floating month selector pinned just under the sticky header */
 (function(){
-  function pin(){ try{ var n=document.getElementById('inlineMonthNav'); if(n){ n.style.top='8px'; } }catch(e){} }
+  function pin(){ }
   window.addEventListener('resize', pin);
   document.addEventListener('DOMContentLoaded', pin);
   setTimeout(pin, 300);
