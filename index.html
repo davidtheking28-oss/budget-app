@@ -2834,7 +2834,7 @@ function renderTxPage(){
 
 function renderAnalytics(){
   const mTx=getMonthTx(currentYear,currentMonth);
-  const inc=mTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const inc=getMonthlyIncome();
   // Savings rate & daily avg
   const srEl=document.getElementById('savingsRatePct');
   const daEl=document.getElementById('dailyAvgAmt');
