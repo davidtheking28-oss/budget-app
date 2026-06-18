@@ -1051,6 +1051,17 @@
   🎭 מצב הדגמה · הנתונים אינם אמיתיים
   <button onclick="exitDemo()">יציאה מהדמו</button>
 </div>
+<header style="position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:200;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.06);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;" id="appHeader">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div style="background:#2563eb;color:white;padding:7px;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+      <i data-lucide="wallet" style="width:18px;height:18px;"></i>
+    </div>
+    <span style="font-size:1rem;font-weight:800;color:#0f172a;letter-spacing:-0.01em;">תקציב אישי</span>
+  </div>
+  <button style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#f1f5f9;border:1px solid rgba(0,0,0,0.07);cursor:pointer;color:#475569;" onclick="openSearch()" aria-label="חיפוש">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </button>
+</header>
 
 <div class="search-overlay" id="searchOverlay">
   <div class="search-bar-row">
@@ -1262,7 +1273,7 @@
       <div class="font-extrabold font-mono tracking-tight mt-3 relative" id="totalBalance" style="z-index:1;line-height:1.04;color:#fff;font-size:clamp(2.3rem,11.5vw,3.1rem)">0</div>
       <div class="text-xs mt-2 flex items-center gap-1 relative" id="trendBalance" style="z-index:1;color:rgba(255,255,255,0.82)"></div>
       <div class="text-xs mt-1 relative font-bold" id="heroSavings" style="z-index:1;display:none"></div>
-      <div id="heroEmptyHint" style="display:none;z-index:1;position:relative;margin-top:14px;padding:9px 14px;background:rgba(255,255,255,0.15);border-radius:12px;color:rgba(255,255,255,0.92);font-size:0.8rem;font-weight:600;text-align:center;cursor:pointer" onclick="openAddTx()">
+      <div id="heroEmptyHint" style="display:none;z-index:1;position:relative;margin-top:14px;padding:9px 14px;background:rgba(255,255,255,0.15);border-radius:12px;color:rgba(255,255,255,0.92);font-size:0.8rem;font-weight:600;text-align:center">
         הוסף הכנסה ראשונה ↓
       </div>
       <!-- Hidden ring element to satisfy SVG references in JS without breaking the UI -->
@@ -1330,6 +1341,19 @@
 
     <!-- Month review (shown once at the start of a new month) -->
     <div id="monthReviewCard" style="display:none"></div>
+
+    <!-- Quick Actions -->
+    <div class="flex gap-2 mb-3">
+      <button class="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm" onclick="setTxType('expense');openAddTx()">
+        <i data-lucide="minus" class="w-3.5 h-3.5"></i>הוצאה
+      </button>
+      <button class="flex-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95" onclick="openAddTx();setTimeout(()=>setTxType('income'),50)">
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>הכנסה
+      </button>
+      <button class="flex-1 bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-600 dark:text-zinc-300 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95" onclick="showPage('analytics',document.getElementById('nav-analytics'))">
+        <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>ניתוח
+      </button>
+    </div>
 
     <!-- Feature shortcuts -->
     <div class="grid grid-cols-3 gap-2 mb-4">
