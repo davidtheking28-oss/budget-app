@@ -2246,6 +2246,36 @@ function addAllRecurring(){
   saveData();showToast('✓ עסקאות חוזרות נוספו!');refreshAll();
 }
 
+function checkSubscriptions(){
+  const now=new Date();
+  const monthKey=mk(now.getFullYear(),now.getMonth());
+  if(mk(currentYear,currentMonth)!==monthKey)return;
+  const today=now.toISOString().split('T')[0];
+  const active=subscriptions.filter(s=>s.active&&s.cycle==='monthly'&&s.nextDate&&s.nextDate<=today);
+  if(!active.length)return;
+  const thisMonthNames=new Set(transactions.filter(t=>t.date.startsWith(monthKey)).map(t=>(t.desc||'').toLowerCase()));
+  const pending=active.filter(s=>!thisMonthNames.has((s.name||'').toLowerCase()));
+  if(!pending.length)return;
+  const storKey='budget_sa_'+monthKey;
+  if(localStorage.getItem(storKey))return;
+  localStorage.setItem(storKey,'1');
+  const addedIds=[];
+  pending.forEach(s=>{
+    const tx={id:Date.now()+Math.random(),type:'expense',cat:s.category||'אחר',desc:s.name,amount:s.amount,date:s.nextDate,recurring:false};
+    addedIds.push(tx.id);
+    transactions.unshift(tx);
+    const nd=new Date(s.nextDate);nd.setMonth(nd.getMonth()+1);s.nextDate=nd.toISOString().split('T')[0];
+  });
+  saveData();refreshAll();
+  showUndoToast('✓ '+pending.length+' מנויים נרשמו אוטומטית',()=>{
+    const idSet=new Set(addedIds);
+    transactions=transactions.filter(t=>!idSet.has(t.id));
+    pending.forEach(s=>{const nd=new Date(s.nextDate);nd.setMonth(nd.getMonth()-1);s.nextDate=nd.toISOString().split('T')[0];});
+    localStorage.removeItem(storKey);
+    saveData();refreshAll();
+  },()=>{});
+}
+
 function trendHtml(cur,prev,lowerIsBetter){
   if(!prev||prev===0)return '';
   const pct=Math.round((cur-prev)/prev*100);
@@ -2991,6 +3021,7 @@ function renderDashboard(){
   const recentTx=[...mTx].filter(t=>t.type==='expense').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
   document.getElementById('recentTxList').innerHTML=recentTx.length?groupedTxHtml(recentTx):'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">חודש נקי ✨</p><p>עדיין לא רשמת הוצאות החודש.<br>לחץ + כדי להתחיל לעקוב</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה ראשונה</button></div>';
   checkRecurring();
+  checkSubscriptions();
 }
 
 function setTxFilter(f,btn){
@@ -3238,7 +3269,20 @@ function addSubscription(){
   document.getElementById('subName').value='';document.getElementById('subEmoji').value='';document.getElementById('subAmount').value='';
   closeSheet('addSubSheet');showToast('✓ המנוי נוסף!');renderSubscriptions();
 }
-function deleteSub(id){const backup=subscriptions.find(s=>s.id===id);const idx=subscriptions.findIndex(s=>s.id===id);subscriptions=subscriptions.filter(s=>s.id!==id);saveData();renderSubscriptions();showUndoToast('🗑️ מנוי נמחק',()=>{subscriptions.splice(idx,0,backup);saveData();renderSubscriptions();},()=>{});}
+function deleteSub(id){
+  const s=subscriptions.find(sub=>sub.id===id);if(!s)return;
+  const backup=s,idx=subscriptions.findIndex(sub=>sub.id===id);
+  const subName=(s.name||'').toLowerCase();
+  const unrecurredIds=[];
+  transactions.forEach(t=>{if(t.recurring&&(t.desc||'').toLowerCase()===subName){t.recurring=false;unrecurredIds.push(t.id);}});
+  subscriptions=subscriptions.filter(sub=>sub.id!==id);
+  saveData();renderSubscriptions();renderUpcoming();
+  showUndoToast('🗑️ מנוי נמחק',()=>{
+    subscriptions.splice(idx,0,backup);
+    transactions.forEach(t=>{if(unrecurredIds.includes(t.id))t.recurring=true;});
+    saveData();renderSubscriptions();renderUpcoming();
+  },()=>{});
+}
 function toggleSub(id){const s=subscriptions.find(s=>s.id===id);if(s){s.active=!s.active;saveData();renderSubscriptions();}}
 function subToExpense(id){
   const s=subscriptions.find(s=>s.id===id);if(!s)return;
