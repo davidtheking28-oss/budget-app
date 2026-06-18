@@ -25,7 +25,7 @@ jobs:
       - name: Inject Supabase anon key
         env:
           SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
-        run: sed -i "s|__SUPABASE_ANON__|${SUPABASE_ANON}|g" index.html
+        run: node -e "const fs=require('fs');let h=fs.readFileSync('index.html','utf8');h=h.replace(/__SUPABASE_ANON__/g,process.env.SUPABASE_ANON||'');fs.writeFileSync('index.html',h);console.log('injected');"
 
       - uses: actions/configure-pages@v4
 
