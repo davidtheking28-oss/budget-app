@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <!-- Tailwind: compiled locally and inlined below (replaces cdn.tailwindcss.com dev build) -->
   <script src="https://unpkg.com/lucide@0.453.0"></script>
   <style id="tailwind-compiled">
@@ -1665,6 +1666,12 @@
         </div>
       </div>
       <div class="settings-section">
+        <div class="settings-section-title">☁️ גיבוי ענן</div>
+        <div id="cloudSection">
+          <div style="font-size:0.82rem;color:var(--text3)">טוען...</div>
+        </div>
+      </div>
+      <div class="settings-section">
         <div class="settings-section-title">אפשרויות</div>
         <button class="btn btn-outline btn-full" onclick="loadDemo()" style="margin-bottom:8px">🎭 הפעל מצב הדגמה</button>
         <button class="btn btn-danger btn-full" onclick="resetAllData()">🗑️ איפוס כל הנתונים</button>
@@ -1809,6 +1816,7 @@ function saveData(){
   localStorage.setItem('budget_subs',  JSON.stringify(subscriptions));
   localStorage.setItem('budget_limits',JSON.stringify(budgets));
   localStorage.setItem('budget_loans', JSON.stringify(loans));
+  scheduleCloudSave();
 }
 
 function fmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';const str=Math.abs(n).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:2});return sym+str.replace(/[-−]/g,'');}
@@ -2326,6 +2334,108 @@ function groupedTxHtml(list){
 // ── Settings ──────────────────────────────────────────────────────
 const SUPA_URL  = 'https://fnklrqxwyeibfptaxewf.supabase.co';
 const SUPA_ANON = '__SUPABASE_ANON__';
+
+// ── Cloud sync ────────────────────────────────────────────────────
+const _sb = window.supabase?.createClient?.(SUPA_URL, SUPA_ANON, {auth:{persistSession:true,autoRefreshToken:true}}) || null;
+let _cloudUser = null;
+let _cloudSaveTimer = null;
+
+function scheduleCloudSave(){
+  if(!_cloudUser||!_sb) return;
+  clearTimeout(_cloudSaveTimer);
+  _cloudSaveTimer = setTimeout(_doCloudSave, 2000);
+}
+async function _doCloudSave(){
+  if(!_cloudUser||!_sb) return;
+  try{
+    await _sb.from('budget_data').upsert({
+      user_id:_cloudUser.id,
+      transactions,budgets,goals,subscriptions,loans,
+      settings:userSettings,
+      updated_at:new Date().toISOString()
+    },{onConflict:'user_id'});
+    const s=document.getElementById('cloudStatus');
+    if(s){s.textContent='✓ מסונכרן';s.style.color='var(--green)';}
+  }catch(e){console.warn('cloud save',e);}
+}
+async function _loadFromCloud(){
+  if(!_cloudUser||!_sb) return;
+  try{
+    const {data}=await _sb.from('budget_data').select('*').eq('user_id',_cloudUser.id).single();
+    if(data){
+      if(data.transactions?.length){transactions=data.transactions;localStorage.setItem('budget_tx',JSON.stringify(transactions));}
+      if(data.budgets&&Object.keys(data.budgets).length){budgets=data.budgets;localStorage.setItem('budget_limits',JSON.stringify(budgets));}
+      if(data.goals?.length){goals=data.goals;localStorage.setItem('budget_goals',JSON.stringify(goals));}
+      if(data.subscriptions?.length){subscriptions=data.subscriptions;localStorage.setItem('budget_subs',JSON.stringify(subscriptions));}
+      if(data.loans?.length){loans=data.loans;localStorage.setItem('budget_loans',JSON.stringify(loans));}
+      if(data.settings&&data.settings.name!==undefined){userSettings={...userSettings,...data.settings};saveSettingsData();}
+      refreshAll();
+      showToast('☁️ נתונים נטענו מהענן');
+    } else {
+      await _doCloudSave();
+    }
+    renderCloudSection();
+  }catch(e){console.warn('cloud load',e);}
+}
+async function cloudSignIn(){
+  const email=(document.getElementById('cloudEmailInput')?.value||'').trim();
+  if(!email||!email.includes('@')){showToast('הזן כתובת אימייל תקינה');return;}
+  const btn=document.getElementById('cloudSignInBtn');
+  if(btn)btn.disabled=true;
+  const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+  if(btn)btn.disabled=false;
+  if(error){showToast('❌ '+error.message);return;}
+  showToast('✉️ קישור נשלח לאימייל שלך');
+  const row=document.getElementById('cloudOtpRow');
+  if(row)row.style.display='';
+}
+async function cloudVerifyOtp(){
+  const email=(document.getElementById('cloudEmailInput')?.value||'').trim();
+  const token=(document.getElementById('cloudOtpInput')?.value||'').trim();
+  if(!token){showToast('הזן את הקוד מהאימייל');return;}
+  const {data,error}=await _sb.auth.verifyOtp({email,token,type:'email'});
+  if(error){showToast('❌ קוד שגוי, נסה שוב');return;}
+  _cloudUser=data.user;
+  renderCloudSection();
+  await _loadFromCloud();
+}
+async function cloudSignOut(){
+  await _sb?.auth.signOut();
+  _cloudUser=null;
+  renderCloudSection();
+  showToast('✓ התנתקת מגיבוי הענן');
+}
+function renderCloudSection(){
+  const el=document.getElementById('cloudSection');
+  if(!el)return;
+  if(_cloudUser){
+    el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+      +'<div><div style="font-size:0.88rem;font-weight:700;color:var(--text)">☁️ מחובר לענן</div>'
+      +'<div style="font-size:0.72rem;color:var(--text3);margin-top:2px">'+esc(_cloudUser.email)+'</div></div>'
+      +'<span id="cloudStatus" style="font-size:0.75rem;font-weight:700;color:var(--green)">✓ מסונכרן</span></div>'
+      +'<button class="btn btn-outline btn-sm" onclick="cloudSignOut()" style="width:100%;color:var(--text3)">התנתק</button>';
+  } else {
+    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הזן אימייל וקבל קוד — הנתונים יגובו ויהיו זמינים בכל מכשיר</div>'
+      +'<input id="cloudEmailInput" type="email" placeholder="האימייל שלך" inputmode="email" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px"/>'
+      +'<button id="cloudSignInBtn" class="btn btn-primary btn-full" onclick="cloudSignIn()">שלח קוד אימות</button>'
+      +'<div id="cloudOtpRow" style="display:none;margin-top:10px">'
+      +'<div style="font-size:0.78rem;color:var(--text3);margin-bottom:6px">הזן את הקוד שקיבלת באימייל:</div>'
+      +'<input id="cloudOtpInput" type="text" inputmode="numeric" maxlength="6" placeholder="• • • • • •" style="width:100%;border:1.5px solid var(--accent);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1.2rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:6px"/>'
+      +'<button class="btn btn-primary btn-full" onclick="cloudVerifyOtp()">אמת וגבה</button></div>';
+  }
+}
+if(_sb){
+  _sb.auth.onAuthStateChange((event,session)=>{
+    _cloudUser=session?.user||null;
+    renderCloudSection();
+    if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')) _loadFromCloud();
+  });
+  _sb.auth.getSession().then(({data:{session}})=>{
+    _cloudUser=session?.user||null;
+    if(_cloudUser) _loadFromCloud();
+    else renderCloudSection();
+  });
+}
 
 let userSettings = JSON.parse(localStorage.getItem('budget_settings') || '{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
 if(!userSettings.incomeSources) userSettings.incomeSources = [];
