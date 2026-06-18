@@ -1885,7 +1885,7 @@ function openAddTx(){
   (function(){var e=document.getElementById('txRecurring');if(e)e.checked=false;})();
   const today=new Date().toISOString().slice(0,10);
   document.getElementById('txDate').value=today;
-  document.getElementById('wizDateLabel').textContent='היום';
+  const _wdl=document.getElementById('wizDateLabel');if(_wdl)_wdl.textContent='היום';
   setTxType('expense');
   wizRender();
   setTimeout(()=>document.getElementById('txDesc').focus(),250);
@@ -2027,8 +2027,8 @@ function wizUpdateDate(){
   const v=document.getElementById('txDate').value;
   if(!v)return;
   const today=new Date().toISOString().slice(0,10);
-  if(v===today){document.getElementById('wizDateLabel').textContent='היום';}
-  else{const[y,m,d]=v.split('-');document.getElementById('wizDateLabel').textContent=d+'/'+m+'/'+y;}
+  const _wdl2=document.getElementById('wizDateLabel');
+  if(_wdl2){if(v===today)_wdl2.textContent='היום';else{const[y,m,d]=v.split('-');_wdl2.textContent=d+'/'+m+'/'+y;}}
 }
 function setFixedType(type){
   txFixedType=type;
