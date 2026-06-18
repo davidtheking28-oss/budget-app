@@ -3420,7 +3420,7 @@ function renderOnboardStep(){
 function renderObIncomes(){
   const el=document.getElementById('obIncomeRows');
   if(!el)return;
-  el.innerHTML=obIncomes.map((inc,i)=>`<div class="onboard-row"><input style="flex:1;border:none;background:transparent;padding:12px 16px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;" placeholder="שם ההכנסה" value="${inc.name||''}" onfocus="this.select()" oninput="obIncomes[${i}].name=this.value"/><input style="width:90px;border:none;background:transparent;padding:12px 8px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;text-align:center;" type="number" inputmode="decimal" placeholder="סכום" value="${inc.amount||''}" onfocus="this.select()" oninput="obIncomes[${i}].amount=this.value"/>${obIncomes.length>1?`<button class="ob-remove" onclick="obRemoveIncome(${i})" aria-label="הסר">✕</button>`:''}</div>`).join('');
+  el.innerHTML=obIncomes.map((inc,i)=>`<div class="onboard-row"><input style="flex:1;border:none;background:transparent;padding:12px 16px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;" placeholder="שם ההכנסה" value="${inc.name||''}" onfocus="this.select()" oninput="obIncomes[${i}].name=this.value"/><input style="width:90px;border:none;background:transparent;padding:12px 8px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;text-align:center;" type="text" inputmode="decimal" placeholder="סכום" value="${inc.amount||''}" onfocus="this.select()" oninput="obIncomes[${i}].amount=this.value.replace(/[,\s]/g,'')"/>${obIncomes.length>1?`<button class="ob-remove" onclick="obRemoveIncome(${i})" aria-label="הסר">✕</button>`:''}</div>`).join('');
 }
 function obAddIncome(){obIncomes.push({name:'',amount:''});renderObIncomes();}
 function obRemoveIncome(i){obIncomes.splice(i,1);renderObIncomes();}
@@ -3437,7 +3437,7 @@ function onboardNav(dir){
     document.querySelectorAll('#obIncomeRows .onboard-row').forEach((row,i)=>{
       const inputs=row.querySelectorAll('input');
       if(obIncomes[i]&&inputs[0]) obIncomes[i].name=inputs[0].value;
-      if(obIncomes[i]&&inputs[1]) obIncomes[i].amount=inputs[1].value;
+      if(obIncomes[i]&&inputs[1]) obIncomes[i].amount=inputs[1].value.replace(/[,\s]/g,'');
     });
   }
   onboardStep=Math.max(0,Math.min(2,onboardStep+dir));
@@ -3445,7 +3445,7 @@ function onboardNav(dir){
 }
 
 function finishOnboarding(){
-  const validIncomes=obIncomes.filter(inc=>inc.amount&&parseFloat(inc.amount)>0);
+  const validIncomes=obIncomes.map(inc=>({...inc,amount:String(inc.amount||'').replace(/[,\s]/g,'')})).filter(inc=>inc.amount&&parseFloat(inc.amount)>0);
   if(validIncomes.length>0){
     userSettings.incomeSources=validIncomes.map(inc=>({name:inc.name||'הכנסה',amount:inc.amount}));
     saveSettingsData();
