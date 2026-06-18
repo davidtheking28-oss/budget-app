@@ -1343,18 +1343,7 @@
     <!-- Month review (shown once at the start of a new month) -->
     <div id="monthReviewCard" style="display:none"></div>
 
-    <!-- Quick Actions -->
-    <div class="flex gap-2 mb-3">
-      <button class="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm" onclick="setTxType('expense');openAddTx()">
-        <i data-lucide="minus" class="w-3.5 h-3.5"></i>הוצאה
-      </button>
-      <button class="flex-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95" onclick="openAddTx();setTimeout(()=>setTxType('income'),50)">
-        <i data-lucide="plus" class="w-3.5 h-3.5"></i>הכנסה
-      </button>
-      <button class="flex-1 bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-600 dark:text-zinc-300 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95" onclick="showPage('analytics',document.getElementById('nav-analytics'))">
-        <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>ניתוח
-      </button>
-    </div>
+
 
     <!-- Feature shortcuts -->
     <div class="grid grid-cols-3 gap-2 mb-4">
