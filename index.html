@@ -83,8 +83,8 @@
     .fab.pulse{animation:fabPulse 1.8s ease-in-out 3;}
     @keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
     @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(29,78,216,0.5),0 0 0 0 rgba(29,78,216,0.4);}50%{box-shadow:0 8px 28px rgba(29,78,216,0.5),0 0 0 14px rgba(29,78,216,0);}}
-    main{padding:calc(120px + env(safe-area-inset-top,0px) + var(--demo-bar-h)) 16px calc(var(--nav-h) + var(--safe-bottom) + 88px);max-width:600px;margin:0 auto;}
-    #inlineMonthNav{position:fixed!important;top:calc(20px + env(safe-area-inset-top,0px) + var(--demo-bar-h) + var(--header-h))!important;left:50%!important;transform:translateX(-50%)!important;z-index:200!important;margin:0!important;}
+    main{padding:calc(76px + env(safe-area-inset-top,0px) + var(--demo-bar-h)) 16px calc(var(--nav-h) + var(--safe-bottom) + 88px);max-width:600px;margin:0 auto;}
+    #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px) + var(--demo-bar-h))!important;left:50%!important;transform:translateX(-50%)!important;z-index:200!important;margin:0!important;}
     .page{display:none;}.page.active{display:block;animation:pageEnter 0.24s cubic-bezier(0.22,1,0.36,1) both;}
     .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
     .cards-row.three{grid-template-columns:repeat(3,1fr);}
@@ -1054,17 +1054,7 @@
   🎭 מצב הדגמה · הנתונים אינם אמיתיים
   <button onclick="exitDemo()">יציאה מהדמו</button>
 </div>
-<header style="position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.06);padding:calc(env(safe-area-inset-top,0px) + var(--demo-bar-h,0px) + 10px) 16px 10px;display:flex;align-items:center;justify-content:space-between;" id="appHeader">
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div style="background:#2563eb;color:white;padding:7px;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-      <i data-lucide="wallet" style="width:18px;height:18px;"></i>
-    </div>
-    <span style="font-size:1rem;font-weight:800;color:#0f172a;letter-spacing:-0.01em;">תקציב אישי</span>
-  </div>
-  <button style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#f1f5f9;border:1px solid rgba(0,0,0,0.07);cursor:pointer;color:#475569;" onclick="openSearch()" aria-label="חיפוש">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  </button>
-</header>
+<div id="appHeader" style="position:fixed;top:0;left:0;right:0;z-index:200;height:env(safe-area-inset-top,0px);background:var(--bg);"></div>
 
 <div class="search-overlay" id="searchOverlay">
   <div class="search-bar-row">
