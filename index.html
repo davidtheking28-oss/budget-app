@@ -2460,23 +2460,18 @@ function renderSettingIncomeRows(){
     return;
   }
   el.innerHTML = userSettings.incomeSources.map((src,i)=>{
-    const amt = src.amount ? '₪'+Number(src.amount).toLocaleString('he-IL') : '';
     const ph = examples[i % examples.length];
     return `<div class="income-source-row">
-      <div class="income-source-row-top">
-        <span style="font-size:0.85rem;font-weight:700;color:var(--text);flex:1">${esc(src.name)||'מקור הכנסה '+(i+1)}</span>
-        ${amt?`<span style="font-size:0.85rem;font-weight:800;color:var(--green)">${amt}</span>`:''}
-        <button class="del-btn" onclick="userSettings.incomeSources.splice(${i},1);saveSettingsData();renderSettingIncomeRows()">🗑️ מחק</button>
-      </div>
-      <div class="income-source-row-fields">
+      <div class="income-source-row-fields" style="align-items:flex-end;gap:8px">
         <div class="income-source-field">
-          <label>מקור ההכנסה</label>
+          <label>שם המקור</label>
           <input type="text" placeholder="${ph}..." value="${esc(src.name||'')}" oninput="userSettings.incomeSources[${i}].name=this.value;saveSettingsData()" onfocus="this.select()"/>
         </div>
-        <div class="income-source-field" style="max-width:120px">
-          <label>סכום חודשי</label>
+        <div class="income-source-field" style="max-width:110px">
+          <label>סכום (₪)</label>
           <input type="number" inputmode="decimal" placeholder="0" value="${src.amount||''}" oninput="userSettings.incomeSources[${i}].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/>
         </div>
+        <button onclick="userSettings.incomeSources.splice(${i},1);saveSettingsData();renderSettingIncomeRows()" style="background:rgba(220,38,38,0.1);border:none;color:var(--red);font-size:1rem;cursor:pointer;padding:9px 10px;border-radius:8px;flex-shrink:0" aria-label="מחק">🗑️</button>
       </div>
       ${hasParter?`<div style="margin-top:8px"><select style="border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:0.82rem;color:var(--text);font-family:inherit;width:100%" oninput="userSettings.incomeSources[${i}].owner=this.value;saveSettingsData()"><option value="" ${!src.owner?'selected':''}>משותף לשניים</option><option value="1" ${src.owner==='1'?'selected':''}>${p1}</option><option value="2" ${src.owner==='2'?'selected':''}>${p2}</option></select></div>`:''}
     </div>`;
@@ -3047,7 +3042,7 @@ function renderAnalytics(){
     var _top=sorted.slice(0,6), _rest=sorted.slice(6).reduce((s,c)=>s+c[1],0);
     var fin=_top.slice(); if(_rest>0) fin.push(['אחר',_rest]);
     var _sum=(fin.reduce((s,c)=>s+c[1],0))||1, multi=fin.length>1;
-    var pctLabels={id:'pl',afterDatasetsDraw:function(ch){if(!multi)return;var x=ch.ctx,mt=ch.getDatasetMeta(0),dd=ch.data.datasets[0],sm=dd.data.reduce((a,b)=>a+(+b||0),0);if(!sm)return;var ca=ch.chartArea,cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;mt.data.forEach(function(arc,i){var p=(+dd.data[i]||0)/sm*100;if(p<3)return;var ps=arc.tooltipPosition();x.save();if(p<7){var angle=(arc.startAngle+arc.endAngle)/2,r=(arc.outerRadius+arc.innerRadius)/2+14;var tx=cx+Math.cos(angle)*r,ty=cy+Math.sin(angle)*r;x.font='600 10px sans-serif';x.fillStyle=isDk?'#d1c7bf':'#4b5563';x.textAlign='center';x.textBaseline='middle';x.fillText(Math.round(p)+'%',tx,ty);}else{x.font='700 12px sans-serif';x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=3;x.fillText(Math.round(p)+'%',ps.x,ps.y);}x.restore();});}};
+    var pctLabels={id:'pl',afterDatasetsDraw:function(ch){if(!multi)return;var x=ch.ctx,mt=ch.getDatasetMeta(0),dd=ch.data.datasets[0],sm=dd.data.reduce((a,b)=>a+(+b||0),0);if(!sm)return;var ca=ch.chartArea,cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;mt.data.forEach(function(arc,i){var p=(+dd.data[i]||0)/sm*100;if(p<5)return;var angle=(arc.startAngle+arc.endAngle)/2,r=(arc.outerRadius+arc.innerRadius)/2,tx=cx+Math.cos(angle)*r,ty=cy+Math.sin(angle)*r;x.save();x.font='700 '+(p<9?'10':'13')+'px sans-serif';x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.shadowColor='rgba(0,0,0,.7)';x.shadowBlur=5;x.fillText(Math.round(p)+'%',tx,ty);x.restore();});}};
     var ctrTotal={id:'ct',afterDraw:function(ch){var ca=ch.chartArea;if(!ca)return;var x=ch.ctx,cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;x.save();x.textAlign='center';x.textBaseline='middle';x.fillStyle=isDk?'#ece7e2':'#1f2937';x.font='800 18px sans-serif';x.fillText(fmt(totalE),cx,cy-4);x.fillStyle=isDk?'#9b9089':'#9ca3af';x.font='600 10px sans-serif';x.fillText('סה"כ הוצאות',cx,cy+15);x.restore();}};
     catChart=new Chart(ctx1,{type:'doughnut',data:{labels:fin.map(c=>c[0]),datasets:[{data:fin.map(c=>c[1]),backgroundColor:COLORS,borderWidth:2,borderColor:isDk?'#1c1917':'#ffffff',hoverOffset:8,spacing:1}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',radius:'94%',layout:{padding:6},animation:{animateRotate:true,duration:900,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{callbacks:{title:it=>(it&&it[0]?it[0].label:''),label:ctx=>' '+fmt(ctx.raw)+' ('+Math.round(ctx.parsed/_sum*100)+'%)'}}}},plugins:[pctLabels,ctrTotal]});
     try{
@@ -3585,7 +3580,7 @@ function skipOnboarding(){localStorage.setItem('budget_onboarded','1');document.
 function checkFabHint(){if(transactions.length===0&&localStorage.getItem('budget_onboarded')){triggerFabHint();}}
 
 function renderOnboardDots(){
-  const steps=['ברוכים','הכנסה','בואו נתחיל'];
+  const steps=['ברוכים','חשבון','הכנסה','בואו נתחיל'];
   document.getElementById('onboardDots').innerHTML=steps.map((s,i)=>'<div class="onboard-dot '+(i===onboardStep?'active':i<onboardStep?'done':'')+'"></div>').join('');
 }
 
@@ -3594,15 +3589,26 @@ function renderOnboardStep(){
   const backBtn=document.getElementById('onboardBack');
   const nextBtn=document.getElementById('onboardNext');
   backBtn.style.display=onboardStep===0?'none':'';
-  nextBtn.textContent=onboardStep===2?'✓ בואו נתחיל!':'הבא ›';
+  nextBtn.textContent=onboardStep===3?'✓ בואו נתחיל!':'הבא ›';
   const skipRow=document.getElementById('onboardSkipRow');
-  if(skipRow)skipRow.style.visibility=onboardStep===2?'hidden':'visible';
+  if(skipRow)skipRow.style.visibility=onboardStep===3?'hidden':'visible';
   const el=document.getElementById('onboardContent');
   if(onboardStep===0){
     const savedName = userSettings.name || '';
     el.innerHTML='<div style="text-align:center;padding:20px 0 16px;"><div style="font-size:4rem;font-weight:800;color:var(--accent);font-family:monospace;margin-bottom:12px;letter-spacing:-2px;">₪</div><div class="onboard-title">ברוכים לאפליקציית התקציב!</div><div class="onboard-sub">מנהלים את הכסף בפשטות. הכנה לוקחת פחות מדקה.</div></div><div style="margin-top:8px"><div style="font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:8px;">👤 איך קוראים לך?</div><input id="obNameInput" type="text" value="'+savedName+'" placeholder="שמי הוא..." oninput="userSettings.name=this.value" onfocus="this.select()" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1.1rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700"/><div style="font-size:0.75rem;color:var(--text3);margin-top:6px;text-align:center;">אפשר גם לדלג — ניתן להוסיף אחר כך בהגדרות</div></div>';
     setTimeout(()=>{const inp=document.getElementById('obNameInput');if(inp&&!savedName)inp.focus();},200);
   } else if(onboardStep===1){
+    const connected=!!_cloudUser;
+    if(connected){
+      el.innerHTML='<div style="text-align:center;padding:28px 0 16px"><div style="font-size:2.6rem;margin-bottom:14px">✅</div><div class="onboard-title">מחובר לענן!</div><div class="onboard-sub" style="word-break:break-all;margin-top:8px">'+(_cloudUser.email||'')+'</div><div style="margin-top:18px;font-size:0.82rem;color:var(--text3);line-height:1.6">הנתונים שלך יישמרו ויסונכרנו<br>אוטומטית בכל מכשיר</div></div>';
+    } else if(_obOtpSent){
+      el.innerHTML='<div class="onboard-title">☁️ גיבוי ענן <span style="font-size:0.78rem;font-weight:600;color:var(--text3);margin-right:6px">(אופציונלי)</span></div><div class="onboard-sub" style="margin-bottom:18px">קוד נשלח ל-<strong>'+_obEmailVal+'</strong></div><input id="obOtpInput" type="text" inputmode="numeric" placeholder="קוד 6 ספרות" maxlength="6" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1.6rem;font-family:var(--font-num);color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700;letter-spacing:8px" oninput="if(this.value.length===6)obVerifyOtp()"/><button class="btn btn-primary btn-full" style="margin-top:10px" onclick="obVerifyOtp()">אמת קוד</button><button style="background:none;border:none;color:var(--text3);font-size:0.8rem;cursor:pointer;margin-top:10px;width:100%;text-align:center;font-family:inherit" onclick="_obOtpSent=false;renderOnboardStep()">שנה מייל</button>';
+      setTimeout(()=>document.getElementById('obOtpInput')?.focus(),200);
+    } else {
+      el.innerHTML='<div class="onboard-title">☁️ גיבוי ענן <span style="font-size:0.78rem;font-weight:600;color:var(--text3);margin-right:6px">(אופציונלי)</span></div><div class="onboard-sub" style="margin-bottom:18px">הזן מייל כדי לשמור את הנתונים בענן ולגשת מכל מכשיר.</div><input id="obEmailInput" type="email" inputmode="email" placeholder="כתובת מייל" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:600" value="'+(_obEmailVal||'')+'"/><button class="btn btn-primary btn-full" style="margin-top:10px" onclick="obSendEmail()">שלח קוד אימות</button>';
+      setTimeout(()=>document.getElementById('obEmailInput')?.focus(),200);
+    }
+  } else if(onboardStep===2){
     el.innerHTML='<div class="onboard-title">💵 מה ההכנסה החודשית שלך?</div><div class="onboard-sub">הזן את המשכורת או כל הכנסה קבועה. זה עוזר לנו לחשב כמה אפשר להוציא בחודש.</div><div class="onboard-rows" id="obIncomeRows"></div><button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="obAddIncome()">+ הוספת מקור הכנסה</button>';
     renderObIncomes();
   } else {
@@ -3619,22 +3625,61 @@ function renderObIncomes(){
 function obAddIncome(){obIncomes.push({name:'',amount:''});renderObIncomes();}
 function obRemoveIncome(i){obIncomes.splice(i,1);renderObIncomes();}
 
+let _obOtpSent=false, _obEmailVal='';
+async function obSendEmail(){
+  const inp=document.getElementById('obEmailInput');
+  if(!inp)return;
+  const email=inp.value.trim();
+  if(!email||!email.includes('@')){showToast('הזן כתובת מייל תקינה');return;}
+  _obEmailVal=email;
+  inp.disabled=true;
+  try{
+    if(!_sb)throw new Error('no_sb');
+    const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+    if(error)throw error;
+    _obOtpSent=true;
+    renderOnboardStep();
+    showToast('✓ קוד נשלח למייל');
+  }catch(e){
+    inp.disabled=false;
+    showToast('שגיאה בשליחת הקוד, נסה שוב');
+  }
+}
+async function obVerifyOtp(){
+  const inp=document.getElementById('obOtpInput');
+  if(!inp)return;
+  const code=inp.value.trim();
+  if(code.length!==6){showToast('הזן קוד 6 ספרות');return;}
+  inp.disabled=true;
+  try{
+    if(!_sb)throw new Error('no_sb');
+    const {error}=await _sb.auth.verifyOtp({email:_obEmailVal,token:code,type:'email'});
+    if(error)throw error;
+    _obOtpSent=false;
+    renderOnboardStep();
+    showToast('✓ מחובר בהצלחה!');
+  }catch(e){
+    inp.disabled=false;
+    showToast('קוד שגוי, נסה שוב');
+  }
+}
+
 function onboardNav(dir){
-  if(dir===1&&onboardStep===2){finishOnboarding();return;}
+  if(dir===1&&onboardStep===3){finishOnboarding();return;}
   if(dir===1&&onboardStep===0){
     const inp=document.getElementById('obNameInput');
     if(inp) userSettings.name=inp.value.trim();
     saveSettingsData();
     updateHeaderTitle();
   }
-  if(dir===1&&onboardStep===1){
+  if(dir===1&&onboardStep===2){
     document.querySelectorAll('#obIncomeRows .onboard-row').forEach((row,i)=>{
       const inputs=row.querySelectorAll('input');
       if(obIncomes[i]&&inputs[0]) obIncomes[i].name=inputs[0].value;
       if(obIncomes[i]&&inputs[1]) obIncomes[i].amount=inputs[1].value.replace(/[,\s]/g,'');
     });
   }
-  onboardStep=Math.max(0,Math.min(2,onboardStep+dir));
+  onboardStep=Math.max(0,Math.min(3,onboardStep+dir));
   renderOnboardStep();
 }
 
@@ -4347,7 +4392,7 @@ setTimeout(autoCarryRecurring,500);
           var fin=_top.slice(); if(_rest>0) fin.push(['אחר',_rest]);
           var _sum=(fin.reduce(function(s,c){return s+c[1];},0))||1;
           var multi=fin.length>1;
-          var pctLabels={id:'pl',afterDatasetsDraw:function(ch){if(!multi)return;var x=ch.ctx,mt=ch.getDatasetMeta(0),dd=ch.data.datasets[0],sm=dd.data.reduce(function(a,b){return a+(+b||0);},0);if(!sm)return;var ca=ch.chartArea,cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;mt.data.forEach(function(arc,i){var p=(+dd.data[i]||0)/sm*100;if(p<3)return;var ps=arc.tooltipPosition();x.save();if(p<7){var angle=(arc.startAngle+arc.endAngle)/2,r=(arc.outerRadius+arc.innerRadius)/2+12;var tx=cx+Math.cos(angle)*r,ty=cy+Math.sin(angle)*r;x.font='600 9px sans-serif';x.fillStyle=isDk?'#d1c7bf':'#4b5563';x.textAlign='center';x.textBaseline='middle';x.fillText(Math.round(p)+'%',tx,ty);}else{x.font='700 11px sans-serif';x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=3;x.fillText(Math.round(p)+'%',ps.x,ps.y);}x.restore();});}};
+          var pctLabels={id:'pl',afterDatasetsDraw:function(ch){if(!multi)return;var x=ch.ctx,mt=ch.getDatasetMeta(0),dd=ch.data.datasets[0],sm=dd.data.reduce(function(a,b){return a+(+b||0);},0);if(!sm)return;var ca=ch.chartArea,cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;mt.data.forEach(function(arc,i){var p=(+dd.data[i]||0)/sm*100;if(p<5)return;var angle=(arc.startAngle+arc.endAngle)/2,r=(arc.outerRadius+arc.innerRadius)/2,tx=cx+Math.cos(angle)*r,ty=cy+Math.sin(angle)*r;x.save();x.font='700 '+(p<9?'10':'12')+'px sans-serif';x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.shadowColor='rgba(0,0,0,.7)';x.shadowBlur=5;x.fillText(Math.round(p)+'%',tx,ty);x.restore();});}};
           var ctrTotal={id:'ct',afterDraw:function(ch){var ca=ch.chartArea;if(!ca)return;var x=ch.ctx,cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;x.save();x.textAlign='center';x.textBaseline='middle';x.fillStyle=isDk?'#ece7e2':'#1f2937';x.font='800 16px sans-serif';x.fillText(fmt(totalE),cx,cy-3);x.fillStyle=isDk?'#9b9089':'#9ca3af';x.font='600 9px sans-serif';x.fillText('סה"כ הוצאות',cx,cy+14);x.restore();}};
           dashCatChart=new Chart(cc.getContext('2d'),{type:'doughnut',data:{labels:fin.map(function(c){return c[0];}),datasets:[{data:fin.map(function(c){return c[1];}),backgroundColor:COLORS,borderWidth:2,borderColor:isDk?'#1c1917':'#ffffff',hoverOffset:8,spacing:1}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',radius:'94%',layout:{padding:6},animation:{animateRotate:true,duration:900,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{callbacks:{title:function(it){return it&&it[0]?it[0].label:'';},label:function(c){return ' '+fmt(c.raw)+' ('+Math.round(c.parsed/_sum*100)+'%)';}}}}},plugins:[pctLabels,ctrTotal]});
           try{
