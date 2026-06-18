@@ -1579,6 +1579,10 @@
         <div class="form-field"><label>תאריך</label><input type="date" id="editTxDate"/></div>
       </div>
       <div class="form-field"><label>קטגוריה</label><select id="editTxCat"></select></div>
+      <div class="form-row" style="gap:16px;align-items:center;padding:4px 2px">
+        <label style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;font-size:0.88rem;color:var(--text2);font-weight:600"><input type="checkbox" id="editTxRecurring" style="width:18px;height:18px;accent-color:var(--accent)"> חוזרת</label>
+        <label style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;font-size:0.88rem;color:var(--text2);font-weight:600"><input type="checkbox" id="editTxFixed" style="width:18px;height:18px;accent-color:var(--accent)"> קבועה</label>
+      </div>
       <div class="form-row" style="gap:8px">
         <button class="btn btn-outline" style="flex:1" onclick="closeSheet('editTxSheet')">ביטול</button>
         <button class="btn btn-primary" style="flex:2" onclick="saveEditTx()">שמור שינויים</button>
@@ -1795,6 +1799,7 @@ let txTypeFilter  = 'expense';
 let txListFilter  = 'all';
 let txFixedType   = 'fixed';
 let txSelectedCat = '';
+let _recurRefused = new Set();
 
 let catChart=null, barChart=null;
 
@@ -2155,29 +2160,55 @@ function showFabHint(){const h=document.getElementById('fabHint');if(h)h.style.d
 function hideFabHint(){const h=document.getElementById('fabHint');if(h)h.style.display='none';localStorage.setItem('budget_fab_hinted','1');}
 function triggerFabHint(){if(!localStorage.getItem('budget_fab_hinted')){localStorage.setItem('budget_fab_hinted','1');setTimeout(()=>{const f=document.getElementById('fab');if(f){f.classList.add('pulse');f.addEventListener('animationend',()=>f.classList.remove('pulse'),{once:true});}},1200);}}
 function checkRecurring(){
-  const thisKey=mk(currentYear,currentMonth);
+  const alertEl=document.getElementById('recurringAlert');
   const now=new Date();
-  if(mk(currentYear,currentMonth)!==mk(now.getFullYear(),now.getMonth())){document.getElementById('recurringAlert').classList.remove('show');return;}
-  const lastM=currentMonth===0?11:currentMonth-1;
-  const lastY=currentMonth===0?currentYear-1:currentYear;
-  const recs=transactions.filter(t=>t.recurring&&t.date.startsWith(mk(lastY,lastM)));
-  const already=new Set(transactions.filter(t=>t.date.startsWith(thisKey)).map(t=>t.desc+'|'+t.cat));
+  const monthKey=mk(now.getFullYear(),now.getMonth());
+  if(mk(currentYear,currentMonth)!==monthKey){alertEl.classList.remove('show');return;}
+  let recs=[];
+  for(let i=1;i<=3&&!recs.length;i++){let lm=now.getMonth()-i,ly=now.getFullYear();while(lm<0){lm+=12;ly--;}recs=transactions.filter(t=>t.recurring&&t.date.startsWith(mk(ly,lm)));}
+  const already=new Set(transactions.filter(t=>t.date.startsWith(monthKey)).map(t=>t.desc+'|'+t.cat));
   const pending=recs.filter(t=>!already.has(t.desc+'|'+t.cat));
-  const alert=document.getElementById('recurringAlert');
-  if(!pending.length){alert.classList.remove('show');return;}
-  alert.classList.add('show');alert._pending=pending;
-  document.getElementById('recurringAlertBody').innerHTML=pending.map(t=>'<div style="font-size:0.82rem;color:var(--text);padding:3px 0">'+catIcon(t.cat)+' '+esc(t.desc)+' → '+fmt(t.amount)+'</div>').join('');
+  alertEl.classList.remove('show');
+  if(!pending.length)return;
+  const storKey='budget_ra_'+monthKey;
+  if(_recurRefused.has(monthKey)){
+    alertEl._pending=pending;
+    document.getElementById('recurringAlertBody').innerHTML=pending.map(t=>'<div style="font-size:0.82rem;color:var(--text);padding:3px 0">'+catIcon(t.cat)+' '+esc(t.desc)+' → '+fmt(t.amount)+'</div>').join('');
+    alertEl.classList.add('show');
+    return;
+  }
+  if(localStorage.getItem(storKey))return;
+  localStorage.setItem(storKey,'1');
+  const dim=daysInMonth(now.getFullYear(),now.getMonth());
+  const addedIds=[];
+  pending.forEach(t=>{
+    const origDay=+String(t.date||'').slice(8,10)||now.getDate();
+    const date=monthKey+'-'+String(Math.min(origDay,dim)).padStart(2,'0');
+    const newTx={id:Date.now()+Math.random(),type:t.type,cat:t.cat,desc:t.desc,amount:t.amount,date,recurring:true,fixed:isFixed(t)};
+    addedIds.push(newTx.id);
+    transactions.unshift(newTx);
+  });
+  saveData();refreshAll();
+  showUndoToast('✓ '+pending.length+' עסקאות חוזרות נוספו אוטומטית',()=>{
+    const idSet=new Set(addedIds);
+    transactions=transactions.filter(t=>!idSet.has(t.id));
+    localStorage.removeItem(storKey);
+    _recurRefused.add(monthKey);
+    saveData();refreshAll();
+  },()=>{});
 }
 function addAllRecurring(){
-  const alert=document.getElementById('recurringAlert');
+  const alertEl=document.getElementById('recurringAlert');
   const now=new Date();
+  const monthKey=mk(now.getFullYear(),now.getMonth());
   const dim=daysInMonth(now.getFullYear(),now.getMonth());
-  (alert._pending||[]).forEach(t=>{
-    // שומר על היום המקורי בחודש (שכר דירה של ה-1 נרשם על ה-1, לא על יום האישור)
+  (alertEl._pending||[]).forEach(t=>{
     const origDay=+String(t.date||'').slice(8,10)||now.getDate();
-    const date=mk(now.getFullYear(),now.getMonth())+'-'+String(Math.min(origDay,dim)).padStart(2,'0');
+    const date=monthKey+'-'+String(Math.min(origDay,dim)).padStart(2,'0');
     transactions.unshift({id:Date.now()+Math.random(),type:t.type,cat:t.cat,desc:t.desc,amount:t.amount,date,recurring:true,fixed:isFixed(t)});
   });
+  _recurRefused.delete(monthKey);
+  localStorage.setItem('budget_ra_'+monthKey,'1');
   saveData();showToast('✓ עסקאות חוזרות נוספו!');refreshAll();
 }
 
@@ -2549,6 +2580,10 @@ function editTx(id){
   const catSel = document.getElementById('editTxCat');
   const cats = tx.type === 'income' ? INCOME_CATS : EXPENSE_CATS;
   catSel.innerHTML = cats.map(c => `<option${c===tx.cat?' selected':''}>${c}</option>`).join('');
+  const recurEl = document.getElementById('editTxRecurring');
+  if(recurEl) recurEl.checked = !!tx.recurring;
+  const fixedEl = document.getElementById('editTxFixed');
+  if(fixedEl) fixedEl.checked = tx.fixed !== false;
   const delBtn = document.getElementById('editTxDeleteBtn');
   delBtn.onclick = () => { deleteTx(id); closeSheet('editTxSheet'); };
   openSheet('editTxSheet');
@@ -2561,10 +2596,12 @@ function saveEditTx(){
   const date   = document.getElementById('editTxDate').value;
   const cat    = document.getElementById('editTxCat').value;
   if(!desc || !amount || !date){ showToast('מלא תיאור, סכום ותאריך'); return; }
-  tx.desc   = desc;
-  tx.amount = amount;
-  tx.date   = date;
-  tx.cat    = cat;
+  tx.desc      = desc;
+  tx.amount    = amount;
+  tx.date      = date;
+  tx.cat       = cat;
+  tx.recurring = !!(document.getElementById('editTxRecurring')?.checked);
+  tx.fixed     = !!(document.getElementById('editTxFixed')?.checked);
   learnCat(desc, cat, tx.type, amount); // עדכון ידני = הלמידה הכי חזקה
   saveData();
   refreshAll();
