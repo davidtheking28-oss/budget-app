@@ -1781,7 +1781,7 @@ function getEffectiveCats(type){
   return custom.length?[...base.slice(0,-1),...custom,'אחר']:base;
 }
 const INCOME_CATS =['שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'];
-const COLORS=['#6d28d9','#059669','#2563eb','#d97706','#0d9488','#dc2626','#7c3aed','#e67e22','#34d399','#6366f1','#f59e0b','#10b981'];
+const COLORS=['#818cf8','#34d399','#60a5fa','#fbbf24','#2dd4bf','#f87171','#a78bfa','#fb923c','#4ade80','#38bdf8','#e879f9','#facc15','#f472b6','#a3e635'];
 
 let transactions  = JSON.parse(localStorage.getItem('budget_tx')    ||'[]');
 let goals         = JSON.parse(localStorage.getItem('budget_goals') ||'[]');
@@ -2893,7 +2893,7 @@ function renderAnalytics(){
     var _top=sorted.slice(0,6), _rest=sorted.slice(6).reduce((s,c)=>s+c[1],0);
     var fin=_top.slice(); if(_rest>0) fin.push(['אחר',_rest]);
     var _sum=(fin.reduce((s,c)=>s+c[1],0))||1, multi=fin.length>1;
-    var pctLabels={id:'pl',afterDatasetsDraw:function(ch){if(!multi)return;var x=ch.ctx,mt=ch.getDatasetMeta(0),dd=ch.data.datasets[0],sm=dd.data.reduce((a,b)=>a+(+b||0),0);if(!sm)return;mt.data.forEach(function(arc,i){var p=(+dd.data[i]||0)/sm*100;if(p<8)return;var ps=arc.tooltipPosition();x.save();x.font='700 12px sans-serif';x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=3;x.fillText(Math.round(p)+'%',ps.x,ps.y);x.restore();});}};
+    var pctLabels={id:'pl',afterDatasetsDraw:function(ch){if(!multi)return;var x=ch.ctx,mt=ch.getDatasetMeta(0),dd=ch.data.datasets[0],sm=dd.data.reduce((a,b)=>a+(+b||0),0);if(!sm)return;var ca=ch.chartArea,cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;mt.data.forEach(function(arc,i){var p=(+dd.data[i]||0)/sm*100;if(p<3)return;var ps=arc.tooltipPosition();x.save();if(p<7){var angle=(arc.startAngle+arc.endAngle)/2,r=(arc.outerRadius+arc.innerRadius)/2+14;var tx=cx+Math.cos(angle)*r,ty=cy+Math.sin(angle)*r;x.font='600 10px sans-serif';x.fillStyle=isDk?'#d1c7bf':'#4b5563';x.textAlign='center';x.textBaseline='middle';x.fillText(Math.round(p)+'%',tx,ty);}else{x.font='700 12px sans-serif';x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=3;x.fillText(Math.round(p)+'%',ps.x,ps.y);}x.restore();});}};
     var ctrTotal={id:'ct',afterDraw:function(ch){var ca=ch.chartArea;if(!ca)return;var x=ch.ctx,cx=(ca.left+ca.right)/2,cy=(ca.top+ca.bottom)/2;x.save();x.textAlign='center';x.textBaseline='middle';x.fillStyle=isDk?'#ece7e2':'#1f2937';x.font='800 18px sans-serif';x.fillText(fmt(totalE),cx,cy-4);x.fillStyle=isDk?'#9b9089':'#9ca3af';x.font='600 10px sans-serif';x.fillText('סה"כ הוצאות',cx,cy+15);x.restore();}};
     catChart=new Chart(ctx1,{type:'doughnut',data:{labels:fin.map(c=>c[0]),datasets:[{data:fin.map(c=>c[1]),backgroundColor:COLORS,borderWidth:2,borderColor:isDk?'#1c1917':'#ffffff',hoverOffset:8,spacing:1}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',radius:'94%',layout:{padding:6},animation:{animateRotate:true,duration:900,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{callbacks:{title:it=>(it&&it[0]?it[0].label:''),label:ctx=>' '+fmt(ctx.raw)+' ('+Math.round(ctx.parsed/_sum*100)+'%)'}}}},plugins:[pctLabels,ctrTotal]});
     try{
@@ -2905,11 +2905,13 @@ function renderAnalytics(){
     }catch(e){ console.warn('anaLegend',e); }
   }
   const months=[];
+  const _salaryFallback=userSettings.incomeSources.reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
   for(let i=5;i>=0;i--){
     let y=currentYear,m=currentMonth-i;while(m<0){m+=12;y--;}
     const mTxA=transactions.filter(t=>t.date.startsWith(mk(y,m)));
+    const txInc=mTxA.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
     months.push({label:['ינו','פבר','מרץ','אפר','מאי','יוני','יול','אוג','ספט','אוק','נוב','דצמ'][m],
-      inc:mTxA.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),
+      inc:txInc>0?txInc:_salaryFallback,
       exp:mTxA.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)});
   }
   const ctx2=document.getElementById('monthlyChart').getContext('2d');
