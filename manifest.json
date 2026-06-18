@@ -14,5 +14,9 @@
     { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "./icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "./screenshot-dashboard.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "דף ראשי — סיכום חודשי" },
+    { "src": "./screenshot-analytics.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "ניתוח — תובנות וסיכום שנתי" }
   ]
 }
