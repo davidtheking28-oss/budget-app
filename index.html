@@ -1769,6 +1769,11 @@ const CAT_SVGS={
 function catIconSvg(c){return CAT_SVGS[c]||CAT_SVGS['אחר'];}
 
 const EXPENSE_CATS=['אוכל','מסעדות','קניות','תחבורה ונסיעות','שכר דירה','חשמל ומים','ארנונה','תקשורת','בריאות','ביגוד והנעלה','חינוך','בילויים','ספורט','חופשות וטיולים','ביטוח','מתנות ואירועים','בעלי חיים','תיקונים ואחזקה','אחר'];
+function getEffectiveCats(type){
+  const base=type==='income'?INCOME_CATS:EXPENSE_CATS;
+  const custom=(userSettings.customCats||[]).filter(c=>!base.includes(c));
+  return custom.length?[...base.slice(0,-1),...custom,'אחר']:base;
+}
 const INCOME_CATS =['שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'];
 const COLORS=['#6d28d9','#059669','#2563eb','#d97706','#0d9488','#dc2626','#7c3aed','#e67e22','#34d399','#6366f1','#f59e0b','#10b981'];
 
@@ -1906,7 +1911,7 @@ function doSearch(q){
 let wizStep=1;
 function setTxType(type){
   txTypeFilter='expense';
-  const cats=EXPENSE_CATS;
+  const cats=getEffectiveCats('expense');
   txSelectedCat=cats[0];
   txFixedType='variable';
   wizRenderCats(cats);
@@ -1919,7 +1924,8 @@ function wizRenderCats(cats){
     '<div class="wiz-cat-icon">'+catIconSvg(c)+'</div>'+
     '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+c+'</span>'+
     '<span class="wiz-sel-check">✓</span></div>'
-  ).join('');
+  ).join('')+
+  '<div style="padding:12px 0 4px;"><button onclick="openAddCustomCat()" style="display:flex;align-items:center;gap:8px;width:100%;background:none;border:1.5px dashed var(--border);border-radius:12px;padding:11px 14px;color:var(--text3);font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף קטגוריה</button></div>';
 }
 function wizPickCat(cat,el){
   txSelectedCat=cat;
@@ -2279,8 +2285,12 @@ function groupedTxHtml(list){
 }
 
 // ── Settings ──────────────────────────────────────────────────────
+const SUPA_URL  = 'https://fnklrqxwyeibfptaxewf.supabase.co';
+const SUPA_ANON = '__SUPABASE_ANON__';
+
 let userSettings = JSON.parse(localStorage.getItem('budget_settings') || '{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
 if(!userSettings.incomeSources) userSettings.incomeSources = [];
+if(!userSettings.customCats)    userSettings.customCats    = [];
 function saveSettingsData(){localStorage.setItem('budget_settings',JSON.stringify(userSettings));}
 
 function getMonthlyIncome(){
@@ -2556,6 +2566,61 @@ function saveEditTx(){
   showToast('✓ העסקה עודכנה');
 }
 
+// ── Custom categories ────────────────────────────────────────────
+function openAddCustomCat(){
+  const name=prompt('שם הקטגוריה החדשה:');
+  if(!name||!name.trim())return;
+  const cat=name.trim();
+  if((userSettings.customCats||[]).includes(cat)||EXPENSE_CATS.includes(cat)){showToast('קטגוריה כבר קיימת');return;}
+  if(!userSettings.customCats)userSettings.customCats=[];
+  userSettings.customCats.push(cat);
+  saveSettingsData();
+  wizRenderCats(getEffectiveCats(txTypeFilter));
+  showToast('✓ קטגוריה נוספה');
+  setTimeout(()=>{
+    const rows=document.querySelectorAll('#wizCatList .wiz-cat-row');
+    rows.forEach(r=>{if(r.querySelector('.wiz-cat-name')?.textContent===cat)wizPickCat(cat,r);});
+  },50);
+}
+
+// ── AI categorization via Edge Function ─────────────────────────
+let _aiCatTimer=null;
+function showWizSuggestion(cat){
+  if(!cat)return;
+  const bar=document.getElementById('wizSuggestBar');
+  if(!bar)return;
+  txSelectedCat=cat;
+  const emoji=CAT_ICONS[cat]||'📌';
+  document.getElementById('wizSuggestEmoji').textContent=emoji;
+  document.getElementById('wizSuggestLabel').textContent=cat;
+  bar.style.display='block';
+  const badge=document.getElementById('wizCatBadge');
+  if(badge)badge.innerHTML=`<span style="font-size:1rem">${emoji}</span> ${cat}`;
+  document.querySelectorAll('#wizCatList .wiz-cat-row').forEach(r=>{
+    const m=r.querySelector('.wiz-cat-name')?.textContent===cat;
+    r.classList.toggle('wiz-sel',m);
+    if(m){r.classList.remove('wiz-just-matched');void r.offsetWidth;r.classList.add('wiz-just-matched');r.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  });
+}
+async function callAiCategorize(val){
+  try{
+    const allCats=getEffectiveCats(txTypeFilter);
+    const res=await fetch(`${SUPA_URL}/functions/v1/parse-expense`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPA_ANON}`},
+      body:JSON.stringify({message:val,customCats:userSettings.customCats||[]})
+    });
+    if(!res.ok)return;
+    const data=await res.json();
+    if(data.category&&allCats.includes(data.category)){
+      showWizSuggestion(data.category);
+      if(data.amount&&!document.getElementById('txAmount').value){
+        document.getElementById('txAmount').value=data.amount;
+      }
+    }
+  }catch(e){}
+}
+
 // ── wizDescNlp: auto-suggest category from description ───────────
 const NLP_MAP = {
   'קפה':'אוכל','בית קפה':'אוכל','נספרסו':'אוכל',
@@ -2645,36 +2710,18 @@ function wizDescNlp(val){
   const bar = document.getElementById('wizSuggestBar');
   if(!val || val.length < 2){
     if(bar) bar.style.display='none';
+    clearTimeout(_aiCatTimer);
     return;
   }
+  // Local keyword match (instant)
   const matched = categorize(val, txTypeFilter);
-  if(!matched){
-    // fallback: hide bar but keep typing
-    if(bar) bar.style.display='none';
-    return;
-  }
-  // Show suggest bar
-  txSelectedCat = matched;
-  const emoji = CAT_ICONS[matched] || '📌';
-  document.getElementById('wizSuggestEmoji').textContent = emoji;
-  document.getElementById('wizSuggestLabel').textContent = matched;
-  if(bar) bar.style.display='block';
-  // Update badge too
-  const badge = document.getElementById('wizCatBadge');
-  if(badge) badge.innerHTML = `<span style="font-size:1rem">${emoji}</span> ${matched}`;
-  // הדלקת הקטגוריה שזוהתה ברשימה עצמה, בזמן ההקלדה
-  let _matchedRow=null;
-  document.querySelectorAll('#wizCatList .wiz-cat-row').forEach(r=>{
-    const m=r.querySelector('.wiz-cat-name')?.textContent===matched;
-    r.classList.toggle('wiz-sel',m);
-    if(m)_matchedRow=r;
-  });
-  if(_matchedRow && _matchedRow!==window._lastMatchedRow){
-    _matchedRow.classList.remove('wiz-just-matched');
-    void _matchedRow.offsetWidth; // restart animation
-    _matchedRow.classList.add('wiz-just-matched');
-    _matchedRow.scrollIntoView({block:'nearest',behavior:'smooth'});
-    window._lastMatchedRow=_matchedRow;
+  if(matched) showWizSuggestion(matched);
+  else if(bar) bar.style.display='none';
+
+  // AI match (debounced, overrides local if better)
+  clearTimeout(_aiCatTimer);
+  if(val.length >= 3){
+    _aiCatTimer = setTimeout(() => callAiCategorize(val), 600);
   }
 }
 function wizAcceptSuggest(){
