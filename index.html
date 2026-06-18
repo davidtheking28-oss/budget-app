@@ -222,7 +222,8 @@
     .check-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;}
     .check-row label{font-size:0.84rem;font-weight:600;color:var(--text);cursor:pointer;flex:1;}
     .check-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;}
-    .wiz-sheet{padding:0!important;border-radius:20px 20px 0 0;overflow:hidden;display:flex;flex-direction:column;max-height:94vh;animation:slideUp 0.32s cubic-bezier(0.16,1,0.3,1) both;}
+    .wiz-sheet{padding:0!important;border-radius:0;overflow:hidden;display:flex;flex-direction:column;height:100dvh;max-height:100dvh;animation:slideUp 0.32s cubic-bezier(0.16,1,0.3,1) both;}
+    #addTxSheet{align-items:stretch;}
     .wiz-hdr{background:var(--accent);padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 30px;flex-shrink:0;}
     .wiz-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
     .wiz-step-btn{font-size:1.5rem;font-weight:400;color:rgba(255,255,255,0.8);background:none;border:none;cursor:pointer;padding:6px 2px;min-width:48px;min-height:44px;font-family:inherit;direction:ltr;text-align:right;-webkit-tap-highlight-color:transparent;line-height:1;}
@@ -1086,20 +1087,17 @@
       <button class="wiz-next-inline" onclick="wizNext()">הבא</button>
     </div>
     <div class="nlp-hint" id="nlpHint"></div>
-    <div class="wiz-body" id="wizBody1">
-      <div class="wiz-body-hdr">
-        <div class="wiz-sec-ttl" id="wizCatSecTitle">קטגוריות נפוצות:</div>
-        <div class="wiz-date-chip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span id="wizDateLabel">היום</span>
-          <input type="date" id="txDate" onchange="wizUpdateDate()"/>
-          <span style="display:inline-flex;gap:6px;margin-right:8px;">
-            <button type="button" class="wiz-date-chip" onclick="setWizDate(0)">היום</button>
-            <button type="button" class="wiz-date-chip" onclick="setWizDate(-1)">אתמול</button>
-            <button type="button" class="wiz-date-chip" onclick="setWizDate(-2)">שלשום</button>
-          </span>
-        </div>
+    <div style="display:flex;gap:6px;padding:10px 18px 0;flex-shrink:0;direction:rtl;">
+      <div class="wiz-date-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="wizDateLabel">היום</span>
+        <input type="date" id="txDate" onchange="wizUpdateDate()"/>
       </div>
+      <button type="button" class="wiz-date-chip" onclick="setWizDate(0)">היום</button>
+      <button type="button" class="wiz-date-chip" onclick="setWizDate(-1)">אתמול</button>
+      <button type="button" class="wiz-date-chip" onclick="setWizDate(-2)">שלשום</button>
+    </div>
+    <div class="wiz-body" id="wizBody1">
       <div id="wizSuggestBar" style="display:none;margin:0 0 10px;background:var(--accent);border-radius:12px;padding:10px 14px;cursor:pointer;" onclick="wizAcceptSuggest()">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
           <div style="display:flex;align-items:center;gap:10px;">
