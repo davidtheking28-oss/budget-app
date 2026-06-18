@@ -643,6 +643,9 @@
     /* ── Demo banner ─────────────────────────── */
     #demoBanner{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:250;background:linear-gradient(90deg,#7c3aed,#6366f1);color:white;text-align:center;font-size:0.78rem;font-weight:700;padding:6px 12px;display:none;align-items:center;justify-content:center;gap:8px;}
     #demoBanner button{background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;}
+    body.dark #appHeader{background:rgba(16,15,13,0.88)!important;border-bottom-color:rgba(255,255,255,0.06)!important;}
+    body.dark #appHeader span{color:#f0ebe3!important;}
+    body.dark #appHeader button{background:rgba(255,255,255,0.07)!important;border-color:rgba(255,255,255,0.08)!important;color:#9b9089!important;}
 
     /* ── GIF overlays ────────────────────────── */
     #gifOverlay{position:fixed;inset:0;z-index:8000;display:none;align-items:center;justify-content:center;pointer-events:none;}
