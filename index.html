@@ -2312,6 +2312,8 @@ function heDate(dateStr){
   const diff=Math.round((today-d)/86400000);
   if(diff===0)return 'היום';
   if(diff===1)return 'אתמול';
+  if(diff<=6)return 'לפני '+diff+' ימים';
+  if(diff===7)return 'לפני שבוע';
   return d.getDate()+' ב'+HE_MONTHS_LONG[d.getMonth()];
 }
 function groupedTxHtml(list){
@@ -2856,7 +2858,7 @@ function renderDashboard(){
   }
   renderUpcoming();
   const recentTx=[...mTx].filter(t=>t.type==='expense').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
-  document.getElementById('recentTxList').innerHTML=recentTx.length?groupedTxHtml(recentTx):'<div class="empty"><div style="font-size:3rem;margin-bottom:12px;">📋</div><p style="font-weight:700;font-size:1rem;margin-bottom:6px;">אין עסקאות עדיין</p><p style="font-size:0.82rem;color:var(--text3);margin-bottom:16px;">לחץ + כדי להוסיף את ההוצאה הראשונה שלך</p><button class="btn btn-primary btn-sm" onclick="openAddTx()">+ הוסף הוצאה</button></div>';
+  document.getElementById('recentTxList').innerHTML=recentTx.length?groupedTxHtml(recentTx):'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">חודש נקי ✨</p><p>עדיין לא רשמת הוצאות החודש.<br>לחץ + כדי להתחיל לעקוב</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה ראשונה</button></div>';
   checkRecurring();
 }
 
@@ -2901,7 +2903,12 @@ function renderTxPage(){
   else if(txListFilter==='variable') list=list.filter(t=>!isFixed(t));
   const q=(document.getElementById('txSearch').value||'').toLowerCase();
   if(q)list=list.filter(t=>t.desc.toLowerCase().includes(q)||t.cat.toLowerCase().includes(q));
-  document.getElementById('allTxList').innerHTML=list.length?groupedTxHtml(list):'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p>לא נמצאו תוצאות</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">נסה לשנות את מילות החיפוש או הסינון</p></div>';
+  const _q=(document.getElementById('txSearch').value||'').trim();
+  const _hasFilter=_q||txListFilter!=='all'||(document.getElementById('txFromDate')||{}).value||(document.getElementById('txToDate')||{}).value;
+  const _txEmpty=_hasFilter
+    ?'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p>לא נמצאו תוצאות</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">נסה לשנות את מילות החיפוש או הסינון</p></div>'
+    :'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">אין הוצאות החודש</p><p>עדיין לא רשמת הוצאות לחודש זה</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה</button></div>';
+  document.getElementById('allTxList').innerHTML=list.length?groupedTxHtml(list):_txEmpty;
   const csvBtn=document.getElementById('csvExportBtn');
   if(csvBtn)csvBtn.style.display=list.length?'':'none';
 }
