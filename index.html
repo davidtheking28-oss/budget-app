@@ -230,11 +230,12 @@
     .wiz-ttl{font-size:2rem;font-weight:var(--fw-extra);color:white;text-align:center;flex:1;letter-spacing:var(--track-normal);line-height:var(--lh-tight);font-family:var(--font-display);}
     .wiz-next-btn{font-size:2rem;color:white;background:none;border:none;cursor:pointer;padding:6px 2px;min-width:48px;line-height:1;opacity:0.9;text-align:left;-webkit-tap-highlight-color:transparent;}
     .wiz-next-btn:active{opacity:0.4;}
-    .wiz-pill-outer{padding:0 18px;margin-top:-22px;position:relative;z-index:10;flex-shrink:0;}
-    .wiz-pill{width:100%;padding:17px 24px;background:white!important;border:none;border-radius:50px;font-size:1.05rem;font-family:inherit;color:#1a1714!important;box-shadow:0 8px 32px rgba(0,0,0,0.14);outline:none;direction:rtl;display:block;transition:box-shadow 0.2s;text-align:right;}
-    .wiz-pill:focus{box-shadow:0 8px 32px rgba(29,78,216,0.18);}
-    body.dark .wiz-pill:focus{box-shadow:0 8px 32px rgba(96,165,250,0.22);}
-    .wiz-pill::placeholder{color:#b0aca8!important;text-align:center;}
+    .wiz-pill-outer{display:flex;align-items:center;margin:-22px 18px 0;position:relative;z-index:10;flex-shrink:0;background:white;border-radius:50px;box-shadow:0 8px 32px rgba(0,0,0,0.14);padding:6px;transition:box-shadow 0.2s;}
+    .wiz-pill-outer:focus-within{box-shadow:0 8px 32px rgba(29,78,216,0.22);}
+    .wiz-pill{flex:1;min-width:0;padding:13px 16px;background:transparent!important;border:none;font-size:1.05rem;font-family:inherit;color:#1a1714!important;box-shadow:none!important;outline:none;direction:rtl;display:block;text-align:right;}
+    .wiz-pill::placeholder{color:#b0aca8!important;}
+    .wiz-next-inline{flex-shrink:0;background:var(--accent);color:white;border:none;border-radius:50px;padding:12px 20px;font-size:0.92rem;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;min-height:44px;-webkit-tap-highlight-color:transparent;}
+    .wiz-next-inline:active{opacity:0.75;}
     .wiz-pill[type=number]{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-weight:700;font-size:1.4rem;letter-spacing:-0.5px;text-align:center;}
     .wiz-pill[type=number]::placeholder{font-family:var(--font-sans);font-weight:400;font-size:1.05rem;text-align:center;}
     .wiz-body{overflow-y:auto;}
@@ -404,7 +405,9 @@
     body.dark .wiz-body-padded{background:var(--bg);}
     body.dark .wiz-cat-row{border-color:var(--border);}
     body.dark .wiz-fix-btn{color:var(--text2);}
-    body.dark .wiz-pill{background:var(--surface)!important;color:var(--text)!important;}
+    body.dark .wiz-pill{color:var(--text)!important;}
+    body.dark .wiz-pill-outer{background:var(--surface)!important;}
+    body.dark .wiz-pill-outer:focus-within{box-shadow:0 8px 32px rgba(96,165,250,0.22);}
     body.dark .wiz-date-chip{background:var(--surface);border-color:var(--border);color:var(--text);}
     body.dark .wiz-fix-row{background:var(--surface2);border-color:var(--border);}
     body.dark .wiz-rec-row{background:var(--surface);border-color:var(--border);}
@@ -1078,8 +1081,9 @@
         <button class="wiz-next-btn" id="wizNextBtn" onclick="wizNext()" aria-label="הבא">›</button>
       </div>
     </div>
-    <div class="wiz-pill-outer">
+    <div class="wiz-pill-outer" id="wizPillOuter">
       <input type="text" id="txDesc" class="wiz-pill" placeholder="קפה, סופר, דלק..." oninput="wizDescNlp(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();wizNext();}" onfocus="this.select()"/>
+      <button class="wiz-next-inline" onclick="wizNext()">הבא</button>
     </div>
     <div class="nlp-hint" id="nlpHint"></div>
     <div class="wiz-body" id="wizBody1">
@@ -1949,7 +1953,9 @@ function wizPickCat(cat,el){
 }
 function wizRender(){
   const isExp=txTypeFilter==='expense';
-  document.getElementById('wizNextBtn').textContent=wizStep===2?'✓':'›';
+  document.getElementById('wizNextBtn').textContent='✓';
+  document.getElementById('wizNextBtn').style.visibility=wizStep===1?'hidden':'visible';
+  const _po=document.getElementById('wizPillOuter');if(_po)_po.style.display=wizStep===1?'':'none';
   document.getElementById('wizStepBtn').innerHTML=wizStep===1?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><polyline points="15 18 21 12 15 6"/><line x1="21" y1="12" x2="3" y2="12"/></svg>';
   document.getElementById('wizTtl').textContent=wizStep===1?'על מה הוצאתי?':'כמה שילמתי?';
   document.getElementById('wizBody1').style.display=wizStep===1?'':'none';
