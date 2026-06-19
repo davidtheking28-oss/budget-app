@@ -1839,7 +1839,6 @@
           <button type="button" class="set-dd-trigger" onclick="toggleSetDD('dataDD')"><span>💾 ייבוא, ייצוא וגיבוי</span><svg class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
           <div class="set-dd-menu">
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();importBankCSV()"><span>🏦</span> ייבא עסקאות מקובץ בנק (CSV)</button>
-            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();exportBackup()"><span>💾</span> גבה את כל הנתונים</button>
           </div>
         </div>
       </div>
@@ -1992,6 +1991,19 @@ function getEffectiveCats(type){
 const INCOME_CATS =['שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'];
 const COLORS=['#818cf8','#34d399','#60a5fa','#fbbf24','#2dd4bf','#f87171','#a78bfa','#fb923c','#4ade80','#38bdf8','#e879f9','#facc15','#f472b6','#a3e635'];
 
+(function(){
+  if(localStorage.getItem('budget_tx')!==null)return;
+  try{
+    const raw=localStorage.getItem('budget_autobackup');
+    if(!raw)return;
+    const snap=JSON.parse(raw);
+    if(!snap||!snap.data)return;
+    const tx=JSON.parse(snap.data['budget_tx']||'[]');
+    if(!tx.length)return;
+    Object.keys(snap.data).forEach(k=>localStorage.setItem(k,snap.data[k]));
+    location.reload();
+  }catch(e){}
+})();
 let transactions  = JSON.parse(localStorage.getItem('budget_tx')    ||'[]');
 let goals         = JSON.parse(localStorage.getItem('budget_goals') ||'[]');
 let subscriptions = JSON.parse(localStorage.getItem('budget_subs')  ||'[]');
