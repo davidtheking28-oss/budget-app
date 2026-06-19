@@ -1068,6 +1068,8 @@
       transform-origin:right;
       transition:transform 0.5s cubic-bezier(.4,0,.2,1)!important;
     }
+    .more-row{transition:background 0.15s;}
+    .more-row:active{background:var(--surface2)!important;}
 
   </style>
 </head>
@@ -1080,7 +1082,7 @@
   <div class="splash-sub">טוען...</div>
 </div>
 <div id="gifOverlay">
-  <img id="gifImg" src="" alt=""/>
+  <img id="gifImg" src="data:," alt=""/>
 </div>
 <div id="confirmOverlay" class="confirm-overlay">
   <div class="confirm-box" role="alertdialog" aria-modal="true">
@@ -1595,6 +1597,50 @@
     </div>
     <div id="loansList"></div>
   </div>
+
+  <!-- עמוד עוד -->
+  <div id="page-more" class="page">
+    <div style="margin-bottom:8px;font-size:0.72rem;font-weight:700;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;padding:0 2px">תכנון</div>
+    <div style="background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:20px">
+      <button onclick="showPage('goals')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:right;font-family:inherit" class="more-row">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(234,179,8,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem">🎯</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:0.95rem;font-weight:700;color:var(--text)">יעדי חיסכון</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">מעקב התקדמות לעבר יעדים</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button onclick="showPage('subscriptions')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:right;font-family:inherit" class="more-row">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(139,92,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem">🔔</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:0.95rem;font-weight:700;color:var(--text)">מנויים</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">Netflix, חשמל, ביטוח ועוד</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button onclick="showPage('loans')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;cursor:pointer;text-align:right;font-family:inherit" class="more-row">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(220,38,38,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem">💳</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:0.95rem;font-weight:700;color:var(--text)">הלוואות וחובות</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">משכנתא, הלוואות, כרטיס אשראי</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <div style="margin-bottom:8px;font-size:0.72rem;font-weight:700;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;padding:0 2px">כללי</div>
+    <div style="background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)">
+      <button onclick="openSettings()" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;cursor:pointer;text-align:right;font-family:inherit" class="more-row">
+        <div style="width:40px;height:40px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--text2)"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:0.95rem;font-weight:700;color:var(--text)">הגדרות</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">פרופיל, גיבוי ענן, ערכת צבעים</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
 </main>
 
 <div class="sheet-overlay" id="editTxSheet" onclick="if(event.target===this)closeSheet('editTxSheet')">
@@ -1760,11 +1806,11 @@
     <span class="nav-label text-[10px] font-semibold">ניתוח</span>
   </button>
 
-  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="openSettings()" id="nav-settings" aria-label="הגדרות">
+  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('more',this)" id="nav-more" aria-label="עוד">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
     </div>
-    <span class="nav-label text-[10px] font-semibold">הגדרות</span>
+    <span class="nav-label text-[10px] font-semibold">עוד</span>
   </button>
 </nav>
 
@@ -4164,7 +4210,7 @@ function showGif(src, durationMs){
   if(!ov||!img) return;
   img.src = src;
   ov.style.display = 'flex';
-  setTimeout(()=>{ ov.style.display='none'; img.src=''; }, durationMs||1200);
+  setTimeout(()=>{ ov.style.display='none'; img.src='data:,'; }, durationMs||1200);
 }
 
 
