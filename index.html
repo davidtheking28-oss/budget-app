@@ -2304,9 +2304,9 @@ function checkRecurring(){
   const already=new Set(transactions.filter(t=>t.date.startsWith(monthKey)).map(t=>t.desc+'|'+t.cat));
   const pending=recs.filter(t=>!already.has(t.desc+'|'+t.cat));
   alertEl.classList.remove('show');
-  if(!pending.length)return;
   const storKey='budget_ra_'+monthKey;
-  if(_recurRefused.has(monthKey)){
+  if(!pending.length){localStorage.setItem(storKey,'1');return;}
+  if(_recurRefused.has(monthKey)||localStorage.getItem('budget_ra_refused_'+monthKey)){
     alertEl._pending=pending;
     document.getElementById('recurringAlertBody').innerHTML=pending.map(t=>'<div style="font-size:0.82rem;color:var(--text);padding:3px 0">'+catIcon(t.cat)+' '+esc(t.desc)+' → '+fmt(t.amount)+'</div>').join('');
     alertEl.classList.add('show');
@@ -2328,6 +2328,7 @@ function checkRecurring(){
     const idSet=new Set(addedIds);
     transactions=transactions.filter(t=>!idSet.has(t.id));
     localStorage.removeItem(storKey);
+    localStorage.setItem('budget_ra_refused_'+monthKey,'1');
     _recurRefused.add(monthKey);
     saveData();refreshAll();
   },()=>{});
