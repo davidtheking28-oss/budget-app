@@ -4703,6 +4703,7 @@ setTimeout(autoCarryRecurring,500);
   var _os=window.openSettings; if(typeof _os==='function'){ window.openSettings=function(){ var r=_os.apply(this,arguments); setTimeout(function(){ refreshTheme(); refreshPriv(); },0); return r; }; }
   document.addEventListener('DOMContentLoaded', function(){ setTimeout(function(){ refreshTheme(); refreshPriv(); }, 200); });
   if(window.matchMedia){ var mq=window.matchMedia('(prefers-color-scheme:dark)'); var onCh=function(){ if(curMode()==='system') applyMode('system'); }; if(mq.addEventListener) mq.addEventListener('change',onCh); else if(mq.addListener) mq.addListener(onCh); }
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden&&curMode()==='system') applyMode('system'); });
 })();
 </script>
 <script>
