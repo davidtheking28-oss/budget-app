@@ -1186,10 +1186,10 @@
       <div class="wiz-body-padded">
         <div style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">קטגוריה שנבחרה</div><div class="wiz-cat-badge" id="wizCatBadge"></div>
         <div class="wiz-fix-row">
-          <button class="wiz-fix-btn" id="wiz-fix-variable" onclick="setFixedType('variable')" title="קניות, מסעדות, בילויים">משתנה 🔄</button>
-          <button class="wiz-fix-btn" id="wiz-fix-fixed" onclick="setFixedType('fixed')" title="שכירות, ביטוח, הלוואה">קבועה 🔒</button>
+          <button class="wiz-fix-btn" id="wiz-fix-variable" onclick="setFixedType('variable')" title="קניות, מסעדות, בילויים">רגילה 🔄</button>
+          <button class="wiz-fix-btn" id="wiz-fix-fixed" onclick="setFixedType('fixed')" title="שכירות, ביטוח, הלוואה">חוזרת 🔒</button>
         </div>
-        <div style="font-size:0.75rem;color:var(--text3);margin-bottom:10px;padding:0 2px;">קבועה = אותו סכום כל חודש (שכירות, ביטוח) · משתנה = משתנה (קניות, בילויים)</div>
+        <div style="font-size:0.75rem;color:var(--text3);margin-bottom:10px;padding:0 2px;">חוזרת: אותו סכום כל חודש (שכירות, ביטוח)</div>
         <div style="margin-top:12px;">
           <div style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">תאריך</div>
           <input type="date" id="txDateVisible" style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.92rem;font-weight:600;color:var(--text);font-family:inherit;outline:none;cursor:pointer;" oninput="document.getElementById('txDate').value=this.value;wizUpdateDate()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
@@ -1711,7 +1711,7 @@
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">📲 ייבוא מ-SMS</div>
-    <div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הדבק הודעות SMS מהבנק — הסכומים יזוהו אוטומטית</div>
+    <div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הדבק הודעות SMS מהבנק. הסכומים יזוהו אוטומטית</div>
     <textarea id="smsTextInput" placeholder="לדוגמה:&#10;עסקת חיוב בגובה 145.50 ₪ בKFC&#10;נרשמה עסקה בסך 89 ₪ ברשת שופרסל" style="width:100%;height:120px;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;resize:none;box-sizing:border-box;direction:rtl;margin-bottom:10px;"></textarea>
     <button class="btn btn-primary btn-full" onclick="parseSmsText()" style="margin-bottom:12px">🔍 נתח הודעות</button>
     <div id="smsParsedList"></div>
@@ -1879,10 +1879,10 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">🔒 מדיניות פרטיות<button onclick="closeSheet('privacySheet')" style="background:none;border:none;font-size:1.4rem;color:var(--text3);cursor:pointer;line-height:1;padding:0 4px;">✕</button></div>
     <div class="form-stack" style="font-size:0.85rem;color:var(--text2);line-height:1.75;overflow-y:auto;max-height:62vh;display:flex;flex-direction:column;gap:14px;">
-      <div><strong style="color:var(--text);display:block;margin-bottom:4px">מה אנחנו אוספים?</strong>אם בחרת להתחבר עם מייל — כתובת המייל שלך נשמרת ב-Supabase לצורך אימות בלבד. הנתונים הפיננסיים (עסקאות, תקציב, יעדים) נשמרים בדפדפן שלך, ואם נרשמת — מגובים בענן תחת החשבון שלך בלבד.</div>
+      <div><strong style="color:var(--text);display:block;margin-bottom:4px">מה אנחנו אוספים?</strong>אם בחרת להתחבר עם מייל: כתובת המייל שלך נשמרת ב-Supabase לצורך אימות בלבד. הנתונים הפיננסיים (עסקאות, תקציב, יעדים) נשמרים בדפדפן שלך, ואם נרשמת, מגובים בענן תחת החשבון שלך בלבד.</div>
       <div><strong style="color:var(--text);display:block;margin-bottom:4px">שיתוף מידע</strong>אנחנו לא מוכרים ולא משתפים את הנתונים שלך עם שום גורם שלישי.</div>
-      <div><strong style="color:var(--text);display:block;margin-bottom:4px">מחיקת נתונים</strong>ניתן למחוק את כל הנתונים בכל עת מהגדרות ← "איפוס כל הנתונים". להסרת חשבון ענן — צור קשר.</div>
-      <div><strong style="color:var(--text);display:block;margin-bottom:4px">אבטחה</strong>כל הנתונים מועברים בהצפנה (HTTPS/TLS). גישה לנתוני ענן מוגנת עם Row Level Security — רק אתה יכול לראות את הנתונים שלך.</div>
+      <div><strong style="color:var(--text);display:block;margin-bottom:4px">מחיקת נתונים</strong>ניתן למחוק את כל הנתונים בכל עת מהגדרות ← "איפוס כל הנתונים". להסרת חשבון ענן, צור קשר.</div>
+      <div><strong style="color:var(--text);display:block;margin-bottom:4px">אבטחה</strong>כל הנתונים מועברים בהצפנה (HTTPS/TLS). גישה לנתוני ענן מוגנת עם Row Level Security: רק אתה יכול לראות את הנתונים שלך.</div>
       <div style="color:var(--text3);font-size:0.78rem;padding-top:4px">עודכן לאחרונה: יוני 2026</div>
     </div>
   </div>
@@ -2242,7 +2242,7 @@ function addTransaction(prefill){
       const left=budgets[cat]-spent;
       const pct=Math.round(spent/budgets[cat]*100);
       if(left<0){ msg='⚠️ עברת את תקציב ה'+cat+' ב-'+fmt(-left); msgType='error'; }
-      else if(pct>=80){ msg='⚠️ '+pct+'% מתקציב '+cat+' — נשארו רק '+fmt(left); msgType='warning'; }
+      else if(pct>=80){ msg='⚠️ '+pct+'% מתקציב '+cat+', נשארו רק '+fmt(left); msgType='warning'; }
       else { msg='✓ נרשם · נשארו '+fmt(left)+' ב'+cat+' החודש'; }
     }
     showToast(msg,msgType);
@@ -2648,7 +2648,7 @@ function renderCloudSection(){
       +'<span id="cloudStatus" style="font-size:0.75rem;font-weight:700;color:var(--green)">✓ מסונכרן</span></div>'
       +'<button class="btn btn-outline btn-sm" onclick="cloudSignOut()" style="width:100%;color:var(--text3)">התנתק</button>';
   } else {
-    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הזן אימייל וקבל קוד — הנתונים יגובו ויהיו זמינים בכל מכשיר</div>'
+    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הזן אימייל וקבל קוד. הנתונים יגובו ויהיו זמינים בכל מכשיר</div>'
       +'<input id="cloudEmailInput" type="email" placeholder="האימייל שלך" inputmode="email" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px"/>'
       +'<button id="cloudSignInBtn" class="btn btn-primary btn-full" onclick="cloudSignIn()">שלח קוד אימות</button>'
       +'<div id="cloudOtpRow" style="display:none;margin-top:10px">'
@@ -2820,7 +2820,7 @@ function importBackup(input){
       refreshAll();
       closeSheet('settingsSheet');
       showToast('✓ הנתונים שוחזרו בהצלחה!');
-    } catch(err) { showToast('❌ לא ניתן לקרוא את הקובץ — נסה קובץ אחר'); }
+    } catch(err) { showToast('❌ לא ניתן לקרוא את הקובץ. נסה קובץ אחר'); }
   };
   reader.readAsText(file);
 }
@@ -3980,12 +3980,12 @@ function renderSmsParsed(){
   const el=document.getElementById('smsParsedList');
   const actEl=document.getElementById('smsImportActions');
   if(!_smsParsed.length){
-    el.innerHTML='<div style="text-align:center;color:var(--text3);font-size:0.85rem;padding:12px 0">לא זוהו עסקאות — וודא שההודעות מכילות סכום עם ₪</div>';
+    el.innerHTML='<div style="text-align:center;color:var(--text3);font-size:0.85rem;padding:12px 0">לא זוהו עסקאות. וודא שההודעות מכילות סכום עם ₪</div>';
     actEl.style.display='none';
     return;
   }
   const cats=getEffectiveCats('expense');
-  el.innerHTML='<div style="font-size:0.78rem;font-weight:700;color:var(--text2);margin-bottom:8px">זוהו '+_smsParsed.length+' עסקאות — ערוך לפי הצורך:</div>'
+  el.innerHTML='<div style="font-size:0.78rem;font-weight:700;color:var(--text2);margin-bottom:8px">זוהו '+_smsParsed.length+' עסקאות, ערוך לפי הצורך:</div>'
     +_smsParsed.map((p,i)=>'<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border)">'
       +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">'
       +'<input type="text" value="'+esc(p.desc)+'" oninput="_smsParsed['+i+'].desc=this.value" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;" />'
@@ -4295,7 +4295,7 @@ function generateInsights(){
       for(const c in byCat){
         if(byCat[c].length>=2){
           const tot=byCat[c].reduce((s,x)=>s+(+x.price||0),0);
-          insights.push({icon:'🔄',type:'info',text:'יש לך <span class="insight-highlight">'+byCat[c].length+' מנויים</span> בקטגוריית '+esc(c)+' ('+fmt(tot)+' בחודש) — שווה לבדוק אם כולם נחוצים'});
+          insights.push({icon:'🔄',type:'info',text:'יש לך <span class="insight-highlight">'+byCat[c].length+' מנויים</span> בקטגוריית '+esc(c)+' ('+fmt(tot)+' בחודש). שווה לבדוק אם כולם נחוצים'});
           break;
         }
       }
@@ -4311,7 +4311,7 @@ function generateInsights(){
     if(wkndD.size>=2&&wkdD.size>=3){
       const wkndAvg=wkndS/wkndD.size,wkdAvg=wkdS/wkdD.size;
       if(wkdAvg>0&&wkndAvg>wkdAvg*1.5){
-        insights.push({icon:'🍻',type:'info',text:'בסופי שבוע אתה מוציא בממוצע <span class="insight-highlight">'+fmt(Math.round(wkndAvg))+' ליום</span> — פי '+(wkndAvg/wkdAvg).toFixed(1)+' מיום חול'});
+        insights.push({icon:'🍻',type:'info',text:'בסופי שבוע אתה מוציא בממוצע <span class="insight-highlight">'+fmt(Math.round(wkndAvg))+' ליום</span>, פי '+(wkndAvg/wkdAvg).toFixed(1)+' מיום חול'});
       }
     }
   }catch(e){}
@@ -4886,7 +4886,7 @@ setTimeout(autoCarryRecurring,500);
       function esc(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
       var html='<!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>סיכום '+esc(label)+'</title>'
         +'<style>body{font-family:Arial,Helvetica,sans-serif;direction:rtl;color:#111;margin:24px;}h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:18px 0 6px;border-bottom:2px solid #2563eb;padding-bottom:4px;color:#1d4ed8}.sum{display:flex;gap:12px;margin:12px 0}.box{flex:1;border:1px solid #ddd;border-radius:10px;padding:10px;text-align:center;font-size:13px}.box b{display:block;font-size:18px;margin-top:4px}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}th,td{border-bottom:1px solid #eee;padding:6px;text-align:right}th{background:#f4f6fb}.muted{color:#777;font-size:12px}@media print{body{margin:10px}}</style></head><body>'
-        +'<h1>סיכום תקציב — '+esc(label)+'</h1><div class="muted">הופק ב-'+new Date().toLocaleDateString('he-IL')+(userSettings.name?(' · '+esc(userSettings.name)):'')+'</div>'
+        +'<h1>סיכום תקציב: '+esc(label)+'</h1><div class="muted">הופק ב-'+new Date().toLocaleDateString('he-IL')+(userSettings.name?(' · '+esc(userSettings.name)):'')+'</div>'
         +'<div class="sum"><div class="box">הכנסות<b style="color:#059669">'+fmt(income)+'</b></div><div class="box">הוצאות<b style="color:#dc2626">'+fmt(totalExp)+'</b></div><div class="box">יתרה<b style="color:'+(balance<0?'#dc2626':'#059669')+'">'+fmt(balance)+'</b></div></div>'
         +'<h2>לפי קטגוריה</h2><table><tr><th>קטגוריה</th><th>סכום</th><th>%</th></tr>'
         +cats.map(function(c){return '<tr><td>'+esc(c[0])+'</td><td>'+fmt(c[1])+'</td><td>'+(totalExp?Math.round(c[1]/totalExp*100):0)+'%</td></tr>';}).join('')
@@ -4894,7 +4894,7 @@ setTimeout(autoCarryRecurring,500);
         +rows.map(function(t){return '<tr><td>'+esc(t.date)+'</td><td>'+esc(t.desc)+'</td><td>'+esc(t.cat)+'</td><td>'+fmt(t.amount)+'</td></tr>';}).join('')
         +'</table><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},350);}</scr'+'ipt></body></html>';
       var w=window.open('','_blank');
-      if(!w){ if(typeof showToast==='function') showToast('❌ הדפדפן חסם חלון — אפשר חלונות קופצים'); return; }
+      if(!w){ if(typeof showToast==='function') showToast('❌ הדפדפן חסם חלון. אפשר חלונות קופצים'); return; }
       w.document.open(); w.document.write(html); w.document.close();
     }catch(e){ console.warn('exportMonthlyPDF',e); if(typeof showToast==='function') showToast('❌ שגיאה בייצוא'); }
   };
@@ -4949,7 +4949,7 @@ setTimeout(autoCarryRecurring,500);
             if(date&&desc&&amount!==0) addTx(date,desc,amount);
           });
           finish();
-        } catch(err){ console.warn(err); if(typeof showToast==='function') showToast('❌ לא ניתן לקרוא את הקובץ — נסה קובץ אחר'); }
+        } catch(err){ console.warn(err); if(typeof showToast==='function') showToast('❌ לא ניתן לקרוא את הקובץ. נסה קובץ אחר'); }
       };
       reader.readAsArrayBuffer(file);
     };
