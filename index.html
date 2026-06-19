@@ -1405,15 +1405,6 @@
       <div class="text-xl font-bold font-mono text-blue-600 dark:text-blue-400" id="dailyWidgetVal">—</div>
     </div>
 
-    <!-- Forecast card -->
-    <div id="forecastCard" style="display:none" class="forecast-bar mb-3">
-      <div>
-        <div class="forecast-bar-label">🔮 צפי לסוף החודש</div>
-        <div style="font-size:0.68rem;color:var(--text3);margin-top:2px" id="forecastSub"></div>
-      </div>
-      <div class="forecast-bar-val" id="forecastVal"></div>
-    </div>
-
     <!-- Month review (shown once at the start of a new month) -->
     <div id="monthReviewCard" style="display:none"></div>
 
@@ -2363,7 +2354,8 @@ function checkRecurring(){
   let recs=[];
   for(let i=1;i<=3&&!recs.length;i++){let lm=now.getMonth()-i,ly=now.getFullYear();while(lm<0){lm+=12;ly--;}recs=transactions.filter(t=>t.recurring&&t.date.startsWith(mk(ly,lm)));}
   const already=new Set(transactions.filter(t=>t.date.startsWith(monthKey)).map(t=>t.desc+'|'+t.cat));
-  const pending=recs.filter(t=>!already.has(t.desc+'|'+t.cat));
+  let _dismissed=new Set();try{_dismissed=new Set(JSON.parse(localStorage.getItem('budget_dismissed_rec_'+monthKey)||'[]'));}catch(e){}
+  const pending=recs.filter(t=>!already.has(t.desc+'|'+t.cat)&&!_dismissed.has(t.desc+'|'+t.cat));
   alertEl.classList.remove('show');
   const storKey='budget_ra_'+monthKey;
   if(!pending.length){localStorage.setItem(storKey,'1');return;}
@@ -3187,7 +3179,6 @@ function renderDashboard(){
   document.getElementById('recentTxList').innerHTML=recentTx.length?groupedTxHtml(recentTx):'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">חודש נקי ✨</p><p>עדיין לא רשמת הוצאות החודש.<br>לחץ + כדי להתחיל לעקוב</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה ראשונה</button></div>';
   checkRecurring();
   checkSubscriptions();
-  renderForecastCard();
 }
 
 function setTxFilter(f,btn){
