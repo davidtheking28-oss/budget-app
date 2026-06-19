@@ -188,6 +188,7 @@
     .sub-logo span{position:relative;z-index:1;}
     .sub-logo.small{width:42px;height:42px;border-radius:12px;font-size:1.1rem;}
     .sub-logo.small.has-img img{width:62%;height:62%;}
+    #subLogoPreview .sub-logo,#editSubLogoPreview .sub-logo{width:52px;height:52px;border-radius:14px;}
     .sub-name-text{font-size:0.95rem;font-weight:700;}
     .sub-cat-chip{font-size:0.68rem;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--blue-light);color:var(--blue);margin-top:2px;display:inline-block;}
     .sub-price{text-align:left;}
@@ -1219,17 +1220,21 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title">🔄 מנוי חדש</div>
     <div class="form-stack">
-      <div class="form-row">
-        <div class="form-field"><label>שם השירות</label><input type="text" id="subName" placeholder="Netflix" onfocus="this.select()"/></div>
-        <div class="form-field"><label>אמוג׳י</label><input type="text" id="subEmoji" placeholder="🎬" maxlength="2" style="text-align:center;font-size:1.3rem" onfocus="this.select()"/></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+        <div id="subLogoPreview" style="width:52px;height:52px;border-radius:14px;flex-shrink:0;overflow:hidden;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;transition:all 0.2s;"></div>
+        <div class="form-field" style="flex:1;margin:0">
+          <label>שם השירות</label>
+          <input type="text" id="subName" placeholder="לדוגמה: Netflix, Spotify..." onfocus="this.select()" oninput="subNameAutoFill(this.value)"/>
+        </div>
       </div>
       <div class="form-row">
         <div class="form-field">
           <label>קטגוריה</label>
           <select id="subCategory">
-            <option>סטרימינג</option><option>מוזיקה</option><option>תוכנה</option>
+            <option>סטרימינג</option><option>מוזיקה</option><option>פודקאסטים</option>
+            <option>תוכנה</option><option>כלי AI</option><option>אחסון ענן</option>
             <option>כושר</option><option>משחקי וידאו</option><option>עיתונות</option>
-            <option>אחסון ענן</option><option>אחר</option>
+            <option>חינוך</option><option>אחר</option>
           </select>
         </div>
         <div class="form-field">
@@ -1245,6 +1250,49 @@
         <div class="form-field"><label>תאריך הבא</label><input type="date" id="subNextDate"/></div>
       </div>
       <button class="btn btn-primary btn-full" onclick="addSubscription()">הוסף מנוי</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="editSubSheet" onclick="if(event.target===this)closeSheet('editSubSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">✏️ עריכת מנוי</div>
+    <div class="form-stack">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+        <div id="editSubLogoPreview" style="width:52px;height:52px;border-radius:14px;flex-shrink:0;overflow:hidden;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;transition:all 0.2s;"></div>
+        <div class="form-field" style="flex:1;margin:0">
+          <label>שם השירות</label>
+          <input type="text" id="editSubName" placeholder="Netflix" onfocus="this.select()" oninput="editSubNamePreview(this.value)"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>קטגוריה</label>
+          <select id="editSubCategory">
+            <option>סטרימינג</option><option>מוזיקה</option><option>פודקאסטים</option>
+            <option>תוכנה</option><option>כלי AI</option><option>אחסון ענן</option>
+            <option>כושר</option><option>משחקי וידאו</option><option>עיתונות</option>
+            <option>חינוך</option><option>אחר</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>תדירות</label>
+          <select id="editSubCycle">
+            <option value="monthly">חודשי</option><option value="annual">שנתי</option>
+            <option value="weekly">שבועי</option><option value="quarterly">רבעוני</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>סכום (₪)</label><input type="number" id="editSubAmount" min="0" step="0.01" inputmode="decimal" onfocus="this.select()"/></div>
+        <div class="form-field"><label>תאריך הבא</label><input type="date" id="editSubNextDate"/></div>
+      </div>
+      <input type="hidden" id="editSubId"/>
+      <div class="form-row" style="gap:8px">
+        <button class="btn btn-outline" style="flex:1" onclick="closeSheet('editSubSheet')">ביטול</button>
+        <button class="btn btn-primary" style="flex:2" onclick="saveEditSub()">שמור שינויים</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1863,11 +1911,11 @@
     <span class="nav-label text-[10px] font-semibold">ניתוח</span>
   </button>
 
-  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('more',this)" id="nav-more" aria-label="עוד">
+  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));this.classList.add('active');openSettings()" id="nav-more" aria-label="הגדרות">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
-    <span class="nav-label text-[10px] font-semibold">עוד</span>
+    <span class="nav-label text-[10px] font-semibold">הגדרות</span>
   </button>
 </nav>
 
@@ -2058,7 +2106,13 @@ function openAddTx(){
   setTimeout(()=>document.getElementById('txDesc').focus(),250);
 }
 function openAddGoal(){openSheet('addGoalSheet');}
-function openAddSub(){openSheet('addSubSheet');}
+function openAddSub(){
+  const prev=document.getElementById('subLogoPreview');if(prev)prev.innerHTML='';
+  const nd=new Date();nd.setMonth(nd.getMonth()+1);
+  const ndf=document.getElementById('subNextDate');if(ndf)ndf.value=nd.toISOString().slice(0,10);
+  openSheet('addSubSheet');
+  setTimeout(()=>document.getElementById('subName').focus(),250);
+}
 
 function openSearch(){document.getElementById('searchOverlay').classList.add('open');setTimeout(()=>document.getElementById('globalSearchInput').focus(),100);}
 function closeSearch(){document.getElementById('searchOverlay').classList.remove('open');document.getElementById('globalSearchInput').value='';document.getElementById('searchResultsList').innerHTML='';}
@@ -3427,19 +3481,120 @@ function renderGoals(){
 function subME(s){if(!s.active)return 0;return {monthly:s.amount,annual:s.amount/12,weekly:s.amount*4.33,quarterly:s.amount/3}[s.cycle]||s.amount;}
 function cycleName(c){return{monthly:'חודשי',annual:'שנתי',weekly:'שבועי',quarterly:'רבעוני'}[c]||c;}
 
+const SUB_CATALOG={
+  netflix:{cat:'סטרימינג',emoji:'🎬'},
+  'hot vod':{cat:'סטרימינג',emoji:'📺'},hotplus:{cat:'סטרימינג',emoji:'📺'},hot:{cat:'סטרימינג',emoji:'📺'},
+  yes:{cat:'סטרימינג',emoji:'📺'},yesplus:{cat:'סטרימינג',emoji:'📺'},
+  disney:{cat:'סטרימינג',emoji:'✨'},
+  hbo:{cat:'סטרימינג',emoji:'🎬'},max:{cat:'סטרימינג',emoji:'🎬'},
+  hulu:{cat:'סטרימינג',emoji:'🎬'},paramount:{cat:'סטרימינג',emoji:'🎬'},
+  apple:{cat:'סטרימינג',emoji:'🍎'},appletv:{cat:'סטרימינג',emoji:'🍎'},
+  amazon:{cat:'סטרימינג',emoji:'📦'},prime:{cat:'סטרימינג',emoji:'📦'},
+  youtube:{cat:'סטרימינג',emoji:'▶️'},
+  crunchyroll:{cat:'סטרימינג',emoji:'🎌'},
+  twitch:{cat:'סטרימינג',emoji:'🎮'},
+  vimeo:{cat:'סטרימינג',emoji:'🎬'},
+  spotify:{cat:'מוזיקה',emoji:'🎵'},
+  'apple music':{cat:'מוזיקה',emoji:'🎵'},
+  deezer:{cat:'מוזיקה',emoji:'🎵'},
+  tidal:{cat:'מוזיקה',emoji:'🎵'},
+  soundcloud:{cat:'מוזיקה',emoji:'🎵'},
+  audible:{cat:'פודקאסטים',emoji:'🎧'},
+  headspace:{cat:'כושר',emoji:'🧘'},
+  calm:{cat:'כושר',emoji:'🧘'},
+  steam:{cat:'משחקי וידאו',emoji:'🎮'},
+  xbox:{cat:'משחקי וידאו',emoji:'🎮'},
+  playstation:{cat:'משחקי וידאו',emoji:'🎮'},
+  nintendo:{cat:'משחקי וידאו',emoji:'🎮'},
+  epic:{cat:'משחקי וידאו',emoji:'🎮'},
+  microsoft:{cat:'תוכנה',emoji:'💼'},office:{cat:'תוכנה',emoji:'💼'},
+  adobe:{cat:'תוכנה',emoji:'🎨'},
+  notion:{cat:'תוכנה',emoji:'📝'},
+  figma:{cat:'תוכנה',emoji:'🎨'},
+  canva:{cat:'תוכנה',emoji:'🎨'},
+  slack:{cat:'תוכנה',emoji:'💬'},
+  zoom:{cat:'תוכנה',emoji:'💻'},
+  github:{cat:'תוכנה',emoji:'💻'},
+  gitlab:{cat:'תוכנה',emoji:'💻'},
+  atlassian:{cat:'תוכנה',emoji:'💼'},jira:{cat:'תוכנה',emoji:'💼'},
+  monday:{cat:'תוכנה',emoji:'📊'},
+  hubspot:{cat:'תוכנה',emoji:'📊'},
+  chatgpt:{cat:'כלי AI',emoji:'🤖'},openai:{cat:'כלי AI',emoji:'🤖'},
+  claude:{cat:'כלי AI',emoji:'🤖'},anthropic:{cat:'כלי AI',emoji:'🤖'},
+  midjourney:{cat:'כלי AI',emoji:'🎨'},
+  grammarly:{cat:'כלי AI',emoji:'✍️'},
+  google:{cat:'אחסון ענן',emoji:'☁️'},
+  icloud:{cat:'אחסון ענן',emoji:'☁️'},
+  dropbox:{cat:'אחסון ענן',emoji:'☁️'},
+  onedrive:{cat:'אחסון ענן',emoji:'☁️'},
+  duolingo:{cat:'חינוך',emoji:'📚'},
+  haaretz:{cat:'עיתונות',emoji:'📰'},ynet:{cat:'עיתונות',emoji:'📰'},
+  walla:{cat:'עיתונות',emoji:'📰'},calcalist:{cat:'עיתונות',emoji:'📰'},
+  maariv:{cat:'עיתונות',emoji:'📰'},
+};
+function subLookup(name){
+  const key=(name||'').toLowerCase().trim();
+  if(key.length<2)return null;
+  for(const [k,v] of Object.entries(SUB_CATALOG)){if(key===k||key.includes(k))return v;}
+  return null;
+}
+function subNameAutoFill(name){
+  const prev=document.getElementById('subLogoPreview');
+  if(prev)prev.innerHTML=name?subLogo(name):'';
+  const match=subLookup(name);
+  if(match){
+    const catSel=document.getElementById('subCategory');
+    if(catSel){for(let i=0;i<catSel.options.length;i++){if(catSel.options[i].value===match.cat||catSel.options[i].text===match.cat){catSel.selectedIndex=i;break;}}}
+  }
+}
+function editSubNamePreview(name){
+  const prev=document.getElementById('editSubLogoPreview');
+  if(prev)prev.innerHTML=name?subLogo(name):'';
+}
+function editSub(id){
+  const s=subscriptions.find(x=>x.id===id);if(!s)return;
+  document.getElementById('editSubId').value=s.id;
+  document.getElementById('editSubName').value=s.name||'';
+  document.getElementById('editSubAmount').value=s.amount||'';
+  document.getElementById('editSubNextDate').value=s.nextDate||'';
+  const catSel=document.getElementById('editSubCategory');
+  for(let i=0;i<catSel.options.length;i++){if(catSel.options[i].value===s.category||catSel.options[i].text===s.category){catSel.selectedIndex=i;break;}}
+  const cycSel=document.getElementById('editSubCycle');
+  for(let i=0;i<cycSel.options.length;i++){if(cycSel.options[i].value===s.cycle){cycSel.selectedIndex=i;break;}}
+  const prev=document.getElementById('editSubLogoPreview');
+  if(prev)prev.innerHTML=subLogo(s.name);
+  openSheet('editSubSheet');
+}
+function saveEditSub(){
+  const id=parseInt(document.getElementById('editSubId').value);
+  const s=subscriptions.find(x=>x.id===id);if(!s)return;
+  const name=document.getElementById('editSubName').value.trim();
+  const amount=parseFloat(document.getElementById('editSubAmount').value);
+  const nextDate=document.getElementById('editSubNextDate').value;
+  if(!name){showToast('✏️ מה שם השירות?');return;}
+  if(!amount||amount<=0){showToast('₪ כמה עולה המנוי?');return;}
+  s.name=name;
+  s.amount=amount;
+  s.cycle=document.getElementById('editSubCycle').value;
+  s.category=document.getElementById('editSubCategory').value;
+  s.nextDate=nextDate;
+  saveData();closeSheet('editSubSheet');showToast('✓ המנוי עודכן');renderSubscriptions();
+}
 function addSubscription(){
   const name=document.getElementById('subName').value.trim();
-  const emoji=document.getElementById('subEmoji').value.trim()||'🦋';
   const category=document.getElementById('subCategory').value;
   const amount=parseFloat(document.getElementById('subAmount').value);
   const cycle=document.getElementById('subCycle').value;
   const nextDate=document.getElementById('subNextDate').value;
   if(!name){showToast('✏️ מה שם השירות? (לדוגמה: Netflix)');return;}
-  if(!amount||amount<=0){showToast('₪ כמה עולה המנוי בחודש?');return;}
+  if(!amount||amount<=0){showToast('₪ כמה עולה המנוי?');return;}
   if(!nextDate){showToast('📅 מתי מחויב המנוי הבא?');return;}
+  const match=subLookup(name);
+  const emoji=match?match.emoji:'🔄';
   subscriptions.push({id:Date.now(),name,emoji,category,amount,cycle,nextDate,active:true});
   saveData();
-  document.getElementById('subName').value='';document.getElementById('subEmoji').value='';document.getElementById('subAmount').value='';
+  document.getElementById('subName').value='';document.getElementById('subAmount').value='';
+  const prev=document.getElementById('subLogoPreview');if(prev)prev.innerHTML='';
   closeSheet('addSubSheet');showToast('✓ המנוי נוסף!');renderSubscriptions();
 }
 function deleteSub(id){
@@ -3652,7 +3807,7 @@ function renderSubscriptions(){
     const pct=Math.min(100,Math.round(elapsed/cycleLen*100));
     const barCls=pct>=90?'danger':pct>=70?'warn':'';
     const cycleBar=s.active&&s.nextDate?'<div class="sub-cycle-bar"><div class="sub-cycle-fill '+barCls+'" style="width:'+pct+'%"></div></div>':'';
-    return '<div class="sub-card'+(s.active?'':' paused')+(soon||over?' soon':'')+'">'+( soon?'<span class="soon-tag">קרוב!</span>':'')+(over?'<span class="overdue-tag">באיחור</span>':'')+'<div class="sub-row1"><div class="sub-identity"><div class="sub-emoji-big" style="display:none">'+s.emoji+'</div>'+subLogo(s.name)+'<div><div class="sub-name-text">'+esc(s.name)+'</div><span class="sub-cat-chip">'+esc(s.category)+'</span></div></div><div class="sub-price"><div class="sub-price-amount">'+fmt(s.amount)+'</div><div class="sub-price-cycle">'+cycleName(s.cycle)+'</div>'+(s.cycle!=='monthly'?'<div class="sub-price-cycle">≈'+fmt(subME(s))+'/חודש</div>':'')+'</div></div>'+cycleBar+'<div class="sub-row2"><div class="sub-next-label'+(soon||over?' soon-txt':'')+'">'+nl+'</div><div class="sub-btns"><button class="btn btn-teal btn-sm" onclick="subToExpense('+s.id+')">+ לרשום</button><button class="btn btn-outline btn-sm" onclick="toggleSub('+s.id+')">'+(s.active?'⏸':'▶️')+'</button><button class="btn btn-danger btn-sm" onclick="deleteSub('+s.id+')" aria-label="מחק מנוי">✕</button></div></div></div>';
+    return '<div class="sub-card'+(s.active?'':' paused')+(soon||over?' soon':'')+'">'+( soon?'<span class="soon-tag">קרוב!</span>':'')+(over?'<span class="overdue-tag">באיחור</span>':'')+'<div class="sub-row1"><div class="sub-identity"><div class="sub-emoji-big" style="display:none">'+s.emoji+'</div>'+subLogo(s.name)+'<div><div class="sub-name-text">'+esc(s.name)+'</div><span class="sub-cat-chip">'+esc(s.category)+'</span></div></div><div class="sub-price"><div class="sub-price-amount">'+fmt(s.amount)+'</div><div class="sub-price-cycle">'+cycleName(s.cycle)+'</div>'+(s.cycle!=='monthly'?'<div class="sub-price-cycle">≈'+fmt(subME(s))+'/חודש</div>':'')+'</div></div>'+cycleBar+'<div class="sub-row2"><div class="sub-next-label'+(soon||over?' soon-txt':'')+'">'+nl+'</div><div class="sub-btns"><button class="btn btn-teal btn-sm" onclick="subToExpense('+s.id+')">+ לרשום</button><button class="btn btn-outline btn-sm" onclick="editSub('+s.id+')" title="ערוך">✏️</button><button class="btn btn-outline btn-sm" onclick="toggleSub('+s.id+')">'+(s.active?'⏸':'▶️')+'</button><button class="btn btn-danger btn-sm" onclick="deleteSub('+s.id+')" aria-label="מחק מנוי">✕</button></div></div></div>';
   }).join('');
 }
 
