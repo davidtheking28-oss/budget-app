@@ -698,6 +698,21 @@
     /* ── Bank import ─────────────────────────── */
     .import-drop{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;color:var(--text3);font-size:0.85rem;cursor:pointer;transition:border-color 0.2s,background 0.2s;}
     .import-drop:hover{border-color:var(--accent);color:var(--accent);}
+    /* ── Calendar view ── */
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px;}
+    .cal-hdr{font-size:0.62rem;font-weight:700;color:var(--text3);text-align:center;padding:4px 0;}
+    .cal-cell{min-height:44px;border-radius:8px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;padding:5px 2px 4px;cursor:pointer;transition:background 0.15s;}
+    .cal-cell.today{box-shadow:inset 0 0 0 1.5px var(--accent);}
+    .cal-cell.has-tx{background:rgba(220,38,38,0.08);}
+    .cal-cell.empty{background:transparent;pointer-events:none;}
+    .cal-day{font-size:0.7rem;font-weight:700;color:var(--text2);line-height:1;}
+    .cal-amt{font-size:0.58rem;font-weight:700;color:var(--red);margin-top:3px;font-family:var(--font-num);line-height:1;}
+    body.dark .cal-cell.has-tx{background:rgba(248,113,113,0.1);}
+    /* ── Forecast card ── */
+    .forecast-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(13,148,136,0.09);border:1px solid rgba(13,148,136,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;}
+    .forecast-bar-label{font-size:0.78rem;font-weight:600;color:var(--teal);}
+    .forecast-bar-val{font-size:0.95rem;font-weight:800;color:var(--teal);font-family:var(--font-num);letter-spacing:-0.3px;}
+    body.dark .forecast-bar{background:rgba(45,212,191,0.08);border-color:rgba(45,212,191,0.15);}
     /* ===== GLOBAL VISUAL POLISH ===== */
     .fab{box-shadow:0 4px 20px rgba(29,78,216,0.38),0 0 0 5px rgba(29,78,216,0.08);}
     body.dark .fab{box-shadow:0 4px 20px rgba(96,165,250,0.25);}
@@ -1390,6 +1405,15 @@
       <div class="text-xl font-bold font-mono text-blue-600 dark:text-blue-400" id="dailyWidgetVal">—</div>
     </div>
 
+    <!-- Forecast card -->
+    <div id="forecastCard" style="display:none" class="forecast-bar mb-3">
+      <div>
+        <div class="forecast-bar-label">🔮 צפי לסוף החודש</div>
+        <div style="font-size:0.68rem;color:var(--text3);margin-top:2px" id="forecastSub"></div>
+      </div>
+      <div class="forecast-bar-val" id="forecastVal"></div>
+    </div>
+
     <!-- Month review (shown once at the start of a new month) -->
     <div id="monthReviewCard" style="display:none"></div>
 
@@ -1499,9 +1523,12 @@
         <button onclick="clearDateFilter()" aria-label="נקה סינון תאריכים" style="background:none;border:none;color:var(--text3);font-size:0.75rem;cursor:pointer;padding:4px;min-width:44px;min-height:44px;">✕</button>
       </div>
       <div class="section-body" style="padding-top:4px">
-        <div style="display:flex;justify-content:flex-start;margin-bottom:10px">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
           <button class="btn btn-outline btn-sm" id="csvExportBtn" onclick="exportCSV()">ייצוא CSV</button>
+          <button class="btn btn-outline btn-sm" onclick="toggleCalendarView()" id="calToggleBtn" style="gap:4px">📅 לוח שנה</button>
+          <button class="btn btn-outline btn-sm" onclick="openSmsImport()" style="gap:4px">📲 ייבא SMS</button>
         </div>
+        <div id="calendarView" style="display:none;margin-bottom:12px;"></div>
         <div class="tx-list" id="allTxList"></div>
       </div>
     </div>
@@ -1672,6 +1699,40 @@
         <button class="btn btn-primary" style="flex:2" onclick="saveEditTx()">שמור שינויים</button>
       </div>
       <button class="btn btn-danger btn-full" id="editTxDeleteBtn">🗑️ מחק עסקה</button>
+      <button class="btn btn-outline btn-full" style="margin-top:6px;color:var(--teal);border-color:var(--teal)" onclick="openSplitMode()">✂️ פצל לקטגוריות</button>
+    </div>
+  </div>
+</div>
+
+<!-- Split transaction sheet -->
+<div class="sheet-overlay" id="splitTxSheet" onclick="if(event.target===this)closeSheet('splitTxSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">✂️ פיצול עסקה</div>
+    <div style="font-size:0.82rem;color:var(--text2);margin-bottom:12px">סה"כ: <strong id="splitTotalDisplay"></strong> · <span id="splitRemaining" style="color:var(--teal);font-weight:700"></span> נותר לחלוקה</div>
+    <div id="splitRows" class="form-stack"></div>
+    <button class="btn btn-outline btn-sm" onclick="addSplitRow()" style="width:100%;margin-top:8px;margin-bottom:12px">+ הוסף חלק</button>
+    <div class="form-row" style="gap:8px">
+      <button class="btn btn-outline" style="flex:1" onclick="closeSheet('splitTxSheet')">ביטול</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveSplitTx()">שמור פיצול</button>
+    </div>
+  </div>
+</div>
+
+<!-- SMS import sheet -->
+<div class="sheet-overlay" id="smsImportSheet" onclick="if(event.target===this)closeSheet('smsImportSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📲 ייבוא מ-SMS</div>
+    <div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הדבק הודעות SMS מהבנק — הסכומים יזוהו אוטומטית</div>
+    <textarea id="smsTextInput" placeholder="לדוגמה:&#10;עסקת חיוב בגובה 145.50 ₪ בKFC&#10;נרשמה עסקה בסך 89 ₪ ברשת שופרסל" style="width:100%;height:120px;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;resize:none;box-sizing:border-box;direction:rtl;margin-bottom:10px;"></textarea>
+    <button class="btn btn-primary btn-full" onclick="parseSmsText()" style="margin-bottom:12px">🔍 נתח הודעות</button>
+    <div id="smsParsedList"></div>
+    <div id="smsImportActions" style="display:none">
+      <div class="form-row" style="gap:8px;margin-top:10px">
+        <button class="btn btn-outline" style="flex:1" onclick="closeSheet('smsImportSheet')">ביטול</button>
+        <button class="btn btn-primary" style="flex:2" onclick="confirmSmsImport()">✓ ייבא הכל</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3126,6 +3187,7 @@ function renderDashboard(){
   document.getElementById('recentTxList').innerHTML=recentTx.length?groupedTxHtml(recentTx):'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">חודש נקי ✨</p><p>עדיין לא רשמת הוצאות החודש.<br>לחץ + כדי להתחיל לעקוב</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה ראשונה</button></div>';
   checkRecurring();
   checkSubscriptions();
+  renderForecastCard();
 }
 
 function setTxFilter(f,btn){
@@ -3177,6 +3239,7 @@ function renderTxPage(){
   document.getElementById('allTxList').innerHTML=list.length?groupedTxHtml(list):_txEmpty;
   const csvBtn=document.getElementById('csvExportBtn');
   if(csvBtn)csvBtn.style.display=list.length?'':'none';
+  if(_calendarMode)renderCalendarView();
 }
 
 function renderAnalytics(){
@@ -3722,6 +3785,217 @@ function showPage(name,btn){
   if(name==='loans')        renderLoans();
   animateHeroNums(name);
   window.scrollTo(0,0);
+}
+
+// ── Feature 2: Cash Flow Forecast ────────────────────────────────
+function renderForecastCard(){
+  const card=document.getElementById('forecastCard');
+  if(!card)return;
+  const now=new Date();
+  if(currentYear!==now.getFullYear()||currentMonth!==now.getMonth()){card.style.display='none';return;}
+  const income=getMonthlyIncome();
+  if(!income){card.style.display='none';return;}
+  const mTx=getMonthTx(currentYear,currentMonth);
+  const expense=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const dayOfMonth=now.getDate();
+  const totalDays=daysInMonth(currentYear,currentMonth);
+  const daysLeft=totalDays-dayOfMonth;
+  const dailyRate=dayOfMonth>0?expense/dayOfMonth:0;
+  const projectedTotal=expense+dailyRate*daysLeft;
+  const forecastBalance=income-projectedTotal;
+  const valEl=document.getElementById('forecastVal');
+  const subEl=document.getElementById('forecastSub');
+  if(valEl)valEl.textContent=(forecastBalance>=0?'+':'')+fmt(forecastBalance);
+  if(valEl)valEl.style.color=forecastBalance>=0?'var(--teal)':'var(--red)';
+  if(subEl)subEl.textContent='צפי הוצאה: '+fmt(Math.round(projectedTotal))+' · קצב יומי: '+fmt(Math.round(dailyRate));
+  card.style.display='flex';
+}
+
+// ── Feature 6: Calendar View ──────────────────────────────────────
+let _calendarMode=false;
+function toggleCalendarView(){
+  _calendarMode=!_calendarMode;
+  const btn=document.getElementById('calToggleBtn');
+  const calEl=document.getElementById('calendarView');
+  if(btn)btn.style.background=_calendarMode?'var(--accent)':'';;
+  if(btn)btn.style.color=_calendarMode?'white':'';
+  if(btn)btn.style.borderColor=_calendarMode?'var(--accent)':'';
+  if(calEl)calEl.style.display=_calendarMode?'block':'none';
+  if(_calendarMode)renderCalendarView();
+}
+function renderCalendarView(){
+  const calEl=document.getElementById('calendarView');
+  if(!calEl)return;
+  const y=currentYear,m=currentMonth;
+  const mTx=getMonthTx(y,m).filter(t=>t.type==='expense');
+  const byDay={};
+  mTx.forEach(t=>{const d=parseInt(t.date.slice(8,10));byDay[d]=(byDay[d]||0)+t.amount;});
+  const firstDay=(new Date(y,m,1).getDay()+1)%7; // 0=Sun adjusted for RTL (Sun=0→display rightmost)
+  // RTL: days go right-to-left: ש ו ה ד ג ב א (Sat→Sun)
+  const days=['א','ב','ג','ד','ה','ו','ש'];
+  const totalDays=daysInMonth(y,m);
+  const today=new Date();
+  const todayD=(today.getFullYear()===y&&today.getMonth()===m)?today.getDate():0;
+  let html='<div class="cal-grid">';
+  days.forEach(d=>html+='<div class="cal-hdr">'+d+'</div>');
+  // first row empty cells (day 0 = Sunday, starts at col 0)
+  // In Hebrew calendar display (RTL), Sunday is first column
+  for(let i=0;i<firstDay;i++)html+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=totalDays;d++){
+    const amt=byDay[d]||0;
+    const isToday=d===todayD;
+    const hasTx=amt>0;
+    html+='<div class="cal-cell'+(isToday?' today':'')+(hasTx?' has-tx':'')+'" onclick="calDayTap('+d+')">'
+      +'<div class="cal-day">'+d+'</div>'
+      +(hasTx?'<div class="cal-amt">'+fmt(amt)+'</div>':'')
+      +'</div>';
+  }
+  html+='</div>';
+  calEl.innerHTML=html;
+}
+function calDayTap(d){
+  const y=currentYear,m=currentMonth;
+  const dateStr=mk(y,m)+'-'+String(d).padStart(2,'0');
+  const fromEl=document.getElementById('txFromDate');
+  const toEl=document.getElementById('txToDate');
+  if(fromEl)fromEl.value=dateStr;
+  if(toEl)toEl.value=dateStr;
+  renderTxPage();
+}
+
+// ── Feature 7: Split Transaction ─────────────────────────────────
+let _splitTxId=null,_splitTotal=0;
+const EXPENSE_CATS_ALL=()=>getEffectiveCats('expense');
+function openSplitMode(){
+  const tx=transactions.find(t=>t.id===editingTxId);
+  if(!tx){showToast('פתח עסקה לעריכה קודם');return;}
+  if(tx.type!=='expense'){showToast('ניתן לפצל רק הוצאות');return;}
+  _splitTxId=editingTxId;
+  _splitTotal=tx.amount;
+  document.getElementById('splitTotalDisplay').textContent=fmt(_splitTotal);
+  const rowsEl=document.getElementById('splitRows');
+  rowsEl.innerHTML='';
+  addSplitRow(tx.cat,tx.amount);
+  addSplitRow(tx.cat,0);
+  updateSplitRemaining();
+  closeSheet('editTxSheet');
+  openSheet('splitTxSheet');
+}
+function addSplitRow(cat,amt){
+  const cats=EXPENSE_CATS_ALL();
+  const rowEl=document.createElement('div');
+  rowEl.className='form-row split-row';
+  rowEl.style.gap='8px';
+  rowEl.innerHTML='<div class="form-field" style="flex:2"><label>תיאור</label><input type="text" class="split-desc" placeholder="תיאור..." style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;" /></div>'
+    +'<div class="form-field" style="flex:1"><label>סכום</label><input type="number" class="split-amt" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+(amt||'')+'" oninput="updateSplitRemaining()" style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:var(--font-num);font-weight:700;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;text-align:center;" /></div>'
+    +'<div class="form-field" style="flex:2"><label>קטגוריה</label><select class="split-cat" style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;">'+cats.map(c=>'<option'+(c===(cat||cats[0])?' selected':'')+'>'+c+'</option>').join('')+'</select></div>'
+    +'<button onclick="this.closest(\'.split-row\').remove();updateSplitRemaining()" style="flex-shrink:0;margin-top:22px;background:transparent;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;padding:6px;min-width:32px">✕</button>';
+  document.getElementById('splitRows').appendChild(rowEl);
+  if(cat)rowEl.querySelector('.split-desc').value=cat;
+}
+function updateSplitRemaining(){
+  const total=_splitTotal;
+  const used=Array.from(document.querySelectorAll('.split-amt')).reduce((s,el)=>s+(parseFloat(el.value)||0),0);
+  const rem=total-used;
+  const el=document.getElementById('splitRemaining');
+  if(el){el.textContent=fmt(Math.abs(rem));el.style.color=Math.abs(rem)<0.01?'var(--green)':rem<0?'var(--red)':'var(--teal)';}
+}
+function saveSplitTx(){
+  const rows=document.querySelectorAll('#splitRows .split-row');
+  const parts=[];
+  for(const row of rows){
+    const desc=(row.querySelector('.split-desc').value||'').trim();
+    const amt=parseFloat(row.querySelector('.split-amt').value)||0;
+    const cat=row.querySelector('.split-cat').value;
+    if(amt<=0)continue;
+    parts.push({desc,amt,cat});
+  }
+  if(!parts.length){showToast('הזן לפחות חלק אחד');return;}
+  const used=parts.reduce((s,p)=>s+p.amt,0);
+  if(Math.abs(used-_splitTotal)>0.5){showToast('הסכומים לא מסתכמים ל-'+fmt(_splitTotal));return;}
+  const origTx=transactions.find(t=>t.id===_splitTxId);
+  if(!origTx){showToast('❌ עסקה לא נמצאה');return;}
+  transactions=transactions.filter(t=>t.id!==_splitTxId);
+  const date=origTx.date;
+  parts.forEach(p=>{
+    transactions.unshift({id:Date.now()+Math.random(),type:'expense',cat:p.cat,desc:p.desc||p.cat,amount:p.amt,date,recurring:false,fixed:false});
+  });
+  saveData();refreshAll();
+  closeSheet('splitTxSheet');
+  showToast('✓ העסקה פוצלה ל-'+parts.length+' חלקים');
+}
+
+// ── Feature 10: SMS Import ────────────────────────────────────────
+let _smsParsed=[];
+function openSmsImport(){
+  document.getElementById('smsTextInput').value='';
+  document.getElementById('smsParsedList').innerHTML='';
+  document.getElementById('smsImportActions').style.display='none';
+  _smsParsed=[];
+  openSheet('smsImportSheet');
+  setTimeout(()=>document.getElementById('smsTextInput').focus(),150);
+}
+function parseSmsText(){
+  const raw=document.getElementById('smsTextInput').value||'';
+  const lines=raw.split(/\n+/).map(l=>l.trim()).filter(Boolean);
+  _smsParsed=[];
+  const patterns=[
+    /(?:בגובה|בסך|סכום[^\d]*)\s*([\d,]+(?:\.\d{1,2})?)\s*₪/i,
+    /₪\s*([\d,]+(?:\.\d{1,2})?)/,
+    /([\d,]+(?:\.\d{1,2})?)\s*₪/,
+    /([\d,]+(?:\.\d{1,2})?)\s*שקל/i,
+  ];
+  lines.forEach(line=>{
+    let amount=null;
+    for(const pat of patterns){
+      const m=line.match(pat);
+      if(m){amount=parseFloat(m[1].replace(/,/g,''));break;}
+    }
+    if(!amount||amount<=0)return;
+    // Try to extract merchant name
+    let desc='';
+    const merchantPat=/ב([א-ת\w\s\.]{2,30})(?:$|[\s,·\.\|])/;
+    const mM=line.match(merchantPat);
+    if(mM)desc=mM[1].trim();
+    if(!desc)desc='עסקה '+amount.toFixed(2);
+    const today=new Date().toISOString().split('T')[0];
+    _smsParsed.push({amount,desc,cat:'אחר',date:today,raw:line});
+  });
+  renderSmsParsed();
+}
+function renderSmsParsed(){
+  const el=document.getElementById('smsParsedList');
+  const actEl=document.getElementById('smsImportActions');
+  if(!_smsParsed.length){
+    el.innerHTML='<div style="text-align:center;color:var(--text3);font-size:0.85rem;padding:12px 0">לא זוהו עסקאות — וודא שההודעות מכילות סכום עם ₪</div>';
+    actEl.style.display='none';
+    return;
+  }
+  const cats=getEffectiveCats('expense');
+  el.innerHTML='<div style="font-size:0.78rem;font-weight:700;color:var(--text2);margin-bottom:8px">זוהו '+_smsParsed.length+' עסקאות — ערוך לפי הצורך:</div>'
+    +_smsParsed.map((p,i)=>'<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border)">'
+      +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">'
+      +'<input type="text" value="'+esc(p.desc)+'" oninput="_smsParsed['+i+'].desc=this.value" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;" />'
+      +'<input type="number" value="'+p.amount+'" oninput="_smsParsed['+i+'].amount=parseFloat(this.value)||0" style="width:80px;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;font-family:var(--font-num);font-weight:700;color:var(--red);background:var(--surface);outline:none;text-align:center;" />'
+      +'</div>'
+      +'<div style="display:flex;gap:8px;align-items:center">'
+      +'<input type="date" value="'+p.date+'" oninput="_smsParsed['+i+'].date=this.value" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;" />'
+      +'<select oninput="_smsParsed['+i+'].cat=this.value" style="flex:2;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;">'+cats.map(c=>'<option'+(c===p.cat?' selected':'')+'>'+c+'</option>').join('')+'</select>'
+      +'<button onclick="_smsParsed.splice('+i+',1);renderSmsParsed()" style="background:transparent;border:none;color:var(--text3);font-size:1rem;cursor:pointer;padding:4px 6px;flex-shrink:0">✕</button>'
+      +'</div>'
+      +'</div>'
+    ).join('');
+  actEl.style.display='block';
+}
+function confirmSmsImport(){
+  const valid=_smsParsed.filter(p=>p.amount>0&&p.desc);
+  if(!valid.length){showToast('אין עסקאות לייבוא');return;}
+  valid.forEach(p=>{
+    transactions.unshift({id:Date.now()+Math.random(),type:'expense',cat:p.cat,desc:p.desc,amount:p.amount,date:p.date,recurring:false,fixed:false});
+  });
+  saveData();refreshAll();
+  closeSheet('smsImportSheet');
+  showToast('✓ יובאו '+valid.length+' עסקאות');
 }
 
 function refreshAll(){
