@@ -2188,7 +2188,29 @@ function addTransaction(prefill){
   }
   refreshAll();
 }
-function deleteTx(id){const backup=transactions.find(t=>t.id===id);const idx=transactions.findIndex(t=>t.id===id);transactions=transactions.filter(t=>t.id!==id);saveData();refreshAll();haptic(6);showUndoToast('🗑️ נמחק',()=>{transactions.splice(idx,0,backup);saveData();refreshAll();},()=>{});}
+function deleteTx(id){
+  const backup=transactions.find(t=>t.id===id);
+  const idx=transactions.findIndex(t=>t.id===id);
+  if(backup&&backup.recurring){
+    const nowKey=mk(new Date().getFullYear(),new Date().getMonth());
+    if(backup.date.startsWith(nowKey)) dismissRecurring(backup.desc+'|'+backup.cat,nowKey);
+  }
+  transactions=transactions.filter(t=>t.id!==id);
+  saveData();refreshAll();haptic(6);
+  showUndoToast('🗑️ נמחק',()=>{
+    if(backup&&backup.recurring){
+      const nowKey=mk(new Date().getFullYear(),new Date().getMonth());
+      undismissRecurring(backup.desc+'|'+backup.cat,nowKey);
+    }
+    transactions.splice(idx,0,backup);saveData();refreshAll();
+  },()=>{});
+}
+function dismissRecurring(key,monthKey){
+  try{const k='budget_dismissed_rec_'+monthKey;const s=new Set(JSON.parse(localStorage.getItem(k)||'[]'));s.add(key);localStorage.setItem(k,JSON.stringify([...s]));}catch(e){}
+}
+function undismissRecurring(key,monthKey){
+  try{const k='budget_dismissed_rec_'+monthKey;const s=new Set(JSON.parse(localStorage.getItem(k)||'[]'));s.delete(key);localStorage.setItem(k,JSON.stringify([...s]));}catch(e){}
+}
 
 function txFixedLabel(t){
   if(t.type==='income') return t.fixed!==false?'<span class="tx-tag income-fixed">קבועה</span>':'';
@@ -2369,7 +2391,9 @@ function renderUpcoming(){
   const prevY=today.getMonth()===0?today.getFullYear()-1:today.getFullYear();
   const recs=transactions.filter(t=>t.recurring&&t.date.startsWith(mk(prevY,prevM)));
   const already=new Set(transactions.filter(t=>t.date.startsWith(nowKey)).map(t=>t.desc+'|'+t.cat));
-  recs.filter(t=>!already.has(t.desc+'|'+t.cat)).forEach(t=>{
+  let dismissed=new Set();
+  try{dismissed=new Set(JSON.parse(localStorage.getItem('budget_dismissed_rec_'+nowKey)||'[]'));}catch(e){}
+  recs.filter(t=>!already.has(t.desc+'|'+t.cat)&&!dismissed.has(t.desc+'|'+t.cat)).forEach(t=>{
     const d=new Date(today);
     items.push({date:d,logoHtml:catIconSvg(t.cat),name:t.desc,meta:'עסקה חוזרת · '+t.cat,amount:t.amount,type:t.type==='income'?'income':'expense'});
   });
