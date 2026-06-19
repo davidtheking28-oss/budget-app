@@ -2495,6 +2495,33 @@ function addAllRecurring(){
   saveData();showToast('✓ עסקאות חוזרות נוספו!');refreshAll();
 }
 
+function checkRecurringIncome(){
+  const now=new Date();
+  const monthKey=mk(now.getFullYear(),now.getMonth());
+  if(mk(currentYear,currentMonth)!==monthKey)return;
+  const todayDay=now.getDate();
+  const sources=(userSettings.incomeSources||[]).filter(s=>s.name&&s.amount&&s.day&&todayDay>=parseInt(s.day));
+  if(!sources.length)return;
+  const thisMonthIncomeNames=new Set(transactions.filter(t=>t.type==='income'&&t.date.startsWith(monthKey)).map(t=>(t.desc||'').toLowerCase()));
+  const pending=sources.filter(s=>!thisMonthIncomeNames.has((s.name||'').toLowerCase()));
+  if(!pending.length)return;
+  const storKey='budget_ri_'+monthKey;
+  if(localStorage.getItem(storKey))return;
+  localStorage.setItem(storKey,'1');
+  const addedIds=[];
+  const dateStr=now.toISOString().split('T')[0];
+  pending.forEach(s=>{
+    const tx={id:Date.now()+Math.random(),type:'income',cat:'הכנסה',desc:s.name,amount:parseFloat(s.amount),date:dateStr,recurring:true};
+    addedIds.push(tx.id);transactions.unshift(tx);
+  });
+  saveData();refreshAll();
+  showUndoToast('✓ '+pending.map(s=>s.name).join(', ')+' נרשמו אוטומטית',()=>{
+    const idSet=new Set(addedIds);
+    transactions=transactions.filter(t=>!idSet.has(t.id));
+    localStorage.removeItem(storKey);
+    saveData();refreshAll();
+  },()=>{});
+}
 function advanceSubNextDate(s){
   const nd=new Date(s.nextDate);
   if(s.cycle==='monthly')nd.setMonth(nd.getMonth()+1);
@@ -2790,9 +2817,13 @@ function renderSettingIncomeRows(){
           <label>שם המקור</label>
           <input type="text" placeholder="${ph}..." value="${esc(src.name||'')}" oninput="userSettings.incomeSources[${i}].name=this.value;saveSettingsData()" onfocus="this.select()"/>
         </div>
-        <div class="income-source-field" style="max-width:110px">
+        <div class="income-source-field" style="max-width:100px">
           <label>סכום (₪)</label>
           <input type="number" inputmode="decimal" placeholder="0" value="${src.amount||''}" oninput="userSettings.incomeSources[${i}].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/>
+        </div>
+        <div class="income-source-field" style="max-width:64px">
+          <label>יום</label>
+          <input type="number" inputmode="numeric" placeholder="1" min="1" max="31" value="${src.day||''}" oninput="userSettings.incomeSources[${i}].day=this.value;saveSettingsData()" onfocus="this.select()" title="יום בחודש להוספה אוטומטית"/>
         </div>
         <button onclick="userSettings.incomeSources.splice(${i},1);saveSettingsData();renderSettingIncomeRows()" style="background:rgba(220,38,38,0.1);border:none;color:var(--red);font-size:1rem;cursor:pointer;padding:9px 10px;border-radius:8px;flex-shrink:0" aria-label="מחק">🗑️</button>
       </div>
@@ -3291,6 +3322,7 @@ function renderDashboard(){
   document.getElementById('recentTxList').innerHTML=recentTx.length?groupedTxHtml(recentTx):'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">חודש נקי ✨</p><p>עדיין לא רשמת הוצאות החודש.<br>לחץ + כדי להתחיל לעקוב</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה ראשונה</button></div>';
   checkRecurring();
   checkSubscriptions();
+  checkRecurringIncome();
 }
 
 function setTxFilter(f,btn){
