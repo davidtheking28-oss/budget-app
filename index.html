@@ -4726,7 +4726,8 @@ function autoCarryRecurring(){
     if(!recs.length) return 0;
     var already={};
     transactions.filter(function(t){ return (t.date||"").slice(0,7)===thisKey; }).forEach(function(t){ already[t.desc+"|"+t.cat]=1; });
-    var pending=recs.filter(function(t){ return !already[t.desc+"|"+t.cat]; });
+    var _dismissed=new Set();try{_dismissed=new Set(JSON.parse(localStorage.getItem('budget_dismissed_rec_'+thisKey)||'[]'));}catch(e){}
+    var pending=recs.filter(function(t){ return !already[t.desc+"|"+t.cat]&&!_dismissed.has(t.desc+"|"+t.cat); });
     if(!pending.length) return 0;
     var dim=daysInMonth(now.getFullYear(),now.getMonth());
     pending.forEach(function(t){
