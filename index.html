@@ -6,6 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="theme-color" content="#0f3460"/>
+  <meta name="color-scheme" content="light dark"/>
   <title>תקציב אישי</title>
   <link rel="manifest" href="./manifest.json"/>
   <meta name="mobile-web-app-capable" content="yes"/>
@@ -1057,6 +1058,17 @@
     #offlineBanner{background:#b45309;}
     /* "הוסף אוטומטית" button: bg-blue-600 with white = 5.3:1 PASS — no change needed */
 
+    /* ════ 17 · PROGRESS BAR PERFORMANCE ════
+       Replace transition:width (layout prop) with transform:scaleX on the two
+       pace bars that have explicit JS setters. Other bars are fresh-rendered
+       each frame so their width transition never fires anyway. */
+    #paceTimeBar,#paceSpendBar{
+      width:100%!important;
+      transform:scaleX(0);
+      transform-origin:right;
+      transition:transform 0.5s cubic-bezier(.4,0,.2,1)!important;
+    }
+
   </style>
 </head>
 <body class="dark">
@@ -1343,7 +1355,7 @@
           <span class="font-mono text-slate-400 dark:text-zinc-400" id="paceDaysVal"></span>
         </div>
         <div class="w-full bg-slate-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
-          <div class="bg-slate-400 dark:bg-zinc-500 h-full rounded-full transition-all duration-500" id="paceTimeBar" style="width: 0%"></div>
+          <div class="bg-slate-400 dark:bg-zinc-500 h-full rounded-full" id="paceTimeBar"></div>
         </div>
       </div>
 
@@ -1353,7 +1365,7 @@
           <span class="font-mono text-slate-400 dark:text-zinc-400" id="paceSpendVal"></span>
         </div>
         <div class="w-full bg-slate-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
-          <div class="bg-blue-500 h-full rounded-full transition-all duration-500" id="paceSpendBar" style="width: 0%"></div>
+          <div class="bg-blue-500 h-full rounded-full" id="paceSpendBar"></div>
         </div>
       </div>
     </div>
@@ -3018,10 +3030,10 @@ function renderDashboard(){
     const totalDays=daysInMonth(currentYear,currentMonth);
     const daysPct=Math.round(dayOfMonth/totalDays*100);
     const spendPct=Math.min(Math.round(expense/income*100),100);
-    document.getElementById('paceTimeBar').style.width=daysPct+'%';
+    document.getElementById('paceTimeBar').style.transform='scaleX('+daysPct/100+')';
     document.getElementById('paceDaysVal').textContent=dayOfMonth+'/'+totalDays+' ימים ('+daysPct+'%)';
     const spendBar=document.getElementById('paceSpendBar');
-    spendBar.style.width=spendPct+'%';
+    spendBar.style.transform='scaleX('+spendPct/100+')';
     const spendCls=spendPct<=daysPct?'ok':spendPct<=daysPct+15?'warn':'';
     spendBar.className='pace-fill pace-fill-spend'+(spendCls?' '+spendCls:'');
     document.getElementById('paceSpendVal').textContent=spendPct+'%';
@@ -3252,7 +3264,7 @@ function renderGoals(){
   list.innerHTML=goals.map(g=>{
     const pct=Math.round(g.saved/g.target*100),done=pct>=100;
     const progCls=done?'':pct<33?' low':pct<67?' mid':'';
-    return '<div class="goal-card"><div class="goal-card-header"><div><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions"><button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')">✕</button></div></div><div class="prog-wrap"><div class="prog-fill'+progCls+'" style="width:'+Math.min(pct,100)+'%"></div></div><div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(g.target-g.saved)+'</div>'+((!done)?'<div class="whatif-row"><span class="whatif-label">מה אם אחסוך</span><input class="whatif-input" type="number" inputmode="decimal" min="1" placeholder="₪/חודש" oninput="calcWhatIf('+g.id+',this)"  onfocus="this.select()"/><span class="whatif-result" id="whatif-result-'+g.id+'"></span></div>':'')+'</div>';
+    return '<div class="goal-card"><div class="goal-card-header"><div><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions"><button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד">✕</button></div></div><div class="prog-wrap"><div class="prog-fill'+progCls+'" style="width:'+Math.min(pct,100)+'%"></div></div><div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(g.target-g.saved)+'</div>'+((!done)?'<div class="whatif-row"><span class="whatif-label">מה אם אחסוך</span><input class="whatif-input" type="number" inputmode="decimal" min="1" placeholder="₪/חודש" oninput="calcWhatIf('+g.id+',this)"  onfocus="this.select()"/><span class="whatif-result" id="whatif-result-'+g.id+'"></span></div>':'')+'</div>';
   }).join('');
 }
 
@@ -3484,7 +3496,7 @@ function renderSubscriptions(){
     const pct=Math.min(100,Math.round(elapsed/cycleLen*100));
     const barCls=pct>=90?'danger':pct>=70?'warn':'';
     const cycleBar=s.active&&s.nextDate?'<div class="sub-cycle-bar"><div class="sub-cycle-fill '+barCls+'" style="width:'+pct+'%"></div></div>':'';
-    return '<div class="sub-card'+(s.active?'':' paused')+(soon||over?' soon':'')+'">'+( soon?'<span class="soon-tag">קרוב!</span>':'')+(over?'<span class="overdue-tag">באיחור</span>':'')+'<div class="sub-row1"><div class="sub-identity"><div class="sub-emoji-big" style="display:none">'+s.emoji+'</div>'+subLogo(s.name)+'<div><div class="sub-name-text">'+esc(s.name)+'</div><span class="sub-cat-chip">'+esc(s.category)+'</span></div></div><div class="sub-price"><div class="sub-price-amount">'+fmt(s.amount)+'</div><div class="sub-price-cycle">'+cycleName(s.cycle)+'</div>'+(s.cycle!=='monthly'?'<div class="sub-price-cycle">≈'+fmt(subME(s))+'/חודש</div>':'')+'</div></div>'+cycleBar+'<div class="sub-row2"><div class="sub-next-label'+(soon||over?' soon-txt':'')+'">'+nl+'</div><div class="sub-btns"><button class="btn btn-teal btn-sm" onclick="subToExpense('+s.id+')">+ לרשום</button><button class="btn btn-outline btn-sm" onclick="toggleSub('+s.id+')">'+(s.active?'⏸':'▶️')+'</button><button class="btn btn-danger btn-sm" onclick="deleteSub('+s.id+')">✕</button></div></div></div>';
+    return '<div class="sub-card'+(s.active?'':' paused')+(soon||over?' soon':'')+'">'+( soon?'<span class="soon-tag">קרוב!</span>':'')+(over?'<span class="overdue-tag">באיחור</span>':'')+'<div class="sub-row1"><div class="sub-identity"><div class="sub-emoji-big" style="display:none">'+s.emoji+'</div>'+subLogo(s.name)+'<div><div class="sub-name-text">'+esc(s.name)+'</div><span class="sub-cat-chip">'+esc(s.category)+'</span></div></div><div class="sub-price"><div class="sub-price-amount">'+fmt(s.amount)+'</div><div class="sub-price-cycle">'+cycleName(s.cycle)+'</div>'+(s.cycle!=='monthly'?'<div class="sub-price-cycle">≈'+fmt(subME(s))+'/חודש</div>':'')+'</div></div>'+cycleBar+'<div class="sub-row2"><div class="sub-next-label'+(soon||over?' soon-txt':'')+'">'+nl+'</div><div class="sub-btns"><button class="btn btn-teal btn-sm" onclick="subToExpense('+s.id+')">+ לרשום</button><button class="btn btn-outline btn-sm" onclick="toggleSub('+s.id+')">'+(s.active?'⏸':'▶️')+'</button><button class="btn btn-danger btn-sm" onclick="deleteSub('+s.id+')" aria-label="מחק מנוי">✕</button></div></div></div>';
   }).join('');
 }
 
@@ -3549,7 +3561,7 @@ function renderLoans(){
       l.rate>0?`<div class="loan-stat"><div class="loan-stat-val">${l.rate}%</div><div class="loan-stat-label">ריבית</div></div>`:'',
       l.remaining>0?`<div class="loan-stat"><div class="loan-stat-val">${fmt(l.remaining)}</div><div class="loan-stat-label">יתרה</div></div>`:''
     ].filter(Boolean).join('');
-    return `<div class="loan-card"><div class="loan-header"><div class="loan-emoji">${emoji}</div><div class="loan-info"><div class="loan-name">${esc(l.name)}</div>${l.lender?'<div class="loan-lender">'+esc(l.lender)+'</div>':''}</div><button class="btn btn-danger btn-sm" onclick="deleteLoan(${l.id})">✕</button></div>${progBar}<div class="loan-stats-row">${stats}</div>${l.notes?'<div class="loan-notes">'+esc(l.notes)+'</div>':''}</div>`;
+    return `<div class="loan-card"><div class="loan-header"><div class="loan-emoji">${emoji}</div><div class="loan-info"><div class="loan-name">${esc(l.name)}</div>${l.lender?'<div class="loan-lender">'+esc(l.lender)+'</div>':''}</div><button class="btn btn-danger btn-sm" onclick="deleteLoan(${l.id})" aria-label="מחק הלוואה">✕</button></div>${progBar}<div class="loan-stats-row">${stats}</div>${l.notes?'<div class="loan-notes">'+esc(l.notes)+'</div>':''}</div>`;
   }).join('');
 }
 
