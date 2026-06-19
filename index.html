@@ -1838,14 +1838,9 @@
         <div class="set-dd" id="dataDD">
           <button type="button" class="set-dd-trigger" onclick="toggleSetDD('dataDD')"><span>💾 ייבוא, ייצוא וגיבוי</span><svg class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
           <div class="set-dd-menu">
-            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();shareMonthly()"><span>📲</span> שלח סיכום חודשי ל-WhatsApp</button>
-            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();exportCSV()"><span>📥</span> ייצא עסקאות ל-CSV</button>
-            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();exportExcel()"><span>📊</span> ייצא ל-Excel (xlsx מעוצב)</button>
-            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();exportMonthlyPDF()"><span>📄</span> ייצא/הדפס סיכום חודשי (PDF)</button>
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();importBankCSV()"><span>🏦</span> ייבא עסקאות מקובץ בנק (CSV)</button>
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();exportBackup()"><span>💾</span> גבה את כל הנתונים</button>
             <label class="set-dd-opt" style="cursor:pointer"><span>📂</span> שחזר מגיבוי<input type="file" accept=".json" style="display:none" onchange="closeAllSetDD();importBackup(this)"/></label>
-            <button type="button" class="set-dd-opt" onclick="restoreAutoBackup()"><span>♻️</span> שחזר מגיבוי אוטומטי <span id="autoBkInfo" style="margin-inline-start:6px;color:var(--text3);font-size:.78rem;font-weight:500"></span></button>
           </div>
         </div>
       </div>
