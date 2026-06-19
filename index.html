@@ -1027,6 +1027,36 @@
     body.dark .set-dd-opt.sel{background:rgba(96,165,250,0.16);}
     .set-dd-opt.sel::after{content:'✓';margin-inline-start:auto;font-weight:800;}
 
+    /* ════════════════════════════════════════════════════════════
+       16 · WCAG AA CONTRAST FIXES
+       ════════════════════════════════════════════════════════════ */
+    /* Dark mode: --accent=#60a5fa as button bg + white = 2.5:1 FAIL
+       Fix: blue-700 (#1d4ed8) = 7.1:1 with white */
+    body.dark .btn-primary,
+    body.dark .wiz-next-inline,
+    body.dark .empty .btn-empty,
+    body.dark .confirm-ok,
+    body.dark .install-go,
+    body.dark .quick-btn.primary .quick-icon{background:#1d4ed8;}
+    body.dark .wiz-hdr{background:#1e3a8a;}
+    body.dark .wiz-fix-btn.active{background:#1d4ed8;box-shadow:0 2px 8px rgba(30,64,175,.3);}
+    /* Dark mode FAB: blue-500→blue-400 gradient + white text = 3.7:1/2.5:1 FAIL */
+    body.dark .fab{background:linear-gradient(145deg,#1e40af,#1d4ed8)!important;box-shadow:0 6px 24px rgba(30,64,175,.45)!important;}
+    /* Dark mode chips: replace solid-accent-bg+white with tinted-surface+blue-300 text */
+    body.dark .filter-chip.active,
+    body.dark .month-btn.active,
+    body.dark .toggle-opt.active,
+    body.dark .range-chip.active{background:rgba(96,165,250,0.13);color:#93c5fd;border-color:rgba(96,165,250,0.4);}
+    /* Green action button: #059669 + white = 3.75:1 FAIL → emerald-700 = 5.1:1 */
+    .btn-success{background:#047857;}
+    body.dark .btn-success{background:#065f46;}
+    /* Soon/overdue tags: amber (#d97706) + white = 3.2:1 FAIL → dark text = 8.5:1 */
+    .soon-tag{color:#451a03;}
+    body.dark .soon-tag{background:#b45309;color:white;}
+    /* Offline banner: amber + white = 3.2:1 FAIL → amber-700 = 4.95:1 */
+    #offlineBanner{background:#b45309;}
+    /* "הוסף אוטומטית" button: bg-blue-600 with white = 5.3:1 PASS — no change needed */
+
   </style>
 </head>
 <body class="dark">
@@ -1119,7 +1149,7 @@
         <span class="wiz-amount-currency">₪</span>
         <input type="number" id="txAmount" class="wiz-amount-input" placeholder="0" min="0" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter'){event.preventDefault();addTransaction();}">
       </div>
-      <div id="wizLastAmtChip" style="display:none;margin:-4px 18px 8px;text-align:center;"><button onclick="applyLastAmt()" style="background:var(--surface2);border:1.5px dashed var(--border);color:var(--text2);padding:6px 16px;border-radius:20px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;">פעם קודמת: <span id="wizLastAmtVal"></span> — להשתמש?</button></div>
+      <div id="wizLastAmtChip" style="display:none;margin:-4px 18px 8px;text-align:center;"><button onclick="applyLastAmt()" style="background:var(--surface2);border:1.5px dashed var(--border);color:var(--text2);padding:6px 16px;border-radius:20px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;">פעם קודמת: <span id="wizLastAmtVal"></span>, להשתמש?</button></div>
       <div class="wiz-body-padded">
         <div style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">קטגוריה שנבחרה</div><div class="wiz-cat-badge" id="wizCatBadge"></div>
         <div class="wiz-fix-row">
@@ -1255,7 +1285,7 @@
         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
       </div>
       <div class="flex-1">
-        <h4 class="text-sm font-semibold text-slate-800 dark:text-zinc-200">הוצאות קבועות קרובות</h4>
+        <h3 class="text-sm font-semibold text-slate-800 dark:text-zinc-200">הוצאות קבועות קרובות</h3>
         <div id="recurringAlertBody" class="text-xs text-slate-500 dark:text-zinc-400 mt-1 space-y-1"></div>
         <button class="mt-2.5 bg-blue-600 hover:bg-blue-700 text-white px-3 rounded-lg text-xs font-semibold cursor-pointer transition-colors" style="padding-top:10px;padding-bottom:10px;min-height:40px" onclick="addAllRecurring()">✓ הוסף אוטומטית</button>
       </div>
@@ -1342,6 +1372,33 @@
 
 
 
+    <!-- Upcoming Section -->
+    <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
+          <i data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
+          תשלומים קרובים
+        </h3>
+      </div>
+      <div id="upcomingList" class="divide-y divide-slate-100 dark:divide-zinc-800/50">
+        <!-- Renders upcomingList from JavaScript -->
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
+          <i data-lucide="activity" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
+          תנועות אחרונות
+        </h3>
+        <button class="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer" style="padding:10px 8px;margin:-10px -8px" onclick="showPage('transactions',document.getElementById('nav-transactions'))">הצג הכל</button>
+      </div>
+      <div class="divide-y divide-slate-100 dark:divide-zinc-800/50" id="recentTxList">
+        <!-- Renders recent transactions from JavaScript -->
+      </div>
+    </div>
+
     <!-- Feature shortcuts -->
     <div class="grid grid-cols-3 gap-2 mb-4">
       <button class="bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-all hover:-translate-y-0.5" onclick="showPage('goals')">
@@ -1357,7 +1414,6 @@
         <span>הלוואות</span>
       </button>
     </div>
-
 
     <!-- Spending Flow: הכנסה → קבועות / משתנות / חיסכון -->
     <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4">
@@ -1382,49 +1438,6 @@
       </div>
       <div class="prog-wrap" style="height:10px;background:var(--surface2);border-radius:6px;overflow:hidden;"><div id="annualSavingsBar" class="prog-fill" style="width:0%;height:100%;background:linear-gradient(90deg,#10b981,#059669);border-radius:6px;transition:width .9s cubic-bezier(.22,1,.36,1)"></div></div>
     </div>
-
-    <!-- Category Chart -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
-          <i data-lucide="pie-chart" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
-          התפלגות הוצאות
-        </h3>
-        <span class="text-xs text-slate-400 dark:text-zinc-500 font-medium">החודש</span>
-      </div>
-      <div class="h-48 relative flex items-center justify-center">
-        <canvas id="categoryChartDashboard"></canvas>
-      </div>
-    </div>
-
-
-    <!-- Upcoming Section -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
-          <i data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
-          תשלומים קרובים
-        </h3>
-      </div>
-      <div id="upcomingList" class="divide-y divide-slate-100 dark:divide-zinc-800/50">
-        <!-- Renders upcomingList from JavaScript -->
-      </div>
-    </div>
-
-    <!-- Recent Transactions -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
-          <i data-lucide="activity" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
-          תנועות אחרונות
-        </h3>
-        <button class="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer" style="padding:10px 8px;margin:-10px -8px" onclick="showPage('transactions',document.getElementById('nav-transactions'))">הצג הכל</button>
-      </div>
-
-      <div class="divide-y divide-slate-100 dark:divide-zinc-800/50" id="recentTxList">
-        <!-- Renders recent transactions from JavaScript -->
-      </div>
-    </div>
   </div>
 
   <div id="page-transactions" class="page">
@@ -1436,7 +1449,6 @@
         <div class="font-extrabold font-mono tracking-tight mt-2" id="txPageExpense" style="color:#fff;font-size:clamp(2.1rem,10vw,2.8rem);line-height:1.05;white-space:nowrap">0</div>
       </div>
     </div>
-    <button onclick="openAddFixedExpense()" style="width:calc(100% - 32px);margin:0 16px 12px;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(145deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:14px;padding:12px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(29,78,216,.35);">🔒 הוסף הוצאה קבועה (נכנסת כל חודש)</button>
     <div class="section">
       <div class="filter-row" id="txFilterChips">
         <button class="filter-chip active" data-filter="all" onclick="setTxFilter('all',this)">הכל</button>
@@ -1744,7 +1756,7 @@
   </button>
 </nav>
 
-<div id="offlineBanner">📶 אין חיבור לאינטרנט — הנתונים נשמרים מקומית</div>
+<div id="offlineBanner">📶 אין חיבור לאינטרנט: הנתונים נשמרים מקומית</div>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <div class="sheet-overlay" id="privacySheet" onclick="if(event.target===this)closeSheet('privacySheet')">
