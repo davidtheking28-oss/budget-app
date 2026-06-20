@@ -238,31 +238,31 @@
     .check-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;}
     .wiz-sheet{padding:0!important;border-radius:0;overflow:hidden;display:flex;flex-direction:column;height:100dvh;max-height:100dvh;animation:slideUp 0.32s cubic-bezier(0.16,1,0.3,1) both;}
     #addTxSheet{align-items:stretch;}
-    .wiz-hdr{background:var(--accent);padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 30px;flex-shrink:0;}
+    .wiz-hdr{background:var(--accent);padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 16px;flex-shrink:0;}
     .wiz-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
     .wiz-step-btn{font-size:1.5rem;font-weight:400;color:rgba(255,255,255,0.8);background:none;border:none;cursor:pointer;padding:6px 2px;min-width:48px;min-height:44px;font-family:inherit;direction:ltr;text-align:right;-webkit-tap-highlight-color:transparent;line-height:1;}
     .wiz-step-btn:active{opacity:0.5;}
     .wiz-ttl{font-size:2rem;font-weight:var(--fw-extra);color:white;text-align:center;flex:1;letter-spacing:var(--track-normal);line-height:var(--lh-tight);font-family:var(--font-display);}
     .wiz-next-btn{font-size:2rem;color:white;background:none;border:none;cursor:pointer;padding:6px 2px;min-width:48px;line-height:1;opacity:0.9;text-align:left;-webkit-tap-highlight-color:transparent;}
     .wiz-next-btn:active{opacity:0.4;}
-    .wiz-pill-outer{display:flex;align-items:center;margin:-22px 18px 0;position:relative;z-index:10;flex-shrink:0;background:var(--surface);border-radius:50px;box-shadow:0 8px 32px rgba(0,0,0,0.14);padding:6px;transition:box-shadow 0.2s;}
-    .wiz-pill-outer:focus-within{box-shadow:0 8px 32px rgba(29,78,216,0.22);}
-    .wiz-pill{flex:1;min-width:0;padding:13px 16px;background:transparent!important;border:none;font-size:1.05rem;font-family:inherit;color:var(--text)!important;box-shadow:none!important;direction:rtl;display:block;text-align:right;}
-    .wiz-pill::placeholder{color:var(--text3)!important;}
-    .wiz-next-inline{flex-shrink:0;background:var(--accent);color:white;border:none;border-radius:50px;padding:12px 20px;font-size:0.92rem;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;min-height:44px;-webkit-tap-highlight-color:transparent;}
+    .wiz-pill-outer{display:flex;align-items:center;margin:12px 0 0;position:relative;z-index:10;flex-shrink:0;background:rgba(255,255,255,0.15);border-radius:50px;border:1.5px solid rgba(255,255,255,0.22);padding:5px;transition:background 0.15s;}
+    .wiz-pill-outer:focus-within{background:rgba(255,255,255,0.22);}
+    .wiz-pill{flex:1;min-width:0;padding:13px 16px;background:transparent!important;border:none;font-size:1.05rem;font-family:inherit;color:white!important;box-shadow:none!important;direction:rtl;display:block;text-align:right;outline:none;}
+    .wiz-pill::placeholder{color:rgba(255,255,255,0.55)!important;}
+    .wiz-next-inline{flex-shrink:0;background:white;color:var(--accent);border:none;border-radius:50px;padding:12px 20px;font-size:0.92rem;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;min-height:44px;-webkit-tap-highlight-color:transparent;}
     .wiz-next-inline:active{opacity:0.75;}
     .wiz-pill[type=number]{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-weight:700;font-size:1.4rem;letter-spacing:-0.5px;text-align:center;}
     .wiz-pill[type=number]::placeholder{font-family:var(--font-sans);font-weight:400;font-size:1.05rem;text-align:center;}
     .wiz-body{overflow-y:auto;}
     #wizBody1{flex:1;padding:14px 18px calc(20px + var(--safe-bottom));background:var(--bg)!important;}
     #wizBody2{flex:1;background:var(--bg)!important;padding:0;overflow-y:auto;display:flex;flex-direction:column;}
-    .wiz-amount-row{display:flex;align-items:center;justify-content:center;padding:12px 20px 38px;background:var(--accent);border-bottom:none;flex-shrink:0;}
+    .wiz2-amount-section{display:flex;align-items:center;justify-content:center;padding:28px 20px 22px;border-bottom:1px solid var(--border);margin-bottom:6px;flex-shrink:0;}
     .wiz-amount-wrap{display:inline-flex;align-items:baseline;direction:rtl;gap:6px;}
-    .wiz-amount-currency{font-size:1.8rem;font-weight:700;color:rgba(255,255,255,0.45);font-family:var(--font-num);}
-    .wiz-amount-input{font-family:var(--font-num);font-size:3rem;font-weight:700;color:white;border:none;border-radius:8px;background:transparent;width:6ch;min-width:2ch;text-align:center;letter-spacing:-2px;-moz-appearance:textfield;transition:opacity 0.15s;}
-    .wiz-amount-input::placeholder{color:rgba(255,255,255,0.28);font-weight:300;}
+    .wiz-amount-currency{font-size:1.8rem;font-weight:700;color:var(--accent);font-family:var(--font-num);}
+    .wiz-amount-input{font-family:var(--font-num);font-size:3rem;font-weight:700;color:var(--text);border:none;border-radius:8px;background:transparent;width:6ch;min-width:2ch;text-align:center;letter-spacing:-2px;-moz-appearance:textfield;transition:opacity 0.15s;outline:none;-webkit-tap-highlight-color:transparent;appearance:none;-webkit-appearance:none;}
+    .wiz-amount-input::placeholder{color:var(--text3);font-weight:300;}
     .wiz-amount-input::-webkit-outer-spin-button,.wiz-amount-input::-webkit-inner-spin-button{-webkit-appearance:none;}
-    .wiz-body-padded{padding:22px 16px calc(28px + env(safe-area-inset-bottom,0px));background:var(--bg);flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;border-radius:22px 22px 0 0;margin-top:-20px;}
+    .wiz-body-padded{padding:0 16px calc(28px + env(safe-area-inset-bottom,0px));background:var(--bg);flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
     .wiz2-label{font-size:0.72rem;font-weight:700;color:var(--text3);letter-spacing:0.04em;margin-bottom:7px;}
     .wiz2-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:13px 15px;}
     .wiz2-cat-row{display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
@@ -440,14 +440,12 @@
     body.dark .wiz-body-padded{background:var(--bg);}
     body.dark .wiz-cat-row{border-color:var(--border);}
     body.dark .wiz-fix-btn{color:var(--text2);}
-    body.dark .wiz-pill{color:var(--text)!important;}
-    body.dark .wiz-pill-outer{background:var(--surface)!important;}
-    body.dark .wiz-pill-outer:focus-within{box-shadow:0 8px 32px rgba(96,165,250,0.22);}
+    body.dark .wiz-pill{color:white!important;}
+    body.dark .wiz-pill-outer{background:rgba(255,255,255,0.15)!important;border-color:rgba(255,255,255,0.22)!important;}
     body.dark .wiz-date-chip{background:var(--surface);border-color:var(--border);color:var(--text);}
     body.dark .wiz-fix-row{background:var(--surface2);border-color:var(--border);}
     body.dark .wiz-rec-row{background:var(--surface);border-color:var(--border);}
     body.dark .wiz-sec-ttl{color:var(--accent);}
-    body.dark .wiz-amount-row{background:#1d4ed8;border-bottom:none;}
     .wiz-footer{padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 14px);background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:10px;}
     body.dark .wiz-footer{background:var(--surface);border-top-color:var(--border);}
     .wiz-next-chip{background:var(--surface);color:var(--accent);border-radius:8px;padding:6px 16px;font-weight:800;font-size:0.9rem;flex-shrink:0;}
@@ -1168,16 +1166,16 @@
 
 <div class="sheet-overlay" id="addTxSheet" onclick="if(event.target===this)closeSheet('addTxSheet')">
   <div class="sheet wiz-sheet">
-    <div class="wiz-hdr">
+    <div class="wiz-hdr" id="wizHdr">
       <div class="wiz-hdr-top">
         <button class="wiz-step-btn" id="wizStepBtn" onclick="wizBack()">1/2</button>
         <h2 class="wiz-ttl" id="wizTtl">מה קניתי?</h2>
         <button class="wiz-next-btn" id="wizNextBtn" onclick="wizNext()" aria-label="הבא">›</button>
       </div>
-    </div>
-    <div class="wiz-pill-outer" id="wizPillOuter">
-      <input type="text" id="txDesc" class="wiz-pill" placeholder="קפה, סופר, דלק..." oninput="wizDescNlp(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();wizNext();}" onfocus="this.select()"/>
-      <button class="wiz-next-inline" onclick="wizNext()">הבא</button>
+      <div class="wiz-pill-outer" id="wizPillOuter">
+        <input type="text" id="txDesc" class="wiz-pill" placeholder="קפה, סופר, דלק..." oninput="wizDescNlp(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();wizNext();}" onfocus="this.select()"/>
+        <button class="wiz-next-inline" onclick="wizNext()">הבא</button>
+      </div>
     </div>
     <div class="nlp-hint" id="nlpHint"></div>
     <input type="date" id="txDate" onchange="wizUpdateDate()" style="display:none;"/>
@@ -1197,13 +1195,13 @@
       <div id="wizCatList"></div>
     </div>
     <div class="wiz-body" id="wizBody2" style="display:none;">
-      <div class="wiz-amount-row">
-        <div class="wiz-amount-wrap">
-          <span class="wiz-amount-currency">₪</span>
-          <input type="number" id="txAmount" class="wiz-amount-input" placeholder="0" min="0" step="0.01" inputmode="decimal" aria-label="סכום בשקלים" oninput="this.style.width=Math.max(2,this.value.length+1)+'ch'" onkeydown="if(event.key==='Enter'){event.preventDefault();addTransaction();}">
-        </div>
-      </div>
       <div class="wiz-body-padded">
+        <div class="wiz2-amount-section">
+          <div class="wiz-amount-wrap">
+            <span class="wiz-amount-currency">₪</span>
+            <input type="number" id="txAmount" class="wiz-amount-input" placeholder="0" min="0" step="0.01" inputmode="decimal" aria-label="סכום בשקלים" oninput="this.style.width=Math.max(2,this.value.length+1)+'ch'" onkeydown="if(event.key==='Enter'){event.preventDefault();addTransaction();}">
+          </div>
+        </div>
         <div id="wizLastAmtChip" style="display:none;text-align:center;margin-bottom:2px;"><button onclick="applyLastAmt()" style="background:var(--surface);border:1.5px dashed var(--border);color:var(--text2);padding:7px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;">פעם קודמת: <span id="wizLastAmtVal"></span> — להשתמש?</button></div>
         <div>
           <div class="wiz2-label">קטגוריה</div>
