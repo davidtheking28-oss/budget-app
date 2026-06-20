@@ -166,6 +166,7 @@
     .prog-fill.low{background:var(--red);}
     .prog-fill.mid{background:var(--yellow);}
     .prog-label{font-size:0.73rem;color:var(--text3);margin-top:6px;text-align:left;font-weight:600;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .goal-monthly{margin-top:10px;padding:9px 12px;background:var(--blue-light);border-radius:10px;font-size:0.85rem;font-weight:700;color:var(--blue);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;text-align:right;}
     .budget-item{padding:16px 0;border-bottom:1px solid var(--border);}
     .budget-item:last-child{border-bottom:none;}
     .budget-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
@@ -1238,7 +1239,7 @@
       <div class="form-field"><label for="goalName">שם היעד</label><input type="text" id="goalName" placeholder='חופשה לאי"ל' onfocus="this.select()"/></div>
       <div class="form-row">
         <div class="form-field"><label for="goalTarget">סכום יעד (₪)</label><input type="number" inputmode="decimal" id="goalTarget" placeholder="10000" min="1" onfocus="this.select()"/></div>
-        <div class="form-field"><label for="goalSaved">נחסך כבר (₪)</label><input type="number" inputmode="decimal" id="goalSaved" placeholder="0" min="0" onfocus="this.select()"/></div>
+        <div class="form-field"><label for="goalMonths">תקופה (חודשים)</label><input type="number" inputmode="numeric" id="goalMonths" placeholder="12" min="1" max="360" onfocus="this.select()"/></div>
       </div>
       <button class="btn btn-primary btn-full" onclick="addGoal()">הוסף יעד</button>
     </div>
@@ -3680,11 +3681,11 @@ function renderBudget(){
 function addGoal(){
   const name=document.getElementById('goalName').value.trim();
   const target=parseFloat(document.getElementById('goalTarget').value);
-  const saved=parseFloat(document.getElementById('goalSaved').value)||0;
+  const months=parseInt(document.getElementById('goalMonths').value)||0;
   if(!name){showToast('✏️ תן שם ליעד החיסכון שלך');return;}
   if(!target||target<=0){showToast('₪ כמה רוצים לחסוך? הזן סכום');return;}
-  goals.push({id:Date.now(),name,target,saved});saveData();
-  document.getElementById('goalName').value='';document.getElementById('goalTarget').value='';document.getElementById('goalSaved').value='';
+  goals.push({id:Date.now(),name,target,months,saved:0});saveData();
+  document.getElementById('goalName').value='';document.getElementById('goalTarget').value='';document.getElementById('goalMonths').value='';
   closeSheet('addGoalSheet');showToast('🎯 יעד חדש נוצר!');renderGoals();
 }
 function deleteGoal(id){const backup=goals.find(g=>g.id===id);const idx=goals.findIndex(g=>g.id===id);goals=goals.filter(g=>g.id!==id);saveData();renderGoals();showUndoToast('🗑️ יעד נמחק',()=>{goals.splice(idx,0,backup);saveData();renderGoals();},()=>{});}
@@ -3709,7 +3710,10 @@ function renderGoals(){
   list.innerHTML=goals.map(g=>{
     const pct=Math.round(g.saved/g.target*100),done=pct>=100;
     const progCls=done?'':pct<33?' low':pct<67?' mid':'';
-    return '<div class="goal-card"><div class="goal-card-header"><div><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions"><button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד">✕</button></div></div><div class="prog-wrap"><div class="prog-fill'+progCls+'" style="width:'+Math.min(pct,100)+'%"></div></div><div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(g.target-g.saved)+'</div>'+((!done)?'<div class="whatif-row"><span class="whatif-label">מה אם אחסוך</span><input class="whatif-input" type="number" inputmode="decimal" min="1" placeholder="₪/חודש" oninput="calcWhatIf('+g.id+',this)"  onfocus="this.select()"/><span class="whatif-result" id="whatif-result-'+g.id+'"></span></div>':'')+'</div>';
+    const remaining=g.target-g.saved;
+    const monthlyNeeded=g.months&&g.months>0?Math.ceil(remaining/g.months):0;
+    const monthlyStr=monthlyNeeded>0?'<div class="goal-monthly">'+fmt(monthlyNeeded)+' לחודש'+(g.months?' · '+g.months+' חודשים':'')+'</div>':'';
+    return '<div class="goal-card"><div class="goal-card-header"><div><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions"><button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד">✕</button></div></div><div class="prog-wrap"><div class="prog-fill'+progCls+'" style="width:'+Math.min(pct,100)+'%"></div></div><div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(remaining)+'</div>'+monthlyStr+'</div>';
   }).join('');
 }
 
