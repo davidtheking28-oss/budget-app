@@ -1760,6 +1760,16 @@
 </div>
 
 <!-- SMS import sheet -->
+<div class="sheet-overlay" id="detectedSubsSheet" onclick="if(event.target===this)closeSheet('detectedSubsSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🔄 מנויים שזוהו</div>
+    <div style="font-size:0.82rem;color:var(--text2);margin-bottom:14px">זיהינו תשלומים חוזרים בקובץ. רוצה להוסיפם כמנויים?</div>
+    <div id="detectedSubsList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+    <button class="btn btn-outline btn-full" onclick="closeSheet('detectedSubsSheet')">סיום</button>
+  </div>
+</div>
+
 <div class="sheet-overlay" id="smsImportSheet" onclick="if(event.target===this)closeSheet('smsImportSheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -2540,6 +2550,15 @@ function checkSubscriptions(){
   subscriptions.filter(s=>s.active&&s.cycle!=='monthly'&&s.nextDate&&s.nextDate<today).forEach(s=>{
     while(s.nextDate<today)advanceSubNextDate(s);
     advanced=true;
+  });
+  // advance annual/quarterly subs already paid (matching expense in recent history)
+  subscriptions.filter(s=>s.active&&(s.cycle==='annual'||s.cycle==='quarterly')&&s.nextDate&&s.nextDate>=today).forEach(s=>{
+    const days=daysUntil(s.nextDate);if(days===null||days>30)return;
+    const cycleMonths=s.cycle==='annual'?11:2;
+    const cutoff=new Date();cutoff.setMonth(cutoff.getMonth()-cycleMonths);
+    const cutoffStr=cutoff.toISOString().split('T')[0];
+    const paid=transactions.some(t=>t.type==='expense'&&(t.desc||'').toLowerCase()===(s.name||'').toLowerCase()&&t.date>=cutoffStr);
+    if(paid){advanceSubNextDate(s);advanced=true;}
   });
   if(advanced)saveData();
   const active=subscriptions.filter(s=>s.active&&s.cycle==='monthly'&&s.nextDate&&s.nextDate<=today);
@@ -4171,6 +4190,36 @@ function saveSplitTx(){
 
 // ── Feature 10: SMS Import ────────────────────────────────────────
 let _smsParsed=[];
+function showDetectedSubs(subs,importMsg){
+  showToast(importMsg);
+  const cycleLabel={monthly:'חודשי',annual:'שנתי',quarterly:'רבעוני'};
+  const list=document.getElementById('detectedSubsList');
+  if(!list)return;
+  list.innerHTML=subs.map((s,i)=>{
+    const match=subLookup(s.name);
+    const cat=match?match.cat:'אחר';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:12px;border:1.5px solid var(--border)">
+      <div style="flex:0 0 40px">${subLogo(s.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:0.9rem;color:var(--text)">${esc(s.name)}</div>
+        <div style="font-size:0.75rem;color:var(--text3)">${fmt(s.amount)} · ${cycleLabel[s.cycle]||s.cycle}</div>
+      </div>
+      <button id="dsbtn${i}" class="btn btn-primary btn-sm" onclick="addDetectedSub(${JSON.stringify(s)},${i})">+ הוסף</button>
+    </div>`;
+  }).join('');
+  openSheet('detectedSubsSheet');
+}
+function addDetectedSub(s,i){
+  const match=subLookup(s.name);
+  const nd=new Date();
+  if(s.cycle==='monthly')nd.setMonth(nd.getMonth()+1);
+  else if(s.cycle==='annual')nd.setFullYear(nd.getFullYear()+1);
+  else if(s.cycle==='quarterly')nd.setMonth(nd.getMonth()+3);
+  subscriptions.push({id:Date.now(),name:s.name,emoji:match?match.emoji:'🔄',category:match?match.cat:'אחר',amount:s.amount,cycle:s.cycle,nextDate:nd.toISOString().split('T')[0],active:true});
+  saveData();
+  const btn=document.getElementById('dsbtn'+i);
+  if(btn){btn.textContent='✓';btn.disabled=true;btn.style.opacity='0.5';}
+}
 function openSmsImport(){
   document.getElementById('smsTextInput').value='';
   document.getElementById('smsParsedList').innerHTML='';
@@ -5149,7 +5198,8 @@ setTimeout(autoCarryRecurring,500);
           function normDate(v){ var m=String(v).match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/); if(!m)return ''; var d=m[1].padStart(2,'0'),mo=m[2].padStart(2,'0'),y=m[3].length===2?'20'+m[3]:m[3]; return y+'-'+mo+'-'+d; }
           function normAmt(v){ var c=String(v).replace(/[₪,\s]/g,'').replace(/[^\d.\-]/g,''); if(!/^-?\d+(\.\d+)?$/.test(c)) return null; return parseFloat(c); }
           function addTx(date,desc,amount,forceType){ if(!date||!desc||!amount) return; var key=date+'|'+desc+'|'+Math.abs(amount); if(existing.has(key)){skippedDup++;return;} var type=forceType||(amount<0?'expense':'income'); var cat=categorize(desc,type)||(type==='expense'?EXPENSE_CATS[0]:INCOME_CATS[0]); transactions.push({id:Date.now()+Math.random(),type:type,cat:cat,desc:desc,amount:Math.abs(amount),date:date,recurring:false}); existing.add(key); imported++; }
-          function finish(){ if(imported>0){ saveData(); refreshAll(); closeSheet('settingsSheet'); showToast('✓ יובאו '+imported+' עסקאות'+(skippedDup>0?' · '+skippedDup+' כפילויות דולגו':'')); } else if(skippedDup>0){ showToast('כל העסקאות בקובץ כבר קיימות ('+skippedDup+' כפילויות)'); } else { showToast('❌ לא נמצאו עסקאות בקובץ'); } }
+          function detectSubs(){ var byDesc={}; transactions.filter(function(t){return t.type==='expense';}).forEach(function(t){var k=(t.desc||'').toLowerCase().trim();if(!byDesc[k])byDesc[k]=[];byDesc[k].push(t);}); var existingNames=new Set(subscriptions.map(function(s){return(s.name||'').toLowerCase();})); var found=[]; Object.keys(byDesc).forEach(function(k){var txs=byDesc[k];if(txs.length<2)return;if(existingNames.has(k))return;txs.sort(function(a,b){return a.date.localeCompare(b.date);}); var amounts=txs.map(function(t){return t.amount;}); var avg=amounts.reduce(function(s,a){return s+a;},0)/amounts.length; var ok=amounts.every(function(a){return Math.abs(a-avg)/avg<0.15;}); if(!ok)return; var dates=txs.map(function(t){return new Date(t.date);}); var intervals=[]; for(var i=1;i<dates.length;i++)intervals.push((dates[i]-dates[i-1])/86400000); var avgI=intervals.reduce(function(s,a){return s+a;},0)/intervals.length; var cycle=avgI>=25&&avgI<=35?'monthly':avgI>=80&&avgI<=100?'quarterly':avgI>=340&&avgI<=390?'annual':null; if(!cycle)return; found.push({name:txs[0].desc,amount:Math.round(avg*100)/100,cycle:cycle});}); return found; }
+          function finish(){ if(imported>0){ saveData(); refreshAll(); closeSheet('settingsSheet'); var msg='✓ יובאו '+imported+' עסקאות'+(skippedDup>0?' · '+skippedDup+' כפילויות דולגו':''); var subs=detectSubs(); if(subs.length){showDetectedSubs(subs,msg);}else{showToast(msg);} } else if(skippedDup>0){ showToast('כל העסקאות בקובץ כבר קיימות ('+skippedDup+' כפילויות)'); } else { showToast('❌ לא נמצאו עסקאות בקובץ'); } }
 
           var header=parseLine(rawRows[0]); var hjoin=header.join(' ');
           var isCard = /תארי/.test(hjoin) && /(בית\s*עסק|בית\s*העסק|שם)/.test(hjoin) && /סכום/.test(hjoin);
