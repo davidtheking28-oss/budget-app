@@ -41,7 +41,10 @@
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     html{min-height:100%;overflow-x:hidden;scrollbar-width:none;}
     html::-webkit-scrollbar{display:none;}
+    body{scrollbar-width:none;}
     body::-webkit-scrollbar{display:none;}
+    *{scrollbar-width:none;}
+    *::-webkit-scrollbar{display:none;}
     body{font-family:var(--font-sans);background:var(--bg);color:var(--text);direction:rtl;min-height:100%;overflow-x:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:var(--lh-normal);letter-spacing:var(--track-normal);font-feature-settings:'kern' 1;text-rendering:optimizeLegibility;}
     /* Hebrew text: neutralize Latin-oriented negative tracking from utility classes */
     h1,h2,h3,h4,h5,h6,p,span,button,label,input,select,textarea,div{letter-spacing:var(--track-normal);}
