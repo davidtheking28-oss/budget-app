@@ -1874,6 +1874,8 @@
       <div style="text-align:center;margin-top:14px;padding-bottom:4px">
         <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">🔒 מדיניות פרטיות</button>
         <span style="color:var(--border);margin:0 6px">·</span>
+        <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">📄 תנאי שימוש</button>
+        <span style="color:var(--border);margin:0 6px">·</span>
         <span style="color:var(--text3);font-size:0.78rem">v1.0</span>
       </div>
     </div>
@@ -1937,16 +1939,93 @@
 <div id="offlineBanner">📶 אין חיבור לאינטרנט: הנתונים נשמרים מקומית</div>
 <div id="toast" role="status" aria-live="polite"></div>
 
+<div class="sheet-overlay" id="termsSheet" onclick="if(event.target===this)closeSheet('termsSheet')">
+  <div class="sheet" style="max-height:86vh">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">📄 תנאי שימוש<button onclick="closeSheet('termsSheet')" style="background:none;border:none;font-size:1.4rem;color:var(--text3);cursor:pointer;line-height:1;padding:0 4px;">✕</button></div>
+    <div style="font-size:0.84rem;color:var(--text2);line-height:1.8;overflow-y:auto;max-height:68vh;display:flex;flex-direction:column;gap:16px;padding-bottom:8px;">
+      <div style="background:rgba(29,78,216,0.07);border-radius:10px;padding:10px 14px;font-size:0.8rem;color:var(--accent);">השימוש באפליקציה מהווה הסכמה לתנאים אלה. אם אינך מסכים, אנא הפסק את השימוש.</div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">1. תיאור השירות</strong>
+        תקציב אישי היא אפליקציה לניהול הוצאות והכנסות אישיות. האפליקציה מיועדת לשימוש אישי בלבד. אין בה ייעוץ פיננסי, השקעות או שירות מוסדר על-פי חוק הייעוץ הפיננסי.
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">2. אחריות המשתמש</strong>
+        אתה אחראי לדיוק הנתונים שתזין, לשמירת פרטי הגישה שלך, ולכל שימוש שייעשה תחת חשבונך. אין להשתמש באפליקציה לצרכים מסחריים ללא אישור.
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">3. זמינות השירות</strong>
+        האפליקציה ניתנת "כמות שהיא" (as-is). איננו מתחייבים לזמינות רצופה. רצוי לגבות נתונים באופן קבוע דרך "ייצוא גיבוי" בהגדרות.
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">4. הגבלת אחריות</strong>
+        לא נישא באחריות לאובדן נתונים, לנזקים כספיים או להחלטות פיננסיות שתתקבלנה על-בסיס המידע באפליקציה. הנתונים המוצגים מבוססים אך ורק על מה שהזנת.
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">5. קניין רוחני</strong>
+        כל הזכויות על קוד האפליקציה שמורות. הנתונים שהזנת שייכים לך בלבד.
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">6. שינויים בתנאים</strong>
+        נעדכן תנאים אלה מעת לעת. המשך השימוש לאחר עדכון מהווה הסכמה לתנאים החדשים.
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">7. דין חל</strong>
+        תנאים אלה כפופים לדין הישראלי. סמכות השיפוט הבלעדית תהיה לבתי-המשפט בישראל.
+      </div>
+      <div style="color:var(--text3);font-size:0.78rem;padding-top:4px;border-top:1px solid var(--border)">עודכן לאחרונה: יוני 2026 · לפניות: davidtheking27@gmail.com</div>
+    </div>
+  </div>
+</div>
+
 <div class="sheet-overlay" id="privacySheet" onclick="if(event.target===this)closeSheet('privacySheet')">
-  <div class="sheet" style="max-height:82vh">
+  <div class="sheet" style="max-height:86vh">
     <div class="sheet-handle"></div>
     <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">🔒 מדיניות פרטיות<button onclick="closeSheet('privacySheet')" style="background:none;border:none;font-size:1.4rem;color:var(--text3);cursor:pointer;line-height:1;padding:0 4px;">✕</button></div>
-    <div class="form-stack" style="font-size:0.85rem;color:var(--text2);line-height:1.75;overflow-y:auto;max-height:62vh;display:flex;flex-direction:column;gap:14px;">
-      <div><strong style="color:var(--text);display:block;margin-bottom:4px">מה אנחנו אוספים?</strong>אם בחרת להתחבר עם מייל: כתובת המייל שלך נשמרת ב-Supabase לצורך אימות בלבד. הנתונים הפיננסיים (עסקאות, תקציב, יעדים) נשמרים בדפדפן שלך, ואם נרשמת, מגובים בענן תחת החשבון שלך בלבד.</div>
-      <div><strong style="color:var(--text);display:block;margin-bottom:4px">שיתוף מידע</strong>אנחנו לא מוכרים ולא משתפים את הנתונים שלך עם שום גורם שלישי.</div>
-      <div><strong style="color:var(--text);display:block;margin-bottom:4px">מחיקת נתונים</strong>ניתן למחוק את כל הנתונים בכל עת מהגדרות ← "איפוס כל הנתונים". להסרת חשבון ענן, צור קשר.</div>
-      <div><strong style="color:var(--text);display:block;margin-bottom:4px">אבטחה</strong>כל הנתונים מועברים בהצפנה (HTTPS/TLS). גישה לנתוני ענן מוגנת עם Row Level Security: רק אתה יכול לראות את הנתונים שלך.</div>
-      <div style="color:var(--text3);font-size:0.78rem;padding-top:4px">עודכן לאחרונה: יוני 2026</div>
+    <div style="font-size:0.84rem;color:var(--text2);line-height:1.8;overflow-y:auto;max-height:68vh;display:flex;flex-direction:column;gap:16px;padding-bottom:8px;">
+      <div style="background:rgba(5,150,105,0.07);border-radius:10px;padding:10px 14px;font-size:0.8rem;color:var(--green);">הנתונים הפיננסיים שלך שמורים אצלך בלבד. אנחנו לא רואים אותם ולא מוכרים אותם.</div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">1. מה אנחנו אוספים? (סעיף 11 לחוק הגנת הפרטיות)</strong>
+        <ul style="margin:0;padding-right:18px;display:flex;flex-direction:column;gap:6px;">
+          <li><strong>כתובת מייל</strong> — אם נרשמת לחשבון ענן, מאוחסנת ב-Supabase לצורך אימות בלבד.</li>
+          <li><strong>נתונים פיננסיים</strong> — עסקאות, תקציב, מנויים, הלוואות, יעדים. נשמרים בדפדפן שלך ובענן תחת חשבונך בלבד.</li>
+          <li><strong>נתוני שימוש ב-AI</strong> — ספירת בקשות בלבד (ללא תוכן) לצורך הגבלת קצב.</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">2. מטרת האיסוף</strong>
+        המידע משמש אך ורק להפעלת שירות ניהול התקציב האישי שלך: אימות זהות, סנכרון בין מכשירים, וניתוח הוצאות. לא נשתמש במידע לפרסום, שיווק, או כל מטרה אחרת.
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">3. האם מסירת המידע היא חובה?</strong>
+        לא. האפליקציה פועלת במלואה ללא חשבון. רישום אופציונלי בלבד, ומאפשר גיבוי בין מכשירים.
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">4. שיתוף עם צדדים שלישיים</strong>
+        <ul style="margin:0;padding-right:18px;display:flex;flex-direction:column;gap:6px;">
+          <li><strong>Supabase</strong> — ספק תשתית האחסון והאימות (ארה"ב). כפוף ל-GDPR.</li>
+          <li><strong>Anthropic (Claude)</strong> — טקסט עסקה בלבד לצורך קטגוריזציה אוטומטית, ללא שמירה.</li>
+          <li>לא נמכור, נשכיר, או נשתף נתונים עם כל גורם אחר.</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">5. זכויותיך</strong>
+        <ul style="margin:0;padding-right:18px;display:flex;flex-direction:column;gap:6px;">
+          <li><strong>עיון</strong> — כל נתוניך גלויים לך בממשק האפליקציה.</li>
+          <li><strong>תיקון</strong> — ניתן לערוך כל עסקה ישירות.</li>
+          <li><strong>מחיקה</strong> — "איפוס כל הנתונים" בהגדרות מוחק מהמכשיר. לבקשת מחיקה מהענן, פנה אלינו.</li>
+          <li><strong>ניידות</strong> — "ייצוא גיבוי" בהגדרות מייצא את כל נתוניך.</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">6. אבטחה</strong>
+        כל התקשורת מוצפנת ב-HTTPS/TLS. גישה לנתוני הענן מוגנת עם Row Level Security: רק אתה יכול לראות את הנתונים שלך, גם לנו אין גישה ישירה.
+      </div>
+      <div>
+        <strong style="color:var(--text);display:block;margin-bottom:5px">7. יצירת קשר</strong>
+        לכל פנייה בנושא פרטיות: <span style="color:var(--accent)">davidtheking27@gmail.com</span>
+      </div>
+      <div style="color:var(--text3);font-size:0.78rem;padding-top:4px;border-top:1px solid var(--border)">עודכן לאחרונה: יוני 2026 · בהתאם לחוק הגנת הפרטיות, תשמ"א-1981</div>
     </div>
   </div>
 </div>
