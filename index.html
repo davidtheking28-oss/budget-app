@@ -1237,7 +1237,7 @@
           <label>תדירות</label>
           <select id="subCycle" onchange="subCycleChanged(this.value,'subNextDate')">
             <option value="monthly">חודשי</option><option value="annual">שנתי</option>
-            <option value="weekly">שבועי</option><option value="quarterly">רבעוני</option>
+            <option value="weekly">שבועי</option>
           </select>
         </div>
       </div>
@@ -1276,13 +1276,19 @@
           <label>תדירות</label>
           <select id="editSubCycle" onchange="subCycleChanged(this.value,'editSubNextDate')">
             <option value="monthly">חודשי</option><option value="annual">שנתי</option>
-            <option value="weekly">שבועי</option><option value="quarterly">רבעוני</option>
+            <option value="weekly">שבועי</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <div class="form-field"><label>סכום (₪)</label><input type="number" id="editSubAmount" min="0" step="0.01" inputmode="decimal" onfocus="this.select()"/></div>
-        <div class="form-field"><label>תאריך הבא</label><input type="date" id="editSubNextDate"/></div>
+        <div class="form-field">
+          <label style="display:flex;justify-content:space-between;align-items:center">
+            תאריך הבא
+            <button type="button" onclick="subCycleChanged(document.getElementById('editSubCycle').value,'editSubNextDate')" style="background:none;border:none;color:var(--accent);font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit">חשב מחדש</button>
+          </label>
+          <input type="date" id="editSubNextDate"/>
+        </div>
       </div>
       <input type="hidden" id="editSubId"/>
       <div class="form-row" style="gap:8px">
@@ -2138,9 +2144,11 @@ function subCycleChanged(cycle,dateInputId){
 }
 function openAddSub(){
   const prev=document.getElementById('subLogoPreview');if(prev)prev.innerHTML='';
+  document.getElementById('subName').value='';
+  document.getElementById('subAmount').value='';
   const cycleEl=document.getElementById('subCycle');
-  const cycle=cycleEl?cycleEl.value:'monthly';
-  subCycleChanged(cycle,'subNextDate');
+  if(cycleEl)cycleEl.value='monthly';
+  subCycleChanged('monthly','subNextDate');
   openSheet('addSubSheet');
   setTimeout(()=>document.getElementById('subName').focus(),250);
 }
