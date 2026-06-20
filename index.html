@@ -1234,7 +1234,7 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title">🎯 יעד חיסכון חדש</div>
     <div class="form-stack">
-      <div class="form-field"><label for="goalName">שם היעד</label><input type="text" id="goalName" placeholder='חופשה לאי"ל' onfocus="this.select()"/></div>
+      <div class="form-field"><label for="goalName">שם היעד</label><input type="text" id="goalName" placeholder='חופשה לאי"ל' autocomplete="off" autocorrect="off" spellcheck="false" onfocus="this.select()"/></div>
       <div class="form-row">
         <div class="form-field"><label for="goalTarget">סכום יעד (₪)</label><input type="number" inputmode="decimal" id="goalTarget" placeholder="10000" min="1" onfocus="this.select()"/></div>
         <div class="form-field"><label for="goalMonths">תקופה (חודשים)</label><input type="number" inputmode="numeric" id="goalMonths" placeholder="12" min="1" max="360" onfocus="this.select()"/></div>
@@ -5719,31 +5719,35 @@ setTimeout(autoCarryRecurring,500);
 (function(){
   var vv=window.visualViewport;
   if(!vv)return;
-  var _sheet=null;
+  var _activeSheetEl=null;
   function sync(){
-    var overlay=document.getElementById('addTxSheet');
-    if(!overlay||!overlay.classList.contains('open'))return;
-    if(!_sheet)_sheet=overlay.querySelector('.wiz-sheet');
-    if(!_sheet)return;
     var h=vv.height;
-    _sheet.style.height=h+'px';
-    _sheet.style.maxHeight=h+'px';
+    var overlays=document.querySelectorAll('.sheet-overlay.open');
+    overlays.forEach(function(ov){
+      var sh=ov.querySelector('.sheet,.wiz-sheet');
+      if(sh){sh.style.maxHeight=h+'px';}
+    });
+    if(_activeSheetEl){_activeSheetEl.style.maxHeight=h+'px';}
   }
-  function reset(){
-    if(!_sheet)return;
-    _sheet.style.height='';
-    _sheet.style.maxHeight='';
+  function reset(sh){
+    if(sh){sh.style.maxHeight='';}
+    _activeSheetEl=null;
   }
   vv.addEventListener('resize',sync);
   var _orig=window.openSheet;
   window.openSheet=function(id){
     _orig&&_orig.apply(this,arguments);
-    if(id==='addTxSheet'){_sheet=null;setTimeout(sync,50);}
+    setTimeout(function(){
+      var ov=document.getElementById(id);
+      if(ov){var sh=ov.querySelector('.sheet,.wiz-sheet');if(sh){_activeSheetEl=sh;sync();}}
+    },50);
   };
   var _origClose=window.closeSheet;
   window.closeSheet=function(id){
+    var ov=document.getElementById(id);
+    var sh=ov&&ov.querySelector('.sheet,.wiz-sheet');
     _origClose&&_origClose.apply(this,arguments);
-    if(id==='addTxSheet')setTimeout(reset,250);
+    setTimeout(function(){reset(sh);},250);
   };
 })();
 </script>
