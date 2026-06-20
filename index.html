@@ -3569,32 +3569,51 @@ function subME(s){if(!s.active)return 0;return {monthly:s.amount,annual:s.amount
 function cycleName(c){return{monthly:'חודשי',annual:'שנתי',weekly:'שבועי',quarterly:'רבעוני'}[c]||c;}
 
 const SUB_CATALOG={
+  // סטרימינג
   netflix:{cat:'סטרימינג',emoji:'🎬'},
-  'hot vod':{cat:'סטרימינג',emoji:'📺'},hotplus:{cat:'סטרימינג',emoji:'📺'},hot:{cat:'סטרימינג',emoji:'📺'},
-  yes:{cat:'סטרימינג',emoji:'📺'},yesplus:{cat:'סטרימינג',emoji:'📺'},
+  'hot vod':{cat:'סטרימינג',emoji:'📺'},'hot+plus':{cat:'סטרימינג',emoji:'📺'},
+  'yes+plus':{cat:'סטרימינג',emoji:'📺'},'כן+':{cat:'סטרימינג',emoji:'📺'},
   disney:{cat:'סטרימינג',emoji:'✨'},
-  hbo:{cat:'סטרימינג',emoji:'🎬'},max:{cat:'סטרימינג',emoji:'🎬'},
+  hbo:{cat:'סטרימינג',emoji:'🎬'},
   hulu:{cat:'סטרימינג',emoji:'🎬'},paramount:{cat:'סטרימינג',emoji:'🎬'},
-  apple:{cat:'סטרימינג',emoji:'🍎'},appletv:{cat:'סטרימינג',emoji:'🍎'},
-  amazon:{cat:'סטרימינג',emoji:'📦'},prime:{cat:'סטרימינג',emoji:'📦'},
-  youtube:{cat:'סטרימינג',emoji:'▶️'},
+  'apple tv':{cat:'סטרימינג',emoji:'🍎'},'appletv':{cat:'סטרימינג',emoji:'🍎'},
+  'amazon prime':{cat:'סטרימינג',emoji:'📦'},'prime video':{cat:'סטרימינג',emoji:'📦'},
+  'youtube premium':{cat:'סטרימינג',emoji:'▶️'},
   crunchyroll:{cat:'סטרימינג',emoji:'🎌'},
-  twitch:{cat:'סטרימינג',emoji:'🎮'},
   vimeo:{cat:'סטרימינג',emoji:'🎬'},
+  twitch:{cat:'סטרימינג',emoji:'🎮'},
+  hayu:{cat:'סטרימינג',emoji:'🎬'},
+  // מוזיקה
   spotify:{cat:'מוזיקה',emoji:'🎵'},
   'apple music':{cat:'מוזיקה',emoji:'🎵'},
   deezer:{cat:'מוזיקה',emoji:'🎵'},
   tidal:{cat:'מוזיקה',emoji:'🎵'},
   soundcloud:{cat:'מוזיקה',emoji:'🎵'},
+  'youtube music':{cat:'מוזיקה',emoji:'🎵'},
+  // פודקאסטים
   audible:{cat:'פודקאסטים',emoji:'🎧'},
+  pocket:{cat:'פודקאסטים',emoji:'🎧'},
+  // כושר
   headspace:{cat:'כושר',emoji:'🧘'},
   calm:{cat:'כושר',emoji:'🧘'},
+  'holmes place':{cat:'כושר',emoji:'🏋️'},
+  'anytime fitness':{cat:'כושר',emoji:'🏋️'},
+  'planet fitness':{cat:'כושר',emoji:'🏋️'},
+  noom:{cat:'כושר',emoji:'🥗'},
+  'my fitness':{cat:'כושר',emoji:'🏋️'},myfitnesspal:{cat:'כושר',emoji:'🏋️'},
+  peloton:{cat:'כושר',emoji:'🚴'},
+  strava:{cat:'כושר',emoji:'🏃'},
+  // משחקי וידאו
   steam:{cat:'משחקי וידאו',emoji:'🎮'},
-  xbox:{cat:'משחקי וידאו',emoji:'🎮'},
-  playstation:{cat:'משחקי וידאו',emoji:'🎮'},
+  'xbox game pass':{cat:'משחקי וידאו',emoji:'🎮'},xbox:{cat:'משחקי וידאו',emoji:'🎮'},
+  'playstation plus':{cat:'משחקי וידאו',emoji:'🎮'},playstation:{cat:'משחקי וידאו',emoji:'🎮'},
   nintendo:{cat:'משחקי וידאו',emoji:'🎮'},
-  epic:{cat:'משחקי וידאו',emoji:'🎮'},
-  microsoft:{cat:'תוכנה',emoji:'💼'},office:{cat:'תוכנה',emoji:'💼'},
+  'epic games':{cat:'משחקי וידאו',emoji:'🎮'},
+  'ea play':{cat:'משחקי וידאו',emoji:'🎮'},
+  roblox:{cat:'משחקי וידאו',emoji:'🎮'},
+  ubisoft:{cat:'משחקי וידאו',emoji:'🎮'},
+  // תוכנה
+  'microsoft 365':{cat:'תוכנה',emoji:'💼'},'office 365':{cat:'תוכנה',emoji:'💼'},microsoft:{cat:'תוכנה',emoji:'💼'},
   adobe:{cat:'תוכנה',emoji:'🎨'},
   notion:{cat:'תוכנה',emoji:'📝'},
   figma:{cat:'תוכנה',emoji:'🎨'},
@@ -3603,27 +3622,55 @@ const SUB_CATALOG={
   zoom:{cat:'תוכנה',emoji:'💻'},
   github:{cat:'תוכנה',emoji:'💻'},
   gitlab:{cat:'תוכנה',emoji:'💻'},
-  atlassian:{cat:'תוכנה',emoji:'💼'},jira:{cat:'תוכנה',emoji:'💼'},
+  jira:{cat:'תוכנה',emoji:'💼'},atlassian:{cat:'תוכנה',emoji:'💼'},
   monday:{cat:'תוכנה',emoji:'📊'},
   hubspot:{cat:'תוכנה',emoji:'📊'},
+  '1password':{cat:'תוכנה',emoji:'🔒'},lastpass:{cat:'תוכנה',emoji:'🔒'},bitwarden:{cat:'תוכנה',emoji:'🔒'},
+  nordvpn:{cat:'תוכנה',emoji:'🛡️'},expressvpn:{cat:'תוכנה',emoji:'🛡️'},
+  wix:{cat:'תוכנה',emoji:'🌐'},
+  squarespace:{cat:'תוכנה',emoji:'🌐'},
+  // כלי AI
   chatgpt:{cat:'כלי AI',emoji:'🤖'},openai:{cat:'כלי AI',emoji:'🤖'},
   claude:{cat:'כלי AI',emoji:'🤖'},anthropic:{cat:'כלי AI',emoji:'🤖'},
   midjourney:{cat:'כלי AI',emoji:'🎨'},
+  'github copilot':{cat:'כלי AI',emoji:'🤖'},copilot:{cat:'כלי AI',emoji:'🤖'},
+  gemini:{cat:'כלי AI',emoji:'🤖'},
+  perplexity:{cat:'כלי AI',emoji:'🤖'},
+  cursor:{cat:'כלי AI',emoji:'🤖'},
   grammarly:{cat:'כלי AI',emoji:'✍️'},
-  google:{cat:'אחסון ענן',emoji:'☁️'},
+  jasper:{cat:'כלי AI',emoji:'✍️'},
+  // אחסון ענן
+  'google one':{cat:'אחסון ענן',emoji:'☁️'},
   icloud:{cat:'אחסון ענן',emoji:'☁️'},
   dropbox:{cat:'אחסון ענן',emoji:'☁️'},
   onedrive:{cat:'אחסון ענן',emoji:'☁️'},
-  duolingo:{cat:'חינוך',emoji:'📚'},
+  box:{cat:'אחסון ענן',emoji:'☁️'},
+  // חינוך
+  duolingo:{cat:'חינוך',emoji:'🦉'},
+  coursera:{cat:'חינוך',emoji:'📚'},
+  udemy:{cat:'חינוך',emoji:'📚'},
+  'linkedin learning':{cat:'חינוך',emoji:'📚'},
+  skillshare:{cat:'חינוך',emoji:'📚'},
+  masterclass:{cat:'חינוך',emoji:'📚'},
+  brilliant:{cat:'חינוך',emoji:'📚'},
+  // עיתונות
   haaretz:{cat:'עיתונות',emoji:'📰'},ynet:{cat:'עיתונות',emoji:'📰'},
   walla:{cat:'עיתונות',emoji:'📰'},calcalist:{cat:'עיתונות',emoji:'📰'},
-  maariv:{cat:'עיתונות',emoji:'📰'},
+  maariv:{cat:'עיתונות',emoji:'📰'},'the marker':{cat:'עיתונות',emoji:'📰'},
+  nyt:{cat:'עיתונות',emoji:'📰'},'new york times':{cat:'עיתונות',emoji:'📰'},
+  'washington post':{cat:'עיתונות',emoji:'📰'},
+  economist:{cat:'עיתונות',emoji:'📰'},
 };
 function subLookup(name){
   const key=(name||'').toLowerCase().trim();
   if(key.length<2)return null;
-  for(const [k,v] of Object.entries(SUB_CATALOG)){if(key===k||key.includes(k))return v;}
-  return null;
+  // מחפש התאמה מדויקת קודם, אחר כך הכי ארוכה שמוכלת
+  let best=null,bestLen=0;
+  for(const [k,v] of Object.entries(SUB_CATALOG)){
+    if(key===k)return v;
+    if(key.includes(k)&&k.length>bestLen){best=v;bestLen=k.length;}
+  }
+  return best;
 }
 function subNameAutoFill(name){
   const prev=document.getElementById('subLogoPreview');
