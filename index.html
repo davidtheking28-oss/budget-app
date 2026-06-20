@@ -198,7 +198,7 @@
     .sub-logo.small.has-img img{width:62%;height:62%;}
     #subLogoPreview .sub-logo,#editSubLogoPreview .sub-logo{width:52px;height:52px;border-radius:14px;}
     .sub-name-text{font-size:0.95rem;font-weight:700;}
-    .sub-cat-chip{font-size:0.68rem;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--blue-light);color:var(--blue);margin-top:2px;display:inline-block;}
+    .sub-cat-chip{font-size:0.72rem;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--blue-light);color:var(--blue);margin-top:2px;display:inline-block;}
     .sub-price{text-align:left;}
     .sub-price-amount{font-size:1.2rem;font-weight:800;color:var(--accent);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;letter-spacing:-0.4px;}
     .sub-price-cycle{font-size:0.72rem;color:var(--text3);}
@@ -206,8 +206,8 @@
     .sub-next-label{font-size:0.78rem;color:var(--text2);}
     .sub-next-label.soon-txt{color:var(--yellow);font-weight:700;}
     .sub-btns{display:flex;gap:6px;flex-wrap:wrap;}
-    .soon-tag{position:absolute;top:10px;right:10px;background:var(--yellow);color:white;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:10px;}
-    .overdue-tag{position:absolute;top:10px;right:10px;background:var(--red);color:white;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:10px;}
+    .soon-tag{position:absolute;top:10px;right:10px;background:var(--yellow);color:white;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:10px;}
+    .overdue-tag{position:absolute;top:10px;right:10px;background:var(--red);color:white;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:10px;}
     .btn{min-height:44px;padding:10px 18px;border:none;border-radius:10px;font-size:0.92rem;font-weight:var(--fw-semibold);letter-spacing:var(--track-normal);cursor:pointer;font-family:inherit;transition:background 0.18s,color 0.18s,opacity 0.18s,transform 0.18s,box-shadow 0.18s;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
     .btn:active{transform:scale(0.95);}
     .btn-primary{background:var(--accent);color:white;box-shadow:0 4px 16px rgba(29,78,216,0.28);}
@@ -490,7 +490,7 @@
     .card{box-shadow:0 1px 8px rgba(0,0,0,0.05),0 4px 16px rgba(0,0,0,0.04);}
     .card.income,.card.expense,.card.balance,.card.avg,.card.forecast,.card.fixed-exp,.card.variable-exp,.card.subs-count,.card.subs-monthly,.card.subs-annual{border-top:none;background:var(--surface);}
     .hero-section{background:linear-gradient(165deg,#0f1117 0%,#151a2b 100%);border-radius:22px;padding:22px 20px 20px;margin-bottom:8px;position:relative;}
-    .hero-eyebrow{font-size:0.68rem;color:rgba(255,255,255,0.5);font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;}
+    .hero-eyebrow{font-size:0.72rem;color:rgba(255,255,255,0.5);font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;}
     .hero-balance-label{font-size:0.82rem;color:rgba(255,255,255,0.6);font-weight:500;margin-bottom:2px;}
     .hero-balance-num.deficit{color:var(--red);}
     .hero-balance-num.surplus{color:#86efac;}
@@ -1927,40 +1927,40 @@
 <div id="fabHint" style="display:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 88px);left:50%;transform:translateX(-50%);background:var(--accent);color:white;padding:8px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;white-space:nowrap;z-index:191;box-shadow:0 4px 16px rgba(29,78,216,0.4);animation:fadeInUp 0.4s ease;pointer-events:none;">לחץ כאן להוסיף הוצאה ☝️<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--accent);"></div></div>
 <button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
-<nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md border-t border-slate-100 dark:border-stone-850 shadow-lg px-2 flex justify-between items-center max-w-md mx-auto" aria-label="ניווט ראשי">
+<nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-stone-900/98 border-t border-slate-100 dark:border-stone-850 shadow-lg px-2 flex justify-between items-center max-w-md mx-auto" aria-label="ניווט ראשי">
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('dashboard',this)" id="nav-dashboard" aria-label="ראשי">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
       <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     </div>
-    <span class="nav-label text-[10px] font-semibold">ראשי</span>
+    <span class="nav-label text-[11px] font-semibold">ראשי</span>
   </button>
-  
+
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('transactions',this)" id="nav-transactions" aria-label="הוצאות">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
       <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     </div>
-    <span class="nav-label text-[10px] font-semibold">הוצאות</span>
+    <span class="nav-label text-[11px] font-semibold">הוצאות</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('budget',this)" id="nav-budget" aria-label="תקציב">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
       <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
     </div>
-    <span class="nav-label text-[10px] font-semibold">תקציב</span>
+    <span class="nav-label text-[11px] font-semibold">תקציב</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('analytics',this)" id="nav-analytics" aria-label="ניתוח">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
       <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     </div>
-    <span class="nav-label text-[10px] font-semibold">ניתוח</span>
+    <span class="nav-label text-[11px] font-semibold">ניתוח</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="openSettings()" id="nav-more" aria-label="הגדרות">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
       <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
-    <span class="nav-label text-[10px] font-semibold">הגדרות</span>
+    <span class="nav-label text-[11px] font-semibold">הגדרות</span>
   </button>
 </nav>
 
