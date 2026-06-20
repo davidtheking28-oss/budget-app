@@ -2682,12 +2682,6 @@ function trendHtml(cur,prev,lowerIsBetter){
 }
 function setTrend(id,cur,prev,lowerIsBetter){const el=document.getElementById(id);if(el)el.innerHTML=trendHtml(cur,prev,lowerIsBetter);}
 
-function markSubPaid(id){
-  const s=subscriptions.find(s=>s.id===id);if(!s)return;
-  advanceSubNextDate(s);
-  saveData();renderUpcoming();renderSubscriptions();
-  showToast('✓ '+s.name+' — תאריך הבא עודכן ל-'+s.nextDate);
-}
 function renderUpcoming(){
   const today=new Date();today.setHours(0,0,0,0);
   const limit=new Date(today);limit.setDate(limit.getDate()+30);
@@ -2718,9 +2712,8 @@ function renderUpcoming(){
     const soonTag='';
     const amtColor=item.type==='income'?'var(--green)':'var(--red)';
     const amtSign=item.type==='income'?'+':'';
-    const paidBtn=item.type==='sub'&&item.cycle&&item.cycle!=='monthly'?'<button onclick="event.stopPropagation();markSubPaid('+item.subId+')" style="background:none;border:1px solid var(--border);color:var(--text3);font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:6px;cursor:pointer;font-family:inherit;margin-top:4px;display:inline-block">✓ כבר שולם</button>':'';
     const clickAttr=item.subId?'onclick="editSub('+item.subId+')" style="cursor:pointer"':'';
-    return '<div class="upcoming-item" '+clickAttr+'><div class="upcoming-date-col"><div class="upcoming-day-num">'+dayNum+'</div><div class="upcoming-day-label">'+dayLabel+'</div></div><div class="upcoming-emoji">'+item.logoHtml+'</div><div class="upcoming-info"><div class="upcoming-name">'+soonTag+esc(item.name)+'</div><div class="upcoming-meta">'+item.meta+'</div>'+paidBtn+'</div><div class="upcoming-amount" style="color:'+amtColor+'">'+amtSign+fmt(item.amount)+'</div></div>';
+    return '<div class="upcoming-item" '+clickAttr+'><div class="upcoming-date-col"><div class="upcoming-day-num">'+dayNum+'</div><div class="upcoming-day-label">'+dayLabel+'</div></div><div class="upcoming-emoji">'+item.logoHtml+'</div><div class="upcoming-info"><div class="upcoming-name">'+soonTag+esc(item.name)+'</div><div class="upcoming-meta">'+item.meta+'</div></div><div class="upcoming-amount" style="color:'+amtColor+'">'+amtSign+fmt(item.amount)+'</div></div>';
   }).join('');
 }
 
