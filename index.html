@@ -3862,9 +3862,11 @@ function renderSubscriptions(){
   const sorted=[...subscriptions].sort((a,b)=>(b.active-a.active)||((a.nextDate||'').localeCompare(b.nextDate||'')));
   list.innerHTML=sorted.map(s=>{
     const days=daysUntil(s.nextDate);
-    const soon=s.active&&days!==null&&days<=7&&days>=0;
+    const soonThresh={monthly:7,weekly:3,quarterly:14,annual:30}[s.cycle]||7;
+    const soon=s.active&&days!==null&&days<=soonThresh&&days>=0;
     const over=s.active&&days!==null&&days<0;
-    const nl=!s.nextDate?'לא הוגדר':over?'⚠️ פג לפני '+Math.abs(days)+' ימים':days===0?'★ היום!':soon?'🔔 בעוד '+days+' ימים':'📅 '+s.nextDate;
+    const fmtNextDate=s.nextDate?new Date(s.nextDate).toLocaleDateString('he-IL',{day:'numeric',month:'long',year:days>60?'numeric':undefined}):'';
+    const nl=!s.nextDate?'לא הוגדר':over?'⚠️ פג לפני '+Math.abs(days)+' ימים':days===0?'★ היום!':days<=30?'🔔 בעוד '+days+' ימים':days<=365?'📅 בעוד '+Math.round(days/30)+' חודשים · '+fmtNextDate:'📅 '+fmtNextDate;
     const cycleLen={monthly:30,annual:365,weekly:7,quarterly:91}[s.cycle]||30;
     const daysLeft=days!==null?Math.max(0,days):cycleLen;
     const elapsed=Math.max(0,cycleLen-daysLeft);
