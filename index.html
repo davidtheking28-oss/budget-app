@@ -1838,10 +1838,6 @@
           <button onclick="removePartner()" class="btn btn-outline btn-sm" style="width:100%;color:var(--red);border-color:var(--red)">✕ הסר בן/בת זוג</button>
         </div>
         <button id="addPartnerBtn" onclick="showPartnerRow()" class="btn btn-outline btn-full" style="margin-bottom:4px">+ הוסף בן/בת זוג</button>
-        <div class="settings-row">
-          <div><div class="settings-row-label">יעד חיסכון חודשי</div><div class="settings-row-sub">לחודש</div></div>
-          <input class="settings-input" id="settingSavingsGoal" type="number" inputmode="decimal" placeholder="0" min="0" onfocus="this.select()"/>
-        </div>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">תצוגה</div>
@@ -2505,7 +2501,7 @@ function txHtml(t){
     +'<div class="tx-info">'
       +'<div class="tx-desc">'+(t.recurring?'<span class="recurring-dot"></span> ':'')+esc(t.desc)+'</div>'
       +(t.note?'<div class="tx-note">'+esc(t.note)+'</div>':'')
-      +'<div class="tx-meta">'+txFixedLabel(t)+' · '+heDate(t.date)+'</div>'
+      +'<div class="tx-meta">'+txFixedLabel(t)+'<span> · '+heDate(t.date)+'</span></div>'
     +'</div>'
     +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
     +'<button class="tx-del-btn" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק עסקה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>'
@@ -2522,7 +2518,7 @@ function txSwipeHtml(t){
         +'<div class="tx-info">'
           +'<div class="tx-desc">'+(t.recurring?'<span class="recurring-dot"></span> ':'')+esc(t.desc)+'</div>'
           +(t.note?'<div class="tx-note">'+esc(t.note)+'</div>':'')
-          +'<div class="tx-meta">'+txFixedLabel(t)+' · '+heDate(t.date)+'</div>'
+          +'<div class="tx-meta">'+txFixedLabel(t)+'<span> · '+heDate(t.date)+'</span></div>'
         +'</div>'
         +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
       +'</div>'
@@ -2995,7 +2991,7 @@ function openSettings(){
   document.getElementById('settingName').value        = userSettings.name        || '';
   updateSettingAvatar();
   userSettings.currency = '₪';
-  document.getElementById('settingSavingsGoal').value = userSettings.savingsGoal || '';
+  const _sgEl = document.getElementById('settingSavingsGoal'); if(_sgEl) _sgEl.value = userSettings.savingsGoal || '';
   // Partner row
   const hasPartner = !!userSettings.partnerName;
   document.getElementById('partnerRow').style.display = hasPartner ? '' : 'none';
@@ -3032,7 +3028,7 @@ function saveSettings(){
   userSettings.name        = document.getElementById('settingName').value.trim();
   const partnerInput = document.getElementById('settingPartnerName'); userSettings.partnerName = partnerInput && document.getElementById('partnerRow').style.display!=='none' ? partnerInput.value.trim() : userSettings.partnerName;
   userSettings.currency    = '₪';
-  userSettings.savingsGoal = parseFloat(document.getElementById('settingSavingsGoal').value) || 0;
+  const _sgEl2 = document.getElementById('settingSavingsGoal'); userSettings.savingsGoal = _sgEl2 ? parseFloat(_sgEl2.value)||0 : userSettings.savingsGoal||0;
   userSettings.incomeSources = userSettings.incomeSources.filter(s=>s.name||s.amount);
   saveSettingsData();
   closeSheet('settingsSheet');
