@@ -5350,6 +5350,11 @@ setTimeout(autoCarryRecurring,500);
   if(typeof _rd==='function'){ window.renderDashboard=function(){ var r=_rd.apply(this,arguments); setTimeout(renderDashCharts,0); return r; }; }
   document.addEventListener('DOMContentLoaded', function(){ setTimeout(renderDashCharts, 450); });
 
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
+  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});
+  document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {passive:false});
+  document.addEventListener('touchmove', function(e){ if(e.touches.length>1) e.preventDefault(); }, {passive:false});
+
   /* ----- PDF / print monthly summary ----- */
   window.exportMonthlyPDF=function(){
     try{
