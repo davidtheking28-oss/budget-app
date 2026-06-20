@@ -5603,5 +5603,65 @@ setTimeout(autoCarryRecurring,500);
   };
 })();
 </script>
+
+<!-- ════ Auto-lock overlay ════ -->
+<div id="autoLockOverlay" onclick="unlockApp()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,12,22,0.97);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:20px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);">
+  <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">🔒</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+    <div style="font-size:1.15rem;font-weight:800;color:#f0ebe3;font-family:Assistant,sans-serif;letter-spacing:0;">תקציב אישי</div>
+    <div style="font-size:0.82rem;color:rgba(240,235,227,0.45);font-family:Assistant,sans-serif;">הקש להמשיך</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var IDLE_MS = 15 * 60 * 1000;
+  var BG_MS   =  2 * 60 * 1000;
+  var _timer = null, _hiddenAt = null, _locked = false;
+
+  function getEl(){ return document.getElementById('autoLockOverlay'); }
+
+  function lock(){
+    if(_locked) return;
+    _locked = true;
+    clearTimeout(_timer);
+    var el = getEl(); if(!el) return;
+    el.style.opacity = '0';
+    el.style.display = 'flex';
+    el.style.transition = 'opacity 0.4s';
+    requestAnimationFrame(function(){ el.style.opacity = '1'; });
+  }
+
+  window.unlockApp = function(){
+    if(!_locked) return;
+    var el = getEl(); if(!el) return;
+    el.style.transition = 'opacity 0.25s';
+    el.style.opacity = '0';
+    setTimeout(function(){ el.style.display = 'none'; el.style.transition = ''; _locked = false; resetTimer(); }, 260);
+  };
+
+  function resetTimer(){
+    clearTimeout(_timer);
+    _timer = setTimeout(lock, IDLE_MS);
+  }
+
+  ['touchstart','touchend','mousedown','keydown','scroll'].forEach(function(ev){
+    document.addEventListener(ev, function(){ if(!_locked) resetTimer(); }, {passive:true});
+  });
+
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){
+      _hiddenAt = Date.now();
+      clearTimeout(_timer);
+    } else {
+      if(_hiddenAt && Date.now() - _hiddenAt >= BG_MS) lock();
+      else resetTimer();
+      _hiddenAt = null;
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', resetTimer);
+})();
+</script>
 </body>
 </html>
