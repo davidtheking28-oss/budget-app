@@ -1489,15 +1489,16 @@
   </button>
   <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(1)" aria-label="חודש הבא" data-month-arrow><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="15 18 9 12 15 6"/></svg></button>
 </div>
-<div id="modeSwitcher">
-  <div class="mode-pill">
-    <button class="mode-btn active" data-mode="personal" onclick="switchMode('personal')">🏠 פרטי</button>
-    <button class="mode-btn" data-mode="business" onclick="switchMode('business')">💼 עסקי</button>
-  </div>
-</div>
 
 <main id="main-content">
   <div id="page-dashboard" class="page active">
+    <!-- Mode switcher -->
+    <div id="modeSwitcher" style="display:none;justify-content:center;margin:0 0 14px;">
+      <div class="mode-pill">
+        <button class="mode-btn active" data-mode="personal" onclick="switchMode('personal')">🏠 פרטי</button>
+        <button class="mode-btn" data-mode="business" onclick="switchMode('business')">💼 עסקי</button>
+      </div>
+    </div>
     <!-- Greeting (prominent) -->
     <div id="heroEyebrow" style="margin:2px 2px 16px;line-height:1.15;">
       <div id="heroGreetName" style="font-family:var(--font-sans);font-size:1.55rem;font-weight:800;color:var(--text);letter-spacing:-0.01em;">טוען...</div>
