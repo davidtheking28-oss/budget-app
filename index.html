@@ -209,12 +209,15 @@
     .btn:active{transform:scale(0.95);}
     .btn-primary{background:var(--accent);color:white;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.28);}
     .btn-primary:active{opacity:0.88;box-shadow:none;}
+    .btn:disabled,.btn[disabled]{opacity:0.45;pointer-events:none;cursor:not-allowed;}
     .btn-success{background:var(--green);color:white;}
     .btn-danger{background:transparent;border:1.5px solid var(--red);color:var(--red);min-height:40px;padding:7px 14px;font-size:0.78rem;border-radius:8px;}
     .btn-danger:active{background:var(--red-light);}
     .btn-outline{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);min-height:38px;padding:8px 14px;font-size:0.82rem;}
     .btn-sm{min-height:40px;padding:7px 14px;font-size:0.78rem;border-radius:8px;}
     .btn-teal{background:var(--teal);color:white;}
+    @media(hover:none){button:hover{transform:none!important;}}
+    .shortcut-btn:active{transform:scale(0.93)!important;transition:transform 0.12s cubic-bezier(0.22,1,0.36,1);}
     .btn-full{width:100%;}
     .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:flex-end;}
     .sheet-overlay.open{display:flex;animation:overlayIn 0.22s ease;}
@@ -513,10 +516,10 @@
     .metric-val.red{color:var(--red);}
     .metric-val.blue{color:var(--blue);}
     .metric-val.purple{color:var(--purple);}
-    .metric-label{font-size:0.6rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
-    .metric-trend-txt{font-size:0.61rem;font-weight:700;margin-top:2px;min-height:14px;}
-    .metric-trend-txt .card-trend{font-size:0.61rem;}
-    .budget-avail-label{font-size:0.67rem;color:var(--text3);font-weight:600;margin-top:2px;font-family:var(--font-num);white-space:nowrap;}
+    .metric-label{font-size:0.68rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
+    .metric-trend-txt{font-size:0.68rem;font-weight:700;margin-top:2px;min-height:14px;}
+    .metric-trend-txt .card-trend{font-size:0.68rem;}
+    .budget-avail-label{font-size:0.72rem;color:var(--text3);font-weight:600;margin-top:2px;font-family:var(--font-num);white-space:nowrap;}
     .budget-avail-num{font-size:1.1rem;font-weight:800;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;letter-spacing:var(--track-num);line-height:1.1;}
     .budget-avail-num.ok{color:var(--green);}
     .budget-avail-num.warn{color:var(--yellow);}
@@ -1517,15 +1520,15 @@
 
     <!-- Feature shortcuts -->
     <div class="grid grid-cols-3 gap-2 mb-4">
-      <button class="bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-all hover:-translate-y-0.5" onclick="showPage('goals')">
+      <button class="shortcut-btn bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-colors" onclick="showPage('goals')">
         <span class="text-lg leading-none">🎯</span>
         <span>יעדים</span>
       </button>
-      <button class="bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-all hover:-translate-y-0.5" onclick="showPage('subscriptions')">
+      <button class="shortcut-btn bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-colors" onclick="showPage('subscriptions')">
         <span class="text-lg leading-none">🔄</span>
         <span>מנויים</span>
       </button>
-      <button class="bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-all hover:-translate-y-0.5" onclick="showPage('loans')">
+      <button class="shortcut-btn bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-colors" onclick="showPage('loans')">
         <span class="text-lg leading-none">🏦</span>
         <span>הלוואות</span>
       </button>
@@ -1921,7 +1924,7 @@
   </div>
 </div>
 
-<div id="fabHint" style="display:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 88px);left:50%;transform:translateX(-50%);background:var(--accent);color:white;padding:8px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;white-space:nowrap;z-index:191;box-shadow:0 4px 16px rgba(29,78,216,0.4);animation:fadeInUp 0.4s ease;pointer-events:none;">לחץ כאן להוסיף הוצאה ☝️<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--accent);"></div></div>
+<div id="fabHint" style="display:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 88px);left:50%;transform:translateX(-50%);background:var(--accent);color:white;padding:8px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;white-space:nowrap;z-index:191;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.4);animation:fadeInUp 0.4s ease;pointer-events:none;">לחץ כאן להוסיף הוצאה ☝️<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--accent);"></div></div>
 <button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
 <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-stone-900/98 border-t border-slate-100 dark:border-stone-850 shadow-lg px-2 flex justify-between items-center max-w-md mx-auto" aria-label="ניווט ראשי">
@@ -3616,7 +3619,8 @@ function setBudget(){
   if(!limit||limit<=0){showToast('₪ הזן גבול הוצאה לקטגוריה');return;}
   budgets[cat]=limit;saveData();
   document.getElementById('budgetLimit').value='';
-  closeSheet('addBudgetSheet');showToast('✓ התקציב נשמר בהצלחה');renderBudget();
+  const _bb=document.querySelector('#addBudgetSheet .btn-primary');if(_bb){_bb.textContent='✓';_bb.disabled=true;}
+  setTimeout(()=>{closeSheet('addBudgetSheet');showToast('✓ התקציב נשמר בהצלחה');renderBudget();},220);
 }
 function deleteBudget(cat){delete budgets[cat];saveData();renderBudget();}
 function budgetBarColorClass(pct){
@@ -3681,7 +3685,8 @@ function addGoal(){
   if(!target||target<=0){showToast('₪ כמה רוצים לחסוך? הזן סכום');return;}
   goals.push({id:Date.now(),name,target,months,saved:0});saveData();
   document.getElementById('goalName').value='';document.getElementById('goalTarget').value='';document.getElementById('goalMonths').value='';
-  closeSheet('addGoalSheet');showToast('🎯 יעד חדש נוצר!');renderGoals();
+  const _gb=document.querySelector('#addGoalSheet .btn-primary');if(_gb){_gb.textContent='✓';_gb.disabled=true;}
+  setTimeout(()=>{closeSheet('addGoalSheet');showToast('🎯 יעד חדש נוצר!');renderGoals();},220);
 }
 function deleteGoal(id){const backup=goals.find(g=>g.id===id);const idx=goals.findIndex(g=>g.id===id);goals=goals.filter(g=>g.id!==id);saveData();renderGoals();showUndoToast('🗑️ יעד נמחק',()=>{goals.splice(idx,0,backup);saveData();renderGoals();},()=>{});}
 let _addToGoalId=null;
@@ -3876,7 +3881,8 @@ function addSubscription(){
   saveData();
   document.getElementById('subName').value='';document.getElementById('subAmount').value='';
   const prev=document.getElementById('subLogoPreview');if(prev)prev.innerHTML='';
-  closeSheet('addSubSheet');showToast('✓ המנוי נוסף!');renderSubscriptions();
+  const _sb2=document.querySelector('#addSubSheet .btn-primary');if(_sb2){_sb2.textContent='✓';_sb2.disabled=true;}
+  setTimeout(()=>{closeSheet('addSubSheet');showToast('✓ המנוי נוסף!');renderSubscriptions();},220);
 }
 function deleteSub(id){
   const s=subscriptions.find(sub=>sub.id===id);if(!s)return;
@@ -4118,10 +4124,9 @@ function saveLoan(){
   };
   loans.push(loan);
   localStorage.setItem('budget_loans',JSON.stringify(loans));
-  closeSheet('addLoanSheet');
   ['loanName','loanLender','loanOriginal','loanRemaining','loanMonthly','loanRate','loanMonthsLeft','loanNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  renderLoans();
-  showToast('📉 הלוואה נוספה');
+  const _lb=document.querySelector('#addLoanSheet .btn-primary');if(_lb){_lb.textContent='✓';_lb.disabled=true;}
+  setTimeout(()=>{closeSheet('addLoanSheet');renderLoans();showToast('📉 הלוואה נוספה');},220);
 }
 function deleteLoan(id){
   loans=loans.filter(l=>l.id!==id);
