@@ -111,7 +111,7 @@
     .card.fixed-exp .card-amount{color:var(--blue);}
     .card.variable-exp .card-amount{color:var(--purple);}
     .card-sub{font-size:0.72rem;color:var(--text3);margin-top:3px;}
-    .tx-tag{display:inline-flex;align-items:center;gap:3px;font-size:0.68rem;font-weight:700;padding:1px 6px;border-radius:6px;}
+    .tx-tag{display:inline-flex;align-items:center;gap:3px;font-size:0.68rem;font-weight:700;padding:1px 6px;border-radius:6px;white-space:nowrap;flex-shrink:0;}
     .tx-tag.fixed{background:var(--blue-light);color:var(--blue);}
     .tx-tag.variable{background:var(--surface2);color:var(--text3);}
     body.dark .tx-tag.variable{background:rgba(255,255,255,0.07);color:var(--text2);}
@@ -138,7 +138,7 @@
     .tx-icon.cat-amber{background:rgba(245,158,11,0.11);border:1.5px solid rgba(245,158,11,0.18);}
     .tx-info{flex:1;min-width:0;}
     .tx-desc{font-size:0.88rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-sans);}
-    .tx-meta{font-size:0.72rem;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:5px;}
+    .tx-meta{font-size:0.72rem;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;row-gap:2px;}
     .tx-note{font-size:0.72rem;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .tx-amount{font-size:0.95rem;font-weight:800;flex-shrink:0;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;letter-spacing:-0.3px;}
     .tx-amount.income-amt{color:var(--green);}
