@@ -137,7 +137,8 @@
     .tx-icon.cat-red{background:rgba(220,38,38,0.11);border:1.5px solid rgba(220,38,38,0.18);}
     .tx-icon.cat-amber{background:rgba(245,158,11,0.11);border:1.5px solid rgba(245,158,11,0.18);}
     .tx-info{flex:1;min-width:0;}
-    .tx-desc{font-size:0.88rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-sans);}
+    .tx-desc{font-size:0.88rem;font-weight:600;color:var(--text);font-family:var(--font-sans);display:flex;align-items:center;gap:5px;overflow:hidden;}
+    .tx-desc-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .tx-meta{font-size:0.72rem;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;row-gap:2px;}
     .tx-note{font-size:0.72rem;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .tx-amount{font-size:0.95rem;font-weight:800;flex-shrink:0;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;letter-spacing:-0.3px;}
@@ -2653,9 +2654,8 @@ function txHtml(t){
   return '<div class="tx-item" data-txid="'+t.id+'" onclick="editTx('+t.id+')">'
     +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+emoji+'</div>'
     +'<div class="tx-info">'
-      +'<div class="tx-desc">'+(t.recurring?'<span class="recurring-dot"></span> ':'')+esc(t.desc)+'</div>'
+      +'<div class="tx-desc">'+(t.recurring?'<span class="recurring-dot"></span>':'')+'<span class="tx-desc-name">'+esc(t.desc)+'</span>'+txFixedLabel(t)+'</div>'
       +(t.note?'<div class="tx-note">'+esc(t.note)+'</div>':'')
-      +'<div class="tx-meta">'+txFixedLabel(t)+'</div>'
     +'</div>'
     +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
     +'<button class="tx-del-btn" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק עסקה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>'
@@ -2670,9 +2670,8 @@ function txSwipeHtml(t){
       +'<div class="tx-item" data-txid="'+t.id+'" onclick="swipeTap(this,'+t.id+')">'
         +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+emoji+'</div>'
         +'<div class="tx-info">'
-          +'<div class="tx-desc">'+(t.recurring?'<span class="recurring-dot"></span> ':'')+esc(t.desc)+'</div>'
+          +'<div class="tx-desc">'+(t.recurring?'<span class="recurring-dot"></span>':'')+'<span class="tx-desc-name">'+esc(t.desc)+'</span>'+txFixedLabel(t)+'</div>'
           +(t.note?'<div class="tx-note">'+esc(t.note)+'</div>':'')
-          +'<div class="tx-meta">'+txFixedLabel(t)+'</div>'
         +'</div>'
         +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
       +'</div>'
