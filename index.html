@@ -1205,7 +1205,7 @@
 
 <div class="search-overlay" id="searchOverlay">
   <div class="search-bar-row">
-    <input type="text" class="search-bar-input" id="globalSearchInput" placeholder="חיפוש עסקאות ומנויים..." oninput="doSearch(this.value)" autofocus  onfocus="this.select()"/>
+    <input type="text" class="search-bar-input" id="globalSearchInput" placeholder="חיפוש עסקאות ומנויים..." oninput="doSearch(this.value)" autofocus onfocus="this.select()" aria-label="חיפוש עסקאות ומנויים"/>
     <button class="btn btn-outline btn-sm" onclick="closeSearch()">סגור</button>
   </div>
   <div class="search-results" id="searchResultsList"></div>
@@ -1233,12 +1233,12 @@
         <button class="wiz-next-btn" id="wizNextBtn" onclick="wizNext()" aria-label="הבא">›</button>
       </div>
       <div class="wiz-pill-outer" id="wizPillOuter">
-        <input type="text" id="txDesc" class="wiz-pill" placeholder="קפה, סופר, דלק..." oninput="wizDescNlp(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();wizNext();}" onfocus="this.select()"/>
+        <input type="text" id="txDesc" class="wiz-pill" placeholder="קפה, סופר, דלק..." oninput="wizDescNlp(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();wizNext();}" onfocus="this.select()" aria-label="תיאור הוצאה"/>
         <button class="wiz-next-inline" onclick="wizNext()">הבא</button>
       </div>
     </div>
     <div class="nlp-hint" id="nlpHint"></div>
-    <input type="date" id="txDate" onchange="wizUpdateDate()" style="display:none;"/>
+    <input type="date" id="txDate" onchange="wizUpdateDate()" style="display:none;" aria-label="תאריך עסקה"/>
     <div class="wiz-body" id="wizBody1">
       <div id="wizSuggestBar" style="display:none;margin:0 0 10px;background:var(--accent);border-radius:12px;padding:10px 14px;cursor:pointer;" onclick="wizAcceptSuggest()">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
@@ -1634,7 +1634,7 @@
         <button class="filter-chip" data-filter="fixed" onclick="setTxFilter('fixed',this)">קבועות</button>
         <button class="filter-chip" data-filter="variable" onclick="setTxFilter('variable',this)">משתנות</button>
       </div>
-      <input type="search" class="search-input" id="txSearch" placeholder="חפש בעסקאות..." oninput="renderTxPage()"  onfocus="this.select()"/>
+      <input type="search" class="search-input" id="txSearch" placeholder="חפש בעסקאות..." oninput="renderTxPage()" onfocus="this.select()" aria-label="חיפוש בעסקאות"/>
       <div style="display:flex;gap:10px;padding:0 16px 10px;">
         <div style="flex:1;background:var(--red-light);border-radius:12px;padding:8px 12px;text-align:center">
           <div style="font-size:0.68rem;color:var(--red);font-weight:700">הוצאות בתקופה</div>
@@ -1649,9 +1649,9 @@
       </div>
       <div style="display:flex;gap:8px;padding:0 16px 8px;align-items:center;">
         <span style="font-size:0.72rem;color:var(--text3);font-weight:600;flex-shrink:0;">מתאריך:</span>
-        <input type="date" id="txFromDate" onchange="renderTxPage()" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
+        <input type="date" id="txFromDate" onchange="renderTxPage()" aria-label="מתאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
         <span style="font-size:0.72rem;color:var(--text3);font-weight:600;flex-shrink:0;">עד:</span>
-        <input type="date" id="txToDate" onchange="renderTxPage()" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
+        <input type="date" id="txToDate" onchange="renderTxPage()" aria-label="עד תאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
         <button onclick="clearDateFilter()" aria-label="נקה סינון תאריכים" style="background:none;border:none;color:var(--text3);font-size:0.75rem;cursor:pointer;padding:4px;min-width:44px;min-height:44px;">✕</button>
       </div>
       <div class="section-body" style="padding-top:4px">
@@ -1823,13 +1823,13 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title">✏️ עריכת עסקה</div>
     <div class="form-stack">
-      <div class="form-field"><label>תיאור</label><input type="text" id="editTxDesc" placeholder="לדוגמה: קפה, חשמל, סופר" onfocus="this.select()"/></div>
-      <div class="form-field"><label>הערה</label><input type="text" id="editTxNote" placeholder="פירוט נוסף (אופציונלי)" onfocus="this.select()"/></div>
+      <div class="form-field"><label for="editTxDesc">תיאור</label><input type="text" id="editTxDesc" placeholder="לדוגמה: קפה, חשמל, סופר" onfocus="this.select()"/></div>
+      <div class="form-field"><label for="editTxNote">הערה</label><input type="text" id="editTxNote" placeholder="פירוט נוסף (אופציונלי)" onfocus="this.select()"/></div>
       <div class="form-row">
-        <div class="form-field"><label>סכום (₪)</label><input type="number" id="editTxAmount" min="0" step="0.01" inputmode="decimal" onfocus="this.select()"/></div>
-        <div class="form-field"><label>תאריך</label><input type="date" id="editTxDate"/></div>
+        <div class="form-field"><label for="editTxAmount">סכום (₪)</label><input type="number" id="editTxAmount" min="0" step="0.01" inputmode="decimal" onfocus="this.select()"/></div>
+        <div class="form-field"><label for="editTxDate">תאריך</label><input type="date" id="editTxDate"/></div>
       </div>
-      <div class="form-field"><label>קטגוריה</label><select id="editTxCat"></select></div>
+      <div class="form-field"><label for="editTxCat">קטגוריה</label><select id="editTxCat"></select></div>
       <div style="padding:4px 2px">
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem;color:var(--text2);font-weight:600;padding:10px 12px;background:var(--surface2);border-radius:10px;border:1.5px solid var(--border)">
           <input type="checkbox" id="editTxRecurring" style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0" onchange="document.getElementById('editTxFixed').checked=this.checked">
@@ -1878,7 +1878,7 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title">📲 ייבוא מ-SMS</div>
     <div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הדבק הודעות SMS מהבנק. הסכומים יזוהו אוטומטית</div>
-    <textarea id="smsTextInput" placeholder="לדוגמה:&#10;עסקת חיוב בגובה 145.50 ₪ בKFC&#10;נרשמה עסקה בסך 89 ₪ ברשת שופרסל" style="width:100%;height:120px;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;resize:none;box-sizing:border-box;direction:rtl;margin-bottom:10px;"></textarea>
+    <textarea id="smsTextInput" aria-label="הדבק כאן הודעת SMS מהבנק" placeholder="לדוגמה:&#10;עסקת חיוב בגובה 145.50 ₪ בKFC&#10;נרשמה עסקה בסך 89 ₪ ברשת שופרסל" style="width:100%;height:120px;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;resize:none;box-sizing:border-box;direction:rtl;margin-bottom:10px;"></textarea>
     <button class="btn btn-primary btn-full" onclick="parseSmsText()" style="margin-bottom:12px">🔍 נתח הודעות</button>
     <div id="smsParsedList"></div>
     <div id="smsImportActions" style="display:none">
@@ -1900,7 +1900,7 @@
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
           <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingAvatar">?</div>
           <div style="flex:1;min-width:0;">
-            <input id="settingName" type="text" placeholder="הכנס שם..." onfocus="this.select()" oninput="updateSettingAvatar()"
+            <input id="settingName" type="text" placeholder="הכנס שם..." aria-label="שם" onfocus="this.select()" oninput="updateSettingAvatar()"
               style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
             <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
           </div>
@@ -1909,7 +1909,7 @@
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
             <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f43f5e);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingPartnerAvatar">?</div>
             <div style="flex:1;min-width:0;">
-              <input id="settingPartnerName" type="text" placeholder="שם בן/בת הזוג..." onfocus="this.select()" oninput="updateSettingAvatar()"
+              <input id="settingPartnerName" type="text" placeholder="שם בן/בת הזוג..." aria-label="שם בן/בת זוג" onfocus="this.select()" oninput="updateSettingAvatar()"
                 style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
               <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
             </div>
@@ -2995,11 +2995,11 @@ function renderCloudSection(){
       +'<button class="btn btn-outline btn-sm" onclick="cloudSignOut()" style="width:100%;color:var(--text3)">התנתק</button>';
   } else {
     el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הזן אימייל וקבל קוד. הנתונים יגובו ויהיו זמינים בכל מכשיר</div>'
-      +'<input id="cloudEmailInput" type="email" placeholder="האימייל שלך" inputmode="email" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px"/>'
+      +'<input id="cloudEmailInput" type="email" placeholder="האימייל שלך" aria-label="כתובת אימייל" inputmode="email" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px"/>'
       +'<button id="cloudSignInBtn" class="btn btn-primary btn-full" onclick="cloudSignIn()">שלח קוד אימות</button>'
       +'<div id="cloudOtpRow" style="display:none;margin-top:10px">'
       +'<div style="font-size:0.78rem;color:var(--text3);margin-bottom:6px">הזן את הקוד שקיבלת באימייל:</div>'
-      +'<input id="cloudOtpInput" type="text" inputmode="numeric" maxlength="6" placeholder="• • • • • •" style="width:100%;border:1.5px solid var(--accent);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1.2rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:6px"/>'
+      +'<input id="cloudOtpInput" type="text" inputmode="numeric" maxlength="6" placeholder="• • • • • •" aria-label="קוד אימות" style="width:100%;border:1.5px solid var(--accent);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1.2rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:6px"/>'
       +'<button class="btn btn-primary btn-full" onclick="cloudVerifyOtp()">אמת וגבה</button></div>';
   }
 }
