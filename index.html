@@ -675,19 +675,22 @@
     .splash-sub{font-size:0.8rem;color:var(--text3);}
     @keyframes splashPulse{from{opacity:0.7;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
     /* ── Auth screen ─────────────────────────── */
-    #authScreen{position:fixed;inset:0;z-index:8000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);transition:opacity 0.35s ease,visibility 0.35s ease;overflow-y:auto;}
+    #authScreen{position:fixed;inset:0;z-index:8000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);transition:opacity 0.35s ease,visibility 0.35s ease;overflow-y:auto;}
     #authScreen.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-    .auth-inner{width:100%;max-width:400px;padding:32px 24px;display:flex;flex-direction:column;}
+    @keyframes authSlideUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+    .auth-inner{width:100%;max-width:400px;padding:24px 24px 32px;display:flex;flex-direction:column;margin-top:max(8vh,48px);animation:authSlideUp 0.48s cubic-bezier(0.16,1,0.3,1) both;}
     .auth-brand{text-align:center;margin-bottom:28px;}
-    .auth-brand-logo{font-size:3rem;font-weight:800;color:var(--accent);font-family:var(--font-num);letter-spacing:-2px;line-height:1;margin-bottom:6px;}
-    .auth-brand-name{font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-0.5px;margin-bottom:4px;}
-    .auth-brand-tag{font-size:0.82rem;color:var(--text3);line-height:1.5;}
+    .auth-brand-icon{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,rgba(var(--accent-rgb),0.18),rgba(var(--accent-rgb),0.06));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:1.5px solid rgba(var(--accent-rgb),0.2);}
+    .auth-brand-logo{font-size:2rem;font-weight:800;color:var(--accent);font-family:var(--font-num);letter-spacing:-1px;line-height:1;}
+    .auth-brand-name{font-size:1.5rem;font-weight:800;color:var(--text);letter-spacing:-0.5px;margin-bottom:4px;}
+    .auth-brand-tag{font-size:0.84rem;color:var(--text3);line-height:1.5;}
     .auth-badge-row{display:flex;justify-content:center;gap:6px;margin-top:14px;flex-wrap:wrap;}
     .auth-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(var(--accent-rgb),0.09);color:var(--accent);font-size:0.68rem;font-weight:700;padding:4px 10px;border-radius:20px;}
     .auth-label{font-size:0.78rem;font-weight:700;color:var(--text2);margin-bottom:5px;display:block;}
     .auth-input{border:1.5px solid var(--border);background:var(--surface);border-radius:12px;padding:14px 16px;font-size:1rem;font-family:inherit;color:var(--text);outline:none;transition:border-color 0.15s,box-shadow 0.15s;width:100%;box-sizing:border-box;-webkit-appearance:none;}
     .auth-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),0.12);}
     body.dark .auth-input{background:var(--surface2);}
+    #authEmail{direction:ltr;text-align:left;}
     .auth-otp-wrap{overflow:hidden;max-height:0;opacity:0;transition:max-height 0.38s cubic-bezier(0.16,1,0.3,1),opacity 0.28s;margin-bottom:0;}
     .auth-otp-wrap.open{max-height:180px;opacity:1;margin-bottom:12px;}
     .auth-otp-hint{font-size:0.78rem;color:var(--green);font-weight:600;margin-bottom:10px;padding:8px 12px;background:rgba(16,185,129,0.08);border-radius:8px;line-height:1.5;}
@@ -1144,7 +1147,7 @@
 <div id="authScreen" class="hidden" role="main" aria-label="כניסה לאפליקציה">
   <div class="auth-inner">
     <div class="auth-brand">
-      <div class="auth-brand-logo">₪</div>
+      <div class="auth-brand-icon"><div class="auth-brand-logo">₪</div></div>
       <div class="auth-brand-name">תקציב אישי</div>
       <div class="auth-brand-tag">ניהול חכם של הכסף המשפחתי</div>
       <div class="auth-badge-row">
