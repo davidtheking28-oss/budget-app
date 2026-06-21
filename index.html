@@ -681,14 +681,24 @@
     #authScreen{position:fixed;inset:0;z-index:8000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);transition:opacity 0.35s ease,visibility 0.35s ease;overflow-y:auto;}
     #authScreen.hidden{opacity:0;visibility:hidden;pointer-events:none;}
     @keyframes authSlideUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
-    .auth-inner{width:100%;max-width:400px;padding:24px 24px 32px;display:flex;flex-direction:column;margin-top:max(8vh,48px);animation:authSlideUp 0.48s cubic-bezier(0.16,1,0.3,1) both;}
-    .auth-brand{text-align:center;margin-bottom:28px;}
-    .auth-brand-icon{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,rgba(var(--accent-rgb),0.18),rgba(var(--accent-rgb),0.06));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:1.5px solid rgba(var(--accent-rgb),0.2);}
-    .auth-brand-logo{font-size:2rem;font-weight:800;color:var(--accent);font-family:var(--font-num);letter-spacing:-1px;line-height:1;}
-    .auth-brand-name{font-size:1.5rem;font-weight:800;color:var(--text);letter-spacing:-0.5px;margin-bottom:4px;}
-    .auth-brand-tag{font-size:0.84rem;color:var(--text3);line-height:1.5;}
-    .auth-badge-row{display:flex;justify-content:center;gap:6px;margin-top:14px;flex-wrap:wrap;}
-    .auth-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(var(--accent-rgb),0.09);color:var(--accent);font-size:0.68rem;font-weight:700;padding:4px 10px;border-radius:20px;}
+    .auth-inner{width:100%;max-width:400px;padding:0 24px 40px;display:flex;flex-direction:column;min-height:100dvh;animation:authSlideUp 0.48s cubic-bezier(0.16,1,0.3,1) both;}
+    .auth-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:max(10vh,56px) 0 36px;min-height:44vh;}
+    .auth-app-icon{width:88px;height:88px;border-radius:22px;background:linear-gradient(145deg,#0f2654,#0a1a3e);border:1.5px solid rgba(var(--accent-rgb),0.28);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 32px rgba(0,0,0,0.32),0 0 0 1px rgba(255,255,255,0.05);}
+    .auth-app-icon-sym{font-size:2.6rem;font-weight:900;color:var(--accent);font-family:var(--font-num);letter-spacing:-2px;line-height:1;}
+    .auth-app-name{font-size:1.8rem;font-weight:800;color:var(--text);letter-spacing:-0.8px;margin-bottom:6px;}
+    .auth-app-sub{font-size:0.88rem;color:var(--text3);line-height:1.55;margin-bottom:32px;max-width:240px;}
+    .auth-features{display:flex;flex-direction:column;gap:11px;width:100%;max-width:290px;}
+    .auth-feature-item{display:flex;align-items:center;gap:12px;text-align:right;}
+    .auth-feature-icon{width:34px;height:34px;border-radius:10px;background:rgba(var(--accent-rgb),0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.95rem;}
+    .auth-feature-text{font-size:0.82rem;color:var(--text2);font-weight:500;line-height:1.35;}
+    .auth-cta-section{display:flex;flex-direction:column;gap:12px;padding-top:4px;}
+    .auth-apple-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;background:#fff;color:#000;border:none;border-radius:14px;font-size:0.97rem;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity 0.15s,transform 0.1s;letter-spacing:0.1px;}
+    body.dark .auth-apple-btn{background:#f5f5f7;}
+    .auth-apple-btn:active{opacity:0.82;transform:scale(0.98);}
+    .auth-email-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;background:transparent;color:var(--text);border:1.5px solid var(--border);border-radius:14px;font-size:0.97rem;font-weight:600;font-family:inherit;cursor:pointer;transition:border-color 0.15s,background 0.15s,transform 0.1s;}
+    .auth-email-btn:hover{border-color:rgba(var(--accent-rgb),0.5);background:rgba(var(--accent-rgb),0.04);}
+    .auth-email-btn:active{transform:scale(0.98);}
+    .auth-back-btn{display:flex;align-items:center;gap:5px;background:none;border:none;color:var(--accent);font-size:0.88rem;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 0;margin-bottom:8px;align-self:flex-start;}
     .auth-label{font-size:0.78rem;font-weight:700;color:var(--text2);margin-bottom:5px;display:block;}
     .auth-input{border:1.5px solid var(--border);background:var(--surface);border-radius:12px;padding:14px 16px;font-size:1rem;font-family:inherit;color:var(--text);outline:none;transition:border-color 0.15s,box-shadow 0.15s;width:100%;box-sizing:border-box;-webkit-appearance:none;}
     .auth-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),0.12);}
@@ -698,12 +708,12 @@
     .auth-otp-wrap.open{max-height:180px;opacity:1;margin-bottom:12px;}
     .auth-otp-hint{font-size:0.78rem;color:var(--green);font-weight:600;margin-bottom:10px;padding:8px 12px;background:rgba(16,185,129,0.08);border-radius:8px;line-height:1.5;}
     .auth-otp-input{text-align:center;letter-spacing:8px;font-size:1.5rem;font-family:var(--font-num);font-weight:700;}
-    .auth-sep{display:flex;align-items:center;gap:10px;margin:6px 0;}
+    .auth-sep{display:flex;align-items:center;gap:10px;margin:2px 0;}
     .auth-sep::before,.auth-sep::after{content:'';flex:1;height:1px;background:var(--border);}
     .auth-sep span{font-size:0.72rem;color:var(--text3);font-weight:600;}
-    .auth-skip-btn{background:none;border:none;color:var(--text3);font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;padding:10px;width:100%;text-align:center;transition:color 0.15s;}
+    .auth-skip-btn{background:none;border:none;color:var(--text3);font-size:0.82rem;font-weight:500;cursor:pointer;font-family:inherit;padding:8px;width:100%;text-align:center;transition:color 0.15s;}
     .auth-skip-btn:active{color:var(--text2);}
-    .auth-footer-note{text-align:center;font-size:0.65rem;color:var(--text3);line-height:1.7;margin-top:20px;}
+    .auth-footer-note{text-align:center;font-size:0.62rem;color:var(--text3);line-height:1.7;margin-top:4px;opacity:0.7;}
     /* ── Demo banner ─────────────────────────── */
     #demoBanner{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:250;background:var(--accent);color:white;text-align:center;font-size:0.78rem;font-weight:700;padding:6px 12px;display:none;align-items:center;justify-content:center;gap:8px;}
     #demoBanner button{background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;}
@@ -1149,17 +1159,46 @@
 </div>
 <div id="authScreen" class="hidden" role="main" aria-label="כניסה לאפליקציה">
   <div class="auth-inner">
-    <div class="auth-brand">
-      <div class="auth-brand-icon"><div class="auth-brand-logo">₪</div></div>
-      <div class="auth-brand-name">תקציב אישי</div>
-      <div class="auth-brand-tag">ניהול חכם של הכסף המשפחתי</div>
-      <div class="auth-badge-row">
-        <span class="auth-badge">☁️ סנכרון ענן</span>
-        <span class="auth-badge">🔒 מאובטח</span>
-        <span class="auth-badge">📱 כל מכשיר</span>
+    <!-- Hero -->
+    <div class="auth-hero">
+      <div class="auth-app-icon"><div class="auth-app-icon-sym">₪</div></div>
+      <div class="auth-app-name">תקציב אישי</div>
+      <div class="auth-app-sub">ניהול חכם של הכסף המשפחתי</div>
+      <div class="auth-features">
+        <div class="auth-feature-item">
+          <div class="auth-feature-icon">☁️</div>
+          <div class="auth-feature-text">סנכרון בין כל המכשירים שלך</div>
+        </div>
+        <div class="auth-feature-item">
+          <div class="auth-feature-icon">🔒</div>
+          <div class="auth-feature-text">מאובטח עם הצפנה מקצה לקצה</div>
+        </div>
+        <div class="auth-feature-item">
+          <div class="auth-feature-icon">📊</div>
+          <div class="auth-feature-text">תובנות חכמות על ההוצאות שלך</div>
+        </div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px;">
+    <!-- Landing step -->
+    <div id="authStepLanding" class="auth-cta-section">
+      <button class="auth-apple-btn" onclick="authApple()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.54 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/></svg>
+        המשך עם אפל
+      </button>
+      <div class="auth-sep"><span>או</span></div>
+      <button class="auth-email-btn" onclick="authShowEmailStep()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        המשך עם אימייל
+      </button>
+      <button class="auth-skip-btn" onclick="authSkip()">המשך ללא חשבון</button>
+      <div class="auth-footer-note">בהמשך אתה מסכים לתנאי השימוש ומדיניות הפרטיות</div>
+    </div>
+    <!-- Email / OTP step -->
+    <div id="authStepEmail" style="display:none;flex-direction:column;gap:12px;">
+      <button class="auth-back-btn" onclick="authShowLanding()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
+        חזרה
+      </button>
       <div>
         <label class="auth-label" for="authEmail">כתובת אימייל</label>
         <input id="authEmail" class="auth-input" type="email" inputmode="email" placeholder="your@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')authAction()" />
@@ -1171,10 +1210,7 @@
       </div>
       <button class="btn btn-primary btn-full" id="authBtn" onclick="authAction()" style="min-height:52px;font-size:1rem;">שלח קוד כניסה</button>
       <button id="authResendBtn" onclick="authResend()" style="display:none;background:none;border:none;color:var(--accent);font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit;padding:2px;text-align:center;">שלח קוד חדש</button>
-      <div class="auth-sep"><span>או</span></div>
-      <button class="auth-skip-btn" onclick="authSkip()">המשך ללא חשבון ›</button>
     </div>
-    <div class="auth-footer-note">הנתונים שלך מוצפנים ופרטיים לחלוטין<br>אין סיסמה — רק קוד חד-פעמי לאימות</div>
   </div>
 </div>
 <div id="gifOverlay">
@@ -4991,13 +5027,36 @@ function showAuthScreen(){
   const s=document.getElementById('authScreen');
   if(!s)return;
   s.classList.remove('hidden');
-  setTimeout(()=>document.getElementById('authEmail')?.focus(),350);
+  authShowLanding();
 }
 function hideAuthScreen(cb){
   const s=document.getElementById('authScreen');
   if(!s){if(cb)cb();return;}
   s.style.opacity='0';
   setTimeout(()=>{s.classList.add('hidden');s.style.opacity='';if(cb)cb();},360);
+}
+function authShowLanding(){
+  _authStep='email';
+  const landing=document.getElementById('authStepLanding');
+  const emailStep=document.getElementById('authStepEmail');
+  if(landing)landing.style.display='';
+  if(emailStep)emailStep.style.display='none';
+  const ow=document.getElementById('authOtpWrap');if(ow)ow.classList.remove('open');
+  const otp=document.getElementById('authOtp');if(otp)otp.value='';
+  const rb=document.getElementById('authResendBtn');if(rb)rb.style.display='none';
+  const btn=document.getElementById('authBtn');if(btn)btn.textContent='שלח קוד כניסה';
+}
+function authShowEmailStep(){
+  const landing=document.getElementById('authStepLanding');
+  const emailStep=document.getElementById('authStepEmail');
+  if(landing)landing.style.display='none';
+  if(emailStep)emailStep.style.display='flex';
+  setTimeout(()=>document.getElementById('authEmail')?.focus(),80);
+}
+async function authApple(){
+  if(!_sb){showToast('שירות ענן אינו זמין');return;}
+  const {error}=await _sb.auth.signInWithOAuth({provider:'apple',options:{redirectTo:location.origin+location.pathname}});
+  if(error)showToast('❌ כניסה עם אפל לא זמינה כרגע');
 }
 async function authAction(){
   if(_authStep==='email')await _authSendCode();
