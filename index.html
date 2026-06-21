@@ -711,6 +711,18 @@
     .auth-skip-btn{background:none;border:none;color:var(--text3);font-size:0.82rem;font-weight:500;cursor:pointer;font-family:inherit;padding:8px;width:100%;text-align:center;transition:color 0.15s;}
     .auth-skip-btn:active{color:var(--text2);}
     .auth-footer-note{text-align:center;font-size:0.62rem;color:var(--text3);line-height:1.7;margin-top:4px;opacity:0.7;}
+    /* ── Mode switcher ──────────────────────── */
+    #modeSwitcher{display:none;align-items:center;justify-content:center;padding:5px 0 0;}
+    .mode-pill{display:flex;background:var(--surface2);border:1.5px solid var(--border);border-radius:999px;padding:3px;gap:3px;}
+    .mode-btn{padding:6px 18px;border-radius:999px;border:none;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text2);background:transparent;transition:background 0.18s,color 0.18s;white-space:nowrap;}
+    .mode-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(var(--accent-rgb),0.28);}
+    /* ── iOS toggle ──────────────────────────── */
+    .ios-toggle{position:relative;display:inline-block;width:44px;height:26px;cursor:pointer;flex-shrink:0;}
+    .ios-toggle input{opacity:0;width:0;height:0;position:absolute;}
+    .ios-t{position:absolute;inset:0;background:var(--border);border-radius:13px;transition:background 0.22s;}
+    .ios-t::before{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform 0.22s;box-shadow:0 1px 4px rgba(0,0,0,0.25);}
+    .ios-toggle input:checked+.ios-t{background:var(--accent);}
+    .ios-toggle input:checked+.ios-t::before{transform:translateX(18px);}
     /* ── Demo banner ─────────────────────────── */
     #demoBanner{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:250;background:var(--accent);color:white;text-align:center;font-size:0.78rem;font-weight:700;padding:6px 12px;display:none;align-items:center;justify-content:center;gap:8px;}
     #demoBanner button{background:rgba(255,255,255,0.2);border:none;color:white;border-radius:6px;padding:3px 10px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:inherit;}
@@ -1477,6 +1489,12 @@
   </button>
   <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(1)" aria-label="חודש הבא" data-month-arrow><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="15 18 9 12 15 6"/></svg></button>
 </div>
+<div id="modeSwitcher">
+  <div class="mode-pill">
+    <button class="mode-btn active" data-mode="personal" onclick="switchMode('personal')">🏠 פרטי</button>
+    <button class="mode-btn" data-mode="business" onclick="switchMode('business')">💼 עסקי</button>
+  </div>
+</div>
 
 <main id="main-content">
   <div id="page-dashboard" class="page active">
@@ -1947,6 +1965,19 @@
         <button id="addPartnerBtn" onclick="showPartnerRow()" class="btn btn-outline btn-full" style="margin-bottom:4px">+ הוסף בן/בת זוג</button>
       </div>
       <div class="settings-section">
+        <div class="settings-section-title">חשבון עסקי</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">הפרד חשבון עסקי</div>
+            <div style="font-size:0.75rem;color:var(--text3);margin-top:2px;">נתונים נפרדים לעסק ולחשבון הפרטי</div>
+          </div>
+          <label class="ios-toggle">
+            <input type="checkbox" id="settingBusinessMode" onchange="toggleBusinessMode(this.checked)">
+            <span class="ios-t"></span>
+          </label>
+        </div>
+      </div>
+      <div class="settings-section">
         <div class="settings-section-title">תצוגה</div>
         <div class="set-dd" id="themeDD">
           <button type="button" class="set-dd-trigger" onclick="toggleSetDD('themeDD')"><span id="themeDDCur">🌗 תצוגה</span><svg class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
@@ -2226,11 +2257,14 @@ const COLORS=['#818cf8','#34d399','#60a5fa','#fbbf24','#2dd4bf','#f87171','#a78b
     location.reload();
   }catch(e){}
 })();
-let transactions  = JSON.parse(localStorage.getItem('budget_tx')    ||'[]');
-let goals         = JSON.parse(localStorage.getItem('budget_goals') ||'[]');
-let subscriptions = JSON.parse(localStorage.getItem('budget_subs')  ||'[]');
-let budgets       = JSON.parse(localStorage.getItem('budget_limits')||'{}');
-let loans         = JSON.parse(localStorage.getItem('budget_loans') ||'[]');
+let _activeMode = localStorage.getItem('budget_active_mode') || 'personal';
+function _modeKey(k){ return _activeMode==='personal'?k:k+'_'+_activeMode; }
+
+let transactions  = JSON.parse(localStorage.getItem(_modeKey('budget_tx'))    ||'[]');
+let goals         = JSON.parse(localStorage.getItem(_modeKey('budget_goals')) ||'[]');
+let subscriptions = JSON.parse(localStorage.getItem(_modeKey('budget_subs'))  ||'[]');
+let budgets       = JSON.parse(localStorage.getItem(_modeKey('budget_limits'))||'{}');
+let loans         = JSON.parse(localStorage.getItem(_modeKey('budget_loans')) ||'[]');
 
 let currentYear  = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
@@ -2243,11 +2277,11 @@ let _recurRefused = new Set();
 let catChart=null, barChart=null;
 
 function saveData(){
-  localStorage.setItem('budget_tx',    JSON.stringify(transactions));
-  localStorage.setItem('budget_goals', JSON.stringify(goals));
-  localStorage.setItem('budget_subs',  JSON.stringify(subscriptions));
-  localStorage.setItem('budget_limits',JSON.stringify(budgets));
-  localStorage.setItem('budget_loans', JSON.stringify(loans));
+  localStorage.setItem(_modeKey('budget_tx'),    JSON.stringify(transactions));
+  localStorage.setItem(_modeKey('budget_goals'), JSON.stringify(goals));
+  localStorage.setItem(_modeKey('budget_subs'),  JSON.stringify(subscriptions));
+  localStorage.setItem(_modeKey('budget_limits'),JSON.stringify(budgets));
+  localStorage.setItem(_modeKey('budget_loans'), JSON.stringify(loans));
   scheduleCloudSave();
 }
 
@@ -2970,11 +3004,11 @@ async function _loadFromCloud(){
   try{
     const {data}=await _sb.from('budget_data').select('*').eq('user_id',_cloudUser.id).single();
     if(data){
-      if(data.transactions?.length){transactions=data.transactions;localStorage.setItem('budget_tx',JSON.stringify(transactions));}
-      if(data.budgets&&Object.keys(data.budgets).length){budgets=data.budgets;localStorage.setItem('budget_limits',JSON.stringify(budgets));}
-      if(data.goals?.length){goals=data.goals;localStorage.setItem('budget_goals',JSON.stringify(goals));}
-      if(data.subscriptions?.length){subscriptions=data.subscriptions;localStorage.setItem('budget_subs',JSON.stringify(subscriptions));}
-      if(data.loans?.length){loans=data.loans;localStorage.setItem('budget_loans',JSON.stringify(loans));}
+      if(data.transactions?.length){transactions=data.transactions;localStorage.setItem(_modeKey('budget_tx'),JSON.stringify(transactions));}
+      if(data.budgets&&Object.keys(data.budgets).length){budgets=data.budgets;localStorage.setItem(_modeKey('budget_limits'),JSON.stringify(budgets));}
+      if(data.goals?.length){goals=data.goals;localStorage.setItem(_modeKey('budget_goals'),JSON.stringify(goals));}
+      if(data.subscriptions?.length){subscriptions=data.subscriptions;localStorage.setItem(_modeKey('budget_subs'),JSON.stringify(subscriptions));}
+      if(data.loans?.length){loans=data.loans;localStorage.setItem(_modeKey('budget_loans'),JSON.stringify(loans));}
       if(data.settings&&data.settings.name!==undefined){userSettings={...userSettings,...data.settings};saveSettingsData();}
       refreshAll();
       showToast('☁️ נתונים נטענו מהענן');
@@ -3045,10 +3079,10 @@ if(_sb){
   });
 }
 
-let userSettings = JSON.parse(localStorage.getItem('budget_settings') || '{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
+let userSettings = JSON.parse(localStorage.getItem(_modeKey('budget_settings')) || '{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
 if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
-function saveSettingsData(){localStorage.setItem('budget_settings',JSON.stringify(userSettings));}
+function saveSettingsData(){localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));}
 
 function getMonthlyIncome(){
   const manualIncome = getMonthTx(currentYear,currentMonth).filter(t=>t.type==='income').reduce((s,t)=>s+(+t.amount||0),0);
@@ -3102,6 +3136,8 @@ function openSettings(){
   document.getElementById('addPartnerBtn').style.display = hasPartner ? 'none' : '';
   if(hasPartner) document.getElementById('settingPartnerName').value = userSettings.partnerName;
   renderSettingIncomeRows();
+  const bm=document.getElementById('settingBusinessMode');
+  if(bm)bm.checked=!!userSettings.businessMode;
   openSheet('settingsSheet');
 }
 
@@ -4212,14 +4248,14 @@ function saveLoan(){
     notes:document.getElementById('loanNotes').value.trim()
   };
   loans.push(loan);
-  localStorage.setItem('budget_loans',JSON.stringify(loans));
+  localStorage.setItem(_modeKey('budget_loans'),JSON.stringify(loans));
   ['loanName','loanLender','loanOriginal','loanRemaining','loanMonthly','loanRate','loanMonthsLeft','loanNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const _lb=document.querySelector('#addLoanSheet .btn-primary');if(_lb){_lb.textContent='✓';_lb.disabled=true;}
   setTimeout(()=>{closeSheet('addLoanSheet');renderLoans();showToast('📉 הלוואה נוספה');},220);
 }
 function deleteLoan(id){
   loans=loans.filter(l=>l.id!==id);
-  localStorage.setItem('budget_loans',JSON.stringify(loans));
+  localStorage.setItem(_modeKey('budget_loans'),JSON.stringify(loans));
   renderLoans();
   showToast('✓ ההלוואה הוסרה');
 }
@@ -5008,6 +5044,39 @@ function _authGateResolve(session){
 function _proceedToApp(){
   if(!localStorage.getItem('budget_onboarded')){showOnboarding();}
   else{try{checkFabHint();}catch(e){}}
+  updateModeSwitcher();
+}
+function switchMode(mode){
+  if(mode===_activeMode)return;
+  _activeMode=mode;
+  localStorage.setItem('budget_active_mode',mode);
+  transactions=JSON.parse(localStorage.getItem(_modeKey('budget_tx'))||'[]');
+  goals=JSON.parse(localStorage.getItem(_modeKey('budget_goals'))||'[]');
+  subscriptions=JSON.parse(localStorage.getItem(_modeKey('budget_subs'))||'[]');
+  budgets=JSON.parse(localStorage.getItem(_modeKey('budget_limits'))||'{}');
+  loans=JSON.parse(localStorage.getItem(_modeKey('budget_loans'))||'[]');
+  const prevBM=userSettings.businessMode;
+  userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
+  if(!userSettings.incomeSources)userSettings.incomeSources=[];
+  if(!userSettings.customCats)userSettings.customCats=[];
+  userSettings.businessMode=true;
+  updateModeSwitcher();
+  refreshAll();
+  showToast(mode==='business'?'💼 מצב עסקי פעיל':'🏠 מצב פרטי פעיל');
+}
+function toggleBusinessMode(on){
+  userSettings.businessMode=!!on;
+  saveSettingsData();
+  if(!on&&_activeMode==='business')switchMode('personal');
+  updateModeSwitcher();
+}
+function updateModeSwitcher(){
+  const el=document.getElementById('modeSwitcher');
+  if(!el)return;
+  el.style.display=userSettings.businessMode?'flex':'none';
+  el.querySelectorAll('.mode-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.mode===_activeMode);
+  });
 }
 // Auth screen
 let _authStep='email';
