@@ -5716,35 +5716,33 @@ setTimeout(autoCarryRecurring,500);
 (function(){
   var vv=window.visualViewport;
   if(!vv)return;
-  var _activeSheetEl=null;
   function sync(){
     var h=vv.height;
-    var overlays=document.querySelectorAll('.sheet-overlay.open');
-    overlays.forEach(function(ov){
+    var kbH=window.innerHeight-vv.offsetTop-h;
+    if(kbH<20)kbH=0;
+    document.querySelectorAll('.sheet-overlay.open').forEach(function(ov){
       var sh=ov.querySelector('.sheet,.wiz-sheet');
-      if(sh){sh.style.maxHeight=h+'px';}
+      if(sh)sh.style.maxHeight=Math.floor(h*0.92)+'px';
+      ov.style.paddingBottom=kbH>0?kbH+'px':'';
     });
-    if(_activeSheetEl){_activeSheetEl.style.maxHeight=h+'px';}
   }
-  function reset(sh){
-    if(sh){sh.style.maxHeight='';}
-    _activeSheetEl=null;
+  function resetAll(){
+    document.querySelectorAll('.sheet-overlay').forEach(function(ov){
+      var sh=ov.querySelector('.sheet,.wiz-sheet');
+      if(sh)sh.style.maxHeight='';
+      ov.style.paddingBottom='';
+    });
   }
   vv.addEventListener('resize',sync);
   var _orig=window.openSheet;
   window.openSheet=function(id){
     _orig&&_orig.apply(this,arguments);
-    setTimeout(function(){
-      var ov=document.getElementById(id);
-      if(ov){var sh=ov.querySelector('.sheet,.wiz-sheet');if(sh){_activeSheetEl=sh;sync();}}
-    },50);
+    setTimeout(sync,50);
   };
   var _origClose=window.closeSheet;
   window.closeSheet=function(id){
-    var ov=document.getElementById(id);
-    var sh=ov&&ov.querySelector('.sheet,.wiz-sheet');
     _origClose&&_origClose.apply(this,arguments);
-    setTimeout(function(){reset(sh);},250);
+    setTimeout(resetAll,250);
   };
 })();
 </script>
