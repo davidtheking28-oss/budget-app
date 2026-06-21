@@ -247,7 +247,7 @@
     .wiz-next-btn:active{opacity:0.4;}
     .wiz-pill-outer{display:flex;align-items:center;margin:12px 0 0;position:relative;z-index:10;flex-shrink:0;background:rgba(255,255,255,0.15);border-radius:50px;border:1.5px solid rgba(255,255,255,0.22);padding:5px;transition:background 0.15s;}
     .wiz-pill-outer:focus-within{background:rgba(255,255,255,0.22);}
-    .wiz-pill{flex:1;min-width:0;padding:13px 16px;background:transparent!important;border:none;font-size:1.05rem;font-family:inherit;color:white!important;box-shadow:none!important;direction:rtl;display:block;text-align:right;outline:none;}
+    .wiz-pill{flex:1;min-width:0;padding:13px 16px;background:transparent!important;border:none;font-size:16px;font-family:inherit;color:white!important;box-shadow:none!important;direction:rtl;display:block;text-align:right;outline:none;}
     .wiz-pill::placeholder{color:rgba(255,255,255,0.55)!important;}
     .wiz-next-inline{flex-shrink:0;background:white;color:var(--accent);border:none;border-radius:50px;padding:12px 20px;font-size:0.92rem;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;min-height:44px;-webkit-tap-highlight-color:transparent;}
     .wiz-next-inline:active{opacity:0.75;}
@@ -6110,14 +6110,23 @@ setTimeout(autoCarryRecurring,500);
     if(kbH<20)kbH=0;
     document.querySelectorAll('.sheet-overlay.open').forEach(function(ov){
       var sh=ov.querySelector('.sheet,.wiz-sheet');
-      if(sh)sh.style.maxHeight=Math.floor(h*0.92)+'px';
-      ov.style.paddingBottom=kbH>0?kbH+'px':'';
+      if(!sh)return;
+      if(sh.classList.contains('wiz-sheet')){
+        // מסך מלא — ממלא את כל הגובה הנראה, ללא חלל
+        sh.style.height=h+'px';
+        sh.style.maxHeight=h+'px';
+        ov.style.paddingBottom='';
+      } else {
+        sh.style.height='';
+        sh.style.maxHeight=Math.floor(h*0.92)+'px';
+        ov.style.paddingBottom=kbH>0?kbH+'px':'';
+      }
     });
   }
   function resetAll(){
     document.querySelectorAll('.sheet-overlay').forEach(function(ov){
       var sh=ov.querySelector('.sheet,.wiz-sheet');
-      if(sh)sh.style.maxHeight='';
+      if(sh){sh.style.maxHeight='';sh.style.height='';}
       ov.style.paddingBottom='';
     });
   }
