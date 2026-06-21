@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="theme-color" content="#0f3460"/>
@@ -624,10 +624,13 @@
     .loan-stat-val{font-size:0.88rem;font-weight:700;color:var(--text);font-family:var(--font-num);}
     .loan-stat-label{font-size:0.68rem;color:var(--text3);margin-top:2px;}
     .loan-notes{font-size:0.78rem;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
-    .loans-summary{background:linear-gradient(135deg,#7c1d1d,#b91c1c);border-radius:var(--radius);padding:16px;margin-bottom:16px;color:white;}
-    .loans-summary-title{font-size:0.78rem;opacity:0.8;margin-bottom:4px;}
-    .loans-summary-val{font-size:1.6rem;font-weight:800;font-family:var(--font-num);letter-spacing:-1px;}
-    .loans-summary-sub{font-size:0.8rem;opacity:0.75;margin-top:4px;}
+    .loans-summary{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;color:var(--text);}
+    .loans-summary.has-loans{background:linear-gradient(135deg,#7c1d1d,#b91c1c);border:none;color:white;}
+    .loans-summary.has-loans .loans-summary-title,.loans-summary.has-loans .loans-summary-sub{color:rgba(255,255,255,0.8);}
+    .loans-summary-title{font-size:0.78rem;font-weight:700;color:var(--text3);margin-bottom:4px;}
+    .loans-summary-val{font-size:1.8rem;font-weight:800;font-family:var(--font-num);letter-spacing:-1px;color:var(--text);}
+    .loans-summary-sub{font-size:0.75rem;color:var(--text3);margin-top:4px;}
+    .loans-summary.has-loans .loans-summary-val{color:white;}
     /* ===== 4-item nav ===== */
     .bottom-nav .nav-item .nav-label{display:block;font-size:0.7rem;}
     .bottom-nav .nav-item .nav-icon{padding:5px 14px;}
@@ -1807,6 +1810,10 @@
         </div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
+    </div>
+    <div style="margin-top:32px;text-align:center;display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--text3)">תקציב אישי</div>
+      <div style="font-size:0.65rem;color:var(--text3);opacity:0.6;">הנתונים שלך נשמרים מקומית במכשיר ומוצפנים בענן</div>
     </div>
   </div>
 </main>
@@ -4199,6 +4206,8 @@ function renderLoans(){
   const monthlyDisplay=document.getElementById('loansMonthlyDisplay');
   if(totalDisplay)totalDisplay.textContent=fmt(totalRemaining);
   if(monthlyDisplay)monthlyDisplay.textContent='החזר חודשי: '+fmt(totalMonthly)+' · '+loans.length+' הלוואות';
+  const summary=document.querySelector('.loans-summary');
+  if(summary)summary.classList.toggle('has-loans',loans.length>0);
   const list=document.getElementById('loansList');
   if(!list)return;
   if(!loans.length){
