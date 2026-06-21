@@ -692,10 +692,7 @@
     .auth-feature-icon{width:34px;height:34px;border-radius:10px;background:rgba(var(--accent-rgb),0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.95rem;}
     .auth-feature-text{font-size:0.82rem;color:var(--text2);font-weight:500;line-height:1.35;}
     .auth-cta-section{display:flex;flex-direction:column;gap:12px;padding-top:4px;}
-    .auth-apple-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;background:#fff;color:#000;border:none;border-radius:14px;font-size:0.97rem;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity 0.15s,transform 0.1s;letter-spacing:0.1px;}
-    body.dark .auth-apple-btn{background:#f5f5f7;}
-    .auth-apple-btn:active{opacity:0.82;transform:scale(0.98);}
-    .auth-email-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;background:transparent;color:var(--text);border:1.5px solid var(--border);border-radius:14px;font-size:0.97rem;font-weight:600;font-family:inherit;cursor:pointer;transition:border-color 0.15s,background 0.15s,transform 0.1s;}
+.auth-email-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;background:transparent;color:var(--text);border:1.5px solid var(--border);border-radius:14px;font-size:0.97rem;font-weight:600;font-family:inherit;cursor:pointer;transition:border-color 0.15s,background 0.15s,transform 0.1s;}
     .auth-email-btn:hover{border-color:rgba(var(--accent-rgb),0.5);background:rgba(var(--accent-rgb),0.04);}
     .auth-email-btn:active{transform:scale(0.98);}
     .auth-back-btn{display:flex;align-items:center;gap:5px;background:none;border:none;color:var(--accent);font-size:0.88rem;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 0;margin-bottom:8px;align-self:flex-start;}
@@ -1181,17 +1178,12 @@
     </div>
     <!-- Landing step -->
     <div id="authStepLanding" class="auth-cta-section">
-      <button class="auth-apple-btn" onclick="authApple()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.54 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/></svg>
-        המשך עם אפל
-      </button>
-      <div class="auth-sep"><span>או</span></div>
       <button class="auth-email-btn" onclick="authShowEmailStep()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
         המשך עם אימייל
       </button>
       <button class="auth-skip-btn" onclick="authSkip()">המשך ללא חשבון</button>
-      <div class="auth-footer-note">בהמשך אתה מסכים לתנאי השימוש ומדיניות הפרטיות</div>
+      <div class="auth-footer-note">אין סיסמה — רק קוד חד-פעמי לאימות במייל</div>
     </div>
     <!-- Email / OTP step -->
     <div id="authStepEmail" style="display:none;flex-direction:column;gap:12px;">
@@ -5052,11 +5044,6 @@ function authShowEmailStep(){
   if(landing)landing.style.display='none';
   if(emailStep)emailStep.style.display='flex';
   setTimeout(()=>document.getElementById('authEmail')?.focus(),80);
-}
-async function authApple(){
-  if(!_sb){showToast('שירות ענן אינו זמין');return;}
-  const {error}=await _sb.auth.signInWithOAuth({provider:'apple',options:{redirectTo:location.origin+location.pathname}});
-  if(error)showToast('❌ כניסה עם אפל לא זמינה כרגע');
 }
 async function authAction(){
   if(_authStep==='email')await _authSendCode();
