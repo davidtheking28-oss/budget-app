@@ -3655,7 +3655,7 @@ function renderDashboard(){
   const label=heMonth(currentYear,currentMonth);
   const eyebrow=document.getElementById('heroEyebrow');
   if(eyebrow){
-    const hour = new Date().getHours();
+    const hour = new Date().toLocaleString('en-US',{timeZone:'Asia/Jerusalem',hour:'numeric',hour12:false})|0;
     const greeting = hour<12?'בוקר טוב':hour<17?'צהריים טובים':hour<21?'ערב טוב':'לילה טוב';
     const nameEl=document.getElementById('heroGreetName');
     const msgEl=document.getElementById('heroGreetMsg');
