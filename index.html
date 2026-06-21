@@ -2356,8 +2356,12 @@ function shiftMonth(d){
   haptic(4);refreshAll();
 }
 
-function openSheet(id){document.getElementById(id).classList.add('open');}
+function openSheet(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='addTxSheet'){const b=document.getElementById('installBanner');if(b)b.style.display='none';}
+}
 function closeSheet(id){
+  if(id==='addTxSheet'){const b=document.getElementById('installBanner');if(b)b.style.display='';}
   const ov=document.getElementById(id);
   const sh=ov.querySelector('.sheet,.wiz-sheet');
   if(sh){
@@ -5020,10 +5024,10 @@ function generateInsights(){
   try{
     if(typeof subscriptions!=='undefined'&&subscriptions.length>1){
       const byCat={};
-      subscriptions.forEach(s=>{(byCat[s.category]=byCat[s.category]||[]).push(s);});
+      subscriptions.forEach(s=>{const k=s.cat||s.category||'אחר';(byCat[k]=byCat[k]||[]).push(s);});
       for(const c in byCat){
         if(byCat[c].length>=2){
-          const tot=byCat[c].reduce((s,x)=>s+(+x.price||0),0);
+          const tot=byCat[c].reduce((s,x)=>s+(+x.amount||+x.price||0),0);
           insights.push({icon:'🔄',type:'info',text:'יש לך <span class="insight-highlight">'+byCat[c].length+' מנויים</span> בקטגוריית '+esc(c)+' ('+fmt(tot)+' בחודש). שווה לבדוק אם כולם נחוצים'});
           break;
         }
