@@ -3079,10 +3079,6 @@ function renderSettingIncomeRows(){
           <label>סכום (₪)</label>
           <input type="number" inputmode="decimal" placeholder="0" value="${src.amount||''}" oninput="userSettings.incomeSources[${i}].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/>
         </div>
-        <div class="income-source-field" style="max-width:64px">
-          <label>יום</label>
-          <input type="number" inputmode="numeric" placeholder="1" min="1" max="31" value="${src.day||''}" oninput="userSettings.incomeSources[${i}].day=this.value;saveSettingsData()" onfocus="this.select()" title="יום בחודש להוספה אוטומטית"/>
-        </div>
         <button onclick="userSettings.incomeSources.splice(${i},1);saveSettingsData();renderSettingIncomeRows()" style="background:rgba(220,38,38,0.1);border:none;color:var(--red);font-size:1rem;cursor:pointer;padding:9px 10px;border-radius:8px;flex-shrink:0" aria-label="מחק">🗑️</button>
       </div>
       ${hasParter?`<div style="margin-top:8px"><select style="border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:0.82rem;color:var(--text);font-family:inherit;width:100%" oninput="userSettings.incomeSources[${i}].owner=this.value;saveSettingsData()"><option value="" ${!src.owner?'selected':''}>משותף לשניים</option><option value="1" ${src.owner==='1'?'selected':''}>${p1}</option><option value="2" ${src.owner==='2'?'selected':''}>${p2}</option></select></div>`:''}
