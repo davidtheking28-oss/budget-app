@@ -2988,6 +2988,10 @@ const _DEBUG = false;
 const _sb = window.supabase?.createClient?.(SUPA_URL, SUPA_ANON, {auth:{persistSession:true,autoRefreshToken:true}}) || null;
 let _cloudUser = null;
 let _cloudSaveTimer = null;
+let _householdOwner = null;
+let _cloudHousehold = null;
+let _realtimeChannel = null;
+function _getDataUserId(){ return _householdOwner || _cloudUser?.id; }
 
 function scheduleCloudSave(){
   if(!_cloudUser||!_sb) return;
@@ -2996,21 +3000,24 @@ function scheduleCloudSave(){
 }
 async function _doCloudSave(){
   if(!_cloudUser||!_sb) return;
+  const uid=_getDataUserId();if(!uid)return;
   try{
     await _sb.from('budget_data').upsert({
-      user_id:_cloudUser.id,
+      user_id:uid,
       transactions,budgets,goals,subscriptions,loans,
       settings:userSettings,
-      updated_at:new Date().toISOString()
+      updated_at:new Date().toISOString(),
+      updated_by:_cloudUser.id
     },{onConflict:'user_id'});
     const s=document.getElementById('cloudStatus');
     if(s){s.textContent='✓ מסונכרן';s.style.color='var(--green)';}
   }catch(e){_DEBUG&&console.warn('cloud save',e);}
 }
-async function _loadFromCloud(){
+async function _loadFromCloud(silent){
   if(!_cloudUser||!_sb) return;
+  const uid=_getDataUserId();if(!uid)return;
   try{
-    const {data}=await _sb.from('budget_data').select('*').eq('user_id',_cloudUser.id).single();
+    const {data}=await _sb.from('budget_data').select('*').eq('user_id',uid).single();
     if(data){
       if(data.transactions?.length){transactions=data.transactions;localStorage.setItem(_modeKey('budget_tx'),JSON.stringify(transactions));}
       if(data.budgets&&Object.keys(data.budgets).length){budgets=data.budgets;localStorage.setItem(_modeKey('budget_limits'),JSON.stringify(budgets));}
@@ -3019,9 +3026,9 @@ async function _loadFromCloud(){
       if(data.loans?.length){loans=data.loans;localStorage.setItem(_modeKey('budget_loans'),JSON.stringify(loans));}
       if(data.settings&&data.settings.name!==undefined){userSettings={...userSettings,...data.settings};saveSettingsData();}
       refreshAll();
-      showToast('☁️ נתונים נטענו מהענן');
+      if(!silent)showToast('☁️ נתונים נטענו מהענן');
     } else {
-      await _doCloudSave();
+      if(!_householdOwner)await _doCloudSave();
     }
     renderCloudSection();
   }catch(e){_DEBUG&&console.warn('cloud load',e);}
@@ -3057,13 +3064,7 @@ async function cloudSignOut(){
 function renderCloudSection(){
   const el=document.getElementById('cloudSection');
   if(!el)return;
-  if(_cloudUser){
-    el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
-      +'<div><div style="font-size:0.88rem;font-weight:700;color:var(--text)">☁️ מחובר לענן</div>'
-      +'<div style="font-size:0.72rem;color:var(--text3);margin-top:2px">'+esc(_cloudUser.email)+'</div></div>'
-      +'<span id="cloudStatus" style="font-size:0.75rem;font-weight:700;color:var(--green)">✓ מסונכרן</span></div>'
-      +'<button class="btn btn-outline btn-sm" onclick="cloudSignOut()" style="width:100%;color:var(--text3)">התנתק</button>';
-  } else {
+  if(!_cloudUser){
     el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הזן אימייל וקבל קוד. הנתונים יגובו ויהיו זמינים בכל מכשיר</div>'
       +'<input id="cloudEmailInput" type="email" placeholder="האימייל שלך" aria-label="כתובת אימייל" inputmode="email" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px"/>'
       +'<button id="cloudSignInBtn" class="btn btn-primary btn-full" onclick="cloudSignIn()">שלח קוד אימות</button>'
@@ -3071,17 +3072,132 @@ function renderCloudSection(){
       +'<div style="font-size:0.78rem;color:var(--text3);margin-bottom:6px">הזן את הקוד שקיבלת באימייל:</div>'
       +'<input id="cloudOtpInput" type="text" inputmode="numeric" maxlength="6" placeholder="• • • • • •" aria-label="קוד אימות" style="width:100%;border:1.5px solid var(--accent);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1.2rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:6px"/>'
       +'<button class="btn btn-primary btn-full" onclick="cloudVerifyOtp()">אמת וגבה</button></div>';
+    return;
   }
+  // מחובר — בנה את ה-UI
+  let html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+    +'<div><div style="font-size:0.88rem;font-weight:700;color:var(--text)">☁️ מחובר לענן</div>'
+    +'<div style="font-size:0.72rem;color:var(--text3);margin-top:2px">'+esc(_cloudUser.email)+'</div></div>'
+    +'<span id="cloudStatus" style="font-size:0.75rem;font-weight:700;color:var(--green)">✓ מסונכרן</span></div>';
+
+  // household section
+  if(!_cloudHousehold){
+    // אין household — הצג אפשרויות
+    html+='<div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">'
+      +'<div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:8px">👨‍👩‍👧 תקציב משפחתי</div>'
+      +'<button class="btn btn-outline btn-full" onclick="createHousehold()" style="margin-bottom:8px">+ צור קוד שיתוף לבן/בת זוג</button>'
+      +'<div style="font-size:0.75rem;color:var(--text3);margin-bottom:6px;text-align:center">— או הצטרף לתקציב קיים —</div>'
+      +'<input id="householdCodeInput" type="text" maxlength="6" placeholder="קוד 6 תווים" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:4px;text-transform:uppercase" />'
+      +'<button class="btn btn-primary btn-full" onclick="joinHousehold()">הצטרף לתקציב</button>'
+      +'</div>';
+  } else if(_cloudHousehold.role==='owner'){
+    const hasMember=!!_cloudHousehold.member_id;
+    html+='<div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">'
+      +'<div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:10px">👨‍👩‍👧 תקציב משפחתי</div>';
+    if(hasMember){
+      html+='<div style="display:flex;align-items:center;gap:8px;background:rgba(16,185,129,0.08);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
+        +'<span style="font-size:1.1rem">✅</span>'
+        +'<div><div style="font-size:0.82rem;font-weight:700;color:var(--green)">מחובר בן/בת זוג</div>'
+        +'<div style="font-size:0.7rem;color:var(--text3)">'+esc(_cloudHousehold.member_email||'')+'</div></div></div>'
+        +'<div style="font-size:0.72rem;color:var(--text3);text-align:center;margin-bottom:8px">🔄 מסונכרן בזמן אמת</div>';
+    } else {
+      html+='<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:center">'
+        +'<div style="font-size:1.4rem;margin-bottom:4px">🔑</div>'
+        +'<div style="font-size:1.4rem;font-weight:800;letter-spacing:6px;font-family:var(--font-num);color:var(--accent)">'+esc(_cloudHousehold.invite_code)+'</div>'
+        +'<div style="font-size:0.72rem;color:var(--text3);margin-top:4px">שתף את הקוד עם בן/בת הזוג</div></div>'
+        +'<button class="btn btn-outline btn-sm" onclick="copyInviteCode()" style="width:100%;margin-bottom:8px">📋 העתק קוד</button>'
+        +'<div style="font-size:0.72rem;color:var(--text3);text-align:center;margin-bottom:8px">ממתין להצטרפות...</div>';
+    }
+    html+='<button class="btn btn-outline btn-sm" onclick="leaveHousehold()" style="width:100%;color:var(--red)">בטל שיתוף</button></div>';
+  } else {
+    // role = member
+    html+='<div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">'
+      +'<div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:10px">👨‍👩‍👧 תקציב משפחתי</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;background:rgba(16,185,129,0.08);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
+      +'<span style="font-size:1.1rem">✅</span>'
+      +'<div><div style="font-size:0.82rem;font-weight:700;color:var(--green)">מחובר לתקציב משפחתי</div>'
+      +'<div style="font-size:0.7rem;color:var(--text3)">🔄 מסונכרן בזמן אמת</div></div></div>'
+      +'<button class="btn btn-outline btn-sm" onclick="leaveHousehold()" style="width:100%;color:var(--red)">עזוב תקציב משפחתי</button></div>';
+  }
+
+  html+='<div style="margin-top:10px"><button class="btn btn-outline btn-sm" onclick="cloudSignOut()" style="width:100%;color:var(--text3)">התנתק</button></div>';
+  el.innerHTML=html;
+}
+async function _loadHousehold(){
+  if(!_cloudUser||!_sb)return;
+  // האם אני חבר בhousehold של מישהו?
+  const {data:asMember}=await _sb.from('households').select('owner_id,invite_code,member_email').eq('member_id',_cloudUser.id).maybeSingle();
+  if(asMember){_householdOwner=asMember.owner_id;_cloudHousehold={role:'member',...asMember};return;}
+  // האם אני בעלים של household?
+  const {data:asOwner}=await _sb.from('households').select('*').eq('owner_id',_cloudUser.id).maybeSingle();
+  _householdOwner=null;
+  _cloudHousehold=asOwner?{role:'owner',...asOwner}:null;
+}
+async function createHousehold(){
+  if(!_cloudUser||!_sb)return;
+  const code=Math.random().toString(36).substring(2,8).toUpperCase();
+  const {data,error}=await _sb.from('households').upsert({owner_id:_cloudUser.id,invite_code:code},{onConflict:'owner_id'}).select().single();
+  if(error){showToast('❌ שגיאה ביצירת קוד');return;}
+  _cloudHousehold={role:'owner',...data};
+  renderCloudSection();
+}
+async function joinHousehold(){
+  const code=(document.getElementById('householdCodeInput')?.value||'').trim().toUpperCase();
+  if(!code||code.length<6){showToast('הזן קוד בן 6 תווים');return;}
+  const {data,error}=await _sb.from('households').select('id,owner_id,member_id').eq('invite_code',code).maybeSingle();
+  if(error||!data){showToast('❌ קוד לא נמצא');return;}
+  if(data.owner_id===_cloudUser.id){showToast('❌ זה התקציב שלך');return;}
+  if(data.member_id&&data.member_id!==_cloudUser.id){showToast('❌ קוד בשימוש');return;}
+  const {error:e2}=await _sb.from('households').update({member_id:_cloudUser.id,member_email:_cloudUser.email}).eq('id',data.id);
+  if(e2){showToast('❌ שגיאה בהצטרפות');return;}
+  _householdOwner=data.owner_id;
+  _cloudHousehold={role:'member',owner_id:data.owner_id,invite_code:code};
+  await _loadFromCloud();
+  _subscribeHousehold();
+  showToast('✅ הצטרפת לתקציב המשפחתי!');
+  renderCloudSection();
+}
+async function leaveHousehold(){
+  if(!_cloudHousehold||!_sb)return;
+  if(_cloudHousehold.role==='owner'){
+    await _sb.from('households').delete().eq('owner_id',_cloudUser.id);
+  } else {
+    await _sb.from('households').update({member_id:null,member_email:null}).eq('owner_id',_cloudHousehold.owner_id);
+    _householdOwner=null;
+  }
+  _cloudHousehold=null;
+  _householdOwner=null;
+  if(_realtimeChannel){_sb.removeChannel(_realtimeChannel);_realtimeChannel=null;}
+  renderCloudSection();
+  showToast('✓ עזבת את התקציב המשפחתי');
+}
+function _subscribeHousehold(){
+  if(!_sb||!_getDataUserId())return;
+  if(_realtimeChannel){_sb.removeChannel(_realtimeChannel);_realtimeChannel=null;}
+  _realtimeChannel=_sb.channel('budget-sync')
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'budget_data',filter:`user_id=eq.${_getDataUserId()}`},(payload)=>{
+      if(payload.new?.updated_by&&payload.new.updated_by!==_cloudUser?.id){
+        _loadFromCloud(true);
+        showToast('🔄 עודכן על ידי בן/בת הזוג');
+      }
+    })
+    .subscribe();
+}
+function copyInviteCode(){
+  const code=_cloudHousehold?.invite_code;if(!code)return;
+  navigator.clipboard?.writeText(code).then(()=>showToast('✓ קוד הועתק'));
 }
 if(_sb){
   _sb.auth.onAuthStateChange((event,session)=>{
     _cloudUser=session?.user||null;
     renderCloudSection();
-    if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')) _loadFromCloud();
+    if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')){
+      _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
+    }
   });
   _sb.auth.getSession().then(({data:{session}})=>{
     _cloudUser=session?.user||null;
-    if(_cloudUser) _loadFromCloud();
+    if(_cloudUser){_loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});}
     else renderCloudSection();
     _authGateResolve(session);
   });
