@@ -4414,7 +4414,7 @@ function animateNumEl(el){
   const target=parseFloat(raw.replace(/[^\d.-]/g,''));
   if(isNaN(target)||Math.abs(target)<1) return;
   const hasPct=raw.includes('%'), hasShk=raw.includes('₪');
-  const dur=650, t0=performance.now();
+  const dur=350, t0=performance.now();
   function frame(now){
     const t=Math.min(1,(now-t0)/dur);
     const e=1-Math.pow(1-t,3);
@@ -5152,7 +5152,7 @@ function _initAuthGate(){
   if(!_sb||SUPA_ANON==='__SUPABASE_ANON__'||localStorage.getItem('auth_skipped')){
     hideSplash();_proceedToApp();return;
   }
-  _authGateTimer=setTimeout(()=>{hideSplash();_proceedToApp();},4000);
+  _authGateTimer=setTimeout(()=>{hideSplash();_proceedToApp();},1000);
 }
 function _authGateResolve(session){
   clearTimeout(_authGateTimer);
@@ -5727,7 +5727,7 @@ setTimeout(autoCarryRecurring,500);
 
   var _rd=window.renderDashboard;
   if(typeof _rd==='function'){ window.renderDashboard=function(){ var r=_rd.apply(this,arguments); setTimeout(renderDashCharts,0); return r; }; }
-  document.addEventListener('DOMContentLoaded', function(){ setTimeout(renderDashCharts, 450); });
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(renderDashCharts, 80); });
 
   document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
   document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});
