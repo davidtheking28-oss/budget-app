@@ -2999,6 +2999,10 @@ async function _doCloudSave(){
   if(!_cloudUser||!_sb) return;
   const uid=_getDataUserId();if(!uid)return;
   try{
+    if(!transactions.length){
+      const {data:existing}=await _sb.from('budget_data').select('transactions').eq('user_id',uid).maybeSingle();
+      if(existing?.transactions?.length) return;
+    }
     await _sb.from('budget_data').upsert({
       user_id:uid,
       transactions,budgets,goals,subscriptions,loans,
