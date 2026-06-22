@@ -1165,7 +1165,11 @@
 <div id="splashScreen">
   <div class="splash-logo">₪</div>
   <div class="splash-title">תקציב אישי</div>
-  <div class="splash-sub">טוען...</div>
+  <div class="splash-sub" id="splashMsg">מתחבר לענן...</div>
+  <div id="splashRetry" style="display:none;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
+    <div style="font-size:0.8rem;color:var(--red)">אין חיבור לאינטרנט</div>
+    <button onclick="location.reload()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit">נסה שוב</button>
+  </div>
 </div>
 <div id="authScreen" class="hidden" role="main" aria-label="כניסה לאפליקציה">
   <div class="auth-inner">
@@ -5159,7 +5163,12 @@ function _initAuthGate(){
   if(!_sb||SUPA_ANON==='__SUPABASE_ANON__'){
     hideSplash();_proceedToApp();return;
   }
-  _authGateTimer=setTimeout(()=>{_gateShown=true;hideSplash();_proceedToApp();},1000);
+  _authGateTimer=setTimeout(()=>{
+    const r=document.getElementById('splashRetry');
+    if(r)r.style.display='flex';
+    const m=document.getElementById('splashMsg');
+    if(m)m.style.display='none';
+  },10000);
 }
 function _authGateResolve(session){
   clearTimeout(_authGateTimer);
