@@ -3025,8 +3025,7 @@ async function _loadFromCloud(silent){
       if(data.subscriptions?.length){subscriptions=data.subscriptions;localStorage.setItem(_modeKey('budget_subs'),JSON.stringify(subscriptions));}
       if(data.loans?.length){loans=data.loans;localStorage.setItem(_modeKey('budget_loans'),JSON.stringify(loans));}
       if(data.settings&&data.settings.name!==undefined){userSettings={...userSettings,...data.settings};saveSettingsData();}
-      refreshAll();
-      if(!silent)showToast('☁️ נתונים נטענו מהענן');
+      if(!silent){refreshAll();showToast('☁️ נתונים נטענו מהענן');}
     } else {
       if(!_householdOwner)await _doCloudSave();
     }
@@ -3187,6 +3186,7 @@ function copyInviteCode(){
   const code=_cloudHousehold?.invite_code;if(!code)return;
   navigator.clipboard?.writeText(code).then(()=>showToast('✓ קוד הועתק'));
 }
+let _gateShown=false;
 if(_sb){
   _sb.auth.onAuthStateChange((event,session)=>{
     _cloudUser=session?.user||null;
@@ -3195,10 +3195,14 @@ if(_sb){
       _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
     }
   });
-  _sb.auth.getSession().then(({data:{session}})=>{
+  _sb.auth.getSession().then(async ({data:{session}})=>{
     _cloudUser=session?.user||null;
-    if(_cloudUser){_loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});}
-    else renderCloudSection();
+    if(_cloudUser){
+      await _loadHousehold();
+      await _loadFromCloud(true);
+      _subscribeHousehold();
+      if(!_gateShown) refreshAll();
+    } else renderCloudSection();
     _authGateResolve(session);
   });
 }
@@ -4904,7 +4908,6 @@ function init(){
   _initAuthGate();
   refreshAll();
   try{showPage('dashboard',document.getElementById('nav-dashboard'));}catch(e){}
-  hideSplash();
   initSheetSwipe();
   setTimeout(()=>animateHeroNums('dashboard'),200);
   (function(){
@@ -5156,10 +5159,11 @@ function _initAuthGate(){
   if(!_sb||SUPA_ANON==='__SUPABASE_ANON__'){
     hideSplash();_proceedToApp();return;
   }
-  _authGateTimer=setTimeout(()=>{hideSplash();_proceedToApp();},1000);
+  _authGateTimer=setTimeout(()=>{_gateShown=true;hideSplash();_proceedToApp();},1000);
 }
 function _authGateResolve(session){
   clearTimeout(_authGateTimer);
+  _gateShown=true;
   if(session?.user){
     hideSplash();_proceedToApp();
   } else {
