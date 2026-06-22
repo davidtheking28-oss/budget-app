@@ -3052,7 +3052,7 @@ async function cloudSignIn(){
   if(!email||!email.includes('@')){showToast('הזן כתובת אימייל תקינה');return;}
   const btn=document.getElementById('cloudSignInBtn');
   if(btn)btn.disabled=true;
-  const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+  const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:'https://davidtheking28-oss.github.io/budget-app/'}});
   if(btn)btn.disabled=false;
   if(error){showToast('❌ '+error.message);return;}
   showToast('✉️ קישור נשלח לאימייל שלך');
@@ -4837,7 +4837,7 @@ async function obSendEmail(){
   inp.disabled=true;
   try{
     if(!_sb)throw new Error('no_sb');
-    const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+    const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:'https://davidtheking28-oss.github.io/budget-app/'}});
     if(error)throw error;
     _obOtpSent=true;
     renderOnboardStep();
@@ -5277,7 +5277,7 @@ async function _authSendCode(){
   const btn=document.getElementById('authBtn');
   const orig=btn.textContent;btn.disabled=true;btn.textContent='שולח...';
   if(!_sb){btn.disabled=false;btn.textContent=orig;showToast('❌ שירות ענן אינו זמין');return;}
-  const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+  const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:'https://davidtheking28-oss.github.io/budget-app/'}});
   btn.disabled=false;
   if(error){showToast('❌ '+error.message);btn.textContent=orig;return;}
   _authStep='otp';
