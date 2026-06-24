@@ -2615,7 +2615,7 @@ function addTransaction(prefill){
     haptic(12);
     showGif(getCheckGif(),1200);
     // משוב תקציבי: כמה נשאר בקטגוריה אחרי ההוצאה הזו
-    let msg='✓ ההוצאה נרשמה!', msgType='';
+    let msg=type==='income'?'✓ ההכנסה נרשמה!':'✓ ההוצאה נרשמה!', msgType='';
     if(type==='expense' && budgets[cat]>0){
       const ym=date.slice(0,7);
       const spent=transactions.filter(t=>t.type==='expense'&&t.cat===cat&&t.date&&t.date.startsWith(ym)).reduce((s,t)=>s+t.amount,0);
