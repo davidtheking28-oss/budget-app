@@ -5216,7 +5216,7 @@ function switchMode(mode){
   userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
   if(!userSettings.incomeSources)userSettings.incomeSources=[];
   if(!userSettings.customCats)userSettings.customCats=[];
-  userSettings.businessMode=true;
+  userSettings.businessMode=(mode==='business');
   updateModeSwitcher();
   refreshAll();
   showToast(mode==='business'?'💼 מצב עסקי פעיל':'🏠 מצב פרטי פעיל');
