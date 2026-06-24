@@ -2437,10 +2437,10 @@ function doSearch(q){
 
 let wizStep=1;
 function setTxType(type){
-  txTypeFilter='expense';
-  const cats=getEffectiveCats('expense');
+  txTypeFilter=type;
+  const cats=getEffectiveCats(type);
   txSelectedCat=cats[0];
-  txFixedType='variable';
+  txFixedType=type==='income'?'fixed':'variable';
   wizRenderCats(cats);
   wizStep=1;
   wizRender();
@@ -2492,7 +2492,7 @@ function wizRender(){
   document.getElementById('wizNextBtn').style.visibility=wizStep===1?'hidden':'visible';
   const _po=document.getElementById('wizPillOuter');if(_po)_po.style.display=wizStep===1?'':'none';
   document.getElementById('wizStepBtn').innerHTML=wizStep===1?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><polyline points="15 18 21 12 15 6"/><line x1="21" y1="12" x2="3" y2="12"/></svg>';
-  document.getElementById('wizTtl').textContent=wizStep===1?'על מה הוצאתי?':'כמה שילמתי?';
+  document.getElementById('wizTtl').textContent=wizStep===1?(txTypeFilter==='income'?'מה מקור ההכנסה?':'על מה הוצאתי?'):(txTypeFilter==='income'?'כמה הרווחתי?':'כמה שילמתי?');
   document.getElementById('wizBody1').style.display=wizStep===1?'':'none';
   document.getElementById('wizBody2').style.display=wizStep===2?'flex':'none';
   if(wizStep===2){setTimeout(()=>{document.getElementById('txAmount').focus();},120);}
