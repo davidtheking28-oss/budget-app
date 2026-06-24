@@ -5194,6 +5194,10 @@ function _authGateResolve(session){
   }
 }
 function _proceedToApp(){
+  if(_cloudUser){
+    const ageMs=Date.now()-new Date(_cloudUser.created_at).getTime();
+    if(ageMs<120000)localStorage.removeItem('budget_onboarded');
+  }
   if(!localStorage.getItem('budget_onboarded')){showOnboarding();}
   else{try{checkFabHint();}catch(e){}}
   updateModeSwitcher();
