@@ -3043,7 +3043,7 @@ async function _loadFromCloud(silent){
       if(data.goals?.length){goals=data.goals;localStorage.setItem(_modeKey('budget_goals'),JSON.stringify(goals));}
       if(data.subscriptions?.length){subscriptions=data.subscriptions;localStorage.setItem(_modeKey('budget_subs'),JSON.stringify(subscriptions));}
       if(data.loans?.length){loans=data.loans;localStorage.setItem(_modeKey('budget_loans'),JSON.stringify(loans));}
-      if(data.settings&&data.settings.name!==undefined){userSettings={...userSettings,...data.settings};saveSettingsData();}
+      if(data.settings&&data.settings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...data.settings};localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
       if(!silent){refreshAll();showToast('☁️ נתונים נטענו מהענן');}
     } else {
       if(!_householdOwner)await _doCloudSave();
@@ -3229,7 +3229,7 @@ if(_sb){
 let userSettings = JSON.parse(localStorage.getItem(_modeKey('budget_settings')) || '{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
 if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
-function saveSettingsData(){localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));scheduleCloudSave();}
+function saveSettingsData(){localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
 
 function getMonthlyIncome(){
   const manualIncome = getMonthTx(currentYear,currentMonth).filter(t=>t.type==='income').reduce((s,t)=>s+(+t.amount||0),0);
