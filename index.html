@@ -2663,8 +2663,8 @@ function txHtml(t){
   return '<div class="tx-item" data-txid="'+t.id+'" onclick="editTx('+t.id+')">'
     +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+emoji+'</div>'
     +'<div class="tx-info">'
-      +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span>'+txFixedLabel(t)+'</div>'
-      +(t.note?'<div class="tx-note">'+esc(t.note)+'</div>':'')
+      +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
+      +'<div class="tx-meta">'+txFixedLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
     +'</div>'
     +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
     +'<button class="tx-del-btn" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק עסקה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>'
@@ -2679,8 +2679,8 @@ function txSwipeHtml(t){
       +'<div class="tx-item" data-txid="'+t.id+'" onclick="swipeTap(this,'+t.id+')">'
         +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+emoji+'</div>'
         +'<div class="tx-info">'
-          +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span>'+txFixedLabel(t)+'</div>'
-          +(t.note?'<div class="tx-note">'+esc(t.note)+'</div>':'')
+          +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
+          +'<div class="tx-meta">'+txFixedLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
         +'</div>'
         +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
       +'</div>'
