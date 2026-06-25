@@ -1965,7 +1965,7 @@
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
           <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingAvatar">?</div>
           <div style="flex:1;min-width:0;">
-            <input id="settingName" type="text" placeholder="הכנס שם..." aria-label="שם" onfocus="this.select()" oninput="updateSettingAvatar()"
+            <input id="settingName" type="text" placeholder="הכנס שם..." aria-label="שם" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.name=this.value.trim();saveSettingsData();updateHeaderTitle()"
               style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
             <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
           </div>
@@ -1974,7 +1974,7 @@
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
             <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f43f5e);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingPartnerAvatar">?</div>
             <div style="flex:1;min-width:0;">
-              <input id="settingPartnerName" type="text" placeholder="שם בן/בת הזוג..." aria-label="שם בן/בת זוג" onfocus="this.select()" oninput="updateSettingAvatar()"
+              <input id="settingPartnerName" type="text" placeholder="שם בן/בת הזוג..." aria-label="שם בן/בת זוג" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.partnerName=this.value.trim();saveSettingsData()"
                 style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
               <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
             </div>
@@ -2033,7 +2033,6 @@
         <div class="settings-section-title">סנכרון ושיתוף</div>
         <div id="cloudSection"></div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="saveSettings()" style="margin-top:8px">שמור הגדרות</button>
       <div style="text-align:center;margin-top:14px;padding-bottom:4px">
         <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">🔒 מדיניות פרטיות</button>
         <span style="color:var(--border);margin:0 6px">·</span>
@@ -3312,16 +3311,12 @@ function removePartner(){
   showToast('✓ בן/בת הזוג הוסר');
 }
 function saveSettings(){
-  userSettings.name        = document.getElementById('settingName').value.trim();
-  const partnerInput = document.getElementById('settingPartnerName'); userSettings.partnerName = partnerInput && document.getElementById('partnerRow').style.display!=='none' ? partnerInput.value.trim() : userSettings.partnerName;
-  userSettings.currency    = '₪';
-  const _sgEl2 = document.getElementById('settingSavingsGoal'); userSettings.savingsGoal = _sgEl2 ? parseFloat(_sgEl2.value)||0 : userSettings.savingsGoal||0;
-  userSettings.incomeSources = userSettings.incomeSources.filter(s=>s.name||s.amount);
+  const _sn=document.getElementById('settingName');if(_sn)userSettings.name=_sn.value.trim();
+  const partnerInput=document.getElementById('settingPartnerName');if(partnerInput&&document.getElementById('partnerRow')?.style.display!=='none')userSettings.partnerName=partnerInput.value.trim();
+  const _sgEl2=document.getElementById('settingSavingsGoal');if(_sgEl2)userSettings.savingsGoal=parseFloat(_sgEl2.value)||0;
+  userSettings.incomeSources=userSettings.incomeSources.filter(s=>s.name||s.amount);
   saveSettingsData();
-  closeSheet('settingsSheet');
   updateHeaderTitle();
-  refreshAll();
-  showToast('✓ ההגדרות נשמרו');
 }
 function updateHeaderTitle(){
   const el = document.querySelector('.header-title h1');
@@ -6125,7 +6120,7 @@ setTimeout(autoCarryRecurring,500);
   if(typeof _cs==='function'){
     window.closeSheet=function(id){
       var r=_cs.apply(this,arguments);
-      if(id==='settingsSheet'){ setTimeout(function(){ try{ if(window.saveSettingsData)saveSettingsData(); if(window.refreshAll)refreshAll(); if(window.updateHeaderTitle)updateHeaderTitle(); }catch(e){} }, 240); }
+      if(id==='settingsSheet'){ setTimeout(function(){ try{ if(window.saveSettings)saveSettings(); if(window.refreshAll)refreshAll(); }catch(e){} }, 240); }
       return r;
     };
   }
