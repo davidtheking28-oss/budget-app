@@ -3229,7 +3229,7 @@ if(_sb){
 let userSettings = JSON.parse(localStorage.getItem(_modeKey('budget_settings')) || '{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
 if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
-function saveSettingsData(){localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));}
+function saveSettingsData(){localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));scheduleCloudSave();}
 
 function getMonthlyIncome(){
   const manualIncome = getMonthTx(currentYear,currentMonth).filter(t=>t.type==='income').reduce((s,t)=>s+(+t.amount||0),0);
