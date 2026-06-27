@@ -3263,7 +3263,7 @@ function renderSettingIncomeRows(){
       </div>
       <div class="income-source-field" style="margin-bottom:8px;">
         <label>שם המקור</label>
-        <input type="text" placeholder="${ph}..." value="${esc(src.name||'')}" autocomplete="off" autocorrect="off" spellcheck="false" oninput="userSettings.incomeSources[${i}].name=this.value;saveSettingsData()" onfocus="this.select()"/>
+        <input type="text" placeholder="${ph}..." value="${esc(src.name||'')}" autocomplete="new-password" autocorrect="off" spellcheck="false" readonly oninput="userSettings.incomeSources[${i}].name=this.value;saveSettingsData()" onfocus="this.removeAttribute('readonly');this.select()" ontouchstart="this.removeAttribute('readonly')"/>
       </div>
       <div class="income-source-field">
         <label>סכום חודשי (₪)</label>
@@ -5674,7 +5674,6 @@ function autoCarryRecurring(){
     });
     saveData();
     if(typeof refreshAll==="function") refreshAll();
-    if(typeof showToast==="function") showToast("✓ נוספו "+pending.length+" הוצאות קבועות לחודש זה");
     return pending.length;
   }catch(e){ _DEBUG&&console.warn("autoCarryRecurring",e); return 0; }
 }
