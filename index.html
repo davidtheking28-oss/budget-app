@@ -1263,7 +1263,7 @@
 
 <div class="search-overlay" id="searchOverlay">
   <div class="search-bar-row">
-    <input type="text" class="search-bar-input" id="globalSearchInput" placeholder="חיפוש עסקאות ומנויים..." oninput="doSearch(this.value)" autofocus onfocus="this.select()" aria-label="חיפוש עסקאות ומנויים"/>
+    <input type="text" class="search-bar-input" id="globalSearchInput" placeholder="חיפוש עסקאות ומנויים..." oninput="doSearch(this.value)" autofocus onfocus="this.select()" aria-label="חיפוש עסקאות ומנויים" autocomplete="off" autocorrect="off" spellcheck="false"/>
     <button class="btn btn-outline btn-sm" onclick="closeSearch()">סגור</button>
   </div>
   <div class="search-results" id="searchResultsList"></div>
@@ -1291,7 +1291,7 @@
         <button class="wiz-next-btn" id="wizNextBtn" onclick="wizNext()" aria-label="הבא">›</button>
       </div>
       <div class="wiz-pill-outer" id="wizPillOuter">
-        <input type="text" id="txDesc" class="wiz-pill" placeholder="קפה, סופר, דלק..." oninput="wizDescNlp(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();wizNext();}" onfocus="this.select()" aria-label="תיאור הוצאה"/>
+        <input type="text" id="txDesc" class="wiz-pill" placeholder="קפה, סופר, דלק..." oninput="wizDescNlp(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();wizNext();}" onfocus="this.select()" aria-label="תיאור הוצאה" autocomplete="off" autocorrect="off" spellcheck="false"/>
         <button class="wiz-next-inline" onclick="wizNext()">הבא</button>
       </div>
     </div>
@@ -1371,7 +1371,7 @@
         <div id="subLogoPreview" style="width:52px;height:52px;border-radius:14px;flex-shrink:0;overflow:hidden;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;transition:all 0.2s;"></div>
         <div class="form-field" style="flex:1;margin:0">
           <label for="subName">שם השירות</label>
-          <input type="text" id="subName" placeholder="לדוגמה: Netflix, Spotify..." onfocus="this.select()" oninput="subNameAutoFill(this.value)"/>
+          <input type="text" id="subName" placeholder="לדוגמה: Netflix, Spotify..." onfocus="this.select()" oninput="subNameAutoFill(this.value)" autocomplete="off" autocorrect="off" spellcheck="false"/>
         </div>
       </div>
       <div class="form-row">
@@ -1410,7 +1410,7 @@
         <div id="editSubLogoPreview" style="width:52px;height:52px;border-radius:14px;flex-shrink:0;overflow:hidden;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;transition:all 0.2s;"></div>
         <div class="form-field" style="flex:1;margin:0">
           <label for="editSubName">שם השירות</label>
-          <input type="text" id="editSubName" placeholder="Netflix" onfocus="this.select()" oninput="editSubNamePreview(this.value)"/>
+          <input type="text" id="editSubName" placeholder="Netflix" onfocus="this.select()" oninput="editSubNamePreview(this.value)" autocomplete="off" autocorrect="off" spellcheck="false"/>
         </div>
       </div>
       <div class="form-row">
@@ -1466,20 +1466,20 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title">📉 הוספת הלוואה / חוב</div>
     <div class="form-stack">
-      <div class="form-field"><label for="loanName">שם ההלוואה</label><input type="text" id="loanName" placeholder="לדוגמה: משכנתא, הלוואת רכב, אוברדראפט" onfocus="this.select()"/></div>
+      <div class="form-field"><label for="loanName">שם ההלוואה</label><input type="text" id="loanName" placeholder="לדוגמה: משכנתא, הלוואת רכב, אוברדראפט" onfocus="this.select()" autocomplete="off" autocorrect="off" spellcheck="false"/></div>
       <div class="form-row">
         <div class="form-field"><label for="loanMonthly">החזר חודשי (₪)</label><input type="number" id="loanMonthly" placeholder="3,500" min="0" inputmode="decimal" onfocus="this.select()"/></div>
         <div class="form-field"><label for="loanRemaining">יתרה לתשלום (₪)</label><input type="number" id="loanRemaining" placeholder="450,000" min="0" inputmode="decimal" onfocus="this.select()"/></div>
       </div>
       <button type="button" onclick="this.style.display='none';document.getElementById('loanExtras').style.display='flex'" style="background:none;border:none;color:var(--accent);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;padding:2px 0;text-align:right">+ פרטים נוספים (ריבית, נושה, הערות)</button>
       <div id="loanExtras" style="display:none;flex-direction:column;gap:10px;">
-        <div class="form-field"><label for="loanLender">נושה (בנק / חברה)</label><input type="text" id="loanLender" placeholder="בנק הפועלים (אופציונלי)" onfocus="this.select()"/></div>
+        <div class="form-field"><label for="loanLender">נושה (בנק / חברה)</label><input type="text" id="loanLender" placeholder="בנק הפועלים (אופציונלי)" onfocus="this.select()" autocomplete="off" autocorrect="off" spellcheck="false"/></div>
         <div class="form-row">
           <div class="form-field"><label for="loanOriginal">סכום מקורי (₪)</label><input type="number" id="loanOriginal" placeholder="500,000" min="0" inputmode="decimal" onfocus="this.select()"/></div>
           <div class="form-field"><label for="loanRate">ריבית (%)</label><input type="number" id="loanRate" placeholder="3.5" min="0" step="0.1" inputmode="decimal" onfocus="this.select()"/></div>
         </div>
         <div class="form-field"><label for="loanMonthsLeft">חודשים שנשארו</label><input type="number" id="loanMonthsLeft" placeholder="120" min="0" inputmode="numeric" onfocus="this.select()"/></div>
-        <div class="form-field"><label for="loanNotes">הערות</label><input type="text" id="loanNotes" placeholder="קו שני משכנתא, ריבית פריים..." onfocus="this.select()"/></div>
+        <div class="form-field"><label for="loanNotes">הערות</label><input type="text" id="loanNotes" placeholder="קו שני משכנתא, ריבית פריים..." onfocus="this.select()" autocomplete="off" autocorrect="off" spellcheck="false"/></div>
       </div>
       <button class="btn btn-primary btn-full" onclick="saveLoan()">שמור הלוואה</button>
     </div>
@@ -1888,8 +1888,8 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title">✏️ עריכת עסקה</div>
     <div class="form-stack">
-      <div class="form-field"><label for="editTxDesc">תיאור</label><input type="text" id="editTxDesc" placeholder="לדוגמה: קפה, חשמל, סופר" onfocus="this.select()"/></div>
-      <div class="form-field"><label for="editTxNote">הערה</label><input type="text" id="editTxNote" placeholder="פירוט נוסף (אופציונלי)" onfocus="this.select()"/></div>
+      <div class="form-field"><label for="editTxDesc">תיאור</label><input type="text" id="editTxDesc" placeholder="לדוגמה: קפה, חשמל, סופר" onfocus="this.select()" autocomplete="off" autocorrect="off" spellcheck="false"/></div>
+      <div class="form-field"><label for="editTxNote">הערה</label><input type="text" id="editTxNote" placeholder="פירוט נוסף (אופציונלי)" onfocus="this.select()" autocomplete="off" autocorrect="off" spellcheck="false"/></div>
       <div class="form-row">
         <div class="form-field"><label for="editTxAmount">סכום (₪)</label><input type="number" id="editTxAmount" min="0" step="0.01" inputmode="decimal" onfocus="this.select()"/></div>
         <div class="form-field"><label for="editTxDate">תאריך</label><input type="date" id="editTxDate"/></div>
@@ -3104,7 +3104,7 @@ function renderCloudSection(){
       +'<div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:8px">👨‍👩‍👧 תקציב משפחתי</div>'
       +'<button class="btn btn-outline btn-full" onclick="createHousehold()" style="margin-bottom:8px">+ צור קוד שיתוף לבן/בת זוג</button>'
       +'<div style="font-size:0.75rem;color:var(--text3);margin-bottom:6px;text-align:center">— או הצטרף לתקציב קיים —</div>'
-      +'<input id="householdCodeInput" type="text" maxlength="6" placeholder="קוד 6 תווים" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:4px;text-transform:uppercase" />'
+      +'<input id="householdCodeInput" type="text" maxlength="6" placeholder="קוד 6 תווים" autocomplete="off" autocorrect="off" spellcheck="false" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:4px;text-transform:uppercase" />'
       +'<button class="btn btn-primary btn-full" onclick="joinHousehold()">הצטרף לתקציב</button>'
       +'</div>';
   } else if(_cloudHousehold.role==='owner'){
@@ -4618,7 +4618,7 @@ function addSplitRow(cat,amt){
   const rowEl=document.createElement('div');
   rowEl.className='form-row split-row';
   rowEl.style.gap='8px';
-  rowEl.innerHTML='<div class="form-field" style="flex:2"><label>תיאור</label><input type="text" class="split-desc" placeholder="תיאור..." style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;" /></div>'
+  rowEl.innerHTML='<div class="form-field" style="flex:2"><label>תיאור</label><input type="text" class="split-desc" placeholder="תיאור..." autocomplete="off" autocorrect="off" spellcheck="false" style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;" /></div>'
     +'<div class="form-field" style="flex:1"><label>סכום</label><input type="number" class="split-amt" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+(amt||'')+'" oninput="updateSplitRemaining()" style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:var(--font-num);font-weight:700;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;text-align:center;" /></div>'
     +'<div class="form-field" style="flex:2"><label>קטגוריה</label><select class="split-cat" style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;">'+cats.map(c=>'<option'+(c===(cat||cats[0])?' selected':'')+'>'+c+'</option>').join('')+'</select></div>'
     +'<button onclick="this.closest(\'.split-row\').remove();updateSplitRemaining()" aria-label="הסר" style="flex-shrink:0;margin-top:22px;background:transparent;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;padding:6px;min-width:32px">✕</button>';
