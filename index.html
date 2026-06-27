@@ -1965,7 +1965,7 @@
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
           <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingAvatar">?</div>
           <div style="flex:1;min-width:0;">
-            <input id="settingName" type="text" placeholder="הכנס שם..." aria-label="שם" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.name=this.value.trim();saveSettingsData();updateHeaderTitle()"
+            <input id="settingName" type="text" placeholder="הכנס שם..." aria-label="שם" autocomplete="off" autocorrect="off" spellcheck="false" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.name=this.value.trim();saveSettingsData();updateHeaderTitle()"
               style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
             <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
           </div>
@@ -1974,7 +1974,7 @@
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
             <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f43f5e);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingPartnerAvatar">?</div>
             <div style="flex:1;min-width:0;">
-              <input id="settingPartnerName" type="text" placeholder="שם בן/בת הזוג..." aria-label="שם בן/בת זוג" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.partnerName=this.value.trim();saveSettingsData()"
+              <input id="settingPartnerName" type="text" placeholder="שם בן/בת הזוג..." aria-label="שם בן/בת זוג" autocomplete="off" autocorrect="off" spellcheck="false" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.partnerName=this.value.trim();saveSettingsData()"
                 style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
               <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
             </div>
@@ -3250,16 +3250,17 @@ function renderSettingIncomeRows(){
   el.innerHTML = userSettings.incomeSources.map((src,i)=>{
     const ph = examples[i % examples.length];
     return `<div class="income-source-row">
-      <div class="income-source-row-fields" style="align-items:flex-end;gap:8px">
-        <div class="income-source-field">
-          <label>שם המקור</label>
-          <input type="text" placeholder="${ph}..." value="${esc(src.name||'')}" oninput="userSettings.incomeSources[${i}].name=this.value;saveSettingsData()" onfocus="this.select()"/>
-        </div>
-        <div class="income-source-field" style="max-width:100px">
-          <label>סכום (₪)</label>
-          <input type="number" inputmode="decimal" placeholder="0" value="${src.amount||''}" oninput="userSettings.incomeSources[${i}].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/>
-        </div>
-        <button onclick="userSettings.incomeSources.splice(${i},1);saveSettingsData();renderSettingIncomeRows()" style="background:rgba(220,38,38,0.1);border:none;color:var(--red);font-size:1rem;cursor:pointer;padding:9px 10px;border-radius:8px;flex-shrink:0" aria-label="מחק">🗑️</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;">מקור ${i+1}</span>
+        <button onclick="userSettings.incomeSources.splice(${i},1);saveSettingsData();renderSettingIncomeRows()" style="background:rgba(220,38,38,0.08);border:none;color:var(--red);cursor:pointer;padding:4px 10px;border-radius:8px;font-size:0.75rem;font-weight:700;" aria-label="מחק">✕ הסר</button>
+      </div>
+      <div class="income-source-field" style="margin-bottom:8px;">
+        <label>שם המקור</label>
+        <input type="text" placeholder="${ph}..." value="${esc(src.name||'')}" autocomplete="off" autocorrect="off" spellcheck="false" oninput="userSettings.incomeSources[${i}].name=this.value;saveSettingsData()" onfocus="this.select()"/>
+      </div>
+      <div class="income-source-field">
+        <label>סכום חודשי (₪)</label>
+        <input type="number" inputmode="decimal" placeholder="0" value="${src.amount||''}" oninput="userSettings.incomeSources[${i}].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/>
       </div>
       ${hasParter?`<div style="margin-top:8px"><select style="border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:0.82rem;color:var(--text);font-family:inherit;width:100%" oninput="userSettings.incomeSources[${i}].owner=this.value;saveSettingsData()"><option value="" ${!src.owner?'selected':''}>משותף לשניים</option><option value="1" ${src.owner==='1'?'selected':''}>${p1}</option><option value="2" ${src.owner==='2'?'selected':''}>${p2}</option></select></div>`:''}
     </div>`;
