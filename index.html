@@ -3047,7 +3047,7 @@ async function _loadFromCloud(silent){
       if(data.subscriptions?.length){subscriptions=data.subscriptions;localStorage.setItem(_modeKey('budget_subs'),JSON.stringify(subscriptions));}
       if(data.loans?.length){loans=data.loans;localStorage.setItem(_modeKey('budget_loans'),JSON.stringify(loans));}
       if(data.settings&&data.settings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...data.settings};localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
-      if(!silent){refreshAll();showToast('☁️ נתונים נטענו מהענן');}
+      if(!silent){refreshAll();}
     } else {
       if(!_householdOwner)await _doCloudSave();
     }
@@ -5181,6 +5181,17 @@ function _initAuthGate(){
   if(!_sb||SUPA_ANON==='__SUPABASE_ANON__'){
     hideSplash();_proceedToApp();return;
   }
+  try{
+    const sk=Object.keys(localStorage).find(k=>k.startsWith('sb-')&&k.endsWith('-auth-token'));
+    if(sk){
+      const cached=JSON.parse(localStorage.getItem(sk));
+      if(cached?.user&&cached?.expires_at&&cached.expires_at>Date.now()/1000+60){
+        _cloudUser=cached.user;
+        hideSplash();_proceedToApp();
+        return;
+      }
+    }
+  }catch(e){}
   _authGateTimer=setTimeout(()=>{
     const r=document.getElementById('splashRetry');
     if(r)r.style.display='flex';
