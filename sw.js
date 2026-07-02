@@ -1,7 +1,8 @@
 /* Service worker — offline app shell with auto-update.
-   HTML is network-first (always fresh when online), static assets cache-first.
+   HTML is stale-while-revalidate (instant open from cache, refreshed in
+   background for the next launch), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v4';
+const CACHE = 'budget-app-v6';
 const SHELL = [
   './',
   './index.html',
@@ -11,7 +12,8 @@ const SHELL = [
   './apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
   'https://unpkg.com/lucide@0.453.0',
-  'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js'
 ];
 
 self.addEventListener('install', (e) => {
@@ -29,6 +31,31 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) {}
+  e.waitUntil(
+    self.registration.showNotification(d.title || 'תקציב', {
+      body: d.body || '',
+      icon: './icon-192.png',
+      badge: './icon-192.png',
+      dir: 'rtl',
+      lang: 'he',
+      data: { url: d.url || './' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) { if ('focus' in c) return c.focus(); }
+      return clients.openWindow(e.notification.data?.url || './');
+    })
+  );
+});
+
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
@@ -37,15 +64,24 @@ self.addEventListener('fetch', (e) => {
   const isHTML = req.mode === 'navigate' || accept.includes('text/html');
 
   if (isHTML) {
-    // network-first: always try to get the latest page, fall back to cache offline
+    // stale-while-revalidate: serve cached instantly, refresh in background
     e.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
+      caches.match(req).then((cached) => {
+        const network = fetch(req)
+          .then((res) => {
+            if (res && res.status === 200) {
+              const copy = res.clone();
+              caches.open(CACHE).then((c) => c.put(req, copy));
+            }
+            return res;
+          })
+          .catch(() => cached || caches.match('./index.html'));
+        if (cached) {
+          e.waitUntil(network.catch(() => {}));
+          return cached;
+        }
+        return network;
+      })
     );
     return;
   }
