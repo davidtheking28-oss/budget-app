@@ -844,8 +844,8 @@
     main .shadow-sm{box-shadow:0 1px 3px rgba(0,0,0,0.05),0 10px 24px -8px rgba(0,0,0,0.09);}
     body.dark main .shadow-sm{box-shadow:0 1px 0 rgba(255,255,255,0.02);}
     /* Smoother, slightly richer page transition */
-    .page.active{animation:pageEnterPolish 0.3s cubic-bezier(0.22,1,0.36,1) both;}
-    @keyframes pageEnterPolish{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    .page.active{animation:pageEnterPolish 0.15s ease-out both;}
+    @keyframes pageEnterPolish{from{opacity:0.4;}to{opacity:1;}}
 
     /* ── Unified card system (cohesion across all pages) ── */
     main .rounded-2xl{border-radius:18px;}
@@ -4854,12 +4854,11 @@ function dismissMonthReview(){
   haptic(4);
 }
 function showPage(name,btn){
+  window.scrollTo(0,0);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>{b.classList.remove('active');b.removeAttribute('aria-current');});
   const pg=document.getElementById('page-'+name);
   pg.classList.add('active');
-  pg.style.animation='none';
-  requestAnimationFrame(()=>{pg.style.animation='';});
   const navBtn=btn||document.getElementById('nav-'+name);
   if(navBtn){navBtn.classList.add('active');navBtn.setAttribute('aria-current','page');}
   if(name==='analytics'){renderAnalytics();renderAnnualSummary();renderInsights();}
@@ -4868,8 +4867,6 @@ function showPage(name,btn){
   if(name==='subscriptions')renderSubscriptions();
   if(name==='budget')       renderBudget();
   if(name==='loans')        renderLoans();
-  animateHeroNums(name);
-  window.scrollTo(0,0);
 }
 
 // ── Feature 2: Cash Flow Forecast ────────────────────────────────
@@ -5151,9 +5148,14 @@ function confirmSmsImport(){
 }
 
 function refreshAll(){
-  renderDashboard();renderTxPage();renderGoals();renderSubscriptions();renderBudget();renderLoans();renderDailyWidget();
-  const ap=document.querySelector('.page.active');
-  if(ap&&ap.id==='page-analytics'){renderAnalytics();renderAnnualSummary();renderInsights();}
+  renderDashboard();renderDailyWidget();
+  const id=document.querySelector('.page.active')?.id||'';
+  if(id==='page-transactions')renderTxPage();
+  else if(id==='page-goals')renderGoals();
+  else if(id==='page-subscriptions')renderSubscriptions();
+  else if(id==='page-budget')renderBudget();
+  else if(id==='page-loans')renderLoans();
+  else if(id==='page-analytics'){renderAnalytics();renderAnnualSummary();renderInsights();}
   renderMonthGrid();
   document.getElementById('headerMonthLabel').textContent=heMonth(currentYear,currentMonth);
 }
@@ -5556,7 +5558,7 @@ function importBankCSV(){
 // ── Splash screen ─────────────────────────────────────────────────
 function hideSplash(){
   const s = document.getElementById('splashScreen');
-  if(s) setTimeout(()=>s.classList.add('hidden'), 400);
+  if(s) requestAnimationFrame(()=>s.classList.add('hidden'));
 }
 
 // ── Auth gate ─────────────────────────────────────────────────────
