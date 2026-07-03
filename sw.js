@@ -2,7 +2,7 @@
    HTML is stale-while-revalidate (instant open from cache, refreshed in
    background for the next launch), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v6';
+const CACHE = 'budget-app-v7';
 const SHELL = [
   './',
   './index.html',
@@ -11,7 +11,6 @@ const SHELL = [
   './icon-512.png',
   './apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
-  'https://unpkg.com/lucide@0.453.0',
   'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js'
 ];
