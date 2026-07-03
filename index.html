@@ -676,7 +676,7 @@
     .quick-btn.income .quick-icon svg{stroke:var(--green);}
 
     /* ── Splash screen ───────────────────────── */
-    #splashScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.5s ease,visibility 0.5s ease;}
+    #splashScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.18s ease,visibility 0.18s ease;}
     #splashScreen.hidden{opacity:0;visibility:hidden;pointer-events:none;}
     .splash-logo{font-size:4.5rem;font-weight:700;color:var(--accent);font-family:var(--font-num);letter-spacing:-3px;animation:splashPulse 1s ease-in-out infinite alternate;}
     .splash-title{font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
@@ -5563,17 +5563,20 @@ function hideSplash(){
 
 // ── Auth gate ─────────────────────────────────────────────────────
 let _authGateTimer=null;
+let _gateDone=false;
 function _initAuthGate(){
   localStorage.removeItem('auth_skipped');
   if(!_sb||SUPA_ANON==='__SUPABASE_ANON__'){
+    _gateDone=true;
     hideSplash();_proceedToApp();return;
   }
   try{
     const sk=Object.keys(localStorage).find(k=>k.startsWith('sb-')&&k.endsWith('-auth-token'));
     if(sk){
       const cached=JSON.parse(localStorage.getItem(sk));
-      if(cached?.user&&cached?.expires_at&&cached.expires_at>Date.now()/1000+60){
+      if(cached?.user){
         _cloudUser=cached.user;
+        _gateDone=true;
         hideSplash();_proceedToApp();
         return;
       }
@@ -5589,6 +5592,8 @@ function _initAuthGate(){
 function _authGateResolve(session){
   clearTimeout(_authGateTimer);
   _gateShown=true;
+  if(_gateDone){hideSplash();return;}
+  _gateDone=true;
   if(session?.user){
     hideSplash();_proceedToApp();
   } else {
@@ -6432,11 +6437,7 @@ setTimeout(autoCarryRecurring,500);
 <script>
 (function(){
   if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
-    /* auto-reload once when a NEW service worker takes control (so updates reach the installed app) */
-    if(navigator.serviceWorker.controller){
-      var _swRefreshing=false;
-      navigator.serviceWorker.addEventListener('controllerchange', function(){ if(_swRefreshing)return; _swRefreshing=true; location.reload(); });
-    }
+    /* a new service worker takes control silently — the fresh version applies on the next launch (no mid-use reload flash) */
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js').then(function(reg){
         try{ reg.update(); }catch(e){}
