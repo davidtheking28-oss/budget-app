@@ -3128,27 +3128,8 @@ function _applyMerged(m){
   return changed;
 }
 
-// ── Sync status indicator ──
+// ── Sync status indicator (dot removed — sync runs silently; status text stays in Settings) ──
 function _setSyncState(state){
-  let dot=document.getElementById('syncDot');
-  if(!dot){
-    const nav=document.getElementById('inlineMonthNav');
-    if(nav){
-      dot=document.createElement('span');
-      dot.id='syncDot';
-      dot.style.cssText='width:8px;height:8px;border-radius:50%;display:none;flex-shrink:0;';
-      nav.appendChild(dot);
-    }
-  }
-  if(dot){
-    if(state==='synced'){dot.style.display='none';}
-    else{
-      dot.style.display='block';
-      dot.style.background=state==='syncing'?'var(--yellow)':'var(--text3)';
-      dot.title=state==='syncing'?'מסנכרן...':'שינויים ממתינים לסנכרון';
-      dot.onclick=()=>showToast(state==='syncing'?'☁️ מסנכרן...':'⏳ שינויים ממתינים לסנכרון — יישמרו אוטומטית');
-    }
-  }
   const s=document.getElementById('cloudStatus');
   if(s){
     if(state==='synced'){s.textContent='✓ מסונכרן';s.style.color='var(--green)';}
