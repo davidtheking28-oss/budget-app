@@ -2047,7 +2047,7 @@
         <span style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">📄 תנאי שימוש</button>
         <span style="color:var(--border);margin:0 6px">·</span>
-        <span style="color:var(--text3);font-size:0.78rem">v2.0 · build 0705</span>
+        <span style="color:var(--text3);font-size:0.78rem">v2.0 · build 0705d</span>
       </div>
     </div>
   </div>
@@ -4192,7 +4192,17 @@ function setBudget(){
   const _bb=document.querySelector('#addBudgetSheet .btn-primary');if(_bb){_bb.textContent='✓';_bb.disabled=true;}
   setTimeout(()=>{closeSheet('addBudgetSheet');showToast('✓ התקציב נשמר בהצלחה');renderBudget();},220);
 }
-function deleteBudget(cat){delete budgets[cat];saveData();renderBudget();}
+function deleteBudget(cat){
+  try{
+    showToast('🔧 מוחק: '+cat);
+    delete budgets[cat];
+    saveData();
+    renderBudget();
+    showToast('✓ נמחק: '+cat);
+  }catch(err){
+    showToast('❌ שגיאה: '+(err&&err.message?err.message:err));
+  }
+}
 function budgetBarColorClass(pct){
   if(pct>=90) return 'bg-rose-500';
   if(pct>=70) return 'bg-amber-500';
@@ -4255,7 +4265,7 @@ function renderBudget(){
         +'<div class="budget-item-name">'+catIconSvg(cat)+' '+cat+carryChip+'</div>'
         +'<div style="display:flex;align-items:center;gap:12px">'
           +(baseLim?'<div style="text-align:left"><div class="budget-avail-num '+state+'">'+fmt(avail||0)+'</div><div class="budget-avail-label">נותר מתוך '+fmt(lim)+'</div></div>':'')
-          +'<button type="button" onclick="deleteBudget(\''+cat+'\')" class="budget-del-x" aria-label="מחק">✕</button>'
+          +'<button type="button" ontouchend="showToast(\'👆 נגיעה זוהתה\')" onclick="deleteBudget(\''+cat+'\')" class="budget-del-x" aria-label="מחק">✕</button>'
         +'</div>'
       +'</div>'
       +(baseLim?'<div class="budget-prog-wrap"><div class="budget-prog-fill '+state+'" style="width:'+pct+'%"></div></div>'
