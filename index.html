@@ -2047,7 +2047,7 @@
         <span style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">📄 תנאי שימוש</button>
         <span style="color:var(--border);margin:0 6px">·</span>
-        <span style="color:var(--text3);font-size:0.78rem">v1.0</span>
+        <span style="color:var(--text3);font-size:0.78rem">v2.0 · build 0705</span>
       </div>
     </div>
   </div>
@@ -6423,7 +6423,12 @@ setTimeout(autoCarryRecurring,500);
 <script>
 (function(){
   if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
-    /* a new service worker takes control silently — the fresh version applies on the next launch (no mid-use reload flash) */
+    /* when a NEW service worker takes control, reload once so the fresh app applies
+       immediately instead of the user staying stuck on an old cached version */
+    var _swReloaded=false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if(_swReloaded) return; _swReloaded=true; location.reload();
+    });
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js').then(function(reg){
         try{ reg.update(); }catch(e){}
