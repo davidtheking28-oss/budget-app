@@ -2,7 +2,7 @@
    HTML is stale-while-revalidate (instant open from cache, refreshed in
    background for the next launch), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v8';
+const CACHE = 'budget-app-v9';
 const SHELL = [
   './',
   './index.html',
@@ -63,24 +63,17 @@ self.addEventListener('fetch', (e) => {
   const isHTML = req.mode === 'navigate' || accept.includes('text/html');
 
   if (isHTML) {
-    // stale-while-revalidate: serve cached instantly, refresh in background
+    // network-first: online users always get the latest app; cache is offline fallback only
     e.respondWith(
-      caches.match(req).then((cached) => {
-        const network = fetch(req)
-          .then((res) => {
-            if (res && res.status === 200) {
-              const copy = res.clone();
-              caches.open(CACHE).then((c) => c.put(req, copy));
-            }
-            return res;
-          })
-          .catch(() => cached || caches.match('./index.html'));
-        if (cached) {
-          e.waitUntil(network.catch(() => {}));
-          return cached;
-        }
-        return network;
-      })
+      fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
     );
     return;
   }
