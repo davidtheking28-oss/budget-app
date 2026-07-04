@@ -2047,7 +2047,7 @@
         <span style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">📄 תנאי שימוש</button>
         <span style="color:var(--border);margin:0 6px">·</span>
-        <span style="color:var(--text3);font-size:0.78rem">v2.0 · build 0705d</span>
+        <span style="color:var(--text3);font-size:0.78rem">v2.0 · build 0705e</span>
       </div>
     </div>
   </div>
@@ -6190,6 +6190,13 @@ setTimeout(autoCarryRecurring,500);
   document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});
   document.addEventListener('gestureend', function(e){ e.preventDefault(); }, {passive:false});
   document.addEventListener('touchmove', function(e){ if(e.touches.length>1) e.preventDefault(); }, {passive:false});
+  /* TEMP diagnostic: report which element every tap actually lands on */
+  document.addEventListener('touchend', function(e){
+    try{
+      var t=e.target, id=t.id?('#'+t.id):'', cls=(typeof t.className==='string'&&t.className)?('.'+t.className.split(' ')[0]):'';
+      if(typeof showToast==='function') showToast('👆 '+t.tagName+id+cls);
+    }catch(_){}
+  }, true);
 
   /* ----- PDF / print monthly summary ----- */
   window.exportMonthlyPDF=function(){
