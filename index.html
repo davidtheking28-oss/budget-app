@@ -986,19 +986,6 @@
     body.dark[data-daypart="dusk"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(168,85,247,.17),transparent 60%);}
     body.dark[data-daypart="night"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(99,102,241,.18),transparent 60%);}
 
-    /* ── 10 · Shared / staggered screen transition ──────────────── */
-    @keyframes aliveCardIn{from{opacity:0;transform:translateY(14px) scale(.985);}to{opacity:1;transform:translateY(0) scale(1);}}
-    .page.alive-enter{animation:none!important;}              /* let children carry the motion */
-    .page.alive-enter > *{animation:aliveCardIn .44s cubic-bezier(.22,1,.36,1) both;}
-    .page.alive-enter > *:nth-child(1){animation-delay:.02s;}
-    .page.alive-enter > *:nth-child(2){animation-delay:.06s;}
-    .page.alive-enter > *:nth-child(3){animation-delay:.10s;}
-    .page.alive-enter > *:nth-child(4){animation-delay:.14s;}
-    .page.alive-enter > *:nth-child(5){animation-delay:.18s;}
-    .page.alive-enter > *:nth-child(6){animation-delay:.22s;}
-    .page.alive-enter > *:nth-child(n+7){animation-delay:.26s;}
-    .page.alive-enter > .balance-hero{transform-origin:center top;}
-
     /* ── 11 · base ambient — visible immediately, even before JS ── */
     body{background-image:radial-gradient(130% 90% at 50% -6%,rgba(59,130,246,.12),transparent 55%);}
     body.dark{background-image:radial-gradient(130% 90% at 50% -6%,rgba(56,189,248,.16),transparent 60%);}
@@ -1034,17 +1021,6 @@
 
     /* bigger live status dot */
     .alive-dot{width:9px;height:9px;}
-
-    /* bolder, longer staggered screen transition */
-    @keyframes aliveCardIn{from{opacity:0;transform:translateY(24px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
-    .page.alive-enter > *{animation-duration:.5s!important;}
-    .page.alive-enter > *:nth-child(1){animation-delay:.03s;}
-    .page.alive-enter > *:nth-child(2){animation-delay:.09s;}
-    .page.alive-enter > *:nth-child(3){animation-delay:.15s;}
-    .page.alive-enter > *:nth-child(4){animation-delay:.21s;}
-    .page.alive-enter > *:nth-child(5){animation-delay:.27s;}
-    .page.alive-enter > *:nth-child(6){animation-delay:.33s;}
-    .page.alive-enter > *:nth-child(n+7){animation-delay:.39s;}
 
     /* brighter bar sheen */
     .prog-fill::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent)!important;
@@ -1116,7 +1092,7 @@
     .set-dd-chev{width:16px;height:16px;stroke:var(--text3);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;flex-shrink:0;}
     .set-dd.open .set-dd-chev{transform:rotate(180deg);}
     .set-dd-menu{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;box-shadow:0 14px 34px rgba(15,23,42,.22);padding:5px;z-index:60;display:none;}
-    .set-dd.open .set-dd-menu{display:block;animation:aliveCardIn .18s ease both;}
+    .set-dd.open .set-dd-menu{display:block;}
     .set-dd-opt{width:100%;display:flex;align-items:center;gap:10px;background:none;border:none;border-radius:9px;padding:11px 12px;font-size:0.9rem;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;text-align:right;min-height:44px;}
     .set-dd-opt:hover,.set-dd-opt:active{background:var(--surface2);}
     .set-dd-opt.sel{background:rgba(var(--accent-rgb),0.10);color:var(--accent);}
@@ -1174,9 +1150,12 @@
   <div class="splash-logo">₪</div>
   <div class="splash-title">תקציב אישי</div>
   <div class="splash-sub" id="splashMsg">מתחבר לענן...</div>
-  <div id="splashRetry" style="display:none;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
-    <div style="font-size:0.8rem;color:var(--red)">אין חיבור לאינטרנט</div>
-    <button onclick="location.reload()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit">נסה שוב</button>
+  <div id="splashRetry" style="display:none;margin-top:16px;flex-direction:column;align-items:center;gap:10px">
+    <div style="font-size:0.8rem;color:var(--text3)">החיבור לוקח יותר זמן מהרגיל</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="location.reload()" style="background:var(--surface2);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:10px 20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit">נסה שוב</button>
+      <button onclick="_authGateContinueOffline()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit">המשך בלי חיבור</button>
+    </div>
   </div>
 </div>
 <div id="authScreen" class="hidden" role="main" aria-label="כניסה לאפליקציה">
@@ -4851,7 +4830,7 @@ function dismissMonthReview(){
   haptic(4);
 }
 function showPage(name,btn){
-  window.scrollTo(0,0);
+  requestAnimationFrame(()=>window.scrollTo(0,0));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>{b.classList.remove('active');b.removeAttribute('aria-current');});
   const pg=document.getElementById('page-'+name);
@@ -5584,7 +5563,7 @@ function _initAuthGate(){
     if(r)r.style.display='flex';
     const m=document.getElementById('splashMsg');
     if(m)m.style.display='none';
-  },10000);
+  },4000);
 }
 function _authGateResolve(session){
   clearTimeout(_authGateTimer);
@@ -5596,6 +5575,12 @@ function _authGateResolve(session){
   } else {
     hideSplash();showAuthScreen();
   }
+}
+function _authGateContinueOffline(){
+  clearTimeout(_authGateTimer);
+  if(_gateDone)return;
+  _gateDone=true;
+  hideSplash();_proceedToApp();
 }
 function _proceedToApp(){
   if(_cloudUser){
@@ -5992,22 +5977,6 @@ function showGif(src, durationMs){
   document.addEventListener('DOMContentLoaded', applyAmbient);
   setInterval(applyAmbient, 10*60*1000);   // re-evaluate every 10 min
   if(window.AppBus) AppBus.on('view:refreshed', applyAmbient);
-
-  /* PILLAR 2 · shared / staggered transition between screens */
-  const origShow = window.showPage;
-  if(typeof origShow === 'function' && !reduce){
-    window.showPage = function(name){
-      const r = origShow.apply(this, arguments);
-      const pg = document.getElementById('page-' + name);
-      if(pg){
-        pg.classList.remove('alive-enter');
-        void pg.offsetWidth;               // restart the animation cleanly
-        pg.classList.add('alive-enter');
-        setTimeout(()=> pg.classList.remove('alive-enter'), 750);
-      }
-      return r;
-    };
-  }
 })();
 
 
