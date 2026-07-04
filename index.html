@@ -3208,11 +3208,13 @@ async function _loadFromCloud(silent){
       const cloudSettings=bundle.settings;
       if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...cloudSettings};localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
       if(!silent||changed){refreshAll();}
+      _decideOnboarding();
     } else {
       if(!_householdOwner)await _doCloudSave();
+      _decideOnboarding();
     }
     renderCloudSection();
-  }catch(e){_DEBUG&&console.warn('cloud load',e);}
+  }catch(e){_DEBUG&&console.warn('cloud load',e);_decideOnboarding();}
 }
 // ── Push notifications ────────────────────────────────────────────
 function _pushSupported(){return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;}
@@ -5582,13 +5584,26 @@ function _authGateContinueOffline(){
   _gateDone=true;
   hideSplash();_proceedToApp();
 }
-function _proceedToApp(){
+function _hasRealData(){
+  return !!(userSettings.name||(userSettings.incomeSources&&userSettings.incomeSources.length)||transactions.length||Object.keys(budgets).length);
+}
+function _decideOnboarding(){
+  if(_hasRealData()){
+    localStorage.setItem('budget_onboarded','1');
+    const ov=document.getElementById('onboardOverlay');
+    if(ov&&ov.classList.contains('open'))ov.classList.remove('open');
+    try{checkFabHint();}catch(e){}
+    return;
+  }
   if(_cloudUser){
     const ageMs=Date.now()-new Date(_cloudUser.created_at).getTime();
     if(ageMs<120000)localStorage.removeItem('budget_onboarded');
   }
   if(!localStorage.getItem('budget_onboarded')){showOnboarding();}
   else{try{checkFabHint();}catch(e){}}
+}
+function _proceedToApp(){
+  if(!_cloudUser)_decideOnboarding();
   updateModeSwitcher();
 }
 function switchMode(mode){
