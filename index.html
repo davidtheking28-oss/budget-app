@@ -3101,7 +3101,7 @@ function _mergeBudgets(local,cloud,meta){
 }
 function _buildMerged(bundle){
   return {
-    transactions:_mergeArrays(transactions,bundle.transactions,_syncMeta.del.tx).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.u||0)-(a.u||0)),
+    transactions:_mergeArrays(transactions,bundle.transactions,_syncMeta.del.tx),
     goals:_mergeArrays(goals,bundle.goals,_syncMeta.del.goals),
     subscriptions:_mergeArrays(subscriptions,bundle.subscriptions,_syncMeta.del.subs),
     loans:_mergeArrays(loans,bundle.loans,_syncMeta.del.loans),
