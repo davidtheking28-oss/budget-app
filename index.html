@@ -5555,7 +5555,10 @@ function _initAuthGate(){
       if(cached?.user){
         _cloudUser=cached.user;
         _gateDone=true;
-        hideSplash();_proceedToApp();
+        _proceedToApp();
+        // returning user with local data → show instantly; empty local (fresh device) → hold
+        // splash until cloud data arrives so the app never flashes empty / re-asks onboarding
+        if(_hasRealData())hideSplash();
         return;
       }
     }
