@@ -10,7 +10,25 @@ const CATEGORIES = [
   'יהדות/חגים','ביטוח לאומי','שונות'
 ]
 
-const MODEL = 'gemini-2.0-flash'
+// free-tier availability varies per key; try in order and use the first that answers
+const MODELS = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash']
+
+async function callGemini(key: string, body: unknown) {
+  let last = { status: 0, detail: 'no model tried' }
+  for (const model of MODELS) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+      { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) },
+    )
+    const ai = await res.json()
+    const text = ai?.candidates?.[0]?.content?.parts?.[0]?.text
+    if (res.ok && text) return { text, model }
+    last = { status: res.status, detail: ai?.error?.message ?? 'no text in response' }
+    console.error('gemini failed', model, res.status, String(last.detail).slice(0, 200))
+    if (res.status !== 429 && res.status !== 404) break   // real error, not "model unavailable"
+  }
+  return { error: last }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
@@ -35,35 +53,19 @@ Deno.serve(async (req) => {
 Output ONLY a JSON object: {"amount":123.45,"description":"...","category":"...","date":"YYYY-MM-DD"}
 If the image is not a receipt, output {"error":"not_receipt"}.`
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: system }] },
-          contents: [{
-            role: 'user',
-            parts: [
-              { inline_data: { mime_type: mediaType || 'image/jpeg', data: image } },
-              { text: 'Extract the receipt data.' },
-            ],
-          }],
-          generationConfig: {
-            temperature: 0,
-            maxOutputTokens: 256,
-            responseMimeType: 'application/json',
-          },
-        }),
-      },
-    )
-
-    const ai = await res.json()
-    const text = ai?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!res.ok || !text) {
-      console.error('gemini call failed', res.status, JSON.stringify(ai?.error ?? ai).slice(0, 400))
-      return json({ error: 'upstream', status: res.status, detail: ai?.error?.message ?? null }, 502)
-    }
+    const out = await callGemini(GEMINI_KEY, {
+      systemInstruction: { parts: [{ text: system }] },
+      contents: [{
+        role: 'user',
+        parts: [
+          { inline_data: { mime_type: mediaType || 'image/jpeg', data: image } },
+          { text: 'Extract the receipt data.' },
+        ],
+      }],
+      generationConfig: { temperature: 0, maxOutputTokens: 256, responseMimeType: 'application/json' },
+    })
+    if ('error' in out) return json({ error: 'upstream', ...out.error }, 502)
+    const text = out.text
 
     let parsed
     try { parsed = JSON.parse(text) } catch { return json({ error: 'bad_json' }, 502) }
