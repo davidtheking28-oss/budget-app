@@ -2122,7 +2122,7 @@
         <span style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">📄 תנאי שימוש</button>
         <span style="color:var(--border);margin:0 6px">·</span>
-        <span style="color:var(--text3);font-size:0.78rem">v2.4</span>
+        <span style="color:var(--text3);font-size:0.78rem">v2.5</span>
       </div>
     </div>
   </div>
@@ -2364,7 +2364,8 @@ Object.assign(CAT_COLOR,{
 });
 
 // One-time remap of the pre-2026-07 expense categories onto the current list.
-// Idempotent: current category names are not keys, so re-running is a no-op.
+// Idempotent. Fixed-expense rows are exempt: several of their names ('ארנונה',
+// 'שכר דירה', 'גז', 'ביטוח בריאות') are still keys here from the variable-list era.
 const _CAT_MIGRATE={
   'אוכל':'מזון לבית','מסעדות':'אוכל בחוץ ובילויים','בילויים':'אוכל בחוץ ובילויים',
   'תחבורה ונסיעות':'דלק וחניה','ספורט':'תחביבים','חופשות וטיולים':'חופשה/טיול',
@@ -2376,13 +2377,13 @@ const _CAT_MIGRATE={
 function _migrateCats(){
   let changed=false;
   transactions.forEach(t=>{
-    if(t.type!=='expense')return;
+    if(t.type!=='expense'||t.fx)return;
     const n=_CAT_MIGRATE[t.cat];
     if(n){t.cat=n;changed=true;}
   });
   const nb={};
   Object.entries(budgets).forEach(([c,v])=>{
-    const n=_CAT_MIGRATE[c]||c;
+    const n=FIXED_CATS.includes(c)?c:(_CAT_MIGRATE[c]||c);
     nb[n]=(nb[n]||0)+v;                 // two old cats can merge into one new one
     if(n!==c)changed=true;
   });
@@ -2404,7 +2405,7 @@ function _migrateCats(){
 function catIconSvg(c){return CAT_SVGS[c]||CAT_SVGS['שונות'];}
 
 const EXPENSE_CATS=['מזון לבית','אוכל בחוץ ובילויים','פארם','דלק וחניה','מתנות לאירועים ולשמחות','ביגוד והנעלה','תחב״צ','כבישי אגרה','תספורת וקוסמטיקה','תחביבים','סיגריות','חופשה/טיול','עזרת/שמרטף','תיקוני רכב','בריאות','בעלי חיים','דמי כיס/ילדים','יהדות/חגים','ביטוח לאומי','שונות'];
-const FIXED_CATS=['משכנתא','שכר דירה','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים'];
+const FIXED_CATS=['משכנתא','שכר דירה','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
   'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,cur=parseFloat(p.current)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0)
