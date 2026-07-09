@@ -1702,7 +1702,7 @@
         <input type="date" id="txFromDate" onchange="renderTxPage()" aria-label="מתאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
         <span style="font-size:0.72rem;color:var(--text3);font-weight:600;flex-shrink:0;">עד:</span>
         <input type="date" id="txToDate" onchange="renderTxPage()" aria-label="עד תאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
-        <button onclick="clearDateFilter()" aria-label="נקה סינון תאריכים" style="background:none;border:none;color:var(--text3);font-size:0.75rem;cursor:pointer;padding:4px;min-width:44px;min-height:44px;">✕</button>
+        <button id="clearDateBtn" type="button" onclick="clearDateFilter()" aria-label="נקה סינון תאריכים" style="display:none;background:none;border:none;color:var(--text3);font-size:0.75rem;cursor:pointer;padding:4px;min-width:44px;min-height:44px;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;">✕</button>
       </div>
       <div class="section-body" style="padding-top:4px">
         <div style="display:flex;justify-content:flex-end;margin-bottom:10px;position:relative;">
@@ -4052,6 +4052,7 @@ function clearDateFilter(){
   if(f)f.value='';if(t)t.value='';
   document.querySelectorAll('#rangeChips .range-chip').forEach(b=>b.classList.toggle('active',b.dataset.range==='month'));
   renderTxPage();
+  showToast('✓ סינון התאריכים נוקה');
 }
 function setRangeChip(r){
   const today=new Date();
@@ -4067,6 +4068,8 @@ function setRangeChip(r){
 function renderTxPage(){
   const fromDate=(document.getElementById('txFromDate')||{}).value||'';
   const toDate=(document.getElementById('txToDate')||{}).value||'';
+  const _cdb=document.getElementById('clearDateBtn');
+  if(_cdb)_cdb.style.display=(fromDate||toDate)?'inline-flex':'none';
   // כשנבחר טווח תאריכים — מסתכלים על כל ההיסטוריה בטווח; אחרת על החודש הנבחר
   let mTx=(fromDate||toDate)?transactions.slice():getMonthTx(currentYear,currentMonth);
   if(fromDate&&fromDate!=='0000-01-01')mTx=mTx.filter(t=>t.date>=fromDate);
