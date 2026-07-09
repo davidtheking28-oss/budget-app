@@ -177,6 +177,9 @@
     .pay-num{font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
     .pay-calc{background:var(--surface2);color:var(--text2);font-weight:700;font-size:0.86rem;height:46px;padding:0 12px;white-space:nowrap;}
     .pay-total td{border-top:2px solid var(--border);background:var(--surface2);font-weight:800;font-size:0.86rem;color:var(--text);height:46px;padding:0 12px;}
+    .fx-table{min-width:340px;}
+    .fx-name{text-align:right;padding:0 12px;height:46px;font-size:0.86rem;font-weight:600;color:var(--text);white-space:nowrap;}
+    .fx-auto{margin-right:8px;padding:2px 7px;border-radius:20px;background:var(--blue-light);color:var(--blue);font-size:0.64rem;font-weight:800;vertical-align:middle;}
     .pay-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;line-height:1;opacity:0.55;transition:opacity .15s,color .15s;-webkit-tap-highlight-color:transparent;}
     @media(hover:hover){.pay-del:hover{opacity:1;color:var(--red);}}
     .pay-del:active{opacity:1;color:var(--red);}
@@ -1840,6 +1843,27 @@
     <div id="paymentsEmpty" class="empty" style="display:none"><div class="empty-emoji" style="font-size:2rem;">💳</div><p>אין תשלומים עדיין</p><button class="btn-empty" onclick="addPaymentRow()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף עסק ראשון</button></div>
   </div>
 
+  <div id="page-fixed" class="page">
+    <div style="margin-bottom:14px;font-size:0.8rem;color:var(--text3);line-height:1.5">מגדירים פעם אחת — הסכומים נרשמים אוטומטית כהוצאה קבועה בכל חודש.</div>
+    <div class="pay-wrap">
+      <table class="pay-table fx-table">
+        <thead>
+          <tr>
+            <th style="min-width:200px">קטגוריה</th>
+            <th style="min-width:130px">סכום חודשי</th>
+          </tr>
+        </thead>
+        <tbody id="fixedBody"></tbody>
+        <tfoot>
+          <tr class="pay-total">
+            <td style="text-align:right">סה״כ הוצאות קבועות</td>
+            <td class="pay-num" id="fixedTotal">₪0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
   <div id="page-subscriptions" class="page">
     <div class="cards-row three">
       <div class="card subs-count"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><div class="card-label">פעילים</div><div class="card-amount" id="subsCount">0</div></div>
@@ -1876,6 +1900,14 @@
         <div style="flex:1;min-width:0">
           <div style="font-size:0.95rem;font-weight:700;color:var(--text)">יעדי חיסכון</div>
           <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">מעקב התקדמות לעבר יעדים</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button onclick="showPage('fixed')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:right;font-family:inherit" class="more-row">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem">🏠</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:0.95rem;font-weight:700;color:var(--text)">הוצאות קבועות</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">משכנתא, ארנונה, חשמל — פעם אחת לכל חודש</div>
         </div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
@@ -2372,6 +2404,12 @@ function _migrateCats(){
 function catIconSvg(c){return CAT_SVGS[c]||CAT_SVGS['שונות'];}
 
 const EXPENSE_CATS=['מזון לבית','אוכל בחוץ ובילויים','פארם','דלק וחניה','מתנות לאירועים ולשמחות','ביגוד והנעלה','תחב״צ','כבישי אגרה','תספורת וקוסמטיקה','תחביבים','סיגריות','חופשה/טיול','עזרת/שמרטף','תיקוני רכב','בריאות','בעלי חיים','דמי כיס/ילדים','יהדות/חגים','ביטוח לאומי','שונות'];
+const FIXED_CATS=['משכנתא','שכר דירה','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים'];
+const FIXED_AUTO={
+  'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
+  'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,cur=parseFloat(p.current)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0)
+};
+const BUDGET_CATS=[...EXPENSE_CATS,...FIXED_CATS.filter(c=>!EXPENSE_CATS.includes(c))];
 const EXPENSE_CATS_BUSINESS=['שיווק ופרסום','מערכות ותוכנה','ציוד משרדי','שכר עובדים','חשבונאות ומשפטי','שכירות משרד','תקשורת עסקית','נסיעות עסקיות','ייצוג וארוח','אחסון ולוגיסטיקה','מסים ואגרות','ביטוח עסקי','הדרכות והשתלמויות','פיתוח ומחקר','קניות ציוד','אחר'];
 const INCOME_CATS_BUSINESS=['הכנסות ממכירות','שירותים','פרויקטים','מנויים לקוחות','עמלות','ייעוץ','השקעות','אחר'];
 const CAT_SUBCATS={};
@@ -2406,13 +2444,14 @@ let subscriptions = JSON.parse(localStorage.getItem(_modeKey('budget_subs'))  ||
 let budgets       = JSON.parse(localStorage.getItem(_modeKey('budget_limits'))||'{}');
 let loans         = JSON.parse(localStorage.getItem(_modeKey('budget_loans')) ||'[]');
 let payments      = JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
+let fixedExpenses = JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))   ||'[]');
 
 // ── Sync metadata: per-item timestamps + tombstones for merge-safe cloud sync ──
-function _emptyMeta(){return {del:{tx:{},goals:{},subs:{},loans:{},payments:{},budgets:{}},bu:{}};}
+function _emptyMeta(){return {del:{tx:{},goals:{},subs:{},loans:{},payments:{},fixed:{},budgets:{}},bu:{}};}
 function _loadSyncMeta(){
   try{
     const m=JSON.parse(localStorage.getItem(_modeKey('budget_sync_meta'))||'null');
-    if(m&&m.del&&m.bu){if(!m.del.payments)m.del.payments={};return m;}
+    if(m&&m.del&&m.bu){if(!m.del.payments)m.del.payments={};if(!m.del.fixed)m.del.fixed={};return m;}
   }catch(e){}
   return _emptyMeta();
 }
@@ -2420,7 +2459,7 @@ let _syncMeta=_loadSyncMeta();
 let _syncShadow={};
 let _demoActive=false;
 function _itemSig(it){if(it.u===undefined)return JSON.stringify(it);const {u,...rest}=it;return JSON.stringify(rest);}
-function _collections(){return [['tx',transactions],['goals',goals],['subs',subscriptions],['loans',loans],['payments',payments]];}
+function _collections(){return [['tx',transactions],['goals',goals],['subs',subscriptions],['loans',loans],['payments',payments],['fixed',fixedExpenses]];}
 function _rebuildShadow(){
   _syncShadow={};
   for(const [k,arr] of _collections()){
@@ -2476,6 +2515,7 @@ function saveData(){
   localStorage.setItem(_modeKey('budget_limits'),JSON.stringify(budgets));
   localStorage.setItem(_modeKey('budget_loans'), JSON.stringify(loans));
   localStorage.setItem(_modeKey('budget_payments'),JSON.stringify(payments));
+  localStorage.setItem(_modeKey('budget_fixed'),JSON.stringify(fixedExpenses));
   localStorage.setItem(_modeKey('budget_sync_meta'),JSON.stringify(_syncMeta));
   scheduleCloudSave();
 }
@@ -2761,7 +2801,7 @@ function setFixedType(type){
   if(vb)vb.classList.toggle('active',type==='variable');
 }
 function populateBudgetCats(){
-  document.getElementById('budgetCat').innerHTML=EXPENSE_CATS.map(c=>'<option>'+c+'</option>').join('');
+  document.getElementById('budgetCat').innerHTML=BUDGET_CATS.map(c=>'<option>'+c+'</option>').join('');
 }
 
 function addTransaction(prefill){
@@ -3223,6 +3263,7 @@ function _buildMerged(bundle){
     subscriptions:_mergeArrays(subscriptions,bundle.subscriptions,_syncMeta.del.subs),
     loans:_mergeArrays(loans,bundle.loans,_syncMeta.del.loans),
     payments:_mergeArrays(payments,bundle.payments,_syncMeta.del.payments),
+    fixed_expenses:_mergeArrays(fixedExpenses,bundle.fixed_expenses,_syncMeta.del.fixed),
     budgets:_mergeBudgets(budgets,bundle.budgets,_syncMeta)
   };
 }
@@ -3232,8 +3273,9 @@ function _applyMerged(m){
     ||JSON.stringify(m.subscriptions)!==JSON.stringify(subscriptions)
     ||JSON.stringify(m.loans)!==JSON.stringify(loans)
     ||JSON.stringify(m.payments)!==JSON.stringify(payments)
+    ||JSON.stringify(m.fixed_expenses)!==JSON.stringify(fixedExpenses)
     ||JSON.stringify(m.budgets)!==JSON.stringify(budgets);
-  transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;budgets=m.budgets;
+  transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;fixedExpenses=m.fixed_expenses;budgets=m.budgets;
   _migrateCats();   // cloud rows may still carry the old category names
   localStorage.setItem(_modeKey('budget_tx'),JSON.stringify(transactions));
   localStorage.setItem(_modeKey('budget_goals'),JSON.stringify(goals));
@@ -3241,6 +3283,7 @@ function _applyMerged(m){
   localStorage.setItem(_modeKey('budget_limits'),JSON.stringify(budgets));
   localStorage.setItem(_modeKey('budget_loans'),JSON.stringify(loans));
   localStorage.setItem(_modeKey('budget_payments'),JSON.stringify(payments));
+  localStorage.setItem(_modeKey('budget_fixed'),JSON.stringify(fixedExpenses));
   localStorage.setItem(_modeKey('budget_sync_meta'),JSON.stringify(_syncMeta));
   _rebuildShadow();
   return changed;
@@ -3694,7 +3737,7 @@ function exportCSV(){
 // ── Backup / Restore ──────────────────────────────────────────────
 function exportBackup(){
   const data = {
-    transactions, goals, subscriptions, budgets, loans, payments, userSettings,
+    transactions, goals, subscriptions, budgets, loans, payments, fixedExpenses, userSettings,
     exportDate: new Date().toISOString()
   };
   const a = document.createElement('a');
@@ -3718,6 +3761,7 @@ function importBackup(input){
       budgets = data.budgets || {};
       loans = data.loans || [];
       payments = data.payments || [];
+      fixedExpenses = data.fixedExpenses || [];
       if(data.userSettings) userSettings = data.userSettings;
       saveData();
       saveSettingsData();
@@ -3733,7 +3777,7 @@ async function resetAllData(){
   if(_cloudUser&&_sb&&!_householdOwner){
     try{await _sb.from('budget_data').delete().eq('user_id',_cloudUser.id);}catch(e){}
   }
-  transactions=[]; goals=[]; subscriptions=[]; budgets={}; loans=[]; payments=[];
+  transactions=[]; goals=[]; subscriptions=[]; budgets={}; loans=[]; payments=[]; fixedExpenses=[];
   userSettings={name:'',savingsGoal:0};
   _syncMeta=_emptyMeta();
   _rebuildShadow();
@@ -4342,7 +4386,7 @@ function renderBudget(){
   if(rollT)rollT.checked=!!userSettings.budgetRollover;
   const mTx=getMonthTx(currentYear,currentMonth);
   const spent={};mTx.filter(t=>t.type==='expense').forEach(t=>{spent[t.cat]=(spent[t.cat]||0)+t.amount;});
-  const allCats=Object.keys(budgets).filter(c=>EXPENSE_CATS.includes(c)).sort();
+  const allCats=Object.keys(budgets).filter(c=>BUDGET_CATS.includes(c)).sort();
   const carry={};allCats.forEach(c=>{carry[c]=_budgetCarry(c);});
   const effLim=c=>budgets[c]?Math.max(0,budgets[c]+(carry[c]||0)):0;
   const summaryCard=document.getElementById('budgetSummaryCard');
@@ -4468,6 +4512,61 @@ function renderPayments(){
     +'</tr>';
   }).join('');
   _payRefreshTotal();
+}
+// ── הוצאות קבועות ─────────────────────────────────────────────────
+function _fxRow(cat){return fixedExpenses.find(f=>f.id===cat);}
+function _fxRaw(cat){const r=_fxRow(cat);return r&&r.amount?r.amount:'';}
+function _fxMonthly(cat){return FIXED_AUTO[cat]?FIXED_AUTO[cat]():(parseFloat((_fxRow(cat)||{}).amount)||0);}
+function _fxTxId(mkey,cat){return 'fx|'+mkey+'|'+cat;}
+function _curMonthKey(){const n=new Date();return mk(n.getFullYear(),n.getMonth());}
+function _fxUpsert(mkey,cat,amount,overwrite){
+  const id=_fxTxId(mkey,cat);
+  const i=transactions.findIndex(t=>String(t.id)===id);
+  if(amount<=0){if(i>=0){transactions.splice(i,1);return true;}return false;}
+  if(i<0){transactions.unshift({id,type:'expense',cat,desc:cat,amount,date:mkey+'-01',recurring:false,fixed:true,fx:true});return true;}
+  if(overwrite&&transactions[i].amount!==amount){transactions[i].amount=amount;return true;}
+  return false;
+}
+function _fxApply(){
+  if(_demoActive)return false;
+  const mkey=_curMonthKey();
+  let changed=false;
+  FIXED_CATS.forEach(cat=>{
+    if(_syncMeta.del.tx[_fxTxId(mkey,cat)])return;
+    changed=_fxUpsert(mkey,cat,_fxMonthly(cat),!!FIXED_AUTO[cat])||changed;
+  });
+  return changed;
+}
+function _fxPushMonth(cat){
+  const mkey=_curMonthKey();
+  delete _syncMeta.del.tx[_fxTxId(mkey,cat)];
+  _fxUpsert(mkey,cat,_fxMonthly(cat),true);
+}
+function _fxRefreshTotal(){
+  let t=0;FIXED_CATS.forEach(c=>t+=_fxMonthly(c));
+  const el=document.getElementById('fixedTotal');if(el)el.textContent=_payFmt(t);
+}
+function setFixedAmount(i,val){
+  const cat=FIXED_CATS[i];
+  const amount=val===''?0:(parseFloat(val)||0);
+  const row=_fxRow(cat);
+  if(amount>0){if(row)row.amount=amount;else fixedExpenses.push({id:cat,amount});}
+  else if(row)fixedExpenses=fixedExpenses.filter(f=>f.id!==cat);
+  _fxPushMonth(cat);
+  saveData();
+  _fxRefreshTotal();
+}
+function renderFixed(){
+  const body=document.getElementById('fixedBody');
+  if(!body)return;
+  body.innerHTML=FIXED_CATS.map((cat,i)=>{
+    const auto=!!FIXED_AUTO[cat];
+    const cell=auto
+      ? '<td class="pay-calc pay-num">'+_payFmt(_fxMonthly(cat))+'</td>'
+      : '<td><input class="pay-num" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+esc(_fxRaw(cat))+'" onfocus="this.select()" oninput="setFixedAmount('+i+',this.value)"></td>';
+    return '<tr><td class="fx-name">'+esc(cat)+(auto?'<span class="fx-auto">אוטומטי</span>':'')+'</td>'+cell+'</tr>';
+  }).join('');
+  _fxRefreshTotal();
 }
 function renderGoals(){
   const list=document.getElementById('goalsList');
@@ -5021,6 +5120,8 @@ function showPage(name,btn){
   if(name==='transactions') renderTxPage();
   if(name==='goals')        renderGoals();
   if(name==='payments')     renderPayments();
+  if(name==='fixed')        renderFixed();
+  if(name==='dashboard'){if(_fxApply())saveData();renderDashboard();}
   if(name==='subscriptions')renderSubscriptions();
   if(name==='budget')       renderBudget();
   if(name==='loans')        renderLoans();
@@ -5305,11 +5406,13 @@ function confirmSmsImport(){
 }
 
 function refreshAll(){
+  if(_fxApply())saveData();
   renderDashboard();renderDailyWidget();
   const id=document.querySelector('.page.active')?.id||'';
   if(id==='page-transactions')renderTxPage();
   else if(id==='page-goals')renderGoals();
   else if(id==='page-payments')renderPayments();
+  else if(id==='page-fixed')renderFixed();
   else if(id==='page-subscriptions')renderSubscriptions();
   else if(id==='page-budget')renderBudget();
   else if(id==='page-loans')renderLoans();
@@ -5458,7 +5561,8 @@ function finishOnboarding(){
 }
 
 function init(){
-  if(_migrateCats())saveData();   // remap locally-stored data from the old category list
+  const _migrated=_migrateCats();            // remap locally-stored data from the old category list
+  if(_fxApply()||_migrated)saveData();       // materialize this month's fixed expenses
   var _tmode=localStorage.getItem('budget_theme');
   if(!_tmode){ var _od=localStorage.getItem('budget_dark'); _tmode=_od==='1'?'dark':(_od==='0'?'light':'system'); }
   var _sysDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
