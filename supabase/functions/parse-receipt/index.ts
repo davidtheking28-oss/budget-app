@@ -1,5 +1,3 @@
-const GEMINI_KEY = Deno.env.get('GEMINI_API_KEY')
-
 const CORS = {
   'Access-Control-Allow-Origin': 'https://davidtheking28-oss.github.io',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -18,6 +16,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
   try {
+    // read per-request: custom secrets are not reliably populated at module load
+    const GEMINI_KEY = Deno.env.get('GEMINI_API_KEY')
     if (!GEMINI_KEY) return json({ error: 'not_configured' }, 503)
 
     const { image, mediaType, customCats } = await req.json()
