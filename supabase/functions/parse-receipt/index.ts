@@ -1,4 +1,4 @@
-const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY')
+const GEMINI_KEY = Deno.env.get('GEMINI_API_KEY')
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://davidtheking28-oss.github.io',
@@ -12,11 +12,13 @@ const CATEGORIES = [
   'יהדות/חגים','ביטוח לאומי','שונות'
 ]
 
+const MODEL = 'gemini-2.0-flash'
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
   try {
-    if (!ANTHROPIC_KEY) return json({ error: 'not_configured' }, 503)
+    if (!GEMINI_KEY) return json({ error: 'not_configured' }, 503)
 
     const { image, mediaType, customCats } = await req.json()
     if (!image) return json({ error: 'missing_image' }, 400)
@@ -31,39 +33,43 @@ Deno.serve(async (req) => {
 3. category: exactly one of [${cats.join(', ')}]
 4. date: purchase date as YYYY-MM-DD, or null if unreadable
 
-Output ONLY valid JSON: {"amount":123.45,"description":"...","category":"...","date":"YYYY-MM-DD"}
+Output ONLY a JSON object: {"amount":123.45,"description":"...","category":"...","date":"YYYY-MM-DD"}
 If the image is not a receipt, output {"error":"not_receipt"}.`
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents: [{
+            role: 'user',
+            parts: [
+              { inline_data: { mime_type: mediaType || 'image/jpeg', data: image } },
+              { text: 'Extract the receipt data.' },
+            ],
+          }],
+          generationConfig: {
+            temperature: 0,
+            maxOutputTokens: 256,
+            responseMimeType: 'application/json',
+          },
+        }),
       },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 256,
-        system,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType || 'image/jpeg', data: image } },
-            { type: 'text', text: 'Extract the receipt data as JSON.' },
-          ],
-        }],
-      }),
-    })
+    )
 
     const ai = await res.json()
-    const text = ai?.content?.[0]?.text
+    const text = ai?.candidates?.[0]?.content?.parts?.[0]?.text
     if (!res.ok || !text) {
-      console.error('anthropic call failed', res.status, JSON.stringify(ai?.error ?? ai))
+      console.error('gemini call failed', res.status, JSON.stringify(ai?.error ?? ai).slice(0, 400))
       return json({ error: 'upstream', status: res.status, detail: ai?.error?.message ?? null }, 502)
     }
 
     let parsed
     try { parsed = JSON.parse(text) } catch { return json({ error: 'bad_json' }, 502) }
+    if (parsed?.error || typeof parsed?.amount !== 'number') return json({ error: 'not_receipt' }, 200)
+    if (!cats.includes(parsed.category)) parsed.category = null   // model is free-form; let the client categorize
 
     return json(parsed, 200)
   } catch (err) {
