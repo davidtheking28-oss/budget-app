@@ -2,7 +2,7 @@
    HTML is stale-while-revalidate (instant open from cache, refreshed in
    background for the next launch), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v9';
+const CACHE = 'budget-app-v10';
 const SHELL = [
   './',
   './index.html',
