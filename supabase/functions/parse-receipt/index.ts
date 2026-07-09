@@ -1,4 +1,4 @@
-const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY')!
+const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY')
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://davidtheking28-oss.github.io',
@@ -16,11 +16,13 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
   try {
+    if (!ANTHROPIC_KEY) return json({ error: 'not_configured' }, 503)
+
     const { image, mediaType, customCats } = await req.json()
-    if (!image) throw new Error('missing image')
+    if (!image) return json({ error: 'missing_image' }, 400)
 
     const cats = customCats?.length
-      ? [...CATEGORIES.slice(0, -1), ...customCats, 'אחר']
+      ? [...CATEGORIES.slice(0, -1), ...customCats, 'שונות']
       : CATEGORIES
 
     const system = `You read receipt photos for a Hebrew budget app. Extract:
@@ -54,15 +56,25 @@ If the image is not a receipt, output {"error":"not_receipt"}.`
     })
 
     const ai = await res.json()
-    const parsed = JSON.parse(ai.content[0].text)
+    const text = ai?.content?.[0]?.text
+    if (!res.ok || !text) {
+      console.error('anthropic call failed', res.status, JSON.stringify(ai?.error ?? ai))
+      return json({ error: 'upstream', status: res.status, detail: ai?.error?.message ?? null }, 502)
+    }
 
-    return new Response(JSON.stringify(parsed), {
-      headers: { ...CORS, 'Content-Type': 'application/json' },
-    })
+    let parsed
+    try { parsed = JSON.parse(text) } catch { return json({ error: 'bad_json' }, 502) }
+
+    return json(parsed, 200)
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
-      headers: { ...CORS, 'Content-Type': 'application/json' },
-    })
+    console.error('parse-receipt', err)
+    return json({ error: 'server', detail: String(err) }, 500)
   }
 })
+
+function json(body: unknown, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...CORS, 'Content-Type': 'application/json' },
+  })
+}

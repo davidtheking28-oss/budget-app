@@ -2122,7 +2122,7 @@
         <span style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">📄 תנאי שימוש</button>
         <span style="color:var(--border);margin:0 6px">·</span>
-        <span style="color:var(--text3);font-size:0.78rem">v2.6</span>
+        <span style="color:var(--text3);font-size:0.78rem">v2.7</span>
       </div>
     </div>
   </div>
@@ -2546,15 +2546,6 @@ function getMonthTx(y,m){return transactions.filter(t=>t.date.startsWith(mk(y,m)
 
 const MOON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 const SUN  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
-
-function toggleDark(){
-  const d=document.body.classList.toggle('dark');
-  localStorage.setItem('budget_dark',d?'1':'0');
-  localStorage.setItem('budget_theme',d?'dark':'light');
-  var _db=document.getElementById('darkBtn');if(_db)_db.innerHTML=d?SUN:MOON;
-  const ap=document.querySelector('.page.active');
-  if(ap&&ap.id==='page-analytics'){renderAnalytics();renderAnnualSummary();renderInsights();}
-}
 
 let sheetDisplayYear = new Date().getFullYear();
 function openMonthSheet(){sheetDisplayYear=currentYear;renderMonthGrid();document.getElementById('monthSheetOverlay').classList.add('open');}
@@ -3856,6 +3847,9 @@ function openAddIncome(){
 function countUp(elOrId, target){
   const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
   if(!el) return;
+  // a re-render with an unchanged value must not replay the 0→value count
+  if(el._cuVal===target){ if(!el._cuRAF) el.textContent=fmt(target); return; }
+  el._cuVal=target;
   // cancel any in-flight animation on this element so competing loops can't freeze it mid-way
   if(el._cuRAF){ cancelAnimationFrame(el._cuRAF); el._cuRAF=0; }
   if(el._cuTO){ clearTimeout(el._cuTO); el._cuTO=0; }
@@ -3988,6 +3982,7 @@ async function _onReceiptPicked(input){
       body:JSON.stringify({image:img.data,mediaType:img.type,customCats:userSettings.customCats||[]})
     });
     const data=await res.json().catch(()=>({}));
+    if(data.error==='not_configured'){showToast('❌ סריקת קבלות לא מוגדרת בשרת');return;}
     if(!res.ok||data.error||!data.amount){showToast('❌ לא הצלחתי לקרוא את הקבלה — נסה תמונה ברורה יותר');return;}
     openAddTx();
     setTxType('expense');
@@ -5918,13 +5913,16 @@ function switchMode(mode){
   subscriptions=JSON.parse(localStorage.getItem(_modeKey('budget_subs'))||'[]');
   budgets=JSON.parse(localStorage.getItem(_modeKey('budget_limits'))||'{}');
   loans=JSON.parse(localStorage.getItem(_modeKey('budget_loans'))||'[]');
+  payments=JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
+  fixedExpenses=JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))||'[]');
   const prevBM=userSettings.businessMode;
   userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
   if(!userSettings.incomeSources)userSettings.incomeSources=[];
   if(!userSettings.customCats)userSettings.customCats=[];
-  userSettings.businessMode=(mode==='business');
+  userSettings.businessMode=prevBM;   // feature flag, not "am I in business mode"
   _syncMeta=_loadSyncMeta();
   _rebuildShadow();
+  saveSettingsData();
   updateModeSwitcher();
   refreshAll();
   if(_cloudUser)_loadFromCloud(true);
