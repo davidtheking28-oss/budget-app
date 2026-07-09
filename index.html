@@ -2122,7 +2122,7 @@
         <span style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">📄 תנאי שימוש</button>
         <span style="color:var(--border);margin:0 6px">·</span>
-        <span style="color:var(--text3);font-size:0.78rem">v2.5</span>
+        <span style="color:var(--text3);font-size:0.78rem">v2.6</span>
       </div>
     </div>
   </div>
@@ -3227,6 +3227,11 @@ function _getDataUserId(){ return _householdOwner || _cloudUser?.id; }
 // ── Merge helpers: timestamp-based, tombstone-aware ──
 let _syncPending=false;
 let _syncRetryTimer=null;
+// Collections added after the table was created. Each is its own column in personal
+// mode, so on a DB that predates them the whole upsert fails — core data included.
+// Drop such a column for this session instead and keep everything else syncing.
+const _OPTIONAL_COLS=['payments','fixed_expenses'];
+const _missingCols=new Set();
 function _mergeMeta(a,b){
   const out=_emptyMeta();
   for(const k of Object.keys(out.del)){
@@ -3324,8 +3329,17 @@ async function _doCloudSave(){
       payload.business={...merged,sync_meta:_syncMeta,settings:userSettings};
     }else{
       Object.assign(payload,merged,{settings:userSettings,sync_meta:_syncMeta});
+      _missingCols.forEach(c=>delete payload[c]);
     }
-    const {error}=await _sb.from('budget_data').upsert(payload,{onConflict:'user_id'});
+    let {error}=await _sb.from('budget_data').upsert(payload,{onConflict:'user_id'});
+    for(let i=0;error&&error.code==='PGRST204'&&i<_OPTIONAL_COLS.length;i++){
+      const col=(/'([^']+)'/.exec(error.message||'')||[])[1];
+      if(!_OPTIONAL_COLS.includes(col)||payload[col]===undefined)break;
+      _DEBUG&&console.warn('cloud save: column "'+col+'" missing, syncing without it');
+      _missingCols.add(col);
+      delete payload[col];
+      ({error}=await _sb.from('budget_data').upsert(payload,{onConflict:'user_id'}));
+    }
     if(error)throw error;
     _syncPending=false;
     _setSyncState('synced');
