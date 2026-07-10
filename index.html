@@ -3403,28 +3403,6 @@ async function savePushPrefs(){
   }catch(e){}
 }
 
-async function cloudSignIn(){
-  const email=(document.getElementById('cloudEmailInput')?.value||'').trim();
-  if(!email||!email.includes('@')){showToast('הזן כתובת אימייל תקינה');return;}
-  const btn=document.getElementById('cloudSignInBtn');
-  if(btn)btn.disabled=true;
-  const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:'https://davidtheking28-oss.github.io/budget-app/'}});
-  if(btn)btn.disabled=false;
-  if(error){showToast('❌ '+error.message);return;}
-  showToast('✉️ קישור נשלח לאימייל שלך');
-  const row=document.getElementById('cloudOtpRow');
-  if(row)row.style.display='';
-}
-async function cloudVerifyOtp(){
-  const email=(document.getElementById('cloudEmailInput')?.value||'').trim();
-  const token=(document.getElementById('cloudOtpInput')?.value||'').trim();
-  if(!token){showToast('הזן את הקוד מהאימייל');return;}
-  const {data,error}=await _sb.auth.verifyOtp({email,token,type:'email'});
-  if(error){showToast('❌ קוד שגוי, נסה שוב');return;}
-  _cloudUser=data.user;
-  renderCloudSection();
-  await _loadFromCloud();
-}
 async function cloudSignOut(){
   await _sb?.auth.signOut();
   _cloudUser=null;
@@ -3435,13 +3413,8 @@ function renderCloudSection(){
   const el=document.getElementById('cloudSection');
   if(!el)return;
   if(!_cloudUser){
-    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">הזן אימייל וקבל קוד. הנתונים יגובו ויהיו זמינים בכל מכשיר</div>'
-      +'<input id="cloudEmailInput" type="email" placeholder="האימייל שלך" aria-label="כתובת אימייל" inputmode="email" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px"/>'
-      +'<button id="cloudSignInBtn" class="btn btn-primary btn-full" onclick="cloudSignIn()">שלח קוד אימות</button>'
-      +'<div id="cloudOtpRow" style="display:none;margin-top:10px">'
-      +'<div style="font-size:0.78rem;color:var(--text3);margin-bottom:6px">הזן את הקוד שקיבלת באימייל:</div>'
-      +'<input id="cloudOtpInput" type="text" inputmode="numeric" maxlength="6" placeholder="• • • • • •" aria-label="קוד אימות" style="width:100%;border:1.5px solid var(--accent);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1.2rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:6px"/>'
-      +'<button class="btn btn-primary btn-full" onclick="cloudVerifyOtp()">אמת וגבה</button></div>';
+    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">התחבר עם Gmail. הנתונים יגובו ויהיו זמינים בכל מכשיר</div>'
+      +'<button class="btn btn-primary btn-full" onclick="authGoogleSignIn()">המשך עם Gmail</button>';
     return;
   }
   // מחובר — בנה את ה-UI
