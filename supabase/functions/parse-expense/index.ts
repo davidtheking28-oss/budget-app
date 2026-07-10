@@ -10,21 +10,25 @@ const CATEGORIES = [
   'יהדות/חגים','ביטוח לאומי','שונות'
 ]
 
-// free-tier availability varies per key; try in order and use the first that answers
-const MODELS = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash']
+// free-tier availability varies per model; try in order and use the first that answers
+const MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
 
-async function callGemini(key: string, body: unknown) {
+async function callGroq(key: string, messages: unknown[]) {
   let last = { status: 0, detail: 'no model tried' }
   for (const model of MODELS) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-      { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) },
-    )
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model, messages, temperature: 0, max_tokens: 128,
+        response_format: { type: 'json_object' },
+      }),
+    })
     const ai = await res.json()
-    const text = ai?.candidates?.[0]?.content?.parts?.[0]?.text
+    const text = ai?.choices?.[0]?.message?.content
     if (res.ok && text) return { text, model }
     last = { status: res.status, detail: ai?.error?.message ?? 'no text in response' }
-    console.error('gemini failed', model, res.status, String(last.detail).slice(0, 200))
+    console.error('groq failed', model, res.status, String(last.detail).slice(0, 200))
     if (res.status !== 429 && res.status !== 404) break
   }
   return { error: last }
@@ -34,8 +38,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
   try {
-    const GEMINI_KEY = Deno.env.get('GEMINI_API_KEY')
-    if (!GEMINI_KEY) return json({ error: 'not_configured' }, 503)
+    const GROQ_KEY = Deno.env.get('GROQ_API_KEY')
+    if (!GROQ_KEY) return json({ error: 'not_configured' }, 503)
 
     const { message, customCats } = await req.json()
     if (!message) return json({ error: 'missing_message' }, 400)
@@ -53,11 +57,10 @@ Given a transaction description (in Hebrew or English), extract:
 If unsure about the category, use "שונות".
 Output ONLY a JSON object: {"category":"...","amount":null,"description":"..."}`
 
-    const out = await callGemini(GEMINI_KEY, {
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [{ role: 'user', parts: [{ text: String(message) }] }],
-      generationConfig: { temperature: 0, maxOutputTokens: 128, responseMimeType: 'application/json' },
-    })
+    const out = await callGroq(GROQ_KEY, [
+      { role: 'system', content: system },
+      { role: 'user', content: String(message) },
+    ])
     if ('error' in out) return json({ error: 'upstream', ...out.error }, 502)
     const text = out.text
 

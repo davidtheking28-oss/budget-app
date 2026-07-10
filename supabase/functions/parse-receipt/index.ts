@@ -10,21 +10,25 @@ const CATEGORIES = [
   'יהדות/חגים','ביטוח לאומי','שונות'
 ]
 
-// free-tier availability varies per key; try in order and use the first that answers
-const MODELS = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash']
+// free-tier availability varies per model; try in order and use the first that answers
+const MODELS = ['meta-llama/llama-4-scout-17b-16e-instruct', 'meta-llama/llama-4-maverick-17b-128e-instruct']
 
-async function callGemini(key: string, body: unknown) {
+async function callGroq(key: string, messages: unknown[]) {
   let last = { status: 0, detail: 'no model tried' }
   for (const model of MODELS) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-      { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) },
-    )
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model, messages, temperature: 0, max_tokens: 256,
+        response_format: { type: 'json_object' },
+      }),
+    })
     const ai = await res.json()
-    const text = ai?.candidates?.[0]?.content?.parts?.[0]?.text
+    const text = ai?.choices?.[0]?.message?.content
     if (res.ok && text) return { text, model }
     last = { status: res.status, detail: ai?.error?.message ?? 'no text in response' }
-    console.error('gemini failed', model, res.status, String(last.detail).slice(0, 200))
+    console.error('groq failed', model, res.status, String(last.detail).slice(0, 200))
     if (res.status !== 429 && res.status !== 404) break   // real error, not "model unavailable"
   }
   return { error: last }
@@ -34,8 +38,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
   try {
-    const GEMINI_KEY = Deno.env.get('GEMINI_API_KEY')
-    if (!GEMINI_KEY) return json({ error: 'not_configured' }, 503)
+    const GROQ_KEY = Deno.env.get('GROQ_API_KEY')
+    if (!GROQ_KEY) return json({ error: 'not_configured' }, 503)
 
     const { image, mediaType, customCats } = await req.json()
     if (!image) return json({ error: 'missing_image' }, 400)
@@ -53,17 +57,16 @@ Deno.serve(async (req) => {
 Output ONLY a JSON object: {"amount":123.45,"description":"...","category":"...","date":"YYYY-MM-DD"}
 If the image is not a receipt, output {"error":"not_receipt"}.`
 
-    const out = await callGemini(GEMINI_KEY, {
-      systemInstruction: { parts: [{ text: system }] },
-      contents: [{
+    const out = await callGroq(GROQ_KEY, [
+      { role: 'system', content: system },
+      {
         role: 'user',
-        parts: [
-          { inline_data: { mime_type: mediaType || 'image/jpeg', data: image } },
-          { text: 'Extract the receipt data.' },
+        content: [
+          { type: 'text', text: 'Extract the receipt data.' },
+          { type: 'image_url', image_url: { url: `data:${mediaType || 'image/jpeg'};base64,${image}` } },
         ],
-      }],
-      generationConfig: { temperature: 0, maxOutputTokens: 256, responseMimeType: 'application/json' },
-    })
+      },
+    ])
     if ('error' in out) return json({ error: 'upstream', ...out.error }, 502)
     const text = out.text
 

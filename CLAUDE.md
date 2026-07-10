@@ -13,9 +13,12 @@ Personal budget & investment tracking app — single HTML file on GitHub Pages, 
 `budget_data`, `households`, `push_subscriptions`, `push_log`, and the
 `parse-receipt` / `parse-expense` / `push-daily` edge functions. Everything else
 (`trades`, `screener_*`, `investments`, `market_cache`, `app_secrets`, `flex_*`)
-belongs to the trading journal — leave it alone. Edge-function secrets are shared,
-so `GEMINI_API_KEY` must be set in this project. The separate `inrmnhjxrwlrttbfhbly`
-project is named "ai budget" but is unused — secrets added there do nothing.
+belongs to the trading journal — leave it alone. Edge-function secrets are shared;
+`parse-expense`/`parse-receipt` use `GROQ_API_KEY` (Groq's free tier — text +
+vision via the OpenAI-compatible `/openai/v1/chat/completions` endpoint). The
+`GEMINI_API_KEY` path was dropped after the key turned out to have zero free-tier
+quota on every model. The separate `inrmnhjxrwlrttbfhbly` project is named
+"ai budget" but is unused — secrets added there do nothing.
 
 **Edge functions are not deployed by CI.** `.github/workflows/deploy.yml` only
 publishes `index.html` to Pages. Functions ship via the Supabase MCP.
