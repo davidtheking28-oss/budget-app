@@ -1,6 +1,6 @@
 /* Service worker — offline app shell with auto-update.
-   HTML is stale-while-revalidate (instant open from cache, refreshed in
-   background for the next launch), static assets cache-first.
+   HTML is network-first (online users always get the latest app; cache is
+   the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
 const CACHE = 'budget-app-v15';
 const SHELL = [
