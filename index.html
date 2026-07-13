@@ -3206,7 +3206,7 @@ function _getDataUserId(){ return _householdOwner || _cloudUser?.id; }
 let _isAdvisor = false;
 async function _loadAdvisorStatus(){
   if(!_cloudUser||!_sb){_isAdvisor=false;return;}
-  const {data}=await _sb.from('advisor_clients').select('id').eq('advisor_id',_cloudUser.id).limit(1).maybeSingle();
+  const {data}=await _sb.from('advisor_clients').select('id').eq('advisor_id',_cloudUser.id).eq('status','active').limit(1).maybeSingle();
   _isAdvisor=!!data;
 }
 function _applyAdvisorGate(){ document.body.classList.toggle('is-advisor', _isAdvisor); }
