@@ -2378,7 +2378,7 @@ const EXPENSE_CATS=['מזון לבית','אוכל בחוץ ובילויים','פ
 const FIXED_CATS=['משכנתא','שכר דירה','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
-  'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,cur=parseFloat(p.current)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0)
+  'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0,cur=_payCalc(p).current;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0)
 };
 const BUDGET_CATS=[...EXPENSE_CATS,...FIXED_CATS.filter(c=>!EXPENSE_CATS.includes(c))];
 const EXPENSE_CATS_BUSINESS=['שיווק ופרסום','מערכות ותוכנה','ציוד משרדי','שכר עובדים','חשבונאות ומשפטי','שכירות משרד','תקשורת עסקית','נסיעות עסקיות','ייצוג וארוח','אחסון ולוגיסטיקה','מסים ואגרות','ביטוח עסקי','הדרכות והשתלמויות','פיתוח ומחקר','קניות ציוד','אחר'];
@@ -4412,10 +4412,23 @@ function confirmAddToGoal(){
 }
 // ── תשלומים ───────────────────────────────────────────────────────
 function _payFmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';return sym+(n||0).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function _monthsElapsed(fromKey,toKey){
+  const[fy,fm]=fromKey.split('-').map(Number),[ty,tm]=toKey.split('-').map(Number);
+  return (ty-fy)*12+(tm-fm);
+}
 function _payCalc(p){
-  const total=parseFloat(p.total)||0, cur=parseFloat(p.current)||0, amt=parseFloat(p.amount)||0;
+  const total=parseFloat(p.total)||0, amt=parseFloat(p.amount)||0;
+  const base=parseFloat(p.current)||0;
+  const cur=p.currentAnchor?Math.max(0,Math.min(total,base+_monthsElapsed(p.currentAnchor,_curMonthKey()))):base;
   const left=Math.max(0,total-cur);
-  return {left,sum:left*amt};
+  return {left,sum:left*amt,current:cur};
+}
+function _migratePayments(){
+  let changed=false;
+  payments.forEach(p=>{
+    if(!p.currentAnchor&&p.current){p.currentAnchor=_curMonthKey();changed=true;}
+  });
+  return changed;
 }
 function _payRefreshTotal(){
   let t=0;payments.forEach(p=>t+=_payCalc(p).sum);
@@ -4436,6 +4449,7 @@ function deletePayment(id){
 function updatePayment(id,field,val){
   const p=payments.find(x=>x.id===id);if(!p)return;
   p[field]=field==='name'?val:(val===''?'':(parseFloat(val)||0));
+  if(field==='current')p.currentAnchor=_curMonthKey();
   const card=document.querySelector('#paymentsBody [data-pid="'+id+'"]');
   if(card){
     const c=_payCalc(p);
@@ -4460,7 +4474,7 @@ function renderPayments(){
       +'</div>'
       +'<div class="pay-grid">'
         +'<div class="pay-field"><label>מספר תשלומים סה״כ</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(p.total)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'total\',this.value)"></div>'
-        +'<div class="pay-field"><label>התשלום שיורד החודש</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(p.current)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'current\',this.value)"></div>'
+        +'<div class="pay-field"><label>התשלום שיורד החודש</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(p.currentAnchor?c.current:p.current)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'current\',this.value)"></div>'
         +'<div class="pay-field"><label>סכום תשלום</label><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+esc(p.amount)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'amount\',this.value)"></div>'
         +'<div class="pay-stat"><span>תשלומים שנותרו</span><b data-cell="left">'+c.left+'</b></div>'
         +'<div class="pay-stat" style="grid-column:1/-1"><span>נותר לשלם</span><b data-cell="sum">'+_payFmt(c.sum)+'</b></div>'
@@ -5517,8 +5531,9 @@ function finishOnboarding(){
 }
 
 function init(){
-  const _migrated=_migrateCats();            // remap locally-stored data from the old category list
-  if(_fxApply()||_migrated)saveData();       // materialize this month's fixed expenses
+  const _catsMigrated=_migrateCats();         // remap locally-stored data from the old category list
+  const _paysMigrated=_migratePayments();     // anchor legacy payment progress to the current month
+  if(_fxApply()||_catsMigrated||_paysMigrated)saveData();  // materialize this month's fixed expenses
   var _tmode=localStorage.getItem('budget_theme');
   if(!_tmode){ var _od=localStorage.getItem('budget_dark'); _tmode=_od==='1'?'dark':(_od==='0'?'light':'system'); }
   var _sysDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
