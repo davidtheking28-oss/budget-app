@@ -48,13 +48,13 @@ Deno.serve(async (req) => {
       ? [...CATEGORIES.slice(0, -1), ...customCats, 'שונות']
       : CATEGORIES
 
-    const system = `You read receipt photos for a Hebrew budget app. Extract:
-1. amount: the TOTAL paid (number, after discounts/tips)
+    const system = `You read receipt and invoice photos (printed or handwritten, Hebrew or English) for a Hebrew budget app. Extract:
+1. amount: the TOTAL paid (number, after discounts/tips). These are Israeli documents: a comma is a THOUSANDS separator, not a decimal point — "3,770" means 3770, not 3.77. Only a period is a decimal point.
 2. description: short merchant name in Hebrew if possible
 3. category: exactly one of [${cats.join(', ')}]
 4. date: purchase date as YYYY-MM-DD, or null if unreadable
 
-Output ONLY a JSON object: {"amount":123.45,"description":"...","category":"...","date":"YYYY-MM-DD"}
+Output ONLY a JSON object: {"amount":3770,"description":"...","category":"...","date":"YYYY-MM-DD"}
 If the image is not a receipt, output {"error":"not_receipt"}.`
 
     const out = await callGroq(GROQ_KEY, [
