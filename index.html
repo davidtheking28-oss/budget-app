@@ -3202,9 +3202,14 @@ let _householdOwner = null;
 let _cloudHousehold = null;
 let _realtimeChannel = null;
 function _getDataUserId(){ return _householdOwner || _cloudUser?.id; }
-// ── Advisor desktop gate (temporary allowlist — replaced by advisor_clients in Step 2) ──
-const _ADVISOR_EMAILS = ['davidtheking27@gmail.com'];
-function _applyAdvisorGate(){ document.body.classList.toggle('is-advisor', !!(_cloudUser && _ADVISOR_EMAILS.includes(_cloudUser.email))); }
+// ── Advisor desktop gate ─────────────────────────────────────────
+let _isAdvisor = false;
+async function _loadAdvisorStatus(){
+  if(!_cloudUser||!_sb){_isAdvisor=false;return;}
+  const {data}=await _sb.from('advisor_clients').select('id').eq('advisor_id',_cloudUser.id).limit(1).maybeSingle();
+  _isAdvisor=!!data;
+}
+function _applyAdvisorGate(){ document.body.classList.toggle('is-advisor', _isAdvisor); }
 
 // ── Merge helpers: timestamp-based, tombstone-aware ──
 let _syncPending=false;
@@ -3607,7 +3612,7 @@ document.addEventListener('DOMContentLoaded',function(){
   if(_sb){
     _sb.auth.onAuthStateChange((event,session)=>{
       _cloudUser=session?.user||null;
-      _applyAdvisorGate();
+      _loadAdvisorStatus().then(_applyAdvisorGate);
       renderCloudSection();
       if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')){
         _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
@@ -3616,6 +3621,7 @@ document.addEventListener('DOMContentLoaded',function(){
     });
     _sb.auth.getSession().then(async ({data:{session}})=>{
       _cloudUser=session?.user||null;
+      await _loadAdvisorStatus();
       _applyAdvisorGate();
       if(_cloudUser){
         await _loadHousehold();
@@ -5878,7 +5884,7 @@ function _initAuthGate(){
       const cached=JSON.parse(localStorage.getItem(sk));
       if(cached?.user){
         _cloudUser=cached.user;
-        _applyAdvisorGate();
+        _loadAdvisorStatus().then(_applyAdvisorGate);
         _gateDone=true;
         _proceedToApp();
         // returning user with local data → show instantly; empty local (fresh device) → hold
