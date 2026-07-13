@@ -1929,6 +1929,14 @@
       <div style="font-size:0.65rem;color:var(--text3);opacity:0.6;">הנתונים שלך נשמרים מקומית במכשיר ומוצפנים בענן</div>
     </div>
   </div>
+
+  <!-- Advisor console — client-list page (Task 5) -->
+  <div id="page-advisorClients" class="page">
+    <div style="margin:2px 2px 16px">
+      <div style="font-family:var(--font-sans);font-size:1.35rem;font-weight:800;color:var(--text)">לקוחות</div>
+    </div>
+    <div id="advisorClientsList" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
 </main>
 
 <div class="sheet-overlay" id="editTxSheet" onclick="if(event.target===this)closeSheet('editTxSheet')">
@@ -2160,6 +2168,14 @@
       <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     </div>
     <span class="nav-label text-[11px] font-semibold">ניתוח</span>
+  </button>
+
+  <!-- Advisor console — client-list nav entry point (Task 5) -->
+  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" style="display:none" onclick="showPage('advisorClients',this)" id="nav-advisorClients" aria-label="לקוחות">
+    <div class="nav-icon px-3 py-1.5 rounded-xl">
+      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <span class="nav-label text-[11px] font-semibold">לקוחות</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="openSettings()" id="nav-more" aria-label="הגדרות">
@@ -3209,7 +3225,28 @@ async function _loadAdvisorStatus(){
   const {data}=await _sb.from('advisor_clients').select('id').eq('advisor_id',_cloudUser.id).eq('status','active').limit(1).maybeSingle();
   _isAdvisor=!!data;
 }
-function _applyAdvisorGate(){ document.body.classList.toggle('is-advisor', _isAdvisor); }
+function _applyAdvisorGate(){
+  document.body.classList.toggle('is-advisor', _isAdvisor);
+  const navBtn=document.getElementById('nav-advisorClients');
+  if(navBtn)navBtn.style.display=_isAdvisor?'':'none';
+}
+
+// ── Advisor console — client roster ─────────────────────────────
+async function renderAdvisorClients(){
+  const el=document.getElementById('advisorClientsList');
+  if(!el||!_sb||!_cloudUser)return;
+  const {data,error}=await _sb.from('advisor_clients').select('*').eq('advisor_id',_cloudUser.id).eq('status','active').order('created_at',{ascending:false});
+  if(error||!data||!data.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:0.9rem">אין עדיין לקוחות מחוברים</div>';
+    return;
+  }
+  el.innerHTML=data.map(c=>
+    '<div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="enterClientBudget(\''+c.client_id+'\',\''+esc(c.client_email)+'\')">'
+    +'<div style="font-weight:700;color:var(--text)">'+esc(c.client_email)+'</div>'
+    +'<div style="color:var(--accent);font-size:0.85rem;font-weight:700">כניסה לתקציב ←</div>'
+    +'</div>'
+  ).join('');
+}
 
 // ── Merge helpers: timestamp-based, tombstone-aware ──
 let _syncPending=false;
@@ -5169,6 +5206,7 @@ function showPage(name,btn){
   if(name==='subscriptions')renderSubscriptions();
   if(name==='budget')       renderBudget();
   if(name==='loans')        renderLoans();
+  if(name==='advisorClients') renderAdvisorClients();
 }
 
 // ── Feature 2: Cash Flow Forecast ────────────────────────────────
