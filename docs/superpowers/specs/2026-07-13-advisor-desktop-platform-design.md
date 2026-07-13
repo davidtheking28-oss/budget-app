@@ -10,6 +10,18 @@ an existing advisor platform (client roster, branded client app, automatic
 financial mapping on onboarding, AI insights, task/meeting/notification
 management, multi-advisor support).
 
+## Code organization
+
+Single file, logically separated. All advisor-specific code (tables, screens,
+CRM, reports) lives in `index.html` alongside the personal-budget code — no
+second HTML file, no separate build. Keep it easy to tell the two apart at a
+glance: advisor CSS/JS grouped in clearly labeled blocks/sections (e.g. a
+`/* ── Advisor console ── */` banner comment and `advisor*`-prefixed function
+names), not interleaved line-by-line with personal-budget logic. This mirrors
+how Step 1's desktop-layout CSS already lives as one clearly bounded
+`@media(min-width:1024px)` block rather than being scattered through the
+stylesheet.
+
 ## Non-goals (V1)
 
 - Branded/white-labeled client-facing app (Velora does this; noted as a future
