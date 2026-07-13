@@ -2115,6 +2115,13 @@
         <div class="settings-section-title">יועץ פיננסי</div>
         <div id="advisorLinkSection"></div>
       </div>
+      <!-- ── Advisor invite redemption ── -->
+      <div class="settings-section">
+        <div class="settings-section-title">הזנת קוד יועץ</div>
+        <div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">קיבלת קוד מלקוח? הזן אותו כאן כדי להתחבר לתקציב שלו</div>
+        <input id="advisorRedeemCodeInput" type="text" maxlength="6" placeholder="קוד 6 תווים" autocomplete="off" autocorrect="off" spellcheck="false" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:4px;text-transform:uppercase" />
+        <button class="btn btn-primary btn-full" onclick="redeemAdvisorInvite()">חבר לקוח</button>
+      </div>
       <div style="text-align:center;margin-top:14px;padding-bottom:4px">
         <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">🔒 מדיניות פרטיות</button>
         <span style="color:var(--border);margin:0 6px">·</span>
@@ -3655,6 +3662,20 @@ function renderAdvisorLinkSection(){
     +'<span style="font-size:1.1rem">✅</span>'
     +'<div><div style="font-size:0.82rem;font-weight:700;color:var(--green)">מחובר ליועץ פיננסי</div></div></div>'
     +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">נתק יועץ</button>';
+}
+// ── Advisor invite redemption ──
+async function redeemAdvisorInvite(){
+  if(!_cloudUser||!_sb)return;
+  const input=document.getElementById('advisorRedeemCodeInput');
+  const code=(input?.value||'').trim().toUpperCase();
+  if(!code){showToast('❌ הזן קוד');return;}
+  const {data,error}=await _sb.rpc('claim_advisor_invite',{p_code:code});
+  if(error||!data){showToast('❌ קוד לא תקין או שכבר נוצל');return;}
+  showToast('✅ הלקוח חובר בהצלחה');
+  if(input)input.value='';
+  await _loadAdvisorStatus();
+  _applyAdvisorGate();
+  if(document.getElementById('page-advisorClients')?.classList.contains('active')) renderAdvisorClients();
 }
 function _subscribeHousehold(){
   if(!_sb||!_getDataUserId())return;
