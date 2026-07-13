@@ -3257,6 +3257,7 @@ async function renderAdvisorClients(){
 let _advisorViewingClient=null;
 let _advisorPriorHouseholdOwner=null;
 async function enterClientBudget(clientUserId,clientName){
+  if(_advisorViewingClient) await exitClientBudget();
   _advisorPriorHouseholdOwner=_householdOwner;
   _advisorViewingClient={id:clientUserId,name:clientName};
   _householdOwner=clientUserId;
