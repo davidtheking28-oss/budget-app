@@ -169,6 +169,78 @@ git commit -m "widen summary cards row on desktop layout"
 
 ---
 
+### Task 3.5: Fix cards-row.three regression, widen the real dashboard summary cards
+
+Added after the final whole-branch review found two Important issues in Task 3:
+(1) forcing `.cards-row.three` to 4 columns on desktop actually hurts its only
+real usage (the subscriptions page's 3 cards, which now leave an empty 4th
+column) — this must be reverted; (2) the dashboard's actual income/expense
+summary row uses Tailwind (`grid grid-cols-2`, index.html:1548), not
+`.cards-row`, so Task 3 never widened it at all. Human decision: revert (1)
+and add a small, scoped desktop treatment for (2) in this same branch.
+
+**Files:**
+- Modify: `index.html` (the `@media(min-width:1024px)` block)
+
+**Interfaces:**
+- Consumes: the media query block from Tasks 2-3.
+- Produces: no new selectors beyond one scoped rule, `#page-dashboard .grid-cols-2`.
+
+- [ ] **Step 1: Remove the `.cards-row.three` desktop override**
+
+Delete this line from inside the `@media(min-width:1024px)` block (it currently
+sits next to the `.cards-row{grid-template-columns:repeat(4,1fr);gap:14px;}`
+line):
+
+```css
+      .cards-row.three{grid-template-columns:repeat(4,1fr);}
+```
+
+Leave the bare `.cards-row{...}` rule in place (it matches no element today
+but is harmless and was already reviewed as acceptable).
+
+- [ ] **Step 2: Widen the dashboard's real summary cards without an empty-column defect**
+
+The income/expense grid at index.html:1548 (`<div class="grid grid-cols-2
+gap-3 mb-4">`) has exactly 2 children. Do not force it to more columns than
+it has content for — that repeats the exact mistake being reverted in Step 1.
+`grid-cols-2` and `grid-cols-3` (index.html:1548, 1639) are Tailwind utility
+classes; do not override the bare `.grid-cols-2`/`.grid-cols-3` classes
+globally (they may be reused elsewhere in the file) — scope the selector to
+`#page-dashboard` and to the specific grid at line 1548 only. Add this inside
+the same `@media(min-width:1024px)` block:
+
+```css
+      #page-dashboard .grid-cols-2{gap:20px;}
+```
+
+This is a cosmetic desktop enhancement (more breathing room between the two
+cards as they stretch across the wider 1040px `main` column from Task 2) —
+it does not change column count, so there is no empty-column risk.
+
+- [ ] **Step 3: Verify at desktop width (1440x900)**
+
+Using the same auth/onboarding-bypass Playwright technique established in
+Tasks 2-3 (inject a style override hiding `#authScreen`/`#onboardOverlay`,
+viewport-only screenshots): confirm the subscriptions page's `.cards-row.three`
+now renders 3 equal columns (not 4 with an empty gap), and the dashboard's
+income/expense cards now have a visibly larger gap between them (20px instead
+of the base 12px `gap-3`).
+
+- [ ] **Step 4: Verify at mobile width (390x844)**
+
+Confirm both areas are unchanged from before this task (media query gates on
+`min-width:1024px`, so nothing below that width should differ).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add index.html
+git commit -m "revert cards-row.three regression, widen dashboard summary card gap on desktop"
+```
+
+---
+
 ### Task 4: Deploy verification
 
 **Files:**
