@@ -22,6 +22,26 @@ how Step 1's desktop-layout CSS already lives as one clearly bounded
 `@media(min-width:1024px)` block rather than being scattered through the
 stylesheet.
 
+## Desktop access is advisor-only (2026-07-13 revision)
+
+Regular clients (non-advisors) always use the mobile UI, even when they open
+the app from a desktop browser — the desktop sidebar layout must NOT trigger
+for them. Only accounts recognized as advisors get the desktop layout when on
+a wide viewport. Both surfaces stay in sync automatically because they read
+the same `budget_data` row — there is no separate sync mechanism to build.
+
+**Known gap from Step 1:** the desktop CSS shipped in Step 1 currently
+triggers on viewport width alone (`@media(min-width:1024px)`), with no
+advisor check — so today, ANY user on a wide browser window sees the sidebar
+layout, not just advisors. This must be gated before Step 1 is considered
+finished under this revision: the trigger needs to become conditional on
+advisor status (e.g. a `body.is-advisor` class set by JS after auth resolves,
+combined with the width media query), not width alone. Gating on advisor
+status depends on Step 2's `advisor_clients` infrastructure (a way to know
+"is this logged-in user an advisor") — until Step 2 exists, there is no
+signal to gate on, so this fix is sequenced as part of Step 2, not
+retrofitted onto Step 1 in isolation.
+
 ## Non-goals (V1)
 
 - Branded/white-labeled client-facing app (Velora does this; noted as a future
