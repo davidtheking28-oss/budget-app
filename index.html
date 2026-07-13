@@ -2100,6 +2100,11 @@
         <div class="settings-section-title">סנכרון ושיתוף</div>
         <div id="cloudSection"></div>
       </div>
+      <!-- ── Advisor link (client side) ── -->
+      <div class="settings-section">
+        <div class="settings-section-title">יועץ פיננסי</div>
+        <div id="advisorLinkSection"></div>
+      </div>
       <div style="text-align:center;margin-top:14px;padding-bottom:4px">
         <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline">🔒 מדיניות פרטיות</button>
         <span style="color:var(--border);margin:0 6px">·</span>
@@ -3538,6 +3543,48 @@ async function leaveHousehold(){
   renderCloudSection();
   showToast('✓ עזבת את התקציב המשפחתי');
 }
+// ── Advisor link (client side) ──────────────────────────────────
+let _advisorLink = null;
+async function _loadAdvisorLink(){
+  if(!_cloudUser||!_sb)return;
+  const {data}=await _sb.from('advisor_clients').select('*').eq('client_id',_cloudUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
+  _advisorLink=data||null;
+}
+async function createAdvisorInvite(){
+  if(!_cloudUser||!_sb)return;
+  const code=Math.random().toString(36).substring(2,8).toUpperCase();
+  const {data,error}=await _sb.from('advisor_clients').insert({client_id:_cloudUser.id,client_email:_cloudUser.email,invite_code:code,status:'pending'}).select().single();
+  if(error){showToast('❌ שגיאה ביצירת קוד');return;}
+  _advisorLink=data;
+  renderAdvisorLinkSection();
+}
+async function removeAdvisorLink(){
+  if(!_advisorLink||!_sb)return;
+  await _sb.from('advisor_clients').delete().eq('id',_advisorLink.id);
+  _advisorLink=null;
+  renderAdvisorLinkSection();
+}
+function renderAdvisorLinkSection(){
+  const el=document.getElementById('advisorLinkSection');
+  if(!el)return;
+  if(!_advisorLink){
+    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">חבר יועץ פיננסי כדי שיוכל לצפות ולערוך את התקציב שלך</div>'
+      +'<button class="btn btn-outline btn-full" onclick="createAdvisorInvite()">+ צור קוד ליועץ</button>';
+    return;
+  }
+  if(_advisorLink.status==='pending'){
+    el.innerHTML='<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:center">'
+      +'<div style="font-size:1.4rem;margin-bottom:4px">🔑</div>'
+      +'<div style="font-size:1.4rem;font-weight:800;letter-spacing:6px;font-family:var(--font-num);color:var(--accent)">'+esc(_advisorLink.invite_code)+'</div>'
+      +'<div style="font-size:0.72rem;color:var(--text3);margin-top:4px">שתף את הקוד עם היועץ הפיננסי שלך</div></div>'
+      +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">בטל קוד</button>';
+    return;
+  }
+  el.innerHTML='<div style="display:flex;align-items:center;gap:8px;background:rgba(16,185,129,0.08);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
+    +'<span style="font-size:1.1rem">✅</span>'
+    +'<div><div style="font-size:0.82rem;font-weight:700;color:var(--green)">מחובר ליועץ פיננסי</div></div></div>'
+    +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">נתק יועץ</button>';
+}
 function _subscribeHousehold(){
   if(!_sb||!_getDataUserId())return;
   if(_realtimeChannel){_sb.removeChannel(_realtimeChannel);_realtimeChannel=null;}
@@ -3564,6 +3611,7 @@ document.addEventListener('DOMContentLoaded',function(){
       renderCloudSection();
       if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')){
         _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
+        _loadAdvisorLink().then(renderAdvisorLinkSection);
       }
     });
     _sb.auth.getSession().then(async ({data:{session}})=>{
@@ -3573,6 +3621,8 @@ document.addEventListener('DOMContentLoaded',function(){
         await _loadHousehold();
         await _loadFromCloud(true);
         _subscribeHousehold();
+        await _loadAdvisorLink();
+        renderAdvisorLinkSection();
         if(!_gateShown) refreshAll();
       } else renderCloudSection();
       _authGateResolve(session);
