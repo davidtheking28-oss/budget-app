@@ -90,6 +90,8 @@
     .fab{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px);left:50%;transform:translateX(-50%);z-index:190;width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#2563eb,#1d4ed8);border:none;color:white;cursor:pointer;box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 6px rgba(var(--accent-rgb),0.10);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;transition:transform 0.22s cubic-bezier(0.22,1,0.36,1),box-shadow 0.22s;will-change:transform;}
     .fab:active{transform:translateX(-50%) scale(0.88);box-shadow:0 4px 14px rgba(var(--accent-rgb),0.4);}
     .fab.pulse{animation:fabPulse 1.8s ease-in-out 3;}
+    .advisor-view-bar{display:none;position:fixed;top:var(--header-h);left:0;right:0;z-index:199;background:rgba(var(--accent-rgb),0.15);border-bottom:1px solid rgba(var(--accent-rgb),0.4);color:var(--accent);padding:10px 16px;align-items:center;justify-content:space-between;font-size:0.85rem;font-weight:700;gap:10px;}
+    body.is-advisor.advisor-viewing-client .advisor-view-bar{display:flex;}
     @keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
     @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 0 rgba(var(--accent-rgb),0.4);}50%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 14px rgba(var(--accent-rgb),0);}}
     main{padding:calc(76px + env(safe-area-inset-top,0px) + var(--demo-bar-h)) 16px calc(var(--nav-h) + var(--safe-bottom) + 88px);max-width:600px;margin:0 auto;}
@@ -2141,6 +2143,10 @@
 <div id="fabHint" style="display:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 88px);left:50%;transform:translateX(-50%);background:var(--accent);color:white;padding:8px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;white-space:nowrap;z-index:191;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.4);animation:fadeInUp 0.4s ease;pointer-events:none;">לחץ כאן להוסיף הוצאה ☝️<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--accent);"></div></div>
 <button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
+<div class="advisor-view-bar" id="advisorViewBar">
+  <span>👁️ אתה צופה בתקציב של <b id="advisorViewBarName"></b> — כל שינוי נשמר אצלם</span>
+  <button class="btn btn-sm" style="background:var(--accent);color:#fff;border:none" onclick="exitClientBudget()">חזרה ללקוחות ←</button>
+</div>
 <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-stone-900/98 border-t border-slate-100 dark:border-stone-850 shadow-lg px-2 flex justify-between items-center max-w-md mx-auto" aria-label="ניווט ראשי">
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('dashboard',this)" id="nav-dashboard" aria-label="ראשי">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
@@ -3246,6 +3252,28 @@ async function renderAdvisorClients(){
     +'<div style="color:var(--accent);font-size:0.85rem;font-weight:700">כניסה לתקציב ←</div>'
     +'</div>'
   ).join('');
+}
+
+let _advisorViewingClient=null;
+let _advisorPriorHouseholdOwner=null;
+async function enterClientBudget(clientUserId,clientName){
+  _advisorPriorHouseholdOwner=_householdOwner;
+  _advisorViewingClient={id:clientUserId,name:clientName};
+  _householdOwner=clientUserId;
+  document.body.classList.add('advisor-viewing-client');
+  document.getElementById('advisorViewBarName').textContent=clientName;
+  await _loadFromCloud();
+  refreshAll();
+  showPage('dashboard',document.getElementById('nav-dashboard'));
+}
+async function exitClientBudget(){
+  _householdOwner=_advisorPriorHouseholdOwner;
+  _advisorPriorHouseholdOwner=null;
+  _advisorViewingClient=null;
+  document.body.classList.remove('advisor-viewing-client');
+  await _loadFromCloud();
+  refreshAll();
+  showPage('advisorClients',document.getElementById('nav-advisorClients'));
 }
 
 // ── Merge helpers: timestamp-based, tombstone-aware ──
