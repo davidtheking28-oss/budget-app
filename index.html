@@ -96,17 +96,17 @@
     .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
     .cards-row.three{grid-template-columns:repeat(3,1fr);}
     @media(min-width:1024px){
-      .bottom-nav{position:fixed;top:var(--header-h);right:0;left:auto;bottom:0;width:224px;height:auto;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;padding:20px 0;border-top:none;border-left:1px solid var(--border);box-shadow:none;}
-      .nav-item{flex:none;flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;padding:12px 24px;}
-      .nav-item .nav-icon{padding:6px;border-radius:10px;}
-      .nav-item .nav-label{font-size:0.88rem;}
-      .nav-item.active::after{display:none;}
-      .nav-item.active{background:rgba(var(--accent-rgb),0.08);}
-      .fab{left:auto;right:calc(224px + 32px);transform:none;}
-      .fab:active{transform:scale(0.88);}
-      main{margin-right:224px;margin-left:0;max-width:1040px;padding:calc(32px + env(safe-area-inset-top,0px) + var(--demo-bar-h)) 40px 40px;}
-      .cards-row{grid-template-columns:repeat(4,1fr);gap:14px;}
-      #page-dashboard .grid-cols-2{gap:20px;}
+      body.is-advisor .bottom-nav{position:fixed;top:var(--header-h);right:0;left:auto;bottom:0;width:224px;height:auto;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;padding:20px 0;border-top:none;border-left:1px solid var(--border);box-shadow:none;}
+      body.is-advisor .nav-item{flex:none;flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;padding:12px 24px;}
+      body.is-advisor .nav-item .nav-icon{padding:6px;border-radius:10px;}
+      body.is-advisor .nav-item .nav-label{font-size:0.88rem;}
+      body.is-advisor .nav-item.active::after{display:none;}
+      body.is-advisor .nav-item.active{background:rgba(var(--accent-rgb),0.08);}
+      body.is-advisor .fab{left:auto;right:calc(224px + 32px);transform:none;}
+      body.is-advisor .fab:active{transform:scale(0.88);}
+      body.is-advisor main{margin-right:224px;margin-left:0;max-width:1040px;padding:calc(32px + env(safe-area-inset-top,0px) + var(--demo-bar-h)) 40px 40px;}
+      body.is-advisor .cards-row{grid-template-columns:repeat(4,1fr);gap:14px;}
+      body.is-advisor #page-dashboard .grid-cols-2{gap:20px;}
     }
     #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px) + var(--demo-bar-h))!important;left:50%!important;transform:translateX(-50%)!important;z-index:200!important;margin:0!important;}
     .page{display:none;}.page.active{display:block;}
@@ -3197,6 +3197,9 @@ let _householdOwner = null;
 let _cloudHousehold = null;
 let _realtimeChannel = null;
 function _getDataUserId(){ return _householdOwner || _cloudUser?.id; }
+// ── Advisor desktop gate (temporary allowlist — replaced by advisor_clients in Step 2) ──
+const _ADVISOR_EMAILS = ['davidtheking27@gmail.com'];
+function _applyAdvisorGate(){ document.body.classList.toggle('is-advisor', !!(_cloudUser && _ADVISOR_EMAILS.includes(_cloudUser.email))); }
 
 // ── Merge helpers: timestamp-based, tombstone-aware ──
 let _syncPending=false;
@@ -3557,6 +3560,7 @@ document.addEventListener('DOMContentLoaded',function(){
   if(_sb){
     _sb.auth.onAuthStateChange((event,session)=>{
       _cloudUser=session?.user||null;
+      _applyAdvisorGate();
       renderCloudSection();
       if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')){
         _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
@@ -3564,6 +3568,7 @@ document.addEventListener('DOMContentLoaded',function(){
     });
     _sb.auth.getSession().then(async ({data:{session}})=>{
       _cloudUser=session?.user||null;
+      _applyAdvisorGate();
       if(_cloudUser){
         await _loadHousehold();
         await _loadFromCloud(true);
@@ -5823,6 +5828,7 @@ function _initAuthGate(){
       const cached=JSON.parse(localStorage.getItem(sk));
       if(cached?.user){
         _cloudUser=cached.user;
+        _applyAdvisorGate();
         _gateDone=true;
         _proceedToApp();
         // returning user with local data → show instantly; empty local (fresh device) → hold
