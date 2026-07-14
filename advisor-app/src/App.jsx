@@ -6,6 +6,7 @@ import ClientList from './clients/ClientList.jsx';
 import Dashboard from './budget/Dashboard.jsx';
 import Expenses from './budget/Expenses.jsx';
 import Budget from './budget/Budget.jsx';
+import Analysis from './budget/Analysis.jsx';
 
 const TABS = ['דשבורד', 'הוצאות', 'תקציב', 'ניתוח'];
 
@@ -39,6 +40,7 @@ export default function App() {
       {tab === 'דשבורד' && <Dashboard clientUserId={selectedClient.id} />}
       {tab === 'הוצאות' && <Expenses clientUserId={selectedClient.id} />}
       {tab === 'תקציב' && <Budget clientUserId={selectedClient.id} />}
+      {tab === 'ניתוח' && <Analysis clientUserId={selectedClient.id} />}
     </Shell>
   );
 }

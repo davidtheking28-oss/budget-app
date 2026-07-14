@@ -1,0 +1,10 @@
+.wrap {
+  max-width: 480px;
+  margin: 20px auto;
+}
+
+.empty {
+  color: var(--text2);
+  text-align: center;
+  padding: 60px 0;
+}
