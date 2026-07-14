@@ -1,0 +1,37 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+}
+
+.row:hover {
+  border-color: var(--accent);
+}
+
+.email {
+  font-weight: 700;
+}
+
+.arrow {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.empty {
+  color: var(--text2);
+  text-align: center;
+  padding: 60px 0;
+}
