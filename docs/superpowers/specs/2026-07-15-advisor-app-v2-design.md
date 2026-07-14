@@ -1,59 +1,96 @@
-# Advisor App V2 — Data Depth, Insights & CRM — Design
+# Advisor App V2 — Console Shell, Data Depth, Insights & CRM — Design
 
 ## Purpose
 
 The advisor app (`advisor-app/`, live at `/advisor/`) shipped as a functional
 V1: login → client list → per-client dashboard/expenses/budget/analysis for
-the current month. It looks polished after the nocturnal-ledger redesign but
-is thin on advisor-grade substance: the client list shows only emails, every
-screen is locked to the current month, and there is no way to record any
-advisor-side context about a client. This iteration adds the data depth and
-workflow features that make it an actual working tool, per the original
+the current month, styled with the nocturnal-ledger redesign. It is still
+thin as a working tool: the client list shows only emails, every screen is
+locked to the current month, the tab layout reads as a website rather than a
+professional console, and there is no advisor-side context (notes, tasks,
+meetings) anywhere. V2 turns it into a real console, per the original
 platform vision (`2026-07-13-advisor-desktop-platform-design.md` Steps 3-4,
 minus real AI).
 
 ## Scope (V2)
 
-1. **Client-list metrics** — each roster row also shows "נותר החודש"
-   (total effective budget minus month expenses) and a warning chip when any
-   budgeted category is over its limit. Red/neutral state at a glance.
-2. **Month navigation** — a shared month switcher (prev/next chevrons +
-   "חודש נוכחי" reset) in the client view's Shell area, driving Dashboard,
-   Expenses, Budget, and Analysis together via a single `(year, month)`
-   state lifted to `App.jsx`.
-3. **6-month trend chart** — Dashboard gains a bar chart (income vs.
-   expenses per month, last 6 months ending at the selected month), built
-   with the already-bundled chart.js.
-4. **Auto insights** — Dashboard gains an insights panel computed
-   client-side from existing data. No LLM, no edge function. Initial rules:
+### A. Console shell redesign
+
+1. **Sidebar layout replaces tabs.** Inside a client, a fixed right-side
+   sidebar (RTL) carries: the client's identity block (avatar-initial,
+   email, "נותר החודש" mini-stat), nav entries — דשבורד, הוצאות, תקציב,
+   ניתוח, יעדים, מנויים והלוואות, לקוח (CRM) — and a "חזרה ללקוחות" action
+   at the bottom. The content area widens accordingly. The roster screen
+   keeps the current top-bar-only layout (no sidebar when no client is
+   selected). Same design tokens (`theme.css`), Frank Ruhl Libre display
+   numbers, `riseIn` motion.
+2. **Loading skeletons** — shimmering placeholder blocks (cards, list rows)
+   replace the current blank screens while `useClientBudget`/roster queries
+   resolve.
+3. **Toasts** — a lightweight toast module (no dependency) confirms every
+   mutating action (הוצאה נוספה, משימה סומנה, קוד מומש...) and surfaces
+   errors, matching the client app's toast convention.
+4. **Micro-animations** — stat numbers count up from 0 on mount
+   (requestAnimationFrame, ~600ms, respects `prefers-reduced-motion`);
+   hover lifts on cards/rows; animated progress-bar fills.
+
+### B. Data depth (existing data, no schema changes)
+
+5. **Client-list metrics** — each roster row shows "נותר החודש" (total
+   effective budget minus month expenses), a warning chip when any budgeted
+   category exceeds its limit, and an open-tasks count chip.
+6. **Month navigation** — shared month switcher (prev/next chevrons +
+   "חודש נוכחי" reset) in the client view, driving all data screens via a
+   single `{year, month}` state lifted to `App.jsx`.
+7. **6-month trend chart** — Dashboard bar chart (income vs. expenses per
+   month, last 6 months ending at the selected month), chart.js (already
+   bundled).
+8. **Auto insights** — Dashboard panel computed client-side from existing
+   data (pure function, no LLM). Initial rules:
    - over-budget categories this month (name + overage amount);
-   - a category ≥50% higher than its 3-month average (and above a ₪200
-     floor, to skip noise);
-   - no income recorded this month (after the 5th of the month);
-   - spending pace: projected month-end total exceeds total budget while
-     it's still mid-month.
-5. **Goals tab** — new "יעדים" tab rendering `budget_data.goals`
-   (name/target/saved/months, data already exists — read-only progress
-   bars; no goal editing in V2).
-6. **CRM tab** — new "לקוח" tab per client with notes and tasks:
-   - `advisor_notes`: free-text note + created_at, newest first, delete.
-   - `advisor_tasks`: title + optional due date + done toggle, open tasks
-     first, delete.
-   - Advisor-only visibility (see Data model). Client never sees these.
-   - Open-task count also surfaces as a small chip on the client-list row.
+   - a category ≥50% above its 3-month average (and above a ₪200 floor);
+   - no income recorded this month (after the 5th);
+   - projected month-end spending exceeds total budget mid-month.
+9. **Goals screen** — renders `budget_data.goals` (name/target/saved/
+   months) as read-only progress bars.
+10. **Subscriptions & loans screen** — read-only rendering of
+    `budget_data.subscriptions` (name, amount, cycle, next renewal) and
+    `budget_data.loans` — completes the client's financial picture. No
+    editing in V2.
+
+### C. Advisor workflow (new tables)
+
+11. **CRM screen ("לקוח")** — notes, tasks, and meetings for the selected
+    client:
+    - `advisor_notes`: free-text note + created_at, newest first, delete.
+    - `advisor_tasks`: title + optional due date + done toggle, open first,
+      delete.
+    - `advisor_meetings`: scheduled_at (datetime) + free-text notes; list
+      upcoming first; delete. An upcoming-meeting line (next meeting date)
+      also shows in the sidebar identity block.
+    - Advisor-only visibility (see Data model). The client never sees these.
+12. **Add client from the advisor app** — a "+ הוסף לקוח" action on the
+    roster screen opens an inline code-entry field that calls the existing
+    `claim_advisor_invite` RPC, refreshes the roster on success, and shows
+    a toast. (The client still generates the code in the mobile app; this
+    removes the advisor's awkward detour through `index.html` Settings.)
+13. **Printable monthly report** — a "דוח חודשי" action inside a client
+    view opens a print-oriented layout (dedicated print stylesheet:
+    light background, no sidebar/nav) summarizing the selected month:
+    income/expense/net, budget-vs-actual table per category, insights list,
+    goals progress. Triggered via `window.print()`; no PDF library.
 
 ## Non-goals (V2)
 
-- Real AI/LLM insights (client-side rules only).
-- Meetings table (`advisor_meetings` from the original spec) — deferred;
-  tasks with due dates cover the near-term need.
-- Goal editing from the advisor app (read-only in V2).
-- Budget rollover/carry-forward parity — the accepted V1 limitation stands.
-- Fixing the multi-writer sync gap (accepted V1 limitation, unchanged).
+- Real AI/LLM insights.
+- Editing goals/subscriptions/loans from the advisor app (read-only).
+- Budget rollover/carry-forward parity (accepted V1 limitation stands).
+- Fixing the multi-writer sync gap (accepted V1 limitation stands).
+- Push notifications/reminders for meetings (list + sidebar line only).
 
 ## Data model
 
-Two new tables (names per the original platform spec):
+Three new tables (names per the original platform spec):
 
 ```sql
 create table public.advisor_notes (
@@ -73,40 +110,52 @@ create table public.advisor_tasks (
   due_date date,
   created_at timestamptz not null default now()
 );
+
+create table public.advisor_meetings (
+  id uuid primary key default gen_random_uuid(),
+  advisor_id uuid not null references auth.users(id),
+  client_id uuid not null references auth.users(id),
+  scheduled_at timestamptz not null,
+  notes text,
+  created_at timestamptz not null default now()
+);
 ```
 
-RLS on both: single `FOR ALL` policy `using (auth.uid() = advisor_id) with
-check (auth.uid() = advisor_id)`. The client has no access path at all —
-these are the advisor's private working notes. Applied via Supabase MCP,
-recorded as numbered migration files (next free numbers in
-`supabase/migrations/`).
+RLS on all three: single `FOR ALL` policy `using (auth.uid() = advisor_id)
+with check (auth.uid() = advisor_id)`. Applied via Supabase MCP, recorded
+as numbered migration files (next free numbers in `supabase/migrations/`).
 
 No changes to `budget_data` or `advisor_clients`.
 
 ## Architecture notes
 
-- **Client-list metrics** require each roster row's `budget_data`. One
-  batched query — `.in('user_id', clientIds)` on `budget_data` — not N
-  queries; RLS already grants the advisor read access to active clients'
-  rows. Compute per-client remaining/overage in JS. Open-task counts come
-  from one `advisor_tasks` query filtered `done = false`, grouped in JS.
-- **Month state** lives in `App.jsx` (`{year, month}`), passed to all four
-  screens; `monthUtils.js` gains `addMonths(y, m, delta)`. Insights and the
-  trend chart derive from the same `data.transactions` already loaded by
-  `useClientBudget` — no new data fetching for features 2-5.
-- **Insights** are a pure function `computeInsights(data, year, month)` in
-  a new `insights.js` module — testable in isolation, no hooks inside.
-- **CRM** gets its own hook (`useClientCrm(advisorId, clientId)`) wrapping
-  the two tables with list/add/toggle/delete, optimistic updates matching
-  the project's UX convention.
-- All new UI follows the existing nocturnal-ledger design system (tokens in
-  `theme.css`, CSS Modules per component, `riseIn` animation, Frank Ruhl
-  Libre for display numbers).
+- **Roster metrics**: one batched `.in('user_id', clientIds)` query on
+  `budget_data` (RLS already grants advisor read on active clients) + one
+  `advisor_tasks` query (`done = false`) + one `advisor_meetings` query,
+  grouped in JS. No N+1.
+- **Month state** `{year, month}` lives in `App.jsx`; `monthUtils.js` gains
+  `addMonths(y, m, delta)`. Trend chart and insights derive from
+  `data.transactions` already loaded by `useClientBudget` — no new fetches
+  for section B.
+- **Insights**: pure function `computeInsights(data, year, month)` in
+  `insights.js` — no hooks inside, testable in isolation.
+- **CRM**: one hook `useClientCrm(advisorId, clientId)` wrapping the three
+  tables with list/add/toggle/delete, optimistic updates + toast on
+  success/error per the project convention.
+- **Toasts**: module-level `toast(msg, kind)` with a `<Toaster>` mounted
+  once in `App.jsx` — no context/provider ceremony, no dependency.
+- **Sidebar shell**: `Shell.jsx` grows a `sidebar` variant (client selected)
+  vs. the existing top-bar-only variant (roster). Nav state replaces the
+  `tabs` prop.
+- **Print report**: a `Report.jsx` rendered into the normal tree but shown
+  via a `@media print` stylesheet + a dedicated "report mode" state; no
+  new route, no PDF dependency.
 
 ## Testing / verification
 
-Per-task Playwright verification against the dev server with scratch
-mounts and placeholder UUIDs (established pattern; real authenticated
-flows remain manually verified by the user — known environment limitation).
-RLS on the new tables verified via `pg_policies` and an impersonated
-`request.jwt.claims` query. Deploy verified live per the project rule.
+Per-task Playwright verification against the dev server with scratch mounts
+and placeholder UUIDs (established pattern; real authenticated flows remain
+manually verified by the user — known environment limitation). RLS on the
+three new tables verified via `pg_policies` plus an impersonated
+`request.jwt.claims` query proving a non-owner advisor sees zero rows.
+Deploy verified live per the project rule.
