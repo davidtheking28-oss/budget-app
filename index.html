@@ -291,7 +291,7 @@
     .check-row label{font-size:0.84rem;font-weight:600;color:var(--text);cursor:pointer;flex:1;}
     .check-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;}
     .wiz-sheet{padding:0!important;border-radius:0;overflow:hidden;display:flex;flex-direction:column;height:100dvh;max-height:100dvh;animation:slideUp 0.32s cubic-bezier(0.16,1,0.3,1) both;}
-    #addTxSheet{align-items:stretch;}
+    #addTxSheet{align-items:stretch;background:var(--bg);}
     .wiz-hdr{background:var(--accent);padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 16px;flex-shrink:0;}
     .wiz-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
     .wiz-step-btn{font-size:1.5rem;font-weight:400;color:rgba(255,255,255,0.8);background:none;border:none;cursor:pointer;padding:6px 2px;min-width:48px;min-height:44px;font-family:inherit;direction:ltr;text-align:right;-webkit-tap-highlight-color:transparent;line-height:1;}
@@ -1334,7 +1334,11 @@
         </div>
         <div>
           <div class="wiz2-label">תאריך</div>
-          <input type="date" id="txDateVisible" class="wiz2-card" style="width:100%;max-width:100%;box-sizing:border-box;padding:9px 12px;font-size:0.85rem;font-weight:600;color:var(--text);font-family:inherit;cursor:pointer;outline:none;direction:ltr;" oninput="document.getElementById('txDate').value=this.value;wizUpdateDate()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+          <div class="wiz2-card" style="position:relative;display:flex;align-items:center;justify-content:space-between;overflow:hidden;">
+            <span id="txDateDisplay" style="font-size:0.85rem;font-weight:600;color:var(--text);"></span>
+            <span style="color:var(--text3);">📅</span>
+            <input type="date" id="txDateVisible" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;" oninput="document.getElementById('txDate').value=this.value;wizUpdateDate()"/>
+          </div>
         </div>
       </div>
     </div>
@@ -2616,6 +2620,7 @@ function openAddTx(){
   document.getElementById('txDate').value=today;
   const _wdl=document.getElementById('wizDateLabel');if(_wdl)_wdl.textContent='היום';
   const _tdv=document.getElementById('txDateVisible');if(_tdv)_tdv.value=today;
+  wizUpdateDate();
   setTxType('expense');
   wizRender();
   setTimeout(()=>document.getElementById('txDesc').focus(),250);
@@ -2801,6 +2806,8 @@ function wizUpdateDate(){
   const _wdl2=document.getElementById('wizDateLabel');
   if(_wdl2){if(v===today)_wdl2.textContent='היום';else{const[y,m,d]=v.split('-');_wdl2.textContent=d+'/'+m+'/'+y;}}
   const _tdv=document.getElementById('txDateVisible');if(_tdv&&_tdv.value!==v)_tdv.value=v;
+  const _tdd=document.getElementById('txDateDisplay');
+  if(_tdd){const[y,m,d]=v.split('-');_tdd.textContent=(+d)+' '+HE_MONTHS_LONG[(+m)-1]+' '+y;}
 }
 function setFixedType(type){
   txFixedType=type;
