@@ -27,6 +27,18 @@ jobs:
           SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
         run: node -e "const fs=require('fs');let h=fs.readFileSync('index.html','utf8');h=h.replace(/__SUPABASE_ANON__/g,(process.env.SUPABASE_ANON||'').trim());fs.writeFileSync('index.html',h);console.log('injected');"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build advisor app
+        working-directory: advisor-app
+        env:
+          VITE_SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
+        run: |
+          npm ci
+          npm run build
+
       - uses: actions/configure-pages@v4
 
       - uses: actions/upload-pages-artifact@v3
