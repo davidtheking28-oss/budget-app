@@ -129,16 +129,25 @@ No changes to `budget_data` or `advisor_clients`.
 
 ## Architecture notes
 
+- **Shared budget math**: "נותר החודש" and over-budget detection are needed
+  by the roster rows, the sidebar identity block, the Budget screen summary,
+  the insights rules, and the printed report. To prevent four drifting
+  implementations, a single pure module `budgetMath.js` exposes
+  `monthSummary(data, year, month)` → `{income, expense, remaining,
+  totalBudget, overCats}` — every consumer uses it; no screen computes
+  these numbers locally.
 - **Roster metrics**: one batched `.in('user_id', clientIds)` query on
   `budget_data` (RLS already grants advisor read on active clients) + one
-  `advisor_tasks` query (`done = false`) + one `advisor_meetings` query,
-  grouped in JS. No N+1.
+  `advisor_tasks` query (`done = false`), grouped in JS. No N+1. Meetings
+  are NOT fetched on the roster — they only appear inside a client view,
+  where `useClientCrm` loads them anyway.
 - **Month state** `{year, month}` lives in `App.jsx`; `monthUtils.js` gains
   `addMonths(y, m, delta)`. Trend chart and insights derive from
   `data.transactions` already loaded by `useClientBudget` — no new fetches
   for section B.
 - **Insights**: pure function `computeInsights(data, year, month)` in
-  `insights.js` — no hooks inside, testable in isolation.
+  `insights.js` — no hooks inside, testable in isolation; consumes
+  `budgetMath.js` for budget/overage numbers rather than recomputing.
 - **CRM**: one hook `useClientCrm(advisorId, clientId)` wrapping the three
   tables with list/add/toggle/delete, optimistic updates + toast on
   success/error per the project convention.
@@ -149,7 +158,13 @@ No changes to `budget_data` or `advisor_clients`.
   `tabs` prop.
 - **Print report**: a `Report.jsx` rendered into the normal tree but shown
   via a `@media print` stylesheet + a dedicated "report mode" state; no
-  new route, no PDF dependency.
+  new route, no PDF dependency. It renders from the same
+  `monthSummary()`/`computeInsights()` outputs and the same goals data the
+  live screens use — zero recomputation or duplicated markup logic.
+- **Interaction polish**: one shared easing token (`--ease-out-expo`) and a
+  visible `:focus-visible` ring on all interactive elements — keyboard
+  navigation looks as deliberate as mouse hover; count-up and skeleton
+  animations are skipped under `prefers-reduced-motion`.
 
 ## Testing / verification
 
