@@ -1,0 +1,23 @@
+:root {
+  --bg: #14181c;
+  --surface: #1c2126;
+  --surface2: #232a30;
+  --accent: #2dd4bf;
+  --accent-rgb: 45, 212, 191;
+  --text: #f2f5f4;
+  --text2: #9ba3a8;
+  --text3: #6b7378;
+  --border: rgba(255, 255, 255, 0.08);
+  --red: #f87171;
+  --green: #34d399;
+  --yellow: #fbbf24;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+}

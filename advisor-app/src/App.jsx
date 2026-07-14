@@ -1,3 +1,5 @@
+import Shell from './components/Shell.jsx';
+
 export default function App() {
-  return <div>advisor app scaffold</div>;
+  return <Shell title="לוח בקרה">בקרוב</Shell>;
 }
