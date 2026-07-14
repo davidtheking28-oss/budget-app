@@ -2,7 +2,7 @@
    HTML is network-first (online users always get the latest app; cache is
    the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v15';
+const CACHE = 'budget-app-v16';
 const SHELL = [
   './',
   './index.html',
@@ -58,6 +58,11 @@ self.addEventListener('notificationclick', (e) => {
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
+
+  // Never intercept cross-origin requests (Supabase API, etc.) — this SW's
+  // scope covers /advisor/ too, and cache-first here previously served
+  // stale/empty API responses to both apps indefinitely.
+  if (new URL(req.url).origin !== self.location.origin) return;
 
   const accept = req.headers.get('accept') || '';
   const isHTML = req.mode === 'navigate' || accept.includes('text/html');
