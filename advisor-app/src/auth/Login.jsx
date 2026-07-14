@@ -21,7 +21,7 @@ export default function Login() {
   return (
     <div className={styles.wrap} dir="rtl">
       <div className={styles.card}>
-        <div className={styles.logo}>Velora Advisor</div>
+        <div className={styles.logo}>Budget Advisor</div>
         {sent ? (
           <div className={styles.sent}>שלחנו לך קישור התחברות למייל — בדוק את תיבת הדואר</div>
         ) : (

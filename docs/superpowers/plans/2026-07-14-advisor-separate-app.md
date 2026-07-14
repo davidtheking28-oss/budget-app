@@ -138,7 +138,7 @@ export default defineConfig({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Velora Advisor</title>
+    <title>Budget Advisor</title>
   </head>
   <body>
     <div id="root"></div>
@@ -445,7 +445,7 @@ export default function Shell({ title, right, children }) {
   return (
     <div className={styles.shell} dir="rtl">
       <div className={styles.topbar}>
-        <div className={styles.logo}>Velora Advisor</div>
+        <div className={styles.logo}>Budget Advisor</div>
         {right}
       </div>
       <div className={styles.content}>
@@ -469,7 +469,7 @@ export default function App() {
 
 - [ ] **Step 6: Verify visually with Playwright**
 
-Run `npm run dev` in `advisor-app/`, navigate with `mcp__playwright__browser_navigate` to `http://localhost:5173/`, take a screenshot with `mcp__playwright__browser_take_screenshot`, and confirm: dark charcoal background, teal "Velora Advisor" wordmark top-right (RTL), "לוח בקרה" heading, "בקרוב" text — no console errors via `mcp__playwright__browser_console_messages`.
+Run `npm run dev` in `advisor-app/`, navigate with `mcp__playwright__browser_navigate` to `http://localhost:5173/`, take a screenshot with `mcp__playwright__browser_take_screenshot`, and confirm: dark charcoal background, teal "Budget Advisor" wordmark top-right (RTL), "לוח בקרה" heading, "בקרוב" text — no console errors via `mcp__playwright__browser_console_messages`.
 
 - [ ] **Step 7: Commit**
 
@@ -602,7 +602,7 @@ export default function Login() {
   return (
     <div className={styles.wrap} dir="rtl">
       <div className={styles.card}>
-        <div className={styles.logo}>Velora Advisor</div>
+        <div className={styles.logo}>Budget Advisor</div>
         {sent ? (
           <div className={styles.sent}>שלחנו לך קישור התחברות למייל — בדוק את תיבת הדואר</div>
         ) : (
@@ -644,7 +644,7 @@ export default function App() {
 - [ ] **Step 5: Verify with Playwright**
 
 Navigate to `http://localhost:5173/`, confirm the login card renders (teal
-"Velora Advisor" wordmark, email input, "שלח קישור התחברות" button). Type a
+"Budget Advisor" wordmark, email input, "שלח קישור התחברות" button). Type a
 test email into the input (`mcp__playwright__browser_type`) and click the
 button (`mcp__playwright__browser_click`); confirm the UI switches to the
 "שלחנו לך קישור..." message (the actual email send will succeed or fail
@@ -1098,7 +1098,7 @@ export default function Shell({ title, right, tabs, activeTab, onTabChange, chil
   return (
     <div className={styles.shell} dir="rtl">
       <div className={styles.topbar}>
-        <div className={styles.logo}>Velora Advisor</div>
+        <div className={styles.logo}>Budget Advisor</div>
         {right}
       </div>
       {tabs && (
@@ -1768,7 +1768,7 @@ curl -s -o /dev/null -w "%{http_code}" https://davidtheking28-oss.github.io/budg
 Expected: `200`.
 
 ```bash
-curl -s https://davidtheking28-oss.github.io/budget-app/advisor/ | grep -c "Velora Advisor"
+curl -s https://davidtheking28-oss.github.io/budget-app/advisor/ | grep -c "Budget Advisor"
 ```
 Expected: non-zero (the Vite dev-server HTML title/shell references the app name, or check for the built asset script tag instead if the title isn't present in the static shell — confirm by reading the actual built `advisor/index.html` output from Task 1 Step 9 first to know exactly what string to grep for).
 

@@ -4,7 +4,7 @@ export default function Shell({ title, right, tabs, activeTab, onTabChange, chil
   return (
     <div className={styles.shell} dir="rtl">
       <div className={styles.topbar}>
-        <div className={styles.logo}>Velora Advisor</div>
+        <div className={styles.logo}>Budget Advisor</div>
         {right}
       </div>
       {tabs && (
