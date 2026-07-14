@@ -30,8 +30,7 @@ export function useClientBudget(clientUserId) {
     setData(next);
     const { error } = await supabase
       .from('budget_data')
-      .update(patch)
-      .eq('user_id', clientUserId);
+      .upsert({ user_id: clientUserId, ...patch }, { onConflict: 'user_id' });
     if (error) setError(error);
   }, [clientUserId, data]);
 
