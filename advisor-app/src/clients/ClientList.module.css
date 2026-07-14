@@ -1,37 +1,73 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 20px;
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
 }
 
 .row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 20px;
+  gap: 16px;
+  padding: 20px 4px;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
+  transition: padding-right 0.2s ease, background 0.2s ease;
+  animation: riseIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .row:hover {
-  border-color: var(--accent);
+  padding-right: 10px;
+  background: rgba(var(--accent-rgb), 0.03);
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(155deg, rgba(var(--accent-rgb), 0.22), rgba(var(--gold-rgb), 0.14));
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
 }
 
 .email {
-  font-weight: 700;
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.98rem;
 }
 
 .arrow {
+  color: var(--text3);
+  font-weight: 500;
+  font-size: 0.82rem;
+  transition: color 0.2s ease;
+}
+
+.row:hover .arrow {
   color: var(--accent);
-  font-weight: 700;
-  font-size: 0.85rem;
 }
 
 .empty {
-  color: var(--text2);
+  color: var(--text3);
   text-align: center;
-  padding: 60px 0;
+  padding: 100px 0;
+  font-size: 0.92rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.emptyMark {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px dashed var(--border-strong);
 }

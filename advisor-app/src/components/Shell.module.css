@@ -2,51 +2,112 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
+  padding: 22px 40px;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: linear-gradient(180deg, var(--surface), rgba(20, 24, 28, 0.4));
+  backdrop-filter: blur(8px);
 }
 
 .logo {
-  font-weight: 800;
-  font-size: 1.1rem;
-  color: var(--accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoMark {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.9);
+}
+
+.backButton {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text2);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.backButton:hover {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  color: var(--text);
 }
 
 .content {
   flex: 1;
-  padding: 32px;
-  max-width: 1200px;
+  padding: 48px 40px 64px;
+  max-width: 1160px;
   width: 100%;
   margin: 0 auto;
+  animation: riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.content h1 {
+  font-size: 2rem;
+  margin-bottom: 4px;
 }
 
 .tabs {
   display: flex;
-  gap: 4px;
-  padding: 0 32px;
+  gap: 8px;
+  padding: 0 40px;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: rgba(20, 24, 28, 0.5);
 }
 
 .tab {
-  padding: 12px 18px;
+  position: relative;
+  padding: 16px 6px;
+  margin: 0 12px;
   background: none;
   border: none;
-  color: var(--text2);
-  font-size: 0.88rem;
-  font-weight: 600;
+  color: var(--text3);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease;
+}
+
+.tab:hover {
+  color: var(--text2);
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tabActive {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tabActive::after {
+  width: 100%;
 }

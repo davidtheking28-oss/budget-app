@@ -1,11 +1,11 @@
 import styles from './Shell.module.css';
 
-export default function Shell({ title, right, tabs, activeTab, onTabChange, children }) {
+export default function Shell({ title, right, onBack, tabs, activeTab, onTabChange, children }) {
   return (
     <div className={styles.shell} dir="rtl">
       <div className={styles.topbar}>
-        <div className={styles.logo}>Budget Advisor</div>
-        {right}
+        <div className={styles.logo}><span className={styles.logoMark}></span>Budget Advisor</div>
+        {onBack ? <button className={styles.backButton} onClick={onBack}>← חזרה ללקוחות</button> : right}
       </div>
       {tabs && (
         <div className={styles.tabs}>

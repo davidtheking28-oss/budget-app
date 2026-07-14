@@ -32,7 +32,7 @@ export default function App() {
   return (
     <Shell
       title={selectedClient.email}
-      right={<button onClick={() => setSelectedClient(null)}>← חזרה ללקוחות</button>}
+      onBack={() => setSelectedClient(null)}
       tabs={TABS}
       activeTab={tab}
       onTabChange={setTab}

@@ -20,10 +20,16 @@ export default function Login() {
 
   return (
     <div className={styles.wrap} dir="rtl">
+      <div className={styles.glow}></div>
       <div className={styles.card}>
+        <div className={styles.mark}></div>
         <div className={styles.logo}>Budget Advisor</div>
+        <div className={styles.tagline}>קונסולת ניהול לקוחות</div>
         {sent ? (
-          <div className={styles.sent}>שלחנו לך קישור התחברות למייל — בדוק את תיבת הדואר</div>
+          <div className={styles.sent}>
+            <div className={styles.sentIcon}>✓</div>
+            שלחנו לך קישור התחברות למייל — בדוק את תיבת הדואר
+          </div>
         ) : (
           <>
             <input
@@ -32,9 +38,10 @@ export default function Login() {
               placeholder="email@example.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && sendLink()}
             />
             <button className={styles.button} onClick={sendLink}>שלח קישור התחברות</button>
-            {error && <div style={{ color: 'var(--red)', marginTop: 10, fontSize: '0.85rem' }}>{error}</div>}
+            {error && <div className={styles.error}>{error}</div>}
           </>
         )}
       </div>

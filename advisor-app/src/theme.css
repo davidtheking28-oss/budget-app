@@ -1,23 +1,64 @@
 :root {
-  --bg: #14181c;
-  --surface: #1c2126;
-  --surface2: #232a30;
+  --bg: #0b0d10;
+  --bg-2: #0f1215;
+  --surface: #14181c;
+  --surface2: #1b2126;
   --accent: #2dd4bf;
   --accent-rgb: 45, 212, 191;
-  --text: #f2f5f4;
-  --text2: #9ba3a8;
-  --text3: #6b7378;
-  --border: rgba(255, 255, 255, 0.08);
-  --red: #f87171;
-  --green: #34d399;
-  --yellow: #fbbf24;
+  --accent-dim: rgba(45, 212, 191, 0.14);
+  --gold: #c9a875;
+  --gold-rgb: 201, 168, 117;
+  --text: #f2f0ea;
+  --text2: #9a9d9f;
+  --text3: #64686b;
+  --border: rgba(242, 240, 234, 0.08);
+  --border-strong: rgba(242, 240, 234, 0.16);
+  --red: #e8756a;
+  --green: #52c99a;
+  --yellow: #d9b25c;
+  --font-display: 'Frank Ruhl Libre', 'Times New Roman', serif;
+  --font-body: 'Heebo', system-ui, sans-serif;
+  --shadow-lift: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
 }
 
 * { box-sizing: border-box; }
 
+html, body { height: 100%; }
+
 body {
   margin: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(var(--accent-rgb), 0.07), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 0%, rgba(var(--gold-rgb), 0.05), transparent 55%),
+    var(--bg);
   color: var(--text);
-  font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* subtle film-grain texture over the whole app for depth */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+::selection {
+  background: rgba(var(--accent-rgb), 0.3);
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
