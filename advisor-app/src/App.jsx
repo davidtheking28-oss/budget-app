@@ -3,6 +3,7 @@ import { useSession } from './auth/useSession.js';
 import Login from './auth/Login.jsx';
 import Shell from './components/Shell.jsx';
 import ClientList from './clients/ClientList.jsx';
+import Dashboard from './budget/Dashboard.jsx';
 
 export default function App() {
   const { session, loading } = useSession();
@@ -22,5 +23,12 @@ export default function App() {
     );
   }
 
-  return <Shell title={selectedClient.email}>בקרוב: ניהול תקציב</Shell>;
+  return (
+    <Shell
+      title={selectedClient.email}
+      right={<button onClick={() => setSelectedClient(null)}>← חזרה ללקוחות</button>}
+    >
+      <Dashboard clientUserId={selectedClient.id} />
+    </Shell>
+  );
 }
