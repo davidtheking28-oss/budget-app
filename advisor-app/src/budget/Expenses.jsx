@@ -6,8 +6,8 @@ import styles from './Expenses.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
-export default function Expenses({ clientUserId }) {
-  const { data, loading, save } = useClientBudget(clientUserId);
+export default function Expenses({ clientUserId, advisorId }) {
+  const { data, loading, save } = useClientBudget(clientUserId, advisorId);
   const [type, setType] = useState('expense');
   const [cat, setCat] = useState(EXPENSE_CATS[0]);
   const [desc, setDesc] = useState('');

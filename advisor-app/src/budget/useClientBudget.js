@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient.js';
 
 const EMPTY = { transactions: [], budgets: {}, goals: [], subscriptions: [], loans: [], fixed_expenses: [] };
 
-export function useClientBudget(clientUserId) {
+export function useClientBudget(clientUserId, advisorId) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,9 +30,9 @@ export function useClientBudget(clientUserId) {
     setData(next);
     const { error } = await supabase
       .from('budget_data')
-      .upsert({ user_id: clientUserId, ...patch }, { onConflict: 'user_id' });
+      .upsert({ user_id: clientUserId, updated_by: advisorId, ...patch }, { onConflict: 'user_id' });
     if (error) setError(error);
-  }, [clientUserId, data]);
+  }, [clientUserId, advisorId, data]);
 
   return { data, loading, error, save, reload };
 }

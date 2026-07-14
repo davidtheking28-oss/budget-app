@@ -6,8 +6,8 @@ import styles from './Budget.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
-export default function Budget({ clientUserId }) {
-  const { data, loading, save } = useClientBudget(clientUserId);
+export default function Budget({ clientUserId, advisorId }) {
+  const { data, loading, save } = useClientBudget(clientUserId, advisorId);
   const [cat, setCat] = useState(BUDGET_CATS[0]);
   const [limit, setLimit] = useState('');
 

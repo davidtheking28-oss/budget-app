@@ -38,8 +38,8 @@ export default function App() {
       onTabChange={setTab}
     >
       {tab === 'דשבורד' && <Dashboard clientUserId={selectedClient.id} />}
-      {tab === 'הוצאות' && <Expenses clientUserId={selectedClient.id} />}
-      {tab === 'תקציב' && <Budget clientUserId={selectedClient.id} />}
+      {tab === 'הוצאות' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} />}
+      {tab === 'תקציב' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} />}
       {tab === 'ניתוח' && <Analysis clientUserId={selectedClient.id} />}
     </Shell>
   );

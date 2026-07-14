@@ -35,7 +35,7 @@ export default function Analysis({ clientUserId }) {
 
   return (
     <div className={styles.wrap}>
-      <Pie data={chartData} options={{ plugins: { legend: { labels: { color: '#f2f5f4' } } } }} />
+      <Pie data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { labels: { color: '#f2f5f4' } } } }} />
     </div>
   );
 }
