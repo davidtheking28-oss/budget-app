@@ -90,26 +90,11 @@
     .fab{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px);left:50%;transform:translateX(-50%);z-index:190;width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#2563eb,#1d4ed8);border:none;color:white;cursor:pointer;box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 6px rgba(var(--accent-rgb),0.10);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;transition:transform 0.22s cubic-bezier(0.22,1,0.36,1),box-shadow 0.22s;will-change:transform;}
     .fab:active{transform:translateX(-50%) scale(0.88);box-shadow:0 4px 14px rgba(var(--accent-rgb),0.4);}
     .fab.pulse{animation:fabPulse 1.8s ease-in-out 3;}
-    .advisor-view-bar{display:none;position:fixed;top:var(--header-h);left:0;right:0;z-index:199;background:rgba(var(--accent-rgb),0.15);border-bottom:1px solid rgba(var(--accent-rgb),0.4);color:var(--accent);padding:10px 16px;align-items:center;justify-content:space-between;font-size:0.85rem;font-weight:700;gap:10px;}
-    body.is-advisor.advisor-viewing-client .advisor-view-bar{display:flex;}
     @keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
     @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 0 rgba(var(--accent-rgb),0.4);}50%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 14px rgba(var(--accent-rgb),0);}}
     main{padding:calc(76px + env(safe-area-inset-top,0px)) 16px calc(var(--nav-h) + var(--safe-bottom) + 88px);max-width:600px;margin:0 auto;}
     .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
     .cards-row.three{grid-template-columns:repeat(3,1fr);}
-    @media(min-width:1024px){
-      body.is-advisor .bottom-nav{position:fixed;top:var(--header-h);right:0;left:auto;bottom:0;width:224px;height:auto;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:2px;padding:20px 0;border-top:none;border-left:1px solid var(--border);box-shadow:none;}
-      body.is-advisor .nav-item{flex:none;flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;padding:12px 24px;}
-      body.is-advisor .nav-item .nav-icon{padding:6px;border-radius:10px;}
-      body.is-advisor .nav-item .nav-label{font-size:0.88rem;}
-      body.is-advisor .nav-item.active::after{display:none;}
-      body.is-advisor .nav-item.active{background:rgba(var(--accent-rgb),0.08);}
-      body.is-advisor .fab{left:auto;right:calc(224px + 32px);transform:none;}
-      body.is-advisor .fab:active{transform:scale(0.88);}
-      body.is-advisor main{margin-right:224px;margin-left:0;max-width:1040px;padding:calc(32px + env(safe-area-inset-top,0px)) 40px 40px;}
-      body.is-advisor .cards-row{grid-template-columns:repeat(4,1fr);gap:14px;}
-      body.is-advisor #page-dashboard .grid-cols-2{gap:20px;}
-    }
     #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:50%!important;transform:translateX(-50%)!important;z-index:200!important;margin:0!important;}
     .page{display:none;}.page.active{display:block;}
     .card{border-radius:var(--radius);padding:16px 14px;box-shadow:0 2px 14px rgba(0,0,0,0.07);position:relative;overflow:hidden;}
@@ -1928,13 +1913,6 @@
     </div>
   </div>
 
-  <!-- Advisor console — client-list page (Task 5) -->
-  <div id="page-advisorClients" class="page">
-    <div style="margin:2px 2px 16px">
-      <div style="font-family:var(--font-sans);font-size:1.35rem;font-weight:800;color:var(--text)">לקוחות</div>
-    </div>
-    <div id="advisorClientsList" style="display:flex;flex-direction:column;gap:10px"></div>
-  </div>
 </main>
 
 <div class="sheet-overlay" id="editTxSheet" onclick="if(event.target===this)closeSheet('editTxSheet')">
@@ -2139,10 +2117,6 @@
 <div id="fabHint" style="display:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 88px);left:50%;transform:translateX(-50%);background:var(--accent);color:white;padding:8px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;white-space:nowrap;z-index:191;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.4);animation:fadeInUp 0.4s ease;pointer-events:none;">לחץ כאן להוסיף הוצאה ☝️<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--accent);"></div></div>
 <button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
-<div class="advisor-view-bar" id="advisorViewBar">
-  <span>👁️ אתה צופה בתקציב של <b id="advisorViewBarName"></b> — כל שינוי נשמר אצלם</span>
-  <button class="btn btn-sm" style="background:var(--accent);color:#fff;border:none" onclick="exitClientBudget()">חזרה ללקוחות ←</button>
-</div>
 <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-stone-900/98 border-t border-slate-100 dark:border-stone-850 shadow-lg px-2 flex justify-between items-center max-w-md mx-auto" aria-label="ניווט ראשי">
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('dashboard',this)" id="nav-dashboard" aria-label="ראשי">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
@@ -2170,14 +2144,6 @@
       <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     </div>
     <span class="nav-label text-[11px] font-semibold">ניתוח</span>
-  </button>
-
-  <!-- Advisor console — client-list nav entry point (Task 5) -->
-  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" style="display:none" onclick="showPage('advisorClients',this)" id="nav-advisorClients" aria-label="לקוחות">
-    <div class="nav-icon px-3 py-1.5 rounded-xl">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    </div>
-    <span class="nav-label text-[11px] font-semibold">לקוחות</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="openSettings()" id="nav-more" aria-label="הגדרות">
@@ -3224,48 +3190,6 @@ async function _loadAdvisorStatus(){
 }
 function _applyAdvisorGate(){
   document.body.classList.toggle('is-advisor', _isAdvisor);
-  const navBtn=document.getElementById('nav-advisorClients');
-  if(navBtn)navBtn.style.display=_isAdvisor?'':'none';
-}
-
-// ── Advisor console — client roster ─────────────────────────────
-async function renderAdvisorClients(){
-  const el=document.getElementById('advisorClientsList');
-  if(!el||!_sb||!_cloudUser)return;
-  const {data,error}=await _sb.from('advisor_clients').select('*').eq('advisor_id',_cloudUser.id).eq('status','active').order('created_at',{ascending:false});
-  if(error||!data||!data.length){
-    el.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:0.9rem">אין עדיין לקוחות מחוברים</div>';
-    return;
-  }
-  el.innerHTML=data.map(c=>
-    '<div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="enterClientBudget(\''+c.client_id+'\',\''+esc(c.client_email)+'\')">'
-    +'<div style="font-weight:700;color:var(--text)">'+esc(c.client_email)+'</div>'
-    +'<div style="color:var(--accent);font-size:0.85rem;font-weight:700">כניסה לתקציב ←</div>'
-    +'</div>'
-  ).join('');
-}
-
-let _advisorViewingClient=null;
-let _advisorPriorHouseholdOwner=null;
-async function enterClientBudget(clientUserId,clientName){
-  if(_advisorViewingClient) await exitClientBudget();
-  _advisorPriorHouseholdOwner=_householdOwner;
-  _advisorViewingClient={id:clientUserId,name:clientName};
-  _householdOwner=clientUserId;
-  document.body.classList.add('advisor-viewing-client');
-  document.getElementById('advisorViewBarName').textContent=clientName;
-  await _loadFromCloud();
-  refreshAll();
-  showPage('dashboard',document.getElementById('nav-dashboard'));
-}
-async function exitClientBudget(){
-  _householdOwner=_advisorPriorHouseholdOwner;
-  _advisorPriorHouseholdOwner=null;
-  _advisorViewingClient=null;
-  document.body.classList.remove('advisor-viewing-client');
-  await _loadFromCloud();
-  refreshAll();
-  showPage('advisorClients',document.getElementById('nav-advisorClients'));
 }
 
 // ── Merge helpers: timestamp-based, tombstone-aware ──
@@ -3659,7 +3583,6 @@ async function redeemAdvisorInvite(){
   if(input)input.value='';
   await _loadAdvisorStatus();
   _applyAdvisorGate();
-  if(document.getElementById('page-advisorClients')?.classList.contains('active')) renderAdvisorClients();
 }
 function _subscribeHousehold(){
   if(!_sb||!_getDataUserId())return;
@@ -5239,7 +5162,6 @@ function showPage(name,btn){
   if(name==='subscriptions')renderSubscriptions();
   if(name==='budget')       renderBudget();
   if(name==='loans')        renderLoans();
-  if(name==='advisorClients') renderAdvisorClients();
 }
 
 // ── Feature 2: Cash Flow Forecast ────────────────────────────────
