@@ -893,7 +893,7 @@
     .range-chip{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);padding:5px 14px;border-radius:18px;font-size:0.74rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
     .range-chip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
     .wiz-date-chip{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);padding:5px 12px;border-radius:16px;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:inherit;}
-    body.privacy #totalBalance,body.privacy #totalIncome,body.privacy #totalExpense,body.privacy #trendBalance,body.privacy #heroSummary,body.privacy .tx-amount,body.privacy .upcoming-amount,body.privacy .sub-price-amount,body.privacy .loan-stat-val,body.privacy .goal-amounts-text,body.privacy .budget-avail-num,body.privacy .budget-item-amounts,body.privacy #txPageIncome,body.privacy #txPageExpense,body.privacy #loansTotalDisplay,body.privacy #loansMonthlyDisplay,body.privacy #heroSavings{filter:blur(7px);transition:filter .2s;}
+    body.privacy #totalBalance,body.privacy #totalIncome,body.privacy #totalExpense,body.privacy #trendBalance,body.privacy #heroSummary,body.privacy .tx-amount,body.privacy .upcoming-amount,body.privacy .sub-price-amount,body.privacy .loan-stat-val,body.privacy .goal-amounts-text,body.privacy .budget-avail-num,body.privacy .budget-item-amounts,body.privacy #txPageIncome,body.privacy #txPageExpense,body.privacy #loansTotalDisplay,body.privacy #loansMonthlyDisplay,body.privacy #heroSavings,body.privacy #txRangeExpense{filter:blur(7px);transition:filter .2s;}
     .hot-badge{font-size:0.7rem;}
 
     /* ── מעבר ניגודיות למצב בהיר: שלא ייעלמו אלמנטים על רקע לבן ── */
@@ -2597,10 +2597,10 @@ function shiftMonth(d){
 
 function openSheet(id){
   document.getElementById(id).classList.add('open');
-  if(id==='addTxSheet'){const b=document.getElementById('installBanner');if(b)b.style.display='none';}
+  const b=document.getElementById('installBanner');if(b)b.style.display='none';
 }
 function closeSheet(id){
-  if(id==='addTxSheet'){const b=document.getElementById('installBanner');if(b)b.style.display='';}
+  const b=document.getElementById('installBanner');if(b)b.style.display='';
   const ov=document.getElementById(id);
   const sh=ov.querySelector('.sheet,.wiz-sheet');
   if(sh){
@@ -2673,6 +2673,8 @@ function setTxType(type){
   wizRenderCats(cats);
   wizStep=1;
   wizRender();
+  const _td=document.getElementById('txDesc');
+  if(_td)_td.placeholder=type==='income'?'משכורת, בונוס, מתנה...':'קפה, סופר, דלק...';
 }
 function wizRenderCats(cats){
   document.getElementById('wizCatList').innerHTML=cats.map((c,i)=>{
@@ -5416,8 +5418,10 @@ function saveSplitTx(){
 
 // ── Feature 10: SMS Import ────────────────────────────────────────
 let _smsParsed=[];
+let _detectedSubs=[];
 function showDetectedSubs(subs,importMsg){
   showToast(importMsg);
+  _detectedSubs=subs;
   const cycleLabel={monthly:'חודשי',annual:'שנתי'};
   const list=document.getElementById('detectedSubsList');
   if(!list)return;
@@ -5430,12 +5434,13 @@ function showDetectedSubs(subs,importMsg){
         <div style="font-weight:700;font-size:0.9rem;color:var(--text)">${esc(s.name)}</div>
         <div style="font-size:0.75rem;color:var(--text3)">${fmt(s.amount)} · ${cycleLabel[s.cycle]||s.cycle}</div>
       </div>
-      <button id="dsbtn${i}" class="btn btn-primary btn-sm" onclick="addDetectedSub(${JSON.stringify(s)},${i})">+ הוסף</button>
+      <button id="dsbtn${i}" class="btn btn-primary btn-sm" onclick="addDetectedSub(${i})">+ הוסף</button>
     </div>`;
   }).join('');
   openSheet('detectedSubsSheet');
 }
-function addDetectedSub(s,i){
+function addDetectedSub(i){
+  const s=_detectedSubs[i];
   const match=subLookup(s.name);
   const nd=new Date();
   if(s.cycle==='monthly')nd.setMonth(nd.getMonth()+1);
