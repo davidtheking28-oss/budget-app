@@ -7,7 +7,7 @@ export default function Toaster() {
 
   useEffect(() => subscribeToast(item => {
     setItems(prev => [...prev, item]);
-    setTimeout(() => setItems(prev => prev.filter(i => i.id !== item.id)), 3200);
+    setTimeout(() => setItems(prev => prev.filter(i => i.id !== item.id)), item.action ? 5000 : 3200);
   }), []);
 
   if (!items.length) return null;
@@ -15,7 +15,17 @@ export default function Toaster() {
   return (
     <div className={styles.wrap} dir="rtl">
       {items.map(i => (
-        <div key={i.id} className={styles.toast + ' ' + styles[i.kind]}>{i.message}</div>
+        <div key={i.id} className={styles.toast + ' ' + styles[i.kind]}>
+          <span>{i.message}</span>
+          {i.action && (
+            <button
+              className={styles.undo}
+              onClick={() => { i.action.onClick(); setItems(prev => prev.filter(x => x.id !== i.id)); }}
+            >
+              {i.action.label}
+            </button>
+          )}
+        </div>
       ))}
     </div>
   );

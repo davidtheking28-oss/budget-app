@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
 import { useCountUp } from '../useCountUp.js';
 import Skeleton from '../components/Skeleton.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import { toast } from '../toast.js';
 import styles from './ClientList.module.css';
 
@@ -35,9 +36,10 @@ function StatSecondary({ label, value, tone }) {
 }
 
 export default function ClientList({ advisorId, onSelect }) {
-  const { clients, loading, reload } = useClientList(advisorId);
+  const { clients, loading, error, reload } = useClientList(advisorId);
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const codeInputRef = useRef(null);
 
   async function claimCode() {
     const trimmed = code.trim().toUpperCase();
@@ -50,6 +52,8 @@ export default function ClientList({ advisorId, onSelect }) {
     reload();
     setCode('');
   }
+
+  if (error) return <ErrorState onRetry={reload} />;
 
   if (loading) {
     return (
@@ -83,9 +87,10 @@ export default function ClientList({ advisorId, onSelect }) {
       </div>
 
       <div className={styles.sectionHead}>
-        <h2 className={styles.sectionTitle}>הלקוחות שלי</h2>
+        <h2 className={styles.sectionTitle}>הלקוחות שלי <span className={styles.kbdHint}>⌘K לחיפוש מהיר</span></h2>
         <div className={styles.addForm}>
           <input
+            ref={codeInputRef}
             className={styles.addInput}
             placeholder="קוד הזמנה מהלקוח"
             value={code}
@@ -99,7 +104,9 @@ export default function ClientList({ advisorId, onSelect }) {
       {!clients.length ? (
         <div className={styles.empty}>
           <div className={styles.emptyMark}></div>
-          אין עדיין לקוחות מחוברים — בקש מהלקוח ליצור קוד הזמנה בהגדרות האפליקציה שלו
+          <div className={styles.emptyTitle}>עדיין אין לקוחות מחוברים</div>
+          <div className={styles.emptyText}>בקש מהלקוח ליצור קוד הזמנה בהגדרות האפליקציה שלו, ואז הדבק אותו כאן</div>
+          <button className={styles.emptyCta} onClick={() => codeInputRef.current?.focus()}>+ חבר לקוח ראשון</button>
         </div>
       ) : (
         <div className={styles.list}>

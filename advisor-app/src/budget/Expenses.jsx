@@ -3,18 +3,20 @@ import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import { EXPENSE_CATS, INCOME_CATS } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import { toast } from '../toast.js';
 import styles from './Expenses.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 export default function Expenses({ clientUserId, advisorId, year, month }) {
-  const { data, loading, save } = useClientBudget(clientUserId, advisorId);
+  const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const [type, setType] = useState('expense');
   const [cat, setCat] = useState(EXPENSE_CATS[0]);
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
 
+  if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return (
       <div>
@@ -52,8 +54,10 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   }
 
   async function removeTx(id) {
-    await save({ transactions: (data.transactions || []).filter(t => t.id !== id) });
-    toast('נמחק', 'success');
+    const removed = (data.transactions || []).find(t => t.id === id);
+    const rest = (data.transactions || []).filter(t => t.id !== id);
+    await save({ transactions: rest });
+    toast('נמחק', 'success', { label: 'בטל', onClick: () => save({ transactions: [removed, ...rest] }) });
   }
 
   const cats = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;

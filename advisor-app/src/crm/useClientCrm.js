@@ -33,10 +33,11 @@ export function useClientCrm(advisorId, clientId) {
   }
 
   async function deleteNote(id) {
+    const removed = notes.find(n => n.id === id);
     const { error } = await supabase.from('advisor_notes').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setNotes(prev => prev.filter(n => n.id !== id));
-    toast('ההערה נמחקה', 'success');
+    toast('ההערה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addNote(removed.body) } : null);
   }
 
   async function addTask(title, dueDate) {
@@ -55,10 +56,11 @@ export function useClientCrm(advisorId, clientId) {
   }
 
   async function deleteTask(id) {
+    const removed = tasks.find(t => t.id === id);
     const { error } = await supabase.from('advisor_tasks').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setTasks(prev => prev.filter(t => t.id !== id));
-    toast('המשימה נמחקה', 'success');
+    toast('המשימה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addTask(removed.title, removed.due_date) } : null);
   }
 
   async function addMeeting(scheduledAt, notesText) {
@@ -70,10 +72,11 @@ export function useClientCrm(advisorId, clientId) {
   }
 
   async function deleteMeeting(id) {
+    const removed = meetings.find(m => m.id === id);
     const { error } = await supabase.from('advisor_meetings').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setMeetings(prev => prev.filter(m => m.id !== id));
-    toast('הפגישה נמחקה', 'success');
+    toast('הפגישה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addMeeting(removed.scheduled_at, removed.notes) } : null);
   }
 
   return { notes, tasks, meetings, loading, addNote, deleteNote, addTask, toggleTask, deleteTask, addMeeting, deleteMeeting };

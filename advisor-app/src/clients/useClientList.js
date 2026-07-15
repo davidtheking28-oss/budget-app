@@ -5,6 +5,7 @@ import { monthSummary } from '../budget/budgetMath.js';
 export function useClientList(advisorId) {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const requestIdRef = useRef(0);
 
   const load = useCallback(async () => {
@@ -20,7 +21,9 @@ export function useClientList(advisorId) {
       .order('created_at', { ascending: false });
 
     if (requestId !== requestIdRef.current) return;
-    if (error || !roster || !roster.length) { setClients([]); setLoading(false); return; }
+    if (error) { setError(error); setLoading(false); return; }
+    setError(null);
+    if (!roster || !roster.length) { setClients([]); setLoading(false); return; }
 
     const clientIds = roster.map(c => c.client_id);
     const now = new Date();
@@ -53,5 +56,5 @@ export function useClientList(advisorId) {
 
   useEffect(() => { load(); }, [load]);
 
-  return { clients, loading, reload: load };
+  return { clients, loading, error, reload: load };
 }

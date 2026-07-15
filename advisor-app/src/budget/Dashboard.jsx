@@ -6,6 +6,7 @@ import { computeInsights } from './insights.js';
 import { addMonths } from './monthUtils.js';
 import { useCountUp } from '../useCountUp.js';
 import Skeleton from '../components/Skeleton.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import styles from './Dashboard.module.css';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -33,8 +34,9 @@ function SubStat({ label, value, kind }) {
 }
 
 export default function Dashboard({ clientUserId, year, month }) {
-  const { data, loading } = useClientBudget(clientUserId);
+  const { data, loading, error, reload } = useClientBudget(clientUserId);
 
+  if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return <Skeleton height="140px" radius="18px" />;
   }

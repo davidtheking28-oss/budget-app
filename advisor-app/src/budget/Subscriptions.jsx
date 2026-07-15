@@ -1,13 +1,15 @@
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import styles from './Subscriptions.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const CYCLE_LABELS = { monthly: 'חודשי', yearly: 'שנתי' };
 
 export default function Subscriptions({ clientUserId }) {
-  const { data, loading } = useClientBudget(clientUserId);
+  const { data, loading, error, reload } = useClientBudget(clientUserId);
 
+  if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return (
       <div>

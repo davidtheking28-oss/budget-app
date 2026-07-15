@@ -3,6 +3,7 @@ import { Pie } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import styles from './Analysis.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -10,7 +11,8 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const PALETTE = ['#ff7a3d', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
 
 export default function Analysis({ clientUserId, year, month }) {
-  const { data, loading } = useClientBudget(clientUserId);
+  const { data, loading, error, reload } = useClientBudget(clientUserId);
+  if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return <Skeleton height="400px" radius="16px" style={{ maxWidth: 460, margin: '32px auto 0' }} />;
   }

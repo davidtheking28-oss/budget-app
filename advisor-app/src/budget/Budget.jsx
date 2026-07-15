@@ -3,16 +3,18 @@ import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import { BUDGET_CATS } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import { toast } from '../toast.js';
 import styles from './Budget.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 export default function Budget({ clientUserId, advisorId, year, month }) {
-  const { data, loading, save } = useClientBudget(clientUserId, advisorId);
+  const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const [cat, setCat] = useState(BUDGET_CATS[0]);
   const [limit, setLimit] = useState('');
 
+  if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return (
       <div>

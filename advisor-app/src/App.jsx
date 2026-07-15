@@ -3,6 +3,7 @@ import { useSession } from './auth/useSession.js';
 import Login from './auth/Login.jsx';
 import Shell from './components/Shell.jsx';
 import Toaster from './components/Toaster.jsx';
+import QuickSwitcher from './components/QuickSwitcher.jsx';
 import MonthNav from './components/MonthNav.jsx';
 import ClientList from './clients/ClientList.jsx';
 import Dashboard from './budget/Dashboard.jsx';
@@ -37,19 +38,19 @@ export default function App() {
   if (loading) return null;
   if (!session) return (<><Login /><Toaster /></>);
 
+  const switchClient = (clientId, clientEmail) => {
+    setSelectedClient({ id: clientId, email: clientEmail });
+    setNav(NAV[0].key);
+    setYm({ year: today.getFullYear(), month: today.getMonth() });
+  };
+
   if (!selectedClient) {
     return (
       <>
         <Shell title="לוח בקרה">
-          <ClientList
-            advisorId={session.user.id}
-            onSelect={(clientId, clientEmail) => {
-              setSelectedClient({ id: clientId, email: clientEmail });
-              setNav(NAV[0].key);
-              setYm({ year: today.getFullYear(), month: today.getMonth() });
-            }}
-          />
+          <ClientList advisorId={session.user.id} onSelect={switchClient} />
         </Shell>
+        <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} />
         <Toaster />
       </>
     );
@@ -62,6 +63,7 @@ export default function App() {
     return (
       <>
         <Report clientUserId={selectedClient.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setReportMode(false)} />
+        <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} />
         <Toaster />
       </>
     );
@@ -86,6 +88,7 @@ export default function App() {
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} />}
         {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} />}
       </Shell>
+      <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} />
       <Toaster />
     </>
   );
