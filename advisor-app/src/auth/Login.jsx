@@ -21,6 +21,7 @@ export default function Login() {
   return (
     <div className={styles.wrap} dir="rtl">
       <div className={styles.glow}></div>
+      <div className={styles.diagonal}></div>
       <div className={styles.card}>
         <div className={styles.mark}></div>
         <div className={styles.logo}>Budget Advisor</div>

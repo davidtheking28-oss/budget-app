@@ -29,8 +29,8 @@
   padding: 11px 22px;
   border-radius: 9px;
   border: none;
-  background: linear-gradient(135deg, var(--accent), #22b3a0);
-  color: #06201c;
+  background: linear-gradient(135deg, var(--accent), #e8551f);
+  color: #2a0d02;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.86rem;

@@ -7,7 +7,7 @@ import styles from './Analysis.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const PALETTE = ['#2dd4bf', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
+const PALETTE = ['#ff7a3d', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
 
 export default function Analysis({ clientUserId, year, month }) {
   const { data, loading } = useClientBudget(clientUserId);
