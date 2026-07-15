@@ -4,6 +4,20 @@
   flex-direction: column;
   position: relative;
   z-index: 1;
+  overflow: hidden;
+}
+
+.shell::before, .shellSidebar::before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 180%;
+  background: linear-gradient(180deg, transparent, rgba(var(--accent-rgb), 0.35) 35%, rgba(var(--accent-rgb), 0.35) 65%, transparent);
+  top: -40%;
+  left: 12%;
+  transform: rotate(14deg);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .topbar {
@@ -117,6 +131,7 @@
   display: flex;
   position: relative;
   z-index: 1;
+  overflow: hidden;
 }
 
 .sidebar {
