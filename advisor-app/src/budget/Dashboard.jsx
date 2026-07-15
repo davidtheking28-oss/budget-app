@@ -92,12 +92,12 @@ export default function Dashboard({ clientUserId, year, month }) {
               maintainAspectRatio: false,
               animation: { duration: 700, easing: 'easeOutQuart' },
               scales: {
-                x: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { display: false } },
-                y: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { color: 'rgba(242,240,234,0.06)' } }
+                x: { ticks: { color: '#5c6b66', font: { family: 'Heebo' } }, grid: { display: false } },
+                y: { ticks: { color: '#5c6b66', font: { family: 'Heebo' } }, grid: { color: 'rgba(18,32,28,0.06)' } }
               },
               plugins: {
-                legend: { labels: { color: '#9a9d9f', font: { family: 'Heebo' } } },
-                tooltip: { backgroundColor: '#17130f', borderColor: 'rgba(255,122,61,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
+                legend: { labels: { color: '#5c6b66', font: { family: 'Heebo' } } },
+                tooltip: { backgroundColor: '#12201c', borderColor: 'rgba(20,184,146,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' }, titleColor: '#f4fbfa', bodyColor: '#dbe8e4' }
               }
             }}
           />

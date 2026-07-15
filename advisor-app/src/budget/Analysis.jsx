@@ -39,7 +39,7 @@ export default function Analysis({ clientUserId, year, month }) {
     datasets: [{
       data: values,
       backgroundColor: labels.map((_, i) => PALETTE[i % PALETTE.length]),
-      borderColor: '#0b0d10',
+      borderColor: '#fdfefe',
       borderWidth: 2
     }]
   };
@@ -53,13 +53,13 @@ export default function Analysis({ clientUserId, year, month }) {
           plugins: {
             legend: {
               position: 'bottom',
-              labels: { color: '#9a9d9f', font: { family: 'Heebo', size: 12 }, padding: 16, boxWidth: 10, boxHeight: 10 }
+              labels: { color: '#5c6b66', font: { family: 'Heebo', size: 12 }, padding: 16, boxWidth: 10, boxHeight: 10 }
             },
             tooltip: {
-              backgroundColor: '#14181c',
-              titleColor: '#f2f0ea',
-              bodyColor: '#9a9d9f',
-              borderColor: 'rgba(242,240,234,0.1)',
+              backgroundColor: '#12201c',
+              titleColor: '#f4fbfa',
+              bodyColor: '#dbe8e4',
+              borderColor: 'rgba(18,32,28,0.1)',
               borderWidth: 1,
               padding: 12,
               titleFont: { family: 'Heebo' },

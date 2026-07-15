@@ -59,7 +59,7 @@
 
 .success .icon { color: var(--green); background: rgba(var(--green-rgb), 0.15); }
 .error .icon { color: var(--red); background: rgba(var(--red-rgb), 0.15); }
-.info .icon { color: var(--text3); background: rgba(255, 255, 255, 0.06); }
+.info .icon { color: var(--text3); background: var(--bg-2); }
 
 @keyframes toastIn {
   from { opacity: 0; transform: translateY(12px); }

@@ -76,7 +76,7 @@
   padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--bg-2);
 }
 
 .insights {
@@ -90,14 +90,14 @@
   border-radius: 10px;
   font-size: var(--text-base);
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--bg-2);
   animation: riseIn 0.45s var(--ease-out-expo) both;
   transition: transform 0.2s var(--ease-out-expo), background 0.2s ease;
 }
 
 .insight:hover {
   transform: translateX(-3px);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface2);
 }
 
 .insight.danger { border-color: rgba(var(--red-rgb), 0.35); color: var(--red); }
