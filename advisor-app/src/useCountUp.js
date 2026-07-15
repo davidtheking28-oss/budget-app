@@ -14,9 +14,10 @@ export function useCountUp(value, duration = 600) {
       if (start === null) start = ts;
       const progress = Math.min((ts - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(from + (value - from) * eased);
+      const displayed = from + (value - from) * eased;
+      setDisplay(displayed);
+      fromRef.current = displayed;
       if (progress < 1) raf = requestAnimationFrame(step);
-      else fromRef.current = value;
     }
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
