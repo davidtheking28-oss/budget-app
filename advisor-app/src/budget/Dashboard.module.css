@@ -64,6 +64,13 @@
   font-size: 0.86rem;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.015);
+  animation: riseIn 0.45s var(--ease-out-expo) both;
+  transition: transform 0.2s var(--ease-out-expo), background 0.2s ease;
+}
+
+.insight:hover {
+  transform: translateX(-3px);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .insight.danger { border-color: rgba(var(--red-rgb), 0.35); color: var(--red); }
@@ -87,4 +94,9 @@
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 20px;
+  transition: border-color 0.3s ease;
+}
+
+.trendChart:hover {
+  border-color: rgba(var(--accent-rgb), 0.25);
 }

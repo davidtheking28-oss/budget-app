@@ -12,13 +12,17 @@
   padding: 20px 4px;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
-  transition: padding-right 0.2s ease, background 0.2s ease;
+  transition: padding-right 0.2s var(--ease-out-expo), background 0.2s ease;
   animation: riseIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .row:hover {
   padding-right: 10px;
   background: rgba(var(--accent-rgb), 0.03);
+}
+
+.row:active {
+  background: rgba(var(--accent-rgb), 0.06);
 }
 
 .avatar {
@@ -35,6 +39,12 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1rem;
+  transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s ease;
+}
+
+.row:hover .avatar {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
 }
 
 .info {
@@ -84,11 +94,13 @@
   color: var(--text3);
   font-weight: 500;
   font-size: 0.82rem;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.25s var(--ease-out-expo);
+  display: inline-block;
 }
 
 .row:hover .arrow {
   color: var(--accent);
+  transform: translateX(-4px);
 }
 
 .empty {
@@ -107,6 +119,12 @@
   height: 46px;
   border-radius: 50%;
   border: 1px dashed var(--border-strong);
+  animation: breathe 2.6s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
 }
 
 .statBar {
@@ -215,6 +233,15 @@
   font-size: 0.86rem;
   cursor: pointer;
   white-space: nowrap;
+  transition: transform 0.15s var(--ease-out-expo), box-shadow 0.15s ease;
+}
+
+.addButton:hover:not(:disabled) {
+  box-shadow: 0 6px 18px -6px rgba(var(--accent-rgb), 0.55);
+}
+
+.addButton:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 .addButton:disabled {

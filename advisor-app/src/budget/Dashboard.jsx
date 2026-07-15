@@ -51,8 +51,8 @@ export default function Dashboard({ clientUserId, year, month }) {
   const chartData = {
     labels: trendMonths.map(({ month: m }) => MONTH_SHORT[m]),
     datasets: [
-      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: '#52c99a' },
-      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: '#e8756a' }
+      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: '#52c99a', borderRadius: 5, hoverBackgroundColor: '#6adcb2' },
+      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: '#e8756a', borderRadius: 5, hoverBackgroundColor: '#f28e83' }
     ]
   };
 
@@ -70,7 +70,7 @@ export default function Dashboard({ clientUserId, year, month }) {
       {insights.length > 0 && (
         <div className={styles.insights}>
           {insights.map((ins, i) => (
-            <div key={i} className={styles.insight + ' ' + styles[ins.kind]}>{ins.text}</div>
+            <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>{ins.text}</div>
           ))}
         </div>
       )}
@@ -82,11 +82,15 @@ export default function Dashboard({ clientUserId, year, month }) {
             data={chartData}
             options={{
               maintainAspectRatio: false,
+              animation: { duration: 700, easing: 'easeOutQuart' },
               scales: {
                 x: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { display: false } },
                 y: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { color: 'rgba(242,240,234,0.06)' } }
               },
-              plugins: { legend: { labels: { color: '#9a9d9f', font: { family: 'Heebo' } } } }
+              plugins: {
+                legend: { labels: { color: '#9a9d9f', font: { family: 'Heebo' } } },
+                tooltip: { backgroundColor: '#17130f', borderColor: 'rgba(255,122,61,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
+              }
             }}
           />
         </div>

@@ -47,6 +47,12 @@
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.9);
+  animation: pulseMark 2.8s ease-in-out infinite;
+}
+
+@keyframes pulseMark {
+  0%, 100% { box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.9); }
+  50% { box-shadow: 0 0 20px rgba(var(--accent-rgb), 1); }
 }
 
 .backButton {
@@ -64,6 +70,10 @@
 .backButton:hover {
   border-color: rgba(var(--accent-rgb), 0.5);
   color: var(--text);
+}
+
+.backButton:active {
+  transform: scale(0.96);
 }
 
 .content {
@@ -163,18 +173,27 @@
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s var(--ease-out-expo);
 }
 
 .navItem:hover {
   color: var(--text2);
   background: rgba(255, 255, 255, 0.02);
+  transform: translateX(-2px);
+}
+
+.navItem:active {
+  transform: translateX(-2px) scale(0.98);
 }
 
 .navItemActive {
   color: var(--text);
   background: var(--accent-dim);
   font-weight: 600;
+}
+
+.navItemActive:hover {
+  transform: none;
 }
 
 .mainArea {
@@ -212,4 +231,8 @@
 .reportButton:hover {
   border-color: rgba(var(--gold-rgb), 0.5);
   color: var(--gold);
+}
+
+.reportButton:active {
+  transform: scale(0.96);
 }
