@@ -15,10 +15,6 @@
   animation: riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.cardMain {
-  border-color: var(--border-strong);
-}
-
 .glow {
   position: absolute;
   width: 140px;
@@ -73,7 +69,7 @@
   background: rgba(255, 255, 255, 0.015);
 }
 
-.insight.danger { border-color: rgba(232, 117, 106, 0.35); color: var(--red); }
+.insight.danger { border-color: rgba(var(--red-rgb), 0.35); color: var(--red); }
 .insight.warn { border-color: rgba(217, 178, 92, 0.35); color: var(--yellow); }
 
 .trendWrap {

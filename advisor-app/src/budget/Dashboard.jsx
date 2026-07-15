@@ -1,13 +1,14 @@
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
 import { computeInsights } from './insights.js';
+import { addMonths } from './monthUtils.js';
 import { useCountUp } from '../useCountUp.js';
 import Skeleton from '../components/Skeleton.jsx';
 import styles from './Dashboard.module.css';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
@@ -41,8 +42,7 @@ export default function Dashboard({ clientUserId, year, month }) {
 
   const trendMonths = [];
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(year, month - i, 1);
-    trendMonths.push({ year: d.getFullYear(), month: d.getMonth() });
+    trendMonths.push(addMonths(year, month, -i));
   }
   const trendData = trendMonths.map(({ year: y, month: m }) => monthSummary(data, y, m));
 
@@ -59,7 +59,7 @@ export default function Dashboard({ clientUserId, year, month }) {
       <div className={styles.cards}>
         <StatCard label="הכנסות החודש" value={summary.income} kind="income" glow="glowGreen" />
         <StatCard label="הוצאות החודש" value={summary.expense} kind="expense" glow="glowRed" />
-        <StatCard label="מאזן" value={summary.net} kind="net" glow="glowGold" />
+        <StatCard label="מאזן" value={summary.net} kind={summary.net < 0 ? 'expense' : 'net'} glow="glowGold" />
       </div>
 
       {insights.length > 0 && (
