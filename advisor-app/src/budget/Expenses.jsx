@@ -17,6 +17,15 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   const [cat, setCat] = useState(EXPENSE_CATS[0]);
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
+  const [openCats, setOpenCats] = useState(() => new Set());
+
+  function toggleCat(c) {
+    setOpenCats(prev => {
+      const next = new Set(prev);
+      next.has(c) ? next.delete(c) : next.add(c);
+      return next;
+    });
+  }
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -32,6 +41,19 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   const monthTx = getMonthTx(data.transactions, year, month)
     .slice()
     .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  const groups = [];
+  const groupIndex = {};
+  monthTx.forEach(t => {
+    if (!(t.cat in groupIndex)) {
+      groupIndex[t.cat] = groups.length;
+      groups.push({ cat: t.cat, items: [], total: 0 });
+    }
+    const g = groups[groupIndex[t.cat]];
+    g.items.push(t);
+    g.total += t.type === 'income' ? t.amount : -t.amount;
+  });
+  groups.sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
 
   async function addTx() {
     const amt = parseFloat(amount);
@@ -80,20 +102,45 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
       </div>
       {!monthTx.length && <div className={styles.empty}>אין תנועות החודש</div>}
       <div className={styles.list}>
-        {monthTx.map((t, i) => (
-          <div key={t.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.03, 0.3) + 's' }}>
-            <div>
-              <div>{t.desc}</div>
-              <div className={styles.meta}>{t.cat} · {t.date}</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ color: t.type === 'income' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
-                {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
+        {groups.map((g, i) => {
+          const open = openCats.has(g.cat);
+          return (
+            <div key={g.cat} className={styles.group}>
+              <div
+                className={styles.groupHeader}
+                style={{ animationDelay: Math.min(i * 0.03, 0.3) + 's' }}
+                onClick={() => toggleCat(g.cat)}
+              >
+                <div className={styles.groupLeft}>
+                  <svg className={styles.chevron + (open ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                  <span>{g.cat}</span>
+                  <span className={styles.groupCount}>{g.items.length}</span>
+                </div>
+                <div style={{ color: g.total >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
+                  {g.total >= 0 ? '+' : '-'}{fmt(Math.abs(g.total))}
+                </div>
               </div>
-              <DeleteButton onClick={() => removeTx(t.id)} />
+              {open && (
+                <div className={styles.groupBody}>
+                  {g.items.map(t => (
+                    <div key={t.id} className={styles.row}>
+                      <div>
+                        <div>{t.desc}</div>
+                        <div className={styles.meta}>{t.date}</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ color: t.type === 'income' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
+                          {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
+                        </div>
+                        <DeleteButton onClick={() => removeTx(t.id)} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
