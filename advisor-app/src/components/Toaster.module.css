@@ -23,8 +23,8 @@
   animation: toastIn 0.3s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
 }
 
-.success { border-color: rgba(82, 201, 154, 0.4); }
-.error { border-color: rgba(232, 117, 106, 0.5); }
+.success { border-color: rgba(var(--green-rgb), 0.4); }
+.error { border-color: rgba(var(--red-rgb), 0.5); }
 .info { border-color: var(--border-strong); }
 
 @keyframes toastIn {
