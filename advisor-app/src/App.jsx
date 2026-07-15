@@ -10,6 +10,7 @@ import Expenses from './budget/Expenses.jsx';
 import Budget from './budget/Budget.jsx';
 import Analysis from './budget/Analysis.jsx';
 import Goals from './budget/Goals.jsx';
+import Subscriptions from './budget/Subscriptions.jsx';
 import { addMonths } from './budget/monthUtils.js';
 
 const NAV = [
@@ -17,7 +18,8 @@ const NAV = [
   { key: 'expenses', label: 'הוצאות' },
   { key: 'budget', label: 'תקציב' },
   { key: 'analysis', label: 'ניתוח' },
-  { key: 'goals', label: 'יעדים' }
+  { key: 'goals', label: 'יעדים' },
+  { key: 'subs', label: 'מנויים והלוואות' }
 ];
 
 const today = new Date();
@@ -67,6 +69,7 @@ export default function App() {
         {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'analysis' && <Analysis clientUserId={selectedClient.id} year={ym.year} month={ym.month} />}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} />}
+        {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} />}
       </Shell>
       <Toaster />
     </>
