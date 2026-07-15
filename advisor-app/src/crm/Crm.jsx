@@ -19,7 +19,7 @@ export default function Crm({ advisorId, clientId }) {
         <div className={styles.form}>
           <input className={styles.input} type="datetime-local" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
           <input className={styles.input} placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} />
-          <button className={styles.button} onClick={() => { addMeeting(meetingAt ? new Date(meetingAt).toISOString() : null, meetingNotes); setMeetingAt(''); setMeetingNotes(''); }}>קבע פגישה</button>
+          <button className={styles.button} disabled={!meetingAt} onClick={() => { addMeeting(meetingAt ? new Date(meetingAt).toISOString() : null, meetingNotes); setMeetingAt(''); setMeetingNotes(''); }}>קבע פגישה</button>
         </div>
         {meetings.length ? (
           <div className={styles.list}>
@@ -41,7 +41,7 @@ export default function Crm({ advisorId, clientId }) {
         <div className={styles.form}>
           <input className={styles.input} placeholder="כותרת המשימה" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} />
           <input className={styles.input} type="date" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
-          <button className={styles.button} onClick={() => { addTask(taskTitle, taskDue); setTaskTitle(''); setTaskDue(''); }}>הוסף משימה</button>
+          <button className={styles.button} disabled={!taskTitle.trim()} onClick={() => { addTask(taskTitle, taskDue); setTaskTitle(''); setTaskDue(''); }}>הוסף משימה</button>
         </div>
         {tasks.length ? (
           <div className={styles.list}>
@@ -63,7 +63,7 @@ export default function Crm({ advisorId, clientId }) {
         <div className={styles.sectionTitle}>הערות</div>
         <div className={styles.form}>
           <textarea className={styles.textarea} placeholder="הערה חדשה על הלקוח" value={noteBody} onChange={e => setNoteBody(e.target.value)} />
-          <button className={styles.button} onClick={() => { addNote(noteBody); setNoteBody(''); }}>שמור הערה</button>
+          <button className={styles.button} disabled={!noteBody.trim()} onClick={() => { addNote(noteBody); setNoteBody(''); }}>שמור הערה</button>
         </div>
         {notes.length ? (
           <div className={styles.list}>

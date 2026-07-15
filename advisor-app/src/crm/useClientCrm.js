@@ -26,24 +26,25 @@ export function useClientCrm(advisorId, clientId) {
 
   async function addNote(body) {
     if (!body.trim()) return;
-    const { error } = await supabase.from('advisor_notes').insert({ advisor_id: advisorId, client_id: clientId, body: body.trim() });
+    const { data, error } = await supabase.from('advisor_notes').insert({ advisor_id: advisorId, client_id: clientId, body: body.trim() }).select().single();
     if (error) { toast('שגיאה בשמירת ההערה', 'error'); return; }
     toast('הערה נוספה', 'success');
-    reload();
+    setNotes(prev => [data, ...prev]);
   }
 
   async function deleteNote(id) {
     const { error } = await supabase.from('advisor_notes').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setNotes(prev => prev.filter(n => n.id !== id));
+    toast('ההערה נמחקה', 'success');
   }
 
   async function addTask(title, dueDate) {
     if (!title.trim()) return;
-    const { error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null });
+    const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null }).select().single();
     if (error) { toast('שגיאה בהוספת המשימה', 'error'); return; }
     toast('משימה נוספה', 'success');
-    reload();
+    setTasks(prev => [data, ...prev].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
   }
 
   async function toggleTask(id, done) {
@@ -57,20 +58,22 @@ export function useClientCrm(advisorId, clientId) {
     const { error } = await supabase.from('advisor_tasks').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setTasks(prev => prev.filter(t => t.id !== id));
+    toast('המשימה נמחקה', 'success');
   }
 
   async function addMeeting(scheduledAt, notesText) {
     if (!scheduledAt) return;
-    const { error } = await supabase.from('advisor_meetings').insert({ advisor_id: advisorId, client_id: clientId, scheduled_at: scheduledAt, notes: notesText || null });
+    const { data, error } = await supabase.from('advisor_meetings').insert({ advisor_id: advisorId, client_id: clientId, scheduled_at: scheduledAt, notes: notesText || null }).select().single();
     if (error) { toast('שגיאה בקביעת הפגישה', 'error'); return; }
     toast('פגישה נקבעה', 'success');
-    reload();
+    setMeetings(prev => [...prev, data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
   }
 
   async function deleteMeeting(id) {
     const { error } = await supabase.from('advisor_meetings').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setMeetings(prev => prev.filter(m => m.id !== id));
+    toast('הפגישה נמחקה', 'success');
   }
 
   return { notes, tasks, meetings, loading, addNote, deleteNote, addTask, toggleTask, deleteTask, addMeeting, deleteMeeting };
