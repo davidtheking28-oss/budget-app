@@ -24,7 +24,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     if (!amt || amt <= 0) return;
     const today = new Date();
     const isCurrent = year === today.getFullYear() && month === today.getMonth();
-    const txDate = isCurrent ? today.toISOString().slice(0, 10) : new Date(year, month, 1).toISOString().slice(0, 10);
+    const txDate = isCurrent ? today.toISOString().slice(0, 10) : `${year}-${String(month + 1).padStart(2, '0')}-01`;
     const tx = {
       id: Date.now() + Math.random(),
       type,
