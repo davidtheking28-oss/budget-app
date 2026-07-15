@@ -46,6 +46,9 @@
 }
 
 .nextMeeting {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.76rem;
   color: var(--gold);
   margin-bottom: 10px;

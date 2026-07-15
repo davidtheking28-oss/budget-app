@@ -20,7 +20,15 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
       <aside className={styles.sidebar}>
         <div className={styles.logo}><span className={styles.logoMark}></span>Budget Advisor</div>
         {sidebarInfo}
-        {onPrint && <button className={styles.reportButton} onClick={onPrint}>📄 דוח חודשי</button>}
+        {onPrint && (
+          <button className={styles.reportButton} onClick={onPrint}>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M6 9V2h9l3 3v4M6 18H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2" />
+              <path d="M6 14h12v8H6z" />
+            </svg>
+            דוח חודשי
+          </button>
+        )}
         <nav className={styles.nav}>
           {nav.map(n => (
             <button
