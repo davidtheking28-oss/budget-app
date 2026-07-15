@@ -6,7 +6,7 @@ import styles from './Budget.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
-export default function Budget({ clientUserId, advisorId }) {
+export default function Budget({ clientUserId, advisorId, year, month }) {
   const { data, loading, save } = useClientBudget(clientUserId, advisorId);
   const [cat, setCat] = useState(BUDGET_CATS[0]);
   const [limit, setLimit] = useState('');
@@ -14,8 +14,7 @@ export default function Budget({ clientUserId, advisorId }) {
   if (loading || !data) return null;
 
   const budgets = data.budgets || {};
-  const now = new Date();
-  const monthTx = getMonthTx(data.transactions, now.getFullYear(), now.getMonth());
+  const monthTx = getMonthTx(data.transactions, year, month);
   const spentByCat = {};
   monthTx.filter(t => t.type === 'expense').forEach(t => {
     spentByCat[t.cat] = (spentByCat[t.cat] || 0) + t.amount;

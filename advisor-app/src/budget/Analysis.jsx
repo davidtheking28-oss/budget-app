@@ -8,12 +8,11 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PALETTE = ['#2dd4bf', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
 
-export default function Analysis({ clientUserId }) {
+export default function Analysis({ clientUserId, year, month }) {
   const { data, loading } = useClientBudget(clientUserId);
   if (loading || !data) return null;
 
-  const now = new Date();
-  const monthTx = getMonthTx(data.transactions, now.getFullYear(), now.getMonth())
+  const monthTx = getMonthTx(data.transactions, year, month)
     .filter(t => t.type === 'expense');
 
   if (!monthTx.length) {

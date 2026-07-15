@@ -4,12 +4,11 @@ import styles from './Dashboard.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
-export default function Dashboard({ clientUserId }) {
+export default function Dashboard({ clientUserId, year, month }) {
   const { data, loading } = useClientBudget(clientUserId);
   if (loading || !data) return null;
 
-  const now = new Date();
-  const monthTx = getMonthTx(data.transactions, now.getFullYear(), now.getMonth());
+  const monthTx = getMonthTx(data.transactions, year, month);
   const income = monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const expense = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const net = income - expense;

@@ -1,0 +1,46 @@
+.wrap {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+  margin: 4px 0;
+}
+
+.email {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 14px;
+  word-break: break-word;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.arrow {
+  background: none;
+  border: 1px solid var(--border-strong);
+  color: var(--text2);
+  border-radius: 7px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.arrow:hover {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  color: var(--accent);
+}
+
+.label {
+  font-size: 0.84rem;
+  color: var(--text2);
+  cursor: pointer;
+  text-align: center;
+  flex: 1;
+}

@@ -6,7 +6,7 @@ import styles from './Expenses.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
-export default function Expenses({ clientUserId, advisorId }) {
+export default function Expenses({ clientUserId, advisorId, year, month }) {
   const { data, loading, save } = useClientBudget(clientUserId, advisorId);
   const [type, setType] = useState('expense');
   const [cat, setCat] = useState(EXPENSE_CATS[0]);
@@ -15,21 +15,23 @@ export default function Expenses({ clientUserId, advisorId }) {
 
   if (loading || !data) return null;
 
-  const now = new Date();
-  const monthTx = getMonthTx(data.transactions, now.getFullYear(), now.getMonth())
+  const monthTx = getMonthTx(data.transactions, year, month)
     .slice()
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
   async function addTx() {
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) return;
+    const today = new Date();
+    const isCurrent = year === today.getFullYear() && month === today.getMonth();
+    const txDate = isCurrent ? today.toISOString().slice(0, 10) : new Date(year, month, 1).toISOString().slice(0, 10);
     const tx = {
       id: Date.now() + Math.random(),
       type,
       cat,
       desc: desc.trim() || cat,
       amount: amt,
-      date: now.toISOString().slice(0, 10),
+      date: txDate,
       recurring: false,
       fixed: false
     };
