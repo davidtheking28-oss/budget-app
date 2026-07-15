@@ -218,7 +218,7 @@
   padding: 11px 14px;
   border-radius: 9px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: rgba(0, 0, 0, 0.2);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--text-base);
