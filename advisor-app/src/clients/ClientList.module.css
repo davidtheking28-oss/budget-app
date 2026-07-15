@@ -104,3 +104,44 @@
   border-radius: 50%;
   border: 1px dashed var(--border-strong);
 }
+
+.addForm {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.addInput {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  outline: none;
+  text-transform: uppercase;
+}
+
+.addInput:focus {
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+.addButton {
+  padding: 11px 22px;
+  border-radius: 9px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), #22b3a0);
+  color: #06201c;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.addButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
