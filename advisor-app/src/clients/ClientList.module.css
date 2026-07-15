@@ -37,10 +37,43 @@
   font-size: 1rem;
 }
 
-.email {
+.info {
   flex: 1;
+  min-width: 0;
+}
+
+.email {
   font-weight: 500;
   font-size: 0.98rem;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.remaining {
+  font-size: 0.76rem;
+  color: var(--text3);
+}
+
+.overageChip, .taskChip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.overageChip {
+  color: var(--red);
+  background: rgba(232, 117, 106, 0.12);
+}
+
+.taskChip {
+  color: var(--gold);
+  background: rgba(var(--gold-rgb), 0.12);
 }
 
 .arrow {
