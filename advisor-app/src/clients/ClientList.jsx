@@ -19,7 +19,7 @@ function RemainingChip({ value }) {
 }
 
 export default function ClientList({ advisorId, onSelect }) {
-  const { clients, loading } = useClientList(advisorId);
+  const { clients, loading, reload } = useClientList(advisorId);
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -31,6 +31,7 @@ export default function ClientList({ advisorId, onSelect }) {
     setSubmitting(false);
     if (error || !data) { toast('קוד לא תקין או שכבר נוצל', 'error'); return; }
     toast('הלקוח חובר בהצלחה', 'success');
+    reload();
     setCode('');
   }
 
