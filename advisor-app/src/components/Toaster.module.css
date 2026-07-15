@@ -45,6 +45,22 @@
 .error { border-color: rgba(var(--red-rgb), 0.5); }
 .info { border-color: var(--border-strong); }
 
+.icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.success .icon { color: var(--green); background: rgba(var(--green-rgb), 0.15); }
+.error .icon { color: var(--red); background: rgba(var(--red-rgb), 0.15); }
+.info .icon { color: var(--text3); background: rgba(255, 255, 255, 0.06); }
+
 @keyframes toastIn {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }

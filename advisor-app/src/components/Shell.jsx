@@ -43,7 +43,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
         <button className={styles.backButton} onClick={onBack}>← חזרה ללקוחות</button>
       </aside>
       <div className={styles.mainArea}>
-        <div className={styles.contentSidebar}>
+        <div className={styles.contentSidebar} key={activeNav}>
           {title && <h1>{title}</h1>}
           {children}
         </div>

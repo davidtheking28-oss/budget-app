@@ -16,6 +16,7 @@ export default function Toaster() {
     <div className={styles.wrap} dir="rtl">
       {items.map(i => (
         <div key={i.id} className={styles.toast + ' ' + styles[i.kind]}>
+          <span className={styles.icon}>{i.kind === 'success' ? '✓' : i.kind === 'error' ? '✕' : 'i'}</span>
           <span>{i.message}</span>
           {i.action && (
             <button

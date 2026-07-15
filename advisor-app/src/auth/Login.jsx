@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import styles from './Login.module.css';
 
@@ -6,6 +6,14 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const glowRef = useRef(null);
+
+  function onMouseMove(e) {
+    if (!glowRef.current) return;
+    const x = (e.clientX / window.innerWidth - 0.5) * 40;
+    const y = (e.clientY / window.innerHeight - 0.5) * 40;
+    glowRef.current.style.transform = `translate(${x}px, ${y}px)`;
+  }
 
   async function sendLink() {
     setError('');
@@ -19,8 +27,8 @@ export default function Login() {
   }
 
   return (
-    <div className={styles.wrap} dir="rtl">
-      <div className={styles.glow}></div>
+    <div className={styles.wrap} dir="rtl" onMouseMove={onMouseMove}>
+      <div className={styles.glow} ref={glowRef}></div>
       <div className={styles.diagonal}></div>
       <div className={styles.card}>
         <div className={styles.mark}></div>
