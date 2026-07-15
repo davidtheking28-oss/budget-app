@@ -7,6 +7,7 @@ import Dashboard from './budget/Dashboard.jsx';
 import Expenses from './budget/Expenses.jsx';
 import Budget from './budget/Budget.jsx';
 import Analysis from './budget/Analysis.jsx';
+import Toaster from './components/Toaster.jsx';
 
 const TABS = ['דשבורד', 'הוצאות', 'תקציב', 'ניתוח'];
 
@@ -16,31 +17,37 @@ export default function App() {
   const [tab, setTab] = useState(TABS[0]);
 
   if (loading) return null;
-  if (!session) return <Login />;
+  if (!session) return (<><Login /><Toaster /></>);
 
   if (!selectedClient) {
     return (
-      <Shell title="לקוחות">
-        <ClientList
-          advisorId={session.user.id}
-          onSelect={(clientId, clientEmail) => setSelectedClient({ id: clientId, email: clientEmail })}
-        />
-      </Shell>
+      <>
+        <Shell title="לקוחות">
+          <ClientList
+            advisorId={session.user.id}
+            onSelect={(clientId, clientEmail) => setSelectedClient({ id: clientId, email: clientEmail })}
+          />
+        </Shell>
+        <Toaster />
+      </>
     );
   }
 
   return (
-    <Shell
-      title={selectedClient.email}
-      onBack={() => setSelectedClient(null)}
-      tabs={TABS}
-      activeTab={tab}
-      onTabChange={setTab}
-    >
-      {tab === 'דשבורד' && <Dashboard clientUserId={selectedClient.id} />}
-      {tab === 'הוצאות' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} />}
-      {tab === 'תקציב' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} />}
-      {tab === 'ניתוח' && <Analysis clientUserId={selectedClient.id} />}
-    </Shell>
+    <>
+      <Shell
+        title={selectedClient.email}
+        onBack={() => setSelectedClient(null)}
+        tabs={TABS}
+        activeTab={tab}
+        onTabChange={setTab}
+      >
+        {tab === 'דשבורד' && <Dashboard clientUserId={selectedClient.id} />}
+        {tab === 'הוצאות' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} />}
+        {tab === 'תקציב' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} />}
+        {tab === 'ניתוח' && <Analysis clientUserId={selectedClient.id} />}
+      </Shell>
+      <Toaster />
+    </>
   );
 }
