@@ -23,10 +23,10 @@ export default function Goals({ clientUserId }) {
 
   return (
     <div className={styles.list}>
-      {goals.map(g => {
+      {goals.map((g, i) => {
         const pct = g.target ? Math.min(Math.round((g.saved / g.target) * 100), 100) : 0;
         return (
-          <div key={g.id} className={styles.item}>
+          <div key={g.id} className={styles.item} style={{ animationDelay: Math.min(i * 0.05, 0.3) + 's' }}>
             <div className={styles.top}>
               <div className={styles.name}>{g.name}</div>
               <div className={styles.amounts}>{fmt(g.saved || 0)} / {fmt(g.target || 0)}</div>

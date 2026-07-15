@@ -49,7 +49,12 @@
   font-size: 0.84rem;
   cursor: pointer;
   white-space: nowrap;
+  transition: transform 0.15s var(--ease-out-expo), box-shadow 0.15s ease;
 }
+
+.button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px -6px rgba(var(--accent-rgb), 0.5); }
+.button:active:not(:disabled) { transform: scale(0.96); }
+.button:disabled { opacity: 0.6; cursor: default; }
 
 .list {
   display: flex;
@@ -67,6 +72,12 @@
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.015);
   animation: riseIn 0.35s var(--ease-out-expo) both;
+  transition: border-color 0.2s ease, transform 0.2s var(--ease-out-expo);
+}
+
+.row:hover {
+  border-color: var(--border-strong);
+  transform: translateX(-2px);
 }
 
 .taskRow {
@@ -76,6 +87,7 @@
 .done {
   opacity: 0.5;
   text-decoration: line-through;
+  transition: opacity 0.25s ease;
 }
 
 .meta {
@@ -91,9 +103,13 @@
   cursor: pointer;
   font-size: 0.8rem;
   flex-shrink: 0;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.15s var(--ease-out-expo);
 }
 
-.del:hover { color: var(--red); }
+.del:hover { color: var(--red); background: rgba(var(--red-rgb), 0.1); }
+.del:active { transform: scale(0.9); }
 
 .checkbox {
   width: 18px;
@@ -101,7 +117,10 @@
   accent-color: var(--accent);
   cursor: pointer;
   flex-shrink: 0;
+  transition: transform 0.15s var(--ease-out-expo);
 }
+
+.checkbox:hover { transform: scale(1.15); }
 
 .taskBody {
   flex: 1;

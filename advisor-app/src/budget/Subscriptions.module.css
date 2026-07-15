@@ -23,6 +23,12 @@
   padding: 14px 4px;
   border-bottom: 1px solid var(--border);
   animation: riseIn 0.4s var(--ease-out-expo) both;
+  transition: background 0.2s ease, padding-right 0.2s var(--ease-out-expo);
+}
+
+.row:hover {
+  background: rgba(var(--accent-rgb), 0.03);
+  padding-right: 10px;
 }
 
 .name {

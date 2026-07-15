@@ -26,8 +26,8 @@ export default function Subscriptions({ clientUserId }) {
         <div className={styles.sectionTitle}>מנויים</div>
         {subs.length ? (
           <div className={styles.list}>
-            {subs.map(s => (
-              <div key={s.id} className={styles.row}>
+            {subs.map((s, i) => (
+              <div key={s.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                 <div>
                   <div className={styles.name}>{s.name}</div>
                   <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + s.nextDate : ''}</div>
@@ -43,8 +43,8 @@ export default function Subscriptions({ clientUserId }) {
         <div className={styles.sectionTitle}>הלוואות</div>
         {loans.length ? (
           <div className={styles.list}>
-            {loans.map(l => (
-              <div key={l.id} className={styles.row}>
+            {loans.map((l, i) => (
+              <div key={l.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                 <div>
                   <div className={styles.name}>{l.name || 'הלוואה'}</div>
                   <div className={styles.meta}>{l.current !== undefined ? 'יתרה ' + fmt(l.current) + ' מתוך ' + fmt(l.total) : ''}</div>

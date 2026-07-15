@@ -11,7 +11,10 @@
   border-radius: 14px;
   padding: 20px 22px;
   animation: riseIn 0.4s var(--ease-out-expo) both;
+  transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
 }
+
+.item:hover { transform: translateY(-2px); border-color: var(--border-strong); }
 
 .top {
   display: flex;

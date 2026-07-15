@@ -68,13 +68,14 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         <select className={styles.select} value={cat} onChange={e => setCat(e.target.value)}>
           {cats.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <input className={styles.input} placeholder="תיאור" value={desc} onChange={e => setDesc(e.target.value)} />
-        <input className={styles.input} type="number" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} />
+        <input className={styles.input} placeholder="תיאור" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
+        <input className={styles.input} type="number" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <button className={styles.button} onClick={addTx}>הוסף</button>
       </div>
+      {!monthTx.length && <div className={styles.empty}>אין תנועות החודש</div>}
       <div className={styles.list}>
-        {monthTx.map(t => (
-          <div key={t.id} className={styles.row}>
+        {monthTx.map((t, i) => (
+          <div key={t.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.03, 0.3) + 's' }}>
             <div>
               <div>{t.desc}</div>
               <div className={styles.meta}>{t.cat} · {t.date}</div>
@@ -83,7 +84,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
               <div style={{ color: t.type === 'income' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
                 {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
               </div>
-              <button className={styles.del} onClick={() => removeTx(t.id)}>✕</button>
+              <button className={styles.del} onClick={() => removeTx(t.id)} title="מחק">✕</button>
             </div>
           </div>
         ))}

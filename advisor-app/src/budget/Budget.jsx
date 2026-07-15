@@ -45,17 +45,19 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
         <select className={styles.select} value={cat} onChange={e => setCat(e.target.value)}>
           {BUDGET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <input className={styles.input} type="number" placeholder="תקרה חודשית" value={limit} onChange={e => setLimit(e.target.value)} />
+        <input className={styles.input} type="number" placeholder="תקרה חודשית" value={limit} onChange={e => setLimit(e.target.value)} onKeyDown={e => e.key === 'Enter' && setBudget()} />
         <button className={styles.button} onClick={setBudget}>שמור תקציב</button>
       </div>
+      {!activeCats.length && <div className={styles.empty}>עדיין לא הוגדרו תקציבי קטגוריה</div>}
       <div className={styles.list}>
-        {activeCats.map(c => {
+        {activeCats.map((c, i) => {
           const s = spentByCat[c] || 0;
           const l = budgets[c];
           const pct = Math.min(Math.round((s / l) * 100), 100);
+          const over = s > l;
           const color = pct >= 100 ? 'var(--red)' : pct >= 80 ? 'var(--yellow)' : 'var(--green)';
           return (
-            <div key={c} className={styles.item}>
+            <div key={c} className={styles.item + (over ? ' ' + styles.itemOver : '')} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
               <div className={styles.itemTop}>
                 <span>{c}</span>
                 <span>{fmt(s)} / {fmt(l)}</span>
