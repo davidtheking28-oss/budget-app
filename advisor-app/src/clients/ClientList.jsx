@@ -118,7 +118,7 @@ export default function ClientList({ advisorId, onSelect }) {
               style={{ animationDelay: (i * 0.04) + 's' }}
               onClick={() => onSelect(c.client_id, c.client_email)}
             >
-              <div className={styles.avatar}>{initials(c.client_email)}</div>
+              <div className={styles.initial}>{initials(c.client_email)}</div>
               <div className={styles.info}>
                 <div className={styles.email}>{c.client_email}</div>
                 <div className={styles.chips}>
@@ -127,7 +127,6 @@ export default function ClientList({ advisorId, onSelect }) {
                   {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
                 </div>
               </div>
-              <div className={styles.arrow}>כניסה לתקציב ←</div>
             </div>
           ))}
         </div>

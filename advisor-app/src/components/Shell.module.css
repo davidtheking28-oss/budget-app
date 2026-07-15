@@ -7,19 +7,6 @@
   overflow: hidden;
 }
 
-.shell::before {
-  content: '';
-  position: absolute;
-  width: 2px;
-  height: 180%;
-  background: linear-gradient(180deg, transparent, rgba(var(--accent-rgb), 0.35) 35%, rgba(var(--accent-rgb), 0.35) 65%, transparent);
-  top: -40%;
-  left: 12%;
-  transform: rotate(14deg);
-  pointer-events: none;
-  z-index: -1;
-}
-
 .topbar {
   display: flex;
   align-items: center;
