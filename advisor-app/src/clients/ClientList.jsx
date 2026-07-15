@@ -15,7 +15,18 @@ const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 function RemainingChip({ value }) {
   const display = useCountUp(value ?? 0);
   if (value === null) return null;
+  if (value < 0) return <div className={styles.remaining + ' ' + styles.remainingOver}>{fmt(Math.abs(display))} מעבר לתקציב</div>;
   return <div className={styles.remaining}>{fmt(display)} נותר</div>;
+}
+
+function Kpi({ label, value, tone }) {
+  const display = useCountUp(value);
+  return (
+    <div className={styles.kpi}>
+      <div className={styles.kpiLabel}>{label}</div>
+      <div className={styles.kpiValue + (tone ? ' ' + styles[tone] : '')}>{Math.round(display)}</div>
+    </div>
+  );
 }
 
 export default function ClientList({ advisorId, onSelect }) {
@@ -35,20 +46,14 @@ export default function ClientList({ advisorId, onSelect }) {
     setCode('');
   }
 
-  return (
-    <div>
-      <div className={styles.addForm}>
-        <input
-          className={styles.addInput}
-          placeholder="קוד הזמנה מהלקוח"
-          value={code}
-          onChange={e => setCode(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && claimCode()}
-        />
-        <button className={styles.addButton} onClick={claimCode} disabled={submitting}>+ הוסף לקוח</button>
-      </div>
-
-      {loading ? (
+  if (loading) {
+    return (
+      <div>
+        <div className={styles.kpis}>
+          <Skeleton height="96px" radius="16px" />
+          <Skeleton height="96px" radius="16px" />
+          <Skeleton height="96px" radius="16px" />
+        </div>
         <div className={styles.list}>
           {[0, 1, 2].map(i => (
             <div key={i} className={styles.row}>
@@ -57,10 +62,39 @@ export default function ClientList({ advisorId, onSelect }) {
             </div>
           ))}
         </div>
-      ) : !clients.length ? (
+      </div>
+    );
+  }
+
+  const overageCount = clients.filter(c => c.hasOverage).length;
+  const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
+
+  return (
+    <div>
+      <div className={styles.kpis}>
+        <Kpi label="לקוחות פעילים" value={clients.length} />
+        <Kpi label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'kpiRed' : 'kpiGreen'} />
+        <Kpi label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'kpiGold' : undefined} />
+      </div>
+
+      <div className={styles.sectionHead}>
+        <h2 className={styles.sectionTitle}>הלקוחות שלי</h2>
+        <div className={styles.addForm}>
+          <input
+            className={styles.addInput}
+            placeholder="קוד הזמנה מהלקוח"
+            value={code}
+            onChange={e => setCode(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && claimCode()}
+          />
+          <button className={styles.addButton} onClick={claimCode} disabled={submitting}>+ הוסף לקוח</button>
+        </div>
+      </div>
+
+      {!clients.length ? (
         <div className={styles.empty}>
           <div className={styles.emptyMark}></div>
-          אין עדיין לקוחות מחוברים
+          אין עדיין לקוחות מחוברים — בקש מהלקוח ליצור קוד הזמנה בהגדרות האפליקציה שלו
         </div>
       ) : (
         <div className={styles.list}>

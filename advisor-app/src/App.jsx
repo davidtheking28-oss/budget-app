@@ -40,7 +40,7 @@ export default function App() {
   if (!selectedClient) {
     return (
       <>
-        <Shell title="לקוחות">
+        <Shell title="לוח בקרה">
           <ClientList
             advisorId={session.user.id}
             onSelect={(clientId, clientEmail) => {

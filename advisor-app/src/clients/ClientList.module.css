@@ -59,6 +59,10 @@
   color: var(--text3);
 }
 
+.remainingOver {
+  color: var(--red);
+}
+
 .overageChip, .taskChip {
   font-size: 0.72rem;
   font-weight: 600;
@@ -105,14 +109,63 @@
   border: 1px dashed var(--border-strong);
 }
 
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.kpi {
+  background: linear-gradient(165deg, var(--surface), var(--bg-2));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  animation: riseIn 0.5s var(--ease-out-expo) both;
+}
+
+.kpiLabel {
+  color: var(--text3);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.kpiValue {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.kpiRed { color: var(--red); }
+.kpiGreen { color: var(--green); }
+.kpiGold { color: var(--gold); }
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+
 .addForm {
   display: flex;
   gap: 10px;
-  margin-bottom: 8px;
 }
 
 .addInput {
-  flex: 1;
+  width: 200px;
   padding: 11px 14px;
   border-radius: 9px;
   border: 1px solid var(--border);
