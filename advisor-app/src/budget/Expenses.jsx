@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import { EXPENSE_CATS, INCOME_CATS } from '../categories.js';
+import Skeleton from '../components/Skeleton.jsx';
+import { toast } from '../toast.js';
 import styles from './Expenses.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
@@ -13,7 +15,15 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
 
-  if (loading || !data) return null;
+  if (loading || !data) {
+    return (
+      <div>
+        <Skeleton height="48px" radius="12px" style={{ marginBottom: 20 }} />
+        <Skeleton height="56px" radius="10px" style={{ marginBottom: 8 }} />
+        <Skeleton height="56px" radius="10px" />
+      </div>
+    );
+  }
 
   const monthTx = getMonthTx(data.transactions, year, month)
     .slice()
@@ -36,12 +46,14 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
       fixed: false
     };
     await save({ transactions: [tx, ...(data.transactions || [])] });
+    toast(type === 'income' ? 'הכנסה נוספה' : 'הוצאה נוספה', 'success');
     setDesc('');
     setAmount('');
   }
 
   async function removeTx(id) {
     await save({ transactions: (data.transactions || []).filter(t => t.id !== id) });
+    toast('נמחק', 'success');
   }
 
   const cats = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import { BUDGET_CATS } from '../categories.js';
+import Skeleton from '../components/Skeleton.jsx';
+import { toast } from '../toast.js';
 import styles from './Budget.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
@@ -11,7 +13,14 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   const [cat, setCat] = useState(BUDGET_CATS[0]);
   const [limit, setLimit] = useState('');
 
-  if (loading || !data) return null;
+  if (loading || !data) {
+    return (
+      <div>
+        <Skeleton height="48px" radius="12px" style={{ marginBottom: 20 }} />
+        <Skeleton height="72px" radius="14px" />
+      </div>
+    );
+  }
 
   const budgets = data.budgets || {};
   const monthTx = getMonthTx(data.transactions, year, month);
@@ -24,6 +33,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
     const amt = parseFloat(limit);
     if (!amt || amt <= 0) return;
     await save({ budgets: { ...budgets, [cat]: amt } });
+    toast('תקציב עודכן', 'success');
     setLimit('');
   }
 

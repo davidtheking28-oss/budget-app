@@ -2,6 +2,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
+import Skeleton from '../components/Skeleton.jsx';
 import styles from './Analysis.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -10,7 +11,9 @@ const PALETTE = ['#2dd4bf', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3
 
 export default function Analysis({ clientUserId, year, month }) {
   const { data, loading } = useClientBudget(clientUserId);
-  if (loading || !data) return null;
+  if (loading || !data) {
+    return <Skeleton height="400px" radius="16px" style={{ maxWidth: 460, margin: '32px auto 0' }} />;
+  }
 
   const monthTx = getMonthTx(data.transactions, year, month)
     .filter(t => t.type === 'expense');
