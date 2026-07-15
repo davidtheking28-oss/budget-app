@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { monthSummary } from '../budget/budgetMath.js';
 
 export function useClientList(advisorId) {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const requestIdRef = useRef(0);
 
   const load = useCallback(async () => {
     if (!advisorId) return;
+    const requestId = ++requestIdRef.current;
     setLoading(true);
 
     const { data: roster, error } = await supabase
@@ -17,6 +19,7 @@ export function useClientList(advisorId) {
       .eq('status', 'active')
       .order('created_at', { ascending: false });
 
+    if (requestId !== requestIdRef.current) return;
     if (error || !roster || !roster.length) { setClients([]); setLoading(false); return; }
 
     const clientIds = roster.map(c => c.client_id);
@@ -43,6 +46,7 @@ export function useClientList(advisorId) {
       };
     });
 
+    if (requestId !== requestIdRef.current) return;
     setClients(merged);
     setLoading(false);
   }, [advisorId]);
