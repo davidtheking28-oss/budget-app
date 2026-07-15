@@ -5,6 +5,8 @@
   --surface2: #201a15;
   --accent: #ff7a3d;
   --accent-rgb: 255, 122, 61;
+  --accent-2: #e8551f;
+  --accent-ink: #2a0d02;
   --accent-dim: rgba(255, 122, 61, 0.14);
   --gold: #c9a875;
   --gold-rgb: 201, 168, 117;
@@ -22,6 +24,27 @@
   --font-body: 'Heebo', system-ui, sans-serif;
   --shadow-lift: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* type scale: use for any new or touched size decision */
+  --text-xs: 0.74rem;
+  --text-sm: 0.8rem;
+  --text-base: 0.86rem;
+  --text-md: 0.94rem;
+  --text-lg: 1.05rem;
+  --text-xl: 1.3rem;
+  --text-display-sm: 1.7rem;
+  --text-display-md: 2rem;
+  --text-display-lg: 3.8rem;
+
+  /* spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
 }
 
 * { box-sizing: border-box; }

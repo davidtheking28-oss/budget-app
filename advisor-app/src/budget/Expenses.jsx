@@ -4,6 +4,8 @@ import { getMonthTx } from './monthUtils.js';
 import { EXPENSE_CATS, INCOME_CATS } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
+import Button from '../components/Button.jsx';
+import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import styles from './Expenses.module.css';
 
@@ -33,7 +35,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
 
   async function addTx() {
     const amt = parseFloat(amount);
-    if (!amt || amt <= 0) return;
+    if (!amt || amt <= 0) { toast('הזן סכום תקין', 'error'); return; }
     const today = new Date();
     const isCurrent = year === today.getFullYear() && month === today.getMonth();
     const txDate = isCurrent ? today.toISOString().slice(0, 10) : `${year}-${String(month + 1).padStart(2, '0')}-01`;
@@ -74,7 +76,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         </select>
         <input className={styles.input} placeholder="תיאור" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <input className={styles.input} type="number" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
-        <button className={styles.button} onClick={addTx}>הוסף</button>
+        <Button onClick={addTx}>הוסף</Button>
       </div>
       {!monthTx.length && <div className={styles.empty}>אין תנועות החודש</div>}
       <div className={styles.list}>
@@ -88,7 +90,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
               <div style={{ color: t.type === 'income' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
                 {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
               </div>
-              <button className={styles.del} onClick={() => removeTx(t.id)} title="מחק">✕</button>
+              <DeleteButton onClick={() => removeTx(t.id)} />
             </div>
           </div>
         ))}

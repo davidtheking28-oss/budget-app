@@ -4,6 +4,7 @@ import { getMonthTx } from './monthUtils.js';
 import { BUDGET_CATS } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
+import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
 import styles from './Budget.module.css';
 
@@ -33,7 +34,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
 
   async function setBudget() {
     const amt = parseFloat(limit);
-    if (!amt || amt <= 0) return;
+    if (!amt || amt <= 0) { toast('הזן תקרה תקינה', 'error'); return; }
     await save({ budgets: { ...budgets, [cat]: amt } });
     toast('תקציב עודכן', 'success');
     setLimit('');
@@ -48,7 +49,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
           {BUDGET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input className={styles.input} type="number" placeholder="תקרה חודשית" value={limit} onChange={e => setLimit(e.target.value)} onKeyDown={e => e.key === 'Enter' && setBudget()} />
-        <button className={styles.button} onClick={setBudget}>שמור תקציב</button>
+        <Button onClick={setBudget}>שמור תקציב</Button>
       </div>
       {!activeCats.length && <div className={styles.empty}>עדיין לא הוגדרו תקציבי קטגוריה</div>}
       <div className={styles.list}>

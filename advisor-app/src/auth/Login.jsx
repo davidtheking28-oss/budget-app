@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
+import Button from '../components/Button.jsx';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -36,8 +37,12 @@ export default function Login() {
         <div className={styles.tagline}>קונסולת ניהול לקוחות</div>
         {sent ? (
           <div className={styles.sent}>
-            <div className={styles.sentIcon}>✓</div>
-            שלחנו לך קישור התחברות למייל — בדוק את תיבת הדואר
+            <div className={styles.sentIcon}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </div>
+            שלחנו לך קישור התחברות למייל, בדוק את תיבת הדואר
           </div>
         ) : (
           <>
@@ -49,7 +54,7 @@ export default function Login() {
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && sendLink()}
             />
-            <button className={styles.button} onClick={sendLink}>שלח קישור התחברות</button>
+            <Button className={styles.button} onClick={sendLink}>שלח קישור התחברות</Button>
             {error && <div className={styles.error}>{error}</div>}
           </>
         )}

@@ -6,7 +6,7 @@
 }
 
 .email {
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--text);
   margin-bottom: 14px;
@@ -21,6 +21,9 @@
 }
 
 .arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 1px solid var(--border-strong);
   color: var(--text2);
@@ -28,8 +31,11 @@
   width: 28px;
   height: 28px;
   cursor: pointer;
-  font-size: 0.8rem;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s var(--ease-out-expo);
+}
+
+.arrow:active {
+  transform: scale(0.9);
 }
 
 .arrow:hover {
@@ -38,7 +44,7 @@
 }
 
 .label {
-  font-size: 0.84rem;
+  font-size: var(--text-base);
   color: var(--text2);
   cursor: pointer;
   text-align: center;
@@ -49,7 +55,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.76rem;
+  font-size: var(--text-xs);
   color: var(--gold);
   margin-bottom: 10px;
 }

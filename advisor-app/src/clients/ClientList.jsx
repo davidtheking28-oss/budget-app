@@ -4,6 +4,7 @@ import { useClientList } from './useClientList.js';
 import { useCountUp } from '../useCountUp.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
+import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
 import styles from './ClientList.module.css';
 
@@ -97,7 +98,7 @@ export default function ClientList({ advisorId, onSelect }) {
             onChange={e => setCode(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && claimCode()}
           />
-          <button className={styles.addButton} onClick={claimCode} disabled={submitting}>+ הוסף לקוח</button>
+          <Button className={styles.addButton} onClick={claimCode} disabled={submitting}>+ הוסף לקוח</Button>
         </div>
       </div>
 
@@ -106,7 +107,7 @@ export default function ClientList({ advisorId, onSelect }) {
           <div className={styles.emptyMark}></div>
           <div className={styles.emptyTitle}>עדיין אין לקוחות מחוברים</div>
           <div className={styles.emptyText}>בקש מהלקוח ליצור קוד הזמנה בהגדרות האפליקציה שלו, ואז הדבק אותו כאן</div>
-          <button className={styles.emptyCta} onClick={() => codeInputRef.current?.focus()}>+ חבר לקוח ראשון</button>
+          <Button className={styles.emptyCta} onClick={() => codeInputRef.current?.focus()}>+ חבר לקוח ראשון</Button>
         </div>
       ) : (
         <div className={styles.list}>

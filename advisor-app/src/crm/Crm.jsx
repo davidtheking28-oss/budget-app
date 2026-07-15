@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useClientCrm } from './useClientCrm.js';
+import Button from '../components/Button.jsx';
+import DeleteButton from '../components/DeleteButton.jsx';
 import styles from './Crm.module.css';
 
 export default function Crm({ advisorId, clientId }) {
@@ -19,7 +21,7 @@ export default function Crm({ advisorId, clientId }) {
         <div className={styles.form}>
           <input className={styles.input} type="datetime-local" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
           <input className={styles.input} placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && meetingAt && (addMeeting(new Date(meetingAt).toISOString(), meetingNotes), setMeetingAt(''), setMeetingNotes(''))} />
-          <button className={styles.button} disabled={!meetingAt} onClick={() => { addMeeting(meetingAt ? new Date(meetingAt).toISOString() : null, meetingNotes); setMeetingAt(''); setMeetingNotes(''); }}>קבע פגישה</button>
+          <Button disabled={!meetingAt} onClick={() => { addMeeting(meetingAt ? new Date(meetingAt).toISOString() : null, meetingNotes); setMeetingAt(''); setMeetingNotes(''); }}>קבע פגישה</Button>
         </div>
         {meetings.length ? (
           <div className={styles.list}>
@@ -29,7 +31,7 @@ export default function Crm({ advisorId, clientId }) {
                   <div>{new Date(m.scheduled_at).toLocaleString('he-IL')}</div>
                   {m.notes && <div className={styles.meta}>{m.notes}</div>}
                 </div>
-                <button className={styles.del} onClick={() => deleteMeeting(m.id)} title="מחק">✕</button>
+                <DeleteButton onClick={() => deleteMeeting(m.id)} />
               </div>
             ))}
           </div>
@@ -41,7 +43,7 @@ export default function Crm({ advisorId, clientId }) {
         <div className={styles.form}>
           <input className={styles.input} placeholder="כותרת המשימה" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && taskTitle.trim() && (addTask(taskTitle, taskDue), setTaskTitle(''), setTaskDue(''))} />
           <input className={styles.input} type="date" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
-          <button className={styles.button} disabled={!taskTitle.trim()} onClick={() => { addTask(taskTitle, taskDue); setTaskTitle(''); setTaskDue(''); }}>הוסף משימה</button>
+          <Button disabled={!taskTitle.trim()} onClick={() => { addTask(taskTitle, taskDue); setTaskTitle(''); setTaskDue(''); }}>הוסף משימה</Button>
         </div>
         {tasks.length ? (
           <div className={styles.list}>
@@ -52,7 +54,7 @@ export default function Crm({ advisorId, clientId }) {
                   <div>{t.title}</div>
                   {t.due_date && <div className={styles.meta}>יעד: {t.due_date}</div>}
                 </div>
-                <button className={styles.del} onClick={() => deleteTask(t.id)} title="מחק">✕</button>
+                <DeleteButton onClick={() => deleteTask(t.id)} />
               </div>
             ))}
           </div>
@@ -63,7 +65,7 @@ export default function Crm({ advisorId, clientId }) {
         <div className={styles.sectionTitle}>הערות</div>
         <div className={styles.form}>
           <textarea className={styles.textarea} placeholder="הערה חדשה על הלקוח" value={noteBody} onChange={e => setNoteBody(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && noteBody.trim() && (e.preventDefault(), addNote(noteBody), setNoteBody(''))} />
-          <button className={styles.button} disabled={!noteBody.trim()} onClick={() => { addNote(noteBody); setNoteBody(''); }}>שמור הערה</button>
+          <Button disabled={!noteBody.trim()} onClick={() => { addNote(noteBody); setNoteBody(''); }}>שמור הערה</Button>
         </div>
         {notes.length ? (
           <div className={styles.list}>
@@ -73,7 +75,7 @@ export default function Crm({ advisorId, clientId }) {
                   <div>{n.body}</div>
                   <div className={styles.meta}>{new Date(n.created_at).toLocaleDateString('he-IL')}</div>
                 </div>
-                <button className={styles.del} onClick={() => deleteNote(n.id)} title="מחק">✕</button>
+                <DeleteButton onClick={() => deleteNote(n.id)} />
               </div>
             ))}
           </div>
