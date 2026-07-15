@@ -69,17 +69,23 @@ export default function Dashboard({ clientUserId, year, month }) {
         </div>
       </div>
 
-      {insights.length > 0 && (
-        <div className={styles.insights}>
-          {insights.map((ins, i) => (
-            <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>{ins.text}</div>
-          ))}
+      <div className={styles.grid}>
+        <div className={styles.insightsCol}>
+          <div className={styles.colTitle}>תובנות</div>
+          {insights.length > 0 ? (
+            <div className={styles.insights}>
+              {insights.map((ins, i) => (
+                <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>{ins.text}</div>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.noInsights}>אין התראות מיוחדות החודש</div>
+          )}
         </div>
-      )}
 
-      <div className={styles.trendWrap}>
-        <div className={styles.trendTitle}>מגמת 6 חודשים</div>
-        <div className={styles.trendChart}>
+        <div className={styles.trendWrap}>
+          <div className={styles.colTitle}>מגמת 6 חודשים</div>
+          <div className={styles.trendChart}>
           <Bar
             data={chartData}
             options={{
@@ -95,6 +101,7 @@ export default function Dashboard({ clientUserId, year, month }) {
               }
             }}
           />
+          </div>
         </div>
       </div>
     </div>

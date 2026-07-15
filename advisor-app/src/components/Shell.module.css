@@ -7,7 +7,7 @@
   overflow: hidden;
 }
 
-.shell::before, .shellSidebar::before {
+.shell::before {
   content: '';
   position: absolute;
   width: 2px;
@@ -202,14 +202,15 @@
 }
 
 .contentSidebar {
-  padding: 44px 48px 64px;
-  max-width: 980px;
+  padding: 48px 56px 72px;
+  max-width: 1280px;
   animation: riseIn 0.5s var(--ease-out-expo) both;
 }
 
 .contentSidebar h1 {
-  font-size: 1.7rem;
-  margin-bottom: 24px;
+  font-size: 2rem;
+  letter-spacing: -0.01em;
+  margin-bottom: 32px;
 }
 
 .reportButton {
