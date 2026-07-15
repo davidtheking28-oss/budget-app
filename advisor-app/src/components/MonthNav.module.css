@@ -44,3 +44,9 @@
   text-align: center;
   flex: 1;
 }
+
+.nextMeeting {
+  font-size: 0.76rem;
+  color: var(--gold);
+  margin-bottom: 10px;
+}

@@ -11,6 +11,7 @@ import Budget from './budget/Budget.jsx';
 import Analysis from './budget/Analysis.jsx';
 import Goals from './budget/Goals.jsx';
 import Subscriptions from './budget/Subscriptions.jsx';
+import Crm from './crm/Crm.jsx';
 import { addMonths } from './budget/monthUtils.js';
 
 const NAV = [
@@ -19,7 +20,8 @@ const NAV = [
   { key: 'budget', label: 'תקציב' },
   { key: 'analysis', label: 'ניתוח' },
   { key: 'goals', label: 'יעדים' },
-  { key: 'subs', label: 'מנויים והלוואות' }
+  { key: 'subs', label: 'מנויים והלוואות' },
+  { key: 'crm', label: 'לקוח' }
 ];
 
 const today = new Date();
@@ -62,7 +64,7 @@ export default function App() {
         nav={NAV}
         activeNav={nav}
         onNavChange={setNav}
-        sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} email={selectedClient.email} />}
+        sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} email={selectedClient.email} nextMeeting={null} />}
       >
         {nav === 'dashboard' && <Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} />}
         {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
@@ -70,6 +72,7 @@ export default function App() {
         {nav === 'analysis' && <Analysis clientUserId={selectedClient.id} year={ym.year} month={ym.month} />}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} />}
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} />}
+        {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} />}
       </Shell>
       <Toaster />
     </>

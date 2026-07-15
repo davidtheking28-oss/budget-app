@@ -1,0 +1,114 @@
+.section {
+  margin-bottom: 36px;
+}
+
+.sectionTitle {
+  color: var(--text3);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.input, .textarea {
+  padding: 10px 13px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.input:focus, .textarea:focus {
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+.textarea {
+  flex: 1;
+  min-width: 220px;
+  resize: vertical;
+  min-height: 40px;
+}
+
+.button {
+  padding: 10px 18px;
+  border-radius: 9px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), #22b3a0);
+  color: #06201c;
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.015);
+  animation: riseIn 0.35s var(--ease-out-expo) both;
+}
+
+.taskRow {
+  align-items: center;
+}
+
+.done {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.meta {
+  color: var(--text3);
+  font-size: 0.76rem;
+  margin-top: 3px;
+}
+
+.del {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.del:hover { color: var(--red); }
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.taskBody {
+  flex: 1;
+}
+
+.empty {
+  color: var(--text3);
+  font-size: 0.84rem;
+  padding: 8px 2px;
+}
