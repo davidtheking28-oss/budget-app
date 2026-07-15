@@ -12,6 +12,7 @@ import Analysis from './budget/Analysis.jsx';
 import Goals from './budget/Goals.jsx';
 import Subscriptions from './budget/Subscriptions.jsx';
 import Crm from './crm/Crm.jsx';
+import Report from './budget/Report.jsx';
 import { addMonths } from './budget/monthUtils.js';
 
 const NAV = [
@@ -31,6 +32,7 @@ export default function App() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [nav, setNav] = useState(NAV[0].key);
   const [ym, setYm] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const [reportMode, setReportMode] = useState(false);
 
   if (loading) return null;
   if (!session) return (<><Login /><Toaster /></>);
@@ -56,6 +58,15 @@ export default function App() {
   const changeMonth = delta => setYm(prev => addMonths(prev.year, prev.month, delta));
   const resetMonth = () => setYm({ year: today.getFullYear(), month: today.getMonth() });
 
+  if (reportMode) {
+    return (
+      <>
+        <Report clientUserId={selectedClient.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setReportMode(false)} />
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <>
       <Shell
@@ -64,6 +75,7 @@ export default function App() {
         nav={NAV}
         activeNav={nav}
         onNavChange={setNav}
+        onPrint={() => setReportMode(true)}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} email={selectedClient.email} nextMeeting={null} />}
       >
         {nav === 'dashboard' && <Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} />}

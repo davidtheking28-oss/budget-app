@@ -1,6 +1,6 @@
 import styles from './Shell.module.css';
 
-export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, children }) {
+export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, children }) {
   if (!nav) {
     return (
       <div className={styles.shell} dir="rtl">
@@ -20,6 +20,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
       <aside className={styles.sidebar}>
         <div className={styles.logo}><span className={styles.logoMark}></span>Budget Advisor</div>
         {sidebarInfo}
+        {onPrint && <button className={styles.reportButton} onClick={onPrint}>📄 דוח חודשי</button>}
         <nav className={styles.nav}>
           {nav.map(n => (
             <button
