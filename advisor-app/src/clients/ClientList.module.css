@@ -109,39 +109,61 @@
   border: 1px dashed var(--border-strong);
 }
 
-.kpis {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin-bottom: 32px;
-}
-
-.kpi {
-  background: linear-gradient(165deg, var(--surface), var(--bg-2));
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px 22px;
+.statBar {
+  display: flex;
+  align-items: baseline;
+  gap: 28px;
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
   animation: riseIn 0.5s var(--ease-out-expo) both;
 }
 
-.kpiLabel {
-  color: var(--text3);
-  font-size: 0.76rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  margin-bottom: 10px;
+.statMain {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
 }
 
-.kpiValue {
+.statMainValue {
   font-family: var(--font-display);
-  font-size: 1.9rem;
+  font-size: 3rem;
   font-weight: 700;
+  line-height: 1;
   color: var(--text);
 }
 
-.kpiRed { color: var(--red); }
-.kpiGreen { color: var(--green); }
-.kpiGold { color: var(--gold); }
+.statMainLabel {
+  color: var(--text2);
+  font-size: 0.88rem;
+}
+
+.statDivider {
+  width: 1px;
+  height: 34px;
+  background: var(--border-strong);
+}
+
+.statSecondary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.statSecondaryValue {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text2);
+}
+
+.statSecondaryLabel {
+  color: var(--text3);
+  font-size: 0.8rem;
+}
+
+.statRed { color: var(--red) !important; }
+.statGold { color: var(--gold) !important; }
 
 .sectionHead {
   display: flex;

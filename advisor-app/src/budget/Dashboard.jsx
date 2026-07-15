@@ -13,13 +13,21 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
 
-function StatCard({ label, value, kind, glow }) {
+function NetHero({ value }) {
   const display = useCountUp(value);
   return (
-    <div className={styles.card}>
-      <div className={styles.glow + ' ' + styles[glow]}></div>
-      <div className={styles.label}>{label}</div>
-      <div className={styles.value + ' ' + (kind ? styles[kind] : '')}>{fmt(display)}</div>
+    <div className={styles.netValue + ' ' + (value < 0 ? styles.expense : styles.net)}>
+      {fmt(display)}
+    </div>
+  );
+}
+
+function SubStat({ label, value, kind }) {
+  const display = useCountUp(value);
+  return (
+    <div className={styles.subStat}>
+      <span className={styles.subStatValue + ' ' + styles[kind]}>{fmt(display)}</span>
+      <span className={styles.subStatLabel}>{label}</span>
     </div>
   );
 }
@@ -28,13 +36,7 @@ export default function Dashboard({ clientUserId, year, month }) {
   const { data, loading } = useClientBudget(clientUserId);
 
   if (loading || !data) {
-    return (
-      <div className={styles.cards}>
-        <Skeleton height="112px" radius="16px" />
-        <Skeleton height="112px" radius="16px" />
-        <Skeleton height="112px" radius="16px" />
-      </div>
-    );
+    return <Skeleton height="140px" radius="18px" />;
   }
 
   const summary = monthSummary(data, year, month);
@@ -56,10 +58,13 @@ export default function Dashboard({ clientUserId, year, month }) {
 
   return (
     <div>
-      <div className={styles.cards}>
-        <StatCard label="הכנסות החודש" value={summary.income} kind="income" glow="glowGreen" />
-        <StatCard label="הוצאות החודש" value={summary.expense} kind="expense" glow="glowRed" />
-        <StatCard label="מאזן" value={summary.net} kind={summary.net < 0 ? 'expense' : 'net'} glow="glowGold" />
+      <div className={styles.hero}>
+        <div className={styles.heroLabel}>מאזן החודש</div>
+        <NetHero value={summary.net} />
+        <div className={styles.subStats}>
+          <SubStat label="הכנסות" value={summary.income} kind="income" />
+          <SubStat label="הוצאות" value={summary.expense} kind="expense" />
+        </div>
       </div>
 
       {insights.length > 0 && (

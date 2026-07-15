@@ -19,12 +19,17 @@ function RemainingChip({ value }) {
   return <div className={styles.remaining}>{fmt(display)} נותר</div>;
 }
 
-function Kpi({ label, value, tone }) {
+function StatMain({ value }) {
+  const display = useCountUp(value);
+  return <div className={styles.statMainValue}>{Math.round(display)}</div>;
+}
+
+function StatSecondary({ label, value, tone }) {
   const display = useCountUp(value);
   return (
-    <div className={styles.kpi}>
-      <div className={styles.kpiLabel}>{label}</div>
-      <div className={styles.kpiValue + (tone ? ' ' + styles[tone] : '')}>{Math.round(display)}</div>
+    <div className={styles.statSecondary}>
+      <span className={styles.statSecondaryValue + (tone ? ' ' + styles[tone] : '')}>{Math.round(display)}</span>
+      <span className={styles.statSecondaryLabel}>{label}</span>
     </div>
   );
 }
@@ -49,11 +54,7 @@ export default function ClientList({ advisorId, onSelect }) {
   if (loading) {
     return (
       <div>
-        <div className={styles.kpis}>
-          <Skeleton height="96px" radius="16px" />
-          <Skeleton height="96px" radius="16px" />
-          <Skeleton height="96px" radius="16px" />
-        </div>
+        <Skeleton height="64px" radius="14px" style={{ marginBottom: 36 }} />
         <div className={styles.list}>
           {[0, 1, 2].map(i => (
             <div key={i} className={styles.row}>
@@ -71,10 +72,14 @@ export default function ClientList({ advisorId, onSelect }) {
 
   return (
     <div>
-      <div className={styles.kpis}>
-        <Kpi label="לקוחות פעילים" value={clients.length} />
-        <Kpi label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'kpiRed' : 'kpiGreen'} />
-        <Kpi label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'kpiGold' : undefined} />
+      <div className={styles.statBar}>
+        <div className={styles.statMain}>
+          <StatMain value={clients.length} />
+          <div className={styles.statMainLabel}>לקוחות פעילים</div>
+        </div>
+        <div className={styles.statDivider}></div>
+        <StatSecondary label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'statRed' : undefined} />
+        <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} />
       </div>
 
       <div className={styles.sectionHead}>
