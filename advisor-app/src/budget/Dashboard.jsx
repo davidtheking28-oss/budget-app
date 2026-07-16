@@ -2,7 +2,7 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Lege
 import { Bar } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
-import { computeInsights } from './insights.js';
+import { computeInsights, computeHealthScore } from './insights.js';
 import { addMonths } from './monthUtils.js';
 import { useCountUp } from '../useCountUp.js';
 import Skeleton from '../components/Skeleton.jsx';
@@ -19,6 +19,29 @@ function NetHero({ value }) {
   return (
     <div className={styles.netValue + ' ' + (value < 0 ? styles.expense : styles.net)}>
       {fmt(display)}
+    </div>
+  );
+}
+
+function HealthRing({ score }) {
+  const display = useCountUp(score);
+  const r = 42;
+  const c = 2 * Math.PI * r;
+  const offset = c - (display / 100) * c;
+  const color = score >= 75 ? 'var(--green)' : score >= 45 ? 'var(--yellow)' : 'var(--red)';
+  const label = score >= 75 ? 'מצב תקין' : score >= 45 ? 'דורש תשומת לב' : 'דורש טיפול';
+  return (
+    <div className={styles.healthRing}>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r={r} fill="none" stroke="var(--border)" strokeWidth="8" />
+        <circle
+          cx="50" cy="50" r={r} fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={offset} transform="rotate(-90 50 50)"
+          className={styles.healthArc}
+        />
+        <text x="50" y="56" textAnchor="middle" fontSize="22" fontWeight="700" fill="var(--text)" fontFamily="var(--font-display)">{display}</text>
+      </svg>
+      <div className={styles.healthLabel}>{label}</div>
     </div>
   );
 }
@@ -43,6 +66,13 @@ export default function Dashboard({ clientUserId, year, month }) {
 
   const summary = monthSummary(data, year, month);
   const insights = computeInsights(data, year, month);
+  const healthScore = computeHealthScore(data, year, month);
+
+  const insightGroups = [
+    { key: 'danger', title: 'התראות סיכון' },
+    { key: 'warn', title: 'כדאי לעקוב' },
+    { key: 'tip', title: 'פעולות מומלצות' }
+  ].map(g => ({ ...g, items: insights.filter(ins => ins.kind === g.key) })).filter(g => g.items.length > 0);
 
   const trendMonths = [];
   for (let i = 5; i >= 0; i--) {
@@ -61,21 +91,31 @@ export default function Dashboard({ clientUserId, year, month }) {
   return (
     <div>
       <div className={styles.hero}>
-        <div className={styles.heroLabel}>מאזן החודש</div>
-        <NetHero value={summary.net} />
-        <div className={styles.subStats}>
-          <SubStat label="הכנסות" value={summary.income} kind="income" />
-          <SubStat label="הוצאות" value={summary.expense} kind="expense" />
+        <div className={styles.heroMain}>
+          <div className={styles.heroLabel}>מאזן החודש</div>
+          <NetHero value={summary.net} />
+          <div className={styles.subStats}>
+            <SubStat label="הכנסות" value={summary.income} kind="income" />
+            <SubStat label="הוצאות" value={summary.expense} kind="expense" />
+          </div>
         </div>
+        <HealthRing score={healthScore} />
       </div>
 
       <div className={styles.grid}>
         <div className={styles.insightsCol}>
           <div className={styles.colTitle}>תובנות</div>
-          {insights.length > 0 ? (
-            <div className={styles.insights}>
-              {insights.map((ins, i) => (
-                <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>{ins.text}</div>
+          {insightGroups.length > 0 ? (
+            <div className={styles.insightGroups}>
+              {insightGroups.map(group => (
+                <div key={group.key} className={styles.insightGroup}>
+                  <div className={styles.groupTitle + ' ' + styles[group.key]}>{group.title}</div>
+                  <div className={styles.insights}>
+                    {group.items.map((ins, i) => (
+                      <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>{ins.text}</div>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           ) : (

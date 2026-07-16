@@ -40,5 +40,25 @@ export function computeInsights(data, year, month) {
     }
   }
 
+  Object.keys(summary.spentByCat).forEach(cat => {
+    if (!data?.budgets?.[cat] && summary.spentByCat[cat] > 300) {
+      insights.push({ kind: 'tip', text: `${cat} — ${fmt(summary.spentByCat[cat])} הוצאה ללא תקציב מוגדר` });
+    }
+  });
+
   return insights;
+}
+
+export function computeHealthScore(data, year, month) {
+  const summary = monthSummary(data, year, month);
+  let score = 100;
+  score -= summary.overCats.length * 12;
+  if (summary.income > 0) {
+    const savingsRate = summary.net / summary.income;
+    if (savingsRate < 0) score -= 30;
+    else if (savingsRate < 0.1) score -= 10;
+  } else if (summary.expense > 0) {
+    score -= 25;
+  }
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
