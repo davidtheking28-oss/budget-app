@@ -26,6 +26,15 @@
   animation: toastIn 0.3s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
 }
 
+.toastLeaving {
+  animation: toastOut 0.22s ease both;
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(8px) scale(0.96); }
+}
+
 .undo {
   background: none;
   border: none;

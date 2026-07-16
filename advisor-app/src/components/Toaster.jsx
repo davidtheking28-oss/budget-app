@@ -8,12 +8,20 @@ const ICONS = {
   info: <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 8v6M12 17.5v.01" /></svg>
 };
 
+const EXIT_MS = 220;
+
 export default function Toaster() {
   const [items, setItems] = useState([]);
+  const [leaving, setLeaving] = useState(() => new Set());
+
+  function dismiss(id) {
+    setLeaving(prev => new Set(prev).add(id));
+    setTimeout(() => setItems(prev => prev.filter(i => i.id !== id)), EXIT_MS);
+  }
 
   useEffect(() => subscribeToast(item => {
     setItems(prev => [...prev, item]);
-    setTimeout(() => setItems(prev => prev.filter(i => i.id !== item.id)), item.action ? 5000 : 3200);
+    setTimeout(() => dismiss(item.id), item.action ? 5000 : 3200);
   }), []);
 
   if (!items.length) return null;
@@ -21,13 +29,13 @@ export default function Toaster() {
   return (
     <div className={styles.wrap} dir="rtl" role="status" aria-live="polite" aria-atomic="true">
       {items.map(i => (
-        <div key={i.id} className={styles.toast + ' ' + styles[i.kind]}>
+        <div key={i.id} className={styles.toast + ' ' + styles[i.kind] + (leaving.has(i.id) ? ' ' + styles.toastLeaving : '')}>
           <span className={styles.icon}>{ICONS[i.kind] || ICONS.info}</span>
           <span>{i.message}</span>
           {i.action && (
             <button
               className={styles.undo}
-              onClick={() => { i.action.onClick(); setItems(prev => prev.filter(x => x.id !== i.id)); }}
+              onClick={() => { i.action.onClick(); dismiss(i.id); }}
             >
               {i.action.label}
             </button>

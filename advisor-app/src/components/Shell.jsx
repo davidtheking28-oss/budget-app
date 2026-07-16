@@ -1,6 +1,11 @@
+import { useEffect } from 'react';
 import styles from './Shell.module.css';
 
 export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, children }) {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeNav]);
+
   if (!nav) {
     return (
       <div className={styles.shell} dir="rtl">

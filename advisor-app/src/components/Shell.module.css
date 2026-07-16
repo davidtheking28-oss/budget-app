@@ -145,7 +145,12 @@
 .contentSidebar {
   padding: 48px 56px 72px;
   max-width: 1280px;
-  animation: riseIn 0.5s var(--ease-out-expo) both;
+  animation: tabIn 0.35s var(--ease-out-expo) both;
+}
+
+@keyframes tabIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .contentSidebar h1 {
