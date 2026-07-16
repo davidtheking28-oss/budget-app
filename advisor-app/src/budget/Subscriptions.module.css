@@ -14,20 +14,26 @@
 }
 
 .rollup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.rollupChip {
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text2);
   padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  display: inline-block;
-  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.02);
   animation: riseIn 0.35s var(--ease-out-expo) both;
+  transition: border-color 0.2s ease;
 }
 
-.rollupSep {
-  margin: 0 8px;
-  color: var(--text3);
+.rollupChip:hover {
+  border-color: var(--border-strong);
 }
 
 .section {
@@ -63,7 +69,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--border);
+  gap: 10px;
 }
 
 .nameRow {
@@ -83,15 +89,44 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 4px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(165deg, var(--surface), var(--bg-2));
   animation: riseIn 0.4s var(--ease-out-expo) both;
-  transition: background 0.2s ease, transform 0.2s var(--ease-out-expo);
+  transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
+}
+
+.rowStacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.rowMain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.loanBar {
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.loanBarFill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.4s var(--ease-out-expo);
 }
 
 .row:hover {
-  background: rgba(var(--accent-rgb), 0.03);
-  transform: translateX(-6px);
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
 }
 
 .name {

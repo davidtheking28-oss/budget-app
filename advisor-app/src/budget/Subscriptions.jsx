@@ -22,8 +22,13 @@ export default function Subscriptions({ clientUserId }) {
 
   const subs = data.subscriptions || [];
   const loans = data.loans || [];
+  const payments = data.payments || [];
+  const fixedExpenses = data.fixed_expenses || [];
   const monthlySubsCost = subs.reduce((s, x) => s + (x.cycle === 'yearly' ? (x.amount || 0) / 12 : (x.amount || 0)), 0);
-  const loansBalance = loans.reduce((s, l) => s + (l.current ?? l.total ?? 0), 0);
+  const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
+  const loansMonthly = loans.reduce((s, l) => s + (l.monthly || 0), 0);
+  const paymentsLeft = payments.reduce((s, p) => s + Math.max(0, (parseFloat(p.total) || 0) - (parseFloat(p.current) || 0)) * (parseFloat(p.amount) || 0), 0);
+  const fixedMonthly = fixedExpenses.reduce((s, f) => s + (f.amount || 0), 0);
   const subShares = subs
     .map(s => ({ name: s.name, monthly: s.cycle === 'yearly' ? (s.amount || 0) / 12 : (s.amount || 0) }))
     .sort((a, b) => b.monthly - a.monthly);
@@ -42,11 +47,12 @@ export default function Subscriptions({ clientUserId }) {
           {renewingSoon.map(s => `${s.name} מתחדש ב-${s.nextDate}`).join(' · ')}
         </div>
       )}
-      {(subs.length > 0 || loans.length > 0) && (
+      {(subs.length > 0 || loans.length > 0 || payments.length > 0 || fixedExpenses.length > 0) && (
         <div className={styles.rollup}>
-          {subs.length > 0 && <span>{fmt(monthlySubsCost)} לחודש במנויים</span>}
-          {subs.length > 0 && loans.length > 0 && <span className={styles.rollupSep}>·</span>}
-          {loans.length > 0 && <span>{fmt(loansBalance)} יתרת הלוואות</span>}
+          {subs.length > 0 && <div className={styles.rollupChip}>{fmt(monthlySubsCost)} לחודש במנויים</div>}
+          {loans.length > 0 && <div className={styles.rollupChip}>{fmt(loansBalance)} יתרת הלוואות</div>}
+          {payments.length > 0 && <div className={styles.rollupChip}>{fmt(paymentsLeft)} יתרת תשלומים</div>}
+          {fixedExpenses.length > 0 && <div className={styles.rollupChip}>{fmt(fixedMonthly)} לחודש בהוצאות קבועות</div>}
         </div>
       )}
       <div className={styles.section}>
@@ -82,20 +88,66 @@ export default function Subscriptions({ clientUserId }) {
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>הלוואות</div>
+        <div className={styles.sectionTitle}>הלוואות{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</div>
         {loans.length ? (
           <div className={styles.list}>
-            {loans.map((l, i) => (
-              <div key={l.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <div>
-                  <div className={styles.name}>{l.name || 'הלוואה'}</div>
-                  <div className={styles.meta}>{l.current !== undefined ? 'יתרה ' + fmt(l.current) + ' מתוך ' + fmt(l.total) : ''}</div>
+            {loans.map((l, i) => {
+              const pct = l.original ? Math.min(100, Math.max(0, Math.round(((l.original - (l.remaining || 0)) / l.original) * 100))) : null;
+              return (
+                <div key={l.id} className={pct !== null ? `${styles.row} ${styles.rowStacked}` : styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                  <div className={styles.rowMain}>
+                    <div>
+                      <div className={styles.name}>{l.name || 'הלוואה'}</div>
+                      <div className={styles.meta}>{l.lender ? l.lender + ' · ' : ''}{l.remaining !== undefined ? 'יתרה ' + fmt(l.remaining) + (l.original ? ' מתוך ' + fmt(l.original) : '') : ''}</div>
+                    </div>
+                    <div className={styles.amount}>{fmt(l.monthly || 0)}</div>
+                  </div>
+                  {pct !== null && (
+                    <div className={styles.loanBar}>
+                      <div className={styles.loanBarFill} style={{ width: pct + '%' }} />
+                    </div>
+                  )}
                 </div>
-                <div className={styles.amount}>{fmt(l.amount || 0)}</div>
+              );
+            })}
+          </div>
+        ) : <div className={styles.empty}>אין הלוואות רשומות</div>}
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>תשלומים בכרטיס אשראי</div>
+        {payments.length ? (
+          <div className={styles.list}>
+            {payments.map((p, i) => {
+              const total = parseFloat(p.total) || 0;
+              const cur = parseFloat(p.current) || 0;
+              const left = Math.max(0, total - cur);
+              return (
+                <div key={p.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                  <div>
+                    <div className={styles.name}>{p.name || 'תשלום'}</div>
+                    <div className={styles.meta}>{total ? `נותרו ${left} מתוך ${total} תשלומים` : ''}</div>
+                  </div>
+                  <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
+                </div>
+              );
+            })}
+          </div>
+        ) : <div className={styles.empty}>אין תשלומים רשומים</div>}
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>הוצאות קבועות{fixedMonthly > 0 ? ` · ${fmt(fixedMonthly)} לחודש` : ''}</div>
+        {fixedExpenses.length ? (
+          <div className={styles.list}>
+            {fixedExpenses.map((f, i) => (
+              <div key={f.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div className={styles.name}>{f.id}</div>
+                <div className={styles.amount}>{fmt(f.amount || 0)}</div>
               </div>
             ))}
           </div>
-        ) : <div className={styles.empty}>אין הלוואות רשומות</div>}
+        ) : <div className={styles.empty}>אין הוצאות קבועות רשומות</div>}
       </div>
     </div>
   );
