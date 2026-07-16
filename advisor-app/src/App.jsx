@@ -1,20 +1,22 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useSession } from './auth/useSession.js';
 import Login from './auth/Login.jsx';
 import Shell from './components/Shell.jsx';
 import Toaster from './components/Toaster.jsx';
 import QuickSwitcher from './components/QuickSwitcher.jsx';
 import MonthNav from './components/MonthNav.jsx';
+import Skeleton from './components/Skeleton.jsx';
 import ClientList from './clients/ClientList.jsx';
-import Dashboard from './budget/Dashboard.jsx';
 import Expenses from './budget/Expenses.jsx';
 import Budget from './budget/Budget.jsx';
-import Analysis from './budget/Analysis.jsx';
 import Goals from './budget/Goals.jsx';
 import Subscriptions from './budget/Subscriptions.jsx';
 import Crm from './crm/Crm.jsx';
 import Report from './budget/Report.jsx';
 import { useClientSummary } from './crm/useClientSummary.js';
+
+const Dashboard = lazy(() => import('./budget/Dashboard.jsx'));
+const Analysis = lazy(() => import('./budget/Analysis.jsx'));
 import { addMonths } from './budget/monthUtils.js';
 
 const svgProps = { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
@@ -113,10 +115,10 @@ export default function App() {
         onPrint={() => setReportMode(true)}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} email={selectedClient.email} nextMeeting={nextMeeting} openTasks={openTasks} />}
       >
-        {nav === 'dashboard' && <Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} />}
+        {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
-        {nav === 'analysis' && <Analysis clientUserId={selectedClient.id} year={ym.year} month={ym.month} />}
+        {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} />}
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} />}
         {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} />}
