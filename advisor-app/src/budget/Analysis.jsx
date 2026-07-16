@@ -9,6 +9,7 @@ import styles from './Analysis.module.css';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PALETTE = ['#ff7a3d', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
+const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 export default function Analysis({ clientUserId, year, month }) {
   const { data, loading, error, reload } = useClientBudget(clientUserId);
@@ -33,12 +34,14 @@ export default function Analysis({ clientUserId, year, month }) {
   monthTx.forEach(t => { byCat[t.cat] = (byCat[t.cat] || 0) + t.amount; });
   const labels = Object.keys(byCat);
   const values = labels.map(l => byCat[l]);
+  const total = values.reduce((s, v) => s + v, 0);
+  const colors = labels.map((_, i) => PALETTE[i % PALETTE.length]);
 
   const chartData = {
     labels,
     datasets: [{
       data: values,
-      backgroundColor: labels.map((_, i) => PALETTE[i % PALETTE.length]),
+      backgroundColor: colors,
       borderColor: '#0b0d10',
       borderWidth: 2
     }]
@@ -46,28 +49,42 @@ export default function Analysis({ clientUserId, year, month }) {
 
   return (
     <div className={styles.wrap}>
-      <Pie
-        data={chartData}
-        options={{
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: { color: '#9a9d9f', font: { family: 'Heebo', size: 12 }, padding: 16, boxWidth: 10, boxHeight: 10 }
-            },
-            tooltip: {
-              backgroundColor: '#14181c',
-              titleColor: '#f2f0ea',
-              bodyColor: '#9a9d9f',
-              borderColor: 'rgba(242,240,234,0.1)',
-              borderWidth: 1,
-              padding: 12,
-              titleFont: { family: 'Heebo' },
-              bodyFont: { family: 'Heebo' }
+      <div className={styles.donutBox}>
+        <Pie
+          data={chartData}
+          options={{
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#14181c',
+                titleColor: '#f2f0ea',
+                bodyColor: '#9a9d9f',
+                borderColor: 'rgba(242,240,234,0.1)',
+                borderWidth: 1,
+                padding: 12,
+                titleFont: { family: 'Heebo' },
+                bodyFont: { family: 'Heebo' }
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+        <div className={styles.donutCenter}>
+          <div className={styles.donutTotal}>{fmt(total)}</div>
+          <div className={styles.donutTotalLabel}>סה"כ הוצאות</div>
+        </div>
+      </div>
+      <div className={styles.legend}>
+        {labels.map((l, i) => (
+          <div key={l} className={styles.legendRow}>
+            <span className={styles.legendDot} style={{ background: colors[i] }} />
+            <span className={styles.legendLabel}>{l}</span>
+            <span className={styles.legendPct}>{Math.round((values[i] / total) * 100)}%</span>
+            <span className={styles.legendValue}>{fmt(values[i])}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

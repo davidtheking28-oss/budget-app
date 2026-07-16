@@ -16,14 +16,16 @@ import Crm from './crm/Crm.jsx';
 import Report from './budget/Report.jsx';
 import { addMonths } from './budget/monthUtils.js';
 
+const svgProps = { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
+
 const NAV = [
-  { key: 'dashboard', label: 'דשבורד' },
-  { key: 'expenses', label: 'הוצאות' },
-  { key: 'budget', label: 'תקציב' },
-  { key: 'analysis', label: 'ניתוח' },
-  { key: 'goals', label: 'יעדים' },
-  { key: 'subs', label: 'מנויים והלוואות' },
-  { key: 'crm', label: 'לקוח' }
+  { key: 'dashboard', label: 'דשבורד', icon: <svg {...svgProps}><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="5" rx="1.5" /><rect x="13" y="12" width="8" height="9" rx="1.5" /><rect x="3" y="15" width="8" height="6" rx="1.5" /></svg> },
+  { key: 'expenses', label: 'הוצאות', icon: <svg {...svgProps}><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></svg> },
+  { key: 'budget', label: 'תקציב', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
+  { key: 'analysis', label: 'ניתוח', icon: <svg {...svgProps}><path d="M4 20V10M12 20V4M20 20v-7" /></svg> },
+  { key: 'goals', label: 'יעדים', icon: <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></svg> },
+  { key: 'subs', label: 'מנויים והלוואות', icon: <svg {...svgProps}><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg> },
+  { key: 'crm', label: 'לקוח', icon: <svg {...svgProps}><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" /></svg> }
 ];
 
 const today = new Date();

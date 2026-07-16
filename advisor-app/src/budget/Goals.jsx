@@ -38,8 +38,13 @@ export default function Goals({ clientUserId }) {
               <div className={styles.name}>{g.name}</div>
               <div className={styles.amounts}>{fmt(g.saved || 0)} / {fmt(g.target || 0)}</div>
             </div>
-            <div className={styles.bar}><div className={styles.fill} style={{ width: pct + '%' }} /></div>
-            <div className={styles.meta}>{pct}% הושלם{g.months ? ' · יעד ל-' + g.months + ' חודשים' : ''}</div>
+            <div className={styles.bar}>
+              <div className={styles.fill} style={{ width: pct + '%' }}>
+                {pct >= 12 && <span className={styles.fillPct}>{pct}%</span>}
+              </div>
+              {pct < 12 && <span className={styles.pctOutside} style={{ insetInlineStart: `calc(${pct}% + 6px)` }}>{pct}%</span>}
+            </div>
+            {g.months && <div className={styles.meta}>יעד ל-{g.months} חודשים</div>}
           </div>
         );
       })}

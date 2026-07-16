@@ -41,6 +41,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
               className={styles.navItem + (n.key === activeNav ? ' ' + styles.navItemActive : '')}
               onClick={() => onNavChange(n.key)}
             >
+              {n.icon && <span className={styles.navIcon} aria-hidden="true">{n.icon}</span>}
               {n.label}
             </button>
           ))}

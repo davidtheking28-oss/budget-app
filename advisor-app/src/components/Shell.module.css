@@ -104,6 +104,9 @@
 }
 
 .navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-align: right;
   padding: 11px 14px;
   border-radius: 9px;
@@ -115,6 +118,18 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s var(--ease-out-expo);
+}
+
+.navIcon {
+  display: flex;
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.navItemActive .navIcon {
+  opacity: 1;
+  color: var(--accent);
 }
 
 .navItem:hover {
