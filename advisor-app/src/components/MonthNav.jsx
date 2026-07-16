@@ -2,7 +2,7 @@ import styles from './MonthNav.module.css';
 
 const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
-export default function MonthNav({ year, month, onChange, onReset, email, nextMeeting }) {
+export default function MonthNav({ year, month, onChange, onReset, email, nextMeeting, openTasks }) {
   const now = new Date();
   const isCurrent = year === now.getFullYear() && month === now.getMonth();
   return (
@@ -15,6 +15,15 @@ export default function MonthNav({ year, month, onChange, onReset, email, nextMe
             <path d="M16 2v4M8 2v4M3 10h18" />
           </svg>
           {new Date(nextMeeting).toLocaleString('he-IL')}
+        </div>
+      )}
+      {openTasks > 0 && (
+        <div className={styles.openTasks}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          {openTasks} משימות פתוחות
         </div>
       )}
       <div className={styles.row}>

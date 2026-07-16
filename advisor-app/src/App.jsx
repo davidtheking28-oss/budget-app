@@ -14,6 +14,7 @@ import Goals from './budget/Goals.jsx';
 import Subscriptions from './budget/Subscriptions.jsx';
 import Crm from './crm/Crm.jsx';
 import Report from './budget/Report.jsx';
+import { useClientSummary } from './crm/useClientSummary.js';
 import { addMonths } from './budget/monthUtils.js';
 
 const svgProps = { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
@@ -51,6 +52,7 @@ export default function App() {
   const [nav, setNav] = useState(initial.nav);
   const [ym, setYm] = useState(initial.ym);
   const [reportMode, setReportMode] = useState(false);
+  const { nextMeeting, openTasks } = useClientSummary(session?.user?.id, selectedClient?.id);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -109,7 +111,7 @@ export default function App() {
         activeNav={nav}
         onNavChange={setNav}
         onPrint={() => setReportMode(true)}
-        sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} email={selectedClient.email} nextMeeting={null} />}
+        sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} email={selectedClient.email} nextMeeting={nextMeeting} openTasks={openTasks} />}
       >
         {nav === 'dashboard' && <Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} />}
         {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
