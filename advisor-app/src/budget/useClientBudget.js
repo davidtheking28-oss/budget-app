@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
+import { toast } from '../toast.js';
 
 const EMPTY = { transactions: [], budgets: {}, goals: [], subscriptions: [], loans: [], fixed_expenses: [] };
 
@@ -37,12 +38,17 @@ export function useClientBudget(clientUserId, advisorId) {
 
   const save = useCallback(async (patch) => {
     if (!clientUserId) return;
+    const prev = data;
     const next = { ...(data || EMPTY), ...patch };
     setData(next);
     const { error } = await supabase
       .from('budget_data')
       .upsert({ user_id: clientUserId, updated_by: advisorId, ...patch }, { onConflict: 'user_id' });
-    if (error) setError(error);
+    if (error) {
+      setError(error);
+      setData(prev);
+      toast('שמירה נכשלה, נסה שוב', 'error');
+    }
   }, [clientUserId, advisorId, data]);
 
   return { data, loading, error, save, reload };
