@@ -74,6 +74,10 @@ export default function ClientList({ advisorId, onSelect }) {
 
   const overageCount = clients.filter(c => c.hasOverage).length;
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
+  const urgent = clients
+    .filter(c => c.hasOverage || c.openTasks > 0)
+    .sort((a, b) => (b.hasOverage - a.hasOverage) || (b.openTasks - a.openTasks))
+    .slice(0, 4);
 
   return (
     <div>
@@ -86,6 +90,25 @@ export default function ClientList({ advisorId, onSelect }) {
         <StatSecondary label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'statRed' : undefined} />
         <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} />
       </div>
+
+      {urgent.length > 0 && (
+        <div className={styles.urgentPanel}>
+          <div className={styles.urgentTitle}>דורש טיפול היום</div>
+          <div className={styles.urgentList}>
+            {urgent.map(c => (
+              <button type="button" key={c.id} className={styles.urgentRow} onClick={() => onSelect(c.client_id, c.client_email)}>
+                <span className={styles.urgentDot + ' ' + (c.hasOverage ? styles.urgentDotRed : styles.urgentDotGold)} aria-hidden="true" />
+                <span className={styles.urgentEmail}>{c.client_email}</span>
+                <span className={styles.urgentReason}>
+                  {c.hasOverage ? 'חריגת תקציב' : ''}
+                  {c.hasOverage && c.openTasks > 0 ? ' · ' : ''}
+                  {c.openTasks > 0 ? `${c.openTasks} משימות פתוחות` : ''}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className={styles.sectionHead}>
         <h2 className={styles.sectionTitle}>הלקוחות שלי <span className={styles.kbdHint}>⌘K לחיפוש מהיר</span></h2>

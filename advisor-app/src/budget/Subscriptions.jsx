@@ -27,9 +27,21 @@ export default function Subscriptions({ clientUserId }) {
   const subShares = subs
     .map(s => ({ name: s.name, monthly: s.cycle === 'yearly' ? (s.amount || 0) / 12 : (s.amount || 0) }))
     .sort((a, b) => b.monthly - a.monthly);
+  const in7Days = new Date();
+  in7Days.setDate(in7Days.getDate() + 7);
+  const renewingSoon = subs.filter(s => s.nextDate && new Date(s.nextDate) <= in7Days && new Date(s.nextDate) >= new Date());
 
   return (
     <div>
+      {renewingSoon.length > 0 && (
+        <div className={styles.renewalBanner}>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+          {renewingSoon.map(s => `${s.name} מתחדש ב-${s.nextDate}`).join(' · ')}
+        </div>
+      )}
       {(subs.length > 0 || loans.length > 0) && (
         <div className={styles.rollup}>
           {subs.length > 0 && <span>{fmt(monthlySubsCost)} לחודש במנויים</span>}
