@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import Logo from './Logo.jsx';
 import styles from './Shell.module.css';
 
 export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, children }) {
@@ -10,7 +11,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
     return (
       <div className={styles.shell} dir="rtl">
         <div className={styles.topbar}>
-          <div className={styles.logo}><span className={styles.logoMark}></span>Budget Advisor</div>
+          <div className={styles.logo}><Logo />Budget Advisor</div>
         </div>
         <div className={styles.content}>
           {title && <h1>{title}</h1>}
@@ -23,7 +24,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
   return (
     <div className={styles.shellSidebar} dir="rtl">
       <aside className={styles.sidebar}>
-        <div className={styles.logo}><span className={styles.logoMark}></span>Budget Advisor</div>
+        <div className={styles.logo}><Logo />Budget Advisor</div>
         {sidebarInfo}
         {onPrint && (
           <button className={styles.reportButton} onClick={onPrint}>

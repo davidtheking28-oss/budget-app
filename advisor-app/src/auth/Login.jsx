@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import Button from '../components/Button.jsx';
+import Logo from '../components/Logo.jsx';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -36,7 +37,7 @@ export default function Login() {
       <div className={styles.glow} ref={glowRef}></div>
       <div className={styles.diagonal}></div>
       <div className={styles.card}>
-        <div className={styles.mark}></div>
+        <Logo size="lg" />
         <div className={styles.logo}>Budget Advisor</div>
         <div className={styles.tagline}>קונסולת ניהול לקוחות</div>
         {sent ? (
