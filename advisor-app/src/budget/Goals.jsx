@@ -23,8 +23,13 @@ export default function Goals({ clientUserId }) {
     return <div className={styles.empty}>הלקוח עדיין לא הגדיר יעדי חיסכון</div>;
   }
 
+  const totalSaved = goals.reduce((s, g) => s + (g.saved || 0), 0);
+  const totalTarget = goals.reduce((s, g) => s + (g.target || 0), 0);
+
   return (
-    <div className={styles.list}>
+    <div>
+      <div className={styles.rollup}>{`${goals.length} יעדים פעילים · נחסכו ${fmt(totalSaved)} מתוך ${fmt(totalTarget)}`}</div>
+      <div className={styles.list}>
       {goals.map((g, i) => {
         const pct = g.target ? Math.min(Math.round((g.saved / g.target) * 100), 100) : 0;
         return (
@@ -38,6 +43,7 @@ export default function Goals({ clientUserId }) {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

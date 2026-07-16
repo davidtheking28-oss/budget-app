@@ -2,17 +2,28 @@ import { useState } from 'react';
 import { useClientCrm } from './useClientCrm.js';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+import Skeleton from '../components/Skeleton.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import styles from './Crm.module.css';
 
 export default function Crm({ advisorId, clientId }) {
-  const { notes, tasks, meetings, loading, addNote, deleteNote, addTask, toggleTask, deleteTask, addMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
+  const { notes, tasks, meetings, loading, error, reload, addNote, deleteNote, addTask, toggleTask, deleteTask, addMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
   const [noteBody, setNoteBody] = useState('');
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDue, setTaskDue] = useState('');
   const [meetingAt, setMeetingAt] = useState('');
   const [meetingNotes, setMeetingNotes] = useState('');
 
-  if (loading) return null;
+  if (error) return <ErrorState onRetry={reload} />;
+  if (loading) {
+    return (
+      <div>
+        <Skeleton height="140px" radius="14px" style={{ marginBottom: 24 }} />
+        <Skeleton height="140px" radius="14px" style={{ marginBottom: 24 }} />
+        <Skeleton height="140px" radius="14px" />
+      </div>
+    );
+  }
 
   return (
     <div>

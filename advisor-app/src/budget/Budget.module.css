@@ -1,3 +1,16 @@
+.rollup {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: inline-block;
+  animation: riseIn 0.35s var(--ease-out-expo) both;
+}
+
+.rollupOk { color: var(--green); border-color: rgba(var(--green-rgb), 0.3); }
+.rollupWarn { color: var(--red); border-color: rgba(var(--red-rgb), 0.3); }
+
 .form {
   display: flex;
   gap: 10px;

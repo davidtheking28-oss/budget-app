@@ -21,9 +21,18 @@ export default function Subscriptions({ clientUserId }) {
 
   const subs = data.subscriptions || [];
   const loans = data.loans || [];
+  const monthlySubsCost = subs.reduce((s, x) => s + (x.cycle === 'yearly' ? (x.amount || 0) / 12 : (x.amount || 0)), 0);
+  const loansBalance = loans.reduce((s, l) => s + (l.current ?? l.total ?? 0), 0);
 
   return (
     <div>
+      {(subs.length > 0 || loans.length > 0) && (
+        <div className={styles.rollup}>
+          {subs.length > 0 && <span>{fmt(monthlySubsCost)} לחודש במנויים</span>}
+          {subs.length > 0 && loans.length > 0 && <span className={styles.rollupSep}>·</span>}
+          {loans.length > 0 && <span>{fmt(loansBalance)} יתרת הלוואות</span>}
+        </div>
+      )}
       <div className={styles.section}>
         <div className={styles.sectionTitle}>מנויים</div>
         {subs.length ? (

@@ -41,9 +41,15 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   }
 
   const activeCats = Object.keys(budgets).filter(c => budgets[c]).sort();
+  const overCount = activeCats.filter(c => (spentByCat[c] || 0) > budgets[c]).length;
 
   return (
     <div>
+      {activeCats.length > 0 && (
+        <div className={styles.rollup + ' ' + (overCount > 0 ? styles.rollupWarn : styles.rollupOk)}>
+          {overCount > 0 ? `${overCount} מתוך ${activeCats.length} קטגוריות בחריגה` : `כל ${activeCats.length} הקטגוריות בתקציב`}
+        </div>
+      )}
       <div className={styles.form}>
         <select className={styles.select} value={cat} onChange={e => setCat(e.target.value)}>
           {BUDGET_CATS.map(c => <option key={c} value={c}>{c}</option>)}

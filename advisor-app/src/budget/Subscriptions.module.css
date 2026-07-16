@@ -1,3 +1,20 @@
+.rollup {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text2);
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: inline-block;
+  margin-bottom: 24px;
+  animation: riseIn 0.35s var(--ease-out-expo) both;
+}
+
+.rollupSep {
+  margin: 0 8px;
+  color: var(--text3);
+}
+
 .section {
   margin-bottom: 32px;
 }

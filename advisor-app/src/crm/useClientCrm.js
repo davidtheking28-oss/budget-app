@@ -7,6 +7,7 @@ export function useClientCrm(advisorId, clientId) {
   const [tasks, setTasks] = useState([]);
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const reload = useCallback(async () => {
     if (!advisorId || !clientId) return;
@@ -16,6 +17,9 @@ export function useClientCrm(advisorId, clientId) {
       supabase.from('advisor_tasks').select('*').eq('advisor_id', advisorId).eq('client_id', clientId).order('created_at', { ascending: false }),
       supabase.from('advisor_meetings').select('*').eq('advisor_id', advisorId).eq('client_id', clientId).order('scheduled_at', { ascending: true })
     ]);
+    const firstError = notesRes.error || tasksRes.error || meetingsRes.error;
+    if (firstError) { setError(firstError); setLoading(false); return; }
+    setError(null);
     setNotes(notesRes.data || []);
     setTasks((tasksRes.data || []).sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
     setMeetings(meetingsRes.data || []);
@@ -79,5 +83,5 @@ export function useClientCrm(advisorId, clientId) {
     toast('הפגישה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addMeeting(removed.scheduled_at, removed.notes) } : null);
   }
 
-  return { notes, tasks, meetings, loading, addNote, deleteNote, addTask, toggleTask, deleteTask, addMeeting, deleteMeeting };
+  return { notes, tasks, meetings, loading, error, reload, addNote, deleteNote, addTask, toggleTask, deleteTask, addMeeting, deleteMeeting };
 }
