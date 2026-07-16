@@ -84,7 +84,7 @@
   text-align: center;
 }
 
-.input:focus {
+.input:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.6);
 }
 

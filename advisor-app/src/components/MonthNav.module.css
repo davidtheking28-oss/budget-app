@@ -44,11 +44,19 @@
 }
 
 .label {
+  font-family: var(--font-body);
   font-size: var(--text-base);
   color: var(--text2);
   cursor: pointer;
   text-align: center;
   flex: 1;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.label:disabled {
+  cursor: default;
 }
 
 .nextMeeting {

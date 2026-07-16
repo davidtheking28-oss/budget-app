@@ -89,15 +89,15 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   return (
     <div>
       <div className={styles.form}>
-        <select className={styles.select} value={type} onChange={e => { setType(e.target.value); setCat(e.target.value === 'expense' ? EXPENSE_CATS[0] : INCOME_CATS[0]); }}>
+        <select className={styles.select} aria-label="סוג תנועה" value={type} onChange={e => { setType(e.target.value); setCat(e.target.value === 'expense' ? EXPENSE_CATS[0] : INCOME_CATS[0]); }}>
           <option value="expense">הוצאה</option>
           <option value="income">הכנסה</option>
         </select>
-        <select className={styles.select} value={cat} onChange={e => setCat(e.target.value)}>
+        <select className={styles.select} aria-label="קטגוריה" value={cat} onChange={e => setCat(e.target.value)}>
           {cats.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <input className={styles.input} placeholder="תיאור" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
-        <input className={styles.input} type="number" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
+        <input className={styles.input} aria-label="תיאור" placeholder="תיאור" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
+        <input className={styles.input} type="number" inputMode="decimal" aria-label="סכום" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <Button onClick={addTx}>הוסף</Button>
       </div>
       {!monthTx.length && <div className={styles.empty}>אין תנועות החודש</div>}
@@ -106,10 +106,12 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
           const open = openCats.has(g.cat);
           return (
             <div key={g.cat} className={styles.group}>
-              <div
+              <button
+                type="button"
                 className={styles.groupHeader}
                 style={{ animationDelay: Math.min(i * 0.03, 0.3) + 's' }}
                 onClick={() => toggleCat(g.cat)}
+                aria-expanded={open}
               >
                 <div className={styles.groupLeft}>
                   <svg className={styles.chevron + (open ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
@@ -119,7 +121,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                 <div style={{ color: g.total >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
                   {g.total >= 0 ? '+' : '-'}{fmt(Math.abs(g.total))}
                 </div>
-              </div>
+              </button>
               {open && (
                 <div className={styles.groupBody}>
                   {g.items.map(t => (

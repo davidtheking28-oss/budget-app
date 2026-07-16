@@ -21,7 +21,7 @@
   transition: border-color 0.2s ease;
 }
 
-.input:focus, .select:focus {
+.input:focus-visible, .select:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.5);
 }
 
@@ -41,7 +41,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: 16px 4px;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  font-size: inherit;
+  color: inherit;
+  text-align: right;
   cursor: pointer;
   transition: background 0.2s ease;
 }

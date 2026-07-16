@@ -33,7 +33,7 @@
   transition: border-color 0.2s ease;
 }
 
-.select:focus, .input:focus {
+.select:focus-visible, .input:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.5);
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from './auth/useSession.js';
 import Login from './auth/Login.jsx';
 import Shell from './components/Shell.jsx';
@@ -28,12 +28,41 @@ const NAV = [
 
 const today = new Date();
 
+function readUrlState() {
+  const params = new URLSearchParams(window.location.search);
+  const clientId = params.get('client');
+  const clientEmail = params.get('email');
+  const nav = params.get('nav');
+  const y = parseInt(params.get('y'), 10);
+  const m = parseInt(params.get('m'), 10);
+  return {
+    selectedClient: clientId && clientEmail ? { id: clientId, email: clientEmail } : null,
+    nav: NAV.some(n => n.key === nav) ? nav : NAV[0].key,
+    ym: Number.isInteger(y) && Number.isInteger(m) ? { year: y, month: m } : { year: today.getFullYear(), month: today.getMonth() }
+  };
+}
+
 export default function App() {
   const { session, loading } = useSession();
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [nav, setNav] = useState(NAV[0].key);
-  const [ym, setYm] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const initial = readUrlState();
+  const [selectedClient, setSelectedClient] = useState(initial.selectedClient);
+  const [nav, setNav] = useState(initial.nav);
+  const [ym, setYm] = useState(initial.ym);
   const [reportMode, setReportMode] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedClient) {
+      params.set('client', selectedClient.id);
+      params.set('email', selectedClient.email);
+      params.set('nav', nav);
+      params.set('y', ym.year);
+      params.set('m', ym.month);
+    }
+    const query = params.toString();
+    const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+    window.history.replaceState(null, '', url);
+  }, [selectedClient, nav, ym]);
 
   if (loading) return null;
   if (!session) return (<><Login /><Toaster /></>);

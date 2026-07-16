@@ -93,6 +93,9 @@ export default function ClientList({ advisorId, onSelect }) {
           <input
             ref={codeInputRef}
             className={styles.addInput}
+            name="invite-code"
+            autoComplete="off"
+            aria-label="קוד הזמנה מהלקוח"
             placeholder="קוד הזמנה מהלקוח"
             value={code}
             onChange={e => setCode(e.target.value)}
@@ -112,13 +115,14 @@ export default function ClientList({ advisorId, onSelect }) {
       ) : (
         <div className={styles.list}>
           {clients.map((c, i) => (
-            <div
+            <button
+              type="button"
               key={c.id}
               className={styles.row}
               style={{ animationDelay: (i * 0.04) + 's' }}
               onClick={() => onSelect(c.client_id, c.client_email)}
             >
-              <div className={styles.initial}>{initials(c.client_email)}</div>
+              <div className={styles.initial} aria-hidden="true">{initials(c.client_email)}</div>
               <div className={styles.info}>
                 <div className={styles.email}>{c.client_email}</div>
                 <div className={styles.chips}>
@@ -127,7 +131,7 @@ export default function ClientList({ advisorId, onSelect }) {
                   {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

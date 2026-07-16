@@ -41,6 +41,10 @@
   box-sizing: border-box;
 }
 
+.input:focus-visible {
+  background: rgba(var(--accent-rgb), 0.03);
+}
+
 .list {
   max-height: 320px;
   overflow-y: auto;
@@ -51,8 +55,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
   padding: 10px 12px;
   border-radius: 9px;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  text-align: right;
   cursor: pointer;
   transition: background 0.12s ease;
 }

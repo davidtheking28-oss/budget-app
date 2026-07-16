@@ -19,7 +19,7 @@ export default function Toaster() {
   if (!items.length) return null;
 
   return (
-    <div className={styles.wrap} dir="rtl">
+    <div className={styles.wrap} dir="rtl" role="status" aria-live="polite" aria-atomic="true">
       {items.map(i => (
         <div key={i.id} className={styles.toast + ' ' + styles[i.kind]}>
           <span className={styles.icon}>{ICONS[i.kind] || ICONS.info}</span>

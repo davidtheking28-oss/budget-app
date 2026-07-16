@@ -7,10 +7,12 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [sending, setSending] = useState(false);
   const glowRef = useRef(null);
+  const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function onMouseMove(e) {
-    if (!glowRef.current) return;
+    if (!glowRef.current || reducedMotion) return;
     const x = (e.clientX / window.innerWidth - 0.5) * 40;
     const y = (e.clientY / window.innerHeight - 0.5) * 40;
     glowRef.current.style.transform = `translate(${x}px, ${y}px)`;
@@ -19,10 +21,12 @@ export default function Login() {
   async function sendLink() {
     setError('');
     if (!email.trim()) { setError('הזן אימייל'); return; }
+    setSending(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { shouldCreateUser: true }
     });
+    setSending(false);
     if (error) { setError('שגיאה בשליחת קישור'); return; }
     setSent(true);
   }
@@ -49,13 +53,16 @@ export default function Login() {
             <input
               className={styles.input}
               type="email"
+              name="email"
+              autoComplete="email"
+              aria-label="כתובת אימייל"
               placeholder="email@example.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && sendLink()}
             />
-            <Button className={styles.button} onClick={sendLink}>שלח קישור התחברות</Button>
-            {error && <div className={styles.error}>{error}</div>}
+            <Button className={styles.button} onClick={sendLink} disabled={sending}>{sending ? 'שולח…' : 'שלח קישור התחברות'}</Button>
+            {error && <div className={styles.error} role="alert" aria-live="polite">{error}</div>}
           </>
         )}
       </div>

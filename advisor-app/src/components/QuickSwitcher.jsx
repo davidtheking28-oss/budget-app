@@ -58,26 +58,31 @@ export default function QuickSwitcher({ advisorId, onSelect }) {
 
   return (
     <div className={styles.overlay} onClick={() => setOpen(false)}>
-      <div className={styles.panel} onClick={e => e.stopPropagation()}>
+      <div className={styles.panel} role="dialog" aria-modal="true" aria-label="חיפוש לקוח מהיר" onClick={e => e.stopPropagation()}>
         <input
           ref={inputRef}
           className={styles.input}
-          placeholder="חפש לקוח לפי אימייל..."
+          type="search"
+          aria-label="חפש לקוח לפי אימייל"
+          placeholder="חפש לקוח לפי אימייל…"
           value={query}
           onChange={e => { setQuery(e.target.value); setActive(0); }}
           onKeyDown={onKeyDown}
         />
-        <div className={styles.list}>
+        <div className={styles.list} role="listbox">
           {filtered.length ? filtered.map((c, i) => (
-            <div
+            <button
+              type="button"
               key={c.client_id}
+              role="option"
+              aria-selected={i === active}
               className={styles.row + (i === active ? ' ' + styles.rowActive : '')}
               onMouseEnter={() => setActive(i)}
               onClick={() => select(c)}
             >
-              <div className={styles.avatar}>{initials(c.client_email)}</div>
+              <div className={styles.avatar} aria-hidden="true">{initials(c.client_email)}</div>
               <div className={styles.email}>{c.client_email}</div>
-            </div>
+            </button>
           )) : <div className={styles.empty}>אין תוצאות</div>}
         </div>
         <div className={styles.hint}>↑↓ לניווט · Enter לבחירה · Esc לסגירה</div>

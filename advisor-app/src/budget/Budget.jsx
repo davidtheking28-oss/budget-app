@@ -51,10 +51,10 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
         </div>
       )}
       <div className={styles.form}>
-        <select className={styles.select} value={cat} onChange={e => setCat(e.target.value)}>
+        <select className={styles.select} aria-label="קטגוריה" value={cat} onChange={e => setCat(e.target.value)}>
           {BUDGET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <input className={styles.input} type="number" placeholder="תקרה חודשית" value={limit} onChange={e => setLimit(e.target.value)} onKeyDown={e => e.key === 'Enter' && setBudget()} />
+        <input className={styles.input} type="number" inputMode="decimal" aria-label="תקרה חודשית" placeholder="תקרה חודשית" value={limit} onChange={e => setLimit(e.target.value)} onKeyDown={e => e.key === 'Enter' && setBudget()} />
         <Button onClick={setBudget}>שמור תקציב</Button>
       </div>
       {!activeCats.length && <div className={styles.empty}>עדיין לא הוגדרו תקציבי קטגוריה</div>}
