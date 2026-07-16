@@ -46,6 +46,22 @@ export function computeInsights(data, year, month) {
     }
   });
 
+  if (summary.totalBudget > 0 && summary.overCats.length === 0 && summary.expense > 0) {
+    insights.push({ kind: 'good', text: 'כל הקטגוריות בתקציב החודש' });
+  }
+
+  const priorSummaries = [1, 2, 3].map(back => {
+    const d = new Date(year, month - back, 1);
+    return monthSummary(data, d.getFullYear(), d.getMonth());
+  }).filter(s => s.income > 0);
+  if (summary.income > 0 && priorSummaries.length) {
+    const priorAvgRate = priorSummaries.reduce((s, x) => s + x.net / x.income, 0) / priorSummaries.length;
+    const currentRate = summary.net / summary.income;
+    if (currentRate > 0 && currentRate > priorAvgRate + 0.05) {
+      insights.push({ kind: 'good', text: `קצב החיסכון השתפר לעומת הממוצע התלת-חודשי — ${Math.round(currentRate * 100)}% מההכנסה` });
+    }
+  }
+
   return insights;
 }
 

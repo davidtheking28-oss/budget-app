@@ -24,6 +24,17 @@ export function useClientBudget(clientUserId, advisorId) {
 
   useEffect(() => { reload(); }, [reload]);
 
+  useEffect(() => {
+    if (!clientUserId) return;
+    const channel = supabase
+      .channel(`budget_data:${clientUserId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'budget_data', filter: `user_id=eq.${clientUserId}` }, () => {
+        reload();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [clientUserId, reload]);
+
   const save = useCallback(async (patch) => {
     if (!clientUserId) return;
     const next = { ...(data || EMPTY), ...patch };

@@ -12,6 +12,12 @@ function initials(email) {
   return (email || '?').trim()[0]?.toUpperCase() || '?';
 }
 
+function HealthDot({ score }) {
+  if (score === null) return null;
+  const color = score >= 75 ? 'var(--green)' : score >= 45 ? 'var(--yellow)' : 'var(--red)';
+  return <span className={styles.healthDot} style={{ background: color }} title={`ציון בריאות: ${score}`} />;
+}
+
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 function RemainingChip({ value }) {
@@ -147,7 +153,7 @@ export default function ClientList({ advisorId, onSelect }) {
             >
               <div className={styles.initial} aria-hidden="true">{initials(c.client_email)}</div>
               <div className={styles.info}>
-                <div className={styles.email}>{c.client_email}</div>
+                <div className={styles.email}><HealthDot score={c.healthScore} />{c.client_email}</div>
                 <div className={styles.chips}>
                   <RemainingChip value={c.remaining} />
                   {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}

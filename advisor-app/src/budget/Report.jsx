@@ -1,6 +1,6 @@
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
-import { computeInsights } from './insights.js';
+import { computeInsights, computeHealthScore } from './insights.js';
 import Logo from '../components/Logo.jsx';
 import styles from './Report.module.css';
 
@@ -13,6 +13,8 @@ export default function Report({ clientUserId, year, month, email, onClose }) {
 
   const summary = monthSummary(data, year, month);
   const insights = computeInsights(data, year, month);
+  const healthScore = computeHealthScore(data, year, month);
+  const healthLabel = healthScore >= 75 ? 'מצב תקין' : healthScore >= 45 ? 'דורש תשומת לב' : 'דורש טיפול';
   const cats = Object.keys(data.budgets || {}).filter(c => data.budgets[c]).sort();
 
   return (
@@ -36,6 +38,7 @@ export default function Report({ clientUserId, year, month, email, onClose }) {
         <div className={styles.stat}><div className={styles.statLabel}>הכנסות</div><div className={styles.statValue}>{fmt(summary.income)}</div></div>
         <div className={styles.stat}><div className={styles.statLabel}>הוצאות</div><div className={styles.statValue}>{fmt(summary.expense)}</div></div>
         <div className={styles.stat}><div className={styles.statLabel}>מאזן</div><div className={styles.statValue}>{fmt(summary.net)}</div></div>
+        <div className={styles.stat}><div className={styles.statLabel}>ציון בריאות</div><div className={styles.statValue}>{healthScore} · {healthLabel}</div></div>
       </div>
 
       {cats.length > 0 && (

@@ -88,7 +88,8 @@ export default function Dashboard({ clientUserId, year, month }) {
   const insightGroups = [
     { key: 'danger', title: 'התראות סיכון' },
     { key: 'warn', title: 'כדאי לעקוב' },
-    { key: 'tip', title: 'פעולות מומלצות' }
+    { key: 'tip', title: 'פעולות מומלצות' },
+    { key: 'good', title: 'מגמות חיוביות' }
   ].map(g => ({ ...g, items: insights.filter(ins => ins.kind === g.key) })).filter(g => g.items.length > 0);
 
   const trendMonths = [];

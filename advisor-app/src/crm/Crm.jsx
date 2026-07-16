@@ -6,6 +6,30 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import styles from './Crm.module.css';
 
+function downloadIcs(meeting) {
+  const dt = new Date(meeting.scheduled_at);
+  const pad = n => String(n).padStart(2, '0');
+  const stamp = `${dt.getUTCFullYear()}${pad(dt.getUTCMonth() + 1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}00Z`;
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'BEGIN:VEVENT',
+    `UID:${meeting.id}@budget-advisor`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART:${stamp}`,
+    `SUMMARY:פגישת ייעוץ${meeting.notes ? ' - ' + meeting.notes.replace(/\n/g, ' ') : ''}`,
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'meeting.ics';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function Crm({ advisorId, clientId }) {
   const { notes, tasks, meetings, loading, error, reload, addNote, deleteNote, addTask, toggleTask, deleteTask, addMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
   const [noteBody, setNoteBody] = useState('');
@@ -42,7 +66,14 @@ export default function Crm({ advisorId, clientId }) {
                   <div>{new Date(m.scheduled_at).toLocaleString('he-IL')}</div>
                   {m.notes && <div className={styles.meta}>{m.notes}</div>}
                 </div>
-                <DeleteButton onClick={() => deleteMeeting(m.id)} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button type="button" className={styles.icsButton} title="הורד ליומן" aria-label="הורד ליומן" onClick={() => downloadIcs(m)}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><path d="M12 14v4M10 16h4" />
+                    </svg>
+                  </button>
+                  <DeleteButton onClick={() => deleteMeeting(m.id)} />
+                </div>
               </div>
             ))}
           </div>

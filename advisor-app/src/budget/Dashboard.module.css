@@ -52,8 +52,9 @@
 
 .subStats {
   display: flex;
-  gap: 28px;
+  gap: 20px;
   margin-top: 16px;
+  flex-wrap: wrap;
 }
 
 .subStat {
@@ -136,6 +137,7 @@
 .groupTitle.danger { color: var(--red); }
 .groupTitle.warn { color: var(--yellow); }
 .groupTitle.tip { color: var(--accent); }
+.groupTitle.good { color: var(--green); }
 
 .insights {
   display: flex;
@@ -161,6 +163,7 @@
 .insight.danger { border-color: rgba(var(--red-rgb), 0.35); color: var(--red); }
 .insight.warn { border-color: rgba(217, 178, 92, 0.35); color: var(--yellow); }
 .insight.tip { border-color: rgba(var(--accent-rgb), 0.35); color: var(--text); }
+.insight.good { border-color: rgba(var(--green-rgb), 0.35); color: var(--green); }
 
 .trendChart {
   height: 280px;

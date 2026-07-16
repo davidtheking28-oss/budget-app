@@ -86,8 +86,24 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
 
   const cats = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;
 
+  function exportCsv() {
+    const rows = [['תאריך', 'סוג', 'קטגוריה', 'תיאור', 'סכום']];
+    monthTx.forEach(t => rows.push([t.date, t.type === 'income' ? 'הכנסה' : 'הוצאה', t.cat, t.desc, t.amount]));
+    const csv = '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `expenses-${year}-${String(month + 1).padStart(2, '0')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div>
+      <div className={styles.toolbar}>
+        <Button variant="ghost" onClick={exportCsv} disabled={!monthTx.length}>ייצוא ל-CSV</Button>
+      </div>
       <div className={styles.form}>
         <select className={styles.select} aria-label="סוג תנועה" value={type} onChange={e => { setType(e.target.value); setCat(e.target.value === 'expense' ? EXPENSE_CATS[0] : INCOME_CATS[0]); }}>
           <option value="expense">הוצאה</option>

@@ -20,7 +20,12 @@ export default function Goals({ clientUserId }) {
 
   const goals = data.goals || [];
   if (!goals.length) {
-    return <div className={styles.empty}>הלקוח עדיין לא הגדיר יעדי חיסכון</div>;
+    return (
+      <div className={styles.empty}>
+        <div className={styles.emptyMark}></div>
+        הלקוח עדיין לא הגדיר יעדי חיסכון
+      </div>
+    );
   }
 
   const totalSaved = goals.reduce((s, g) => s + (g.saved || 0), 0);

@@ -5,6 +5,7 @@ import { BUDGET_CATS } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
+import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import styles from './Budget.module.css';
 
@@ -40,6 +41,13 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
     setLimit('');
   }
 
+  async function removeBudget(c) {
+    const rest = { ...budgets };
+    delete rest[c];
+    await save({ budgets: rest });
+    toast(`תקציב ${c} הוסר`, 'success', { label: 'בטל', onClick: () => save({ budgets: { ...rest, [c]: budgets[c] } }) });
+  }
+
   const activeCats = Object.keys(budgets).filter(c => budgets[c]).sort();
   const overCount = activeCats.filter(c => (spentByCat[c] || 0) > budgets[c]).length;
 
@@ -69,7 +77,10 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
             <div key={c} className={styles.item + (over ? ' ' + styles.itemOver : '')} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
               <div className={styles.itemTop}>
                 <span>{c}</span>
-                <span>{fmt(s)} / {fmt(l)}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span>{fmt(s)} / {fmt(l)}</span>
+                  <DeleteButton title="הסר תקציב" onClick={() => removeBudget(c)} />
+                </div>
               </div>
               <div className={styles.bar}>
                 <div className={styles.fill} style={{ width: pct + '%', background: color }} />

@@ -184,3 +184,52 @@
 .reportButton:active {
   transform: scale(0.96);
 }
+
+@media (max-width: 860px) {
+  .shellSidebar {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    border-inline-start: none;
+    border-bottom: 1px solid var(--border);
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 4px;
+    padding-bottom: 4px;
+  }
+
+  .navItem {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .backButton {
+    align-self: flex-start;
+  }
+
+  .contentSidebar {
+    padding: 28px 20px 48px;
+  }
+
+  .contentSidebar h1 {
+    font-size: var(--text-xl);
+    margin-bottom: 20px;
+  }
+
+  .topbar {
+    padding: 16px 20px;
+  }
+
+  .content {
+    padding: 28px 20px 48px;
+  }
+}

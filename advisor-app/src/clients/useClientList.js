@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { monthSummary } from '../budget/budgetMath.js';
+import { computeHealthScore } from '../budget/insights.js';
 
 export function useClientList(advisorId) {
   const [clients, setClients] = useState([]);
@@ -45,7 +46,8 @@ export function useClientList(advisorId) {
         ...c,
         remaining: summary ? summary.remaining : null,
         hasOverage: summary ? summary.overCats.length > 0 : false,
-        openTasks: openTaskCounts[c.client_id] || 0
+        openTasks: openTaskCounts[c.client_id] || 0,
+        healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null
       };
     });
 

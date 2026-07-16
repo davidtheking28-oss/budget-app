@@ -94,6 +94,29 @@
   flex: 1;
 }
 
+.icsButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 6px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.15s var(--ease-out-expo);
+}
+
+.icsButton:hover {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+.icsButton:active {
+  transform: scale(0.9);
+}
+
 .empty {
   color: var(--text3);
   font-size: var(--text-base);

@@ -96,4 +96,15 @@
   text-align: center;
   padding: 100px 0;
   font-size: var(--text-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.emptyMark {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px dashed var(--border-strong);
 }
