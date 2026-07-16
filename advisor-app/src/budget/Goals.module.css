@@ -38,11 +38,11 @@
 .name {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: var(--text-lg);
 }
 
 .amounts {
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   color: var(--text2);
   direction: ltr;
 }
@@ -87,7 +87,7 @@
 
 .meta {
   margin-top: 8px;
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   color: var(--text3);
 }
 
@@ -95,5 +95,5 @@
   color: var(--text3);
   text-align: center;
   padding: 100px 0;
-  font-size: 0.92rem;
+  font-size: var(--text-md);
 }

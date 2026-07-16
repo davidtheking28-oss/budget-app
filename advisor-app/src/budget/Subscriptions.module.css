@@ -27,10 +27,41 @@
   margin-bottom: 12px;
 }
 
+.miniBar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  gap: 2px;
+  animation: riseIn 0.4s var(--ease-out-expo) both;
+}
+
+.miniBarSeg {
+  transition: opacity 0.2s ease;
+}
+
+.miniBarSeg:hover {
+  opacity: 0.8;
+}
+
 .list {
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--border);
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .row {

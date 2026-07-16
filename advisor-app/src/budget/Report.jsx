@@ -1,6 +1,7 @@
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
 import { computeInsights } from './insights.js';
+import Logo from '../components/Logo.jsx';
 import styles from './Report.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
@@ -21,9 +22,12 @@ export default function Report({ clientUserId, year, month, email, onClose }) {
         <button className={styles.closeButton} onClick={onClose}>סגור</button>
       </div>
       <div className={styles.header}>
-        <div>
-          <div className={styles.title}>דוח חודשי</div>
-          <div className={styles.sub}>{email}</div>
+        <div className={styles.titleRow}>
+          <Logo size="sm" />
+          <div>
+            <div className={styles.title}>דוח חודשי</div>
+            <div className={styles.sub}>{email}</div>
+          </div>
         </div>
         <div className={styles.sub}>{MONTH_NAMES[month]} {year}</div>
       </div>

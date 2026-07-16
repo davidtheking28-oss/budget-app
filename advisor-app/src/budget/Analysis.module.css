@@ -87,7 +87,7 @@
   color: var(--text3);
   text-align: center;
   padding: 100px 0;
-  font-size: 0.92rem;
+  font-size: var(--text-md);
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -20,7 +20,7 @@
 .logo {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.3rem;
+  font-size: var(--text-xl);
   letter-spacing: 0.01em;
   color: var(--text);
   display: flex;
@@ -35,7 +35,7 @@
   background: rgba(255, 255, 255, 0.02);
   color: var(--text2);
   font-family: var(--font-body);
-  font-size: 0.84rem;
+  font-size: var(--text-base);
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
@@ -59,7 +59,7 @@
 }
 
 .content h1 {
-  font-size: 2rem;
+  font-size: var(--text-display-md);
   margin-bottom: 4px;
 }
 
@@ -100,7 +100,7 @@
   background: none;
   color: var(--text3);
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: var(--text-base);
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s var(--ease-out-expo);
@@ -155,7 +155,7 @@
 }
 
 .contentSidebar h1 {
-  font-size: 2rem;
+  font-size: var(--text-display-md);
   letter-spacing: -0.01em;
   margin-bottom: 32px;
 }
@@ -170,7 +170,7 @@
   background: rgba(255, 255, 255, 0.02);
   color: var(--text2);
   font-family: var(--font-body);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   cursor: pointer;
   text-align: right;
   transition: border-color 0.2s ease, color 0.2s ease;

@@ -74,6 +74,20 @@
   font-size: var(--text-sm);
 }
 
+.trendBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  direction: ltr;
+}
+
+.trendGood { color: var(--green); background: rgba(var(--green-rgb), 0.12); }
+.trendBad { color: var(--red); background: rgba(var(--red-rgb), 0.12); }
+
 .net { color: var(--text); }
 .income { color: var(--green); }
 .expense { color: var(--red); }

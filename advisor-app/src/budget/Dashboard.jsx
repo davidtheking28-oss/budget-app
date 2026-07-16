@@ -46,12 +46,29 @@ function HealthRing({ score }) {
   );
 }
 
-function SubStat({ label, value, kind }) {
+function TrendBadge({ current, previous, kind }) {
+  if (!previous) return null;
+  const pct = Math.round(((current - previous) / previous) * 100);
+  if (pct === 0) return null;
+  const rising = pct > 0;
+  const good = kind === 'income' ? rising : !rising;
+  return (
+    <span className={styles.trendBadge + ' ' + (good ? styles.trendGood : styles.trendBad)}>
+      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {rising ? <path d="M6 15l6-6 6 6" /> : <path d="M6 9l6 6 6-6" />}
+      </svg>
+      {Math.abs(pct)}%
+    </span>
+  );
+}
+
+function SubStat({ label, value, prevValue, kind }) {
   const display = useCountUp(value);
   return (
     <div className={styles.subStat}>
       <span className={styles.subStatValue + ' ' + styles[kind]}>{fmt(display)}</span>
       <span className={styles.subStatLabel}>{label}</span>
+      <TrendBadge current={value} previous={prevValue} kind={kind} />
     </div>
   );
 }
@@ -95,8 +112,8 @@ export default function Dashboard({ clientUserId, year, month }) {
           <div className={styles.heroLabel}>מאזן החודש</div>
           <NetHero value={summary.net} />
           <div className={styles.subStats}>
-            <SubStat label="הכנסות" value={summary.income} kind="income" />
-            <SubStat label="הוצאות" value={summary.expense} kind="expense" />
+            <SubStat label="הכנסות" value={summary.income} prevValue={trendData[trendData.length - 2]?.income} kind="income" />
+            <SubStat label="הוצאות" value={summary.expense} prevValue={trendData[trendData.length - 2]?.expense} kind="expense" />
           </div>
         </div>
         <HealthRing score={healthScore} />

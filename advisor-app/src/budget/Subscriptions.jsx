@@ -5,6 +5,7 @@ import styles from './Subscriptions.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const CYCLE_LABELS = { monthly: 'חודשי', yearly: 'שנתי' };
+const PALETTE = ['#4f83ff', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
 
 export default function Subscriptions({ clientUserId }) {
   const { data, loading, error, reload } = useClientBudget(clientUserId);
@@ -23,6 +24,9 @@ export default function Subscriptions({ clientUserId }) {
   const loans = data.loans || [];
   const monthlySubsCost = subs.reduce((s, x) => s + (x.cycle === 'yearly' ? (x.amount || 0) / 12 : (x.amount || 0)), 0);
   const loansBalance = loans.reduce((s, l) => s + (l.current ?? l.total ?? 0), 0);
+  const subShares = subs
+    .map(s => ({ name: s.name, monthly: s.cycle === 'yearly' ? (s.amount || 0) / 12 : (s.amount || 0) }))
+    .sort((a, b) => b.monthly - a.monthly);
 
   return (
     <div>
@@ -35,13 +39,28 @@ export default function Subscriptions({ clientUserId }) {
       )}
       <div className={styles.section}>
         <div className={styles.sectionTitle}>מנויים</div>
+        {subShares.length > 1 && (
+          <div className={styles.miniBar}>
+            {subShares.map((s, i) => (
+              <div
+                key={s.name}
+                className={styles.miniBarSeg}
+                style={{ width: (s.monthly / monthlySubsCost * 100) + '%', background: PALETTE[i % PALETTE.length] }}
+                title={s.name}
+              />
+            ))}
+          </div>
+        )}
         {subs.length ? (
           <div className={styles.list}>
             {subs.map((s, i) => (
               <div key={s.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <div>
-                  <div className={styles.name}>{s.name}</div>
-                  <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + s.nextDate : ''}</div>
+                <div className={styles.nameRow}>
+                  {subShares.length > 1 && <span className={styles.dot} style={{ background: PALETTE[subShares.findIndex(x => x.name === s.name) % PALETTE.length] }} />}
+                  <div>
+                    <div className={styles.name}>{s.name}</div>
+                    <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + s.nextDate : ''}</div>
+                  </div>
                 </div>
                 <div className={styles.amount}>{fmt(s.amount || 0)}</div>
               </div>

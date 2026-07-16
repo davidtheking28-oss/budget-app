@@ -17,7 +17,7 @@
   padding: 12px 20px;
   border-radius: 10px;
   font-family: var(--font-body);
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   font-weight: 500;
   box-shadow: var(--shadow-lift);
   border: 1px solid var(--border-strong);
@@ -41,7 +41,7 @@
   color: var(--accent);
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 0.84rem;
+  font-size: var(--text-base);
   cursor: pointer;
   padding: 2px 4px;
   white-space: nowrap;
