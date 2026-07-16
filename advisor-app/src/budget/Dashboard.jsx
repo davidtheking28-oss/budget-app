@@ -137,7 +137,7 @@ export default function Dashboard({ clientUserId, year, month }) {
               },
               plugins: {
                 legend: { labels: { color: '#9a9d9f', font: { family: 'Heebo' } } },
-                tooltip: { backgroundColor: '#17130f', borderColor: 'rgba(255,122,61,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
+                tooltip: { backgroundColor: '#17130f', borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
               }
             }}
           />
