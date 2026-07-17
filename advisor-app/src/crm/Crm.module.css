@@ -117,6 +117,12 @@
   transform: scale(0.9);
 }
 
+@media (max-width: 860px) {
+  .icsButton {
+    padding: 15px;
+  }
+}
+
 .empty {
   color: var(--text3);
   font-size: var(--text-base);

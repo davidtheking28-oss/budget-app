@@ -43,6 +43,13 @@
   color: var(--accent);
 }
 
+@media (max-width: 860px) {
+  .arrow {
+    width: 44px;
+    height: 44px;
+  }
+}
+
 .label {
   font-family: var(--font-body);
   font-size: var(--text-base);
