@@ -33,13 +33,16 @@
 .list {
   display: flex;
   flex-direction: column;
+  gap: 10px;
   margin-top: 24px;
-  border-top: 1px solid var(--border);
 }
 
 .group {
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: linear-gradient(165deg, var(--surface), var(--bg-2));
   animation: riseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  overflow: hidden;
 }
 
 .groupHeader {
@@ -47,7 +50,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 16px 4px;
+  padding: 16px 18px;
   border: none;
   background: none;
   font-family: var(--font-body);
@@ -59,7 +62,7 @@
 }
 
 .groupHeader:hover {
-  background: var(--bg-2);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .groupLeft {
@@ -86,7 +89,7 @@
 }
 
 .groupBody {
-  padding: 0 4px 4px 20px;
+  padding: 0 18px 4px 32px;
 }
 
 .row {
@@ -104,7 +107,7 @@
 }
 
 .row:hover {
-  background: var(--bg-2);
+  background: rgba(255, 255, 255, 0.03);
   transform: translateX(-6px);
 }
 
