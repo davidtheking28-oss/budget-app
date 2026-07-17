@@ -70,7 +70,7 @@ export default function Subscriptions({ clientUserId }) {
           </div>
         )}
         {subs.length ? (
-          <div className={styles.list}>
+          <div className={styles.grid}>
             {subs.map((s, i) => (
               <div key={s.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                 <div className={styles.nameRow}>
@@ -90,11 +90,11 @@ export default function Subscriptions({ clientUserId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}>הלוואות{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</div>
         {loans.length ? (
-          <div className={styles.list}>
+          <div className={styles.grid}>
             {loans.map((l, i) => {
               const pct = l.original ? Math.min(100, Math.max(0, Math.round(((l.original - (l.remaining || 0)) / l.original) * 100))) : null;
               return (
-                <div key={l.id} className={pct !== null ? `${styles.row} ${styles.rowStacked}` : styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div key={l.id} className={pct !== null ? `${styles.row} ${styles.rowStacked} ${styles.rowWide}` : styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                   <div className={styles.rowMain}>
                     <div>
                       <div className={styles.name}>{l.name || 'הלוואה'}</div>
@@ -117,7 +117,7 @@ export default function Subscriptions({ clientUserId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}>תשלומים בכרטיס אשראי</div>
         {payments.length ? (
-          <div className={styles.list}>
+          <div className={styles.grid}>
             {payments.map((p, i) => {
               const total = parseFloat(p.total) || 0;
               const cur = parseFloat(p.current) || 0;
@@ -139,7 +139,7 @@ export default function Subscriptions({ clientUserId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}>הוצאות קבועות{fixedMonthly > 0 ? ` · ${fmt(fixedMonthly)} לחודש` : ''}</div>
         {fixedExpenses.length ? (
-          <div className={styles.list}>
+          <div className={styles.grid}>
             {fixedExpenses.map((f, i) => (
               <div key={f.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                 <div className={styles.name}>{f.id}</div>

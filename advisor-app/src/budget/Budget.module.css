@@ -37,20 +37,25 @@
   border-color: rgba(var(--accent-rgb), 0.5);
 }
 
-.list {
-  display: flex;
-  flex-direction: column;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 14px;
   margin-top: 24px;
 }
 
 .item {
+  min-width: 0;
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 18px 20px;
   animation: riseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
+}
+
+.itemOver {
+  grid-column: span 2;
 }
 
 .item:hover { transform: translateY(-2px); border-color: var(--border-strong); }

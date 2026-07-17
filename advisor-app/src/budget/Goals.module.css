@@ -10,14 +10,15 @@
   animation: riseIn 0.35s var(--ease-out-expo) both;
 }
 
-.list {
-  display: flex;
-  flex-direction: column;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 14px;
   margin-top: 8px;
 }
 
 .item {
+  min-width: 0;
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
   border: 1px solid var(--border);
   border-radius: 14px;

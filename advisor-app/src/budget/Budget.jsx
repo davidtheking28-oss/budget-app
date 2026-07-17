@@ -66,7 +66,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
         <Button onClick={setBudget}>שמור תקציב</Button>
       </div>
       {!activeCats.length && <div className={styles.empty}>עדיין לא הוגדרו תקציבי קטגוריה</div>}
-      <div className={styles.list}>
+      <div className={styles.grid}>
         {activeCats.map((c, i) => {
           const s = spentByCat[c] || 0;
           const l = budgets[c];

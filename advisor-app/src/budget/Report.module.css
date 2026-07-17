@@ -1,6 +1,6 @@
 .page {
-  background: #fff;
-  color: #14181c;
+  background: var(--bg);
+  color: var(--text);
   padding: 48px;
   max-width: 720px;
   margin: 0 auto;
@@ -11,7 +11,7 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  border-bottom: 2px solid #14181c;
+  border-bottom: 2px solid var(--border-strong);
   padding-bottom: 16px;
   margin-bottom: 24px;
 }
@@ -29,7 +29,7 @@
 }
 
 .sub {
-  color: #666;
+  color: var(--text3);
   font-size: 0.86rem;
 }
 
@@ -41,14 +41,15 @@
 }
 
 .stat {
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: linear-gradient(165deg, var(--surface), var(--bg-2));
   padding: 14px;
 }
 
 .statLabel {
   font-size: 0.74rem;
-  color: #666;
+  color: var(--text3);
   margin-bottom: 6px;
 }
 
@@ -56,6 +57,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.25rem;
+  color: var(--accent);
   direction: ltr;
   text-align: right;
 }
@@ -64,7 +66,7 @@
   font-weight: 700;
   font-size: 0.92rem;
   margin: 24px 0 10px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border);
   padding-bottom: 6px;
 }
 
@@ -77,20 +79,37 @@ table {
 th, td {
   text-align: right;
   padding: 6px 4px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
 }
 
 .insight {
   font-size: 0.84rem;
   padding: 6px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
 }
 
 .printButton {
   margin-bottom: 20px;
 }
 
+/* Browsers don't print background colors by default, and this report is meant
+   to be printed/exported to send to a client — keep the physical output light
+   and ink-safe regardless of the dark on-screen preview above. */
 @media print {
   .printButton, .closeButton { display: none !important; }
-  .page { padding: 0; max-width: none; }
+  .page {
+    padding: 0;
+    max-width: none;
+    background: #fff !important;
+    color: #14181c !important;
+  }
+  .header { border-bottom-color: #14181c !important; }
+  .sub { color: #666 !important; }
+  .stat {
+    background: none !important;
+    border-color: #ddd !important;
+  }
+  .statLabel { color: #666 !important; }
+  .statValue { color: #14181c !important; }
+  .sectionTitle, th, td, .insight { border-color: #eee !important; }
 }

@@ -11,7 +11,7 @@ export default function Goals({ clientUserId }) {
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return (
-      <div className={styles.list}>
+      <div className={styles.grid}>
         <Skeleton height="90px" radius="14px" />
         <Skeleton height="90px" radius="14px" />
       </div>
@@ -34,7 +34,7 @@ export default function Goals({ clientUserId }) {
   return (
     <div>
       <div className={styles.rollup}>{`${goals.length} יעדים פעילים · נחסכו ${fmt(totalSaved)} מתוך ${fmt(totalTarget)}`}</div>
-      <div className={styles.list}>
+      <div className={styles.grid}>
       {goals.map((g, i) => {
         const pct = g.target ? Math.min(Math.round((g.saved / g.target) * 100), 100) : 0;
         return (
