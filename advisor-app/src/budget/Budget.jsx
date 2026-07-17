@@ -7,6 +7,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
+import { getCategoryIcon } from '../categoryIcons.jsx';
 import styles from './Budget.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
@@ -76,7 +77,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
           return (
             <div key={c} className={styles.item + (over ? ' ' + styles.itemOver : '')} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
               <div className={styles.itemTop}>
-                <span>{c}</span>
+                <span className={styles.catLabel}>{getCategoryIcon(c)}{c}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span>{fmt(s)} / {fmt(l)}</span>
                   <DeleteButton title="הסר תקציב" onClick={() => removeBudget(c)} />

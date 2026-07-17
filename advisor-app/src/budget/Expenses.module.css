@@ -88,6 +88,12 @@
   transform: rotate(90deg);
 }
 
+.catIcon {
+  display: flex;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
 .groupBody {
   padding: 0 18px 4px 32px;
 }

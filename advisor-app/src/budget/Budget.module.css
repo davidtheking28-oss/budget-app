@@ -86,6 +86,17 @@
   font-size: var(--text-md);
 }
 
+.catLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.catLabel svg {
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
 .itemTop span:last-child {
   font-family: var(--font-display);
   font-weight: 700;

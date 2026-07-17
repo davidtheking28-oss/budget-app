@@ -1,18 +1,20 @@
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Bar, Pie } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
 import { computeInsights, computeHealthScore } from './insights.js';
-import { addMonths } from './monthUtils.js';
+import { addMonths, getMonthTx } from './monthUtils.js';
 import { useCountUp } from '../useCountUp.js';
+import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import styles from './Dashboard.module.css';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
+const CAT_PALETTE = ['#4f83ff', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
 
 function NetHero({ value }) {
   const display = useCountUp(value);
@@ -94,6 +96,14 @@ export default function Dashboard({ clientUserId, year, month }) {
 
   const topInsight = ['danger', 'warn', 'tip', 'good'].map(k => insights.find(ins => ins.kind === k)).find(Boolean);
 
+  const byCat = {};
+  getMonthTx(data.transactions, year, month).filter(t => t.type === 'expense').forEach(t => {
+    byCat[t.cat] = (byCat[t.cat] || 0) + t.amount;
+  });
+  const catLabels = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
+  const catTotal = catLabels.reduce((s, l) => s + byCat[l], 0);
+  const catColors = catLabels.map((_, i) => CAT_PALETTE[i % CAT_PALETTE.length]);
+
   const trendMonths = [];
   for (let i = 5; i >= 0; i--) {
     trendMonths.push(addMonths(year, month, -i));
@@ -127,6 +137,36 @@ export default function Dashboard({ clientUserId, year, month }) {
       <div className={styles.tileHighlight + ' ' + styles[topInsight ? topInsight.kind : 'good']}>
         <div className={styles.tileLabel}>{topInsight ? 'לתשומת לבך' : 'מצב כללי'}</div>
         <div className={styles.tileHighlightText}>{topInsight ? topInsight.text : 'אין התראות מיוחדות החודש'}</div>
+      </div>
+
+      <div className={styles.tileCategories}>
+        <div className={styles.colTitle}>קטגוריות הוצאה</div>
+        {catLabels.length ? (
+          <div className={styles.catBox}>
+            <div className={styles.catDonut}>
+              <Pie
+                data={{ labels: catLabels, datasets: [{ data: catLabels.map(l => byCat[l]), backgroundColor: catColors, borderColor: '#17130f', borderWidth: 2 }] }}
+                options={{
+                  maintainAspectRatio: false,
+                  cutout: '70%',
+                  plugins: { legend: { display: false }, tooltip: { backgroundColor: '#17130f', borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } } }
+                }}
+              />
+            </div>
+            <div className={styles.catList}>
+              {catLabels.slice(0, 4).map((l, i) => (
+                <div key={l} className={styles.catRow}>
+                  <span className={styles.catDot} style={{ background: catColors[i] }} />
+                  <span className={styles.catIconWrap}>{getCategoryIcon(l)}</span>
+                  <span className={styles.catName}>{l}</span>
+                  <span className={styles.catPct}>{Math.round((byCat[l] / catTotal) * 100)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className={styles.trendEmpty}>אין עדיין הוצאות החודש</div>
+        )}
       </div>
 
       <div className={styles.tileTrend}>

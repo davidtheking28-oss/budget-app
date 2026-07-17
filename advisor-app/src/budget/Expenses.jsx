@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import { EXPENSE_CATS, INCOME_CATS } from '../categories.js';
+import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -131,6 +132,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
               >
                 <div className={styles.groupLeft}>
                   <svg className={styles.chevron + (open ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                  <span className={styles.catIcon}>{getCategoryIcon(g.cat)}</span>
                   <span>{g.cat}</span>
                   <span className={styles.groupCount}>{g.items.length}</span>
                 </div>
