@@ -99,6 +99,7 @@ export default function Dashboard({ clientUserId, year, month }) {
     trendMonths.push(addMonths(year, month, -i));
   }
   const trendData = trendMonths.map(({ year: y, month: m }) => monthSummary(data, y, m));
+  const hasTrendData = trendData.some(s => s.income > 0 || s.expense > 0);
 
   const chartData = {
     labels: trendMonths.map(({ month: m }) => MONTH_SHORT[m]),
@@ -130,23 +131,27 @@ export default function Dashboard({ clientUserId, year, month }) {
 
       <div className={styles.tileTrend}>
         <div className={styles.colTitle}>מגמת 6 חודשים</div>
-        <div className={styles.trendChart}>
-          <Bar
-            data={chartData}
-            options={{
-              maintainAspectRatio: false,
-              animation: { duration: 700, easing: 'easeOutQuart' },
-              scales: {
-                x: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { display: false } },
-                y: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { color: 'rgba(242,240,234,0.06)' } }
-              },
-              plugins: {
-                legend: { labels: { color: '#9a9d9f', font: { family: 'Heebo' } } },
-                tooltip: { backgroundColor: '#17130f', borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
-              }
-            }}
-          />
-        </div>
+        {hasTrendData ? (
+          <div className={styles.trendChart}>
+            <Bar
+              data={chartData}
+              options={{
+                maintainAspectRatio: false,
+                animation: { duration: 700, easing: 'easeOutQuart' },
+                scales: {
+                  x: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { display: false } },
+                  y: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { color: 'rgba(242,240,234,0.06)' } }
+                },
+                plugins: {
+                  legend: { labels: { color: '#9a9d9f', font: { family: 'Heebo' } } },
+                  tooltip: { backgroundColor: '#17130f', borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <div className={styles.trendEmpty}>אין עדיין נתונים להצגת מגמה</div>
+        )}
       </div>
 
       {insightGroups.map(group => (

@@ -221,3 +221,13 @@
   min-width: 0;
   position: relative;
 }
+
+.trendEmpty {
+  height: 100%;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
+  font-size: var(--text-base);
+}
