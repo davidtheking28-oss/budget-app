@@ -4,3 +4,6 @@ Thumbs.db
 *.log
 node_modules/
 advisor/
+.agents/
+skills-lock.json
+.claude/skills/web-design-guidelines/

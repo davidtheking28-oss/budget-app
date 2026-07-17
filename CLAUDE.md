@@ -9,6 +9,11 @@ Personal budget & investment tracking app — single HTML file on GitHub Pages, 
 - Hosting: GitHub Pages → `https://davidtheking28-oss.github.io/budget-app/`
 - Supabase project ref: `fnklrqxwyeibfptaxewf`
 
+**Advisor platform (`advisor-app/`) is a separate React/Vite app**, branded
+"Budget Advisor" — lets an advisor manage multiple clients' budgets. Built by
+CI and deployed alongside the main app to `/advisor/` (see below). Local dev:
+`cd advisor-app && npm run dev`; tests: `npm run test`.
+
 **The Supabase project is shared with the trading-journal app.** Budget owns
 `budget_data`, `households`, `push_subscriptions`, `push_log`, and the
 `parse-receipt` / `parse-expense` / `push-daily` edge functions. Everything else
@@ -20,8 +25,11 @@ vision via the OpenAI-compatible `/openai/v1/chat/completions` endpoint). The
 quota on every model. The separate `inrmnhjxrwlrttbfhbly` project is named
 "ai budget" but is unused — secrets added there do nothing.
 
-**Edge functions are not deployed by CI.** `.github/workflows/deploy.yml` only
-publishes `index.html` to Pages. Functions ship via the Supabase MCP.
+**Edge functions are not deployed by CI.** Functions ship via the Supabase MCP.
+`.github/workflows/deploy.yml` publishes `index.html` (with the Supabase anon
+key injected from the `SUPABASE_ANON` secret) *and* builds `advisor-app`
+(`npm ci && npm run build`, using the `VITE_SUPABASE_ANON` secret) to `/advisor/`,
+then deploys both to Pages together.
 
 **Verify a deploy before claiming it works** — Pages has failed transiently:
 `curl -s https://davidtheking28-oss.github.io/budget-app/index.html | grep -c '>v2.8<'`
