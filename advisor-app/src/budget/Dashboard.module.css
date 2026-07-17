@@ -1,17 +1,93 @@
-.hero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding-bottom: 24px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-  animation: riseIn 0.5s var(--ease-out-expo) both;
+.bentoGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: dense;
+  grid-auto-rows: minmax(90px, auto);
+  gap: 20px;
 }
 
-.heroMain {
-  flex: 1;
+@media (max-width: 860px) {
+  .bentoGrid { grid-template-columns: 1fr; }
+  .tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileGroupWide {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+  }
+}
+
+.tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup {
   min-width: 0;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: linear-gradient(165deg, var(--surface), var(--bg-2));
+  padding: 24px;
+  animation: riseIn 0.5s var(--ease-out-expo) both;
+  transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
+}
+
+.tileBalance:hover, .tileHealth:hover, .tileHighlight:hover, .tileTrend:hover, .tileGroup:hover {
+  border-color: var(--border-strong);
+}
+
+.tileBalance {
+  grid-column: span 2;
+  grid-row: span 2;
+  background: linear-gradient(165deg, rgba(var(--accent-rgb), 0.1), var(--bg-2));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tileHealth {
+  grid-column: span 1;
+  grid-row: span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tileHighlight {
+  grid-column: span 1;
+  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tileHighlight.danger { border-color: rgba(var(--red-rgb), 0.3); }
+.tileHighlight.warn { border-color: rgba(217, 178, 92, 0.3); }
+.tileHighlight.tip { border-color: rgba(var(--accent-rgb), 0.3); }
+.tileHighlight.good { border-color: rgba(var(--green-rgb), 0.3); }
+
+.tileLabel {
+  color: var(--text3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.tileHighlightText {
+  font-size: var(--text-lg);
+  line-height: 1.4;
+}
+
+.tileHighlight.danger .tileHighlightText { color: var(--red); }
+.tileHighlight.warn .tileHighlightText { color: var(--yellow); }
+.tileHighlight.tip .tileHighlightText { color: var(--text); }
+.tileHighlight.good .tileHighlightText { color: var(--green); }
+
+.tileTrend {
+  grid-column: span 4;
+  grid-row: span 2;
+}
+
+.tileGroup {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+.tileGroupWide {
+  grid-column: span 2;
 }
 
 .healthRing {
@@ -42,7 +118,7 @@
 
 .netValue {
   font-family: var(--font-display);
-  font-size: 3.8rem;
+  font-size: 4.4rem;
   font-weight: 700;
   letter-spacing: -0.015em;
   direction: ltr;
@@ -93,38 +169,12 @@
 .income { color: var(--green); }
 .expense { color: var(--red); }
 
-.grid {
-  display: grid;
-  grid-template-columns: 0.85fr 1.15fr;
-  gap: 40px 56px;
-  align-items: start;
-}
-
-@media (max-width: 860px) {
-  .grid { grid-template-columns: 1fr; }
-}
-
 .colTitle {
   color: var(--text3);
   font-size: var(--text-sm);
   font-weight: 600;
   letter-spacing: 0.05em;
   margin-bottom: 14px;
-}
-
-.noInsights {
-  color: var(--text3);
-  font-size: var(--text-base);
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.015);
-}
-
-.insightGroups {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
 }
 
 .groupTitle {
@@ -166,14 +216,8 @@
 .insight.good { border-color: rgba(var(--green-rgb), 0.35); color: var(--green); }
 
 .trendChart {
-  height: 280px;
-  background: linear-gradient(165deg, var(--surface), var(--bg-2));
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-  transition: border-color 0.3s ease;
-}
-
-.trendChart:hover {
-  border-color: rgba(var(--accent-rgb), 0.25);
+  height: 100%;
+  min-height: 240px;
+  min-width: 0;
+  position: relative;
 }

@@ -1,33 +1,44 @@
-.list {
-  display: flex;
-  flex-direction: column;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: dense;
+  gap: 16px;
   margin-top: 28px;
-  border-top: 1px solid var(--border);
 }
 
-.row {
+@media (max-width: 860px) {
+  .grid { grid-template-columns: 1fr; }
+  .cardWide { grid-column: span 1; }
+}
+
+.card {
   display: flex;
   align-items: center;
   gap: 16px;
   width: 100%;
-  padding: 20px 4px;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  background: none;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(165deg, var(--surface), var(--bg-2));
   font-family: var(--font-body);
   text-align: right;
   cursor: pointer;
-  transition: transform 0.2s var(--ease-out-expo), background 0.2s ease;
+  transition: transform 0.2s var(--ease-out-expo), border-color 0.2s ease;
   animation: riseIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.row:hover {
-  transform: translateX(-6px);
-  background: rgba(var(--accent-rgb), 0.03);
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-strong);
 }
 
-.row:active {
-  background: rgba(var(--accent-rgb), 0.06);
+.card:active {
+  transform: translateY(-1px);
+}
+
+.cardWide {
+  grid-column: span 2;
 }
 
 .initial {
@@ -42,7 +53,7 @@
   transition: color 0.2s ease;
 }
 
-.row:hover .initial {
+.card:hover .initial {
   color: var(--accent);
 }
 

@@ -66,9 +66,9 @@ export default function ClientList({ advisorId, onSelect }) {
     return (
       <div>
         <Skeleton height="64px" radius="14px" style={{ marginBottom: 36 }} />
-        <div className={styles.list}>
+        <div className={styles.grid}>
           {[0, 1, 2].map(i => (
-            <div key={i} className={styles.row}>
+            <div key={i} className={styles.card}>
               <Skeleton width="42px" height="42px" radius="50%" />
               <Skeleton width="160px" />
             </div>
@@ -142,26 +142,29 @@ export default function ClientList({ advisorId, onSelect }) {
           <Button className={styles.emptyCta} onClick={() => codeInputRef.current?.focus()}>+ חבר לקוח ראשון</Button>
         </div>
       ) : (
-        <div className={styles.list}>
-          {clients.map((c, i) => (
-            <button
-              type="button"
-              key={c.id}
-              className={styles.row}
-              style={{ animationDelay: (i * 0.04) + 's' }}
-              onClick={() => onSelect(c.client_id, c.client_email)}
-            >
-              <div className={styles.initial} aria-hidden="true">{initials(c.client_email)}</div>
-              <div className={styles.info}>
-                <div className={styles.email}><HealthDot score={c.healthScore} />{c.client_email}</div>
-                <div className={styles.chips}>
-                  <RemainingChip value={c.remaining} />
-                  {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}
-                  {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
+        <div className={styles.grid}>
+          {clients.map((c, i) => {
+            const urgent = c.hasOverage || c.openTasks > 0;
+            return (
+              <button
+                type="button"
+                key={c.id}
+                className={styles.card + (urgent ? ' ' + styles.cardWide : '')}
+                style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}
+                onClick={() => onSelect(c.client_id, c.client_email)}
+              >
+                <div className={styles.initial} aria-hidden="true">{initials(c.client_email)}</div>
+                <div className={styles.info}>
+                  <div className={styles.email}><HealthDot score={c.healthScore} />{c.client_email}</div>
+                  <div className={styles.chips}>
+                    <RemainingChip value={c.remaining} />
+                    {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}
+                    {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

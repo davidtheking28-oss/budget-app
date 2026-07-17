@@ -92,6 +92,8 @@ export default function Dashboard({ clientUserId, year, month }) {
     { key: 'good', title: 'מגמות חיוביות' }
   ].map(g => ({ ...g, items: insights.filter(ins => ins.kind === g.key) })).filter(g => g.items.length > 0);
 
+  const topInsight = ['danger', 'warn', 'tip', 'good'].map(k => insights.find(ins => ins.kind === k)).find(Boolean);
+
   const trendMonths = [];
   for (let i = 5; i >= 0; i--) {
     trendMonths.push(addMonths(year, month, -i));
@@ -107,43 +109,28 @@ export default function Dashboard({ clientUserId, year, month }) {
   };
 
   return (
-    <div>
-      <div className={styles.hero}>
-        <div className={styles.heroMain}>
-          <div className={styles.heroLabel}>מאזן החודש</div>
-          <NetHero value={summary.net} />
-          <div className={styles.subStats}>
-            <SubStat label="הכנסות" value={summary.income} prevValue={trendData[trendData.length - 2]?.income} kind="income" />
-            <SubStat label="הוצאות" value={summary.expense} prevValue={trendData[trendData.length - 2]?.expense} kind="expense" />
-          </div>
+    <div className={styles.bentoGrid}>
+      <div className={styles.tileBalance}>
+        <div className={styles.heroLabel}>מאזן החודש</div>
+        <NetHero value={summary.net} />
+        <div className={styles.subStats}>
+          <SubStat label="הכנסות" value={summary.income} prevValue={trendData[trendData.length - 2]?.income} kind="income" />
+          <SubStat label="הוצאות" value={summary.expense} prevValue={trendData[trendData.length - 2]?.expense} kind="expense" />
         </div>
+      </div>
+
+      <div className={styles.tileHealth}>
         <HealthRing score={healthScore} />
       </div>
 
-      <div className={styles.grid}>
-        <div className={styles.insightsCol}>
-          <div className={styles.colTitle}>תובנות</div>
-          {insightGroups.length > 0 ? (
-            <div className={styles.insightGroups}>
-              {insightGroups.map(group => (
-                <div key={group.key} className={styles.insightGroup}>
-                  <div className={styles.groupTitle + ' ' + styles[group.key]}>{group.title}</div>
-                  <div className={styles.insights}>
-                    {group.items.map((ins, i) => (
-                      <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>{ins.text}</div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className={styles.noInsights}>אין התראות מיוחדות החודש</div>
-          )}
-        </div>
+      <div className={styles.tileHighlight + ' ' + styles[topInsight ? topInsight.kind : 'good']}>
+        <div className={styles.tileLabel}>{topInsight ? 'לתשומת לבך' : 'מצב כללי'}</div>
+        <div className={styles.tileHighlightText}>{topInsight ? topInsight.text : 'אין התראות מיוחדות החודש'}</div>
+      </div>
 
-        <div className={styles.trendWrap}>
-          <div className={styles.colTitle}>מגמת 6 חודשים</div>
-          <div className={styles.trendChart}>
+      <div className={styles.tileTrend}>
+        <div className={styles.colTitle}>מגמת 6 חודשים</div>
+        <div className={styles.trendChart}>
           <Bar
             data={chartData}
             options={{
@@ -159,9 +146,19 @@ export default function Dashboard({ clientUserId, year, month }) {
               }
             }}
           />
-          </div>
         </div>
       </div>
+
+      {insightGroups.map(group => (
+        <div key={group.key} className={styles.tileGroup + (group.items.length > 1 ? ' ' + styles.tileGroupWide : '')}>
+          <div className={styles.groupTitle + ' ' + styles[group.key]}>{group.title}</div>
+          <div className={styles.insights}>
+            {group.items.map((ins, i) => (
+              <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>{ins.text}</div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
