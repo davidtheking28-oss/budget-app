@@ -44,6 +44,7 @@ export default function Login() {
           type="email"
           name="email"
           autoComplete="email"
+          spellCheck={false}
           aria-label="כתובת אימייל"
           placeholder="email@example.com"
           value={email}
