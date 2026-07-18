@@ -1,11 +1,11 @@
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
+import { CHART_PALETTE } from '../categories.js';
 import styles from './Subscriptions.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const CYCLE_LABELS = { monthly: 'חודשי', yearly: 'שנתי' };
-const PALETTE = ['#4f83ff', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
 
 export default function Subscriptions({ clientUserId }) {
   const { data, loading, error, reload } = useClientBudget(clientUserId);
@@ -63,7 +63,7 @@ export default function Subscriptions({ clientUserId }) {
               <div
                 key={s.name}
                 className={styles.miniBarSeg}
-                style={{ width: (s.monthly / monthlySubsCost * 100) + '%', background: PALETTE[i % PALETTE.length] }}
+                style={{ width: (s.monthly / monthlySubsCost * 100) + '%', background: CHART_PALETTE[i % CHART_PALETTE.length] }}
                 title={s.name}
               />
             ))}
@@ -74,7 +74,7 @@ export default function Subscriptions({ clientUserId }) {
             {subs.map((s, i) => (
               <div key={s.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                 <div className={styles.nameRow}>
-                  {subShares.length > 1 && <span className={styles.dot} style={{ background: PALETTE[subShares.findIndex(x => x.name === s.name) % PALETTE.length] }} />}
+                  {subShares.length > 1 && <span className={styles.dot} style={{ background: CHART_PALETTE[subShares.findIndex(x => x.name === s.name) % CHART_PALETTE.length] }} />}
                   <div>
                     <div className={styles.name}>{s.name}</div>
                     <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + s.nextDate : ''}</div>

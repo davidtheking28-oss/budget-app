@@ -1,30 +1,30 @@
 .renewalBanner {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--gold);
-  padding: 10px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid rgba(var(--gold-rgb), 0.3);
   background: rgba(var(--gold-rgb), 0.06);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   animation: riseIn 0.35s var(--ease-out-expo) both;
 }
 
 .rollup {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 28px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
 }
 
 .rollupChip {
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text2);
-  padding: 10px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.02);
@@ -37,7 +37,7 @@
 }
 
 .section {
-  margin-bottom: 32px;
+  margin-bottom: var(--space-6);
 }
 
 .sectionTitle {
@@ -45,15 +45,15 @@
   font-size: var(--text-sm);
   font-weight: 600;
   letter-spacing: 0.05em;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .miniBar {
   display: flex;
-  height: 8px;
+  height: var(--space-2);
   border-radius: var(--radius-xs);
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   gap: 2px;
   animation: riseIn 0.4s var(--ease-out-expo) both;
 }
@@ -69,18 +69,18 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .nameRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
+  width: var(--space-2);
+  height: var(--space-2);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -90,7 +90,7 @@
   align-items: center;
   justify-content: space-between;
   min-width: 0;
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
@@ -101,7 +101,7 @@
 .rowStacked {
   flex-direction: column;
   align-items: stretch;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .rowWide {
@@ -156,5 +156,5 @@
 .empty {
   color: var(--text3);
   font-size: var(--text-base);
-  padding: 16px 4px;
+  padding: var(--space-4) var(--space-1);
 }

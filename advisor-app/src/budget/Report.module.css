@@ -1,7 +1,7 @@
 .page {
   background: var(--bg);
   color: var(--text);
-  padding: 48px;
+  padding: var(--space-7);
   max-width: 720px;
   margin: 0 auto;
   font-family: var(--font-body);
@@ -12,14 +12,14 @@
   justify-content: space-between;
   align-items: baseline;
   border-bottom: 2px solid var(--border-strong);
-  padding-bottom: 16px;
-  margin-bottom: 24px;
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .titleRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .title {
@@ -36,21 +36,21 @@
 .statsRow {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .stat {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
-  padding: 14px;
+  padding: var(--space-3);
 }
 
 .statLabel {
   font-size: 0.74rem;
   color: var(--text3);
-  margin-bottom: 6px;
+  margin-bottom: var(--space-1);
 }
 
 .statValue {
@@ -66,9 +66,9 @@
 .sectionTitle {
   font-weight: 700;
   font-size: 0.92rem;
-  margin: 24px 0 10px;
+  margin: var(--space-5) 0 var(--space-2);
   border-bottom: 1px solid var(--border);
-  padding-bottom: 6px;
+  padding-bottom: var(--space-1);
 }
 
 table {
@@ -79,18 +79,18 @@ table {
 
 th, td {
   text-align: right;
-  padding: 6px 4px;
+  padding: var(--space-1) var(--space-1);
   border-bottom: 1px solid var(--border);
 }
 
 .insight {
   font-size: 0.84rem;
-  padding: 6px 0;
+  padding: var(--space-1) 0;
   border-bottom: 1px solid var(--border);
 }
 
 .printButton {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 }
 
 /* Browsers don't print background colors by default, and this report is meant

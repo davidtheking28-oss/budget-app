@@ -4,11 +4,11 @@ import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
+import { CHART_PALETTE } from '../categories.js';
 import styles from './Analysis.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const PALETTE = ['#4f83ff', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 export default function Analysis({ clientUserId, year, month }) {
@@ -35,14 +35,14 @@ export default function Analysis({ clientUserId, year, month }) {
   const labels = Object.keys(byCat);
   const values = labels.map(l => byCat[l]);
   const total = values.reduce((s, v) => s + v, 0);
-  const colors = labels.map((_, i) => PALETTE[i % PALETTE.length]);
+  const colors = labels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
 
   const chartData = {
     labels,
     datasets: [{
       data: values,
       backgroundColor: colors,
-      borderColor: '#0b0d10',
+      borderColor: '#0a0908',
       borderWidth: 2
     }]
   };
@@ -58,7 +58,7 @@ export default function Analysis({ clientUserId, year, month }) {
             plugins: {
               legend: { display: false },
               tooltip: {
-                backgroundColor: '#14181c',
+                backgroundColor: '#17130f',
                 titleColor: '#f2f0ea',
                 bodyColor: '#9a9d9f',
                 borderColor: 'rgba(242,240,234,0.1)',
