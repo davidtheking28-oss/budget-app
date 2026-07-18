@@ -48,7 +48,7 @@ function readUrlState() {
 }
 
 export default function App() {
-  const { session, loading } = useSession();
+  const { session, loading, isRecovery, clearRecovery } = useSession();
   const initial = readUrlState();
   const [selectedClient, setSelectedClient] = useState(initial.selectedClient);
   const [nav, setNav] = useState(initial.nav);
@@ -71,6 +71,7 @@ export default function App() {
   }, [selectedClient, nav, ym]);
 
   if (loading) return null;
+  if (isRecovery) return (<><Login recovery onRecoveryDone={clearRecovery} /><Toaster /></>);
   if (!session) return (<><Login /><Toaster /></>);
 
   const switchClient = (clientId, clientEmail) => {

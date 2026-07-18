@@ -119,3 +119,19 @@
   margin-top: 12px;
   font-size: var(--text-sm);
 }
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  margin-top: 16px;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.linkBtn:hover {
+  color: var(--accent);
+}
