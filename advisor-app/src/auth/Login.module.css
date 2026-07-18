@@ -37,7 +37,7 @@
   position: relative;
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 52px 44px 44px;
   width: 380px;
   text-align: center;
@@ -64,7 +64,7 @@
 .input {
   width: 100%;
   padding: 14px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.25);
   color: var(--text);

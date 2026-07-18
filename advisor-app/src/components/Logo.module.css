@@ -13,14 +13,14 @@
 .sm {
   width: 26px;
   height: 26px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
 }
 
 .lg {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   font-size: 1.6rem;
   margin: 0 auto 20px;
   box-shadow: 0 8px 24px -6px rgba(var(--accent-rgb), 0.7);

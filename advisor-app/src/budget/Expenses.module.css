@@ -11,12 +11,12 @@
   padding: 18px;
   background: var(--bg-2);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
 }
 
 .input, .select {
   padding: 11px 14px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
@@ -39,7 +39,7 @@
 
 .group {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
   animation: riseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   overflow: hidden;

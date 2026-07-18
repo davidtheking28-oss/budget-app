@@ -2,7 +2,7 @@
   font-size: var(--text-sm);
   font-weight: 600;
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   display: inline-block;
   animation: riseIn 0.35s var(--ease-out-expo) both;
@@ -18,12 +18,12 @@
   padding: 18px;
   background: rgba(255, 255, 255, 0.015);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
 }
 
 .select, .input {
   padding: 11px 14px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.2);
   color: var(--text);
@@ -48,7 +48,7 @@
   min-width: 0;
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 18px 20px;
   animation: riseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
@@ -105,7 +105,7 @@
 
 .bar {
   height: 5px;
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
   background: rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }

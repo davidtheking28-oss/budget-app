@@ -42,7 +42,7 @@
 
 .stat {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
   padding: 14px;
 }

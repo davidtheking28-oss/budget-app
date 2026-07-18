@@ -3,7 +3,7 @@
   font-weight: 600;
   color: var(--text2);
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   display: inline-block;
   margin-bottom: 20px;
@@ -21,7 +21,7 @@
   min-width: 0;
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 20px 22px;
   animation: riseIn 0.4s var(--ease-out-expo) both;
   transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
@@ -51,7 +51,7 @@
 .bar {
   position: relative;
   height: 18px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
@@ -59,7 +59,7 @@
 .fill {
   height: 100%;
   min-width: 18px;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--accent);
   transition: width 0.4s var(--ease-out-expo);
   display: flex;

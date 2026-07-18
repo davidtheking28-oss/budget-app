@@ -16,7 +16,7 @@
 
 .tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileCategories {
   min-width: 0;
-  border-radius: 22px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
   padding: 24px;
@@ -224,7 +224,7 @@
   font-size: var(--text-xs);
   font-weight: 700;
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   direction: ltr;
 }
 
@@ -263,7 +263,7 @@
 
 .insight {
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: var(--text-base);
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.015);

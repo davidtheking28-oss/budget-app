@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --bg: #0a0908;
   --bg-2: #100d0b;
   --surface: #17130f;
@@ -45,6 +46,13 @@
   --space-6: 32px;
   --space-7: 48px;
   --space-8: 64px;
+
+  /* radius scale: use for any new or touched radius decision */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
 }
 
 * { box-sizing: border-box; }
