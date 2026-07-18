@@ -29,14 +29,13 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Build advisor app
         working-directory: advisor-app
         env:
           VITE_SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
         run: |
-          npm install -g npm@latest
           npm ci
           npm run build
 
