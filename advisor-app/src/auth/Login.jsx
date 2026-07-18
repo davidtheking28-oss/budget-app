@@ -70,6 +70,7 @@ export default function Login({ recovery, onRecoveryDone }) {
               </svg>
             </div>
             אם קיים חשבון עם המייל הזה, נשלח אליו קישור לאיפוס סיסמה
+            <button type="button" className={styles.linkBtn} onClick={() => setMode('login')}>חזרה להתחברות</button>
           </div>
         ) : mode === 'newPassword' ? (
           <>
@@ -78,6 +79,7 @@ export default function Login({ recovery, onRecoveryDone }) {
               type="password"
               name="new-password"
               autoComplete="new-password"
+              spellCheck={false}
               aria-label="סיסמה חדשה"
               placeholder="סיסמה חדשה"
               value={password}
@@ -107,6 +109,7 @@ export default function Login({ recovery, onRecoveryDone }) {
                 type="password"
                 name="password"
                 autoComplete="current-password"
+                spellCheck={false}
                 aria-label="סיסמה"
                 placeholder="סיסמה"
                 value={password}
