@@ -155,7 +155,7 @@ export default function ClientList({ advisorId, onSelect }) {
               >
                 <div className={styles.initial} aria-hidden="true">{initials(c.client_email)}</div>
                 <div className={styles.info}>
-                  <div className={styles.email}><HealthDot score={c.healthScore} />{c.client_email}</div>
+                  <div className={styles.email}><HealthDot score={c.healthScore} /><span className={styles.emailText}>{c.client_email}</span></div>
                   <div className={styles.chips}>
                     <RemainingChip value={c.remaining} />
                     {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}

@@ -43,6 +43,7 @@
 }
 
 .amounts {
+  font-variant-numeric: tabular-nums;
   font-size: var(--text-sm);
   color: var(--text2);
   direction: ltr;

@@ -56,16 +56,10 @@
 
 .itemOver {
   grid-column: span 2;
+  border-color: rgba(var(--red-rgb), 0.4);
 }
 
 .item:hover { transform: translateY(-2px); border-color: var(--border-strong); }
-
-.itemOver { animation: riseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both, overPulse 2.2s ease-in-out 0.6s infinite; }
-
-@keyframes overPulse {
-  0%, 100% { border-color: var(--border); }
-  50% { border-color: rgba(var(--red-rgb), 0.4); }
-}
 
 .empty {
   color: var(--text3);

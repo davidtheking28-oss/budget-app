@@ -68,6 +68,14 @@
   gap: 8px;
   font-weight: 500;
   font-size: var(--text-lg);
+  min-width: 0;
+}
+
+.emailText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .healthDot {
@@ -263,6 +271,10 @@
 .urgentEmail {
   font-weight: 600;
   font-size: var(--text-base);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .urgentReason {

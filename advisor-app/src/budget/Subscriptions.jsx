@@ -14,8 +14,8 @@ export default function Subscriptions({ clientUserId }) {
   if (loading || !data) {
     return (
       <div>
-        <Skeleton height="60px" radius="10px" style={{ marginBottom: 10 }} />
-        <Skeleton height="60px" radius="10px" />
+        <Skeleton height="60px" radius="8px" style={{ marginBottom: 10 }} />
+        <Skeleton height="60px" radius="8px" />
       </div>
     );
   }
@@ -104,7 +104,7 @@ export default function Subscriptions({ clientUserId }) {
                   </div>
                   {pct !== null && (
                     <div className={styles.loanBar}>
-                      <div className={styles.loanBarFill} style={{ width: pct + '%' }} />
+                      <div className={styles.loanBarFill} style={{ transform: `scaleX(${pct / 100})` }} />
                     </div>
                   )}
                 </div>

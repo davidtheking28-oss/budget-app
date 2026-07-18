@@ -15,7 +15,7 @@ export default function Analysis({ clientUserId, year, month }) {
   const { data, loading, error, reload } = useClientBudget(clientUserId);
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
-    return <Skeleton height="400px" radius="16px" style={{ maxWidth: 460, margin: '32px auto 0' }} />;
+    return <Skeleton height="400px" radius="14px" style={{ maxWidth: 460, margin: '32px auto 0' }} />;
   }
 
   const monthTx = getMonthTx(data.transactions, year, month)

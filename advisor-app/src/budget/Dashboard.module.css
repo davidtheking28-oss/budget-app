@@ -183,8 +183,9 @@
 }
 
 .netValue {
+  font-variant-numeric: tabular-nums;
   font-family: var(--font-display);
-  font-size: 4.4rem;
+  font-size: var(--text-display-lg);
   font-weight: 700;
   letter-spacing: -0.015em;
   direction: ltr;
@@ -206,6 +207,7 @@
 }
 
 .subStatValue {
+  font-variant-numeric: tabular-nums;
   font-family: var(--font-display);
   font-size: var(--text-lg);
   font-weight: 700;
@@ -262,18 +264,19 @@
 }
 
 .insight {
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
+  padding: 10px 4px;
   font-size: var(--text-base);
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.015);
+  border-bottom: 1px solid var(--border);
   animation: riseIn 0.45s var(--ease-out-expo) both;
-  transition: transform 0.2s var(--ease-out-expo), background 0.2s ease;
+  transition: transform 0.2s var(--ease-out-expo);
+}
+
+.insight:last-child {
+  border-bottom: none;
 }
 
 .insight:hover {
   transform: translateX(-3px);
-  background: rgba(255, 255, 255, 0.03);
 }
 
 .insight.danger { border-color: rgba(var(--red-rgb), 0.35); color: var(--red); }

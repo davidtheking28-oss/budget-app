@@ -2,13 +2,15 @@ import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
 import { computeInsights, computeHealthScore } from './insights.js';
 import Logo from '../components/Logo.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import styles from './Report.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
 export default function Report({ clientUserId, year, month, email, onClose }) {
-  const { data, loading } = useClientBudget(clientUserId);
+  const { data, loading, error, reload } = useClientBudget(clientUserId);
+  if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) return null;
 
   const summary = monthSummary(data, year, month);

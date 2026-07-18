@@ -124,9 +124,11 @@
 
 .loanBarFill {
   height: 100%;
+  width: 100%;
   border-radius: var(--radius-xs);
   background: var(--accent);
-  transition: width 0.4s var(--ease-out-expo);
+  transform-origin: right;
+  transition: transform 0.4s var(--ease-out-expo);
 }
 
 .row:hover {
@@ -145,6 +147,7 @@
 }
 
 .amount {
+  font-variant-numeric: tabular-nums;
   font-family: var(--font-display);
   font-weight: 700;
   direction: ltr;
