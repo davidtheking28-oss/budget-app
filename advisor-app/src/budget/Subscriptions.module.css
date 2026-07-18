@@ -72,6 +72,11 @@
   gap: var(--space-2);
 }
 
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
 .nameRow {
   display: flex;
   align-items: center;
@@ -90,11 +95,22 @@
   align-items: center;
   justify-content: space-between;
   min-width: 0;
+  padding: var(--space-3) var(--space-1);
+  border-bottom: 1px solid var(--border);
+  animation: riseIn 0.4s var(--ease-out-expo) both;
+  transition: transform 0.25s var(--ease-out-expo);
+}
+
+.list .row:last-child {
+  border-bottom: none;
+}
+
+.rowCard {
   padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
-  animation: riseIn 0.4s var(--ease-out-expo) both;
   transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
 }
 
