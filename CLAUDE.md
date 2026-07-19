@@ -34,6 +34,14 @@ then deploys both to Pages together.
 **Verify a deploy before claiming it works** — Pages has failed transiently:
 `curl -s https://davidtheking28-oss.github.io/budget-app/index.html | grep -c '>v2.8<'`
 
+**Actual theme (overrides the generic dark-navy spec in `frontend.md`, which
+describes the trading-journal app instead):** `index.html`'s `:root` is a
+light/cream theme (`--bg:#f5f4f1`, `--surface:#fff`, `--accent:#1d4ed8`), with
+a `body.dark` override (`--bg:#100f0d`, `--accent:#60a5fa`) toggled via
+`budget_theme` in localStorage. `frontend.md`'s "Data Flow" section
+(`db.stocks`, `_rowToTrade`, etc.) also doesn't apply here — that's
+trading-journal's model, not this app's.
+
 ---
 
 ## Rules
