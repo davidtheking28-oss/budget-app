@@ -70,7 +70,7 @@ export default function App() {
     window.history.replaceState(null, '', url);
   }, [selectedClient, nav, ym]);
 
-  if (loading) return null;
+  if (loading) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
   if (isRecovery) return (<><Login recovery onRecoveryDone={clearRecovery} /><Toaster /></>);
   if (!session) return (<><Login /><Toaster /></>);
 
@@ -120,7 +120,7 @@ export default function App() {
         {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
-        {nav === 'goals' && <Goals clientUserId={selectedClient.id} />}
+        {nav === 'goals' && <Goals clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} />}
         {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} />}
       </Shell>

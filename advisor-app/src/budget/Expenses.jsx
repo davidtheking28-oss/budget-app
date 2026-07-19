@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
-import { EXPENSE_CATS, INCOME_CATS } from '../categories.js';
+import { EXPENSE_CATS } from '../categories.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -14,11 +14,17 @@ const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 export default function Expenses({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
-  const [type, setType] = useState('expense');
   const [cat, setCat] = useState(EXPENSE_CATS[0]);
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
+  const [date, setDate] = useState('');
   const [openCats, setOpenCats] = useState(() => new Set());
+
+  const today = new Date();
+  const isCurrent = year === today.getFullYear() && month === today.getMonth();
+  const defaultDate = isCurrent ? today.toISOString().slice(0, 10) : `${year}-${String(month + 1).padStart(2, '0')}-01`;
+
+  useEffect(() => { setDate(''); }, [year, month]);
 
   function toggleCat(c) {
     setOpenCats(prev => {
@@ -40,6 +46,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   }
 
   const monthTx = getMonthTx(data.transactions, year, month)
+    .filter(t => t.type === 'expense')
     .slice()
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
@@ -52,30 +59,28 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     }
     const g = groups[groupIndex[t.cat]];
     g.items.push(t);
-    g.total += t.type === 'income' ? t.amount : -t.amount;
+    g.total += t.amount;
   });
-  groups.sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
+  groups.sort((a, b) => b.total - a.total);
 
   async function addTx() {
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) { toast('הזן סכום תקין', 'error'); return; }
-    const today = new Date();
-    const isCurrent = year === today.getFullYear() && month === today.getMonth();
-    const txDate = isCurrent ? today.toISOString().slice(0, 10) : `${year}-${String(month + 1).padStart(2, '0')}-01`;
     const tx = {
       id: Date.now() + Math.random(),
-      type,
+      type: 'expense',
       cat,
       desc: desc.trim() || cat,
       amount: amt,
-      date: txDate,
+      date: date || defaultDate,
       recurring: false,
       fixed: false
     };
     await save({ transactions: [tx, ...(data.transactions || [])] });
-    toast(type === 'income' ? 'הכנסה נוספה' : 'הוצאה נוספה', 'success');
+    toast('הוצאה נוספה', 'success');
     setDesc('');
     setAmount('');
+    setDate('');
   }
 
   async function removeTx(id) {
@@ -85,11 +90,9 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     toast('נמחק', 'success', { label: 'בטל', onClick: () => save({ transactions: [removed, ...rest] }) });
   }
 
-  const cats = type === 'expense' ? EXPENSE_CATS : INCOME_CATS;
-
   function exportCsv() {
-    const rows = [['תאריך', 'סוג', 'קטגוריה', 'תיאור', 'סכום']];
-    monthTx.forEach(t => rows.push([t.date, t.type === 'income' ? 'הכנסה' : 'הוצאה', t.cat, t.desc, t.amount]));
+    const rows = [['תאריך', 'קטגוריה', 'תיאור', 'סכום']];
+    monthTx.forEach(t => rows.push([t.date, t.cat, t.desc, t.amount]));
     const csv = '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -106,15 +109,12 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         <Button variant="ghost" onClick={exportCsv} disabled={!monthTx.length}>ייצוא ל-CSV</Button>
       </div>
       <div className={styles.form}>
-        <select className={styles.select} aria-label="סוג תנועה" value={type} onChange={e => { setType(e.target.value); setCat(e.target.value === 'expense' ? EXPENSE_CATS[0] : INCOME_CATS[0]); }}>
-          <option value="expense">הוצאה</option>
-          <option value="income">הכנסה</option>
-        </select>
         <select className={styles.select} aria-label="קטגוריה" value={cat} onChange={e => setCat(e.target.value)}>
-          {cats.map(c => <option key={c} value={c}>{c}</option>)}
+          {EXPENSE_CATS.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input className={styles.input} aria-label="תיאור" placeholder="תיאור" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <input className={styles.input} type="number" inputMode="decimal" aria-label="סכום" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
+        <input className={styles.input} type="date" aria-label="תאריך" value={date || defaultDate} onChange={e => setDate(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <Button onClick={addTx}>הוסף</Button>
       </div>
       {!monthTx.length && <div className={styles.empty}>אין תנועות החודש</div>}
@@ -136,8 +136,8 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                   <span>{g.cat}</span>
                   <span className={styles.groupCount}>{g.items.length}</span>
                 </div>
-                <div style={{ color: g.total >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
-                  {g.total >= 0 ? '+' : '-'}{fmt(Math.abs(g.total))}
+                <div style={{ color: 'var(--red)', fontWeight: 700 }}>
+                  {fmt(g.total)}
                 </div>
               </button>
               {open && (
@@ -149,8 +149,8 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                         <div className={styles.meta}>{t.date}</div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ color: t.type === 'income' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
-                          {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
+                        <div style={{ color: 'var(--red)', fontWeight: 700 }}>
+                          {fmt(t.amount)}
                         </div>
                         <DeleteButton onClick={() => removeTx(t.id)} />
                       </div>

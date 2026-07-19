@@ -31,12 +31,28 @@ function downloadIcs(meeting) {
 }
 
 export default function Crm({ advisorId, clientId }) {
-  const { notes, tasks, meetings, loading, error, reload, addNote, deleteNote, addTask, toggleTask, deleteTask, addMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
+  const { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTask, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
   const [noteBody, setNoteBody] = useState('');
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDue, setTaskDue] = useState('');
   const [meetingAt, setMeetingAt] = useState('');
   const [meetingNotes, setMeetingNotes] = useState('');
+
+  const [editingNote, setEditingNote] = useState(null);
+  const [editNoteBody, setEditNoteBody] = useState('');
+  const [editingTask, setEditingTask] = useState(null);
+  const [editTaskTitle, setEditTaskTitle] = useState('');
+  const [editTaskDue, setEditTaskDue] = useState('');
+  const [editingMeeting, setEditingMeeting] = useState(null);
+  const [editMeetingAt, setEditMeetingAt] = useState('');
+  const [editMeetingNotes, setEditMeetingNotes] = useState('');
+
+  function startEditNote(n) { setEditingNote(n.id); setEditNoteBody(n.body); }
+  function saveEditNote(id) { editNote(id, editNoteBody); setEditingNote(null); }
+  function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); }
+  function saveEditTask(id) { editTask(id, editTaskTitle, editTaskDue); setEditingTask(null); }
+  function startEditMeeting(m) { setEditingMeeting(m.id); setEditMeetingAt(new Date(m.scheduled_at).toISOString().slice(0, 16)); setEditMeetingNotes(m.notes || ''); }
+  function saveEditMeeting(id) { editMeeting(id, new Date(editMeetingAt).toISOString(), editMeetingNotes); setEditingMeeting(null); }
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) {
@@ -60,9 +76,18 @@ export default function Crm({ advisorId, clientId }) {
         </div>
         {meetings.length ? (
           <div className={styles.list}>
-            {meetings.map((m, i) => (
+            {meetings.map((m, i) => editingMeeting === m.id ? (
               <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <div>
+                <div className={styles.form} style={{ margin: 0, flex: 1 }}>
+                  <input className={styles.input} type="datetime-local" aria-label="תאריך ושעת הפגישה" value={editMeetingAt} onChange={e => setEditMeetingAt(e.target.value)} />
+                  <input className={styles.input} aria-label="נושא הפגישה" value={editMeetingNotes} onChange={e => setEditMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditMeeting(m.id)} />
+                  <Button onClick={() => saveEditMeeting(m.id)}>שמור</Button>
+                  <Button variant="ghost" onClick={() => setEditingMeeting(null)}>ביטול</Button>
+                </div>
+              </div>
+            ) : (
+              <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div style={{ cursor: 'pointer', flex: 1 }} onClick={() => startEditMeeting(m)}>
                   <div>{new Date(m.scheduled_at).toLocaleString('he-IL')}</div>
                   {m.notes && <div className={styles.meta}>{m.notes}</div>}
                 </div>
@@ -89,10 +114,19 @@ export default function Crm({ advisorId, clientId }) {
         </div>
         {tasks.length ? (
           <div className={styles.list}>
-            {tasks.map((t, i) => (
+            {tasks.map((t, i) => editingTask === t.id ? (
+              <div key={t.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div className={styles.form} style={{ margin: 0, flex: 1 }}>
+                  <input className={styles.input} value={editTaskTitle} onChange={e => setEditTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditTask(t.id)} />
+                  <input className={styles.input} type="date" value={editTaskDue} onChange={e => setEditTaskDue(e.target.value)} />
+                  <Button onClick={() => saveEditTask(t.id)}>שמור</Button>
+                  <Button variant="ghost" onClick={() => setEditingTask(null)}>ביטול</Button>
+                </div>
+              </div>
+            ) : (
               <div key={t.id} className={styles.row + ' ' + styles.taskRow} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                 <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => toggleTask(t.id, e.target.checked)} />
-                <div className={styles.taskBody + (t.done ? ' ' + styles.done : '')}>
+                <div className={styles.taskBody + (t.done ? ' ' + styles.done : '')} style={{ cursor: 'pointer' }} onClick={() => startEditTask(t)}>
                   <div>{t.title}</div>
                   {t.due_date && <div className={styles.meta}>יעד: {t.due_date}</div>}
                 </div>
@@ -111,9 +145,17 @@ export default function Crm({ advisorId, clientId }) {
         </div>
         {notes.length ? (
           <div className={styles.list}>
-            {notes.map((n, i) => (
+            {notes.map((n, i) => editingNote === n.id ? (
               <div key={n.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <div>
+                <div className={styles.form} style={{ margin: 0, flex: 1 }}>
+                  <textarea className={styles.textarea} value={editNoteBody} onChange={e => setEditNoteBody(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), saveEditNote(n.id))} />
+                  <Button onClick={() => saveEditNote(n.id)}>שמור</Button>
+                  <Button variant="ghost" onClick={() => setEditingNote(null)}>ביטול</Button>
+                </div>
+              </div>
+            ) : (
+              <div key={n.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div style={{ cursor: 'pointer', flex: 1 }} onClick={() => startEditNote(n)}>
                   <div>{n.body}</div>
                   <div className={styles.meta}>{new Date(n.created_at).toLocaleDateString('he-IL')}</div>
                 </div>

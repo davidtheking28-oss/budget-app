@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 
@@ -8,15 +8,18 @@ export function useClientBudget(clientUserId, advisorId) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const requestIdRef = useRef(0);
 
   const reload = useCallback(async () => {
     if (!clientUserId) return;
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     const { data: row, error } = await supabase
       .from('budget_data')
       .select('*')
       .eq('user_id', clientUserId)
       .maybeSingle();
+    if (requestId !== requestIdRef.current) return;
     if (error) { setError(error); setLoading(false); return; }
     setData(row || { user_id: clientUserId, ...EMPTY });
     setError(null);
@@ -38,9 +41,8 @@ export function useClientBudget(clientUserId, advisorId) {
 
   const save = useCallback(async (patch) => {
     if (!clientUserId) return;
-    const prev = data;
-    const next = { ...(data || EMPTY), ...patch };
-    setData(next);
+    let prev;
+    setData(d => { prev = d || EMPTY; return { ...prev, ...patch }; });
     const { error } = await supabase
       .from('budget_data')
       .upsert({ user_id: clientUserId, updated_by: advisorId, ...patch }, { onConflict: 'user_id' });
@@ -49,7 +51,7 @@ export function useClientBudget(clientUserId, advisorId) {
       setData(prev);
       toast('שמירה נכשלה, נסה שוב', 'error');
     }
-  }, [clientUserId, advisorId, data]);
+  }, [clientUserId, advisorId]);
 
   return { data, loading, error, save, reload };
 }

@@ -7,13 +7,16 @@ export function useSession() {
   const [isRecovery, setIsRecovery] = useState(false);
 
   useEffect(() => {
+    let gotEvent = false;
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+      if (!gotEvent) setSession(session);
       setLoading(false);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      gotEvent = true;
       if (event === 'PASSWORD_RECOVERY') setIsRecovery(true);
       setSession(session);
+      setLoading(false);
     });
     return () => listener.subscription.unsubscribe();
   }, []);

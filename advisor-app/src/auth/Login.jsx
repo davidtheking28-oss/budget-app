@@ -60,7 +60,12 @@ export default function Login({ recovery, onRecoveryDone }) {
       <div className={styles.card}>
         <Logo size="lg" />
         <div className={styles.logo}>Budget Advisor</div>
-        <div className={styles.tagline}>קונסולת ניהול לקוחות</div>
+        <div className={styles.tagline}>
+          {mode === 'login' && 'קונסולת ניהול לקוחות'}
+          {mode === 'forgot' && 'איפוס סיסמה'}
+          {mode === 'sent' && 'איפוס סיסמה'}
+          {mode === 'newPassword' && 'הגדרת סיסמה חדשה'}
+        </div>
 
         {mode === 'sent' ? (
           <div className={styles.sent}>
