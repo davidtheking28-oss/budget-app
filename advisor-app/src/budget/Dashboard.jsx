@@ -8,13 +8,13 @@ import { useCountUp } from '../useCountUp.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
+import { CHART_PALETTE, CHART_THEME } from '../categories.js';
 import styles from './Dashboard.module.css';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
-const CAT_PALETTE = ['#4f83ff', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
 
 function NetHero({ value }) {
   const display = useCountUp(value);
@@ -102,7 +102,7 @@ export default function Dashboard({ clientUserId, year, month }) {
   });
   const catLabels = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
   const catTotal = catLabels.reduce((s, l) => s + byCat[l], 0);
-  const catColors = catLabels.map((_, i) => CAT_PALETTE[i % CAT_PALETTE.length]);
+  const catColors = catLabels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
 
   const trendMonths = [];
   for (let i = 5; i >= 0; i--) {
@@ -114,8 +114,8 @@ export default function Dashboard({ clientUserId, year, month }) {
   const chartData = {
     labels: trendMonths.map(({ month: m }) => MONTH_SHORT[m]),
     datasets: [
-      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: '#52c99a', borderRadius: 5, hoverBackgroundColor: '#6adcb2' },
-      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: '#e8756a', borderRadius: 5, hoverBackgroundColor: '#f28e83' }
+      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: CHART_THEME.green, borderRadius: 5, hoverBackgroundColor: CHART_THEME.greenLight },
+      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: CHART_THEME.red, borderRadius: 5, hoverBackgroundColor: CHART_THEME.redLight }
     ]
   };
 
@@ -145,11 +145,11 @@ export default function Dashboard({ clientUserId, year, month }) {
           <div className={styles.catBox}>
             <div className={styles.catDonut}>
               <Pie
-                data={{ labels: catLabels, datasets: [{ data: catLabels.map(l => byCat[l]), backgroundColor: catColors, borderColor: '#17130f', borderWidth: 2 }] }}
+                data={{ labels: catLabels, datasets: [{ data: catLabels.map(l => byCat[l]), backgroundColor: catColors, borderColor: CHART_THEME.surface, borderWidth: 2 }] }}
                 options={{
                   maintainAspectRatio: false,
                   cutout: '70%',
-                  plugins: { legend: { display: false }, tooltip: { backgroundColor: '#17130f', borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } } }
+                  plugins: { legend: { display: false }, tooltip: { backgroundColor: CHART_THEME.surface, borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } } }
                 }}
               />
             </div>
@@ -179,12 +179,12 @@ export default function Dashboard({ clientUserId, year, month }) {
                 maintainAspectRatio: false,
                 animation: { duration: 700, easing: 'easeOutQuart' },
                 scales: {
-                  x: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { display: false } },
-                  y: { ticks: { color: '#9a9d9f', font: { family: 'Heebo' } }, grid: { color: 'rgba(242,240,234,0.06)' } }
+                  x: { ticks: { color: CHART_THEME.text2, font: { family: 'Heebo' } }, grid: { display: false } },
+                  y: { ticks: { color: CHART_THEME.text2, font: { family: 'Heebo' } }, grid: { color: 'rgba(242,240,234,0.06)' } }
                 },
                 plugins: {
-                  legend: { labels: { color: '#9a9d9f', font: { family: 'Heebo' } } },
-                  tooltip: { backgroundColor: '#17130f', borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
+                  legend: { labels: { color: CHART_THEME.text2, font: { family: 'Heebo' } } },
+                  tooltip: { backgroundColor: CHART_THEME.surface, borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
                 }
               }}
             />
@@ -199,7 +199,10 @@ export default function Dashboard({ clientUserId, year, month }) {
           <div className={styles.groupTitle + ' ' + styles[group.key]}>{group.title}</div>
           <div className={styles.insights}>
             {group.items.map((ins, i) => (
-              <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>{ins.text}</div>
+              <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>
+                <span className={styles.insightDot} />
+                {ins.text}
+              </div>
             ))}
           </div>
         </div>

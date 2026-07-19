@@ -4,7 +4,7 @@ import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
-import { CHART_PALETTE } from '../categories.js';
+import { CHART_PALETTE, CHART_THEME } from '../categories.js';
 import styles from './Analysis.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -24,7 +24,12 @@ export default function Analysis({ clientUserId, year, month }) {
   if (!monthTx.length) {
     return (
       <div className={styles.empty}>
-        <div className={styles.emptyMark}></div>
+        <div className={styles.emptyMark}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.5" />
+            <path d="M12 3.5v8.5h8.5" />
+          </svg>
+        </div>
         אין הוצאות החודש
       </div>
     );
@@ -42,7 +47,7 @@ export default function Analysis({ clientUserId, year, month }) {
     datasets: [{
       data: values,
       backgroundColor: colors,
-      borderColor: '#0a0908',
+      borderColor: CHART_THEME.bg,
       borderWidth: 2
     }]
   };
@@ -58,10 +63,10 @@ export default function Analysis({ clientUserId, year, month }) {
             plugins: {
               legend: { display: false },
               tooltip: {
-                backgroundColor: '#17130f',
-                titleColor: '#f2f0ea',
-                bodyColor: '#9a9d9f',
-                borderColor: 'rgba(242,240,234,0.1)',
+                backgroundColor: CHART_THEME.surface,
+                titleColor: CHART_THEME.text,
+                bodyColor: CHART_THEME.text2,
+                borderColor: CHART_THEME.border,
                 borderWidth: 1,
                 padding: 12,
                 titleFont: { family: 'Heebo' },

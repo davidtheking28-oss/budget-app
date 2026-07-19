@@ -14,6 +14,7 @@
   border-bottom: 2px solid var(--border-strong);
   padding-bottom: var(--space-4);
   margin-bottom: var(--space-5);
+  animation: riseIn 0.4s var(--ease-out-expo) both;
 }
 
 .titleRow {
@@ -24,13 +25,13 @@
 
 .title {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: var(--text-xl);
   font-weight: 700;
 }
 
 .sub {
   color: var(--text3);
-  font-size: 0.86rem;
+  font-size: var(--text-base);
 }
 
 .statsRow {
@@ -45,10 +46,12 @@
   border-radius: var(--radius-md);
   background: linear-gradient(165deg, var(--surface), var(--bg-2));
   padding: var(--space-3);
+  animation: riseIn 0.4s var(--ease-out-expo) both;
+  animation-delay: 0.05s;
 }
 
 .statLabel {
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
   color: var(--text3);
   margin-bottom: var(--space-1);
 }
@@ -57,24 +60,32 @@
   font-variant-numeric: tabular-nums;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.25rem;
-  color: var(--accent);
+  font-size: var(--text-xl);
   direction: ltr;
   text-align: right;
 }
 
+.net { color: var(--text); }
+.income { color: var(--green); }
+.expense { color: var(--red); }
+
 .sectionTitle {
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: var(--text-md);
   margin: var(--space-5) 0 var(--space-2);
   border-bottom: 1px solid var(--border);
   padding-bottom: var(--space-1);
+  animation: riseIn 0.4s var(--ease-out-expo) both;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.84rem;
+  font-size: var(--text-base);
+}
+
+tbody tr {
+  animation: riseIn 0.35s var(--ease-out-expo) both;
 }
 
 th, td {
@@ -84,12 +95,15 @@ th, td {
 }
 
 .insight {
-  font-size: 0.84rem;
+  font-size: var(--text-base);
   padding: var(--space-1) 0;
   border-bottom: 1px solid var(--border);
+  animation: riseIn 0.35s var(--ease-out-expo) both;
 }
 
 .printButton {
+  display: flex;
+  gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
 
@@ -98,6 +112,11 @@ th, td {
    and ink-safe regardless of the dark on-screen preview above. */
 @media print {
   .printButton, .closeButton { display: none !important; }
+  .header, .stat, .sectionTitle, tbody tr, .insight {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
   .page {
     padding: 0;
     max-width: none;
@@ -111,6 +130,6 @@ th, td {
     border-color: #ddd !important;
   }
   .statLabel { color: #666 !important; }
-  .statValue { color: #14181c !important; }
+  .statValue, .net, .income, .expense { color: #14181c !important; }
   .sectionTitle, th, td, .insight { border-color: #eee !important; }
 }

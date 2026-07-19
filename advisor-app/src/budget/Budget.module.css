@@ -55,7 +55,6 @@
 }
 
 .itemOver {
-  grid-column: span 2;
   border-color: rgba(var(--red-rgb), 0.4);
 }
 
@@ -106,5 +105,7 @@
 
 .fill {
   height: 100%;
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  transform-origin: right;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }

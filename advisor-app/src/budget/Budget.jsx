@@ -84,7 +84,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
                 </div>
               </div>
               <div className={styles.bar}>
-                <div className={styles.fill} style={{ width: pct + '%', background: color }} />
+                <div className={styles.fill} style={{ transform: `scaleX(${pct / 100})`, background: color }} />
               </div>
             </div>
           );

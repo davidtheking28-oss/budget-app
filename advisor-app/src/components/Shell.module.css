@@ -13,8 +13,7 @@
   justify-content: space-between;
   padding: 22px 40px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--surface), rgba(20, 24, 28, 0.4));
-  backdrop-filter: blur(8px);
+  background: var(--surface);
 }
 
 .logo {

@@ -80,7 +80,7 @@
   font-weight: 700;
   font-size: var(--text-sm);
   direction: ltr;
-  min-width: var(--space-8);
+  min-width: fit-content;
   text-align: left;
 }
 
@@ -100,4 +100,8 @@
   height: 46px;
   border-radius: 50%;
   border: 1px dashed var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
 }

@@ -3,6 +3,7 @@ import { monthSummary } from './budgetMath.js';
 import { computeInsights, computeHealthScore } from './insights.js';
 import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
+import Button from '../components/Button.jsx';
 import styles from './Report.module.css';
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
@@ -22,8 +23,8 @@ export default function Report({ clientUserId, year, month, email, onClose }) {
   return (
     <div className={styles.page} dir="rtl">
       <div className={styles.printButton}>
-        <button onClick={() => window.print()}>הדפס</button>
-        <button className={styles.closeButton} onClick={onClose}>סגור</button>
+        <Button onClick={() => window.print()}>הדפס</Button>
+        <Button variant="ghost" className={styles.closeButton} onClick={onClose}>סגור</Button>
       </div>
       <div className={styles.header}>
         <div className={styles.titleRow}>
@@ -37,10 +38,10 @@ export default function Report({ clientUserId, year, month, email, onClose }) {
       </div>
 
       <div className={styles.statsRow}>
-        <div className={styles.stat}><div className={styles.statLabel}>הכנסות</div><div className={styles.statValue}>{fmt(summary.income)}</div></div>
-        <div className={styles.stat}><div className={styles.statLabel}>הוצאות</div><div className={styles.statValue}>{fmt(summary.expense)}</div></div>
-        <div className={styles.stat}><div className={styles.statLabel}>מאזן</div><div className={styles.statValue}>{fmt(summary.net)}</div></div>
-        <div className={styles.stat}><div className={styles.statLabel}>ציון בריאות</div><div className={styles.statValue}>{healthScore} · {healthLabel}</div></div>
+        <div className={styles.stat}><div className={styles.statLabel}>הכנסות</div><div className={styles.statValue + ' ' + styles.income}>{fmt(summary.income)}</div></div>
+        <div className={styles.stat}><div className={styles.statLabel}>הוצאות</div><div className={styles.statValue + ' ' + styles.expense}>{fmt(summary.expense)}</div></div>
+        <div className={styles.stat}><div className={styles.statLabel}>מאזן</div><div className={styles.statValue + ' ' + (summary.net < 0 ? styles.expense : styles.net)}>{fmt(summary.net)}</div></div>
+        <div className={styles.stat}><div className={styles.statLabel}>ציון בריאות</div><div className={styles.statValue + ' ' + styles.net}>{healthScore} · {healthLabel}</div></div>
       </div>
 
       {cats.length > 0 && (

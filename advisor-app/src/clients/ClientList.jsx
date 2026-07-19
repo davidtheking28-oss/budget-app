@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
 import { useCountUp } from '../useCountUp.js';
@@ -15,7 +15,7 @@ function initials(email) {
 function HealthDot({ score }) {
   if (score === null) return null;
   const color = score >= 75 ? 'var(--green)' : score >= 45 ? 'var(--yellow)' : 'var(--red)';
-  return <span className={styles.healthDot} style={{ background: color }} title={`ציון בריאות: ${score}`} />;
+  return <span className={styles.healthDot} style={{ background: color }} role="img" aria-label={`ציון בריאות: ${score}`} title={`ציון בריאות: ${score}`} />;
 }
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
@@ -47,6 +47,8 @@ export default function ClientList({ advisorId, onSelect }) {
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const codeInputRef = useRef(null);
+  const mountedRef = useRef(false);
+  useEffect(() => { mountedRef.current = true; }, []);
 
   async function claimCode() {
     const trimmed = code.trim().toUpperCase();
@@ -117,7 +119,7 @@ export default function ClientList({ advisorId, onSelect }) {
       )}
 
       <div className={styles.sectionHead}>
-        <h2 className={styles.sectionTitle}>הלקוחות שלי <span className={styles.kbdHint}>⌘K לחיפוש מהיר</span></h2>
+        <h2 className={styles.sectionTitle}>הלקוחות שלי <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span></h2>
         <div className={styles.addForm}>
           <input
             ref={codeInputRef}
@@ -136,7 +138,12 @@ export default function ClientList({ advisorId, onSelect }) {
 
       {!clients.length ? (
         <div className={styles.empty}>
-          <div className={styles.emptyMark}></div>
+          <div className={styles.emptyMark}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" />
+            </svg>
+          </div>
           <div className={styles.emptyTitle}>עדיין אין לקוחות מחוברים</div>
           <div className={styles.emptyText}>בקש מהלקוח ליצור קוד הזמנה בהגדרות האפליקציה שלו, ואז הדבק אותו כאן</div>
           <Button className={styles.emptyCta} onClick={() => codeInputRef.current?.focus()}>+ חבר לקוח ראשון</Button>
@@ -149,8 +156,8 @@ export default function ClientList({ advisorId, onSelect }) {
               <button
                 type="button"
                 key={c.id}
-                className={styles.card + (urgent ? ' ' + styles.cardWide : '')}
-                style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}
+                className={styles.card + (urgent ? ' ' + styles.cardWide : '') + (mountedRef.current ? ' ' + styles.cardNoAnim : '')}
+                style={mountedRef.current ? undefined : { animationDelay: Math.min(i * 0.04, 0.3) + 's' }}
                 onClick={() => onSelect(c.client_id, c.client_email)}
               >
                 <div className={styles.initial} aria-hidden="true">{initials(c.client_email)}</div>

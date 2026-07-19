@@ -3,3 +3,14 @@ export const FIXED_CATS = ['משכנתא','שכר דירה','ועד בית','ג�
 export const BUDGET_CATS = [...EXPENSE_CATS, ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c))];
 export const INCOME_CATS = ['שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'];
 export const CHART_PALETTE = ['#4f83ff', '#c9a875', '#8b95a8', '#e8756a', '#52c99a', '#7d8fb3', '#d9b25c', '#5f7a76'];
+export const CHART_THEME = {
+  bg: '#0a0908',
+  surface: '#17130f',
+  text: '#f2f0ea',
+  text2: '#9a9d9f',
+  border: 'rgba(242, 240, 234, 0.1)',
+  green: '#52c99a',
+  greenLight: '#6adcb2',
+  red: '#e8756a',
+  redLight: '#f28e83'
+};

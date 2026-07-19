@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { subscribeToast } from '../toast.js';
 import styles from './Toaster.module.css';
 
@@ -13,16 +13,33 @@ const EXIT_MS = 220;
 export default function Toaster() {
   const [items, setItems] = useState([]);
   const [leaving, setLeaving] = useState(() => new Set());
+  const timersRef = useRef(new Set());
+
+  function setTrackedTimeout(fn, ms) {
+    const id = setTimeout(() => { timersRef.current.delete(id); fn(); }, ms);
+    timersRef.current.add(id);
+  }
 
   function dismiss(id) {
     setLeaving(prev => new Set(prev).add(id));
-    setTimeout(() => setItems(prev => prev.filter(i => i.id !== id)), EXIT_MS);
+    setTrackedTimeout(() => {
+      setItems(prev => prev.filter(i => i.id !== id));
+      setLeaving(prev => { const next = new Set(prev); next.delete(id); return next; });
+    }, EXIT_MS);
   }
 
-  useEffect(() => subscribeToast(item => {
-    setItems(prev => [...prev, item]);
-    setTimeout(() => dismiss(item.id), item.action ? 5000 : 3200);
-  }), []);
+  useEffect(() => {
+    const timers = timersRef.current;
+    const unsubscribe = subscribeToast(item => {
+      setItems(prev => [...prev, item]);
+      setTrackedTimeout(() => dismiss(item.id), item.action ? 5000 : 3200);
+    });
+    return () => {
+      unsubscribe();
+      timers.forEach(clearTimeout);
+      timers.clear();
+    };
+  }, []);
 
   if (!items.length) return null;
 
