@@ -200,6 +200,8 @@
     .pay-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;line-height:1;opacity:0.55;transition:opacity .15s,color .15s;-webkit-tap-highlight-color:transparent;}
     @media(hover:hover){.pay-del:hover{opacity:1;color:var(--red);}}
     .pay-del:active{opacity:1;color:var(--red);}
+    .pay-card-done{opacity:0.6;}
+    .pay-done-badge{background:var(--green-light);color:var(--green);font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;margin-inline-end:6px;}
     .budget-item{padding:16px 0;border-bottom:1px solid var(--border);}
     .budget-item:last-child{border-bottom:none;}
     .budget-del-x{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.1rem;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;line-height:1;opacity:0.55;transition:opacity .15s,color .15s;-webkit-tap-highlight-color:transparent;}
@@ -250,10 +252,12 @@
     .btn-primary:active{opacity:0.88;box-shadow:none;}
     .btn:disabled,.btn[disabled]{opacity:0.45;pointer-events:none;cursor:not-allowed;}
     .btn-success{background:var(--green);color:white;}
-    .btn-danger{background:transparent;border:1.5px solid var(--red);color:var(--red);min-height:40px;padding:7px 14px;font-size:0.78rem;border-radius:8px;}
+    .btn-danger{background:transparent;border:1.5px solid var(--red);color:var(--red);min-height:44px;padding:7px 14px;font-size:0.78rem;border-radius:8px;}
     .btn-danger:active{background:var(--red-light);}
-    .btn-outline{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);min-height:38px;padding:8px 14px;font-size:0.82rem;}
-    .btn-sm{min-height:40px;padding:7px 14px;font-size:0.78rem;border-radius:8px;}
+    .btn-neutral{background:transparent;border:1.5px solid var(--blue);color:var(--blue);min-height:44px;padding:7px 14px;font-size:0.78rem;border-radius:8px;}
+    .btn-neutral:active{background:var(--blue-light);}
+    .btn-outline{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);min-height:44px;padding:8px 14px;font-size:0.82rem;}
+    .btn-sm{min-height:44px;padding:7px 14px;font-size:0.78rem;border-radius:8px;}
     .btn-teal{background:var(--teal);color:white;}
     @media(hover:none){button:hover{transform:none!important;}}
     .shortcut-btn:active{transform:scale(0.93)!important;transition:transform 0.12s cubic-bezier(0.22,1,0.36,1);}
@@ -579,7 +583,7 @@
     .hero-stats{display:flex;align-items:center;background:rgba(255,255,255,0.06);border-radius:14px;padding:10px 0;margin-top:2px;}
     .hero-stat{flex:1;text-align:center;}
     .hero-stat-val{font-size:1.08rem;font-weight:800;letter-spacing:-0.5px;}
-    .hero-stat-label{font-size:0.59rem;color:rgba(255,255,255,0.38);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-top:2px;}
+    .hero-stat-label{font-size:0.59rem;color:rgba(255,255,255,0.64);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-top:2px;}
     .hero-stat-divider{width:1px;height:26px;background:rgba(255,255,255,0.1);flex-shrink:0;}
     /* === QUICK ACTIONS === */
     .quick-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:22px;}
@@ -657,6 +661,7 @@
     .loan-lender{font-size:0.78rem;color:var(--text3);margin-top:2px;}
     .loan-prog-wrap{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:5px;}
     .loan-prog-fill{height:100%;background:linear-gradient(90deg,var(--red),#f87171);border-radius:4px;transition:width 0.6s cubic-bezier(0.22,1,0.36,1);}
+    .loan-prog-fill.near-done{background:linear-gradient(90deg,var(--green),#4ade80);}
     .loan-prog-label{font-size:0.75rem;color:var(--text3);margin-bottom:12px;}
     .loan-stats-row{display:flex;gap:8px;flex-wrap:wrap;}
     .loan-stat{flex:1;min-width:70px;background:var(--surface2);border-radius:10px;padding:8px 10px;text-align:center;}
@@ -816,7 +821,7 @@
     .fab{box-shadow:0 4px 20px rgba(var(--accent-rgb),0.38),0 0 0 5px rgba(var(--accent-rgb),0.08);}
     body.dark .fab{box-shadow:0 4px 20px rgba(var(--accent-rgb),0.25);}
     .hero-stats{border-radius:12px;padding:12px 0;}
-    .hero-stat-label{font-size:0.68rem;color:rgba(255,255,255,0.42);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-top:3px;}
+    .hero-stat-label{font-size:0.68rem;color:rgba(255,255,255,0.64);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-top:3px;}
     .hero-eyebrow{margin-bottom:4px;}
 
     /* ── Responsive typography & currency safety ── */
@@ -1325,14 +1330,14 @@
 <div class="sheet-overlay" id="addGoalSheet" onclick="if(event.target===this)closeSheet('addGoalSheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">🎯 יעד חיסכון חדש</div>
+    <div class="sheet-title" id="goalSheetTitle">🎯 יעד חיסכון חדש</div>
     <div class="form-stack">
       <div class="form-field"><label for="goalName">שם היעד</label><input type="text" id="goalName" placeholder='חופשה לאי"ל' autocomplete="off" autocorrect="off" spellcheck="false" onfocus="this.select()"/></div>
       <div class="form-row">
         <div class="form-field"><label for="goalTarget">סכום יעד (₪)</label><input type="number" inputmode="decimal" id="goalTarget" placeholder="10000" min="1" onfocus="this.select()"/></div>
         <div class="form-field"><label for="goalMonths">תקופה (חודשים)</label><input type="number" inputmode="numeric" id="goalMonths" placeholder="12" min="1" max="360" onfocus="this.select()"/></div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="addGoal()">הוסף יעד</button>
+      <button class="btn btn-primary btn-full" id="goalSaveBtn" onclick="addGoal()">הוסף יעד</button>
     </div>
   </div>
 </div>
@@ -1431,7 +1436,7 @@
     <div class="sheet-title" id="addToGoalTitle">הוסף לחיסכון</div>
     <div class="form-stack">
       <div class="form-field"><label for="addToGoalAmount">סכום (₪)</label><input type="number" id="addToGoalAmount" placeholder="0" min="1" inputmode="decimal" onfocus="this.select()"/></div>
-      <button class="btn btn-success btn-full" onclick="confirmAddToGoal()">הוסף לחיסכון</button>
+      <button class="btn btn-success btn-full" id="addToGoalBtn" onclick="confirmAddToGoal()">הוסף לחיסכון</button>
     </div>
   </div>
 </div>
@@ -1439,7 +1444,7 @@
 <div class="sheet-overlay" id="addLoanSheet" onclick="if(event.target===this)closeSheet('addLoanSheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">📉 הוספת הלוואה / חוב</div>
+    <div class="sheet-title" id="loanSheetTitle">📉 הוספת הלוואה / חוב</div>
     <div class="form-stack">
       <div class="form-field"><label for="loanName">שם ההלוואה</label><input type="text" id="loanName" placeholder="לדוגמה: משכנתא, הלוואת רכב, אוברדראפט" onfocus="this.select()" autocomplete="off" autocorrect="off" spellcheck="false"/></div>
       <div class="form-row">
@@ -1456,7 +1461,7 @@
         <div class="form-field"><label for="loanMonthsLeft">חודשים שנשארו</label><input type="number" id="loanMonthsLeft" placeholder="120" min="0" inputmode="numeric" onfocus="this.select()"/></div>
         <div class="form-field"><label for="loanNotes">הערות</label><input type="text" id="loanNotes" placeholder="קו שני משכנתא, ריבית פריים..." onfocus="this.select()" autocomplete="off" autocorrect="off" spellcheck="false"/></div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="saveLoan()">שמור הלוואה</button>
+      <button class="btn btn-primary btn-full" id="loanSaveBtn" onclick="saveLoan()">שמור הלוואה</button>
     </div>
   </div>
 </div>
@@ -1788,10 +1793,10 @@
 
   <div id="page-goals" class="page">
     <div style="margin-bottom:14px;display:flex;justify-content:flex-start">
-      <button class="btn btn-primary btn-sm" onclick="openSheet('addGoalSheet')">+ יעד חדש</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddGoalSheet()">+ יעד חדש</button>
     </div>
     <div id="goalsList">
-      <div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>אין יעדים עדיין</p><button class="btn-empty" onclick="openAddGoal()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>
+      <div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>אין יעדים עדיין</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>
     </div>
   </div>
 
@@ -1828,6 +1833,9 @@
         </tfoot>
       </table>
     </div>
+    <div style="margin-top:14px;display:flex;justify-content:flex-start">
+      <button class="btn btn-primary btn-sm" onclick="addCustomFixedCat()">+ קטגוריה מותאמת אישית</button>
+    </div>
   </div>
 
   <div id="page-subscriptions" class="page">
@@ -1852,7 +1860,7 @@
       <div class="loans-summary-sub" id="loansMonthlyDisplay">החזר חודשי: ₪0 · 0 הלוואות</div>
     </div>
     <div style="margin-bottom:14px;display:flex;justify-content:flex-start">
-      <button class="btn btn-primary btn-sm" onclick="openSheet('addLoanSheet')">+ הלוואה / חוב</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddLoanSheet()">+ הלוואה / חוב</button>
     </div>
     <div id="loansList"></div>
   </div>
@@ -2377,10 +2385,11 @@ function _migrateCats(){
 function catIconSvg(c){return CAT_SVGS[c]||CAT_SVGS['שונות'];}
 
 const EXPENSE_CATS=['מזון לבית','אוכל בחוץ ובילויים','פארם','דלק וחניה','מתנות לאירועים ולשמחות','ביגוד והנעלה','תחב״צ','כבישי אגרה','תספורת וקוסמטיקה','תחביבים','סיגריות','חופשה/טיול','עזרת/שמרטף','תיקוני רכב','בריאות','בעלי חיים','דמי כיס/ילדים','יהדות/חגים','ביטוח לאומי','שונות'];
-const FIXED_CATS=['משכנתא','שכר דירה','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים'];
+const FIXED_CATS=['משכנתא','שכר דירה','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
-  'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0,cur=_payCalc(p).current;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0)
+  'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0,cur=_payCalc(p).current;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0),
+  'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0)
 };
 const BUDGET_CATS=[...EXPENSE_CATS,...FIXED_CATS.filter(c=>!EXPENSE_CATS.includes(c))];
 const EXPENSE_CATS_BUSINESS=['שיווק ופרסום','מערכות ותוכנה','ציוד משרדי','שכר עובדים','חשבונאות ומשפטי','שכירות משרד','תקשורת עסקית','נסיעות עסקיות','ייצוג וארוח','אחסון ולוגיסטיקה','מסים ואגרות','ביטוח עסקי','הדרכות והשתלמויות','פיתוח ומחקר','קניות ציוד','אחר'];
@@ -2494,6 +2503,8 @@ function saveData(){
 function fmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';const str=Math.abs(n).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:2});return sym+str.replace(/[-−]/g,'');}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function fmtNum(n){return (n||0).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function progState(pct,rules){for(const[min,cls]of rules){if(pct>=min)return cls;}return'';}
+function progBarHTML(pct,{wrapClass,fillClass,stateClass}){const w=Math.min(100,Math.max(0,pct));return'<div class="'+wrapClass+'"><div class="'+fillClass+(stateClass?' '+stateClass:'')+'" style="width:'+w+'%"></div></div>';}
 function mk(y,m){return y+'-'+String(m+1).padStart(2,'0');}
 function heMonth(y,m){return ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'][m]+' '+y;}
 function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
@@ -3588,10 +3599,11 @@ function _subscribeHousehold(){
   if(!_sb||!_getDataUserId())return;
   if(_realtimeChannel){_sb.removeChannel(_realtimeChannel);_realtimeChannel=null;}
   _realtimeChannel=_sb.channel('budget-sync')
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'budget_data',filter:`user_id=eq.${_getDataUserId()}`},(payload)=>{
+    .on('postgres_changes',{event:'*',schema:'public',table:'budget_data',filter:`user_id=eq.${_getDataUserId()}`},(payload)=>{
       if(payload.new?.updated_by&&payload.new.updated_by!==_cloudUser?.id){
         _loadFromCloud(true);
-        showToast('🔄 עודכן על ידי בן/בת הזוג');
+        const byAdvisor=_advisorLink&&_advisorLink.status==='active'&&payload.new.updated_by===_advisorLink.advisor_id;
+        showToast(byAdvisor?'🔄 עודכן על ידי היועץ הפיננסי שלך':'🔄 עודכן על ידי בן/בת הזוג');
       }
     })
     .subscribe();
@@ -3633,6 +3645,7 @@ document.addEventListener('DOMContentLoaded',function(){
 let userSettings = JSON.parse(localStorage.getItem(_modeKey('budget_settings')) || '{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
 if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
+if(!userSettings.customFixedCats) userSettings.customFixedCats = [];
 function saveSettingsData(){localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
 
 function getMonthlyIncome(){
@@ -4432,7 +4445,7 @@ function renderBudget(){
   list.innerHTML=allCats.map(cat=>{
     const s=spent[cat]||0;const baseLim=budgets[cat]||0;const lim=baseLim?effLim(cat):0;
     const pct=lim?Math.min(Math.round(s/lim*100),100):(baseLim?100:0);
-    const state=pct>=90?'danger':pct>=70?'warn':'ok';
+    const state=progState(pct,[[90,'danger'],[70,'warn'],[0,'ok']]);
     const avail=lim?Math.max(0,lim-s):null;
     const carryChip=(baseLim&&carry[cat])?'<span style="font-size:0.66rem;font-weight:700;padding:1px 6px;border-radius:6px;background:'+(carry[cat]>0?'var(--green-light)':'var(--red-light)')+';color:'+(carry[cat]>0?'var(--green)':'var(--red)')+';margin-inline-start:6px;white-space:nowrap;">'+(carry[cat]>0?'+':'-')+fmt(Math.abs(carry[cat]))+' גלגול</span>':'';
     return '<div class="budget-item">'
@@ -4443,7 +4456,7 @@ function renderBudget(){
           +'<button type="button" onclick="deleteBudget(\''+cat+'\')" class="budget-del-x" aria-label="מחק">✕</button>'
         +'</div>'
       +'</div>'
-      +(baseLim?'<div class="budget-prog-wrap"><div class="budget-prog-fill '+state+'" style="width:'+pct+'%"></div></div>'
+      +(baseLim?progBarHTML(pct,{wrapClass:'budget-prog-wrap',fillClass:'budget-prog-fill',stateClass:state})
           +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px">'
             +'<div class="budget-pct-label '+state+'">'+pct+'% נוצל</div>'
             +'<div class="budget-item-amounts">'+fmt(s)+' הוצאת</div>'
@@ -4451,32 +4464,84 @@ function renderBudget(){
     +'</div>';
   }).join('');
 }
+let _editingGoalId=null;
+function _clearGoalForm(){
+  document.getElementById('goalName').value='';document.getElementById('goalTarget').value='';document.getElementById('goalMonths').value='';
+}
+function openAddGoalSheet(){
+  _editingGoalId=null;
+  _clearGoalForm();
+  const title=document.getElementById('goalSheetTitle');if(title)title.textContent='🎯 יעד חיסכון חדש';
+  const btn=document.getElementById('goalSaveBtn');if(btn){btn.textContent='הוסף יעד';btn.disabled=false;}
+  openSheet('addGoalSheet');
+}
+function editGoal(id){
+  const g=goals.find(x=>x.id===id);if(!g)return;
+  _editingGoalId=id;
+  document.getElementById('goalName').value=g.name||'';
+  document.getElementById('goalTarget').value=g.target||'';
+  document.getElementById('goalMonths').value=g.months||'';
+  const title=document.getElementById('goalSheetTitle');if(title)title.textContent='✏️ עריכת יעד';
+  const btn=document.getElementById('goalSaveBtn');if(btn){btn.textContent='שמור שינויים';btn.disabled=false;}
+  openSheet('addGoalSheet');
+}
 function addGoal(){
   const name=document.getElementById('goalName').value.trim();
   const target=parseFloat(document.getElementById('goalTarget').value);
-  const months=parseInt(document.getElementById('goalMonths').value)||0;
+  const months=Math.max(0,parseInt(document.getElementById('goalMonths').value)||0);
   if(!name){showToast('✏️ תן שם ליעד החיסכון שלך');return;}
   if(!target||target<=0){showToast('₪ כמה רוצים לחסוך? הזן סכום');return;}
-  goals.push({id:Date.now(),name,target,months,saved:0});saveData();
-  document.getElementById('goalName').value='';document.getElementById('goalTarget').value='';document.getElementById('goalMonths').value='';
+  const editingId=_editingGoalId;
+  if(editingId!=null){
+    const g=goals.find(x=>x.id===editingId);
+    if(g){g.name=name;g.target=target;g.months=months;g.saved=Math.min(g.saved,target);}
+  }else{
+    goals.push({id:Date.now(),name,target,months,saved:0});
+  }
+  saveData();
+  _clearGoalForm();
+  _editingGoalId=null;
   const _gb=document.querySelector('#addGoalSheet .btn-primary');if(_gb){_gb.textContent='✓';_gb.disabled=true;}
-  setTimeout(()=>{closeSheet('addGoalSheet');showToast('🎯 יעד חדש נוצר!');renderGoals();},220);
+  setTimeout(()=>{closeSheet('addGoalSheet');showToast(editingId!=null?'✓ היעד עודכן':'🎯 יעד חדש נוצר!');renderGoals();},220);
 }
-function deleteGoal(id){const backup=goals.find(g=>g.id===id);const idx=goals.findIndex(g=>g.id===id);goals=goals.filter(g=>g.id!==id);saveData();renderGoals();showUndoToast('🗑️ יעד נמחק',()=>{goals.splice(idx,0,backup);saveData();renderGoals();},()=>{});}
+function deleteGoal(id){const backup=goals.find(g=>g.id===id);const idx=goals.findIndex(g=>g.id===id);goals=goals.filter(g=>g.id!==id);transactions=transactions.filter(t=>!(t.goalTx&&t.goalId===id));saveData();renderGoals();showUndoToast('🗑️ יעד נמחק',()=>{goals.splice(idx,0,backup);saveData();renderGoals();},()=>{});}
 let _addToGoalId=null;
+let _goalTxDir='add';
 function addToGoal(id){
-  _addToGoalId=id;const g=goals.find(g=>g.id===id);
+  _addToGoalId=id;_goalTxDir='add';const g=goals.find(g=>g.id===id);
   document.getElementById('addToGoalTitle').textContent='הוסף ל'+(g?g.name:'חיסכון');
+  const btn=document.getElementById('addToGoalBtn');if(btn){btn.textContent='הוסף לחיסכון';btn.className='btn btn-success btn-full';}
+  document.getElementById('addToGoalAmount').value='';
+  openSheet('addToGoalSheet');
+  setTimeout(()=>document.getElementById('addToGoalAmount')?.focus(),150);
+}
+function withdrawFromGoal(id){
+  _addToGoalId=id;_goalTxDir='withdraw';const g=goals.find(g=>g.id===id);
+  document.getElementById('addToGoalTitle').textContent='משוך מ'+(g?g.name:'חיסכון');
+  const btn=document.getElementById('addToGoalBtn');if(btn){btn.textContent='משוך מהחיסכון';btn.className='btn btn-neutral btn-full';}
   document.getElementById('addToGoalAmount').value='';
   openSheet('addToGoalSheet');
   setTimeout(()=>document.getElementById('addToGoalAmount')?.focus(),150);
 }
 function confirmAddToGoal(){
   const amt=parseFloat(document.getElementById('addToGoalAmount').value);
-  if(!amt||amt<=0){showToast('₪ הזן סכום להוסיף ליעד');return;}
+  if(!amt||amt<=0){showToast('₪ הזן סכום');return;}
   const g=goals.find(g=>g.id===_addToGoalId);
-  if(g){g.saved=Math.min(g.target,g.saved+amt);saveData();showToast('₪ החיסכון עודכן!');}
-  closeSheet('addToGoalSheet');renderGoals();
+  if(g){
+    const today=new Date().toISOString().split('T')[0];
+    if(_goalTxDir==='withdraw'){
+      const actual=Math.min(amt,g.saved);
+      g.saved=Math.max(0,g.saved-actual);
+      if(actual>0)transactions.unshift({id:'goal|'+g.id+'|'+Date.now(),type:'income',cat:'אחר',desc:'משיכה מיעד: '+g.name,amount:actual,date:today,recurring:false,goalTx:true,goalId:g.id});
+      showToast('₪ נמשך מהחיסכון');
+    }else{
+      g.saved=Math.min(g.target,g.saved+amt);
+      transactions.unshift({id:'goal|'+g.id+'|'+Date.now(),type:'expense',cat:'חיסכון ליעד',desc:'חיסכון: '+g.name,amount:amt,date:today,recurring:false,goalTx:true,goalId:g.id});
+      showToast('₪ החיסכון עודכן!');
+    }
+    saveData();
+  }
+  closeSheet('addToGoalSheet');renderGoals();refreshAll();
 }
 // ── תשלומים ───────────────────────────────────────────────────────
 function _payFmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';return sym+(n||0).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -4535,9 +4600,12 @@ function renderPayments(){
   empty.style.display=payments.length?'none':'';
   body.innerHTML=payments.map(p=>{
     const c=_payCalc(p);
-    return '<div class="pay-card" data-pid="'+p.id+'">'
+    const total=parseFloat(p.total)||0;
+    const done=total>0&&c.left<=0;
+    return '<div class="pay-card'+(done?' pay-card-done':'')+'" data-pid="'+p.id+'">'
       +'<div class="pay-card-top">'
         +'<input class="pay-name-in" type="text" value="'+esc(p.name||'')+'" placeholder="לדוגמה: זארה" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" oninput="updatePayment('+p.id+',\'name\',this.value)">'
+        +(done?'<span class="pay-done-badge">✓ הושלם</span>':'')
         +'<button type="button" class="pay-del" onclick="deletePayment('+p.id+')" aria-label="מחק">✕</button>'
       +'</div>'
       +'<div class="pay-grid">'
@@ -4552,6 +4620,27 @@ function renderPayments(){
   _payRefreshTotal();
 }
 // ── הוצאות קבועות ─────────────────────────────────────────────────
+function getEffectiveFixedCats(){return [...FIXED_CATS,...(userSettings.customFixedCats||[])];}
+function addCustomFixedCat(){
+  const name=prompt('שם ההוצאה הקבועה החדשה:');
+  if(!name||!name.trim())return;
+  const cat=name.trim();
+  if(getEffectiveFixedCats().includes(cat)){showToast('קטגוריה כבר קיימת');return;}
+  if(!userSettings.customFixedCats)userSettings.customFixedCats=[];
+  userSettings.customFixedCats.push(cat);
+  saveSettingsData();
+  renderFixed();
+  showToast('✓ קטגוריה נוספה');
+}
+function removeCustomFixedCat(cat){
+  userSettings.customFixedCats=(userSettings.customFixedCats||[]).filter(c=>c!==cat);
+  fixedExpenses=fixedExpenses.filter(f=>f.id!==cat);
+  saveSettingsData();
+  _fxPushMonth(cat);
+  saveData();
+  renderFixed();
+  showToast('✓ קטגוריה הוסרה');
+}
 function _fxRow(cat){return fixedExpenses.find(f=>f.id===cat);}
 function _fxRaw(cat){const r=_fxRow(cat);return r&&r.amount?r.amount:'';}
 function _fxMonthly(cat){return FIXED_AUTO[cat]?FIXED_AUTO[cat]():(parseFloat((_fxRow(cat)||{}).amount)||0);}
@@ -4568,7 +4657,7 @@ function _fxUpsert(mkey,cat,amount,overwrite){
 function _fxApply(){
   const mkey=_curMonthKey();
   let changed=false;
-  FIXED_CATS.forEach(cat=>{
+  getEffectiveFixedCats().forEach(cat=>{
     if(_syncMeta.del.tx[_fxTxId(mkey,cat)])return;
     changed=_fxUpsert(mkey,cat,_fxMonthly(cat),!!FIXED_AUTO[cat])||changed;
   });
@@ -4580,11 +4669,11 @@ function _fxPushMonth(cat){
   _fxUpsert(mkey,cat,_fxMonthly(cat),true);
 }
 function _fxRefreshTotal(){
-  let t=0;FIXED_CATS.forEach(c=>t+=_fxMonthly(c));
+  let t=0;getEffectiveFixedCats().forEach(c=>t+=_fxMonthly(c));
   const el=document.getElementById('fixedTotal');if(el)el.textContent=_payFmt(t);
 }
 function setFixedAmount(i,val){
-  const cat=FIXED_CATS[i];
+  const cat=getEffectiveFixedCats()[i];
   const amount=val===''?0:(parseFloat(val)||0);
   const row=_fxRow(cat);
   if(amount>0){if(row)row.amount=amount;else fixedExpenses.push({id:cat,amount});}
@@ -4596,25 +4685,29 @@ function setFixedAmount(i,val){
 function renderFixed(){
   const body=document.getElementById('fixedBody');
   if(!body)return;
-  body.innerHTML=FIXED_CATS.map((cat,i)=>{
+  const cats=getEffectiveFixedCats();
+  body.innerHTML=cats.map((cat,i)=>{
     const auto=!!FIXED_AUTO[cat];
+    const isCustom=!FIXED_CATS.includes(cat);
     const cell=auto
       ? '<td class="pay-calc pay-num">'+_payFmt(_fxMonthly(cat))+'</td>'
       : '<td><input class="pay-num" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+esc(_fxRaw(cat))+'" onfocus="this.select()" oninput="setFixedAmount('+i+',this.value)"></td>';
-    return '<tr><td class="fx-name">'+esc(cat)+(auto?'<span class="fx-auto">אוטומטי</span>':'')+'</td>'+cell+'</tr>';
+    const removeBtn=isCustom?'<button type="button" class="pay-del" onclick="removeCustomFixedCat(\''+cat.replace(/'/g,"\\'")+'\')" aria-label="הסר קטגוריה">✕</button>':'';
+    return '<tr><td class="fx-name">'+esc(cat)+(auto?'<span class="fx-auto">אוטומטי</span>':'')+removeBtn+'</td>'+cell+'</tr>';
   }).join('');
   _fxRefreshTotal();
 }
 function renderGoals(){
   const list=document.getElementById('goalsList');
-  if(!goals.length){list.innerHTML='<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>הגדר יעד חיסכון</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">עקוב אחרי ההתקדמות שלך חודש אחרי חודש</p><button class="btn-empty" onclick="openAddGoal()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>';return;}
+  if(!goals.length){list.innerHTML='<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>הגדר יעד חיסכון</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">עקוב אחרי ההתקדמות שלך חודש אחרי חודש</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>';return;}
   list.innerHTML=goals.map(g=>{
     const pct=Math.round(g.saved/g.target*100),done=pct>=100;
-    const progCls=done?'':pct<33?' low':pct<67?' mid':'';
+    const progCls=done?'':progState(pct,[[67,''],[33,'mid'],[0,'low']]);
+    const progBar=progBarHTML(pct,{wrapClass:'prog-wrap',fillClass:'prog-fill',stateClass:progCls});
     const remaining=g.target-g.saved;
     const monthlyNeeded=g.months&&g.months>0?Math.ceil(remaining/g.months):0;
     const monthlyStr=monthlyNeeded>0?'<div class="goal-monthly">'+fmt(monthlyNeeded)+' לחודש'+(g.months?' · '+g.months+' חודשים':'')+'</div>':'';
-    return '<div class="goal-card"><div class="goal-card-header"><div><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions"><button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד">✕</button></div></div><div class="prog-wrap"><div class="prog-fill'+progCls+'" style="width:'+Math.min(pct,100)+'%"></div></div><div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(remaining)+'</div>'+monthlyStr+'</div>';
+    return '<div class="goal-card"><div class="goal-card-header"><div style="cursor:pointer" onclick="editGoal('+g.id+')"><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions">'+(g.saved>0?'<button class="btn btn-neutral btn-sm" onclick="withdrawFromGoal('+g.id+')" aria-label="משוך מהחיסכון">−</button>':'')+'<button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד">✕</button></div></div>'+progBar+'<div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(remaining)+'</div>'+monthlyStr+'</div>';
   }).join('');
 }
 
@@ -4991,8 +5084,8 @@ function renderSubscriptions(){
     const daysLeft=days!==null?Math.max(0,days):cycleLen;
     const elapsed=Math.max(0,cycleLen-daysLeft);
     const pct=Math.min(100,Math.round(elapsed/cycleLen*100));
-    const barCls=pct>=90?'danger':pct>=70?'warn':'';
-    const cycleBar=s.active&&s.nextDate?'<div class="sub-cycle-bar"><div class="sub-cycle-fill '+barCls+'" style="width:'+pct+'%"></div></div>':'';
+    const barCls=progState(pct,[[90,'danger'],[70,'warn'],[0,'']]);
+    const cycleBar=s.active&&s.nextDate?progBarHTML(pct,{wrapClass:'sub-cycle-bar',fillClass:'sub-cycle-fill',stateClass:barCls}):'';
     return '<div class="sub-card'+(s.active?'':' paused')+(soon||over?' soon':'')+'" onclick="editSub('+s.id+')" style="cursor:pointer">'+( soon?'<span class="soon-tag">קרוב!</span>':'')+(over?'<span class="overdue-tag">באיחור</span>':'')+'<div class="sub-row1"><div class="sub-identity"><div class="sub-emoji-big" style="display:none">'+s.emoji+'</div>'+subLogo(s.name)+'<div><div class="sub-name-text">'+esc(s.name)+'</div><span class="sub-cat-chip">'+esc(s.category)+'</span></div></div><div class="sub-price"><div class="sub-price-amount">'+fmt(s.amount)+'</div><div class="sub-price-cycle">'+cycleName(s.cycle)+'</div>'+(s.cycle!=='monthly'?'<div class="sub-price-cycle">≈'+fmt(subME(s))+'/חודש</div>':'')+'</div></div>'+cycleBar+'<div class="sub-row2"><div class="sub-next-label'+(soon||over?' soon-txt':'')+'">'+nl+'</div><div class="sub-btns"><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteSub('+s.id+')" aria-label="מחק מנוי">✕</button></div></div></div>';
   }).join('');
 }
@@ -5008,12 +5101,40 @@ function loanEmoji(name){
   if(n.includes('כרטיס'))return'💳';
   return'🏦';
 }
+let _editingLoanId=null;
+function _clearLoanForm(){
+  ['loanName','loanLender','loanOriginal','loanRemaining','loanMonthly','loanRate','loanMonthsLeft','loanNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+function openAddLoanSheet(){
+  _editingLoanId=null;
+  _clearLoanForm();
+  const title=document.getElementById('loanSheetTitle');if(title)title.textContent='📉 הוספת הלוואה / חוב';
+  const btn=document.getElementById('loanSaveBtn');if(btn){btn.textContent='שמור הלוואה';btn.disabled=false;}
+  openSheet('addLoanSheet');
+}
+function editLoan(id){
+  const l=loans.find(x=>x.id===id);if(!l)return;
+  _editingLoanId=id;
+  document.getElementById('loanName').value=l.name||'';
+  document.getElementById('loanMonthly').value=l.monthly||'';
+  document.getElementById('loanRemaining').value=l.remaining||'';
+  document.getElementById('loanLender').value=l.lender||'';
+  document.getElementById('loanOriginal').value=l.original||'';
+  document.getElementById('loanRate').value=l.rate||'';
+  document.getElementById('loanMonthsLeft').value=l.monthsLeft||'';
+  document.getElementById('loanNotes').value=l.notes||'';
+  if(l.lender||l.original||l.rate||l.monthsLeft||l.notes){
+    const extras=document.getElementById('loanExtras');if(extras)extras.style.display='flex';
+  }
+  const title=document.getElementById('loanSheetTitle');if(title)title.textContent='✏️ עריכת הלוואה';
+  const btn=document.getElementById('loanSaveBtn');if(btn){btn.textContent='שמור שינויים';btn.disabled=false;}
+  openSheet('addLoanSheet');
+}
 function saveLoan(){
   const name=document.getElementById('loanName').value.trim();
   const monthly=parseFloat(document.getElementById('loanMonthly').value)||0;
   if(!name||!monthly){showToast('₪ נדרשים שם הלוואה וסכום חודשי');return;}
-  const loan={
-    id:Date.now(),
+  const patch={
     name,
     lender:document.getElementById('loanLender').value.trim(),
     original:parseFloat(document.getElementById('loanOriginal').value)||0,
@@ -5023,11 +5144,23 @@ function saveLoan(){
     monthsLeft:parseInt(document.getElementById('loanMonthsLeft').value)||0,
     notes:document.getElementById('loanNotes').value.trim()
   };
-  loans.push(loan);
+  const editingId=_editingLoanId;
+  if(editingId!=null){
+    const l=loans.find(x=>x.id===editingId);
+    if(l)Object.assign(l,patch);
+  }else{
+    loans.push({id:Date.now(),...patch});
+  }
   saveData();
-  ['loanName','loanLender','loanOriginal','loanRemaining','loanMonthly','loanRate','loanMonthsLeft','loanNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  _clearLoanForm();
+  _editingLoanId=null;
+  const needsOriginal=patch.remaining>0&&patch.original===0;
   const _lb=document.querySelector('#addLoanSheet .btn-primary');if(_lb){_lb.textContent='✓';_lb.disabled=true;}
-  setTimeout(()=>{closeSheet('addLoanSheet');renderLoans();showToast('📉 הלוואה נוספה');},220);
+  setTimeout(()=>{
+    closeSheet('addLoanSheet');renderLoans();
+    showToast(editingId!=null?'✓ ההלוואה עודכנה':'📉 הלוואה נוספה');
+    if(needsOriginal)setTimeout(()=>showToast('💡 טיפ: הוסף סכום מקורי כדי לראות פס התקדמות ותחזית סילוק'),1600);
+  },220);
 }
 function deleteLoan(id){
   loans=loans.filter(l=>l.id!==id);
@@ -5047,19 +5180,20 @@ function renderLoans(){
   const list=document.getElementById('loansList');
   if(!list)return;
   if(!loans.length){
-    list.innerHTML='<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></div><p>אין הלוואות רשומות</p><button class="btn-empty" onclick="openSheet(\'addLoanSheet\')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הלוואה ראשונה</button></div>';
+    list.innerHTML='<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></div><p>אין הלוואות רשומות</p><button class="btn-empty" onclick="openAddLoanSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הלוואה ראשונה</button></div>';
     return;
   }
   list.innerHTML=loans.map(l=>{
     const pct=l.original>0?Math.min(Math.round((l.original-l.remaining)/l.original*100),100):0;
     const emoji=loanEmoji(l.name);
-    const progBar=l.original>0?`<div class="loan-prog-wrap"><div class="loan-prog-fill" style="width:${pct}%"></div></div><div class="loan-prog-label">${pct}% שולם${l.monthsLeft>0?' · עוד '+l.monthsLeft+' חודשים':''}</div>`:'';
+    const loanBarCls=progState(pct,[[90,'near-done'],[0,'']]);
+    const progBar=l.original>0?progBarHTML(pct,{wrapClass:'loan-prog-wrap',fillClass:'loan-prog-fill',stateClass:loanBarCls})+`<div class="loan-prog-label">${pct}% שולם${l.monthsLeft>0?' · עוד '+l.monthsLeft+' חודשים':''}</div>`:'';
     const stats=[
       `<div class="loan-stat"><div class="loan-stat-val">${fmt(l.monthly)}</div><div class="loan-stat-label">לחודש</div></div>`,
       l.rate>0?`<div class="loan-stat"><div class="loan-stat-val">${l.rate}%</div><div class="loan-stat-label">ריבית</div></div>`:'',
       l.remaining>0?`<div class="loan-stat"><div class="loan-stat-val">${fmt(l.remaining)}</div><div class="loan-stat-label">יתרה</div></div>`:''
     ].filter(Boolean).join('');
-    return `<div class="loan-card"><div class="loan-header"><div class="loan-emoji">${emoji}</div><div class="loan-info"><div class="loan-name">${esc(l.name)}</div>${l.lender?'<div class="loan-lender">'+esc(l.lender)+'</div>':''}</div><button class="btn btn-danger btn-sm" onclick="deleteLoan(${l.id})" aria-label="מחק הלוואה">✕</button></div>${progBar}<div class="loan-stats-row">${stats}</div>${loanPayoffHtml(l)}${l.notes?'<div class="loan-notes">'+esc(l.notes)+'</div>':''}</div>`;
+    return `<div class="loan-card" onclick="editLoan(${l.id})" style="cursor:pointer"><div class="loan-header"><div class="loan-emoji">${emoji}</div><div class="loan-info"><div class="loan-name">${esc(l.name)}</div>${l.lender?'<div class="loan-lender">'+esc(l.lender)+'</div>':''}</div><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteLoan(${l.id})" aria-label="מחק הלוואה">✕</button></div>${progBar}<div class="loan-stats-row">${stats}</div>${loanPayoffHtml(l)}${l.notes?'<div class="loan-notes">'+esc(l.notes)+'</div>':''}</div>`;
   }).join('');
 }
 function _loanMonths(P,M,annualRate){
@@ -5079,7 +5213,7 @@ function loanPayoffHtml(l){
   const chips=[100,250,500].map(x=>{
     const n2=_loanMonths(l.remaining,l.monthly+x,l.rate);
     const saved=(n2&&n2!==Infinity)?n-n2:0;
-    return saved>0?`<button onclick="showToast('💡 תוספת של ${fmt(x)}/חודש ל${esc(l.name).replace(/'/g,'')} תקצר ב-${saved} חודשים')" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px 9px;font-size:0.72rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;">+${fmt(x)} → ${saved} חוד' פחות</button>`:'';
+    return saved>0?`<button onclick="event.stopPropagation();showToast('💡 תוספת של ${fmt(x)}/חודש ל${esc(l.name).replace(/'/g,'')} תקצר ב-${saved} חודשים')" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px 9px;font-size:0.72rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;">+${fmt(x)} → ${saved} חוד' פחות</button>`:'';
   }).filter(Boolean).join('');
   return '<div style="font-size:0.78rem;color:var(--text2);margin-top:8px;font-weight:600;">'+line+'</div>'
     +(chips?'<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'+chips+'</div>':'');
@@ -5951,6 +6085,7 @@ function switchMode(mode){
   userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
   if(!userSettings.incomeSources)userSettings.incomeSources=[];
   if(!userSettings.customCats)userSettings.customCats=[];
+  if(!userSettings.customFixedCats)userSettings.customFixedCats=[];
   userSettings.businessMode=prevBM;   // feature flag, not "am I in business mode"
   _syncMeta=_loadSyncMeta();
   _rebuildShadow();
