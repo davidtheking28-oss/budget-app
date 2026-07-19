@@ -25,7 +25,7 @@ export function computeInsights(data, year, month) {
     const priorAvg = priorMonths.reduce((s, txs) => s + txs.filter(t => t.cat === cat).reduce((s2, t) => s2 + t.amount, 0), 0) / 3;
     const current = summary.spentByCat[cat];
     if (current > 200 && priorAvg > 0 && current >= priorAvg * 1.5) {
-      insights.push({ kind: 'warn', text: `${cat} גבוה ב-${Math.round((current / priorAvg - 1) * 100)}% מהממוצע התלת-חודשי` });
+      insights.push({ kind: 'warn', text: `${cat}: ${fmt(current)} החודש, פי ${(current / priorAvg).toFixed(1)} מהרגיל (בממוצע ${fmt(priorAvg)})` });
     }
   });
 

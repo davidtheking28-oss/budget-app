@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
@@ -13,6 +14,8 @@ const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 export default function Analysis({ clientUserId, year, month }) {
   const { data, loading, error, reload } = useClientBudget(clientUserId);
+  const [whatIfCat, setWhatIfCat] = useState('');
+  const [cutPct, setCutPct] = useState(20);
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return <Skeleton height="400px" radius="14px" style={{ maxWidth: 460, margin: '32px auto 0' }} />;
@@ -52,7 +55,13 @@ export default function Analysis({ clientUserId, year, month }) {
     }]
   };
 
+  const activeCat = labels.includes(whatIfCat) ? whatIfCat : labels[0];
+  const catAmount = byCat[activeCat] || 0;
+  const savings = Math.round(catAmount * (cutPct / 100));
+  const newTotal = total - savings;
+
   return (
+    <div className={styles.wrapOuter}>
     <div className={styles.wrap}>
       <div className={styles.donutBox}>
         <Pie
@@ -89,6 +98,34 @@ export default function Analysis({ clientUserId, year, month }) {
             <span className={styles.legendValue}>{fmt(values[i])}</span>
           </div>
         ))}
+      </div>
+    </div>
+      <div className={styles.whatIf}>
+        <div className={styles.whatIfTitle}>מה אם נצמצם קטגוריה?</div>
+        <div className={styles.whatIfRow}>
+          <select
+            className={styles.whatIfSelect}
+            aria-label="קטגוריה לצמצום"
+            value={activeCat}
+            onChange={e => setWhatIfCat(e.target.value)}
+          >
+            {labels.map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
+          <input
+            className={styles.whatIfSlider}
+            type="range"
+            min="0"
+            max="100"
+            step="5"
+            value={cutPct}
+            aria-label="אחוז צמצום"
+            onChange={e => setCutPct(Number(e.target.value))}
+          />
+          <span className={styles.whatIfPct}>{cutPct}%-</span>
+        </div>
+        <div className={styles.whatIfResult}>
+          חיסכון של <b>{fmt(savings)}</b> בחודש · סה"כ הוצאות יורד ל-<b>{fmt(newTotal)}</b>
+        </div>
       </div>
     </div>
   );

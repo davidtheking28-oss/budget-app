@@ -121,7 +121,7 @@ export default function Subscriptions({ clientUserId }) {
               );
             })}
           </div>
-        ) : <div className={styles.empty}>אין מנויים רשומים</div>}
+        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.subs}</span>אין מנויים רשומים</div>}
       </div>
 
       <div className={styles.section}>
@@ -150,7 +150,7 @@ export default function Subscriptions({ clientUserId }) {
               );
             })}
           </div>
-        ) : <div className={styles.empty}>אין הלוואות רשומות</div>}
+        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.loans}</span>אין הלוואות רשומות</div>}
       </div>
 
       <div className={styles.section}>
@@ -173,7 +173,7 @@ export default function Subscriptions({ clientUserId }) {
               );
             })}
           </div>
-        ) : <div className={styles.empty}>אין תשלומים רשומים</div>}
+        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.payments}</span>אין תשלומים רשומים</div>}
       </div>
 
       <div className={styles.section}>
@@ -187,7 +187,7 @@ export default function Subscriptions({ clientUserId }) {
               </div>
             ))}
           </div>
-        ) : <div className={styles.empty}>אין הוצאות קבועות רשומות</div>}
+        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.fixed}</span>אין הוצאות קבועות רשומות</div>}
       </div>
     </div>
   );
