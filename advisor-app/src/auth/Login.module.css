@@ -85,6 +85,10 @@
   color: var(--text3);
 }
 
+.input[type="email"] {
+  direction: ltr;
+}
+
 .button {
   width: 100%;
   padding: 14px;

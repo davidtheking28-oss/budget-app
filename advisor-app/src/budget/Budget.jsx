@@ -73,7 +73,18 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
         <input className={styles.input} type="number" inputMode="decimal" aria-label="תקרה חודשית" placeholder="תקרה חודשית" value={limit} onChange={e => setLimit(e.target.value)} onKeyDown={e => e.key === 'Enter' && setBudget()} />
         <Button onClick={setBudget} disabled={saving}>שמור תקציב</Button>
       </div>
-      {!activeCats.length && <div className={styles.empty}>עדיין לא הוגדרו תקציבי קטגוריה</div>}
+      {!activeCats.length && (
+        <div className={styles.empty}>
+          <div className={styles.emptyMark}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="8.5" />
+              <circle cx="12" cy="12" r="4.5" />
+              <circle cx="12" cy="12" r="0.8" fill="currentColor" />
+            </svg>
+          </div>
+          עדיין לא הוגדרו תקציבי קטגוריה
+        </div>
+      )}
       <div className={styles.grid}>
         {activeCats.map((c, i) => {
           const s = spentByCat[c] || 0;

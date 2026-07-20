@@ -124,7 +124,18 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         <input className={styles.input} type="date" aria-label="תאריך" value={date || defaultDate} onChange={e => setDate(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <Button onClick={addTx} disabled={adding}>הוסף</Button>
       </div>
-      {!monthTx.length && <div className={styles.empty}>אין תנועות החודש</div>}
+      {!monthTx.length && (
+        <div className={styles.empty}>
+          <div className={styles.emptyMark}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="8.5" />
+              <circle cx="12" cy="12" r="4.5" />
+              <circle cx="12" cy="12" r="0.8" fill="currentColor" />
+            </svg>
+          </div>
+          אין תנועות החודש
+        </div>
+      )}
       {monthTx.length > 0 && (
         <div className={styles.statStrip}>
           <div className={styles.stat}><div className={styles.statValue}>{fmt(grandTotal)}</div><div className={styles.statLabel}>סה"כ החודש</div></div>

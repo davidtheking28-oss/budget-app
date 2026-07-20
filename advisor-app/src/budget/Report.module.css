@@ -41,6 +41,12 @@
   margin-bottom: var(--space-5);
 }
 
+@media (max-width: 860px) {
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .stat {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

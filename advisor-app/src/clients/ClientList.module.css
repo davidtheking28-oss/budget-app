@@ -35,7 +35,7 @@
 .removeBtn {
   position: absolute;
   top: var(--space-3);
-  left: var(--space-3);
+  inset-inline-end: var(--space-3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,7 +62,7 @@
 .confirmRemoveBtn {
   position: absolute;
   top: var(--space-3);
-  left: var(--space-3);
+  inset-inline-end: var(--space-3);
   padding: 5px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(var(--red-rgb), 0.4);
