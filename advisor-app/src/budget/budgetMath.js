@@ -2,7 +2,10 @@ import { getMonthTx } from './monthUtils.js';
 
 export function monthSummary(data, year, month) {
   const monthTx = getMonthTx(data?.transactions, year, month);
-  const income = monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const manualIncome = monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const incomeSources = data?.settings?.incomeSources || [];
+  const fallbackIncome = incomeSources.reduce((s, src) => s + (parseFloat(src.amount) || 0), 0);
+  const income = manualIncome > 0 ? manualIncome : fallbackIncome;
   const expense = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const budgets = data?.budgets || {};
   const spentByCat = {};
