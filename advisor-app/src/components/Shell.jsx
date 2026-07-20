@@ -1,6 +1,20 @@
 import { useEffect } from 'react';
+import { supabase } from '../supabaseClient.js';
 import Logo from './Logo.jsx';
 import styles from './Shell.module.css';
+
+function LogoutButton() {
+  return (
+    <button className={styles.logoutButton} onClick={() => supabase.auth.signOut()} title="התנתק">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <path d="M16 17l5-5-5-5" />
+        <path d="M21 12H9" />
+      </svg>
+      התנתק
+    </button>
+  );
+}
 
 export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, children }) {
   useEffect(() => {
@@ -12,6 +26,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
       <div className={styles.shell} dir="rtl">
         <div className={styles.topbar}>
           <div className={styles.logo}><Logo />Budget Advisor</div>
+          <LogoutButton />
         </div>
         <div className={styles.content}>
           {title && <h1>{title}</h1>}
@@ -51,6 +66,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
           חזרה ללקוחות
         </button>
+        <LogoutButton />
       </aside>
       <div className={styles.mainArea}>
         <div className={styles.contentSidebar} key={activeNav}>

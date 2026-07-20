@@ -51,6 +51,30 @@
   transform: scale(0.96);
 }
 
+.logoutButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text3);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.logoutButton:hover {
+  border-color: rgba(var(--red-rgb), 0.5);
+  color: var(--red);
+}
+
+.logoutButton:active {
+  transform: scale(0.96);
+}
+
 .content {
   flex: 1;
   padding: var(--space-7) 40px var(--space-8);
