@@ -51,28 +51,115 @@
   transform: scale(0.96);
 }
 
-.logoutButton {
+.accountMenu {
+  position: relative;
+}
+
+.accountTrigger {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 18px;
+  padding: 9px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   background: rgba(255, 255, 255, 0.02);
-  color: var(--text3);
+  color: var(--text2);
   font-family: var(--font-body);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 
-.logoutButton:hover {
-  border-color: rgba(var(--red-rgb), 0.5);
-  color: var(--red);
+.accountTrigger:hover {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  color: var(--text);
 }
 
-.logoutButton:active {
-  transform: scale(0.96);
+.accountTrigger svg {
+  flex-shrink: 0;
+  transition: transform 0.2s var(--ease-out-expo);
+}
+
+.accountTrigger svg.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.accountEmail {
+  direction: ltr;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountPanel {
+  position: absolute;
+  z-index: var(--z-overlay);
+  top: calc(100% + var(--space-2));
+  left: 0;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lift);
+  animation: riseIn 0.2s var(--ease-out-expo) both;
+}
+
+.accountPanelLabel {
+  color: var(--text3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.accountInput {
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  outline: none;
+}
+
+.accountSaveBtn {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.accountSaveBtn:hover {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  color: var(--text);
+}
+
+.accountLogoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  color: var(--text3);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.accountLogoutBtn:hover {
+  color: var(--red);
 }
 
 .content {

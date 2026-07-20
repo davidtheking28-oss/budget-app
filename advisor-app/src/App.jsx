@@ -83,7 +83,7 @@ export default function App() {
   if (!selectedClient) {
     return (
       <>
-        <Shell title="לוח בקרה">
+        <Shell title="לוח בקרה" email={session.user.email}>
           <ClientList advisorId={session.user.id} onSelect={switchClient} />
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} />
@@ -114,6 +114,7 @@ export default function App() {
         activeNav={nav}
         onNavChange={setNav}
         onPrint={() => setReportMode(true)}
+        email={session.user.email}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} email={selectedClient.email} nextMeeting={nextMeeting} openTasks={openTasks} />}
       >
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}

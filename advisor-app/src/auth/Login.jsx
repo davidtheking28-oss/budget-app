@@ -32,6 +32,17 @@ export default function Login({ recovery, onRecoveryDone }) {
     if (error) { setError('אימייל או סיסמה שגויים'); return; }
   }
 
+  async function signUp() {
+    setError('');
+    if (!email.trim() || !password) { setError('הזן אימייל וסיסמה'); return; }
+    if (password.length < 6) { setError('הסיסמה חייבת להיות באורך 6 תווים לפחות'); return; }
+    setSending(true);
+    const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+    setSending(false);
+    if (error) { setError(error.message.includes('already registered') ? 'כבר קיים חשבון עם המייל הזה' : 'שגיאה בהרשמה, נסה שוב'); return; }
+    if (!data.session) { setMode('signupSent'); return; }
+  }
+
   async function sendReset() {
     setError('');
     if (!email.trim()) { setError('הזן אימייל'); return; }
@@ -62,12 +73,24 @@ export default function Login({ recovery, onRecoveryDone }) {
         <div className={styles.logo}>Budget Advisor</div>
         <div className={styles.tagline}>
           {mode === 'login' && 'קונסולת ניהול לקוחות'}
+          {mode === 'signup' && 'יצירת חשבון יועץ'}
+          {mode === 'signupSent' && 'יצירת חשבון יועץ'}
           {mode === 'forgot' && 'איפוס סיסמה'}
           {mode === 'sent' && 'איפוס סיסמה'}
           {mode === 'newPassword' && 'הגדרת סיסמה חדשה'}
         </div>
 
-        {mode === 'sent' ? (
+        {mode === 'signupSent' ? (
+          <div className={styles.sent}>
+            <div className={styles.sentIcon}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </div>
+            נשלח קישור אימות למייל שלך - לחץ עליו כדי להשלים את ההרשמה
+            <button type="button" className={styles.linkBtn} onClick={() => setMode('login')}>חזרה להתחברות</button>
+          </div>
+        ) : mode === 'sent' ? (
           <div className={styles.sent}>
             <div className={styles.sentIcon}>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -106,35 +129,41 @@ export default function Login({ recovery, onRecoveryDone }) {
               placeholder="email@example.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && (mode === 'login' ? signIn() : sendReset())}
+              onKeyDown={e => e.key === 'Enter' && (mode === 'login' ? signIn() : mode === 'signup' ? signUp() : sendReset())}
             />
-            {mode === 'login' && (
+            {(mode === 'login' || mode === 'signup') && (
               <input
                 className={styles.input}
                 type="password"
-                name="password"
-                autoComplete="current-password"
+                name={mode === 'signup' ? 'new-password' : 'password'}
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                 spellCheck={false}
                 aria-label="סיסמה"
                 placeholder="סיסמה"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && signIn()}
+                onKeyDown={e => e.key === 'Enter' && (mode === 'signup' ? signUp() : signIn())}
               />
             )}
-            {mode === 'login' ? (
+            {mode === 'login' && (
               <Button className={styles.button} onClick={signIn} disabled={sending}>{sending ? 'מתחבר…' : 'התחבר'}</Button>
-            ) : (
+            )}
+            {mode === 'signup' && (
+              <Button className={styles.button} onClick={signUp} disabled={sending}>{sending ? 'נרשם…' : 'הרשמה'}</Button>
+            )}
+            {mode === 'forgot' && (
               <Button className={styles.button} onClick={sendReset} disabled={sending}>{sending ? 'שולח…' : 'שלח קישור לאיפוס'}</Button>
             )}
             {error && <div className={styles.error} role="alert" aria-live="polite">{error}</div>}
-            <button
-              type="button"
-              className={styles.linkBtn}
-              onClick={() => { setMode(mode === 'login' ? 'forgot' : 'login'); setError(''); }}
-            >
-              {mode === 'login' ? 'שכחת סיסמה?' : 'חזרה להתחברות'}
-            </button>
+            {mode === 'login' && (
+              <>
+                <button type="button" className={styles.linkBtn} onClick={() => { setMode('forgot'); setError(''); }}>שכחת סיסמה?</button>
+                <button type="button" className={styles.linkBtn} onClick={() => { setMode('signup'); setError(''); }}>אין לך חשבון? הרשם</button>
+              </>
+            )}
+            {(mode === 'signup' || mode === 'forgot') && (
+              <button type="button" className={styles.linkBtn} onClick={() => { setMode('login'); setError(''); }}>חזרה להתחברות</button>
+            )}
           </>
         )}
       </div>

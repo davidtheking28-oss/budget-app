@@ -15,6 +15,7 @@
 }
 
 .card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -29,6 +30,48 @@
   cursor: pointer;
   transition: transform 0.2s var(--ease-out-expo), border-color 0.2s ease;
   animation: riseIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.removeBtn {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text3);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.card:hover .removeBtn {
+  opacity: 1;
+}
+
+.removeBtn:hover {
+  color: var(--red);
+  background: rgba(var(--red-rgb), 0.12);
+}
+
+.confirmRemoveBtn {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(var(--red-rgb), 0.4);
+  background: rgba(var(--red-rgb), 0.12);
+  color: var(--red);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .card:hover {

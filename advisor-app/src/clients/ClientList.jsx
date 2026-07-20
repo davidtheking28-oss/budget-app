@@ -46,6 +46,7 @@ export default function ClientList({ advisorId, onSelect }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [confirmingId, setConfirmingId] = useState(null);
   const codeInputRef = useRef(null);
   const mountedRef = useRef(false);
   useEffect(() => { mountedRef.current = true; }, []);
@@ -62,6 +63,14 @@ export default function ClientList({ advisorId, onSelect }) {
     toast('הלקוח חובר בהצלחה', 'success');
     reload();
     setCode('');
+  }
+
+  async function removeClient(id) {
+    const { error } = await supabase.from('advisor_clients').delete().eq('id', id).eq('advisor_id', advisorId);
+    setConfirmingId(null);
+    if (error) { toast('שגיאה בניתוק הלקוח', 'error'); return; }
+    toast('הלקוח נותק', 'success');
+    reload();
   }
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -156,13 +165,16 @@ export default function ClientList({ advisorId, onSelect }) {
         <div className={styles.grid}>
           {clients.map((c, i) => {
             const urgent = c.hasOverage || c.openTasks > 0;
+            const confirming = confirmingId === c.id;
             return (
-              <button
-                type="button"
+              <div
                 key={c.id}
+                role="button"
+                tabIndex={0}
                 className={styles.card + (urgent ? ' ' + styles.cardWide : '') + (mountedRef.current ? ' ' + styles.cardNoAnim : '')}
                 style={mountedRef.current ? undefined : { animationDelay: Math.min(i * 0.04, 0.3) + 's' }}
                 onClick={() => onSelect(c.client_id, c.client_email)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(c.client_id, c.client_email); } }}
               >
                 <div className={styles.initial} aria-hidden="true">{initials(c.client_email)}</div>
                 <div className={styles.info}>
@@ -173,7 +185,16 @@ export default function ClientList({ advisorId, onSelect }) {
                     {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
                   </div>
                 </div>
-              </button>
+                {confirming ? (
+                  <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>
+                    לאשר ניתוק?
+                  </button>
+                ) : (
+                  <button type="button" className={styles.removeBtn} title="נתק לקוח" aria-label="נתק לקוח" onClick={e => { e.stopPropagation(); setConfirmingId(c.id); }}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
