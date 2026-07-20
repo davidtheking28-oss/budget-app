@@ -38,8 +38,10 @@ function downloadIcs(meeting) {
 
 function daysUntil(dateStr) {
   if (!dateStr) return null;
-  const diff = new Date(dateStr) - new Date();
-  return Math.ceil(diff / 86400000);
+  const target = new Date(dateStr);
+  const now = new Date();
+  if (target < now) return -1;
+  return Math.ceil((target - now) / 86400000);
 }
 
 export default function Crm({ advisorId, clientId }) {
@@ -145,7 +147,9 @@ export default function Crm({ advisorId, clientId }) {
                 </div>
               </div>
             ) : (() => {
-              const overdue = !t.done && t.due_date && new Date(t.due_date) < new Date(new Date().toDateString());
+              const now = new Date();
+              const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+              const overdue = !t.done && t.due_date && t.due_date < todayIso;
               return (
                 <div key={t.id} className={styles.row + ' ' + styles.taskRow} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                   <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => toggleTask(t.id, e.target.checked)} />

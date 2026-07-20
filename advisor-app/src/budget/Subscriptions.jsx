@@ -171,8 +171,9 @@ export default function Subscriptions({ clientUserId }) {
               const left = Math.max(0, total - cur);
               const done = total > 0 && left <= 0;
               const paidPct = total > 0 ? Math.min(100, Math.max(0, Math.round((cur / total) * 100))) : null;
+              const showBar = paidPct !== null && !done;
               return (
-                <div key={p.id} className={`${styles.row} ${styles.rowCard} ${styles.rowStacked}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div key={p.id} className={`${styles.row} ${styles.rowCard}${showBar ? ' ' + styles.rowStacked : ''}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                   <div className={styles.rowMain}>
                     <div>
                       <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg> הושלם</span>}</div>
@@ -180,7 +181,7 @@ export default function Subscriptions({ clientUserId }) {
                     </div>
                     <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
                   </div>
-                  {paidPct !== null && !done && (
+                  {showBar && (
                     <div className={styles.loanBarRow}>
                       <div className={styles.loanBar}>
                         <div className={styles.loanBarFill} style={{ transform: `scaleX(${paidPct / 100})` }} />
