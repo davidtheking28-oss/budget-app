@@ -3572,6 +3572,10 @@ async function removeAdvisorLink(){
 function renderAdvisorLinkSection(){
   const el=document.getElementById('advisorLinkSection');
   if(!el)return;
+  if(!_cloudUser){
+    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2)">התחבר עם Gmail (בסעיף "סנכרון ושיתוף" למעלה) כדי לחבר יועץ פיננסי</div>';
+    return;
+  }
   if(!_advisorLink){
     el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">חבר יועץ פיננסי כדי שיוכל לצפות ולערוך את התקציב שלך</div>'
       +'<button class="btn btn-outline btn-full" onclick="createAdvisorInvite()">+ צור קוד ליועץ</button>';
@@ -3616,6 +3620,7 @@ document.addEventListener('DOMContentLoaded',function(){
       _cloudUser=session?.user||null;
       _loadAdvisorStatus().then(_applyAdvisorGate);
       renderCloudSection();
+      renderAdvisorLinkSection();
       if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')){
         _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
         _loadAdvisorLink().then(renderAdvisorLinkSection);
@@ -3632,7 +3637,7 @@ document.addEventListener('DOMContentLoaded',function(){
         await _loadAdvisorLink();
         renderAdvisorLinkSection();
         if(!_gateShown) refreshAll();
-      } else renderCloudSection();
+      } else { renderCloudSection(); renderAdvisorLinkSection(); }
       _authGateResolve(session);
     });
   }
