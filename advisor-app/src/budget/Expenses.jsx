@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
-import { EXPENSE_CATS } from '../categories.js';
+import { EXPENSE_CATS, CHART_PALETTE } from '../categories.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -63,6 +63,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     g.total += t.amount;
   });
   groups.sort((a, b) => b.total - a.total);
+  const grandTotal = groups.reduce((s, g) => s + g.total, 0);
 
   async function addTx() {
     const amt = parseFloat(amount);
@@ -124,9 +125,18 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         <Button onClick={addTx} disabled={adding}>הוסף</Button>
       </div>
       {!monthTx.length && <div className={styles.empty}>אין תנועות החודש</div>}
+      {monthTx.length > 0 && (
+        <div className={styles.statStrip}>
+          <div className={styles.stat}><div className={styles.statValue}>{fmt(grandTotal)}</div><div className={styles.statLabel}>סה"כ החודש</div></div>
+          <div className={styles.stat}><div className={styles.statValue}>{monthTx.length}</div><div className={styles.statLabel}>עסקאות</div></div>
+          {groups[0] && <div className={styles.stat}><div className={styles.statValue}>{groups[0].cat}</div><div className={styles.statLabel}>קטגוריה מובילה</div></div>}
+        </div>
+      )}
       <div className={styles.list}>
         {groups.map((g, i) => {
           const open = openCats.has(g.cat);
+          const pct = grandTotal ? Math.round((g.total / grandTotal) * 100) : 0;
+          const color = CHART_PALETTE[i % CHART_PALETTE.length];
           return (
             <div key={g.cat} className={styles.group}>
               <button
@@ -138,14 +148,17 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
               >
                 <div className={styles.groupLeft}>
                   <svg className={styles.chevron + (open ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                  <span className={styles.catDot} style={{ background: color }} />
                   <span className={styles.catIcon}>{getCategoryIcon(g.cat)}</span>
                   <span>{g.cat}</span>
                   <span className={styles.groupCount}>{g.items.length}</span>
                 </div>
-                <div style={{ color: 'var(--red)', fontWeight: 700 }}>
-                  {fmt(g.total)}
+                <div className={styles.groupRight}>
+                  <span className={styles.groupPct}>{pct}%</span>
+                  <span style={{ color: 'var(--red)', fontWeight: 700 }}>{fmt(g.total)}</span>
                 </div>
               </button>
+              <div className={styles.groupBar}><div className={styles.groupBarFill} style={{ width: pct + '%', background: color }} /></div>
               {open && (
                 <div className={styles.groupBody}>
                   {g.items.map(t => (
