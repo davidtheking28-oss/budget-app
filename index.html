@@ -3540,13 +3540,28 @@ async function _loadAdvisorLink(){
   const {data}=await _sb.from('advisor_clients').select('*').eq('client_id',_cloudUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
   _advisorLink=data||null;
 }
+function genInviteCode(){
+  const chars='23456789ABCDEFGHJKMNPQRSTUVWXYZ'; // no 0/O/1/I/L — avoids copy/type ambiguity
+  let code='';
+  for(let i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
 async function createAdvisorInvite(){
   if(!_cloudUser||!_sb)return;
-  const code=Math.random().toString(36).substring(2,8).toUpperCase();
+  const code=genInviteCode();
   const {data,error}=await _sb.from('advisor_clients').insert({client_id:_cloudUser.id,client_email:_cloudUser.email,invite_code:code,status:'pending'}).select().single();
   if(error){showToast('❌ שגיאה ביצירת קוד');return;}
   _advisorLink=data;
   renderAdvisorLinkSection();
+}
+async function copyAdvisorCode(){
+  if(!_advisorLink?.invite_code)return;
+  try{
+    await navigator.clipboard.writeText(_advisorLink.invite_code);
+    showToast('✅ הקוד הועתק');
+  }catch(e){
+    showToast('❌ לא ניתן להעתיק, העתק ידנית');
+  }
 }
 async function removeAdvisorLink(){
   if(!_advisorLink||!_sb)return;
@@ -3565,7 +3580,8 @@ function renderAdvisorLinkSection(){
   if(_advisorLink.status==='pending'){
     el.innerHTML='<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:center">'
       +'<div style="font-size:1.4rem;margin-bottom:4px">🔑</div>'
-      +'<div style="font-size:1.4rem;font-weight:800;letter-spacing:6px;font-family:var(--font-num);color:var(--accent)">'+esc(_advisorLink.invite_code)+'</div>'
+      +'<div style="font-size:1.4rem;font-weight:800;letter-spacing:6px;font-family:var(--font-num);color:var(--accent);direction:ltr">'+esc(_advisorLink.invite_code)+'</div>'
+      +'<button class="btn btn-outline btn-sm" onclick="copyAdvisorCode()" style="margin-top:8px">העתק קוד</button>'
       +'<div style="font-size:0.72rem;color:var(--text3);margin-top:4px">שתף את הקוד עם היועץ הפיננסי שלך</div></div>'
       +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">בטל קוד</button>';
     return;

@@ -56,7 +56,8 @@ export default function ClientList({ advisorId, onSelect }) {
     setSubmitting(true);
     const { data, error } = await supabase.rpc('claim_advisor_invite', { p_code: trimmed });
     setSubmitting(false);
-    if (error || !data) { toast('קוד לא תקין או שכבר נוצל', 'error'); return; }
+    if (error) { console.error('claim_advisor_invite', error); toast('שגיאה בחיבור, נסה שוב', 'error'); return; }
+    if (!data) { toast('קוד לא תקין או שכבר נוצל', 'error'); return; }
     toast('הלקוח חובר בהצלחה', 'success');
     reload();
     setCode('');
@@ -126,10 +127,12 @@ export default function ClientList({ advisorId, onSelect }) {
             className={styles.addInput}
             name="invite-code"
             autoComplete="off"
+            dir="ltr"
+            style={{ textAlign: 'center', letterSpacing: '2px' }}
             aria-label="קוד הזמנה מהלקוח"
             placeholder="קוד הזמנה מהלקוח"
             value={code}
-            onChange={e => setCode(e.target.value)}
+            onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
             onKeyDown={e => e.key === 'Enter' && claimCode()}
           />
           <Button className={styles.addButton} onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
