@@ -258,6 +258,7 @@
     .btn-neutral:active{background:var(--blue-light);}
     .btn-outline{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);min-height:44px;padding:8px 14px;font-size:0.82rem;}
     .btn-sm{min-height:44px;padding:7px 14px;font-size:0.78rem;border-radius:8px;}
+    .sheet-close-x{background:none;border:none;font-size:1.4rem;color:var(--text3);cursor:pointer;line-height:1;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .btn-teal{background:var(--teal);color:white;}
     @media(hover:none){button:hover{transform:none!important;}}
     .shortcut-btn:active{transform:scale(0.93)!important;transition:transform 0.12s cubic-bezier(0.22,1,0.36,1);}
@@ -722,8 +723,7 @@
     .splash-sub{font-size:0.8rem;color:var(--text3);}
     @keyframes splashPulse{from{opacity:0.7;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
     /* ── Auth screen ─────────────────────────── */
-    #authScreen{position:fixed;inset:0;z-index:8000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);transition:opacity 0.35s ease,visibility 0.35s ease;overflow-y:auto;}
-    #authScreen{position:fixed;inset:0;z-index:9998;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow-y:auto;}
+    #authScreen{position:fixed;inset:0;z-index:9998;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);transition:opacity 0.35s ease,visibility 0.35s ease;overflow-y:auto;}
     #authScreen.hidden{opacity:0;visibility:hidden;pointer-events:none;}
     @keyframes authSlideUp{from{opacity:0;transform:translateY(32px);}to{opacity:1;transform:translateY(0);}}
     .auth-inner{width:100%;max-width:390px;padding:max(7vh,52px) 28px max(6vh,44px);display:flex;flex-direction:column;min-height:100dvh;animation:authSlideUp 0.52s cubic-bezier(0.16,1,0.3,1) both;}
@@ -1778,7 +1778,7 @@
     </div>
     <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px">
       <button class="btn btn-primary btn-sm" onclick="openSheet('addBudgetSheet')">+ הגדר תקציב</button>
-      <label style="display:flex;align-items:center;gap:7px;font-size:0.8rem;color:var(--text2);cursor:pointer;white-space:nowrap;">
+      <label style="display:flex;align-items:center;gap:7px;font-size:0.8rem;color:var(--text2);cursor:pointer;white-space:nowrap;min-height:44px;padding:6px 0;">
         <input type="checkbox" id="budgetRolloverToggle" onchange="toggleBudgetRollover(this.checked)" style="width:16px;height:16px;accent-color:var(--accent);">
         גלגול יתרה מחודש קודם
       </label>
@@ -1998,7 +1998,7 @@
 <div class="sheet-overlay" id="settingsSheet" onclick="if(event.target===this)closeSheet('settingsSheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">⚙️ הגדרות<button onclick="closeSheet('settingsSheet')" aria-label="סגור" style="background:none;border:none;font-size:1.4rem;color:var(--text3);cursor:pointer;line-height:1;padding:0 4px;">✕</button></div>
+    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">⚙️ הגדרות<button onclick="closeSheet('settingsSheet')" aria-label="סגור" class="sheet-close-x">✕</button></div>
     <div class="form-stack">
       <div class="settings-section">
         <div class="settings-section-title">פרופיל</div>
@@ -2049,10 +2049,10 @@
           </label>
         </div>
         <div id="pushPrefsWrap" style="display:none;margin-top:6px;padding:4px 2px;">
-          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;"><input type="checkbox" id="pushPrefDaily" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">תזכורת יומית לרישום הוצאות</label>
-          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;"><input type="checkbox" id="pushPrefBudget" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">התראת חריגה מתקציב</label>
-          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;"><input type="checkbox" id="pushPrefRenewals" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">תזכורת לפני חידוש מנוי</label>
-          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;"><input type="checkbox" id="pushPrefMonthly" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">סיכום חודשי</label>
+          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefDaily" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">תזכורת יומית לרישום הוצאות</label>
+          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefBudget" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">התראת חריגה מתקציב</label>
+          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefRenewals" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">תזכורת לפני חידוש מנוי</label>
+          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefMonthly" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">סיכום חודשי</label>
         </div>
       </div>
       <div class="settings-section">
@@ -2168,7 +2168,7 @@
 <div class="sheet-overlay" id="termsSheet" onclick="if(event.target===this)closeSheet('termsSheet')">
   <div class="sheet" style="max-height:86vh">
     <div class="sheet-handle"></div>
-    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">📄 תנאי שימוש<button onclick="closeSheet('termsSheet')" aria-label="סגור" style="background:none;border:none;font-size:1.4rem;color:var(--text3);cursor:pointer;line-height:1;padding:0 4px;">✕</button></div>
+    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">📄 תנאי שימוש<button onclick="closeSheet('termsSheet')" aria-label="סגור" class="sheet-close-x">✕</button></div>
     <div style="font-size:0.84rem;color:var(--text2);line-height:1.8;overflow-y:auto;max-height:68vh;display:flex;flex-direction:column;gap:16px;padding-bottom:8px;">
       <div style="background:rgba(29,78,216,0.07);border-radius:10px;padding:10px 14px;font-size:0.8rem;color:var(--accent);">השימוש באפליקציה מהווה הסכמה לתנאים אלה. אם אינך מסכים, אנא הפסק את השימוש.</div>
       <div>
@@ -2207,7 +2207,7 @@
 <div class="sheet-overlay" id="privacySheet" onclick="if(event.target===this)closeSheet('privacySheet')">
   <div class="sheet" style="max-height:86vh">
     <div class="sheet-handle"></div>
-    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">🔒 מדיניות פרטיות<button onclick="closeSheet('privacySheet')" aria-label="סגור" style="background:none;border:none;font-size:1.4rem;color:var(--text3);cursor:pointer;line-height:1;padding:0 4px;">✕</button></div>
+    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">🔒 מדיניות פרטיות<button onclick="closeSheet('privacySheet')" aria-label="סגור" class="sheet-close-x">✕</button></div>
     <div style="font-size:0.84rem;color:var(--text2);line-height:1.8;overflow-y:auto;max-height:68vh;display:flex;flex-direction:column;gap:16px;padding-bottom:8px;">
       <div style="background:rgba(5,150,105,0.07);border-radius:10px;padding:10px 14px;font-size:0.8rem;color:var(--green);">הנתונים הפיננסיים שלך שמורים אצלך בלבד. אנחנו לא רואים אותם ולא מוכרים אותם.</div>
       <div>
@@ -5561,13 +5561,13 @@ function renderSmsParsed(){
     +_smsParsed.map((p,i)=>'<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border)">'
       +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">'
       +(p.type==='income'?'<span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--green-light);color:var(--green);white-space:nowrap;flex-shrink:0;">הכנסה</span>':'')
-      +'<input type="text" value="'+esc(p.desc)+'" oninput="_smsParsed['+i+'].desc=this.value" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;" />'
-      +'<input type="number" value="'+p.amount+'" oninput="_smsParsed['+i+'].amount=parseFloat(this.value)||0" style="width:80px;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;font-family:var(--font-num);font-weight:700;color:'+(p.type==='income'?'var(--green)':'var(--red)')+';background:var(--surface);outline:none;text-align:center;" />'
+      +'<input type="text" aria-label="תיאור עסקה" value="'+esc(p.desc)+'" oninput="_smsParsed['+i+'].desc=this.value" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;" />'
+      +'<input type="number" aria-label="סכום" value="'+p.amount+'" oninput="_smsParsed['+i+'].amount=parseFloat(this.value)||0" style="width:80px;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.85rem;font-family:var(--font-num);font-weight:700;color:'+(p.type==='income'?'var(--green)':'var(--red)')+';background:var(--surface);outline:none;text-align:center;" />'
       +'</div>'
       +'<div style="display:flex;gap:8px;align-items:center">'
-      +'<input type="date" value="'+p.date+'" oninput="_smsParsed['+i+'].date=this.value" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;" />'
-      +'<select oninput="_smsParsed['+i+'].cat=this.value" style="flex:2;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;">'+cats.map(c=>'<option'+(c===p.cat?' selected':'')+'>'+c+'</option>').join('')+'</select>'
-      +'<button onclick="_smsParsed.splice('+i+',1);renderSmsParsed()" aria-label="הסר" style="background:transparent;border:none;color:var(--text3);font-size:1rem;cursor:pointer;padding:4px 6px;flex-shrink:0">✕</button>'
+      +'<input type="date" aria-label="תאריך" value="'+p.date+'" oninput="_smsParsed['+i+'].date=this.value" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;" />'
+      +'<select aria-label="קטגוריה" oninput="_smsParsed['+i+'].cat=this.value" style="flex:2;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;">'+cats.map(c=>'<option'+(c===p.cat?' selected':'')+'>'+c+'</option>').join('')+'</select>'
+      +'<button onclick="_smsParsed.splice('+i+',1);renderSmsParsed()" aria-label="הסר עסקה" style="background:transparent;border:none;color:var(--text3);font-size:1rem;cursor:pointer;min-width:44px;min-height:44px;flex-shrink:0">✕</button>'
       +'</div>'
       +'</div>'
     ).join('');
