@@ -11,7 +11,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 40px;
+  padding: var(--space-5) 40px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -53,7 +53,7 @@
 
 .content {
   flex: 1;
-  padding: 48px 40px 64px;
+  padding: var(--space-7) 40px var(--space-8);
   max-width: 1160px;
   width: 100%;
   margin: 0 auto;
@@ -62,7 +62,7 @@
 
 .content h1 {
   font-size: var(--text-display-md);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .shellSidebar {
@@ -79,7 +79,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 24px 20px;
+  padding: var(--space-5) 20px;
   background: linear-gradient(180deg, var(--surface), rgba(20, 24, 28, 0.5));
   border-inline-start: 1px solid var(--border);
   min-height: 100vh;
@@ -170,7 +170,7 @@
 }
 
 .contentSidebar {
-  padding: 48px 56px 72px;
+  padding: var(--space-7) 56px 72px;
   max-width: 1280px;
   animation: tabIn 0.4s var(--ease-out-expo) both;
 }
@@ -183,7 +183,7 @@
 .contentSidebar h1 {
   font-size: var(--text-display-md);
   letter-spacing: -0.01em;
-  margin-bottom: 32px;
+  margin-bottom: var(--space-6);
 }
 
 .reportButton {
@@ -223,14 +223,14 @@
     border-inline-start: none;
     border-bottom: 1px solid var(--border);
     gap: 14px;
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .nav {
     flex-direction: row;
     overflow-x: auto;
-    gap: 4px;
-    padding-bottom: 4px;
+    gap: var(--space-1);
+    padding-bottom: var(--space-1);
   }
 
   .navItem {
@@ -243,7 +243,7 @@
   }
 
   .contentSidebar {
-    padding: 28px 20px 48px;
+    padding: 28px 20px var(--space-7);
   }
 
   .contentSidebar h1 {
@@ -252,10 +252,10 @@
   }
 
   .topbar {
-    padding: 16px 20px;
+    padding: var(--space-4) 20px;
   }
 
   .content {
-    padding: 28px 20px 48px;
+    padding: 28px 20px var(--space-7);
   }
 }

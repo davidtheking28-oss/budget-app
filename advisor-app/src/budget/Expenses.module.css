@@ -50,7 +50,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 16px 18px;
+  padding: var(--space-4) 18px;
   border: none;
   background: none;
   font-family: var(--font-body);

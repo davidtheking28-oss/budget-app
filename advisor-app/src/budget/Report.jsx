@@ -4,6 +4,7 @@ import { computeInsights, computeHealthScore } from './insights.js';
 import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
+import Skeleton from '../components/Skeleton.jsx';
 import styles from './Report.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
@@ -12,7 +13,14 @@ const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי',
 export default function Report({ clientUserId, year, month, email, onClose }) {
   const { data, loading, error, reload } = useClientBudget(clientUserId);
   if (error) return <ErrorState onRetry={reload} />;
-  if (loading || !data) return null;
+  if (loading || !data) {
+    return (
+      <div style={{ padding: 24 }}>
+        <Skeleton height="48px" radius="12px" style={{ marginBottom: 20 }} />
+        <Skeleton height="200px" radius="14px" />
+      </div>
+    );
+  }
 
   const summary = monthSummary(data, year, month);
   const insights = computeInsights(data, year, month);

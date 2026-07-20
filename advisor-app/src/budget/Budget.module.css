@@ -71,7 +71,7 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .itemTop span:first-child {
@@ -82,7 +82,7 @@
 .catLabel {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .catLabel svg {
