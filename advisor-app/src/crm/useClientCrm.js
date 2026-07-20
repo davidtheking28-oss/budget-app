@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 
@@ -8,15 +8,18 @@ export function useClientCrm(advisorId, clientId) {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const requestIdRef = useRef(0);
 
   const reload = useCallback(async () => {
     if (!advisorId || !clientId) return;
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     const [notesRes, tasksRes, meetingsRes] = await Promise.all([
       supabase.from('advisor_notes').select('*').eq('advisor_id', advisorId).eq('client_id', clientId).order('created_at', { ascending: false }),
       supabase.from('advisor_tasks').select('*').eq('advisor_id', advisorId).eq('client_id', clientId).order('created_at', { ascending: false }),
       supabase.from('advisor_meetings').select('*').eq('advisor_id', advisorId).eq('client_id', clientId).order('scheduled_at', { ascending: true })
     ]);
+    if (requestId !== requestIdRef.current) return;
     const firstError = notesRes.error || tasksRes.error || meetingsRes.error;
     if (firstError) { setError(firstError); setLoading(false); return; }
     setError(null);
