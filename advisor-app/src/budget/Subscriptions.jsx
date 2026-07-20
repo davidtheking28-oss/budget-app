@@ -135,8 +135,9 @@ export default function Subscriptions({ clientUserId }) {
             {loans.map((l, i) => {
               const pct = l.original ? Math.min(100, Math.max(0, Math.round(((l.original - (l.remaining || 0)) / l.original) * 100))) : null;
               const payoff = loanPayoffLabel(l);
+              const danger = payoff?.danger;
               return (
-                <div key={l.id} className={pct !== null ? `${styles.row} ${styles.rowCard} ${styles.rowStacked} ${styles.rowWide}` : `${styles.row} ${styles.rowCard}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div key={l.id} className={`${styles.row} ${styles.rowCard} ${styles.rowStacked} ${styles.rowWide}${danger ? ' ' + styles.rowDanger : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                   <div className={styles.rowMain}>
                     <div>
                       <div className={styles.name}>{l.name || 'הלוואה'}</div>
@@ -145,8 +146,11 @@ export default function Subscriptions({ clientUserId }) {
                     <div className={styles.amount}>{fmt(l.monthly || 0)}</div>
                   </div>
                   {pct !== null && (
-                    <div className={styles.loanBar}>
-                      <div className={styles.loanBarFill} style={{ transform: `scaleX(${pct / 100})` }} />
+                    <div className={styles.loanBarRow}>
+                      <div className={styles.loanBar}>
+                        <div className={styles.loanBarFill + (pct >= 70 ? ' ' + styles.loanBarFillGood : '')} style={{ transform: `scaleX(${pct / 100})` }} />
+                      </div>
+                      <div className={styles.loanBarPct}>{pct}%</div>
                     </div>
                   )}
                   {payoff && <div className={payoff.danger ? styles.payoffDanger : styles.payoffLabel}>{payoff.text}</div>}
@@ -160,19 +164,30 @@ export default function Subscriptions({ clientUserId }) {
       {payments.length > 0 && <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span></div>
         {payments.length ? (
-          <div className={styles.list}>
+          <div className={styles.grid}>
             {payments.map((p, i) => {
               const total = parseFloat(p.total) || 0;
               const cur = parseFloat(p.current) || 0;
               const left = Math.max(0, total - cur);
               const done = total > 0 && left <= 0;
+              const paidPct = total > 0 ? Math.min(100, Math.max(0, Math.round((cur / total) * 100))) : null;
               return (
-                <div key={p.id} className={styles.row + (done ? ' ' + styles.rowDone : '')} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                  <div>
-                    <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg> הושלם</span>}</div>
-                    <div className={styles.meta}>{total ? `נותרו ${left} מתוך ${total} תשלומים` : ''}</div>
+                <div key={p.id} className={`${styles.row} ${styles.rowCard} ${styles.rowStacked}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                  <div className={styles.rowMain}>
+                    <div>
+                      <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg> הושלם</span>}</div>
+                      <div className={styles.meta}>{total ? `נותרו ${left} מתוך ${total} תשלומים` : ''}</div>
+                    </div>
+                    <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
                   </div>
-                  <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
+                  {paidPct !== null && !done && (
+                    <div className={styles.loanBarRow}>
+                      <div className={styles.loanBar}>
+                        <div className={styles.loanBarFill} style={{ transform: `scaleX(${paidPct / 100})` }} />
+                      </div>
+                      <div className={styles.loanBarPct}>{paidPct}%</div>
+                    </div>
+                  )}
                 </div>
               );
             })}

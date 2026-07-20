@@ -177,8 +177,15 @@
   width: 100%;
 }
 
+.loanBarRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .loanBar {
-  height: 5px;
+  flex: 1;
+  height: 6px;
   border-radius: var(--radius-xs);
   background: rgba(0, 0, 0, 0.3);
   overflow: hidden;
@@ -191,6 +198,29 @@
   background: var(--accent);
   transform-origin: right;
   transition: transform 0.4s var(--ease-out-expo);
+}
+
+.loanBarFillGood {
+  background: var(--green);
+}
+
+.loanBarPct {
+  flex-shrink: 0;
+  min-width: 2.4em;
+  text-align: left;
+  direction: ltr;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text3);
+  font-variant-numeric: tabular-nums;
+}
+
+.rowDanger {
+  border-color: rgba(var(--red-rgb), 0.3);
+}
+
+.rowDanger:hover {
+  border-color: rgba(var(--red-rgb), 0.45);
 }
 
 .rowCard:hover {

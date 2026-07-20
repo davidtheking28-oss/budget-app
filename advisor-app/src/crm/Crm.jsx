@@ -6,6 +6,12 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import styles from './Crm.module.css';
 
+const ICONS = {
+  meetings: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
+  tasks: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>,
+  notes: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4V4z" /></svg>
+};
+
 function downloadIcs(meeting) {
   const dt = new Date(meeting.scheduled_at);
   const pad = n => String(n).padStart(2, '0');
@@ -28,6 +34,12 @@ function downloadIcs(meeting) {
   a.download = 'meeting.ics';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const diff = new Date(dateStr) - new Date();
+  return Math.ceil(diff / 86400000);
 }
 
 export default function Crm({ advisorId, clientId }) {
@@ -68,7 +80,7 @@ export default function Crm({ advisorId, clientId }) {
   return (
     <div>
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>פגישות</div>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconMeetings}>{ICONS.meetings}</span>פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}</div>
         <div className={styles.form}>
           <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && meetingAt && (addMeeting(new Date(meetingAt).toISOString(), meetingNotes), setMeetingAt(''), setMeetingNotes(''))} />
           <input className={styles.input} type="datetime-local" aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
@@ -85,28 +97,37 @@ export default function Crm({ advisorId, clientId }) {
                   <Button variant="ghost" onClick={() => setEditingMeeting(null)}>ביטול</Button>
                 </div>
               </div>
-            ) : (
-              <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <div role="button" tabIndex={0} style={{ cursor: 'pointer', flex: 1 }} onClick={() => startEditMeeting(m)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditMeeting(m))}>
-                  <div>{new Date(m.scheduled_at).toLocaleString('he-IL')}</div>
-                  {m.notes && <div className={styles.meta}>{m.notes}</div>}
+            ) : (() => {
+              const days = daysUntil(m.scheduled_at);
+              const soon = days !== null && days >= 0 && days <= 3;
+              const past = days !== null && days < 0;
+              return (
+                <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                  <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditMeeting(m)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditMeeting(m))}>
+                    <div className={styles.name}>
+                      {new Date(m.scheduled_at).toLocaleString('he-IL')}
+                      {soon && <span className={styles.soonBadge}>בעוד {days === 0 ? 'היום' : days + ' ימים'}</span>}
+                      {past && <span className={styles.pastBadge}>עברה</span>}
+                    </div>
+                    {m.notes && <div className={styles.meta}>{m.notes}</div>}
+                  </div>
+                  <div className={styles.rowActions}>
+                    <button type="button" className={styles.icsButton} title="הורד ליומן" aria-label="הורד ליומן" onClick={() => downloadIcs(m)}>
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><path d="M12 14v4M10 16h4" />
+                      </svg>
+                    </button>
+                    <DeleteButton onClick={() => deleteMeeting(m.id)} />
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <button type="button" className={styles.icsButton} title="הורד ליומן" aria-label="הורד ליומן" onClick={() => downloadIcs(m)}>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><path d="M12 14v4M10 16h4" />
-                    </svg>
-                  </button>
-                  <DeleteButton onClick={() => deleteMeeting(m.id)} />
-                </div>
-              </div>
-            ))}
+              );
+            })())}
           </div>
-        ) : <div className={styles.empty}><span className={styles.emptyMark}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg></span>אין פגישות מתוזמנות</div>}
+        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.meetings}</span>אין פגישות מתוזמנות</div>}
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>משימות</div>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconTasks}>{ICONS.tasks}</span>משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}</div>
         <div className={styles.form}>
           <input className={styles.input} aria-label="כותרת המשימה" placeholder="כותרת המשימה" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && taskTitle.trim() && (addTask(taskTitle, taskDue), setTaskTitle(''), setTaskDue(''))} />
           <input className={styles.input} type="date" aria-label="תאריך יעד למשימה" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
@@ -123,22 +144,25 @@ export default function Crm({ advisorId, clientId }) {
                   <Button variant="ghost" onClick={() => setEditingTask(null)}>ביטול</Button>
                 </div>
               </div>
-            ) : (
-              <div key={t.id} className={styles.row + ' ' + styles.taskRow} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => toggleTask(t.id, e.target.checked)} />
-                <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} style={{ cursor: 'pointer' }} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
-                  <div>{t.title}</div>
-                  {t.due_date && <div className={styles.meta}>יעד: {t.due_date}</div>}
+            ) : (() => {
+              const overdue = !t.done && t.due_date && new Date(t.due_date) < new Date(new Date().toDateString());
+              return (
+                <div key={t.id} className={styles.row + ' ' + styles.taskRow} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                  <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => toggleTask(t.id, e.target.checked)} />
+                  <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
+                    <div className={styles.name}>{t.title}{overdue && <span className={styles.pastBadge}>באיחור</span>}</div>
+                    {t.due_date && <div className={styles.meta}>יעד: {t.due_date}</div>}
+                  </div>
+                  <DeleteButton onClick={() => deleteTask(t.id)} />
                 </div>
-                <DeleteButton onClick={() => deleteTask(t.id)} />
-              </div>
-            ))}
+              );
+            })())}
           </div>
-        ) : <div className={styles.empty}><span className={styles.emptyMark}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg></span>אין משימות</div>}
+        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.tasks}</span>אין משימות</div>}
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>הערות</div>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconNotes}>{ICONS.notes}</span>הערות{notes.length > 0 && <span className={styles.countBadge}>{notes.length}</span>}</div>
         <div className={styles.form}>
           <textarea className={styles.textarea} aria-label="הערה חדשה על הלקוח" placeholder="הערה חדשה על הלקוח" value={noteBody} onChange={e => setNoteBody(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && noteBody.trim() && (e.preventDefault(), addNote(noteBody), setNoteBody(''))} />
           <Button disabled={!noteBody.trim()} onClick={() => { addNote(noteBody); setNoteBody(''); }}>שמור הערה</Button>
@@ -155,7 +179,7 @@ export default function Crm({ advisorId, clientId }) {
               </div>
             ) : (
               <div key={n.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <div role="button" tabIndex={0} style={{ cursor: 'pointer', flex: 1 }} onClick={() => startEditNote(n)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditNote(n))}>
+                <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditNote(n)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditNote(n))}>
                   <div>{n.body}</div>
                   <div className={styles.meta}>{new Date(n.created_at).toLocaleDateString('he-IL')}</div>
                 </div>
@@ -163,7 +187,7 @@ export default function Crm({ advisorId, clientId }) {
               </div>
             ))}
           </div>
-        ) : <div className={styles.empty}><span className={styles.emptyMark}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4V4z" /></svg></span>אין הערות</div>}
+        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.notes}</span>אין הערות</div>}
       </div>
     </div>
   );
