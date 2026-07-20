@@ -137,7 +137,7 @@ export default function Subscriptions({ clientUserId }) {
               const payoff = loanPayoffLabel(l);
               const danger = payoff?.danger;
               return (
-                <div key={l.id} className={`${styles.row} ${styles.rowCard} ${styles.rowStacked} ${styles.rowWide}${danger ? ' ' + styles.rowDanger : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div key={l.id} className={`${styles.row} ${styles.rowCard}${pct !== null ? ` ${styles.rowStacked} ${styles.rowWide}` : ''}${danger ? ' ' + styles.rowDanger : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                   <div className={styles.rowMain}>
                     <div>
                       <div className={styles.name}>{l.name || 'הלוואה'}</div>
