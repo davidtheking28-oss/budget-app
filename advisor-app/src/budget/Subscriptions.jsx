@@ -4,7 +4,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import { CHART_PALETTE } from '../categories.js';
 import styles from './Subscriptions.module.css';
 
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const CYCLE_LABELS = { monthly: 'חודשי', yearly: 'שנתי' };
 const AUTO_FIXED_CATS = ['החזר הלוואות + חיוב קבוע', 'עסקאות בתשלומים', 'מנויים ושירותים'];
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];

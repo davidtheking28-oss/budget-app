@@ -6,7 +6,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import styles from './Report.module.css';
 
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
 export default function Report({ clientUserId, year, month, email, onClose }) {

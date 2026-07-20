@@ -18,7 +18,7 @@ function HealthDot({ score }) {
   return <span className={styles.healthDot} style={{ background: color }} role="img" aria-label={`ציון בריאות: ${score}`} title={`ציון בריאות: ${score}`} />;
 }
 
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 function RemainingChip({ value }) {
   const display = useCountUp(value ?? 0);

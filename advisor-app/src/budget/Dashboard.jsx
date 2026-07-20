@@ -13,7 +13,7 @@ import styles from './Dashboard.module.css';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
 
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
 
 function NetHero({ value }) {

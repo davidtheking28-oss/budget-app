@@ -7,7 +7,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import styles from './Goals.module.css';
 
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 export default function Goals({ clientUserId, advisorId }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);

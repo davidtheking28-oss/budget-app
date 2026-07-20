@@ -10,7 +10,7 @@ import styles from './Analysis.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 export default function Analysis({ clientUserId, year, month }) {
   const { data, loading, error, reload } = useClientBudget(clientUserId);

@@ -10,7 +10,7 @@ import { toast } from '../toast.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import styles from './Budget.module.css';
 
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 export default function Budget({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
