@@ -57,7 +57,8 @@ export default function ClientList({ advisorId, onSelect }) {
     const { data, error } = await supabase.rpc('claim_advisor_invite', { p_code: trimmed });
     setSubmitting(false);
     if (error) { console.error('claim_advisor_invite', error); toast('שגיאה בחיבור, נסה שוב', 'error'); return; }
-    if (!data) { toast('קוד לא תקין או שכבר נוצל', 'error'); return; }
+    if (data === 'self') { toast('אתה מחובר כרגע עם חשבון הלקוח עצמו - התחבר לפלטפורמה עם חשבון היועץ שלך', 'error'); return; }
+    if (data !== 'ok') { toast('קוד לא תקין או שכבר נוצל', 'error'); return; }
     toast('הלקוח חובר בהצלחה', 'success');
     reload();
     setCode('');
