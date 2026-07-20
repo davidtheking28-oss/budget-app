@@ -25,6 +25,24 @@ function NetHero({ value }) {
   );
 }
 
+function Sparkline({ values }) {
+  const w = 120, h = 32, pad = 3;
+  const min = Math.min(...values, 0);
+  const max = Math.max(...values, 0);
+  const range = max - min || 1;
+  const points = values.map((v, i) => {
+    const x = pad + (i / (values.length - 1)) * (w - pad * 2);
+    const y = pad + (1 - (v - min) / range) * (h - pad * 2);
+    return `${x},${y}`;
+  });
+  const rising = values[values.length - 1] >= values[0];
+  return (
+    <svg className={styles.sparkline} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
+      <polyline points={points.join(' ')} fill="none" stroke={rising ? 'var(--green)' : 'var(--red)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function HealthRing({ score }) {
   const display = useCountUp(score);
   const r = 42;
@@ -110,6 +128,7 @@ export default function Dashboard({ clientUserId, year, month }) {
   }
   const trendData = trendMonths.map(({ year: y, month: m }) => monthSummary(data, y, m));
   const hasTrendData = trendData.some(s => s.income > 0 || s.expense > 0);
+  const netTrend = trendData.map(s => s.income - s.expense);
 
   const chartData = {
     labels: trendMonths.map(({ month: m }) => MONTH_SHORT[m]),
@@ -123,7 +142,10 @@ export default function Dashboard({ clientUserId, year, month }) {
     <div className={styles.bentoGrid}>
       <div className={styles.tileBalance}>
         <div className={styles.heroLabel}>מאזן החודש</div>
-        <NetHero value={summary.net} />
+        <div className={styles.heroRow}>
+          <NetHero value={summary.net} />
+          {hasTrendData && <Sparkline values={netTrend} />}
+        </div>
         <div className={styles.subStats}>
           <SubStat label="הכנסות" value={summary.income} prevValue={trendData[trendData.length - 2]?.income} kind="income" />
           <SubStat label="הוצאות" value={summary.expense} prevValue={trendData[trendData.length - 2]?.expense} kind="expense" />

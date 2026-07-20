@@ -1526,7 +1526,10 @@
         <span class="text-sm font-semibold" style="color:rgba(255,255,255,0.88)">יתרה נותרת</span>
         <span class="px-3 py-1 rounded-full text-xs font-bold" style="background:rgba(255,255,255,0.22);color:#fff" id="heroSummary">החודש</span>
       </div>
-      <div class="font-extrabold font-mono tracking-tight mt-3 relative" id="totalBalance" style="z-index:1;line-height:1.04;color:#fff;font-size:clamp(2.3rem,11.5vw,3.1rem)">0</div>
+      <div class="flex items-end gap-2 mt-3 relative" style="z-index:1">
+        <div class="font-extrabold font-mono tracking-tight" id="totalBalance" style="line-height:1.04;color:#fff;font-size:clamp(2.3rem,11.5vw,3.1rem)">0</div>
+        <svg id="heroSparkline" viewBox="0 0 120 32" preserveAspectRatio="none" style="width:56px;height:18px;flex-shrink:0;margin-bottom:8px;display:none" aria-hidden="true"><polyline fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
       <div class="text-xs mt-2 flex items-center gap-1 relative" id="trendBalance" style="z-index:1;color:rgba(255,255,255,0.82)"></div>
       <div class="text-xs mt-1 relative font-bold" id="heroSavings" style="z-index:1;display:none"></div>
 
@@ -4142,6 +4145,32 @@ function wizAcceptSuggest(){
   if(txSelectedCat) wizNext();
 }
 
+function renderHeroSparkline(){
+  const svg=document.getElementById('heroSparkline');
+  if(!svg) return;
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(currentYear,currentMonth-i,1);
+    months.push({y:d.getFullYear(),m:d.getMonth()});
+  }
+  const nets=months.map(({y,m})=>{
+    const mTx=transactions.filter(t=>t.date.startsWith(mk(y,m)));
+    const inc=mTx.filter(t=>t.type==='income').reduce((s,t)=>s+(+t.amount||0),0)||getMonthlyIncome();
+    const exp=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+(+t.amount||0),0);
+    return inc-exp;
+  });
+  if(!nets.some(n=>n!==0)){svg.style.display='none';return;}
+  const w=120,h=32,pad=3;
+  const min=Math.min(...nets,0),max=Math.max(...nets,0);
+  const range=(max-min)||1;
+  const pts=nets.map((v,i)=>{
+    const x=pad+(i/(nets.length-1))*(w-pad*2);
+    const y=pad+(1-(v-min)/range)*(h-pad*2);
+    return x+','+y;
+  }).join(' ');
+  svg.querySelector('polyline').setAttribute('points',pts);
+  svg.style.display='block';
+}
 function renderDashboard(){
   const label=heMonth(currentYear,currentMonth);
   const eyebrow=document.getElementById('heroEyebrow');
@@ -4170,6 +4199,7 @@ function renderDashboard(){
   countUp(balEl,balance);
   countUp('totalIncome',income);
   countUp('totalExpense',expense);
+  renderHeroSparkline();
   const emptyHint=document.getElementById('heroEmptyHint');
   if(emptyHint) emptyHint.style.display=(income===0&&expense===0)?'block':'none';
   countUp('fixedExpMetric',fixedExp);
