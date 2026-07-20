@@ -27,6 +27,15 @@
   gap: 10px;
 }
 
+.sidebarFooter {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
 .backButton {
   display: flex;
   align-items: center;
