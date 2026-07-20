@@ -87,7 +87,7 @@ export default function Crm({ advisorId, clientId }) {
               </div>
             ) : (
               <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <div style={{ cursor: 'pointer', flex: 1 }} onClick={() => startEditMeeting(m)}>
+                <div role="button" tabIndex={0} style={{ cursor: 'pointer', flex: 1 }} onClick={() => startEditMeeting(m)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditMeeting(m))}>
                   <div>{new Date(m.scheduled_at).toLocaleString('he-IL')}</div>
                   {m.notes && <div className={styles.meta}>{m.notes}</div>}
                 </div>
@@ -126,7 +126,7 @@ export default function Crm({ advisorId, clientId }) {
             ) : (
               <div key={t.id} className={styles.row + ' ' + styles.taskRow} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                 <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => toggleTask(t.id, e.target.checked)} />
-                <div className={styles.taskBody + (t.done ? ' ' + styles.done : '')} style={{ cursor: 'pointer' }} onClick={() => startEditTask(t)}>
+                <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} style={{ cursor: 'pointer' }} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
                   <div>{t.title}</div>
                   {t.due_date && <div className={styles.meta}>יעד: {t.due_date}</div>}
                 </div>
@@ -155,7 +155,7 @@ export default function Crm({ advisorId, clientId }) {
               </div>
             ) : (
               <div key={n.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <div style={{ cursor: 'pointer', flex: 1 }} onClick={() => startEditNote(n)}>
+                <div role="button" tabIndex={0} style={{ cursor: 'pointer', flex: 1 }} onClick={() => startEditNote(n)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditNote(n))}>
                   <div>{n.body}</div>
                   <div className={styles.meta}>{new Date(n.created_at).toLocaleDateString('he-IL')}</div>
                 </div>

@@ -87,23 +87,27 @@
 }
 
 .fill {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
   height: 100%;
-  min-width: 18px;
+  width: 100%;
   border-radius: var(--radius-sm);
   background: var(--accent);
-  transition: width 0.4s var(--ease-out-expo);
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-inline-start: 7px;
-  box-sizing: border-box;
+  transform-origin: right;
+  transition: transform 0.4s var(--ease-out-expo);
 }
 
 .fillPct {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 7px;
+  transform: translateY(-50%);
   font-size: 0.68rem;
   font-weight: 700;
   color: var(--accent-ink);
   direction: ltr;
+  pointer-events: none;
 }
 
 .pctOutside {
@@ -114,6 +118,7 @@
   font-weight: 700;
   color: var(--text2);
   direction: ltr;
+  pointer-events: none;
 }
 
 .meta {

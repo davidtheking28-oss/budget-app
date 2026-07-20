@@ -16,6 +16,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const [cat, setCat] = useState(BUDGET_CATS[0]);
   const [limit, setLimit] = useState('');
+  const [saving, setSaving] = useState(false);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -37,7 +38,9 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   async function setBudget() {
     const amt = parseFloat(limit);
     if (!amt || amt <= 0) { toast('הזן תקרה תקינה', 'error'); return; }
+    setSaving(true);
     await save({ budgets: { ...budgets, [cat]: amt } });
+    setSaving(false);
     toast('תקציב עודכן', 'success');
     setLimit('');
   }
@@ -64,7 +67,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
           {BUDGET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input className={styles.input} type="number" inputMode="decimal" aria-label="תקרה חודשית" placeholder="תקרה חודשית" value={limit} onChange={e => setLimit(e.target.value)} onKeyDown={e => e.key === 'Enter' && setBudget()} />
-        <Button onClick={setBudget}>שמור תקציב</Button>
+        <Button onClick={setBudget} disabled={saving}>שמור תקציב</Button>
       </div>
       {!activeCats.length && <div className={styles.empty}>עדיין לא הוגדרו תקציבי קטגוריה</div>}
       <div className={styles.grid}>

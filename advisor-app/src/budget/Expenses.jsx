@@ -19,6 +19,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState('');
   const [openCats, setOpenCats] = useState(() => new Set());
+  const [adding, setAdding] = useState(false);
 
   const today = new Date();
   const isCurrent = year === today.getFullYear() && month === today.getMonth();
@@ -76,7 +77,9 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
       recurring: false,
       fixed: false
     };
+    setAdding(true);
     await save({ transactions: [tx, ...(data.transactions || [])] });
+    setAdding(false);
     toast('הוצאה נוספה', 'success');
     setDesc('');
     setAmount('');
@@ -115,7 +118,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         <input className={styles.input} aria-label="תיאור" placeholder="תיאור" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <input className={styles.input} type="number" inputMode="decimal" aria-label="סכום" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <input className={styles.input} type="date" aria-label="תאריך" value={date || defaultDate} onChange={e => setDate(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
-        <Button onClick={addTx}>הוסף</Button>
+        <Button onClick={addTx} disabled={adding}>הוסף</Button>
       </div>
       {!monthTx.length && <div className={styles.empty}>אין תנועות החודש</div>}
       <div className={styles.list}>

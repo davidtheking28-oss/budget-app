@@ -16,6 +16,8 @@ export default function Goals({ clientUserId, advisorId }) {
   const [months, setMonths] = useState('');
   const [txCard, setTxCard] = useState(null);
   const [amount, setAmount] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -36,16 +38,20 @@ export default function Goals({ clientUserId, advisorId }) {
     if (!t || t <= 0) { toast('הזן סכום יעד תקין', 'error'); return; }
     const m = Math.max(0, parseInt(months, 10) || 0);
     const goal = { id: Date.now(), name: name.trim(), target: t, months: m, saved: 0 };
+    setAdding(true);
     await save({ goals: [...goals, goal] });
+    setAdding(false);
     toast('יעד נוצר', 'success');
     setName(''); setTarget(''); setMonths('');
   }
 
   async function deleteGoal(id) {
+    const removedGoal = goals.find(g => g.id === id);
+    const removedTx = transactions.filter(t => t.goalTx && t.goalId === id);
     const rest = goals.filter(g => g.id !== id);
     const restTx = transactions.filter(t => !(t.goalTx && t.goalId === id));
     await save({ goals: rest, transactions: restTx });
-    toast('יעד נמחק', 'success');
+    toast('יעד נמחק', 'success', { label: 'בטל', onClick: () => save({ goals: [...rest, removedGoal], transactions: [...removedTx, ...restTx] }) });
   }
 
   function openTx(id, dir) { setTxCard({ id, dir }); setAmount(''); }
@@ -70,7 +76,9 @@ export default function Goals({ clientUserId, advisorId }) {
       nextTx = [{ id: 'goal|' + g.id + '|' + Date.now(), type: 'expense', cat: 'חיסכון ליעד', desc: 'חיסכון: ' + g.name, amount: amt, date: today, recurring: false, goalTx: true, goalId: g.id }, ...transactions];
       toast('החיסכון עודכן', 'success');
     }
+    setConfirming(true);
     await save({ goals: nextGoals, transactions: nextTx });
+    setConfirming(false);
     closeTx();
   }
 
@@ -83,7 +91,7 @@ export default function Goals({ clientUserId, advisorId }) {
         <input className={styles.input} placeholder="שם היעד" value={name} onChange={e => setName(e.target.value)} />
         <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום יעד" value={target} onChange={e => setTarget(e.target.value)} />
         <input className={styles.input} type="number" inputMode="numeric" placeholder="חודשים" value={months} onChange={e => setMonths(e.target.value)} onKeyDown={e => e.key === 'Enter' && addGoal()} />
-        <Button onClick={addGoal}>+ יעד חדש</Button>
+        <Button onClick={addGoal} disabled={adding}>הוסף יעד</Button>
       </div>
 
       {!goals.length ? (
@@ -114,10 +122,10 @@ export default function Goals({ clientUserId, advisorId }) {
                     </div>
                   </div>
                   <div className={styles.bar}>
-                    <div className={styles.fill} style={{ width: pct + '%' }}>
-                      {pct >= 12 && <span className={styles.fillPct}>{pct}%</span>}
-                    </div>
-                    {pct < 12 && <span className={styles.pctOutside} style={{ insetInlineStart: `calc(${pct}% + 6px)` }}>{pct}%</span>}
+                    <div className={styles.fill} style={{ transform: `scaleX(${Math.max(pct, 4) / 100})` }} />
+                    {pct >= 12
+                      ? <span className={styles.fillPct}>{pct}%</span>
+                      : <span className={styles.pctOutside} style={{ insetInlineStart: `calc(${pct}% + 6px)` }}>{pct}%</span>}
                   </div>
                   {g.months > 0 && <div className={styles.meta}>יעד ל-{g.months} חודשים</div>}
                   {expanded ? (
@@ -132,12 +140,12 @@ export default function Goals({ clientUserId, advisorId }) {
                         onChange={e => setAmount(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && confirmTx()}
                       />
-                      <Button variant={txCard.dir === 'withdraw' ? 'ghost' : 'primary'} onClick={confirmTx}>{txCard.dir === 'withdraw' ? 'משוך' : 'הוסף'}</Button>
+                      <Button variant={txCard.dir === 'withdraw' ? 'ghost' : 'primary'} onClick={confirmTx} disabled={confirming}>{txCard.dir === 'withdraw' ? 'משוך' : 'הוסף'}</Button>
                       <Button variant="ghost" onClick={closeTx}>ביטול</Button>
                     </div>
                   ) : (
                     <div className={styles.txActions}>
-                      <button className={styles.txBtn} onClick={() => openTx(g.id, 'add')}>+ הוסף לחיסכון</button>
+                      <button className={styles.txBtn} onClick={() => openTx(g.id, 'add')}>הוסף לחיסכון</button>
                       {g.saved > 0 && <button className={styles.txBtnNeutral} onClick={() => openTx(g.id, 'withdraw')}>− משוך</button>}
                     </div>
                   )}

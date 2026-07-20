@@ -132,7 +132,7 @@ export default function ClientList({ advisorId, onSelect }) {
             onChange={e => setCode(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && claimCode()}
           />
-          <Button className={styles.addButton} onClick={claimCode} disabled={submitting}>+ הוסף לקוח</Button>
+          <Button className={styles.addButton} onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
         </div>
       </div>
 
@@ -146,7 +146,7 @@ export default function ClientList({ advisorId, onSelect }) {
           </div>
           <div className={styles.emptyTitle}>עדיין אין לקוחות מחוברים</div>
           <div className={styles.emptyText}>בקש מהלקוח ליצור קוד הזמנה בהגדרות האפליקציה שלו, ואז הדבק אותו כאן</div>
-          <Button className={styles.emptyCta} onClick={() => codeInputRef.current?.focus()}>+ חבר לקוח ראשון</Button>
+          <Button className={styles.emptyCta} onClick={() => codeInputRef.current?.focus()}>חבר לקוח ראשון</Button>
         </div>
       ) : (
         <div className={styles.grid}>
