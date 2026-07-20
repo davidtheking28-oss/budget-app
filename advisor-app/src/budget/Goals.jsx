@@ -39,19 +39,33 @@ export default function Goals({ clientUserId, advisorId }) {
     const m = Math.max(0, parseInt(months, 10) || 0);
     const goal = { id: Date.now(), name: name.trim(), target: t, months: m, saved: 0 };
     setAdding(true);
-    await save({ goals: [...goals, goal] });
+    await save(cur => ({ goals: [...(cur.goals || []), goal] }));
     setAdding(false);
     toast('יעד נוצר', 'success');
     setName(''); setTarget(''); setMonths('');
   }
 
   async function deleteGoal(id) {
-    const removedGoal = goals.find(g => g.id === id);
-    const removedTx = transactions.filter(t => t.goalTx && t.goalId === id);
-    const rest = goals.filter(g => g.id !== id);
-    const restTx = transactions.filter(t => !(t.goalTx && t.goalId === id));
-    await save({ goals: rest, transactions: restTx });
-    toast('יעד נמחק', 'success', { label: 'בטל', onClick: () => save({ goals: [...rest, removedGoal], transactions: [...removedTx, ...restTx] }) });
+    let captured;
+    await save(cur => {
+      const curGoals = cur.goals || [];
+      const curTx = cur.transactions || [];
+      captured = {
+        removedGoal: curGoals.find(g => g.id === id),
+        removedTx: curTx.filter(t => t.goalTx && t.goalId === id)
+      };
+      return {
+        goals: curGoals.filter(g => g.id !== id),
+        transactions: curTx.filter(t => !(t.goalTx && t.goalId === id))
+      };
+    });
+    toast('יעד נמחק', 'success', {
+      label: 'בטל',
+      onClick: () => save(cur => ({
+        goals: [...(cur.goals || []), captured.removedGoal],
+        transactions: [...captured.removedTx, ...(cur.transactions || [])]
+      }))
+    });
   }
 
   function openTx(id, dir) { setTxCard({ id, dir }); setAmount(''); }
@@ -60,25 +74,33 @@ export default function Goals({ clientUserId, advisorId }) {
   async function confirmTx() {
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) { toast('הזן סכום', 'error'); return; }
-    const g = goals.find(x => x.id === txCard.id);
-    if (!g) return;
-    const today = new Date().toISOString().split('T')[0];
-    let nextGoals, nextTx;
-    if (txCard.dir === 'withdraw') {
-      const actual = Math.min(amt, g.saved || 0);
-      nextGoals = goals.map(x => x.id === g.id ? { ...x, saved: Math.max(0, (x.saved || 0) - actual) } : x);
-      nextTx = actual > 0
-        ? [{ id: 'goal|' + g.id + '|' + Date.now(), type: 'income', cat: 'אחר', desc: 'משיכה מיעד: ' + g.name, amount: actual, date: today, recurring: false, goalTx: true, goalId: g.id }, ...transactions]
-        : transactions;
-      toast('נמשך מהחיסכון', 'success');
-    } else {
-      nextGoals = goals.map(x => x.id === g.id ? { ...x, saved: Math.min(x.target, (x.saved || 0) + amt) } : x);
-      nextTx = [{ id: 'goal|' + g.id + '|' + Date.now(), type: 'expense', cat: 'חיסכון ליעד', desc: 'חיסכון: ' + g.name, amount: amt, date: today, recurring: false, goalTx: true, goalId: g.id }, ...transactions];
-      toast('החיסכון עודכן', 'success');
-    }
+    const dir = txCard.dir;
+    const goalId = txCard.id;
     setConfirming(true);
-    await save({ goals: nextGoals, transactions: nextTx });
+    await save(cur => {
+      const curGoals = cur.goals || [];
+      const curTx = cur.transactions || [];
+      const g = curGoals.find(x => x.id === goalId);
+      if (!g) return {};
+      const today = new Date().toISOString().split('T')[0];
+      let nextGoals, nextTx;
+      if (dir === 'withdraw') {
+        const actual = Math.min(amt, g.saved || 0);
+        nextGoals = curGoals.map(x => x.id === g.id ? { ...x, saved: Math.max(0, (x.saved || 0) - actual) } : x);
+        nextTx = actual > 0
+          ? [{ id: 'goal|' + g.id + '|' + Date.now(), type: 'income', cat: 'אחר', desc: 'משיכה מיעד: ' + g.name, amount: actual, date: today, recurring: false, goalTx: true, goalId: g.id }, ...curTx]
+          : curTx;
+      } else {
+        const actual = Math.min(amt, g.target - (g.saved || 0));
+        nextGoals = curGoals.map(x => x.id === g.id ? { ...x, saved: Math.min(x.target, (x.saved || 0) + actual) } : x);
+        nextTx = actual > 0
+          ? [{ id: 'goal|' + g.id + '|' + Date.now(), type: 'expense', cat: 'חיסכון ליעד', desc: 'חיסכון: ' + g.name, amount: actual, date: today, recurring: false, goalTx: true, goalId: g.id }, ...curTx]
+          : curTx;
+      }
+      return { goals: nextGoals, transactions: nextTx };
+    });
     setConfirming(false);
+    toast(dir === 'withdraw' ? 'נמשך מהחיסכון' : 'החיסכון עודכן', 'success');
     closeTx();
   }
 

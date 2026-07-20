@@ -78,7 +78,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
       fixed: false
     };
     setAdding(true);
-    await save({ transactions: [tx, ...(data.transactions || [])] });
+    await save(cur => ({ transactions: [tx, ...(cur.transactions || [])] }));
     setAdding(false);
     toast('הוצאה נוספה', 'success');
     setDesc('');
@@ -87,10 +87,13 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   }
 
   async function removeTx(id) {
-    const removed = (data.transactions || []).find(t => t.id === id);
-    const rest = (data.transactions || []).filter(t => t.id !== id);
-    await save({ transactions: rest });
-    toast('נמחק', 'success', { label: 'בטל', onClick: () => save({ transactions: [removed, ...rest] }) });
+    let removed;
+    await save(cur => {
+      const curTx = cur.transactions || [];
+      removed = curTx.find(t => t.id === id);
+      return { transactions: curTx.filter(t => t.id !== id) };
+    });
+    toast('נמחק', 'success', { label: 'בטל', onClick: () => save(cur => ({ transactions: [removed, ...(cur.transactions || [])] })) });
   }
 
   function exportCsv() {

@@ -9,6 +9,7 @@ export function useClientBudget(clientUserId, advisorId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const requestIdRef = useRef(0);
+  const dataRef = useRef(null);
 
   const reload = useCallback(async () => {
     if (!clientUserId) return;
@@ -21,7 +22,9 @@ export function useClientBudget(clientUserId, advisorId) {
       .maybeSingle();
     if (requestId !== requestIdRef.current) return;
     if (error) { setError(error); setLoading(false); return; }
-    setData(row || { user_id: clientUserId, ...EMPTY });
+    const next = row || { user_id: clientUserId, ...EMPTY };
+    dataRef.current = next;
+    setData(next);
     setError(null);
     setLoading(false);
   }, [clientUserId]);
@@ -39,15 +42,19 @@ export function useClientBudget(clientUserId, advisorId) {
     return () => { supabase.removeChannel(channel); };
   }, [clientUserId, reload]);
 
-  const save = useCallback(async (patch) => {
+  const save = useCallback(async (patchOrFn) => {
     if (!clientUserId) return;
-    let prev;
-    setData(d => { prev = d || EMPTY; return { ...prev, ...patch }; });
+    const prev = dataRef.current || EMPTY;
+    const patch = typeof patchOrFn === 'function' ? patchOrFn(prev) : patchOrFn;
+    const next = { ...prev, ...patch };
+    dataRef.current = next;
+    setData(next);
     const { error } = await supabase
       .from('budget_data')
       .upsert({ user_id: clientUserId, updated_by: advisorId, ...patch }, { onConflict: 'user_id' });
     if (error) {
       setError(error);
+      dataRef.current = prev;
       setData(prev);
       toast('שמירה נכשלה, נסה שוב', 'error');
     }

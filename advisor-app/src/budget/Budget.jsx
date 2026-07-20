@@ -39,17 +39,21 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
     const amt = parseFloat(limit);
     if (!amt || amt <= 0) { toast('הזן תקרה תקינה', 'error'); return; }
     setSaving(true);
-    await save({ budgets: { ...budgets, [cat]: amt } });
+    await save(cur => ({ budgets: { ...(cur.budgets || {}), [cat]: amt } }));
     setSaving(false);
     toast('תקציב עודכן', 'success');
     setLimit('');
   }
 
   async function removeBudget(c) {
-    const rest = { ...budgets };
-    delete rest[c];
-    await save({ budgets: rest });
-    toast(`תקציב ${c} הוסר`, 'success', { label: 'בטל', onClick: () => save({ budgets: { ...rest, [c]: budgets[c] } }) });
+    let removedValue;
+    await save(cur => {
+      const rest = { ...(cur.budgets || {}) };
+      removedValue = rest[c];
+      delete rest[c];
+      return { budgets: rest };
+    });
+    toast(`תקציב ${c} הוסר`, 'success', { label: 'בטל', onClick: () => save(cur => ({ budgets: { ...(cur.budgets || {}), [c]: removedValue } })) });
   }
 
   const activeCats = Object.keys(budgets).filter(c => budgets[c]).sort();
