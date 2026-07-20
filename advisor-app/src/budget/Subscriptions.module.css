@@ -235,6 +235,9 @@
 }
 
 .doneBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   margin-inline-start: var(--space-2);
   padding: 2px 8px;
   border-radius: var(--radius-sm);

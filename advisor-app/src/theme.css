@@ -53,6 +53,11 @@
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-full: 999px;
+
+  /* z-index scale: use for any new or touched stacking decision */
+  --z-base: 1;
+  --z-toast: 900;
+  --z-overlay: 1000;
 }
 
 * { box-sizing: border-box; }

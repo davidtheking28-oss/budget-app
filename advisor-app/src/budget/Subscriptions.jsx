@@ -165,7 +165,7 @@ export default function Subscriptions({ clientUserId }) {
               return (
                 <div key={p.id} className={styles.row + (done ? ' ' + styles.rowDone : '')} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                   <div>
-                    <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}>✓ הושלם</span>}</div>
+                    <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg> הושלם</span>}</div>
                     <div className={styles.meta}>{total ? `נותרו ${left} מתוך ${total} תשלומים` : ''}</div>
                   </div>
                   <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
