@@ -28,6 +28,18 @@
   outline: none;
 }
 
+.form input[type="text"],
+.form input:not([type]) {
+  flex: 1;
+  min-width: 160px;
+}
+
+.form input[type="date"],
+.form input[type="datetime-local"] {
+  flex: 0 0 auto;
+  width: 180px;
+}
+
 .input:focus-visible, .textarea:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.5);
 }

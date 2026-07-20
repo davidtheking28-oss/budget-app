@@ -70,8 +70,8 @@ export default function Crm({ advisorId, clientId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}>פגישות</div>
         <div className={styles.form}>
-          <input className={styles.input} type="datetime-local" aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
           <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && meetingAt && (addMeeting(new Date(meetingAt).toISOString(), meetingNotes), setMeetingAt(''), setMeetingNotes(''))} />
+          <input className={styles.input} type="datetime-local" aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
           <Button disabled={!meetingAt} onClick={() => { addMeeting(meetingAt ? new Date(meetingAt).toISOString() : null, meetingNotes); setMeetingAt(''); setMeetingNotes(''); }}>קבע פגישה</Button>
         </div>
         {meetings.length ? (
@@ -79,8 +79,8 @@ export default function Crm({ advisorId, clientId }) {
             {meetings.map((m, i) => editingMeeting === m.id ? (
               <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
                 <div className={styles.form} style={{ margin: 0, flex: 1 }}>
-                  <input className={styles.input} type="datetime-local" aria-label="תאריך ושעת הפגישה" value={editMeetingAt} onChange={e => setEditMeetingAt(e.target.value)} />
                   <input className={styles.input} aria-label="נושא הפגישה" value={editMeetingNotes} onChange={e => setEditMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditMeeting(m.id)} />
+                  <input className={styles.input} type="datetime-local" aria-label="תאריך ושעת הפגישה" value={editMeetingAt} onChange={e => setEditMeetingAt(e.target.value)} />
                   <Button onClick={() => saveEditMeeting(m.id)}>שמור</Button>
                   <Button variant="ghost" onClick={() => setEditingMeeting(null)}>ביטול</Button>
                 </div>
