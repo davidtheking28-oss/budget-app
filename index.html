@@ -3506,14 +3506,9 @@ async function createHousehold(){
 async function joinHousehold(){
   const code=(document.getElementById('householdCodeInput')?.value||'').trim().toUpperCase();
   if(!code||code.length<6){showToast('הזן קוד בן 6 תווים');return;}
-  const {data,error}=await _sb.from('households').select('id,owner_id,member_id').eq('invite_code',code).maybeSingle();
-  if(error||!data){showToast('❌ קוד לא נמצא');return;}
-  if(data.owner_id===_cloudUser.id){showToast('❌ זה התקציב שלך');return;}
-  if(data.member_id&&data.member_id!==_cloudUser.id){showToast('❌ קוד בשימוש');return;}
-  const {error:e2}=await _sb.from('households').update({member_id:_cloudUser.id,member_email:_cloudUser.email}).eq('id',data.id);
-  if(e2){showToast('❌ שגיאה בהצטרפות');return;}
-  _householdOwner=data.owner_id;
-  _cloudHousehold={role:'member',owner_id:data.owner_id,invite_code:code};
+  const {data,error}=await _sb.rpc('join_household',{p_code:code});
+  if(error||!data){showToast('❌ קוד לא תקין או שכבר נוצל');return;}
+  await _loadHousehold();
   await _loadFromCloud();
   _subscribeHousehold();
   showToast('✅ הצטרפת לתקציב המשפחתי!');
@@ -4515,8 +4510,9 @@ function confirmAddToGoal(){
       if(actual>0)transactions.unshift({id:'goal|'+g.id+'|'+Date.now(),type:'income',cat:'אחר',desc:'משיכה מיעד: '+g.name,amount:actual,date:today,recurring:false,goalTx:true,goalId:g.id});
       showToast('₪ נמשך מהחיסכון');
     }else{
-      g.saved=Math.min(g.target,g.saved+amt);
-      transactions.unshift({id:'goal|'+g.id+'|'+Date.now(),type:'expense',cat:'חיסכון ליעד',desc:'חיסכון: '+g.name,amount:amt,date:today,recurring:false,goalTx:true,goalId:g.id});
+      const actual=Math.min(amt,g.target-g.saved);
+      g.saved=Math.min(g.target,g.saved+actual);
+      if(actual>0)transactions.unshift({id:'goal|'+g.id+'|'+Date.now(),type:'expense',cat:'חיסכון ליעד',desc:'חיסכון: '+g.name,amount:actual,date:today,recurring:false,goalTx:true,goalId:g.id});
       showToast('₪ החיסכון עודכן!');
     }
     saveData();
@@ -6390,6 +6386,8 @@ function autoCarryRecurring(){
     var already={};
     transactions.filter(function(t){ return (t.date||"").slice(0,7)===thisKey; }).forEach(function(t){ already[t.desc+"|"+t.cat]=1; });
     var _dismissed=new Set();try{_dismissed=new Set(JSON.parse(localStorage.getItem('budget_dismissed_rec_'+thisKey)||'[]'));}catch(e){}
+    var _refused=!!localStorage.getItem('budget_ra_refused_'+thisKey);
+    if(_refused) return 0;
     var pending=recs.filter(function(t){ return !already[t.desc+"|"+t.cat]&&!_dismissed.has(t.desc+"|"+t.cat); });
     if(!pending.length) return 0;
     var dim=daysInMonth(now.getFullYear(),now.getMonth());
