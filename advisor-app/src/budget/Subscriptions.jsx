@@ -1,12 +1,18 @@
+import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
-import { CHART_PALETTE } from '../categories.js';
+import Button from '../components/Button.jsx';
+import DeleteButton from '../components/DeleteButton.jsx';
+import { CHART_PALETTE, FIXED_CATS } from '../categories.js';
+import { toast } from '../toast.js';
 import styles from './Subscriptions.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const CYCLE_LABELS = { monthly: 'חודשי', yearly: 'שנתי' };
 const AUTO_FIXED_CATS = ['החזר הלוואות + חיוב קבוע', 'עסקאות בתשלומים', 'מנויים ושירותים'];
+const MANUAL_FIXED_CATS = FIXED_CATS.filter(c => !AUTO_FIXED_CATS.includes(c));
+const SUB_CATEGORIES = ['סטרימינג', 'מוזיקה', 'פודקאסטים', 'תוכנה', 'כלי AI', 'אחסון ענן', 'כושר', 'משחקי וידאו', 'עיתונות', 'חינוך', 'אחר'];
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 function daysUntil(dateStr) {
@@ -28,6 +34,22 @@ function currentInstallments(p, total) {
   if (!p.currentAnchor) return base;
   const now = new Date();
   return Math.max(0, Math.min(total, base + monthsElapsed(p.currentAnchor, monthKey(now.getFullYear(), now.getMonth()))));
+}
+
+function addItem(save, key, item) {
+  return save(cur => ({ [key]: [...(cur[key] || []), { id: Date.now(), ...item }] }));
+}
+function updateItem(save, key, id, patch) {
+  return save(cur => ({ [key]: (cur[key] || []).map(x => x.id === id ? { ...x, ...patch } : x) }));
+}
+function removeItem(save, key, id) {
+  return save(cur => ({ [key]: (cur[key] || []).filter(x => x.id !== id) }));
+}
+function setFixedExpense(save, cat, amount) {
+  return save(cur => {
+    const list = (cur.fixed_expenses || []).filter(f => f.id !== cat);
+    return { fixed_expenses: amount > 0 ? [...list, { id: cat, amount }] : list };
+  });
 }
 
 function loanPayoffMonths(remaining, monthly, annualRate) {
@@ -57,7 +79,69 @@ const ICONS = {
 };
 
 export default function Subscriptions({ clientUserId }) {
-  const { data, loading, error, reload } = useClientBudget(clientUserId);
+  const { data, loading, error, reload, save } = useClientBudget(clientUserId);
+
+  const [subForm, setSubForm] = useState({ name: '', category: SUB_CATEGORIES[0], amount: '', cycle: 'monthly', nextDate: '' });
+  const [editingSubId, setEditingSubId] = useState(null);
+  const [loanForm, setLoanForm] = useState({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' });
+  const [editingLoanId, setEditingLoanId] = useState(null);
+  const [paymentForm, setPaymentForm] = useState({ name: '', total: '', current: '', amount: '' });
+  const [editingPaymentId, setEditingPaymentId] = useState(null);
+  const [fixedCat, setFixedCat] = useState(MANUAL_FIXED_CATS[0]);
+  const [fixedAmount, setFixedAmount] = useState('');
+
+  function resetSubForm() { setSubForm({ name: '', category: SUB_CATEGORIES[0], amount: '', cycle: 'monthly', nextDate: '' }); setEditingSubId(null); }
+  function submitSub() {
+    const amount = parseFloat(subForm.amount);
+    if (!subForm.name.trim()) { toast('מה שם השירות?', 'error'); return; }
+    if (!amount || amount <= 0) { toast('כמה עולה המנוי?', 'error'); return; }
+    const patch = { name: subForm.name.trim(), category: subForm.category, amount, cycle: subForm.cycle, nextDate: subForm.nextDate };
+    if (editingSubId != null) updateItem(save, 'subscriptions', editingSubId, patch);
+    else addItem(save, 'subscriptions', { ...patch, active: true });
+    toast(editingSubId != null ? 'המנוי עודכן' : 'המנוי נוסף', 'success');
+    resetSubForm();
+  }
+  function startEditSub(s) { setEditingSubId(s.id); setSubForm({ name: s.name || '', category: s.category || SUB_CATEGORIES[0], amount: s.amount || '', cycle: s.cycle || 'monthly', nextDate: s.nextDate || '' }); }
+
+  function resetLoanForm() { setLoanForm({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' }); setEditingLoanId(null); }
+  function submitLoan() {
+    const monthly = parseFloat(loanForm.monthly) || 0;
+    if (!loanForm.name.trim() || !monthly) { toast('נדרשים שם הלוואה וסכום חודשי', 'error'); return; }
+    const patch = {
+      name: loanForm.name.trim(),
+      lender: loanForm.lender.trim(),
+      monthly,
+      remaining: parseFloat(loanForm.remaining) || 0,
+      original: parseFloat(loanForm.original) || 0,
+      rate: parseFloat(loanForm.rate) || 0
+    };
+    if (editingLoanId != null) updateItem(save, 'loans', editingLoanId, patch);
+    else addItem(save, 'loans', patch);
+    toast(editingLoanId != null ? 'ההלוואה עודכנה' : 'הלוואה נוספה', 'success');
+    resetLoanForm();
+  }
+  function startEditLoan(l) { setEditingLoanId(l.id); setLoanForm({ name: l.name || '', lender: l.lender || '', monthly: l.monthly || '', remaining: l.remaining || '', original: l.original || '', rate: l.rate || '' }); }
+
+  function resetPaymentForm() { setPaymentForm({ name: '', total: '', current: '', amount: '' }); setEditingPaymentId(null); }
+  function submitPayment() {
+    const total = parseFloat(paymentForm.total) || 0;
+    const amount = parseFloat(paymentForm.amount) || 0;
+    if (!paymentForm.name.trim() || !total || !amount) { toast('נדרשים שם, מספר תשלומים וסכום', 'error'); return; }
+    const patch = { name: paymentForm.name.trim(), total, current: parseFloat(paymentForm.current) || 0, amount, currentAnchor: monthKey(new Date().getFullYear(), new Date().getMonth()) };
+    if (editingPaymentId != null) updateItem(save, 'payments', editingPaymentId, patch);
+    else addItem(save, 'payments', patch);
+    toast(editingPaymentId != null ? 'התשלום עודכן' : 'התשלום נוסף', 'success');
+    resetPaymentForm();
+  }
+  function startEditPayment(p) { setEditingPaymentId(p.id); setPaymentForm({ name: p.name || '', total: p.total || '', current: p.current || '', amount: p.amount || '' }); }
+
+  function submitFixed() {
+    const amount = parseFloat(fixedAmount) || 0;
+    if (!amount || amount <= 0) { toast('הזן סכום תקין', 'error'); return; }
+    setFixedExpense(save, fixedCat, amount);
+    toast('הוצאה קבועה עודכנה', 'success');
+    setFixedAmount('');
+  }
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -91,10 +175,6 @@ export default function Subscriptions({ clientUserId }) {
   in7Days.setDate(in7Days.getDate() + 7);
   const renewingSoon = subs.filter(s => s.nextDate && new Date(s.nextDate) <= in7Days && new Date(s.nextDate) >= new Date());
 
-  if (!subs.length && !loans.length && !payments.length && !fixedExpenses.length) {
-    return <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.subs}</span>אין עדיין מנויים, הלוואות או הוצאות קבועות רשומים</div>;
-  }
-
   return (
     <div>
       {renewingSoon.length > 0 && (
@@ -117,6 +197,20 @@ export default function Subscriptions({ clientUserId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconSubs}>{ICONS.subs}</span>מנויים<span className={styles.countBadge}>{subs.length}</span></div>
         {!subs.length && <div className={styles.sectionEmpty}>אין מנויים רשומים</div>}
+        <div className={styles.form}>
+          <input className={styles.input} placeholder="שם המנוי" value={subForm.name} onChange={e => setSubForm({ ...subForm, name: e.target.value })} />
+          <select className={styles.input} value={subForm.category} onChange={e => setSubForm({ ...subForm, category: e.target.value })}>
+            {SUB_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום" value={subForm.amount} onChange={e => setSubForm({ ...subForm, amount: e.target.value })} />
+          <select className={styles.input} value={subForm.cycle} onChange={e => setSubForm({ ...subForm, cycle: e.target.value })}>
+            <option value="monthly">חודשי</option>
+            <option value="yearly">שנתי</option>
+          </select>
+          <input className={styles.input} type="date" placeholder="חידוש הבא" value={subForm.nextDate} onChange={e => setSubForm({ ...subForm, nextDate: e.target.value })} />
+          <Button onClick={submitSub}>{editingSubId != null ? 'שמור' : 'הוסף מנוי'}</Button>
+          {editingSubId != null && <Button variant="ghost" onClick={resetSubForm}>ביטול</Button>}
+        </div>
         {subShares.length > 1 && (
           <div className={styles.miniBar}>
             {subShares.map((s, i) => (
@@ -137,14 +231,17 @@ export default function Subscriptions({ clientUserId }) {
               const overdue = days !== null && days < 0;
               return (
                 <div key={s.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                  <div className={styles.nameRow}>
-                    {subShares.length > 1 && <span className={styles.dot} style={{ background: CHART_PALETTE[subShares.findIndex(x => x.name === s.name) % CHART_PALETTE.length] }} />}
-                    <div>
-                      <div className={styles.name}>{s.name}{overdue && <span className={styles.overdueBadge}>באיחור</span>}{soon && <span className={styles.soonBadge}>בעוד {days === 0 ? 'היום' : days + ' ימים'}</span>}</div>
-                      <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + s.nextDate : ''}</div>
+                  <div className={styles.rowMain} role="button" tabIndex={0} onClick={() => startEditSub(s)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditSub(s))}>
+                    <div className={styles.nameRow}>
+                      {subShares.length > 1 && <span className={styles.dot} style={{ background: CHART_PALETTE[subShares.findIndex(x => x.name === s.name) % CHART_PALETTE.length] }} />}
+                      <div>
+                        <div className={styles.name}>{s.name}{overdue && <span className={styles.overdueBadge}>באיחור</span>}{soon && <span className={styles.soonBadge}>בעוד {days === 0 ? 'היום' : days + ' ימים'}</span>}</div>
+                        <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + s.nextDate : ''}</div>
+                      </div>
                     </div>
+                    <div className={styles.amount}>{fmt(s.amount || 0)}</div>
                   </div>
-                  <div className={styles.amount}>{fmt(s.amount || 0)}</div>
+                  <DeleteButton onClick={() => removeItem(save, 'subscriptions', s.id)} />
                 </div>
               );
             })}
@@ -155,6 +252,16 @@ export default function Subscriptions({ clientUserId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconLoans}>{ICONS.loans}</span>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</div>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
+        <div className={styles.form}>
+          <input className={styles.input} placeholder="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
+          <input className={styles.input} placeholder="גורם מלווה" value={loanForm.lender} onChange={e => setLoanForm({ ...loanForm, lender: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרה" value={loanForm.remaining} onChange={e => setLoanForm({ ...loanForm, remaining: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום מקורי" value={loanForm.original} onChange={e => setLoanForm({ ...loanForm, original: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} />
+          <Button onClick={submitLoan}>{editingLoanId != null ? 'שמור' : 'הוסף הלוואה'}</Button>
+          {editingLoanId != null && <Button variant="ghost" onClick={resetLoanForm}>ביטול</Button>}
+        </div>
         {loans.length ? (
           <div className={styles.grid}>
             {loans.map((l, i) => {
@@ -162,13 +269,16 @@ export default function Subscriptions({ clientUserId }) {
               const payoff = loanPayoffLabel(l);
               const danger = payoff?.danger;
               return (
-                <div key={l.id} className={`${styles.row} ${styles.rowCard}${pct !== null ? ` ${styles.rowStacked} ${styles.rowWide}` : ''}${danger ? ' ' + styles.rowDanger : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div key={l.id} className={`${styles.row} ${styles.rowCard}${pct !== null ? ` ${styles.rowStacked} ${styles.rowWide}` : ''}${danger ? ' ' + styles.rowDanger : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }} role="button" tabIndex={0} onClick={() => startEditLoan(l)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditLoan(l))}>
                   <div className={styles.rowMain}>
                     <div>
                       <div className={styles.name}>{l.name || 'הלוואה'}</div>
                       <div className={styles.meta}>{l.lender ? l.lender + ' · ' : ''}{l.remaining !== undefined ? 'יתרה ' + fmt(l.remaining) + (l.original ? ' מתוך ' + fmt(l.original) : '') : ''}</div>
                     </div>
-                    <div className={styles.amount}>{fmt(l.monthly || 0)}</div>
+                    <div className={styles.rowActions}>
+                      <div className={styles.amount}>{fmt(l.monthly || 0)}</div>
+                      <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id); }} />
+                    </div>
                   </div>
                   {pct !== null && (
                     <div className={styles.loanBarRow}>
@@ -189,6 +299,14 @@ export default function Subscriptions({ clientUserId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span></div>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
+        <div className={styles.form}>
+          <input className={styles.input} placeholder="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="numeric" placeholder="סה״כ תשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="numeric" placeholder="שולמו עד כה" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום לתשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
+          <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוסף תשלום'}</Button>
+          {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
+        </div>
         {payments.length ? (
           <div className={styles.grid}>
             {payments.map((p, i) => {
@@ -199,13 +317,16 @@ export default function Subscriptions({ clientUserId }) {
               const paidPct = total > 0 ? Math.min(100, Math.max(0, Math.round((cur / total) * 100))) : null;
               const showBar = paidPct !== null && !done;
               return (
-                <div key={p.id} className={`${styles.row} ${styles.rowCard}${showBar ? ' ' + styles.rowStacked : ''}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div key={p.id} className={`${styles.row} ${styles.rowCard}${showBar ? ' ' + styles.rowStacked : ''}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }} role="button" tabIndex={0} onClick={() => startEditPayment(p)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditPayment(p))}>
                   <div className={styles.rowMain}>
                     <div>
                       <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg> הושלם</span>}</div>
                       <div className={styles.meta}>{total ? `נותרו ${left} מתוך ${total} תשלומים` : ''}</div>
                     </div>
-                    <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
+                    <div className={styles.rowActions}>
+                      <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
+                      <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id); }} />
+                    </div>
                   </div>
                   {showBar && (
                     <div className={styles.loanBarRow}>
@@ -225,14 +346,34 @@ export default function Subscriptions({ clientUserId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.fixed}</span>הוצאות קבועות<span className={styles.countBadge}>{fixedExpenses.length}</span>{fixedMonthly > 0 ? ` · ${fmt(fixedMonthly)} לחודש` : ''}</div>
         {!fixedExpenses.length && <div className={styles.sectionEmpty}>אין הוצאות קבועות רשומות</div>}
+        {MANUAL_FIXED_CATS.length > 0 && (
+          <div className={styles.form}>
+            <select className={styles.input} value={fixedCat} onChange={e => setFixedCat(e.target.value)}>
+              {MANUAL_FIXED_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" value={fixedAmount} onChange={e => setFixedAmount(e.target.value)} />
+            <Button onClick={submitFixed}>עדכן / הוסף</Button>
+          </div>
+        )}
         {fixedExpenses.length > 0 && (
           <div className={styles.list}>
-            {fixedExpenses.map((f, i) => (
-              <div key={f.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                <div className={styles.name}>{f.id}{AUTO_FIXED_CATS.includes(f.id) && <span className={styles.autoBadge}>אוטומטי</span>}</div>
-                <div className={styles.amount}>{fmt(f.amount || 0)}</div>
-              </div>
-            ))}
+            {fixedExpenses.map((f, i) => {
+              const auto = AUTO_FIXED_CATS.includes(f.id);
+              return (
+                <div
+                  key={f.id}
+                  className={styles.row}
+                  style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}
+                  {...(!auto ? { role: 'button', tabIndex: 0, onClick: () => { setFixedCat(f.id); setFixedAmount(f.amount || ''); }, onKeyDown: e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setFixedCat(f.id), setFixedAmount(f.amount || '')) } : {})}
+                >
+                  <div className={styles.name}>{f.id}{auto && <span className={styles.autoBadge}>אוטומטי</span>}</div>
+                  <div className={styles.rowActions}>
+                    <div className={styles.amount}>{fmt(f.amount || 0)}</div>
+                    {!auto && <DeleteButton onClick={e => { e.stopPropagation(); setFixedExpense(save, f.id, 0); }} />}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
