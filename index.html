@@ -224,17 +224,12 @@
     .budget-pct-label.danger{color:var(--red);font-weight:700;}
     .budget-chip-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
     .budget-chip-strip::-webkit-scrollbar{display:none;}
-    .budget-chip{flex:0 0 auto;width:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 6px;border:none;border-radius:20px;cursor:pointer;font-family:inherit;transition:transform 0.15s,box-shadow 0.15s;-webkit-tap-highlight-color:transparent;}
+    .budget-chip{flex:0 0 auto;width:88px;height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:14px 6px;border:none;border-radius:26px;cursor:pointer;font-family:inherit;transition:transform 0.15s,box-shadow 0.15s,background 0.15s;-webkit-tap-highlight-color:transparent;}
     .budget-chip:active{transform:scale(0.96);}
-    .budget-chip-icon{font-size:1.6rem;line-height:1;}
-    .budget-chip-name{font-size:0.72rem;font-weight:700;color:var(--text);text-align:center;line-height:1.25;}
-    .budget-chip-sel{box-shadow:0 0 0 2px var(--accent),0 6px 16px rgba(0,0,0,0.14);transform:translateY(-2px);}
-    .budget-chip-amber,.budget-chip-yellow{background:var(--yellow-light);}
-    .budget-chip-blue{background:var(--blue-light);}
-    .budget-chip-purple{background:var(--purple-light);}
-    .budget-chip-teal{background:var(--teal-light);}
-    .budget-chip-red{background:var(--red-light);}
-    .budget-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;}
+    .budget-chip-icon{font-size:1.9rem;line-height:1;}
+    .budget-chip-name{font-size:0.72rem;font-weight:700;color:#1f2937;text-align:center;line-height:1.25;}
+    .budget-chip-sel{box-shadow:0 6px 16px rgba(0,0,0,0.18);}
+    .budget-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,0.05);}
     .budget-detail-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
     .budget-detail-text{min-width:0;}
     .budget-detail-name{font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:4px;}
@@ -250,9 +245,17 @@
     .budget-tx-groupsum{font-family:var(--font-num);font-size:0.85rem;font-weight:700;color:var(--text2);flex-shrink:0;}
     .budget-tx-grouplabel{font-size:0.85rem;font-weight:700;color:var(--text);flex:1;}
     .budget-detail-txlist{margin-top:12px;}
-    .budget-tx-row{margin-bottom:8px;}
-    .budget-tx-movewrap{display:flex;justify-content:flex-end;padding:2px 14px 10px;}
-    .budget-move-btn{background:none;border:1.5px solid var(--border);border-radius:999px;padding:7px 16px;font-size:0.76rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+    .budget-tx-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+    .budget-tx-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;cursor:pointer;}
+    .budget-tx-desc-wrap{text-align:right;min-width:0;}
+    .budget-tx-desc{font-size:0.87rem;font-weight:700;color:var(--text);}
+    .budget-tx-date{font-size:0.74rem;color:var(--text3);margin-top:2px;font-family:var(--font-num);}
+    .budget-tx-amt{font-family:var(--font-num);font-weight:800;color:var(--red);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
+    .budget-tx-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .budget-tx-del{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+    .budget-tx-del:active{color:var(--red);}
+    .budget-tx-del svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .budget-move-btn{flex:1;text-align:center;background:none;border:1.5px solid var(--border);border-radius:999px;padding:9px 14px;font-size:0.78rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
     .budget-move-btn:active{opacity:0.6;}
     .budget-tx-empty{text-align:center;color:var(--text3);font-size:0.85rem;padding:24px 0;}
     .sub-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);position:relative;box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),box-shadow 0.15s;}
@@ -2416,6 +2419,21 @@ function _migrateCats(){
 function catIconSvg(c){return CAT_SVGS[c]||CAT_SVGS['שונות'];}
 
 const EXPENSE_CATS=['מזון לבית','אוכל בחוץ ובילויים','פארם','דלק וחניה','מתנות לאירועים ולשמחות','ביגוד והנעלה','תחב״צ','כבישי אגרה','תספורת וקוסמטיקה','תחביבים','סיגריות','חופשה/טיול','עזרת/שמרטף','תיקוני רכב','בריאות','בעלי חיים','דמי כיס/ילדים','יהדות/חגים','ביטוח לאומי','שונות'];
+// Pastel chip colors for the budget category strip — base = unselected tile, sel = active tile.
+const BUDGET_CHIP_HEX={
+  pink:{base:'#fce7f3',sel:'#f472b6'},yellow:{base:'#fef9c3',sel:'#facc15'},
+  green:{base:'#dcfce7',sel:'#4ade80'},blue:{base:'#e0e7ff',sel:'#818cf8'},
+  purple:{base:'#f3e8ff',sel:'#c084fc'},teal:{base:'#ccfbf1',sel:'#2dd4bf'},
+  orange:{base:'#ffedd5',sel:'#fb923c'},gray:{base:'#f1f5f9',sel:'#94a3b8'}
+};
+const BUDGET_CHIP_COLOR={
+  'מזון לבית':'teal','אוכל בחוץ ובילויים':'orange','פארם':'blue','דלק וחניה':'green',
+  'מתנות לאירועים ולשמחות':'pink','ביגוד והנעלה':'pink','תחב״צ':'blue','כבישי אגרה':'blue',
+  'תספורת וקוסמטיקה':'pink','תחביבים':'purple','סיגריות':'gray','חופשה/טיול':'purple',
+  'עזרת/שמרטף':'yellow','תיקוני רכב':'blue','בריאות':'teal','בעלי חיים':'yellow',
+  'דמי כיס/ילדים':'yellow','יהדות/חגים':'purple','ביטוח לאומי':'blue','שונות':'gray'
+};
+function budgetChipColor(cat){return BUDGET_CHIP_HEX[BUDGET_CHIP_COLOR[cat]||'gray'];}
 const FIXED_CATS=['משכנתא','שכר דירה','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
@@ -4484,9 +4502,9 @@ function renderBudget(){
   empty.style.display='none';strip.style.display='';detail.style.display='';
   if(!_selectedBudgetCat||!allCats.includes(_selectedBudgetCat))_selectedBudgetCat=allCats[0];
   strip.innerHTML=allCats.map(cat=>{
-    const color=CAT_COLOR[cat]||'blue';
+    const hex=budgetChipColor(cat);
     const sel=cat===_selectedBudgetCat;
-    return '<button type="button" class="budget-chip budget-chip-'+color+(sel?' budget-chip-sel':'')+'" onclick="selectBudgetCat(\''+cat+'\')">'
+    return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" style="background:'+(sel?hex.sel:hex.base)+'" onclick="selectBudgetCat(\''+cat+'\')">'
       +'<span class="budget-chip-icon">'+(CAT_ICONS[cat]||'•')+'</span>'
       +'<span class="budget-chip-name">'+cat+'</span>'
     +'</button>';
@@ -4529,8 +4547,15 @@ function renderBudgetDetail(spent,effLim){
     +'</button>'
     +'<div class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
       +(mTx.length?mTx.map(t=>
-        '<div class="budget-tx-row">'+txHtml(t)
-          +'<div class="budget-tx-movewrap"><button type="button" class="budget-move-btn" onclick="event.stopPropagation();openMoveTxCat('+t.id+')">העברה לקטגוריה אחרת</button></div>'
+        '<div class="budget-tx-card">'
+          +'<div class="budget-tx-top" onclick="editTx('+t.id+')">'
+            +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
+            +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+t.date+'</div></div>'
+          +'</div>'
+          +'<div class="budget-tx-bottom">'
+            +'<button type="button" class="budget-tx-del" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק">'+trashSvg+'</button>'
+            +'<button type="button" class="budget-move-btn" onclick="event.stopPropagation();openMoveTxCat('+t.id+')">העברה לקטגוריה אחרת</button>'
+          +'</div>'
         +'</div>'
       ).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>')
     +'</div>';
