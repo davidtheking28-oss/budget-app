@@ -15,6 +15,21 @@ function daysUntil(dateStr) {
   return Math.ceil(diff / 86400000);
 }
 
+function monthKey(y, m) { return `${y}-${String(m + 1).padStart(2, '0')}`; }
+
+function monthsElapsed(fromKey, toKey) {
+  const [fy, fm] = fromKey.split('-').map(Number);
+  const [ty, tm] = toKey.split('-').map(Number);
+  return (ty - fy) * 12 + (tm - fm);
+}
+
+function currentInstallments(p, total) {
+  const base = parseFloat(p.current) || 0;
+  if (!p.currentAnchor) return base;
+  const now = new Date();
+  return Math.max(0, Math.min(total, base + monthsElapsed(p.currentAnchor, monthKey(now.getFullYear(), now.getMonth()))));
+}
+
 function loanPayoffMonths(remaining, monthly, annualRate) {
   if (!remaining || !monthly || remaining <= 0 || monthly <= 0) return null;
   const r = (annualRate || 0) / 1200;
@@ -29,7 +44,9 @@ function loanPayoffLabel(l) {
   if (n === Infinity) return { text: 'ההחזר לא מכסה את הריבית, היתרה תגדל', danger: true };
   const d = new Date();
   d.setMonth(d.getMonth() + n);
-  return { text: `סילוק משוער: ${MONTHS_HE[d.getMonth()]} ${d.getFullYear()}`, danger: false };
+  const interest = Math.max(0, n * l.monthly - l.remaining);
+  const interestText = interest > 1 ? ` · ריבית כוללת ≈ ${fmt(interest)}` : '';
+  return { text: `סילוק משוער: ${MONTHS_HE[d.getMonth()]} ${d.getFullYear()}${interestText}`, danger: false };
 }
 
 const ICONS = {
@@ -55,15 +72,17 @@ export default function Subscriptions({ clientUserId }) {
   const subs = data.subscriptions || [];
   const loans = [...(data.loans || [])].sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
   const payments = [...(data.payments || [])].sort((a, b) => {
-    const leftA = Math.max(0, (parseFloat(a.total) || 0) - (parseFloat(a.current) || 0)) * (parseFloat(a.amount) || 0);
-    const leftB = Math.max(0, (parseFloat(b.total) || 0) - (parseFloat(b.current) || 0)) * (parseFloat(b.amount) || 0);
+    const totalA = parseFloat(a.total) || 0;
+    const totalB = parseFloat(b.total) || 0;
+    const leftA = Math.max(0, totalA - currentInstallments(a, totalA)) * (parseFloat(a.amount) || 0);
+    const leftB = Math.max(0, totalB - currentInstallments(b, totalB)) * (parseFloat(b.amount) || 0);
     return leftB - leftA;
   });
   const fixedExpenses = data.fixed_expenses || [];
   const monthlySubsCost = subs.reduce((s, x) => s + (x.cycle === 'yearly' ? (x.amount || 0) / 12 : (x.amount || 0)), 0);
   const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
   const loansMonthly = loans.reduce((s, l) => s + (l.monthly || 0), 0);
-  const paymentsLeft = payments.reduce((s, p) => s + Math.max(0, (parseFloat(p.total) || 0) - (parseFloat(p.current) || 0)) * (parseFloat(p.amount) || 0), 0);
+  const paymentsLeft = payments.reduce((s, p) => { const total = parseFloat(p.total) || 0; return s + Math.max(0, total - currentInstallments(p, total)) * (parseFloat(p.amount) || 0); }, 0);
   const fixedMonthly = fixedExpenses.reduce((s, f) => s + (f.amount || 0), 0);
   const subShares = subs
     .map(s => ({ name: s.name, monthly: s.cycle === 'yearly' ? (s.amount || 0) / 12 : (s.amount || 0) }))
@@ -174,7 +193,7 @@ export default function Subscriptions({ clientUserId }) {
           <div className={styles.grid}>
             {payments.map((p, i) => {
               const total = parseFloat(p.total) || 0;
-              const cur = parseFloat(p.current) || 0;
+              const cur = currentInstallments(p, total);
               const left = Math.max(0, total - cur);
               const done = total > 0 && left <= 0;
               const paidPct = total > 0 ? Math.min(100, Math.max(0, Math.round((cur / total) * 100))) : null;
