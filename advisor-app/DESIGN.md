@@ -203,6 +203,11 @@ overlaid surfaces: dropdown panels, the quick-switcher modal, the login card.
   Budget/Expenses/Subscriptions): `padding: 100px 0`, centered column, a 46px
   circle with `1px dashed border-strong` holding an 18px line-icon, followed by
   a short `text3`-colored sentence.
+- **Density exception (CRM):** Crm.jsx can show up to three of these empty
+  states stacked in one view (meetings/tasks/notes each empty independently).
+  There the same circle+sentence pattern uses `padding: 56px 0` instead of
+  100px, so three stacked empties don't push the page to ~300px of dead
+  space. Same visual language, tuned padding for a multi-section page.
 
 ### Navigation (Sidebar)
 - Fixed 264px sidebar, vertical stack, `2px` active indicator bar on the

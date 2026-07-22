@@ -9,7 +9,8 @@ import styles from './Crm.module.css';
 const ICONS = {
   meetings: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
   tasks: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>,
-  notes: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4V4z" /></svg>
+  notes: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4V4z" /></svg>,
+  edit: <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
 };
 
 function downloadIcs(meeting) {
@@ -114,6 +115,7 @@ export default function Crm({ advisorId, clientId }) {
                     {m.notes && <div className={styles.meta}>{m.notes}</div>}
                   </div>
                   <div className={styles.rowActions}>
+                    <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
                     <button type="button" className={styles.icsButton} title="הורד ליומן" aria-label="הורד ליומן" onClick={() => downloadIcs(m)}>
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><path d="M12 14v4M10 16h4" />
@@ -157,6 +159,7 @@ export default function Crm({ advisorId, clientId }) {
                     <div className={styles.name}>{t.title}{overdue && <span className={styles.pastBadge}>באיחור</span>}</div>
                     {t.due_date && <div className={styles.meta}>יעד: {t.due_date}</div>}
                   </div>
+                  <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
                   <DeleteButton onClick={() => deleteTask(t.id)} />
                 </div>
               );
@@ -187,6 +190,7 @@ export default function Crm({ advisorId, clientId }) {
                   <div>{n.body}</div>
                   <div className={styles.meta}>{new Date(n.created_at).toLocaleDateString('he-IL')}</div>
                 </div>
+                <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
                 <DeleteButton onClick={() => deleteNote(n.id)} />
               </div>
             ))}

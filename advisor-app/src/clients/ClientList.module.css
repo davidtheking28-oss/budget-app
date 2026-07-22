@@ -278,8 +278,8 @@
   font-size: var(--text-sm);
 }
 
-.statRed { color: var(--red) !important; }
-.statGold { color: var(--gold) !important; }
+.statRed { color: var(--red); }
+.statGold { color: var(--gold); }
 
 .urgentPanel {
   border: 1px solid rgba(var(--red-rgb), 0.25);

@@ -125,6 +125,20 @@
   flex-shrink: 0;
 }
 
+.editHint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text3);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.row:hover .editHint {
+  opacity: 1;
+}
+
 .name {
   font-weight: 500;
 }
