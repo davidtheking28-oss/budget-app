@@ -79,15 +79,15 @@
     .year-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
     .year-nav button{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:7px 18px;min-height:44px;font-size:0.92rem;font-weight:700;color:var(--text);cursor:pointer;font-family:inherit;}
     .year-nav span{font-size:1rem;font-weight:800;color:var(--text);}
-    .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:stretch;height:calc(var(--nav-h) + var(--safe-bottom));padding-bottom:var(--safe-bottom);box-shadow:0 -4px 24px rgba(0,0,0,0.1);}
-    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;padding:8px 2px;transition:opacity 0.18s;-webkit-tap-highlight-color:transparent;font-family:inherit;}
-    .nav-item .nav-icon{display:flex;align-items:center;justify-content:center;padding:5px 11px;border-radius:14px;transition:background 0.18s,transform 0.12s cubic-bezier(0.22,1,0.36,1);}
+    .bottom-nav{position:fixed;left:16px;right:16px;bottom:calc(10px + var(--safe-bottom));z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:999px;display:flex;align-items:center;justify-content:space-between;height:62px;padding:0 6px;box-shadow:0 12px 32px rgba(0,0,0,0.16);max-width:420px;margin:0 auto;}
+    .nav-item{flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;background:none;padding:0;height:100%;transition:opacity 0.18s;-webkit-tap-highlight-color:transparent;font-family:inherit;}
+    .nav-item .nav-icon{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;transition:background 0.18s,transform 0.12s cubic-bezier(0.22,1,0.36,1);}
     .nav-item .nav-icon svg{width:20px;height:20px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.18s;}
-    .nav-item .nav-label{font-size:0.72rem;font-weight:700;color:var(--text3);transition:color 0.18s;}
+    .nav-item .nav-label{display:none;}
     .nav-item:active .nav-icon{transform:scale(0.88);}
     .nav-dot{display:none;}
     /* Active nav — unified accent */
-    .nav-item.active .nav-icon{background:rgba(var(--accent-rgb),0.12);}
+    .nav-item.active .nav-icon{background:rgba(var(--accent-rgb),0.14);}
     .nav-item.active .nav-icon svg{stroke:var(--accent);}
     .nav-item.active .nav-label{color:var(--accent);}
     .fab{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px);left:50%;transform:translateX(-50%);z-index:190;width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#2563eb,#1d4ed8);border:none;color:white;cursor:pointer;box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 6px rgba(var(--accent-rgb),0.10);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;transition:transform 0.22s cubic-bezier(0.22,1,0.36,1),box-shadow 0.22s;will-change:transform;}
@@ -600,7 +600,7 @@
     .quick-btn.primary{color:var(--text);}
     /* === NAV TOP INDICATOR === */
     .nav-item{position:relative;}
-    .nav-item.active::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:22px;height:3px;border-radius:0 0 3px 3px;background:var(--accent);animation:indicatorIn 0.22s cubic-bezier(0.22,1,0.36,1) both;}
+    .nav-item.active::after{display:none;}
     @keyframes indicatorIn{from{opacity:0;transform:translateX(-50%) scaleX(0.3);}to{opacity:1;transform:translateX(-50%) scaleX(1);}}
     .hero-balance-num{letter-spacing:-3px;}
     .card-amount{letter-spacing:-0.5px;}
@@ -679,8 +679,7 @@
     .loans-summary-sub{font-size:0.75rem;color:var(--text3);margin-top:4px;}
     .loans-summary.has-loans .loans-summary-val{color:white;}
     /* ===== 4-item nav ===== */
-    .bottom-nav .nav-item .nav-label{display:block;font-size:0.7rem;}
-    .bottom-nav .nav-item .nav-icon{padding:5px 14px;}
+    .bottom-nav .nav-item .nav-label{display:none;}
     /* ── Income source row in settings ─────── */
     .income-source-row{background:var(--surface);border-radius:12px;padding:12px 14px;border:1px solid var(--border);margin-bottom:8px;}
     .income-source-row-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
@@ -841,7 +840,6 @@
       .card-label{font-size:0.78rem;}
       .metric-label{font-size:0.55rem;}
       .hero-stat-label{font-size:0.55rem;}
-      .bottom-nav .nav-item .nav-label{font-size:0.64rem;}
       .upcoming-name,.tx-desc,.breakdown-name{font-size:0.84rem;}
     }
 
