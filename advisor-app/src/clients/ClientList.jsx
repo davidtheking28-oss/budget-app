@@ -186,9 +186,14 @@ export default function ClientList({ advisorId, onSelect }) {
                   </div>
                 </div>
                 {confirming ? (
-                  <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>
-                    לאשר ניתוק?
-                  </button>
+                  <div className={styles.confirmRemoveGroup}>
+                    <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>
+                      לאשר ניתוק?
+                    </button>
+                    <button type="button" className={styles.cancelRemoveBtn} onClick={e => { e.stopPropagation(); setConfirmingId(null); }}>
+                      ביטול
+                    </button>
+                  </div>
                 ) : (
                   <button type="button" className={styles.removeBtn} title="נתק לקוח" aria-label="נתק לקוח" onClick={e => { e.stopPropagation(); setConfirmingId(c.id); }}>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>

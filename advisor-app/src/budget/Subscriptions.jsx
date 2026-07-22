@@ -75,7 +75,7 @@ export default function Subscriptions({ clientUserId }) {
   return (
     <div>
       {renewingSoon.length > 0 && (
-        <div className={styles.renewalBanner}>
+        <div className={styles.renewalBanner} role="status" aria-live="polite">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <path d="M16 2v4M8 2v4M3 10h18" />
