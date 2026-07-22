@@ -147,7 +147,7 @@ export default function Subscriptions({ clientUserId }) {
                   </div>
                   {pct !== null && (
                     <div className={styles.loanBarRow}>
-                      <div className={styles.loanBar}>
+                      <div className={styles.loanBar} role="progressbar" aria-label="אחוז שנפרע" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
                         <div className={styles.loanBarFill + (pct >= 70 ? ' ' + styles.loanBarFillGood : '')} style={{ transform: `scaleX(${pct / 100})` }} />
                       </div>
                       <div className={styles.loanBarPct}>{pct}%</div>
@@ -183,7 +183,7 @@ export default function Subscriptions({ clientUserId }) {
                   </div>
                   {showBar && (
                     <div className={styles.loanBarRow}>
-                      <div className={styles.loanBar}>
+                      <div className={styles.loanBar} role="progressbar" aria-label="אחוז ששולם" aria-valuenow={paidPct} aria-valuemin={0} aria-valuemax={100}>
                         <div className={styles.loanBarFill} style={{ transform: `scaleX(${paidPct / 100})` }} />
                       </div>
                       <div className={styles.loanBarPct}>{paidPct}%</div>
