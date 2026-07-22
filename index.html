@@ -222,13 +222,16 @@
     .budget-pct-label.ok{color:var(--text3);}
     .budget-pct-label.warn{color:var(--yellow);}
     .budget-pct-label.danger{color:var(--red);font-weight:700;}
-    .budget-chip-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    .budget-chip-strip{display:flex;align-items:center;gap:10px;overflow-x:auto;padding:10px calc(50% - 47px) 20px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
     .budget-chip-strip::-webkit-scrollbar{display:none;}
-    .budget-chip{flex:0 0 auto;width:88px;height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:14px 6px;border:none;border-radius:26px;cursor:pointer;font-family:inherit;transition:transform 0.15s,box-shadow 0.15s,background 0.15s;-webkit-tap-highlight-color:transparent;}
-    .budget-chip:active{transform:scale(0.96);}
+    .budget-chip{flex:0 0 auto;width:88px;height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:14px 6px;border:none;border-radius:26px;cursor:pointer;font-family:inherit;scroll-snap-align:center;opacity:0.7;transform:scale(0.86);transition:transform 0.25s cubic-bezier(0.22,1,0.36,1),opacity 0.25s,box-shadow 0.15s,background 0.15s;-webkit-tap-highlight-color:transparent;}
+    .budget-chip:active{transform:scale(0.8);}
     .budget-chip-icon{font-size:1.9rem;line-height:1;}
     .budget-chip-name{font-size:0.72rem;font-weight:700;color:#1f2937;text-align:center;line-height:1.25;}
-    .budget-chip-sel{box-shadow:0 6px 16px rgba(0,0,0,0.18);}
+    .budget-chip-sel{opacity:1;transform:scale(1);box-shadow:0 6px 16px rgba(0,0,0,0.18);}
+    .budget-chip-sel:active{transform:scale(0.96);}
+    .budget-chip-add{background:var(--surface2);border:1.5px dashed var(--border-strong,var(--border));opacity:1;transform:scale(0.86);}
+    .budget-chip-add .budget-chip-icon{font-size:1.6rem;color:var(--text3);font-weight:300;}
     .budget-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,0.05);}
     .budget-detail-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
     .budget-detail-text{min-width:0;}
@@ -416,7 +419,6 @@
     #offlineBanner{display:none;position:fixed;top:0;left:0;right:0;z-index:9998;background:#d97706;color:#fff;text-align:center;font-size:0.84rem;font-weight:700;padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px));}
     body.offline #offlineBanner{display:block;}
     body.offline main{padding-top:calc(76px + env(safe-area-inset-top,0px) + 40px);}
-    #budgetSummaryCard.all-ok{border:1px solid var(--border);}
     .recurring-alert{display:none;}
     .recurring-alert.show{display:flex !important;}
     .recurring-alert-title{font-size:0.9rem;font-weight:800;color:var(--blue);margin-bottom:8px;}
@@ -1517,6 +1519,10 @@
     <div class="form-stack">
       <div class="form-field"><label for="budgetCat">קטגוריה</label><select id="budgetCat"></select></div>
       <div class="form-field"><label for="budgetLimit">תקרה חודשית (₪)</label><input type="number" id="budgetLimit" placeholder="1500" min="1" inputmode="decimal" onfocus="this.select()"/></div>
+      <label style="display:flex;align-items:center;gap:7px;font-size:0.8rem;color:var(--text2);cursor:pointer;white-space:nowrap;min-height:44px;">
+        <input type="checkbox" id="budgetRolloverToggle" onchange="toggleBudgetRollover(this.checked)" style="width:16px;height:16px;accent-color:var(--accent);">
+        גלגול יתרה מחודש קודם
+      </label>
       <button class="btn btn-primary btn-full" onclick="setBudget()">שמור תקציב</button>
     </div>
   </div>
@@ -1802,31 +1808,6 @@
   </div>
 
   <div id="page-budget" class="page">
-    <div id="budgetSummaryCard" class="balance-hero rounded-3xl p-6 relative overflow-hidden mb-4" style="display:none;">
-      <div class="balance-hero-bloom" style="top:-32%;right:-14%;width:55%;padding-bottom:55%;"></div>
-      <div class="balance-hero-bloom" style="bottom:-38%;left:-10%;width:45%;padding-bottom:45%;opacity:0.55;"></div>
-      <div class="flex justify-between items-end relative" style="z-index:1;margin-bottom:14px;">
-        <div>
-          <div class="text-xs font-semibold" style="color:rgba(255,255,255,0.85);">סה"כ תקציב</div>
-          <div id="budgetSummaryTotal" style="font-size:clamp(1.6rem,7vw,2.1rem);font-weight:800;letter-spacing:-0.5px;color:#fff;line-height:1.1;white-space:nowrap;margin-top:4px;">0</div>
-        </div>
-        <div style="text-align:left;">
-          <div class="text-xs font-semibold" style="color:rgba(255,255,255,0.85);">נוצל</div>
-          <div id="budgetSummaryPct" style="font-size:clamp(1.3rem,5.5vw,1.6rem);font-weight:800;line-height:1.1;white-space:nowrap;color:#fff;margin-top:4px;">0%</div>
-        </div>
-      </div>
-      <div class="relative" style="z-index:1;height:9px;background:rgba(255,255,255,0.28);border-radius:5px;overflow:hidden;">
-        <div id="budgetSummaryBar" style="height:100%;border-radius:5px;transition:width 0.6s cubic-bezier(.4,0,.2,1),background 0.3s;width:0%;background:#fff;"></div>
-      </div>
-      <div id="budgetSummaryMeta" class="relative" style="z-index:1;font-size:0.72rem;color:rgba(255,255,255,0.82);margin-top:8px;text-align:left;"></div>
-    </div>
-    <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px">
-      <button class="btn btn-primary btn-sm" onclick="openSheet('addBudgetSheet')">+ הגדר תקציב</button>
-      <label style="display:flex;align-items:center;gap:7px;font-size:0.8rem;color:var(--text2);cursor:pointer;white-space:nowrap;min-height:44px;padding:6px 0;">
-        <input type="checkbox" id="budgetRolloverToggle" onchange="toggleBudgetRollover(this.checked)" style="width:16px;height:16px;accent-color:var(--accent);">
-        גלגול יתרה מחודש קודם
-      </label>
-    </div>
     <div id="budgetEmpty" class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg></div><p>קבע תקרה חודשית לקטגוריה כמו "אוכל" או "קניות" ותדע מיד כשחרגת</p><button class="btn-empty" onclick="openSheet('addBudgetSheet')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הגדר תקציב ראשון</button></div>
     <div id="budgetChipStrip" class="budget-chip-strip" style="display:none"></div>
     <div id="budgetCatDetail" class="budget-detail-card" style="display:none"></div>
@@ -4475,23 +4456,6 @@ function renderBudget(){
   const allCats=Object.keys(budgets).filter(c=>BUDGET_CATS.includes(c)).sort();
   const carry={};allCats.forEach(c=>{carry[c]=_budgetCarry(c);});
   const effLim=c=>budgets[c]?Math.max(0,budgets[c]+(carry[c]||0)):0;
-  const summaryCard=document.getElementById('budgetSummaryCard');
-  const totalBudget=Object.keys(budgets).reduce((s,c)=>s+effLim(c),0);
-  const totalSpent=Object.entries(spent).filter(([c])=>budgets[c]).reduce((s,[,v])=>s+v,0);
-  if(summaryCard&&totalBudget>0){
-    summaryCard.style.display='';
-    const allOk=allCats.filter(c=>budgets[c]).length>0&&allCats.filter(c=>budgets[c]).every(c=>!spent[c]||!effLim(c)||Math.round((spent[c]||0)/effLim(c)*100)<70);
-    summaryCard.classList.toggle('all-ok',allOk);
-    const pct=Math.min(Math.round(totalSpent/totalBudget*100),100);
-    const barColor=pct>=100?'var(--red)':pct>=80?'var(--yellow)':'var(--green)';
-    document.getElementById('budgetSummaryTotal').textContent=fmt(totalBudget);
-    const pctEl=document.getElementById('budgetSummaryPct');
-    pctEl.textContent=pct+'%';
-    pctEl.style.color=barColor;
-    document.getElementById('budgetSummaryBar').style.width=pct+'%';
-    document.getElementById('budgetSummaryBar').style.background=barColor;
-    document.getElementById('budgetSummaryMeta').textContent=fmt(totalSpent)+' הוצאת · נותר '+fmt(Math.max(0,totalBudget-totalSpent));
-  } else if(summaryCard){summaryCard.style.display='none';}
   const empty=document.getElementById('budgetEmpty');
   const strip=document.getElementById('budgetChipStrip');
   const detail=document.getElementById('budgetCatDetail');
@@ -4508,7 +4472,10 @@ function renderBudget(){
       +'<span class="budget-chip-icon">'+(CAT_ICONS[cat]||'•')+'</span>'
       +'<span class="budget-chip-name">'+cat+'</span>'
     +'</button>';
-  }).join('');
+  }).join('')
+  +'<button type="button" class="budget-chip budget-chip-add" onclick="openSheet(\'addBudgetSheet\')" aria-label="הגדר תקציב לקטגוריה נוספת"><span class="budget-chip-icon">+</span></button>';
+  const selEl=strip.querySelector('.budget-chip-sel');
+  if(selEl)selEl.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
   renderBudgetDetail(spent,effLim);
 }
 let _selectedBudgetCat=null;
@@ -5368,7 +5335,7 @@ function animateNumEl(el){
   requestAnimationFrame(frame);
 }
 function animateHeroNums(page){
-  const map={dashboard:[],transactions:['txPageExpense'],budget:['budgetSummaryTotal']};
+  const map={dashboard:[],transactions:['txPageExpense'],budget:[]};
   (map[page]||[]).forEach(id=>animateNumEl(document.getElementById(id)));
 }
 function renderMonthReview(){
