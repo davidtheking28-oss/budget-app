@@ -69,6 +69,42 @@
   margin-top: 24px;
 }
 
+.superGroup {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(165deg, var(--surface), var(--bg-2));
+  animation: riseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  overflow: hidden;
+}
+
+.superHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-4) 18px;
+  border: none;
+  background: none;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: inherit;
+  text-align: right;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.superHeader:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.superBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 14px 14px;
+}
+
 .group {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

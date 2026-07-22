@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
-import { EXPENSE_CATS, CHART_PALETTE } from '../categories.js';
+import { EXPENSE_CATS, FIXED_CATS, CHART_PALETTE } from '../categories.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -19,6 +19,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState('');
   const [openCats, setOpenCats] = useState(() => new Set());
+  const [openSuper, setOpenSuper] = useState(() => new Set());
   const [adding, setAdding] = useState(false);
 
   const today = new Date();
@@ -31,6 +32,14 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     setOpenCats(prev => {
       const next = new Set(prev);
       next.has(c) ? next.delete(c) : next.add(c);
+      return next;
+    });
+  }
+
+  function toggleSuper(k) {
+    setOpenSuper(prev => {
+      const next = new Set(prev);
+      next.has(k) ? next.delete(k) : next.add(k);
       return next;
     });
   }
@@ -64,6 +73,11 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   });
   groups.sort((a, b) => b.total - a.total);
   const grandTotal = groups.reduce((s, g) => s + g.total, 0);
+
+  const superGroups = [
+    { key: 'variable', label: 'הוצאות משתנות', groups: groups.filter(g => !FIXED_CATS.includes(g.cat)) },
+    { key: 'fixed', label: 'הוצאות קבועות', groups: groups.filter(g => FIXED_CATS.includes(g.cat)) }
+  ].filter(sg => sg.groups.length).map(sg => ({ ...sg, total: sg.groups.reduce((s, g) => s + g.total, 0) }));
 
   async function addTx() {
     const amt = parseFloat(amount);
@@ -144,48 +158,76 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         </div>
       )}
       <div className={styles.list}>
-        {groups.map((g, i) => {
-          const open = openCats.has(g.cat);
-          const pct = grandTotal ? Math.round((g.total / grandTotal) * 100) : 0;
-          const color = CHART_PALETTE[i % CHART_PALETTE.length];
+        {superGroups.map((sg, si) => {
+          const sOpen = openSuper.has(sg.key);
+          const sPct = grandTotal ? Math.round((sg.total / grandTotal) * 100) : 0;
           return (
-            <div key={g.cat} className={styles.group}>
+            <div key={sg.key} className={styles.superGroup}>
               <button
                 type="button"
-                className={styles.groupHeader}
-                style={{ animationDelay: Math.min(i * 0.03, 0.3) + 's' }}
-                onClick={() => toggleCat(g.cat)}
-                aria-expanded={open}
+                className={styles.superHeader}
+                style={{ animationDelay: Math.min(si * 0.05, 0.3) + 's' }}
+                onClick={() => toggleSuper(sg.key)}
+                aria-expanded={sOpen}
               >
                 <div className={styles.groupLeft}>
-                  <svg className={styles.chevron + (open ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-                  <span className={styles.catDot} style={{ background: color }} />
-                  <span className={styles.catIcon}>{getCategoryIcon(g.cat)}</span>
-                  <span>{g.cat}</span>
-                  <span className={styles.groupCount}>{g.items.length}</span>
+                  <svg className={styles.chevron + (sOpen ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                  <span>{sg.label}</span>
+                  <span className={styles.groupCount}>{sg.groups.length}</span>
                 </div>
                 <div className={styles.groupRight}>
-                  <span className={styles.groupPct}>{pct}%</span>
-                  <span style={{ color: 'var(--red)', fontWeight: 700 }}>{fmt(g.total)}</span>
+                  <span className={styles.groupPct}>{sPct}%</span>
+                  <span style={{ color: 'var(--red)', fontWeight: 700 }}>{fmt(sg.total)}</span>
                 </div>
               </button>
-              <div className={styles.groupBar}><div className={styles.groupBarFill} style={{ width: pct + '%', background: color }} /></div>
-              {open && (
-                <div className={styles.groupBody}>
-                  {g.items.map(t => (
-                    <div key={t.id} className={styles.row}>
-                      <div>
-                        <div>{t.desc}</div>
-                        <div className={styles.meta}>{t.date}</div>
+              {sOpen && (
+                <div className={styles.superBody}>
+                  {sg.groups.map((g, i) => {
+                    const open = openCats.has(g.cat);
+                    const pct = grandTotal ? Math.round((g.total / grandTotal) * 100) : 0;
+                    const color = CHART_PALETTE[i % CHART_PALETTE.length];
+                    return (
+                      <div key={g.cat} className={styles.group}>
+                        <button
+                          type="button"
+                          className={styles.groupHeader}
+                          onClick={() => toggleCat(g.cat)}
+                          aria-expanded={open}
+                        >
+                          <div className={styles.groupLeft}>
+                            <svg className={styles.chevron + (open ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                            <span className={styles.catDot} style={{ background: color }} />
+                            <span className={styles.catIcon}>{getCategoryIcon(g.cat)}</span>
+                            <span>{g.cat}</span>
+                            <span className={styles.groupCount}>{g.items.length}</span>
+                          </div>
+                          <div className={styles.groupRight}>
+                            <span className={styles.groupPct}>{pct}%</span>
+                            <span style={{ color: 'var(--red)', fontWeight: 700 }}>{fmt(g.total)}</span>
+                          </div>
+                        </button>
+                        <div className={styles.groupBar}><div className={styles.groupBarFill} style={{ width: pct + '%', background: color }} /></div>
+                        {open && (
+                          <div className={styles.groupBody}>
+                            {g.items.map(t => (
+                              <div key={t.id} className={styles.row}>
+                                <div>
+                                  <div>{t.desc}</div>
+                                  <div className={styles.meta}>{t.date}</div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                  <div style={{ color: 'var(--red)', fontWeight: 700 }}>
+                                    {fmt(t.amount)}
+                                  </div>
+                                  <DeleteButton onClick={() => removeTx(t.id)} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ color: 'var(--red)', fontWeight: 700 }}>
-                          {fmt(t.amount)}
-                        </div>
-                        <DeleteButton onClick={() => removeTx(t.id)} />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
