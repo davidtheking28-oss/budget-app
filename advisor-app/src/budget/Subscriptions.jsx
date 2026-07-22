@@ -53,8 +53,12 @@ export default function Subscriptions({ clientUserId }) {
   }
 
   const subs = data.subscriptions || [];
-  const loans = data.loans || [];
-  const payments = data.payments || [];
+  const loans = [...(data.loans || [])].sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
+  const payments = [...(data.payments || [])].sort((a, b) => {
+    const leftA = Math.max(0, (parseFloat(a.total) || 0) - (parseFloat(a.current) || 0)) * (parseFloat(a.amount) || 0);
+    const leftB = Math.max(0, (parseFloat(b.total) || 0) - (parseFloat(b.current) || 0)) * (parseFloat(b.amount) || 0);
+    return leftB - leftA;
+  });
   const fixedExpenses = data.fixed_expenses || [];
   const monthlySubsCost = subs.reduce((s, x) => s + (x.cycle === 'yearly' ? (x.amount || 0) / 12 : (x.amount || 0)), 0);
   const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
@@ -91,8 +95,9 @@ export default function Subscriptions({ clientUserId }) {
           {fixedExpenses.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(fixedMonthly)}</div><div className={styles.statLabel}>לחודש בהוצאות קבועות</div></div>}
         </div>
       )}
-      {subs.length > 0 && <div className={styles.section}>
+      <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconSubs}>{ICONS.subs}</span>מנויים<span className={styles.countBadge}>{subs.length}</span></div>
+        {!subs.length && <div className={styles.sectionEmpty}>אין מנויים רשומים</div>}
         {subShares.length > 1 && (
           <div className={styles.miniBar}>
             {subShares.map((s, i) => (
@@ -126,10 +131,11 @@ export default function Subscriptions({ clientUserId }) {
             })}
           </div>
         ) : null}
-      </div>}
+      </div>
 
-      {loans.length > 0 && <div className={styles.section}>
+      <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconLoans}>{ICONS.loans}</span>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</div>
+        {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
         {loans.length ? (
           <div className={styles.grid}>
             {loans.map((l, i) => {
@@ -159,10 +165,11 @@ export default function Subscriptions({ clientUserId }) {
             })}
           </div>
         ) : null}
-      </div>}
+      </div>
 
-      {payments.length > 0 && <div className={styles.section}>
+      <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span></div>
+        {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         {payments.length ? (
           <div className={styles.grid}>
             {payments.map((p, i) => {
@@ -194,19 +201,22 @@ export default function Subscriptions({ clientUserId }) {
             })}
           </div>
         ) : null}
-      </div>}
+      </div>
 
-      {fixedExpenses.length > 0 && <div className={styles.section}>
+      <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.fixed}</span>הוצאות קבועות<span className={styles.countBadge}>{fixedExpenses.length}</span>{fixedMonthly > 0 ? ` · ${fmt(fixedMonthly)} לחודש` : ''}</div>
-        <div className={styles.list}>
-          {fixedExpenses.map((f, i) => (
-            <div key={f.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-              <div className={styles.name}>{f.id}{AUTO_FIXED_CATS.includes(f.id) && <span className={styles.autoBadge}>אוטומטי</span>}</div>
-              <div className={styles.amount}>{fmt(f.amount || 0)}</div>
-            </div>
-          ))}
-        </div>
-      </div>}
+        {!fixedExpenses.length && <div className={styles.sectionEmpty}>אין הוצאות קבועות רשומות</div>}
+        {fixedExpenses.length > 0 && (
+          <div className={styles.list}>
+            {fixedExpenses.map((f, i) => (
+              <div key={f.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div className={styles.name}>{f.id}{AUTO_FIXED_CATS.includes(f.id) && <span className={styles.autoBadge}>אוטומטי</span>}</div>
+                <div className={styles.amount}>{fmt(f.amount || 0)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

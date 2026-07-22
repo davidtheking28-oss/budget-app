@@ -94,6 +94,11 @@
   margin-bottom: var(--space-4);
 }
 
+.sectionEmpty {
+  color: var(--text3);
+  font-size: var(--text-sm);
+}
+
 .miniBar {
   display: flex;
   height: var(--space-2);
