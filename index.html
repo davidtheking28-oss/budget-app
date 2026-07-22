@@ -222,6 +222,39 @@
     .budget-pct-label.ok{color:var(--text3);}
     .budget-pct-label.warn{color:var(--yellow);}
     .budget-pct-label.danger{color:var(--red);font-weight:700;}
+    .budget-chip-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    .budget-chip-strip::-webkit-scrollbar{display:none;}
+    .budget-chip{flex:0 0 auto;width:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px 6px;border:none;border-radius:20px;cursor:pointer;font-family:inherit;transition:transform 0.15s,box-shadow 0.15s;-webkit-tap-highlight-color:transparent;}
+    .budget-chip:active{transform:scale(0.96);}
+    .budget-chip-icon{font-size:1.6rem;line-height:1;}
+    .budget-chip-name{font-size:0.72rem;font-weight:700;color:var(--text);text-align:center;line-height:1.25;}
+    .budget-chip-sel{box-shadow:0 0 0 2px var(--accent),0 6px 16px rgba(0,0,0,0.14);transform:translateY(-2px);}
+    .budget-chip-amber,.budget-chip-yellow{background:var(--yellow-light);}
+    .budget-chip-blue{background:var(--blue-light);}
+    .budget-chip-purple{background:var(--purple-light);}
+    .budget-chip-teal{background:var(--teal-light);}
+    .budget-chip-red{background:var(--red-light);}
+    .budget-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;}
+    .budget-detail-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
+    .budget-detail-text{min-width:0;}
+    .budget-detail-name{font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:4px;}
+    .budget-detail-amount{font-family:var(--font-num);font-size:1.5rem;font-weight:800;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
+    .budget-detail-limit{font-size:1rem;font-weight:600;color:var(--text3);}
+    .budget-detail-actions{display:flex;gap:8px;flex-shrink:0;}
+    .budget-icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:background 0.15s;-webkit-tap-highlight-color:transparent;}
+    .budget-icon-btn:active{opacity:0.7;}
+    .budget-icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .budget-tx-grouphdr{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;border-top:1px solid var(--border);margin-top:16px;padding:14px 2px 0;cursor:pointer;font-family:inherit;text-align:right;-webkit-tap-highlight-color:transparent;}
+    .budget-tx-chevron{width:15px;height:15px;color:var(--text3);flex-shrink:0;transition:transform 0.2s;}
+    .budget-tx-chevron-open{transform:rotate(180deg);}
+    .budget-tx-groupsum{font-family:var(--font-num);font-size:0.85rem;font-weight:700;color:var(--text2);flex-shrink:0;}
+    .budget-tx-grouplabel{font-size:0.85rem;font-weight:700;color:var(--text);flex:1;}
+    .budget-detail-txlist{margin-top:12px;}
+    .budget-tx-row{margin-bottom:8px;}
+    .budget-tx-movewrap{display:flex;justify-content:flex-end;padding:2px 14px 10px;}
+    .budget-move-btn{background:none;border:1.5px solid var(--border);border-radius:999px;padding:7px 16px;font-size:0.76rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+    .budget-move-btn:active{opacity:0.6;}
+    .budget-tx-empty{text-align:center;color:var(--text3);font-size:0.85rem;padding:24px 0;}
     .sub-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);position:relative;box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),box-shadow 0.15s;}
     .sub-card[onclick]:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.11);}
     .sub-card[onclick]:active{transform:scale(0.985);}
@@ -320,7 +353,7 @@
     .wiz-date-chip input[type=date]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
     .wiz-body-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
     .wiz-sec-ttl{font-size:0.95rem;font-weight:800;color:var(--accent);letter-spacing:0.1px;}
-    #wizCatList{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+    .cat-tile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
     .wiz-cat-row{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:18px 8px;border:1.5px solid var(--border);border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s,transform 0.15s,border-color 0.15s,background 0.15s;width:100%;background:var(--surface);font-family:inherit;text-align:center;}
     .wiz-cat-row:active{opacity:0.7;transform:scale(0.97);}
     .wiz-cat-name{font-size:0.78rem;font-weight:600;color:var(--text);font-family:var(--font-sans);line-height:1.25;}
@@ -1286,7 +1319,7 @@
           <div class="wiz-next-chip">הבא ›</div>
         </div>
       </div>
-      <div id="wizCatList"></div>
+      <div id="wizCatList" class="cat-tile-grid"></div>
     </div>
     <div class="wiz-body" id="wizBody2" style="display:none;">
       <div class="wiz-body-padded">
@@ -1324,6 +1357,14 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="moveCatSheet" onclick="if(event.target===this)closeSheet('moveCatSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">↪ העברה לקטגוריה אחרת</div>
+    <div id="moveCatList" class="cat-tile-grid" style="max-height:56vh;overflow-y:auto;"></div>
   </div>
 </div>
 
@@ -1783,12 +1824,9 @@
         גלגול יתרה מחודש קודם
       </label>
     </div>
-    <div class="section">
-      <div class="section-header"><div class="section-title">מעקב הוצאות מול תקציב</div></div>
-      <div class="section-body" id="budgetList">
-        <div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg></div><p>קבע תקרה חודשית לקטגוריה כמו "אוכל" או "קניות" ותדע מיד כשחרגת</p><button class="btn-empty" onclick="openSheet('addBudgetSheet')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הגדר תקציב ראשון</button></div>
-      </div>
-    </div>
+    <div id="budgetEmpty" class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg></div><p>קבע תקרה חודשית לקטגוריה כמו "אוכל" או "קניות" ותדע מיד כשחרגת</p><button class="btn-empty" onclick="openSheet('addBudgetSheet')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הגדר תקציב ראשון</button></div>
+    <div id="budgetChipStrip" class="budget-chip-strip" style="display:none"></div>
+    <div id="budgetCatDetail" class="budget-detail-card" style="display:none"></div>
   </div>
 
   <div id="page-goals" class="page">
@@ -4436,29 +4474,96 @@ function renderBudget(){
     document.getElementById('budgetSummaryBar').style.background=barColor;
     document.getElementById('budgetSummaryMeta').textContent=fmt(totalSpent)+' הוצאת · נותר '+fmt(Math.max(0,totalBudget-totalSpent));
   } else if(summaryCard){summaryCard.style.display='none';}
-  const list=document.getElementById('budgetList');
-  if(!allCats.length){list.innerHTML='<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg></div><p>קבע תקרה חודשית לקטגוריה כמו אוכל או קניות, ותדע מיד כשחרגת</p><button class="btn-empty" onclick="openSheet(\'addBudgetSheet\')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הגדר תקציב ראשון</button></div>';return;}
-  list.innerHTML=allCats.map(cat=>{
-    const s=spent[cat]||0;const baseLim=budgets[cat]||0;const lim=baseLim?effLim(cat):0;
-    const pct=lim?Math.min(Math.round(s/lim*100),100):(baseLim?100:0);
-    const state=progState(pct,[[90,'danger'],[70,'warn'],[0,'ok']]);
-    const avail=lim?Math.max(0,lim-s):null;
-    const carryChip=(baseLim&&carry[cat])?'<span style="font-size:0.66rem;font-weight:700;padding:1px 6px;border-radius:6px;background:'+(carry[cat]>0?'var(--green-light)':'var(--red-light)')+';color:'+(carry[cat]>0?'var(--green)':'var(--red)')+';margin-inline-start:6px;white-space:nowrap;">'+(carry[cat]>0?'+':'-')+fmt(Math.abs(carry[cat]))+' גלגול</span>':'';
-    return '<div class="budget-item">'
-      +'<div class="budget-item-header">'
-        +'<div class="budget-item-name">'+catIconSvg(cat)+' '+cat+carryChip+'</div>'
-        +'<div style="display:flex;align-items:center;gap:12px">'
-          +(baseLim?'<div style="text-align:left"><div class="budget-avail-num '+state+'">'+fmt(avail||0)+'</div><div class="budget-avail-label">נותר מתוך '+fmt(lim)+'</div></div>':'')
-          +'<button type="button" onclick="deleteBudget(\''+cat+'\')" class="budget-del-x" aria-label="מחק">✕</button>'
-        +'</div>'
-      +'</div>'
-      +(baseLim?progBarHTML(pct,{wrapClass:'budget-prog-wrap',fillClass:'budget-prog-fill',stateClass:state})
-          +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px">'
-            +'<div class="budget-pct-label '+state+'">'+pct+'% נוצל</div>'
-            +'<div class="budget-item-amounts">'+fmt(s)+' הוצאת</div>'
-          +'</div>':'')
-    +'</div>';
+  const empty=document.getElementById('budgetEmpty');
+  const strip=document.getElementById('budgetChipStrip');
+  const detail=document.getElementById('budgetCatDetail');
+  if(!allCats.length){
+    empty.style.display='';strip.style.display='none';detail.style.display='none';
+    return;
+  }
+  empty.style.display='none';strip.style.display='';detail.style.display='';
+  if(!_selectedBudgetCat||!allCats.includes(_selectedBudgetCat))_selectedBudgetCat=allCats[0];
+  strip.innerHTML=allCats.map(cat=>{
+    const color=CAT_COLOR[cat]||'blue';
+    const sel=cat===_selectedBudgetCat;
+    return '<button type="button" class="budget-chip budget-chip-'+color+(sel?' budget-chip-sel':'')+'" onclick="selectBudgetCat(\''+cat+'\')">'
+      +'<span class="budget-chip-icon">'+(CAT_ICONS[cat]||'•')+'</span>'
+      +'<span class="budget-chip-name">'+cat+'</span>'
+    +'</button>';
   }).join('');
+  renderBudgetDetail(spent,effLim);
+}
+let _selectedBudgetCat=null;
+function selectBudgetCat(cat){_selectedBudgetCat=cat;renderBudget();}
+function renderBudgetDetail(spent,effLim){
+  const cat=_selectedBudgetCat;
+  const detail=document.getElementById('budgetCatDetail');
+  if(!cat){detail.style.display='none';return;}
+  const s=spent[cat]||0;
+  const baseLim=budgets[cat]||0;
+  const lim=baseLim?effLim(cat):0;
+  const pct=lim?Math.min(Math.round(s/lim*100),100):(baseLim?100:0);
+  const state=progState(pct,[[90,'danger'],[70,'warn'],[0,'ok']]);
+  const mTx=getMonthTx(currentYear,currentMonth).filter(t=>t.type==='expense'&&t.cat===cat).sort((a,b)=>a.date<b.date?1:-1);
+  const trashSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+  const editSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
+  const chartSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>';
+  const chevronSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="budget-tx-chevron'+(_budgetTxListOpen?' budget-tx-chevron-open':'')+'"><polyline points="6 9 12 15 18 9"/></svg>';
+  detail.innerHTML=
+    '<div class="budget-detail-header">'
+      +'<div class="budget-detail-text">'
+        +'<div class="budget-detail-name">'+cat+'</div>'
+        +'<div class="budget-detail-amount">'+fmt(s)+' <span class="budget-detail-limit">/ '+fmt(lim)+'</span></div>'
+      +'</div>'
+      +'<div class="budget-detail-actions">'
+        +'<button type="button" class="budget-icon-btn" onclick="deleteBudget(\''+cat+'\')" aria-label="מחק תקציב">'+trashSvg+'</button>'
+        +'<button type="button" class="budget-icon-btn" onclick="editBudgetCat(\''+cat+'\')" aria-label="ערוך תקציב">'+editSvg+'</button>'
+        +'<button type="button" class="budget-icon-btn" onclick="showPage(\'analytics\',document.getElementById(\'nav-analytics\'))" aria-label="ניתוח">'+chartSvg+'</button>'
+      +'</div>'
+    +'</div>'
+    +progBarHTML(pct,{wrapClass:'budget-prog-wrap',fillClass:'budget-prog-fill',stateClass:state})
+    +'<button type="button" class="budget-tx-grouphdr" onclick="toggleBudgetTxList()">'
+      +chevronSvg
+      +'<span class="budget-tx-groupsum">'+fmt(s)+'</span>'
+      +'<span class="budget-tx-grouplabel">עסקאות ב'+cat+'</span>'
+    +'</button>'
+    +'<div class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
+      +(mTx.length?mTx.map(t=>
+        '<div class="budget-tx-row">'+txHtml(t)
+          +'<div class="budget-tx-movewrap"><button type="button" class="budget-move-btn" onclick="event.stopPropagation();openMoveTxCat('+t.id+')">העברה לקטגוריה אחרת</button></div>'
+        +'</div>'
+      ).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>')
+    +'</div>';
+}
+let _budgetTxListOpen=true;
+function toggleBudgetTxList(){_budgetTxListOpen=!_budgetTxListOpen;renderBudget();}
+function editBudgetCat(cat){
+  document.getElementById('budgetCat').value=cat;
+  document.getElementById('budgetLimit').value=budgets[cat]||'';
+  openSheet('addBudgetSheet');
+}
+let _moveTxId=null;
+function openMoveTxCat(id){
+  _moveTxId=id;
+  const t=transactions.find(x=>x.id===id);if(!t)return;
+  const cats=getEffectiveCats('expense');
+  document.getElementById('moveCatList').innerHTML=cats.map(c=>
+    '<button type="button" class="wiz-cat-row'+(c===t.cat?' wiz-sel':'')+'" onclick="moveTxToCat(\''+c+'\')">'
+      +'<div class="wiz-cat-icon">'+catIconSvg(c)+'</div>'
+      +'<span class="wiz-cat-name">'+c+'</span>'
+    +'</button>'
+  ).join('');
+  openSheet('moveCatSheet');
+}
+function moveTxToCat(cat){
+  const t=transactions.find(x=>x.id===_moveTxId);
+  if(!t)return;
+  t.cat=cat;
+  saveData();
+  closeSheet('moveCatSheet');
+  showToast('✓ הועבר ל'+cat);
+  renderBudget();
+  refreshAll();
 }
 let _editingGoalId=null;
 function _clearGoalForm(){
