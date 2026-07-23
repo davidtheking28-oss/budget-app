@@ -2413,6 +2413,7 @@ Object.assign(CAT_SVGS,{
   'עסקאות בתשלומים':CAT_SVGS['הלוואות'],
   'דמי כרטיס אשראי':_sv('<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/>'),
   'ביטוחי בריאות וחיים':CAT_SVGS['ביטוח'],
+  'ביטוחים':CAT_SVGS['ביטוח'],
   'הוראת קבע לחסכון':CAT_SVGS['השקעות'],
   'ועד בית':_sv('<rect x="4" y="3" width="16" height="18" rx="1"/><line x1="9" y1="21" x2="9" y2="14"/><line x1="15" y1="21" x2="15" y2="14"/>'),
   'מים וביוב':_sv('<path d="M12 2s7 8 7 13a7 7 0 0 1-14 0c0-5 7-13 7-13z"/>'),
@@ -2425,7 +2426,7 @@ Object.assign(CAT_SVGS,{
 });
 Object.assign(CAT_ICONS,{
   'מנויים ושירותים':'🔄','החזר הלוואות + חיוב קבוע':'🏦','עסקאות בתשלומים':'💳','דמי כרטיס אשראי':'💳',
-  'ביטוחי בריאות וחיים':'🛡️','הוראת קבע לחסכון':'📈','ועד בית':'🏢','מים וביוב':'🚰','חשמל':'⚡',
+  'ביטוחי בריאות וחיים':'🛡️','ביטוחים':'🛡️','הוראת קבע לחסכון':'📈','ועד בית':'🏢','מים וביוב':'🚰','חשמל':'⚡',
   'תרומות בהוראת קבע':'🤝','חינוך, חוגים וקייטנות':'📚','ריבית על המינוס':'📉',
   'עמלת פעולות בערוץ ישיר':'🧾','עמלת SMS':'💬'
 });
@@ -2475,9 +2476,19 @@ function _mergeFixedCatInto(oldKeys,newKey){
   if(transactions.some(t=>t._dropMe))transactions=transactions.filter(t=>!t._dropMe);
   return changed;
 }
+function _migrateInsuranceCats(){
+  const changed=_mergeFixedCatInto(['ביטוחי בריאות וחיים','ביטוח בריאות'],'ביטוחים');
+  if(changed){
+    const row=fixedExpenses.find(f=>f.id==='ביטוחים');
+    if(row&&parseFloat(row.amount)>0)insurances.push({id:Date.now(),name:'ביטוח',monthly:parseFloat(row.amount)});
+    fixedExpenses=fixedExpenses.filter(f=>f.id!=='ביטוחים');
+  }
+  return changed;
+}
 function _migrateCats(){
   let changed=_mergeFixedCatInto(['משכנתא','שכר דירה'],'דיור');
   changed=_mergeFixedCatInto(['מניות'],'הוראת קבע לחסכון')||changed;
+  changed=_migrateInsuranceCats()||changed;
   transactions.forEach(t=>{
     if(t.type!=='expense'||t.fx)return;
     const n=_CAT_MIGRATE[t.cat];
@@ -2522,11 +2533,12 @@ const BUDGET_CHIP_COLOR={
   'דמי כיס/ילדים':'yellow','יהדות/חגים':'purple','ביטוח לאומי':'blue','שונות':'gray'
 };
 function budgetChipColor(cat){return BUDGET_CHIP_HEX[BUDGET_CHIP_COLOR[cat]||'gray'];}
-const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','הוראת קבע לחסכון','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
+const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
   'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0,cur=_payCalc(p).current;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0),
-  'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0)
+  'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0),
+  'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
 };
 const BUDGET_CATS=[...EXPENSE_CATS,...FIXED_CATS.filter(c=>!EXPENSE_CATS.includes(c))];
 const EXPENSE_CATS_BUSINESS=['שיווק ופרסום','מערכות ותוכנה','ציוד משרדי','שכר עובדים','חשבונאות ומשפטי','שכירות משרד','תקשורת עסקית','נסיעות עסקיות','ייצוג וארוח','אחסון ולוגיסטיקה','מסים ואגרות','ביטוח עסקי','הדרכות והשתלמויות','פיתוח ומחקר','קניות ציוד','אחר'];
@@ -2564,20 +2576,21 @@ let budgets       = JSON.parse(localStorage.getItem(_modeKey('budget_limits'))||
 let loans         = JSON.parse(localStorage.getItem(_modeKey('budget_loans')) ||'[]');
 let payments      = JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
 let fixedExpenses = JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))   ||'[]');
+let insurances    = JSON.parse(localStorage.getItem(_modeKey('budget_insurances'))||'[]');
 
 // ── Sync metadata: per-item timestamps + tombstones for merge-safe cloud sync ──
-function _emptyMeta(){return {del:{tx:{},goals:{},subs:{},loans:{},payments:{},fixed:{},budgets:{}},bu:{}};}
+function _emptyMeta(){return {del:{tx:{},goals:{},subs:{},loans:{},payments:{},fixed:{},insurances:{},budgets:{}},bu:{}};}
 function _loadSyncMeta(){
   try{
     const m=JSON.parse(localStorage.getItem(_modeKey('budget_sync_meta'))||'null');
-    if(m&&m.del&&m.bu){if(!m.del.payments)m.del.payments={};if(!m.del.fixed)m.del.fixed={};return m;}
+    if(m&&m.del&&m.bu){if(!m.del.payments)m.del.payments={};if(!m.del.fixed)m.del.fixed={};if(!m.del.insurances)m.del.insurances={};return m;}
   }catch(e){}
   return _emptyMeta();
 }
 let _syncMeta=_loadSyncMeta();
 let _syncShadow={};
 function _itemSig(it){if(it.u===undefined)return JSON.stringify(it);const {u,...rest}=it;return JSON.stringify(rest);}
-function _collections(){return [['tx',transactions],['goals',goals],['subs',subscriptions],['loans',loans],['payments',payments],['fixed',fixedExpenses]];}
+function _collections(){return [['tx',transactions],['goals',goals],['subs',subscriptions],['loans',loans],['payments',payments],['fixed',fixedExpenses],['insurances',insurances]];}
 function _rebuildShadow(){
   _syncShadow={};
   for(const [k,arr] of _collections()){
@@ -2633,6 +2646,7 @@ function saveData(){
   localStorage.setItem(_modeKey('budget_loans'), JSON.stringify(loans));
   localStorage.setItem(_modeKey('budget_payments'),JSON.stringify(payments));
   localStorage.setItem(_modeKey('budget_fixed'),JSON.stringify(fixedExpenses));
+  localStorage.setItem(_modeKey('budget_insurances'),JSON.stringify(insurances));
   localStorage.setItem(_modeKey('budget_sync_meta'),JSON.stringify(_syncMeta));
   scheduleCloudSave();
 }
@@ -3343,6 +3357,10 @@ function _expStructListHtml(kind){
     const rows=loans.map(l=>'<div class="exp-struct-row" onclick="event.stopPropagation();editLoan('+l.id+')"><span>'+esc(l.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(l.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteLoan('+l.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
     return (rows||'<div class="budget-tx-empty">אין הלוואות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openAddLoanSheet()">+ הוסף הלוואה</button>';
   }
+  if(kind==='insurance'){
+    const rows=insurances.map(i=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditInsurance('+i.id+')"><span>'+esc(i.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(i.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteInsurance('+i.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    return (rows||'<div class="budget-tx-empty">אין ביטוחים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddInsurance()">+ הוסף ביטוח</button>';
+  }
   if(kind==='subs'){
     const active=subscriptions.filter(s=>s.active);
     const rows=active.map(s=>'<div class="exp-struct-row" onclick="event.stopPropagation();editSub('+s.id+')"><span>'+esc(s.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(subME(s))+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteSub('+s.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
@@ -3367,7 +3385,7 @@ function _expStructListHtml(kind){
   }
   return '';
 }
-const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs'};
+const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs','ביטוחים':'insurance'};
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
   return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+key+'\')" aria-expanded="'+open+'">'
@@ -3470,7 +3488,7 @@ let _syncRetryTimer=null;
 // Collections added after the table was created. Each is its own column in personal
 // mode, so on a DB that predates them the whole upsert fails — core data included.
 // Drop such a column for this session instead and keep everything else syncing.
-const _OPTIONAL_COLS=['payments','fixed_expenses'];
+const _OPTIONAL_COLS=['payments','fixed_expenses','insurances'];
 const _missingCols=new Set();
 function _mergeMeta(a,b){
   const out=_emptyMeta();
@@ -3510,6 +3528,7 @@ function _buildMerged(bundle){
     loans:_mergeArrays(loans,bundle.loans,_syncMeta.del.loans),
     payments:_mergeArrays(payments,bundle.payments,_syncMeta.del.payments),
     fixed_expenses:_mergeArrays(fixedExpenses,bundle.fixed_expenses,_syncMeta.del.fixed),
+    insurances:_mergeArrays(insurances,bundle.insurances,_syncMeta.del.insurances),
     budgets:_mergeBudgets(budgets,bundle.budgets,_syncMeta)
   };
 }
@@ -3520,8 +3539,9 @@ function _applyMerged(m){
     ||JSON.stringify(m.loans)!==JSON.stringify(loans)
     ||JSON.stringify(m.payments)!==JSON.stringify(payments)
     ||JSON.stringify(m.fixed_expenses)!==JSON.stringify(fixedExpenses)
+    ||JSON.stringify(m.insurances)!==JSON.stringify(insurances)
     ||JSON.stringify(m.budgets)!==JSON.stringify(budgets);
-  transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;fixedExpenses=m.fixed_expenses;budgets=m.budgets;
+  transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;fixedExpenses=m.fixed_expenses;insurances=m.insurances;budgets=m.budgets;
   _migrateCats();   // cloud rows may still carry the old category names
   localStorage.setItem(_modeKey('budget_tx'),JSON.stringify(transactions));
   localStorage.setItem(_modeKey('budget_goals'),JSON.stringify(goals));
@@ -3530,6 +3550,7 @@ function _applyMerged(m){
   localStorage.setItem(_modeKey('budget_loans'),JSON.stringify(loans));
   localStorage.setItem(_modeKey('budget_payments'),JSON.stringify(payments));
   localStorage.setItem(_modeKey('budget_fixed'),JSON.stringify(fixedExpenses));
+  localStorage.setItem(_modeKey('budget_insurances'),JSON.stringify(insurances));
   localStorage.setItem(_modeKey('budget_sync_meta'),JSON.stringify(_syncMeta));
   _rebuildShadow();
   return changed;
@@ -4031,7 +4052,7 @@ function exportCSV(){
 // ── Backup / Restore ──────────────────────────────────────────────
 function exportBackup(){
   const data = {
-    transactions, goals, subscriptions, budgets, loans, payments, fixedExpenses, userSettings,
+    transactions, goals, subscriptions, budgets, loans, payments, fixedExpenses, insurances, userSettings,
     exportDate: new Date().toISOString()
   };
   const a = document.createElement('a');
@@ -4056,6 +4077,7 @@ function importBackup(input){
       loans = data.loans || [];
       payments = data.payments || [];
       fixedExpenses = data.fixedExpenses || [];
+      insurances = data.insurances || [];
       if(data.userSettings) userSettings = data.userSettings;
       saveData();
       saveSettingsData();
@@ -4071,7 +4093,7 @@ async function resetAllData(){
   if(_cloudUser&&_sb&&!_householdOwner){
     try{await _sb.from('budget_data').delete().eq('user_id',_cloudUser.id);}catch(e){}
   }
-  transactions=[]; goals=[]; subscriptions=[]; budgets={}; loans=[]; payments=[]; fixedExpenses=[];
+  transactions=[]; goals=[]; subscriptions=[]; budgets={}; loans=[]; payments=[]; fixedExpenses=[]; insurances=[];
   userSettings={name:'',savingsGoal:0};
   _syncMeta=_emptyMeta();
   _rebuildShadow();
@@ -4980,6 +5002,25 @@ function _expEditPayment(id){
   const current=prompt('כמה תשלומים כבר שולמו:',p.currentAnchor?_payCalc(p).current:(p.current||''));if(current===null)return;
   p.name=name.trim();p.amount=parseFloat(amount)||0;p.total=parseFloat(total)||0;p.current=parseFloat(current)||0;p.currentAnchor=_curMonthKey();
   saveData();renderTxPage();renderPayments();
+}
+function _expEditInsurance(id){
+  const i=insurances.find(x=>x.id===id);if(!i)return;
+  const name=prompt('שם הביטוח:',i.name||'');if(name===null)return;
+  const monthly=prompt('סכום חודשי:',i.monthly||'');if(monthly===null)return;
+  i.name=name.trim();i.monthly=parseFloat(monthly)||0;
+  saveData();renderTxPage();
+}
+function _expDeleteInsurance(id){
+  insurances=insurances.filter(i=>i.id!==id);
+  saveData();renderTxPage();
+  showToast('✓ הביטוח הוסר');
+}
+function _expAddInsurance(){
+  const name=prompt('שם הביטוח החדש:');if(!name||!name.trim())return;
+  const monthly=parseFloat(prompt('סכום חודשי:')||'')||0;
+  insurances.push({id:Date.now(),name:name.trim(),monthly});
+  saveData();renderTxPage();
+  showToast('✓ ביטוח נוסף');
 }
 function _expAddPayment(){
   const name=prompt('שם התשלום החדש:');if(!name||!name.trim())return;
@@ -6525,6 +6566,7 @@ function switchMode(mode){
   loans=JSON.parse(localStorage.getItem(_modeKey('budget_loans'))||'[]');
   payments=JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
   fixedExpenses=JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))||'[]');
+  insurances=JSON.parse(localStorage.getItem(_modeKey('budget_insurances'))||'[]');
   const prevBM=userSettings.businessMode;
   userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
   if(!userSettings.incomeSources)userSettings.incomeSources=[];
