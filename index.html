@@ -416,14 +416,11 @@
     .wiz-cat-row{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:18px 8px;border:1.5px solid var(--border);border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s,transform 0.15s,border-color 0.15s,background 0.15s;width:100%;background:var(--surface);font-family:inherit;text-align:center;}
     .wiz-cat-row:active{opacity:0.7;transform:scale(0.97);}
     .wiz-cat-name{font-size:0.78rem;font-weight:600;color:var(--text);font-family:var(--font-sans);line-height:1.25;}
-    .wiz-cat-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(var(--accent-rgb),0.1);}
-    .wiz-cat-icon svg{width:21px;height:21px;stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+    .wiz-cat-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.35rem;line-height:1;}
     .wiz-cat-row.wiz-sel{border-color:var(--accent);background:rgba(var(--accent-rgb),0.06);}
     .wiz-cat-row.wiz-sel .wiz-cat-name{color:var(--accent);font-weight:700;}
-    .wiz-cat-row.wiz-sel .wiz-cat-icon{background:var(--accent);}
     @keyframes wizPulse{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
     .wiz-cat-row.wiz-just-matched .wiz-cat-icon{animation:wizPulse .4s cubic-bezier(0.22,1,0.36,1);}
-    .wiz-cat-row.wiz-sel .wiz-cat-icon svg{stroke:white;}
     .wiz-sel-check{display:none;}
     .wiz-cat-addwrap{grid-column:1/-1;}
     .wiz-sub-list{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:none;border-radius:0;margin:0;overflow:visible;animation:wizSubIn 0.2s cubic-bezier(0.22,1,0.36,1) both;}
@@ -462,7 +459,6 @@
     body.dark .wiz-fix-btn.active{box-shadow:0 2px 8px rgba(var(--accent-rgb),0.25);}
     body.dark .toggle-opt.active{box-shadow:0 2px 8px rgba(var(--accent-rgb),0.2);}
     body.dark .btn-primary{box-shadow:0 4px 16px rgba(var(--accent-rgb),0.2);}
-    body.dark .wiz-cat-icon{background:rgba(var(--accent-rgb),0.12);}
     #toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 96px);left:50%;transform:translateX(-50%) translateY(16px);background:#1a1a2e;color:white;padding:10px 22px;border-radius:24px;font-size:0.88rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.22s cubic-bezier(0.22,1,0.36,1),transform 0.22s cubic-bezier(0.22,1,0.36,1);white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.3);}
     body.dark #toast{background:#30363d;}
     #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -2793,7 +2789,7 @@ function wizRenderCats(cats){
     const hasSub=!!CAT_SUBCATS[c];
     const onclick=hasSub?'wizExpandCat(\''+c+'\',this)':'wizPickCat(\''+c+'\',this)';
     return '<button type="button" class="wiz-cat-row'+(i===0?' wiz-sel':'')+'" onclick="'+onclick+'">'+
-      '<div class="wiz-cat-icon">'+catIconSvg(c)+'</div>'+
+      '<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+'">'+(CAT_ICONS[c]||'•')+'</div>'+
       '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+c+'</span>'+
       (hasSub?'<span class="wiz-expand-arrow">›</span>':'<span class="wiz-sel-check">✓</span>')+
       '</button>';
@@ -2822,7 +2818,7 @@ function wizExpandCat(cat,el){
   div.className='wiz-sub-list';
   div.innerHTML=subCats.map(sc=>
     '<button type="button" class="wiz-cat-row wiz-sub-row" onclick="wizPickCat(\''+sc+'\',this)">'+
-    '<div class="wiz-cat-icon wiz-sub-icon">'+catIconSvg(sc)+'</div>'+
+    '<div class="wiz-cat-icon wiz-sub-icon" style="background:'+budgetChipColor(sc).base+'">'+(CAT_ICONS[sc]||'•')+'</div>'+
     '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+sc+'</span>'+
     '<span class="wiz-sel-check">✓</span></button>'
   ).join('');
@@ -4931,7 +4927,7 @@ function openMoveTxCat(id){
   const cats=getEffectiveCats('expense');
   document.getElementById('moveCatList').innerHTML=cats.map(c=>
     '<button type="button" class="wiz-cat-row'+(c===t.cat?' wiz-sel':'')+'" onclick="moveTxToCat(\''+c+'\')">'
-      +'<div class="wiz-cat-icon">'+catIconSvg(c)+'</div>'
+      +'<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+'">'+(CAT_ICONS[c]||'•')+'</div>'
       +'<span class="wiz-cat-name">'+c+'</span>'
     +'</button>'
   ).join('');
