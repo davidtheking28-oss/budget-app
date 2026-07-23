@@ -6066,6 +6066,7 @@ function refreshAll(){
 let onboardStep=0;
 let obIncomes=[{name:'משכורת שלי',amount:''}];
 let obFixed=[];
+const OB_FIXED_DEFAULT=['דיור','ארנונה','חשמל','מים וביוב'];
 let obLoans=[];
 let obInvest=[
   {emoji:'🏦',name:'קרן פנסיה',amount:''},
@@ -6111,8 +6112,8 @@ function renderOnboardStep(){
     el.innerHTML='<div class="onboard-title">💵 מה ההכנסה החודשית שלך?</div><div class="onboard-sub">הזן את המשכורת או כל הכנסה קבועה. זה עוזר לנו לחשב כמה אפשר להוציא בחודש.</div><div class="onboard-rows" id="obIncomeRows"></div><button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="obAddIncome()">+ הוספת מקור הכנסה</button>';
     renderObIncomes();
   } else if(onboardStep===3){
-    if(!obFixed.length)obFixed=getEffectiveFixedCats().filter(c=>!FIXED_AUTO[c]).map(cat=>({cat,amount:''}));
-    el.innerHTML='<div class="onboard-title">🏠 הוצאות קבועות</div><div class="onboard-sub">אילו הוצאות קבועות יש לך כל חודש? מלא סכום רק למה שרלוונטי — אפשר להוסיף או לשנות בכל שלב מאוחר יותר.</div><div class="onboard-rows" id="obFixedRows"></div>';
+    if(!obFixed.length)obFixed=OB_FIXED_DEFAULT.filter(c=>getEffectiveFixedCats().includes(c)).map(cat=>({cat,amount:''}));
+    el.innerHTML='<div class="onboard-title">🏠 הוצאות קבועות</div><div class="onboard-sub">אילו הוצאות קבועות יש לך כל חודש? מלא סכום רק למה שרלוונטי — אפשר להוסיף עוד קטגוריות למטה, או לשנות הכל בכל שלב מאוחר יותר.</div><div class="onboard-rows" id="obFixedRows"></div><div id="obFixedMore"></div>';
     renderObFixed();
   } else {
     const totalIncome=obIncomes.reduce((s,inc)=>s+(parseFloat(inc.amount)||0),0);
@@ -6130,7 +6131,18 @@ function obRemoveIncome(i){obIncomes.splice(i,1);renderObIncomes();}
 function renderObFixed(){
   const el=document.getElementById('obFixedRows');
   if(!el)return;
-  el.innerHTML=obFixed.map((f,i)=>'<div class="onboard-row"><span style="padding:12px 16px;flex:1;min-width:0;font-size:0.9rem;color:var(--text);display:flex;align-items:center;gap:8px"><span style="width:18px;height:18px;flex-shrink:0;display:flex">'+catIconSvg(f.cat)+'</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.cat)+'</span></span><input style="width:90px;flex-shrink:0;border:none;background:transparent;padding:12px 8px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;text-align:center;" type="text" inputmode="decimal" placeholder="סכום" value="'+(f.amount||'')+'" onfocus="this.select()" oninput="obFixed['+i+'].amount=this.value.replace(/[,\\s]/g,\'\')"/></div>').join('');
+  el.innerHTML=obFixed.map((f,i)=>'<div class="onboard-row"><span style="padding:12px 16px;flex:1;min-width:0;font-size:0.9rem;color:var(--text);display:flex;align-items:center;gap:8px"><span style="width:18px;height:18px;flex-shrink:0;display:flex">'+catIconSvg(f.cat)+'</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.cat)+'</span></span><input style="width:90px;flex-shrink:0;border:none;background:transparent;padding:12px 8px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;text-align:center;" type="text" inputmode="decimal" placeholder="סכום" value="'+(f.amount||'')+'" onfocus="this.select()" oninput="obFixed['+i+'].amount=this.value.replace(/[,\\s]/g,\'\')"/><button class="ob-remove" onclick="obRemoveFixed('+i+')" aria-label="הסר">✕</button></div>').join('');
+  const remaining=getEffectiveFixedCats().filter(c=>!FIXED_AUTO[c]&&!obFixed.some(f=>f.cat===c));
+  const moreEl=document.getElementById('obFixedMore');
+  if(moreEl){
+    moreEl.innerHTML=remaining.length?('<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">'+remaining.map(c=>'<button type="button" onclick="obAddFixedCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:8px 14px;border-radius:999px;border:1.5px dashed var(--border);background:none;color:var(--text2);font-size:0.8rem;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">+ '+esc(c)+'</button>').join('')+'</div>'):'';
+  }
+}
+function obRemoveFixed(i){obFixed.splice(i,1);renderObFixed();}
+function obAddFixedCat(cat){
+  obFixed.push({cat,amount:''});
+  renderObFixed();
+  setTimeout(()=>{const rows=document.querySelectorAll('#obFixedRows .onboard-row');rows[rows.length-1]?.querySelector('input')?.focus();},50);
 }
 
 let _obOtpSent=false, _obEmailVal='';
