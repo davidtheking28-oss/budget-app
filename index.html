@@ -4803,7 +4803,7 @@ function renderBudget(){
   strip.innerHTML=allCats.map(cat=>{
     const hex=budgetChipColor(cat);
     const sel=cat===_selectedBudgetCat;
-    return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" style="background:'+(sel?hex.sel:hex.base)+'" onclick="selectBudgetCat(\''+cat+'\')">'
+    return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" data-cat="'+esc(cat)+'" style="background:'+(sel?hex.sel:hex.base)+'" onclick="selectBudgetCat(\''+cat+'\')">'
       +'<span class="budget-chip-icon">'+(CAT_ICONS[cat]||'•')+'</span>'
       +'<span class="budget-chip-name">'+cat+'</span>'
     +'</button>';
@@ -4812,9 +4812,45 @@ function renderBudget(){
   const selEl=strip.querySelector('.budget-chip-sel');
   if(selEl)selEl.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
   renderBudgetDetail(spent,effLim);
+  _bindBudgetStripScroll(strip);
 }
 let _selectedBudgetCat=null;
 function selectBudgetCat(cat){_selectedBudgetCat=cat;renderBudget();}
+let _budgetStripScrollBound=false;
+function _bindBudgetStripScroll(strip){
+  if(_budgetStripScrollBound||!strip)return;
+  _budgetStripScrollBound=true;
+  let t=null;
+  strip.addEventListener('scroll',()=>{
+    clearTimeout(t);
+    t=setTimeout(_syncBudgetStripToScroll,120);
+  },{passive:true});
+}
+function _syncBudgetStripToScroll(){
+  const strip=document.getElementById('budgetChipStrip');
+  if(!strip)return;
+  const rect=strip.getBoundingClientRect();
+  const centerX=rect.left+rect.width/2;
+  let best=null,bestDist=Infinity;
+  strip.querySelectorAll('.budget-chip[data-cat]').forEach(el=>{
+    const r=el.getBoundingClientRect();
+    const d=Math.abs((r.left+r.width/2)-centerX);
+    if(d<bestDist){bestDist=d;best=el;}
+  });
+  if(!best)return;
+  const cat=best.dataset.cat;
+  if(!cat||cat===_selectedBudgetCat)return;
+  const prevEl=strip.querySelector('.budget-chip-sel');
+  if(prevEl){prevEl.classList.remove('budget-chip-sel');prevEl.style.background=budgetChipColor(prevEl.dataset.cat).base;}
+  best.classList.add('budget-chip-sel');
+  best.style.background=budgetChipColor(cat).sel;
+  _selectedBudgetCat=cat;
+  const mTx=getMonthTx(currentYear,currentMonth);
+  const spent={};mTx.filter(t=>t.type==='expense').forEach(t=>{spent[t.cat]=(spent[t.cat]||0)+t.amount;});
+  const carry=_budgetCarry(cat);
+  const effLim=c=>budgets[c]?Math.max(0,budgets[c]+(carry||0)):0;
+  renderBudgetDetail(spent,effLim);
+}
 function renderBudgetDetail(spent,effLim){
   const cat=_selectedBudgetCat;
   const detail=document.getElementById('budgetCatDetail');
