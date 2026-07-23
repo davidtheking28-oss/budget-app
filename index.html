@@ -280,6 +280,32 @@
     .exp-body{padding:2px 4px 4px;margin-top:-4px;margin-bottom:8px;}
     .exp-struct-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:12px;margin-bottom:6px;font-size:0.85rem;}
     .exp-add-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1.5px dashed var(--border);border-radius:16px;color:var(--text2);font-weight:700;cursor:pointer;margin-bottom:14px;background:none;width:100%;font-family:inherit;font-size:0.87rem;-webkit-tap-highlight-color:transparent;}
+    .dash-title{display:flex;align-items:center;gap:8px;font-size:1.3rem;font-weight:800;color:var(--accent);margin:2px 0 16px;width:fit-content;margin-inline-start:auto;}
+    .dash-toprow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+    .dash-ai-pill{background:none;border:1.5px solid var(--accent);color:var(--accent);border-radius:999px;padding:9px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+    .dash-greet{flex:1;text-align:center;}
+    .dash-greet-name{font-size:1rem;font-weight:800;color:var(--text);}
+    .dash-greet-date{font-size:0.78rem;color:var(--text3);margin-top:2px;}
+    .dash-avatar{width:48px;height:48px;border-radius:50%;background:rgba(var(--accent-rgb),0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0;}
+    .dash-period-toggle{display:flex;justify-content:center;gap:6px;background:var(--surface2);border-radius:999px;padding:4px;margin:0 auto 20px;width:fit-content;}
+    .dash-period-btn{background:none;border:none;border-radius:999px;padding:8px 20px;font-size:0.82rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+    .dash-period-btn.active{background:var(--accent);color:#fff;}
+    .dash-bignum{text-align:center;margin-bottom:26px;}
+    .dash-bignum-val{font-family:var(--font-num);font-size:2.6rem;font-weight:800;color:var(--accent);line-height:1.1;}
+    .dash-bignum-label{font-size:0.85rem;color:var(--text3);font-weight:600;margin-top:4px;}
+    .dash-goals-title{font-size:1.05rem;font-weight:800;color:var(--text);margin-bottom:14px;}
+    .dash-rings-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+    .dash-ring-item{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .dash-ring-svg{width:100%;height:auto;transform:rotate(-90deg);}
+    .dash-ring-track{fill:none;stroke:var(--surface2);stroke-width:8;}
+    .dash-ring-fill{fill:none;stroke:var(--green);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1);}
+    .dash-ring-fill.warn{stroke:var(--yellow);}
+    .dash-ring-fill.danger{stroke:var(--red);}
+    .dash-ring-label{font-size:0.76rem;font-weight:700;color:var(--text);text-align:center;line-height:1.3;}
+    .dash-ring-frac{font-size:0.66rem;color:var(--text3);font-weight:600;}
+    .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:16px;}
+    .dash-insight-emoji{font-size:1.4rem;flex-shrink:0;}
+    .dash-insight-text{font-size:0.85rem;font-weight:700;color:var(--text);line-height:1.4;}
     .sub-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);position:relative;box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),box-shadow 0.15s;}
     .sub-card[onclick]:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.11);}
     .sub-card[onclick]:active{transform:scale(0.985);}
@@ -1567,9 +1593,35 @@
       </div>
     </div>
     <!-- Greeting (prominent) -->
-    <div id="heroEyebrow" style="margin:2px 2px 16px;line-height:1.15;">
-      <div id="heroGreetName" style="font-family:var(--font-sans);font-size:1.55rem;font-weight:800;color:var(--text);letter-spacing:-0.01em;">טוען...</div>
-      <div id="heroGreetMsg" style="font-size:0.95rem;font-weight:600;color:var(--text2);margin-top:3px;"></div>
+    <div id="heroEyebrow" style="display:none;">
+      <div id="heroGreetName">טוען...</div>
+      <div id="heroGreetMsg"></div>
+    </div>
+
+    <!-- New minimal home: spend-so-far + category goal rings -->
+    <div class="dash-title">📈 סכם לי</div>
+    <div class="dash-toprow">
+      <div class="dash-avatar" id="dashAvatar">?</div>
+      <div class="dash-greet">
+        <div class="dash-greet-name" id="dashGreetName">טוען...</div>
+        <div class="dash-greet-date" id="dashGreetDate"></div>
+      </div>
+      <button type="button" class="dash-ai-pill" onclick="showToast('🤖 צ׳אט עם AI בקרוב')">💬 צ'אט עם AI</button>
+    </div>
+    <div class="dash-period-toggle" id="dashPeriodToggle">
+      <button type="button" class="dash-period-btn" data-period="week" onclick="setDashPeriod('week')">שבוע</button>
+      <button type="button" class="dash-period-btn active" data-period="month" onclick="setDashPeriod('month')">חודש</button>
+      <button type="button" class="dash-period-btn" data-period="all" onclick="setDashPeriod('all')">אחר</button>
+    </div>
+    <div class="dash-bignum">
+      <div class="dash-bignum-val" id="dashBigNum">₪0</div>
+      <div class="dash-bignum-label" id="dashBigLabel">מתחילת החודש</div>
+    </div>
+    <div class="dash-goals-title">המטרות שלי:</div>
+    <div class="dash-rings-grid" id="dashRingsGrid"></div>
+    <div class="dash-insight-card" id="dashInsightCard" style="display:none">
+      <span class="dash-insight-emoji">💰</span>
+      <div class="dash-insight-text" id="dashInsightText"></div>
     </div>
 
     <!-- Recurring Alert -->
@@ -1585,6 +1637,8 @@
     </div>
 
 
+    <!-- Legacy summary cards: kept in DOM (hidden) so existing calculations/JS ids keep working -->
+    <div style="display:none">
     <!-- Balance Hero Card -->
     <div class="balance-hero rounded-3xl p-6 relative overflow-hidden mb-4">
       <div class="balance-hero-bloom" style="top:-32%;right:-14%;width:55%;padding-bottom:55%;"></div>
@@ -1659,6 +1713,8 @@
       </div>
       <div class="text-xl font-bold font-mono text-blue-600 dark:text-blue-400" id="dailyWidgetVal">—</div>
     </div>
+    </div>
+    <!-- /Legacy summary cards -->
 
     <!-- Month review (shown once at the start of a new month) -->
     <div id="monthReviewCard" style="display:none"></div>
@@ -4377,8 +4433,70 @@ function wizAcceptSuggest(){
   if(txSelectedCat) wizNext();
 }
 
+let _dashPeriod='month';
+function setDashPeriod(p){
+  _dashPeriod=p;
+  document.querySelectorAll('#dashPeriodToggle .dash-period-btn').forEach(b=>b.classList.toggle('active',b.dataset.period===p));
+  renderDashGoals();
+}
+function _dashPeriodTx(){
+  if(_dashPeriod==='week'){
+    const cutoff=new Date();cutoff.setDate(cutoff.getDate()-6);
+    const cutoffStr=cutoff.toISOString().slice(0,10);
+    return transactions.filter(t=>t.type==='expense'&&t.date>=cutoffStr);
+  }
+  if(_dashPeriod==='all')return transactions.filter(t=>t.type==='expense');
+  return getMonthTx(currentYear,currentMonth).filter(t=>t.type==='expense');
+}
+function renderDashGoals(){
+  const grid=document.getElementById('dashRingsGrid');
+  if(!grid)return;
+  const pTx=_dashPeriodTx();
+  const spentByCat={};
+  pTx.forEach(t=>{spentByCat[t.cat]=(spentByCat[t.cat]||0)+t.amount;});
+  const total=pTx.reduce((s,t)=>s+t.amount,0);
+  const bigNum=document.getElementById('dashBigNum');
+  const bigLabel=document.getElementById('dashBigLabel');
+  if(bigNum)bigNum.textContent=fmt(total);
+  if(bigLabel)bigLabel.textContent=_dashPeriod==='week'?'ב-7 הימים האחרונים':_dashPeriod==='all'?'סך הכל':'מתחילת החודש';
+  const cats=Object.keys(budgets).filter(c=>EXPENSE_CATS.includes(c)).sort().slice(0,8);
+  const R=34,C=2*Math.PI*R;
+  grid.innerHTML=cats.length?cats.map(cat=>{
+    const s=spentByCat[cat]||0,lim=budgets[cat]||0;
+    const pct=lim?Math.min(s/lim,1):0;
+    const state=progState(Math.round(pct*100),[[90,'danger'],[70,'warn'],[0,'']]);
+    return '<div class="dash-ring-item" onclick="showPage(\'budget\',document.getElementById(\'nav-budget\'));selectBudgetCat(\''+cat+'\')">'
+      +'<svg viewBox="0 0 80 80" class="dash-ring-svg">'
+        +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-track"/>'
+        +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-fill'+(state?' '+state:'')+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct))+'"/>'
+      +'</svg>'
+      +'<div class="dash-ring-label">'+cat+'<div class="dash-ring-frac">'+fmt(s)+'/'+fmt(lim)+'</div></div>'
+    +'</div>';
+  }).join(''):'<div class="budget-tx-empty" style="grid-column:1/-1">עדיין לא הוגדרו תקציבי קטגוריה</div>';
+  const insight=document.getElementById('dashInsightCard');
+  const insightText=document.getElementById('dashInsightText');
+  const now=new Date();
+  const isCurMonth=currentYear===now.getFullYear()&&currentMonth===now.getMonth();
+  if(insight&&insightText&&_dashPeriod==='month'&&isCurMonth){
+    const income=getMonthlyIncome();
+    if(income>0){
+      const remaining=income-total;
+      const daysLeft=Math.max(1,daysInMonth(currentYear,currentMonth)-now.getDate()+1);
+      const perDay=Math.max(0,remaining)/daysLeft;
+      insightText.textContent=(remaining>=0?'נשאר לך '+fmt(remaining)+' לחודש הזה - '+fmt(perDay)+' ליום':'חרגת ב-'+fmt(Math.abs(remaining))+' החודש');
+      insight.style.display='flex';
+    } else insight.style.display='none';
+  } else if(insight){insight.style.display='none';}
+  const nameEl=document.getElementById('dashGreetName');
+  if(nameEl)nameEl.textContent=userSettings.name?'היי, '+userSettings.name+' 👋':'היי 👋';
+  const dateEl=document.getElementById('dashGreetDate');
+  if(dateEl)dateEl.textContent=now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'});
+  const avEl=document.getElementById('dashAvatar');
+  if(avEl)avEl.textContent=(userSettings.name||'?').trim().charAt(0)||'?';
+}
 function renderDashboard(){
   const label=heMonth(currentYear,currentMonth);
+  renderDashGoals();
   const eyebrow=document.getElementById('heroEyebrow');
   if(eyebrow){
     const hour = new Date().toLocaleString('en-US',{timeZone:'Asia/Jerusalem',hour:'numeric',hour12:false})|0;
