@@ -279,6 +279,14 @@
     .exp-auto-badge{font-size:0.66rem;color:var(--text3);font-weight:600;}
     .exp-body{padding:2px 4px 4px;margin-top:-4px;margin-bottom:8px;}
     .exp-struct-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:12px;margin-bottom:6px;font-size:0.85rem;}
+    .exp-pay-card{padding:12px 14px;background:var(--surface2);border-radius:12px;margin-bottom:8px;}
+    .exp-pay-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    .exp-pay-name{font-weight:700;font-size:0.9rem;}
+    .exp-pay-icons{display:flex;gap:8px;}
+    .exp-pay-bottom{display:flex;justify-content:space-between;align-items:flex-start;font-size:0.78rem;}
+    .exp-pay-col{display:flex;flex-direction:column;gap:3px;}
+    .exp-pay-row{display:flex;gap:5px;color:var(--text2);}
+    .exp-pay-row b{color:var(--text);font-weight:700;}
     .exp-add-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1.5px dashed var(--border);border-radius:16px;color:var(--text2);font-weight:700;cursor:pointer;margin-bottom:14px;background:none;width:100%;font-family:inherit;font-size:0.87rem;-webkit-tap-highlight-color:transparent;}
     .dash-title{display:flex;align-items:center;gap:8px;font-size:1.3rem;font-weight:800;color:var(--accent);margin:2px 0 16px;width:fit-content;margin-inline-start:auto;}
     .dash-toprow{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;}
@@ -1742,18 +1750,6 @@
 
     <!-- Feature shortcuts -->
     <div class="grid grid-cols-3 gap-2 mb-4">
-      <button class="shortcut-btn bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-colors" onclick="showPage('payments')">
-        <span class="text-lg leading-none">💳</span>
-        <span>תשלומים</span>
-      </button>
-      <button class="shortcut-btn bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-colors" onclick="showPage('subscriptions')">
-        <span class="text-lg leading-none">🔄</span>
-        <span>מנויים</span>
-      </button>
-      <button class="shortcut-btn bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-colors" onclick="showPage('loans')">
-        <span class="text-lg leading-none">🏦</span>
-        <span>הלוואות</span>
-      </button>
       <button class="shortcut-btn bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 p-3 rounded-2xl shadow-sm text-xs font-bold flex flex-col items-center gap-1.5 cursor-pointer transition-colors" onclick="showPage('fixed')">
         <span class="text-lg leading-none">🏠</span>
         <span>קבועות</span>
@@ -1966,27 +1962,11 @@
         </div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <button onclick="showPage('fixed')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:right;font-family:inherit" class="more-row">
+      <button onclick="showPage('fixed')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;cursor:pointer;text-align:right;font-family:inherit" class="more-row">
         <div style="width:40px;height:40px;border-radius:12px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem">🏠</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:0.95rem;font-weight:700;color:var(--text)">הוצאות קבועות</div>
           <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">משכנתא, ארנונה, חשמל — פעם אחת לכל חודש</div>
-        </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-      <button onclick="showPage('subscriptions')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:right;font-family:inherit" class="more-row">
-        <div style="width:40px;height:40px;border-radius:12px;background:rgba(139,92,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem">🔔</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:0.95rem;font-weight:700;color:var(--text)">מנויים</div>
-          <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">Netflix, חשמל, ביטוח ועוד</div>
-        </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-      <button onclick="showPage('loans')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;cursor:pointer;text-align:right;font-family:inherit" class="more-row">
-        <div style="width:40px;height:40px;border-radius:12px;background:rgba(220,38,38,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem">💳</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:0.95rem;font-weight:700;color:var(--text)">הלוואות וחובות</div>
-          <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">משכנתא, הלוואות, כרטיס אשראי</div>
         </div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
@@ -3358,9 +3338,32 @@ function _expTxListHtml(cat,byCat){
   return items.length?items.map(_expTxCardHtml).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>';
 }
 function _expStructListHtml(kind){
-  if(kind==='loans')return loans.length?loans.map(l=>'<div class="exp-struct-row" onclick="event.stopPropagation();editLoan('+l.id+')"><span>'+esc(l.name)+'</span><span class="exp-amt">'+fmt(parseFloat(l.monthly)||0)+'</span></div>').join(''):'<div class="budget-tx-empty">אין הלוואות</div>';
-  if(kind==='subs'){const active=subscriptions.filter(s=>s.active);return active.length?active.map(s=>'<div class="exp-struct-row" onclick="event.stopPropagation();editSub('+s.id+')"><span>'+esc(s.name)+'</span><span class="exp-amt">'+fmt(subME(s))+'</span></div>').join(''):'<div class="budget-tx-empty">אין מנויים פעילים</div>';}
-  if(kind==='payments')return payments.length?payments.map(p=>'<div class="exp-struct-row" onclick="event.stopPropagation();showPage(\'payments\')"><span>'+esc(p.name)+'</span><span class="exp-amt">'+fmt(parseFloat(p.amount)||0)+'</span></div>').join(''):'<div class="budget-tx-empty">אין תשלומים</div>';
+  if(kind==='loans'){
+    const rows=loans.map(l=>'<div class="exp-struct-row" onclick="event.stopPropagation();editLoan('+l.id+')"><span>'+esc(l.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(l.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteLoan('+l.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    return (rows||'<div class="budget-tx-empty">אין הלוואות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openAddLoanSheet()">+ הוסף הלוואה</button>';
+  }
+  if(kind==='subs'){
+    const active=subscriptions.filter(s=>s.active);
+    const rows=active.map(s=>'<div class="exp-struct-row" onclick="event.stopPropagation();editSub('+s.id+')"><span>'+esc(s.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(subME(s))+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteSub('+s.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    return (rows||'<div class="budget-tx-empty">אין מנויים פעילים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openSheet(\'addSubSheet\')">+ הוסף מנוי</button>';
+  }
+  if(kind==='payments'){
+    const rows=payments.map(p=>{
+      const c=_payCalc(p);
+      const total=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;
+      return '<div class="exp-pay-card">'
+        +'<div class="exp-pay-top">'
+          +'<span class="exp-pay-name">'+esc(p.name)+'</span>'
+          +'<span class="exp-pay-icons"><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expEditPayment('+p.id+')" aria-label="ערוך">'+_expEditSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deletePayment('+p.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span>'
+        +'</div>'
+        +'<div class="exp-pay-bottom">'
+          +'<div class="exp-pay-col"><div class="exp-pay-row">סה״כ: <b>'+_payFmt(total*amt)+'</b></div><div class="exp-pay-row"><b>'+c.current+'/'+total+'</b></div></div>'
+          +'<div class="exp-pay-col"><div class="exp-pay-row">חודשי: <b>'+fmt(amt)+'</b></div><div class="exp-pay-row">נותר: <b>'+_payFmt(c.sum)+'</b></div></div>'
+        +'</div>'
+      +'</div>';
+    }).join('');
+    return (rows||'<div class="budget-tx-empty">אין תשלומים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddPayment()">+ הוסף תשלום</button>';
+  }
   return '';
 }
 const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs'};
@@ -4965,8 +4968,25 @@ function addPaymentRow(){
 function deletePayment(id){
   const idx=payments.findIndex(p=>p.id===id);if(idx<0)return;
   const backup=payments[idx];
-  payments.splice(idx,1);saveData();renderPayments();
-  showUndoToast('🗑️ התשלום נמחק',()=>{payments.splice(idx,0,backup);saveData();renderPayments();},()=>{});
+  payments.splice(idx,1);saveData();renderPayments();renderTxPage();
+  showUndoToast('🗑️ התשלום נמחק',()=>{payments.splice(idx,0,backup);saveData();renderPayments();renderTxPage();},()=>{});
+}
+function _expEditPayment(id){
+  const p=payments.find(x=>x.id===id);if(!p)return;
+  const name=prompt('שם התשלום:',p.name||'');if(name===null)return;
+  const amount=prompt('סכום תשלום חודשי:',p.amount||'');if(amount===null)return;
+  const total=prompt('מספר תשלומים סה״כ:',p.total||'');if(total===null)return;
+  const current=prompt('כמה תשלומים כבר שולמו:',p.currentAnchor?_payCalc(p).current:(p.current||''));if(current===null)return;
+  p.name=name.trim();p.amount=parseFloat(amount)||0;p.total=parseFloat(total)||0;p.current=parseFloat(current)||0;p.currentAnchor=_curMonthKey();
+  saveData();renderTxPage();renderPayments();
+}
+function _expAddPayment(){
+  const name=prompt('שם התשלום החדש:');if(!name||!name.trim())return;
+  const amount=parseFloat(prompt('סכום תשלום חודשי:')||'')||0;
+  const total=parseFloat(prompt('מספר תשלומים סה״כ:')||'')||0;
+  payments.push({id:Date.now(),name:name.trim(),total,current:0,amount,currentAnchor:_curMonthKey()});
+  saveData();renderTxPage();renderPayments();
+  showToast('✓ תשלום נוסף');
 }
 function updatePayment(id,field,val){
   const p=payments.find(x=>x.id===id);if(!p)return;
@@ -5247,7 +5267,7 @@ function saveEditSub(){
   s.cycle=document.getElementById('editSubCycle').value;
   s.category=document.getElementById('editSubCategory').value;
   s.nextDate=nextDate;
-  saveData();closeSheet('editSubSheet');showToast('✓ המנוי עודכן');renderSubscriptions();
+  saveData();closeSheet('editSubSheet');showToast('✓ המנוי עודכן');renderSubscriptions();renderTxPage();
 }
 function addSubscription(){
   const name=document.getElementById('subName').value.trim();
@@ -5265,7 +5285,7 @@ function addSubscription(){
   document.getElementById('subName').value='';document.getElementById('subAmount').value='';
   const prev=document.getElementById('subLogoPreview');if(prev)prev.innerHTML='';
   const _sb2=document.querySelector('#addSubSheet .btn-primary');if(_sb2){_sb2.textContent='✓';_sb2.disabled=true;}
-  setTimeout(()=>{closeSheet('addSubSheet');showToast('✓ המנוי נוסף!');renderSubscriptions();},220);
+  setTimeout(()=>{closeSheet('addSubSheet');showToast('✓ המנוי נוסף!');renderSubscriptions();renderTxPage();},220);
 }
 function deleteSub(id){
   const s=subscriptions.find(sub=>sub.id===id);if(!s)return;
@@ -5274,11 +5294,11 @@ function deleteSub(id){
   const unrecurredIds=[];
   transactions.forEach(t=>{if(t.recurring&&(t.desc||'').toLowerCase()===subName){t.recurring=false;unrecurredIds.push(t.id);}});
   subscriptions=subscriptions.filter(sub=>sub.id!==id);
-  saveData();renderSubscriptions();renderUpcoming();
+  saveData();renderSubscriptions();renderUpcoming();renderTxPage();
   showUndoToast('🗑️ מנוי נמחק',()=>{
     subscriptions.splice(idx,0,backup);
     transactions.forEach(t=>{if(unrecurredIds.includes(t.id))t.recurring=true;});
-    saveData();renderSubscriptions();renderUpcoming();
+    saveData();renderSubscriptions();renderUpcoming();renderTxPage();
   },()=>{});
 }
 function toggleSub(id){
@@ -5551,7 +5571,7 @@ function saveLoan(){
   const needsOriginal=patch.remaining>0&&patch.original===0;
   const _lb=document.querySelector('#addLoanSheet .btn-primary');if(_lb){_lb.textContent='✓';_lb.disabled=true;}
   setTimeout(()=>{
-    closeSheet('addLoanSheet');renderLoans();
+    closeSheet('addLoanSheet');renderLoans();renderTxPage();
     showToast(editingId!=null?'✓ ההלוואה עודכנה':'📉 הלוואה נוספה');
     if(needsOriginal)setTimeout(()=>showToast('💡 טיפ: הוסף סכום מקורי כדי לראות פס התקדמות ותחזית סילוק'),1600);
   },220);
@@ -5559,7 +5579,7 @@ function saveLoan(){
 function deleteLoan(id){
   loans=loans.filter(l=>l.id!==id);
   saveData();
-  renderLoans();
+  renderLoans();renderTxPage();
   showToast('✓ ההלוואה הוסרה');
 }
 function renderLoans(){
