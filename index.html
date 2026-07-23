@@ -2377,6 +2377,29 @@ Object.assign(CAT_COLOR,{
   'תחביבים':'purple','סיגריות':'red','חופשה/טיול':'purple','עזרת/שמרטף':'teal',
   'תיקוני רכב':'yellow','דמי כיס/ילדים':'teal','יהדות/חגים':'purple','ביטוח לאומי':'yellow'
 });
+// Icons for the fixed-expense categories (FIXED_CATS) that have no dedicated icon above.
+Object.assign(CAT_SVGS,{
+  'מנויים ושירותים':_sv('<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>'),
+  'החזר הלוואות + חיוב קבוע':_sv('<line x1="3" y1="21" x2="21" y2="21"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 3 21 8 3 8"/>'),
+  'עסקאות בתשלומים':CAT_SVGS['הלוואות'],
+  'דמי כרטיס אשראי':_sv('<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/>'),
+  'ביטוחי בריאות וחיים':CAT_SVGS['ביטוח'],
+  'הוראת קבע לחסכון':CAT_SVGS['השקעות'],
+  'ועד בית':_sv('<rect x="4" y="3" width="16" height="18" rx="1"/><line x1="9" y1="21" x2="9" y2="14"/><line x1="15" y1="21" x2="15" y2="14"/>'),
+  'מים וביוב':_sv('<path d="M12 2s7 8 7 13a7 7 0 0 1-14 0c0-5 7-13 7-13z"/>'),
+  'חשמל':CAT_SVGS['חשמל ומים'],
+  'תרומות בהוראת קבע':CAT_SVGS['צדקה'],
+  'חינוך, חוגים וקייטנות':CAT_SVGS['חינוך'],
+  'ריבית על המינוס':_sv('<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>'),
+  'עמלת פעולות בערוץ ישיר':_sv('<path d="M4 2h16v20l-3-2-3 2-3-2-3 2-3-2-1 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/>'),
+  'עמלת SMS':_sv('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>')
+});
+Object.assign(CAT_ICONS,{
+  'מנויים ושירותים':'🔄','החזר הלוואות + חיוב קבוע':'🏦','עסקאות בתשלומים':'💳','דמי כרטיס אשראי':'💳',
+  'ביטוחי בריאות וחיים':'🛡️','הוראת קבע לחסכון':'📈','ועד בית':'🏢','מים וביוב':'🚰','חשמל':'⚡',
+  'תרומות בהוראת קבע':'🤝','חינוך, חוגים וקייטנות':'📚','ריבית על המינוס':'📉',
+  'עמלת פעולות בערוץ ישיר':'🧾','עמלת SMS':'💬'
+});
 
 // One-time remap of the pre-2026-07 expense categories onto the current list.
 // Idempotent. Fixed-expense rows are exempt: several of their names ('ארנונה',
@@ -2389,29 +2412,28 @@ const _CAT_MIGRATE={
   'קניות':'שונות','שכר דירה':'שונות','חשמל ומים':'שונות','ארנונה':'שונות','תקשורת':'שונות',
   'חינוך':'שונות','תיקונים ואחזקה':'שונות','ביטוח דירה':'שונות','גז':'שונות','צדקה':'שונות','אחר':'שונות'
 };
-const _HOUSING_MERGE=['משכנתא','שכר דירה'];
-function _migrateHousingCat(){
+function _mergeFixedCatInto(oldKeys,newKey){
   let changed=false;
-  const oldFx=fixedExpenses.filter(f=>_HOUSING_MERGE.includes(f.id));
+  const oldFx=fixedExpenses.filter(f=>oldKeys.includes(f.id));
   if(oldFx.length){
     const sum=oldFx.reduce((s,f)=>s+(parseFloat(f.amount)||0),0);
-    fixedExpenses=fixedExpenses.filter(f=>!_HOUSING_MERGE.includes(f.id));
-    const existing=fixedExpenses.find(f=>f.id==='דיור');
+    fixedExpenses=fixedExpenses.filter(f=>!oldKeys.includes(f.id));
+    const existing=fixedExpenses.find(f=>f.id===newKey);
     if(existing)existing.amount=(parseFloat(existing.amount)||0)+sum;
-    else if(sum>0)fixedExpenses.push({id:'דיור',amount:sum});
+    else if(sum>0)fixedExpenses.push({id:newKey,amount:sum});
     changed=true;
   }
   let budSum=0,hadBud=false;
-  _HOUSING_MERGE.forEach(c=>{if(budgets[c]!=null){budSum+=budgets[c];hadBud=true;delete budgets[c];}});
-  if(hadBud){budgets['דיור']=(budgets['דיור']||0)+budSum;changed=true;}
+  oldKeys.forEach(c=>{if(budgets[c]!=null){budSum+=budgets[c];hadBud=true;delete budgets[c];}});
+  if(hadBud){budgets[newKey]=(budgets[newKey]||0)+budSum;changed=true;}
   const byNewId={};
   transactions.forEach(t=>{
-    if(t.type!=='expense'||!_HOUSING_MERGE.includes(t.cat))return;
+    if(t.type!=='expense'||!oldKeys.includes(t.cat))return;
     changed=true;
-    t.cat='דיור';
+    t.cat=newKey;
     if(t.fx){
       const mkey=String(t.id).split('|')[1];
-      const newId=_fxTxId(mkey,'דיור');
+      const newId=_fxTxId(mkey,newKey);
       if(byNewId[newId]&&byNewId[newId]!==t){
         byNewId[newId].amount=(parseFloat(byNewId[newId].amount)||0)+(parseFloat(t.amount)||0);
         t._dropMe=true;
@@ -2425,7 +2447,8 @@ function _migrateHousingCat(){
   return changed;
 }
 function _migrateCats(){
-  let changed=_migrateHousingCat();
+  let changed=_mergeFixedCatInto(['משכנתא','שכר דירה'],'דיור');
+  changed=_mergeFixedCatInto(['מניות'],'הוראת קבע לחסכון')||changed;
   transactions.forEach(t=>{
     if(t.type!=='expense'||t.fx)return;
     const n=_CAT_MIGRATE[t.cat];
@@ -2470,7 +2493,7 @@ const BUDGET_CHIP_COLOR={
   'דמי כיס/ילדים':'yellow','יהדות/חגים':'purple','ביטוח לאומי':'blue','שונות':'gray'
 };
 function budgetChipColor(cat){return BUDGET_CHIP_HEX[BUDGET_CHIP_COLOR[cat]||'gray'];}
-const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
+const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','הוראת קבע לחסכון','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
   'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0,cur=_payCalc(p).current;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0),
@@ -3297,8 +3320,7 @@ function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
   return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+key+'\')" aria-expanded="'+open+'">'
     +'<div class="exp-row-left">'
-      +(opts.editable?'<span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'</span>':'')
-      +_expChevron(open)
+      +(opts.editable?'<span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'</span>':_expChevron(open))
       +(opts.planned?'<span class="exp-plan-label">תכנון</span>':'')
       +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
     +'</div>'
