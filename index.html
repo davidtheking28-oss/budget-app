@@ -263,7 +263,7 @@
     .budget-tx-empty{text-align:center;color:var(--text3);font-size:0.85rem;padding:24px 0;}
     .exp-section-title{display:flex;align-items:center;gap:10px;margin:18px 0 12px;font-size:1.02rem;font-weight:800;color:var(--text);}
     .exp-badge{background:var(--surface2);color:var(--text2);font-size:0.76rem;font-weight:700;padding:3px 11px;border-radius:999px;}
-    .exp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:15px 16px;background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;cursor:pointer;font-family:inherit;text-align:right;-webkit-tap-highlight-color:transparent;}
+    .exp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:16px 18px;background:var(--surface);border:none;border-radius:20px;margin-bottom:10px;cursor:pointer;font-family:inherit;text-align:right;-webkit-tap-highlight-color:transparent;box-shadow:0 3px 12px rgba(0,0,0,0.06);}
     .exp-row-left{display:flex;align-items:center;gap:8px;flex-shrink:0;}
     .exp-row-right{display:flex;align-items:center;gap:8px;}
     .exp-amt{font-family:var(--font-num);font-weight:800;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
@@ -274,8 +274,9 @@
     .exp-icon-sm:active{color:var(--red);}
     .exp-icon-sm svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
     .exp-name{font-weight:700;color:var(--text);}
-    .exp-cat-icon{display:flex;color:var(--text3);flex-shrink:0;}
-    .exp-cat-icon svg{width:17px;height:17px;}
+    .exp-cat-icon{display:flex;flex-shrink:0;font-size:1.15rem;line-height:1;}
+    .cashflow-page{background:#fdf8ec;border-radius:18px;padding:14px;}
+    body.dark .cashflow-page{background:#211f16;}
     .exp-auto-badge{font-size:0.66rem;color:var(--text3);font-weight:600;}
     .exp-body{padding:2px 4px 4px;margin-top:-4px;margin-bottom:8px;}
     .exp-struct-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:12px;margin-bottom:6px;font-size:0.85rem;}
@@ -1562,14 +1563,6 @@
   </div>
 </div>
 
-<div class="sheet-overlay" id="manageCatsSheet" onclick="if(event.target===this)closeSheet('manageCatsSheet')">
-  <div class="sheet" style="max-height:85vh;display:flex;flex-direction:column">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">🗂️ ניהול הוצאות קבועות ומשתנות</div>
-    <div id="manageCatsBody" style="overflow-y:auto;flex:1"></div>
-  </div>
-</div>
-
 <div class="sheet-overlay" id="addBudgetSheet" onclick="if(event.target===this)closeSheet('addBudgetSheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -1790,40 +1783,57 @@
     </div>
   </div>
 
-  <div id="page-transactions" class="page">
+  <div id="page-transactions" class="page cashflow-page">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <button type="button" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))" style="display:flex;align-items:center;gap:4px;background:none;border:none;color:var(--text2);font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;padding:6px 0"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>חזרה לעמוד הבית</button>
+      <button type="button" onclick="showToast('💡 תזרים = ההפרש בין מה שנכנס למה שיצא החודש')" style="background:none;border:none;color:var(--accent);font-size:0.8rem;font-weight:700;text-decoration:underline;cursor:pointer;font-family:inherit">מה זה תזרים?</button>
+    </div>
     <div class="balance-hero rounded-3xl p-6 relative overflow-hidden mb-4">
       <div class="balance-hero-bloom" style="top:-32%;right:-14%;width:55%;padding-bottom:55%;"></div>
       <div class="balance-hero-bloom" style="bottom:-38%;left:-10%;width:45%;padding-bottom:45%;opacity:0.55;"></div>
       <div class="relative" style="z-index:1">
-        <div class="text-sm font-semibold" style="color:rgba(255,255,255,0.88)">סך ההוצאות החודש</div>
-        <div class="font-extrabold font-mono tracking-tight mt-2" id="txPageExpense" style="color:#fff;font-size:clamp(2.1rem,10vw,2.8rem);line-height:1.05;white-space:nowrap">0</div>
+        <div class="text-sm font-semibold" style="color:rgba(255,255,255,0.88)">התזרים שלך החודש</div>
+        <div class="font-extrabold font-mono tracking-tight mt-2" id="txPageFlow" style="color:#fff;font-size:clamp(2.1rem,10vw,2.8rem);line-height:1.05;white-space:nowrap">₪0</div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <div style="flex:1;background:rgba(255,255,255,0.16);border-radius:14px;padding:10px 14px;text-align:center">
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.85);font-weight:700">הכנסות</div>
+            <div id="txPageIncome" style="font-weight:800;color:#fff;font-size:1rem;margin-top:2px">₪0</div>
+          </div>
+          <div style="flex:1;background:rgba(255,255,255,0.95);border-radius:14px;padding:10px 14px;text-align:center">
+            <div style="font-size:0.72rem;color:var(--text2);font-weight:700">הוצאות</div>
+            <div id="txPageExpense" style="font-weight:800;color:var(--text);font-size:1rem;margin-top:2px">₪0</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="section">
-      <div class="filter-row" id="txFilterChips">
-        <button class="filter-chip active" data-filter="all" onclick="setTxFilter('all',this)">הכל</button>
+      <div class="filter-row" id="txFilterChips" style="align-items:center">
         <button class="filter-chip" data-filter="fixed" onclick="setTxFilter('fixed',this)">קבועות</button>
         <button class="filter-chip" data-filter="variable" onclick="setTxFilter('variable',this)">משתנות</button>
+        <button class="filter-chip active" data-filter="all" onclick="setTxFilter('all',this)">הכל</button>
+        <button type="button" onclick="toggleAdvancedFilters()" style="margin-inline-start:auto;display:flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--border);border-radius:999px;padding:8px 14px;font-size:0.8rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>סנן</button>
       </div>
-      <input type="search" class="search-input" id="txSearch" placeholder="חפש בעסקאות..." oninput="renderTxPage()" onfocus="this.select()" aria-label="חיפוש בעסקאות"/>
-      <div style="display:flex;gap:10px;padding:0 16px 10px;">
-        <div style="flex:1;background:var(--red-light);border-radius:12px;padding:8px 12px;text-align:center">
-          <div style="font-size:0.68rem;color:var(--red);font-weight:700">הוצאות בתקופה</div>
-          <div id="txRangeExpense" style="font-weight:800;color:var(--red);font-size:0.95rem">—</div>
+      <div id="txAdvancedFilters" style="display:none">
+        <input type="search" class="search-input" id="txSearch" placeholder="חפש בעסקאות..." oninput="renderTxPage()" onfocus="this.select()" aria-label="חיפוש בעסקאות"/>
+        <div style="display:flex;gap:10px;padding:0 16px 10px;">
+          <div style="flex:1;background:var(--red-light);border-radius:12px;padding:8px 12px;text-align:center">
+            <div style="font-size:0.68rem;color:var(--red);font-weight:700">הוצאות בתקופה</div>
+            <div id="txRangeExpense" style="font-weight:800;color:var(--red);font-size:0.95rem">—</div>
+          </div>
         </div>
-      </div>
-      <div style="display:flex;gap:6px;padding:0 16px 8px;flex-wrap:wrap;" id="rangeChips">
-        <button class="range-chip active" data-range="month" onclick="setRangeChip('month')">החודש</button>
-        <button class="range-chip" data-range="3m" onclick="setRangeChip('3m')">3 חודשים</button>
-        <button class="range-chip" data-range="year" onclick="setRangeChip('year')">השנה</button>
-        <button class="range-chip" data-range="all" onclick="setRangeChip('all')">הכול</button>
-      </div>
-      <div style="display:flex;gap:8px;padding:0 16px 8px;align-items:center;">
-        <span style="font-size:0.72rem;color:var(--text3);font-weight:600;flex-shrink:0;">מתאריך:</span>
-        <input type="date" id="txFromDate" onchange="renderTxPage()" aria-label="מתאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
-        <span style="font-size:0.72rem;color:var(--text3);font-weight:600;flex-shrink:0;">עד:</span>
-        <input type="date" id="txToDate" onchange="renderTxPage()" aria-label="עד תאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
-        <button id="clearDateBtn" type="button" onclick="clearDateFilter()" aria-label="נקה סינון תאריכים" style="display:none;background:none;border:none;color:var(--text3);font-size:0.75rem;cursor:pointer;padding:4px;min-width:44px;min-height:44px;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;">✕</button>
+        <div style="display:flex;gap:6px;padding:0 16px 8px;flex-wrap:wrap;" id="rangeChips">
+          <button class="range-chip active" data-range="month" onclick="setRangeChip('month')">החודש</button>
+          <button class="range-chip" data-range="3m" onclick="setRangeChip('3m')">3 חודשים</button>
+          <button class="range-chip" data-range="year" onclick="setRangeChip('year')">השנה</button>
+          <button class="range-chip" data-range="all" onclick="setRangeChip('all')">הכול</button>
+        </div>
+        <div style="display:flex;gap:8px;padding:0 16px 8px;align-items:center;">
+          <span style="font-size:0.72rem;color:var(--text3);font-weight:600;flex-shrink:0;">מתאריך:</span>
+          <input type="date" id="txFromDate" onchange="renderTxPage()" aria-label="מתאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
+          <span style="font-size:0.72rem;color:var(--text3);font-weight:600;flex-shrink:0;">עד:</span>
+          <input type="date" id="txToDate" onchange="renderTxPage()" aria-label="עד תאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
+          <button id="clearDateBtn" type="button" onclick="clearDateFilter()" aria-label="נקה סינון תאריכים" style="display:none;background:none;border:none;color:var(--text3);font-size:0.75rem;cursor:pointer;padding:4px;min-width:44px;min-height:44px;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;">✕</button>
+        </div>
       </div>
       <div class="section-body" style="padding-top:4px">
         <div style="display:flex;justify-content:flex-end;margin-bottom:10px;position:relative;">
@@ -1832,8 +1842,7 @@
             <button onclick="exportCSV();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📥 ייצוא CSV</button>
             <button onclick="toggleCalendarView();toggleTxOverflow()" id="calToggleBtn" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📅 לוח שנה</button>
             <button onclick="openSmsImport();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📲 ייבא SMS</button>
-            <button onclick="scanReceipt();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📷 סרוק קבלה</button>
-            <button onclick="openManageCatsSheet();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;">🗂️ ניהול הוצאות קבועות ומשתנות</button>
+            <button onclick="scanReceipt();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;">📷 סרוק קבלה</button>
           </div>
         </div>
         <div id="calendarView" style="display:none;margin-bottom:12px;"></div>
@@ -3394,7 +3403,7 @@ const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','ע�
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
   return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+key+'\')" aria-expanded="'+open+'">'
-    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.cat)+'</span><span class="exp-name">'+opts.cat+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
+    +'<div class="exp-row-right"><span class="exp-cat-icon">'+(CAT_ICONS[opts.cat]||'•')+'</span><span class="exp-name">'+opts.cat+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
       +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
       +(opts.planned?'<span class="exp-plan-label">תכנון</span>':'')
@@ -3404,44 +3413,41 @@ function _expRowHtml(opts){
   +(open?'<div class="exp-body">'+opts.body+'</div>':'');
 }
 function renderTxCategorized(byCat){
-  const fixedCats=getEffectiveFixedCats().filter(cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0);
-  const fixedConfigured=fixedCats.length;
-  const fixedHtml=fixedCats.map(cat=>{
-    const auto=!!FIXED_AUTO[cat];
-    const amount=_fxMonthly(cat);
-    const key='fx:'+cat;
-    if(auto){
-      return _expRowHtml({key,cat,amount,auto:true,body:_expStructListHtml(_EXP_AUTO_KIND[cat])});
-    }
-    return _expRowHtml({
-      key,cat,amount,planned:true,editable:true,
-      onEdit:'_expEditManual(\''+cat.replace(/'/g,"\\'")+'\')',
-      onDelete:'_expDeleteManual(\''+cat.replace(/'/g,"\\'")+'\')',
-      body:_expTxListHtml(cat,byCat)
-    });
-  }).join('');
-  const varCats=Object.keys(budgets).filter(c=>EXPENSE_CATS.includes(c)).sort();
-  const varHtml=varCats.map(cat=>{
-    const key='var:'+cat;
-    return _expRowHtml({
-      key,cat,amount:budgets[cat]||0,planned:true,editable:true,
-      onEdit:'editBudgetCat(\''+cat.replace(/'/g,"\\'")+'\')',
-      onDelete:'deleteBudget(\''+cat.replace(/'/g,"\\'")+'\')',
-      body:_expTxListHtml(cat,byCat)
-    });
-  }).join('');
-  let html='';
+  const entries=[];
   if(txListFilter!=='variable'){
-    html+='<div class="exp-section-title">הוצאות קבועות<span class="exp-badge">'+fixedConfigured+'</span></div>'
-      +fixedHtml
-      +'<button type="button" class="exp-add-row" onclick="addCustomFixedCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
+    getEffectiveFixedCats().filter(cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0).forEach(cat=>{
+      const auto=!!FIXED_AUTO[cat];
+      const amount=_fxMonthly(cat);
+      const key='fx:'+cat;
+      const html=auto
+        ?_expRowHtml({key,cat,amount,auto:true,body:_expStructListHtml(_EXP_AUTO_KIND[cat])})
+        :_expRowHtml({key,cat,amount,planned:true,editable:true,
+            onEdit:'_expEditManual(\''+cat.replace(/'/g,"\\'")+'\')',
+            onDelete:'_expDeleteManual(\''+cat.replace(/'/g,"\\'")+'\')',
+            body:_expTxListHtml(cat,byCat)});
+      entries.push({amount,html});
+    });
   }
   if(txListFilter!=='fixed'){
-    html+='<div class="exp-section-title">הוצאות משתנות<span class="exp-badge">'+varCats.length+'/'+varCats.length+'</span></div>'
-      +(varHtml||'<div class="budget-tx-empty">עדיין לא הוגדרו תקציבי קטגוריה</div>')
-      +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
+    Object.keys(budgets).filter(c=>EXPENSE_CATS.includes(c)).forEach(cat=>{
+      const amount=budgets[cat]||0;
+      const key='var:'+cat;
+      const html=_expRowHtml({key,cat,amount,planned:true,editable:true,
+        onEdit:'editBudgetCat(\''+cat.replace(/'/g,"\\'")+'\')',
+        onDelete:'deleteBudget(\''+cat.replace(/'/g,"\\'")+'\')',
+        body:_expTxListHtml(cat,byCat)});
+      entries.push({amount,html});
+    });
   }
+  entries.sort((a,b)=>b.amount-a.amount);
+  let html=entries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות או משתנות מוגדרות עדיין</div>';
+  if(txListFilter!=='variable')html+='<button type="button" class="exp-add-row" onclick="addCustomFixedCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
+  if(txListFilter!=='fixed')html+='<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
   return html;
+}
+function toggleAdvancedFilters(){
+  const el=document.getElementById('txAdvancedFilters');
+  if(el)el.style.display=el.style.display==='none'?'':'none';
 }
 function _expEditManual(cat){
   const cur=_fxRaw(cat);
@@ -4643,38 +4649,37 @@ function renderTxPage(){
   if(toDate)mTx=mTx.filter(t=>t.date<=toDate);
   const inc=mTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   const exp=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const incEl=document.getElementById('txPageIncome');const expEl=document.getElementById('txPageExpense');const rngEl=document.getElementById('txRangeExpense');
+  const incEl=document.getElementById('txPageIncome');const expEl=document.getElementById('txPageExpense');const rngEl=document.getElementById('txRangeExpense');const flowEl=document.getElementById('txPageFlow');
   if(incEl)incEl.textContent=fmt(inc);
   if(expEl)expEl.textContent=fmt(exp);
   if(rngEl)rngEl.textContent=fmt(exp);
-  let list;
-  if(txListFilter==='fixed') list=mTx.filter(t=>t.type==='expense'&&isFixed(t));
-  else if(txListFilter==='variable') list=mTx.filter(t=>t.type==='expense'&&!isFixed(t));
-  else list=mTx.slice(); // תזרים משולב: הכנסות + הוצאות יחד
+  if(flowEl){
+    const net=inc-exp;
+    flowEl.textContent=(net<0?'-':'')+fmt(Math.abs(net));
+    flowEl.style.color=net<0?'#fecaca':'#fff';
+  }
+  let list=mTx.filter(t=>t.type==='expense'); // תצוגה מקוטלגת מבוססת הוצאות
+  if(txListFilter==='fixed') list=list.filter(t=>isFixed(t));
+  else if(txListFilter==='variable') list=list.filter(t=>!isFixed(t));
   const q=(document.getElementById('txSearch').value||'').toLowerCase();
   if(q)list=list.filter(t=>t.desc.toLowerCase().includes(q)||t.cat.toLowerCase().includes(q));
   const _q=(document.getElementById('txSearch').value||'').trim();
-  const _hasFilter=_q||txListFilter!=='all'||(document.getElementById('txFromDate')||{}).value||(document.getElementById('txToDate')||{}).value;
+  const _hasFilter=_q||fromDate||toDate;
   const _txEmpty=_hasFilter
     ?'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p>לא נמצאו תוצאות</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">נסה לשנות את מילות החיפוש או הסינון</p></div>'
-    :'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">אין תנועות החודש</p><p>עדיין לא רשמת הכנסות או הוצאות לחודש זה</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף תנועה</button></div>';
+    :'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">אין הוצאות החודש</p><p>עדיין לא רשמת הוצאות לחודש זה</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה</button></div>';
   list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  document.getElementById('allTxList').innerHTML=list.length?groupedTxHtml(list):_txEmpty;
+  const _useCategorized=!q&&!fromDate&&!toDate;
+  if(_useCategorized){
+    const byCat={};list.forEach(t=>{(byCat[t.cat]=byCat[t.cat]||[]).push(t);});
+    document.getElementById('allTxList').innerHTML=renderTxCategorized(byCat);
+  } else {
+    document.getElementById('allTxList').innerHTML=list.length?groupedTxHtml(list):_txEmpty;
+  }
   const csvBtn=document.getElementById('csvExportBtn');
   if(csvBtn)csvBtn.style.display=list.length?'':'none';
   if(_calendarMode)renderCalendarView();
-  renderManageCatsSheet();
 }
-function renderManageCatsSheet(){
-  const sheet=document.getElementById('manageCatsSheet');
-  if(!sheet||!sheet.classList.contains('open'))return;
-  const body=document.getElementById('manageCatsBody');
-  if(!body)return;
-  const mTx=getMonthTx(currentYear,currentMonth).filter(t=>t.type==='expense');
-  const byCat={};mTx.forEach(t=>{(byCat[t.cat]=byCat[t.cat]||[]).push(t);});
-  body.innerHTML=renderTxCategorized(byCat);
-}
-function openManageCatsSheet(){openSheet('manageCatsSheet');renderManageCatsSheet();}
 
 function renderAnalytics(){
   const mTx=getMonthTx(currentYear,currentMonth);
