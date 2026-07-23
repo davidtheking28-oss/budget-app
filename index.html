@@ -3429,12 +3429,12 @@ function renderTxCategorized(byCat){
   if(txListFilter!=='variable'){
     html+='<div class="exp-section-title">הוצאות קבועות<span class="exp-badge">'+fixedConfigured+'</span></div>'
       +fixedHtml
-      +'<button type="button" class="exp-add-row" onclick="addCustomFixedCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוספת הוצאה קבועה</button>';
+      +'<button type="button" class="exp-add-row" onclick="addCustomFixedCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
   }
   if(txListFilter!=='fixed'){
     html+='<div class="exp-section-title">הוצאות משתנות<span class="exp-badge">'+varCats.length+'/'+varCats.length+'</span></div>'
       +(varHtml||'<div class="budget-tx-empty">עדיין לא הוגדרו תקציבי קטגוריה</div>')
-      +'<button type="button" class="exp-add-row" onclick="openSheet(\'addBudgetSheet\')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוספת קטגוריית תקציב</button>';
+      +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
   }
   return html;
 }
@@ -4744,7 +4744,21 @@ function setBudget(){
   const _bb=document.querySelector('#addBudgetSheet .btn-primary');if(_bb){_bb.textContent='✓';_bb.disabled=true;}
   setTimeout(()=>{closeSheet('addBudgetSheet');showToast('✓ התקציב נשמר בהצלחה');renderBudget();},220);
 }
-function deleteBudget(cat){delete budgets[cat];saveData();renderBudget();showToast('✓ התקציב הוסר');}
+function deleteBudget(cat){delete budgets[cat];saveData();renderBudget();renderTxPage();showToast('✓ התקציב הוסר');}
+function addCustomBudgetCat(){
+  const remaining=EXPENSE_CATS.filter(c=>budgets[c]==null);
+  const name=prompt('שם קטגוריית ההוצאה המשתנה:'+(remaining.length?'\n(לדוגמה: '+remaining.slice(0,3).join(', ')+')':''));
+  if(!name||!name.trim())return;
+  const cat=name.trim();
+  const val=prompt('תקציב חודשי עבור '+cat+':',budgets[cat]||'');
+  if(val===null)return;
+  const amt=parseFloat(val);
+  if(amt>0)budgets[cat]=amt;else delete budgets[cat];
+  saveData();
+  renderBudget();
+  renderTxPage();
+  showToast('✓ קטגוריה נוספה');
+}
 function budgetBarColorClass(pct){
   if(pct>=90) return 'bg-rose-500';
   if(pct>=70) return 'bg-amber-500';
