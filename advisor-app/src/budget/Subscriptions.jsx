@@ -10,7 +10,7 @@ import styles from './Subscriptions.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const CYCLE_LABELS = { monthly: 'חודשי', yearly: 'שנתי' };
-const AUTO_FIXED_CATS = ['החזר הלוואות + חיוב קבוע', 'עסקאות בתשלומים', 'מנויים ושירותים'];
+const AUTO_FIXED_CATS = ['החזר הלוואות + חיוב קבוע', 'עסקאות בתשלומים', 'מנויים ושירותים', 'ביטוחים'];
 const MANUAL_FIXED_CATS = FIXED_CATS.filter(c => !AUTO_FIXED_CATS.includes(c));
 const SUB_CATEGORIES = ['סטרימינג', 'מוזיקה', 'פודקאסטים', 'תוכנה', 'כלי AI', 'אחסון ענן', 'כושר', 'משחקי וידאו', 'עיתונות', 'חינוך', 'אחר'];
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
@@ -75,7 +75,8 @@ const ICONS = {
   subs: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg>,
   loans: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg>,
   payments: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></svg>,
-  fixed: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7" /><path d="M5 10v9h14v-9" /></svg>
+  fixed: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7" /><path d="M5 10v9h14v-9" /></svg>,
+  insurance: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
 };
 
 export default function Subscriptions({ clientUserId }) {
@@ -89,6 +90,8 @@ export default function Subscriptions({ clientUserId }) {
   const [editingPaymentId, setEditingPaymentId] = useState(null);
   const [fixedCat, setFixedCat] = useState(MANUAL_FIXED_CATS[0]);
   const [fixedAmount, setFixedAmount] = useState('');
+  const [insForm, setInsForm] = useState({ name: '', monthly: '' });
+  const [editingInsId, setEditingInsId] = useState(null);
 
   function resetSubForm() { setSubForm({ name: '', category: SUB_CATEGORIES[0], amount: '', cycle: 'monthly', nextDate: '' }); setEditingSubId(null); }
   function submitSub() {
@@ -135,6 +138,18 @@ export default function Subscriptions({ clientUserId }) {
   }
   function startEditPayment(p) { setEditingPaymentId(p.id); setPaymentForm({ name: p.name || '', total: p.total || '', current: p.current || '', amount: p.amount || '' }); }
 
+  function resetInsForm() { setInsForm({ name: '', monthly: '' }); setEditingInsId(null); }
+  function submitInsurance() {
+    const monthly = parseFloat(insForm.monthly) || 0;
+    if (!insForm.name.trim() || !monthly) { toast('נדרשים שם ביטוח וסכום חודשי', 'error'); return; }
+    const patch = { name: insForm.name.trim(), monthly };
+    if (editingInsId != null) updateItem(save, 'insurances', editingInsId, patch);
+    else addItem(save, 'insurances', patch);
+    toast(editingInsId != null ? 'הביטוח עודכן' : 'ביטוח נוסף', 'success');
+    resetInsForm();
+  }
+  function startEditInsurance(x) { setEditingInsId(x.id); setInsForm({ name: x.name || '', monthly: x.monthly || '' }); }
+
   function submitFixed() {
     const amount = parseFloat(fixedAmount) || 0;
     if (!amount || amount <= 0) { toast('הזן סכום תקין', 'error'); return; }
@@ -163,6 +178,8 @@ export default function Subscriptions({ clientUserId }) {
     return leftB - leftA;
   });
   const fixedExpenses = data.fixed_expenses || [];
+  const insurances = [...(data.insurances || [])].sort((a, b) => (b.monthly || 0) - (a.monthly || 0));
+  const insurancesMonthly = insurances.reduce((s, x) => s + (x.monthly || 0), 0);
   const monthlySubsCost = subs.reduce((s, x) => s + (x.cycle === 'yearly' ? (x.amount || 0) / 12 : (x.amount || 0)), 0);
   const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
   const loansMonthly = loans.reduce((s, l) => s + (l.monthly || 0), 0);
@@ -186,11 +203,12 @@ export default function Subscriptions({ clientUserId }) {
           {renewingSoon.map(s => `${s.name} מתחדש ב-${s.nextDate}`).join(' · ')}
         </div>
       )}
-      {(subs.length > 0 || loans.length > 0 || payments.length > 0 || fixedExpenses.length > 0) && (
+      {(subs.length > 0 || loans.length > 0 || payments.length > 0 || fixedExpenses.length > 0 || insurances.length > 0) && (
         <div className={styles.statStrip}>
           {subs.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(monthlySubsCost)}</div><div className={styles.statLabel}>לחודש במנויים</div></div>}
           {loans.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(loansBalance)}</div><div className={styles.statLabel}>יתרת הלוואות</div></div>}
           {payments.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(paymentsLeft)}</div><div className={styles.statLabel}>יתרת תשלומים</div></div>}
+          {insurances.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(insurancesMonthly)}</div><div className={styles.statLabel}>לחודש בביטוחים</div></div>}
           {fixedExpenses.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(fixedMonthly)}</div><div className={styles.statLabel}>לחודש בהוצאות קבועות</div></div>}
         </div>
       )}
@@ -339,6 +357,30 @@ export default function Subscriptions({ clientUserId }) {
                 </div>
               );
             })}
+          </div>
+        ) : null}
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.insurance}</span>ביטוחים<span className={styles.countBadge}>{insurances.length}</span>{insurancesMonthly > 0 ? ` · ${fmt(insurancesMonthly)} לחודש` : ''}</div>
+        {!insurances.length && <div className={styles.sectionEmpty}>אין ביטוחים רשומים</div>}
+        <div className={styles.form}>
+          <input className={styles.input} placeholder="שם הביטוח" value={insForm.name} onChange={e => setInsForm({ ...insForm, name: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" value={insForm.monthly} onChange={e => setInsForm({ ...insForm, monthly: e.target.value })} />
+          <Button onClick={submitInsurance}>{editingInsId != null ? 'שמור' : 'הוסף ביטוח'}</Button>
+          {editingInsId != null && <Button variant="ghost" onClick={resetInsForm}>ביטול</Button>}
+        </div>
+        {insurances.length ? (
+          <div className={styles.list}>
+            {insurances.map((x, i) => (
+              <div key={x.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div className={styles.rowMain} role="button" tabIndex={0} onClick={() => startEditInsurance(x)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditInsurance(x))}>
+                  <div className={styles.name}>{x.name}</div>
+                  <div className={styles.amount}>{fmt(x.monthly || 0)}</div>
+                </div>
+                <DeleteButton onClick={() => removeItem(save, 'insurances', x.id)} />
+              </div>
+            ))}
           </div>
         ) : null}
       </div>
