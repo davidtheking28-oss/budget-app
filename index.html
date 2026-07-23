@@ -261,6 +261,25 @@
     .budget-move-btn{flex:1;text-align:center;background:none;border:1.5px solid var(--border);border-radius:999px;padding:9px 14px;font-size:0.78rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
     .budget-move-btn:active{opacity:0.6;}
     .budget-tx-empty{text-align:center;color:var(--text3);font-size:0.85rem;padding:24px 0;}
+    .exp-section-title{display:flex;align-items:center;gap:10px;margin:18px 0 12px;font-size:1.02rem;font-weight:800;color:var(--text);}
+    .exp-badge{background:var(--surface2);color:var(--text2);font-size:0.76rem;font-weight:700;padding:3px 11px;border-radius:999px;}
+    .exp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:15px 16px;background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;cursor:pointer;font-family:inherit;text-align:right;-webkit-tap-highlight-color:transparent;}
+    .exp-row-left{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+    .exp-row-right{display:flex;align-items:center;gap:8px;}
+    .exp-amt{font-family:var(--font-num);font-weight:800;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
+    .exp-plan-label{font-size:0.68rem;color:var(--text3);font-weight:600;margin-inline-end:2px;}
+    .exp-chevron{width:15px;height:15px;color:var(--text3);flex-shrink:0;transition:transform 0.2s;}
+    .exp-chevron-open{transform:rotate(180deg);}
+    .exp-icon-sm{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+    .exp-icon-sm:active{color:var(--red);}
+    .exp-icon-sm svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .exp-name{font-weight:700;color:var(--text);}
+    .exp-cat-icon{display:flex;color:var(--text3);flex-shrink:0;}
+    .exp-cat-icon svg{width:17px;height:17px;}
+    .exp-auto-badge{font-size:0.66rem;color:var(--text3);font-weight:600;}
+    .exp-body{padding:2px 4px 4px;margin-top:-4px;margin-bottom:8px;}
+    .exp-struct-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:12px;margin-bottom:6px;font-size:0.85rem;}
+    .exp-add-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1.5px dashed var(--border);border-radius:16px;color:var(--text2);font-weight:700;cursor:pointer;margin-bottom:14px;background:none;width:100%;font-family:inherit;font-size:0.87rem;-webkit-tap-highlight-color:transparent;}
     .sub-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);position:relative;box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),box-shadow 0.15s;}
     .sub-card[onclick]:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.11);}
     .sub-card[onclick]:active{transform:scale(0.985);}
@@ -3209,6 +3228,108 @@ function groupedTxHtml(list,useSwipe){
   return order.map(date=>'<div class="tx-date-label">'+heDate(date)+'</div>'+groups[date].map(fn).join('')).join('');
 }
 
+// ── Categorized expenses view (fixed + variable, grouped by category) ──
+const _expTrashSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+const _expEditSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
+function _expChevron(open){return '<svg class="exp-chevron'+(open?' exp-chevron-open':'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';}
+let _expOpenGroups=new Set();
+function toggleExpGroup(key){_expOpenGroups.has(key)?_expOpenGroups.delete(key):_expOpenGroups.add(key);renderTxPage();}
+function _expTxCardHtml(t){
+  return '<div class="budget-tx-card">'
+    +'<div class="budget-tx-top" onclick="event.stopPropagation();editTx('+t.id+')">'
+      +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
+      +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+t.date+'</div></div>'
+    +'</div>'
+    +'<div class="budget-tx-bottom">'
+      +'<button type="button" class="budget-tx-del" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק">'+_expTrashSvg+'</button>'
+      +'<button type="button" class="budget-move-btn" onclick="event.stopPropagation();openMoveTxCat('+t.id+')">העברה לקטגוריה אחרת</button>'
+    +'</div>'
+  +'</div>';
+}
+function _expTxListHtml(cat,byCat){
+  const items=(byCat[cat]||[]).filter(t=>!t.fx);
+  return items.length?items.map(_expTxCardHtml).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>';
+}
+function _expStructListHtml(kind){
+  if(kind==='loans')return loans.length?loans.map(l=>'<div class="exp-struct-row" onclick="event.stopPropagation();editLoan('+l.id+')"><span>'+esc(l.name)+'</span><span class="exp-amt">'+fmt(parseFloat(l.monthly)||0)+'</span></div>').join(''):'<div class="budget-tx-empty">אין הלוואות</div>';
+  if(kind==='subs'){const active=subscriptions.filter(s=>s.active);return active.length?active.map(s=>'<div class="exp-struct-row" onclick="event.stopPropagation();editSub('+s.id+')"><span>'+esc(s.name)+'</span><span class="exp-amt">'+fmt(subME(s))+'</span></div>').join(''):'<div class="budget-tx-empty">אין מנויים פעילים</div>';}
+  if(kind==='payments')return payments.length?payments.map(p=>'<div class="exp-struct-row" onclick="event.stopPropagation();showPage(\'payments\')"><span>'+esc(p.name)+'</span><span class="exp-amt">'+fmt(parseFloat(p.amount)||0)+'</span></div>').join(''):'<div class="budget-tx-empty">אין תשלומים</div>';
+  return '';
+}
+const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs'};
+function _expRowHtml(opts){
+  const key=opts.key,open=_expOpenGroups.has(key);
+  return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+key+'\')" aria-expanded="'+open+'">'
+    +'<div class="exp-row-left">'
+      +(opts.editable?'<span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'</span>':'')
+      +_expChevron(open)
+      +(opts.planned?'<span class="exp-plan-label">תכנון</span>':'')
+      +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
+    +'</div>'
+    +'<div class="exp-row-right"><span class="exp-name">'+opts.cat+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span><span class="exp-cat-icon">'+catIconSvg(opts.cat)+'</span></div>'
+  +'</button>'
+  +(open?'<div class="exp-body">'+opts.body+'</div>':'');
+}
+function renderTxCategorized(byCat){
+  const fixedCats=getEffectiveFixedCats();
+  const fixedConfigured=fixedCats.filter(c=>_fxMonthly(c)>0).length;
+  const fixedHtml=fixedCats.map(cat=>{
+    const auto=!!FIXED_AUTO[cat];
+    const amount=_fxMonthly(cat);
+    const key='fx:'+cat;
+    if(auto){
+      return _expRowHtml({key,cat,amount,auto:true,body:_expStructListHtml(_EXP_AUTO_KIND[cat])});
+    }
+    return _expRowHtml({
+      key,cat,amount,planned:true,editable:true,
+      onEdit:'_expEditManual(\''+cat.replace(/'/g,"\\'")+'\')',
+      onDelete:'_expDeleteManual(\''+cat.replace(/'/g,"\\'")+'\')',
+      body:_expTxListHtml(cat,byCat)
+    });
+  }).join('');
+  const varCats=Object.keys(budgets).filter(c=>EXPENSE_CATS.includes(c)).sort();
+  const varHtml=varCats.map(cat=>{
+    const key='var:'+cat;
+    return _expRowHtml({
+      key,cat,amount:budgets[cat]||0,planned:true,editable:true,
+      onEdit:'editBudgetCat(\''+cat.replace(/'/g,"\\'")+'\')',
+      onDelete:'deleteBudget(\''+cat.replace(/'/g,"\\'")+'\')',
+      body:_expTxListHtml(cat,byCat)
+    });
+  }).join('');
+  let html='';
+  if(txListFilter!=='variable'){
+    html+='<div class="exp-section-title">הוצאות קבועות<span class="exp-badge">'+fixedConfigured+'/'+fixedCats.length+'</span></div>'
+      +fixedHtml
+      +'<button type="button" class="exp-add-row" onclick="addCustomFixedCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוספת הוצאה קבועה</button>';
+  }
+  if(txListFilter!=='fixed'){
+    html+='<div class="exp-section-title">הוצאות משתנות<span class="exp-badge">'+varCats.length+'/'+varCats.length+'</span></div>'
+      +(varHtml||'<div class="budget-tx-empty">עדיין לא הוגדרו תקציבי קטגוריה</div>')
+      +'<button type="button" class="exp-add-row" onclick="openSheet(\'addBudgetSheet\')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוספת קטגוריית תקציב</button>';
+  }
+  return html;
+}
+function _expEditManual(cat){
+  const cur=_fxRaw(cat);
+  const val=prompt('סכום תכנון עבור '+cat+':',cur||'');
+  if(val===null)return;
+  const amt=parseFloat(val);
+  const row=_fxRow(cat);
+  if(amt>0){if(row)row.amount=amt;else fixedExpenses.push({id:cat,amount:amt});}
+  else if(row)fixedExpenses=fixedExpenses.filter(f=>f.id!==cat);
+  _fxPushMonth(cat);
+  saveData();
+  renderTxPage();
+}
+function _expDeleteManual(cat){
+  fixedExpenses=fixedExpenses.filter(f=>f.id!==cat);
+  _fxPushMonth(cat);
+  saveData();
+  renderTxPage();
+  showToast('✓ הוסר');
+}
+
 // ── Settings ──────────────────────────────────────────────────────
 const SUPA_URL  = 'https://fnklrqxwyeibfptaxewf.supabase.co';
 const SUPA_ANON = '__SUPABASE_ANON__';
@@ -4338,7 +4459,13 @@ function renderTxPage(){
     ?'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p>לא נמצאו תוצאות</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">נסה לשנות את מילות החיפוש או הסינון</p></div>'
     :'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">אין הוצאות החודש</p><p>עדיין לא רשמת הוצאות לחודש זה</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה</button></div>';
   list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  document.getElementById('allTxList').innerHTML=list.length?groupedTxHtml(list):_txEmpty;
+  const _useCategorized=!q&&!fromDate&&!toDate;
+  if(_useCategorized){
+    const byCat={};list.forEach(t=>{(byCat[t.cat]=byCat[t.cat]||[]).push(t);});
+    document.getElementById('allTxList').innerHTML=renderTxCategorized(byCat);
+  } else {
+    document.getElementById('allTxList').innerHTML=list.length?groupedTxHtml(list):_txEmpty;
+  }
   const csvBtn=document.getElementById('csvExportBtn');
   if(csvBtn)csvBtn.style.display=list.length?'':'none';
   if(_calendarMode)renderCalendarView();
