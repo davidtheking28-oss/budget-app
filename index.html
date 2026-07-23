@@ -4810,7 +4810,11 @@ function renderBudget(){
   }).join('')
   +'<button type="button" class="budget-chip budget-chip-add" onclick="openSheet(\'addBudgetSheet\')" aria-label="הגדר תקציב לקטגוריה נוספת"><span class="budget-chip-icon">+</span></button>';
   const selEl=strip.querySelector('.budget-chip-sel');
-  if(selEl)selEl.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  if(selEl){
+    const stripRect=strip.getBoundingClientRect(),elRect=selEl.getBoundingClientRect();
+    const delta=(elRect.left+elRect.width/2)-(stripRect.left+stripRect.width/2);
+    if(Math.abs(delta)>2)strip.scrollBy({left:delta,behavior:'smooth'});
+  }
   renderBudgetDetail(spent,effLim);
   _bindBudgetStripScroll(strip);
 }
