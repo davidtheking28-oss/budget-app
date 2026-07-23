@@ -2296,7 +2296,7 @@ const CAT_ICONS = {
   'ייצוג וארוח':'🤝','אחסון ולוגיסטיקה':'📦','מסים ואגרות':'🏛️','ביטוח עסקי':'🛡️',
   'הדרכות והשתלמויות':'🎓','פיתוח ומחקר':'🔬','קניות ציוד':'🛒',
   'הכנסות ממכירות':'💰','שירותים':'⚙️','פרויקטים':'📋','מנויים לקוחות':'🔄','עמלות':'💵','ייעוץ':'💡',
-  'תחבורה ונסיעות':'🚗','שכר דירה':'🏠','תקשורת':'📱','בריאות':'🏥',
+  'תחבורה ונסיעות':'🚗','שכר דירה':'🏠','דיור':'🏠','תקשורת':'📱','בריאות':'🏥',
   'קניות':'🛍','בילויים':'🎉','חינוך':'📚','ספורט':'⚽',
   'ספרות':'📖','ביטוח':'🛡','ביטוח לאומי':'🏛️','ביטוח בריאות':'💊','ביטוח רכב':'🚘','ביטוח דירה':'🔐','ביטוח חיים':'🛡️','פרילנס':'💻','מתנות':'🎁','השקעות':'📈','שכר':'💼',
   'אוכל':'🍽️','מסעדות':'🍴','ביגוד והנעלה':'👟','חופשות וטיולים':'✈️',
@@ -2309,6 +2309,7 @@ const _sv=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 const CAT_SVGS={
   'תחבורה ונסיעות':_sv('<rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'),
   'שכר דירה':_sv('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'),
+  'דיור':_sv('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'),
   'תקשורת':_sv('<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>'),
   'בריאות':_sv('<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'),
   'קניות':_sv('<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>'),
@@ -2388,8 +2389,43 @@ const _CAT_MIGRATE={
   'קניות':'שונות','שכר דירה':'שונות','חשמל ומים':'שונות','ארנונה':'שונות','תקשורת':'שונות',
   'חינוך':'שונות','תיקונים ואחזקה':'שונות','ביטוח דירה':'שונות','גז':'שונות','צדקה':'שונות','אחר':'שונות'
 };
-function _migrateCats(){
+const _HOUSING_MERGE=['משכנתא','שכר דירה'];
+function _migrateHousingCat(){
   let changed=false;
+  const oldFx=fixedExpenses.filter(f=>_HOUSING_MERGE.includes(f.id));
+  if(oldFx.length){
+    const sum=oldFx.reduce((s,f)=>s+(parseFloat(f.amount)||0),0);
+    fixedExpenses=fixedExpenses.filter(f=>!_HOUSING_MERGE.includes(f.id));
+    const existing=fixedExpenses.find(f=>f.id==='דיור');
+    if(existing)existing.amount=(parseFloat(existing.amount)||0)+sum;
+    else if(sum>0)fixedExpenses.push({id:'דיור',amount:sum});
+    changed=true;
+  }
+  let budSum=0,hadBud=false;
+  _HOUSING_MERGE.forEach(c=>{if(budgets[c]!=null){budSum+=budgets[c];hadBud=true;delete budgets[c];}});
+  if(hadBud){budgets['דיור']=(budgets['דיור']||0)+budSum;changed=true;}
+  const byNewId={};
+  transactions.forEach(t=>{
+    if(t.type!=='expense'||!_HOUSING_MERGE.includes(t.cat))return;
+    changed=true;
+    t.cat='דיור';
+    if(t.fx){
+      const mkey=String(t.id).split('|')[1];
+      const newId=_fxTxId(mkey,'דיור');
+      if(byNewId[newId]&&byNewId[newId]!==t){
+        byNewId[newId].amount=(parseFloat(byNewId[newId].amount)||0)+(parseFloat(t.amount)||0);
+        t._dropMe=true;
+      } else {
+        t.id=newId;
+        byNewId[newId]=t;
+      }
+    }
+  });
+  if(transactions.some(t=>t._dropMe))transactions=transactions.filter(t=>!t._dropMe);
+  return changed;
+}
+function _migrateCats(){
+  let changed=_migrateHousingCat();
   transactions.forEach(t=>{
     if(t.type!=='expense'||t.fx)return;
     const n=_CAT_MIGRATE[t.cat];
@@ -2434,7 +2470,7 @@ const BUDGET_CHIP_COLOR={
   'דמי כיס/ילדים':'yellow','יהדות/חגים':'purple','ביטוח לאומי':'blue','שונות':'gray'
 };
 function budgetChipColor(cat){return BUDGET_CHIP_HEX[BUDGET_CHIP_COLOR[cat]||'gray'];}
-const FIXED_CATS=['משכנתא','שכר דירה','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
+const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחי בריאות וחיים','מניות','ביטוח בריאות','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
   'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0,cur=_payCalc(p).current;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0),
@@ -3237,8 +3273,8 @@ function toggleExpGroup(key){_expOpenGroups.has(key)?_expOpenGroups.delete(key):
 function _expTxCardHtml(t){
   return '<div class="budget-tx-card">'
     +'<div class="budget-tx-top" onclick="event.stopPropagation();editTx('+t.id+')">'
-      +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
       +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+t.date+'</div></div>'
+      +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
     +'</div>'
     +'<div class="budget-tx-bottom">'
       +'<button type="button" class="budget-tx-del" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק">'+_expTrashSvg+'</button>'
@@ -4643,8 +4679,8 @@ function renderBudgetDetail(spent,effLim){
       +(mTx.length?mTx.map(t=>
         '<div class="budget-tx-card">'
           +'<div class="budget-tx-top" onclick="editTx('+t.id+')">'
-            +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
             +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+t.date+'</div></div>'
+            +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
           +'</div>'
           +'<div class="budget-tx-bottom">'
             +'<button type="button" class="budget-tx-del" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק">'+trashSvg+'</button>'
