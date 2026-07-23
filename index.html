@@ -3367,12 +3367,12 @@ const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','ע�
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
   return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+key+'\')" aria-expanded="'+open+'">'
+    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.cat)+'</span><span class="exp-name">'+opts.cat+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
-      +(opts.editable?'<span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'</span>':_expChevron(open))
-      +(opts.planned?'<span class="exp-plan-label">תכנון</span>':'')
       +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
+      +(opts.planned?'<span class="exp-plan-label">תכנון</span>':'')
+      +(opts.editable?'<span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'</span>':_expChevron(open))
     +'</div>'
-    +'<div class="exp-row-right"><span class="exp-name">'+opts.cat+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span><span class="exp-cat-icon">'+catIconSvg(opts.cat)+'</span></div>'
   +'</button>'
   +(open?'<div class="exp-body">'+opts.body+'</div>':'');
 }
