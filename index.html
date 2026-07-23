@@ -557,6 +557,7 @@
     .ob-amt-in.loan-in{color:var(--red);}
     .ob-remove{width:44px;min-height:44px;border:none;background:transparent;color:var(--text3);font-size:1rem;cursor:pointer;padding:0 8px;flex-shrink:0;}
     .ob-remove:active{color:var(--red);}
+    .onboard-row svg{width:18px;height:18px;flex-shrink:0;}
     .onboard-add-btn{width:100%;padding:12px;border:1.5px dashed var(--border);border-radius:14px;background:transparent;color:var(--text2);font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s,opacity 0.15s;}
     .onboard-add-btn:active{background:var(--surface);}
     .onboard-invest-row{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,0.07);}
@@ -6023,6 +6024,7 @@ function refreshAll(){
 
 let onboardStep=0;
 let obIncomes=[{name:'משכורת שלי',amount:''}];
+let obFixed=[];
 let obLoans=[];
 let obInvest=[
   {emoji:'🏦',name:'קרן פנסיה',amount:''},
@@ -6036,7 +6038,7 @@ function skipOnboarding(){localStorage.setItem('budget_onboarded','1');document.
 function checkFabHint(){if(transactions.length===0&&localStorage.getItem('budget_onboarded')){triggerFabHint();}}
 
 function renderOnboardDots(){
-  const steps=['ברוכים','חשבון','הכנסה','בואו נתחיל'];
+  const steps=['ברוכים','חשבון','הכנסה','קבועות','בואו נתחיל'];
   document.getElementById('onboardDots').innerHTML=steps.map((s,i)=>'<div class="onboard-dot '+(i===onboardStep?'active':i<onboardStep?'done':'')+'"></div>').join('');
 }
 
@@ -6045,9 +6047,9 @@ function renderOnboardStep(){
   const backBtn=document.getElementById('onboardBack');
   const nextBtn=document.getElementById('onboardNext');
   backBtn.style.display=onboardStep===0?'none':'';
-  nextBtn.textContent=onboardStep===3?'✓ בואו נתחיל!':'הבא ›';
+  nextBtn.textContent=onboardStep===4?'✓ בואו נתחיל!':'הבא ›';
   const skipRow=document.getElementById('onboardSkipRow');
-  if(skipRow)skipRow.style.visibility=onboardStep===3?'hidden':'visible';
+  if(skipRow)skipRow.style.visibility=onboardStep===4?'hidden':'visible';
   const el=document.getElementById('onboardContent');
   if(onboardStep===0){
     const savedName = userSettings.name || '';
@@ -6067,6 +6069,10 @@ function renderOnboardStep(){
   } else if(onboardStep===2){
     el.innerHTML='<div class="onboard-title">💵 מה ההכנסה החודשית שלך?</div><div class="onboard-sub">הזן את המשכורת או כל הכנסה קבועה. זה עוזר לנו לחשב כמה אפשר להוציא בחודש.</div><div class="onboard-rows" id="obIncomeRows"></div><button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="obAddIncome()">+ הוספת מקור הכנסה</button>';
     renderObIncomes();
+  } else if(onboardStep===3){
+    if(!obFixed.length)obFixed=getEffectiveFixedCats().filter(c=>!FIXED_AUTO[c]).map(cat=>({cat,amount:''}));
+    el.innerHTML='<div class="onboard-title">🏠 הוצאות קבועות</div><div class="onboard-sub">אילו הוצאות קבועות יש לך כל חודש? מלא סכום רק למה שרלוונטי — אפשר להוסיף או לשנות בכל שלב מאוחר יותר.</div><div class="onboard-rows" id="obFixedRows"></div>';
+    renderObFixed();
   } else {
     const totalIncome=obIncomes.reduce((s,inc)=>s+(parseFloat(inc.amount)||0),0);
     const name = userSettings.name ? ', '+userSettings.name : '';
@@ -6080,6 +6086,11 @@ function renderObIncomes(){
 }
 function obAddIncome(){obIncomes.push({name:'',amount:''});renderObIncomes();}
 function obRemoveIncome(i){obIncomes.splice(i,1);renderObIncomes();}
+function renderObFixed(){
+  const el=document.getElementById('obFixedRows');
+  if(!el)return;
+  el.innerHTML=obFixed.map((f,i)=>'<div class="onboard-row"><span style="padding:12px 16px;flex:1;min-width:0;font-size:0.9rem;color:var(--text);display:flex;align-items:center;gap:8px"><span style="width:18px;height:18px;flex-shrink:0;display:flex">'+catIconSvg(f.cat)+'</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.cat)+'</span></span><input style="width:90px;flex-shrink:0;border:none;background:transparent;padding:12px 8px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;text-align:center;" type="text" inputmode="decimal" placeholder="סכום" value="'+(f.amount||'')+'" onfocus="this.select()" oninput="obFixed['+i+'].amount=this.value.replace(/[,\\s]/g,\'\')"/></div>').join('');
+}
 
 let _obOtpSent=false, _obEmailVal='';
 async function obSendEmail(){
@@ -6121,7 +6132,7 @@ async function obVerifyOtp(){
 }
 
 function onboardNav(dir){
-  if(dir===1&&onboardStep===3){finishOnboarding();return;}
+  if(dir===1&&onboardStep===4){finishOnboarding();return;}
   if(dir===1&&onboardStep===0){
     const inp=document.getElementById('obNameInput');
     if(inp) userSettings.name=inp.value.trim();
@@ -6135,7 +6146,7 @@ function onboardNav(dir){
       if(obIncomes[i]&&inputs[1]) obIncomes[i].amount=inputs[1].value.replace(/[,\s]/g,'');
     });
   }
-  onboardStep=Math.max(0,Math.min(3,onboardStep+dir));
+  onboardStep=Math.max(0,Math.min(4,onboardStep+dir));
   renderOnboardStep();
 }
 
@@ -6150,6 +6161,13 @@ function finishOnboarding(){
     });
   }
   userSettings.name = (document.getElementById('obNameInput')||{}).value || userSettings.name || '';
+  const validFixed=obFixed.filter(f=>f.amount&&parseFloat(f.amount)>0);
+  validFixed.forEach(f=>{
+    const amt=parseFloat(f.amount);
+    const row=fixedExpenses.find(x=>x.id===f.cat);
+    if(row)row.amount=amt;else fixedExpenses.push({id:f.cat,amount:amt});
+    _fxPushMonth(f.cat);
+  });
   saveData();
   saveSettingsData();
   localStorage.setItem('budget_onboarded','1');
