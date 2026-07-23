@@ -3380,8 +3380,8 @@ function _expRowHtml(opts){
   +(open?'<div class="exp-body">'+opts.body+'</div>':'');
 }
 function renderTxCategorized(byCat){
-  const fixedCats=getEffectiveFixedCats();
-  const fixedConfigured=fixedCats.filter(c=>_fxMonthly(c)>0).length;
+  const fixedCats=getEffectiveFixedCats().filter(cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0);
+  const fixedConfigured=fixedCats.length;
   const fixedHtml=fixedCats.map(cat=>{
     const auto=!!FIXED_AUTO[cat];
     const amount=_fxMonthly(cat);
@@ -3408,7 +3408,7 @@ function renderTxCategorized(byCat){
   }).join('');
   let html='';
   if(txListFilter!=='variable'){
-    html+='<div class="exp-section-title">הוצאות קבועות<span class="exp-badge">'+fixedConfigured+'/'+fixedCats.length+'</span></div>'
+    html+='<div class="exp-section-title">הוצאות קבועות<span class="exp-badge">'+fixedConfigured+'</span></div>'
       +fixedHtml
       +'<button type="button" class="exp-add-row" onclick="addCustomFixedCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוספת הוצאה קבועה</button>';
   }
@@ -5031,14 +5031,26 @@ function renderPayments(){
 // ── הוצאות קבועות ─────────────────────────────────────────────────
 function getEffectiveFixedCats(){return [...FIXED_CATS,...(userSettings.customFixedCats||[])];}
 function addCustomFixedCat(){
-  const name=prompt('שם ההוצאה הקבועה החדשה:');
+  const name=prompt('שם ההוצאה הקבועה:');
   if(!name||!name.trim())return;
   const cat=name.trim();
-  if(getEffectiveFixedCats().includes(cat)){showToast('קטגוריה כבר קיימת');return;}
-  if(!userSettings.customFixedCats)userSettings.customFixedCats=[];
-  userSettings.customFixedCats.push(cat);
-  saveSettingsData();
+  const known=getEffectiveFixedCats().includes(cat);
+  if(!known){
+    if(!userSettings.customFixedCats)userSettings.customFixedCats=[];
+    userSettings.customFixedCats.push(cat);
+    saveSettingsData();
+  }
+  if(FIXED_AUTO[cat]){renderFixed();renderTxPage();showToast('✓ נוספה');return;}
+  const val=prompt('סכום חודשי עבור '+cat+':',_fxRaw(cat)||'');
+  if(val!==null){
+    const amt=parseFloat(val);
+    const row=_fxRow(cat);
+    if(amt>0){if(row)row.amount=amt;else fixedExpenses.push({id:cat,amount:amt});}
+    _fxPushMonth(cat);
+    saveData();
+  }
   renderFixed();
+  renderTxPage();
   showToast('✓ קטגוריה נוספה');
 }
 function removeCustomFixedCat(cat){
