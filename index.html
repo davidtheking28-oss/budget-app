@@ -846,9 +846,13 @@
     #page-budget .section,#page-goals .section,#page-subscriptions .section,#page-loans .section{min-height:55vh;}
     /* ── Mode switcher ──────────────────────── */
     #modeSwitcher{display:none;align-items:center;justify-content:center;padding:5px 0 0;}
-    .mode-pill{display:flex;background:var(--surface2);border:1.5px solid var(--border);border-radius:999px;padding:3px;gap:3px;}
-    .mode-btn{padding:6px 18px;border-radius:999px;border:none;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text2);background:transparent;transition:background 0.18s,color 0.18s;white-space:nowrap;}
-    .mode-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(var(--accent-rgb),0.28);}
+    .mode-pill-current{display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1.5px solid var(--border);border-radius:999px;padding:8px 18px;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent;}
+    .mode-pill-current svg{transition:transform 0.2s;flex-shrink:0;}
+    .mode-pill-current.open svg{transform:rotate(180deg);}
+    .mode-dropdown{display:none;flex-direction:column;gap:2px;position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,0.16);z-index:20;min-width:130px;}
+    .mode-dropdown.open{display:flex;}
+    .mode-btn{padding:8px 18px;border-radius:10px;border:none;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text2);background:transparent;transition:background 0.18s,color 0.18s;white-space:nowrap;text-align:center;}
+    .mode-btn.active{background:var(--accent);color:#fff;}
     /* ── iOS toggle ──────────────────────────── */
     .ios-toggle{position:relative;display:inline-block;width:44px;height:26px;cursor:pointer;flex-shrink:0;}
     .ios-toggle input{opacity:0;width:0;height:0;position:absolute;}
@@ -1608,10 +1612,14 @@
 <main id="main-content">
   <div id="page-dashboard" class="page active">
     <!-- Mode switcher -->
-    <div id="modeSwitcher" style="display:none;justify-content:center;margin:0 0 14px;">
-      <div class="mode-pill">
-        <button class="mode-btn active" data-mode="personal" onclick="switchMode('personal')">🏠 פרטי</button>
-        <button class="mode-btn" data-mode="business" onclick="switchMode('business')">💼 עסקי</button>
+    <div id="modeSwitcher" style="display:none;justify-content:center;margin:0 0 14px;position:relative;">
+      <button type="button" id="modeCurrentBtn" class="mode-pill-current" onclick="toggleModeDropdown()">
+        <span id="modeCurrentLabel">🏠 פרטי</span>
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div id="modeDropdown" class="mode-dropdown">
+        <button class="mode-btn" data-mode="personal" onclick="pickMode('personal')">🏠 פרטי</button>
+        <button class="mode-btn" data-mode="business" onclick="pickMode('business')">💼 עסקי</button>
       </div>
     </div>
     <!-- Greeting (prominent) -->
@@ -6146,6 +6154,7 @@ function refreshAll(){
 }
 
 let onboardStep=0;
+let obHasBusiness=false;
 let obIncomes=[{name:'משכורת שלי',amount:''}];
 let obFixed=[];
 const OB_FIXED_DEFAULT=['דיור','ארנונה','חשמל','מים וביוב'];
@@ -6177,7 +6186,7 @@ function renderOnboardStep(){
   const el=document.getElementById('onboardContent');
   if(onboardStep===0){
     const savedName = userSettings.name || '';
-    el.innerHTML='<div style="text-align:center;padding:20px 0 16px;"><div style="font-size:4rem;font-weight:800;color:var(--accent);font-family:monospace;margin-bottom:12px;letter-spacing:-2px;">₪</div><div class="onboard-title">ברוכים לאפליקציית התקציב!</div><div class="onboard-sub">מנהלים את הכסף בפשטות. הכנה לוקחת פחות מדקה.</div></div><div style="margin-top:8px"><div style="font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:8px;">👤 איך קוראים לך?</div><input id="obNameInput" type="text" value="'+savedName+'" placeholder="שמי הוא..." oninput="userSettings.name=this.value" onfocus="this.select()" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1.1rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700"/><div style="font-size:0.75rem;color:var(--text3);margin-top:6px;text-align:center;">אפשר גם לדלג — ניתן להוסיף אחר כך בהגדרות</div></div>';
+    el.innerHTML='<div style="text-align:center;padding:20px 0 16px;"><div style="font-size:4rem;font-weight:800;color:var(--accent);font-family:monospace;margin-bottom:12px;letter-spacing:-2px;">₪</div><div class="onboard-title">ברוכים לאפליקציית התקציב!</div><div class="onboard-sub">מנהלים את הכסף בפשטות. הכנה לוקחת פחות מדקה.</div></div><div style="margin-top:8px"><div style="font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:8px;">👤 איך קוראים לך?</div><input id="obNameInput" type="text" value="'+savedName+'" placeholder="שמי הוא..." oninput="userSettings.name=this.value" onfocus="this.select()" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1.1rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700"/><div style="font-size:0.75rem;color:var(--text3);margin-top:6px;text-align:center;">אפשר גם לדלג — ניתן להוסיף אחר כך בהגדרות</div></div><div style="margin-top:22px"><div style="font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:8px;text-align:center">💼 יש לך גם עסק שתרצה לנהל בנפרד?</div><div style="display:flex;gap:8px;justify-content:center" id="obBusinessToggle">'+_obBusinessToggleHtml()+'</div></div>';
     setTimeout(()=>{const inp=document.getElementById('obNameInput');if(inp&&!savedName)inp.focus();},200);
   } else if(onboardStep===1){
     const connected=!!_cloudUser;
@@ -6221,6 +6230,16 @@ function renderObFixed(){
   }
 }
 function obRemoveFixed(i){obFixed.splice(i,1);renderObFixed();}
+function _obBusinessToggleHtml(){
+  const b='padding:10px 22px;border-radius:999px;border:1.5px solid var(--border);font-size:0.85rem;font-weight:700;font-family:inherit;cursor:pointer;background:var(--surface2);color:var(--text2);';
+  const active='background:var(--accent);color:#fff;border-color:var(--accent);';
+  return '<button type="button" onclick="obPickBusiness(true)" style="'+b+(obHasBusiness?active:'')+'">כן</button><button type="button" onclick="obPickBusiness(false)" style="'+b+(!obHasBusiness?active:'')+'">לא</button>';
+}
+function obPickBusiness(v){
+  obHasBusiness=v;
+  const el=document.getElementById('obBusinessToggle');
+  if(el)el.innerHTML=_obBusinessToggleHtml();
+}
 function obAddFixedCat(cat){
   obFixed.push({cat,amount:''});
   renderObFixed();
@@ -6296,6 +6315,8 @@ function finishOnboarding(){
     });
   }
   userSettings.name = (document.getElementById('obNameInput')||{}).value || userSettings.name || '';
+  userSettings.businessMode=obHasBusiness;
+  updateModeSwitcher();
   const validFixed=obFixed.filter(f=>f.amount&&parseFloat(f.amount)>0);
   validFixed.forEach(f=>{
     const amt=parseFloat(f.amount);
@@ -6688,6 +6709,17 @@ function updateModeSwitcher(){
   el.querySelectorAll('.mode-btn').forEach(b=>{
     b.classList.toggle('active',b.dataset.mode===_activeMode);
   });
+  const label=document.getElementById('modeCurrentLabel');
+  if(label)label.textContent=_activeMode==='business'?'💼 עסקי':'🏠 פרטי';
+}
+function toggleModeDropdown(){
+  document.getElementById('modeDropdown').classList.toggle('open');
+  document.getElementById('modeCurrentBtn').classList.toggle('open');
+}
+function pickMode(mode){
+  document.getElementById('modeDropdown').classList.remove('open');
+  document.getElementById('modeCurrentBtn').classList.remove('open');
+  if(mode!==_activeMode)switchMode(mode);
 }
 // Auth screen
 function showAuthScreen(){
