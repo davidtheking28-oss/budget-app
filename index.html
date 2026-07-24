@@ -1990,7 +1990,7 @@
     </div>
     <div style="margin-bottom:8px;font-size:0.72rem;font-weight:700;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;padding:0 2px">כללי</div>
     <div style="background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)">
-      <button onclick="openSettings()" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;cursor:pointer;text-align:right;font-family:inherit" class="more-row">
+      <button onclick="showPage('settings',document.getElementById('nav-more'))" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;cursor:pointer;text-align:right;font-family:inherit" class="more-row">
         <div style="width:40px;height:40px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--text2)"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </div>
@@ -2081,10 +2081,8 @@
   </div>
 </div>
 
-<div class="sheet-overlay" id="settingsSheet" onclick="if(event.target===this)closeSheet('settingsSheet')">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">⚙️ הגדרות<button onclick="closeSheet('settingsSheet')" aria-label="סגור" class="sheet-close-x">✕</button></div>
+<div id="page-settings" class="page">
+    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">⚙️ הגדרות</div>
     <div class="form-stack">
       <div class="settings-section">
         <div class="settings-section-title">פרופיל</div>
@@ -2228,7 +2226,7 @@
     <span class="nav-label text-[11px] font-semibold">ניתוח</span>
   </button>
 
-  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="openSettings()" id="nav-more" aria-label="הגדרות">
+  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('settings',this)" id="nav-more" aria-label="הגדרות">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
       <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
@@ -3994,7 +3992,6 @@ function openSettings(){
   const pcb=document.getElementById('settingPushEnabled');
   if(pcb)pcb.checked=!!localStorage.getItem('budget_push_on');
   _renderPushPrefs();
-  openSheet('settingsSheet');
 }
 
 function updateSettingAvatar(){
@@ -4084,7 +4081,7 @@ function importBackup(input){
       saveData();
       saveSettingsData();
       refreshAll();
-      closeSheet('settingsSheet');
+      showPage('dashboard',document.getElementById('nav-dashboard'));
       showToast('✓ הנתונים שוחזרו בהצלחה!');
     } catch(err) { showToast('❌ לא ניתן לקרוא את הקובץ. נסה קובץ אחר'); }
   };
@@ -4102,7 +4099,6 @@ async function resetAllData(){
   localStorage.removeItem(_modeKey('budget_sync_meta'));
   saveData(); saveSettingsData();
   localStorage.removeItem('budget_onboarded');
-  closeSheet('settingsSheet');
   location.reload();
 }
 
@@ -5843,6 +5839,8 @@ function dismissMonthReview(){
 }
 function showPage(name,btn){
   requestAnimationFrame(()=>window.scrollTo(0,0));
+  const wasSettings=document.getElementById('page-settings')?.classList.contains('active');
+  if(wasSettings&&name!=='settings'){try{saveSettings();refreshAll();}catch(e){}}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>{b.classList.remove('active');b.removeAttribute('aria-current');});
   const pg=document.getElementById('page-'+name);
@@ -5858,6 +5856,7 @@ function showPage(name,btn){
   if(name==='subscriptions')renderSubscriptions();
   if(name==='budget')       renderBudget();
   if(name==='loans')        renderLoans();
+  if(name==='settings')     openSettings();
 }
 
 // ── Feature 2: Cash Flow Forecast ────────────────────────────────
@@ -6586,7 +6585,7 @@ function importBankCSV(){
         if(imported>0){
           saveData();
           refreshAll();
-          closeSheet('settingsSheet');
+          showPage('dashboard',document.getElementById('nav-dashboard'));
           showToast('✓ יובאו '+imported+' עסקאות'+(skippedDup>0?' · '+skippedDup+' כפילויות דולגו':''));
         } else if(skippedDup>0){
           showToast('כל העסקאות בקובץ כבר קיימות ('+skippedDup+' כפילויות)');
@@ -7486,18 +7485,8 @@ setTimeout(autoCarryRecurring,500);
 })();
 </script>
 <script>
-/* ════ Income/settings → keep the budget in sync (refresh on edit & on close) ════ */
+/* ════ Income → keep the budget in sync while editing (debounced) ════ */
 (function(){
-  /* refresh the budget whenever the settings sheet is closed (any way) */
-  var _cs=window.closeSheet;
-  if(typeof _cs==='function'){
-    window.closeSheet=function(id){
-      var r=_cs.apply(this,arguments);
-      if(id==='settingsSheet'){ setTimeout(function(){ try{ if(window.saveSettings)saveSettings(); if(window.refreshAll)refreshAll(); }catch(e){} }, 240); }
-      return r;
-    };
-  }
-  /* live-update the budget while editing income sources on the cash-flow page (debounced) */
   var t=null;
   document.addEventListener('input', function(e){
     var box=document.getElementById('txIncomeRows');
