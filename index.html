@@ -277,6 +277,9 @@
     .exp-cat-icon{display:flex;flex-shrink:0;font-size:1.15rem;line-height:1;}
     .cashflow-page{background:#fdf8ec;margin:-16px -16px 0;padding:16px;min-height:calc(100% + 16px);}
     body.dark .cashflow-page{background:#211f16;}
+    .cashflow-page .section-header{padding:22px 4px 6px}
+    .cashflow-page .badge{background:rgba(0,0,0,0.07);color:var(--text2)}
+    body.dark .cashflow-page .badge{background:rgba(255,255,255,0.08);color:var(--text2)}
     .exp-auto-badge{font-size:0.66rem;color:var(--text3);font-weight:600;}
     .exp-body{padding:2px 4px 4px;margin-top:-4px;margin-bottom:8px;}
     .exp-struct-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:12px;margin-bottom:6px;font-size:0.85rem;}
@@ -1527,6 +1530,14 @@
   </div>
 </div>
 
+<div class="sheet-overlay" id="fixedCatPickerSheet" onclick="if(event.target===this)closeSheet('fixedCatPickerSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🏠 הוספת הוצאה קבועה</div>
+    <div id="fixedCatPickerBody"></div>
+  </div>
+</div>
+
 <div class="sheet-overlay" id="addToGoalSheet" onclick="if(event.target===this)closeSheet('addToGoalSheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -2150,11 +2161,6 @@
           </div>
         </div>
         <button id="settingsInstallBtn" type="button" class="btn btn-outline btn-full" onclick="triggerInstall()" style="display:none;margin-top:8px;align-items:center;justify-content:center;gap:8px"><span style="font-size:1.1rem">📲</span> התקן אפליקציה</button>
-      </div>
-      <div class="settings-section">
-        <div class="settings-section-title">מקורות הכנסה קבועים</div>
-        <div id="settingIncomeRows" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
-        <button class="btn btn-outline btn-sm" onclick="addSettingIncome()" style="width:100%">+ הוסף מקור הכנסה</button>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">נתונים</div>
@@ -3432,7 +3438,7 @@ function renderTxCategorized(byCat){
     fxEntries.sort((a,b)=>b.amount-a.amount);
     html+='<div class="section-header"><div class="section-title">הוצאות קבועות <span class="badge">'+fxEntries.length+'/'+allFixed.length+'</span></div></div>'
       +(fxEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות מוגדרות עדיין</div>')
-      +'<button type="button" class="exp-add-row" onclick="addCustomFixedCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
+      +'<button type="button" class="exp-add-row" onclick="openFixedCatPicker()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
   }
   if(txListFilter!=='fixed'){
     const varEntries=[];
@@ -3450,7 +3456,30 @@ function renderTxCategorized(byCat){
       +(varEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות משתנות מוגדרות עדיין</div>')
       +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
   }
+  html+='<div class="section-header"><div class="section-title">הכנסות <span class="badge">'+userSettings.incomeSources.length+'</span></div></div>'
+    +'<div id="txIncomeRows">'+_expIncomeListHtml()+'</div>'
+    +'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>';
   return html||'<div class="budget-tx-empty">אין הוצאות קבועות או משתנות מוגדרות עדיין</div>';
+}
+function _expIncomeListHtml(){
+  if(!userSettings.incomeSources.length)return '<div class="budget-tx-empty">אין מקורות הכנסה מוגדרים</div>';
+  const examples=['משכורת','שכר בן/בת זוג','שכירות','קצבה','פרילנס','הכנסה אחרת'];
+  return userSettings.incomeSources.map((src,i)=>{
+    const ph=examples[i%examples.length];
+    return '<div class="income-source-row">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+        +'<span style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;">מקור '+(i+1)+'</span>'
+        +'<button onclick="userSettings.incomeSources.splice('+i+',1);saveSettingsData();renderTxPage()" style="background:rgba(220,38,38,0.08);border:none;color:var(--red);cursor:pointer;padding:4px 10px;border-radius:8px;font-size:0.75rem;font-weight:700;" aria-label="מחק">✕ הסר</button>'
+      +'</div>'
+      +'<div class="income-source-field" style="margin-bottom:8px;"><label>שם המקור</label><input type="text" placeholder="'+esc(ph)+'..." value="'+esc(src.name||'')+'" autocomplete="off" autocorrect="off" spellcheck="false" oninput="userSettings.incomeSources['+i+'].name=this.value;saveSettingsData()" onfocus="this.select()"/></div>'
+      +'<div class="income-source-field"><label>סכום חודשי (₪)</label><input type="number" inputmode="decimal" placeholder="0" value="'+esc(src.amount||'')+'" oninput="userSettings.incomeSources['+i+'].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/></div>'
+    +'</div>';
+  }).join('');
+}
+function addIncomeSource(){
+  userSettings.incomeSources.push({name:'',amount:''});
+  saveSettingsData();
+  renderTxPage();
 }
 function toggleAdvancedFilters(){
   const el=document.getElementById('txAdvancedFilters');
@@ -3957,41 +3986,6 @@ function getMonthlyIncome(){
   return userSettings.incomeSources.reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
 }
 
-function renderSettingIncomeRows(){
-  const el = document.getElementById('settingIncomeRows');
-  if(!el) return;
-  const p1 = userSettings.name        || 'שם 1';
-  const p2 = userSettings.partnerName || 'שם 2';
-  const hasParter = !!userSettings.partnerName;
-  const examples = ['משכורת','שכר בן/בת זוג','שכירות','קצבה','פרילנס','הכנסה אחרת'];
-  if(!userSettings.incomeSources.length){
-    el.innerHTML = '<div style="font-size:0.82rem;color:var(--text3);text-align:center;padding:10px 0;">לחץ על הכפתור למטה כדי להוסיף מקור הכנסה</div>';
-    return;
-  }
-  el.innerHTML = userSettings.incomeSources.map((src,i)=>{
-    const ph = examples[i % examples.length];
-    return `<div class="income-source-row">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <span style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;">מקור ${i+1}</span>
-        <button onclick="userSettings.incomeSources.splice(${i},1);saveSettingsData();renderSettingIncomeRows()" style="background:rgba(220,38,38,0.08);border:none;color:var(--red);cursor:pointer;padding:4px 10px;border-radius:8px;font-size:0.75rem;font-weight:700;" aria-label="מחק">✕ הסר</button>
-      </div>
-      <div class="income-source-field" style="margin-bottom:8px;">
-        <label>שם המקור</label>
-        <input type="text" placeholder="${ph}..." value="${esc(src.name||'')}" autocomplete="new-password" autocorrect="off" spellcheck="false" readonly oninput="userSettings.incomeSources[${i}].name=this.value;saveSettingsData()" onfocus="this.removeAttribute('readonly');this.select()" ontouchstart="this.removeAttribute('readonly')"/>
-      </div>
-      <div class="income-source-field">
-        <label>סכום חודשי (₪)</label>
-        <input type="number" inputmode="decimal" placeholder="0" value="${src.amount||''}" oninput="userSettings.incomeSources[${i}].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/>
-      </div>
-      ${hasParter?`<div style="margin-top:8px"><select style="border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:0.82rem;color:var(--text);font-family:inherit;width:100%" oninput="userSettings.incomeSources[${i}].owner=this.value;saveSettingsData()"><option value="" ${!src.owner?'selected':''}>משותף לשניים</option><option value="1" ${src.owner==='1'?'selected':''}>${p1}</option><option value="2" ${src.owner==='2'?'selected':''}>${p2}</option></select></div>`:''}
-    </div>`;
-  }).join('');
-}
-function addSettingIncome(){
-  userSettings.incomeSources.push({name:'',amount:''});
-  saveSettingsData();
-  renderSettingIncomeRows();
-}
 
 function openSettings(){
   document.getElementById('settingName').value        = userSettings.name        || '';
@@ -4003,7 +3997,6 @@ function openSettings(){
   document.getElementById('partnerRow').style.display = hasPartner ? '' : 'none';
   document.getElementById('addPartnerBtn').style.display = hasPartner ? 'none' : '';
   if(hasPartner) document.getElementById('settingPartnerName').value = userSettings.partnerName;
-  renderSettingIncomeRows();
   const bm=document.getElementById('settingBusinessMode');
   if(bm)bm.checked=!!userSettings.businessMode;
   const pcb=document.getElementById('settingPushEnabled');
@@ -4032,7 +4025,6 @@ function removePartner(){
   document.getElementById('addPartnerBtn').style.display = '';
   saveSettingsData();
   updateHeaderTitle();
-  renderSettingIncomeRows();
   showToast('✓ בן/בת הזוג הוסר');
 }
 function saveSettings(){
@@ -5171,6 +5163,36 @@ function addCustomFixedCat(){
   renderFixed();
   renderTxPage();
   showToast('✓ קטגוריה נוספה');
+}
+function openFixedCatPicker(){
+  renderFixedCatPickerBody();
+  openSheet('fixedCatPickerSheet');
+}
+function renderFixedCatPickerBody(){
+  const el=document.getElementById('fixedCatPickerBody');
+  if(!el)return;
+  const configured=cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0;
+  const recommended=OB_FIXED_DEFAULT.filter(c=>getEffectiveFixedCats().includes(c)&&!configured(c));
+  const rest=getEffectiveFixedCats().filter(c=>!configured(c)&&!recommended.includes(c));
+  const chip=c=>'<button type="button" onclick="pickFixedCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:10px 16px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.85rem;font-weight:600;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">'+esc(c)+'</button>';
+  const dashedChip=c=>'<button type="button" onclick="pickFixedCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:8px 14px;border-radius:999px;border:1.5px dashed var(--border);background:none;color:var(--text2);font-size:0.8rem;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">+ '+esc(c)+'</button>';
+  el.innerHTML=(recommended.length?'<div style="font-size:0.8rem;color:var(--text3);margin-bottom:8px">מומלץ</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">'+recommended.map(chip).join('')+'</div>':'')
+    +(rest.length?'<div style="font-size:0.8rem;color:var(--text3);margin-bottom:8px">עוד קטגוריות</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">'+rest.map(dashedChip).join('')+'</div>':'')
+    +'<button type="button" class="btn btn-outline btn-full" onclick="closeSheet(\'fixedCatPickerSheet\');addCustomFixedCat()">קטגוריה אחרת (הקלדה חופשית)</button>';
+}
+function pickFixedCat(cat){
+  closeSheet('fixedCatPickerSheet');
+  if(FIXED_AUTO[cat]){renderTxPage();showToast('✓ נוספה');return;}
+  const val=prompt('סכום חודשי עבור '+cat+':',_fxRaw(cat)||'');
+  if(val===null)return;
+  const amt=parseFloat(val);
+  const row=_fxRow(cat);
+  if(amt>0){if(row)row.amount=amt;else fixedExpenses.push({id:cat,amount:amt});}
+  _fxPushMonth(cat);
+  saveData();
+  renderFixed();
+  renderTxPage();
+  showToast('✓ נוספה');
 }
 function removeCustomFixedCat(cat){
   userSettings.customFixedCats=(userSettings.customFixedCats||[]).filter(c=>c!==cat);
@@ -7454,13 +7476,13 @@ setTimeout(autoCarryRecurring,500);
       return r;
     };
   }
-  /* live-update the budget while editing income sources in settings (debounced) */
+  /* live-update the budget while editing income sources on the cash-flow page (debounced) */
   var t=null;
   document.addEventListener('input', function(e){
-    var box=document.getElementById('settingIncomeRows');
+    var box=document.getElementById('txIncomeRows');
     if(box && e.target && box.contains(e.target)){
       clearTimeout(t);
-      t=setTimeout(function(){ try{ if(window.saveSettingsData)saveSettingsData(); if(window.refreshAll)refreshAll(); }catch(_){} }, 500);
+      t=setTimeout(function(){ try{ if(window.refreshAll)refreshAll(); }catch(_){} }, 500);
     }
   });
 })();
