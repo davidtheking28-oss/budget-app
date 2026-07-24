@@ -1737,19 +1737,6 @@
 
 
 
-    <!-- Upcoming Section -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
-          <i data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
-          תשלומים קרובים
-        </h3>
-      </div>
-      <div id="upcomingList" class="divide-y divide-slate-100 dark:divide-zinc-800/50">
-        <!-- Renders upcomingList from JavaScript -->
-      </div>
-    </div>
-
     <!-- Recent Transactions -->
     <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4 space-y-4">
       <div class="flex items-center justify-between">
@@ -3252,6 +3239,7 @@ function trendHtml(cur,prev,lowerIsBetter){
 function setTrend(id,cur,prev,lowerIsBetter){const el=document.getElementById(id);if(el)el.innerHTML=trendHtml(cur,prev,lowerIsBetter);}
 
 function renderUpcoming(){
+  if(!document.getElementById('upcomingList'))return;
   const today=new Date();today.setHours(0,0,0,0);
   const limit=new Date(today);limit.setDate(limit.getDate()+30);
   const items=[];
