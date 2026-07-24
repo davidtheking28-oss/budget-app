@@ -2098,14 +2098,13 @@
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
             <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f43f5e);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingPartnerAvatar">?</div>
             <div style="flex:1;min-width:0;">
-              <input id="settingPartnerName" type="text" placeholder="שם בן/בת הזוג..." aria-label="שם בן/בת זוג" autocomplete="off" autocorrect="off" spellcheck="false" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.partnerName=this.value.trim();saveSettingsData()"
-                style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
-              <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
+              <div id="settingPartnerLabel" style="font-size:1.05rem;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+              <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">שותף/ה לתקציב המשותף</div>
             </div>
           </div>
-          <button onclick="removePartner()" class="btn btn-outline btn-sm" style="width:100%;color:var(--red);border-color:var(--red)">✕ הסר בן/בת זוג</button>
+          <button onclick="leaveHousehold()" class="btn btn-outline btn-sm" style="width:100%;color:var(--red);border-color:var(--red)">✕ בטל שיתוף</button>
         </div>
-        <button id="addPartnerBtn" onclick="showPartnerRow()" class="btn btn-outline btn-full" style="margin-bottom:4px">+ הוסף בן/בת זוג</button>
+        <button id="addPartnerBtn" onclick="openPartnerShare()" class="btn btn-outline btn-full" style="margin-bottom:4px">+ הוסף בן/בת זוג</button>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">חשבון עסקי</div>
@@ -3757,6 +3756,7 @@ async function cloudSignOut(){
 function renderCloudSection(){
   const el=document.getElementById('cloudSection');
   if(!el)return;
+  updatePartnerFromHousehold();
   if(!_cloudUser){
     el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">התחבר עם Gmail. הנתונים יגובו ויהיו זמינים בכל מכשיר</div>'
       +'<button class="btn btn-primary btn-full" onclick="authGoogleSignIn()">המשך עם Gmail</button>';
@@ -3982,43 +3982,45 @@ function openSettings(){
   updateSettingAvatar();
   userSettings.currency = '₪';
   const _sgEl = document.getElementById('settingSavingsGoal'); if(_sgEl) _sgEl.value = userSettings.savingsGoal || '';
-  // Partner row
-  const hasPartner = !!userSettings.partnerName;
-  document.getElementById('partnerRow').style.display = hasPartner ? '' : 'none';
-  document.getElementById('addPartnerBtn').style.display = hasPartner ? 'none' : '';
-  if(hasPartner) document.getElementById('settingPartnerName').value = userSettings.partnerName;
   const bm=document.getElementById('settingBusinessMode');
   if(bm)bm.checked=!!userSettings.businessMode;
   const pcb=document.getElementById('settingPushEnabled');
   if(pcb)pcb.checked=!!localStorage.getItem('budget_push_on');
   _renderPushPrefs();
+  renderCloudSection();
 }
 
 function updateSettingAvatar(){
   const name = document.getElementById('settingName').value || '';
   const av = document.getElementById('settingAvatar');
   if(av) av.textContent = name ? name[0].toUpperCase() : '?';
-  const pname = document.getElementById('settingPartnerName');
-  const pav = document.getElementById('settingPartnerAvatar');
-  if(pav && pname) pav.textContent = pname.value ? pname.value[0].toUpperCase() : '?';
 }
-function showPartnerRow(){
-  document.getElementById('partnerRow').style.display = '';
-  document.getElementById('addPartnerBtn').style.display = 'none';
-  setTimeout(()=>document.getElementById('settingPartnerName').focus(), 100);
+function openPartnerShare(){
+  if(!_cloudUser){showToast('התחבר קודם עם Gmail כדי לשתף תקציב');authGoogleSignIn();return;}
+  if(!_cloudHousehold)createHousehold();
+  document.getElementById('cloudSection')?.scrollIntoView({behavior:'smooth',block:'center'});
 }
-function removePartner(){
-  userSettings.partnerName = '';
-  document.getElementById('settingPartnerName').value = '';
-  document.getElementById('partnerRow').style.display = 'none';
-  document.getElementById('addPartnerBtn').style.display = '';
+function updatePartnerFromHousehold(){
+  if(_cloudHousehold&&_cloudHousehold.role==='owner'&&_cloudHousehold.member_email)
+    userSettings.partnerName=_cloudHousehold.member_email.split('@')[0];
+  else if(_cloudHousehold&&_cloudHousehold.role==='member')
+    userSettings.partnerName='שותף/ה';
+  else
+    userSettings.partnerName='';
   saveSettingsData();
   updateHeaderTitle();
-  showToast('✓ בן/בת הזוג הוסר');
+  const hasP=!!userSettings.partnerName;
+  const row=document.getElementById('partnerRow');
+  const btn=document.getElementById('addPartnerBtn');
+  if(row)row.style.display=hasP?'':'none';
+  if(btn)btn.style.display=hasP?'none':'';
+  const lbl=document.getElementById('settingPartnerLabel');
+  if(lbl)lbl.textContent=userSettings.partnerName||'—';
+  const av=document.getElementById('settingPartnerAvatar');
+  if(av)av.textContent=userSettings.partnerName?userSettings.partnerName[0].toUpperCase():'?';
 }
 function saveSettings(){
   const _sn=document.getElementById('settingName');if(_sn)userSettings.name=_sn.value.trim();
-  const partnerInput=document.getElementById('settingPartnerName');if(partnerInput&&document.getElementById('partnerRow')?.style.display!=='none')userSettings.partnerName=partnerInput.value.trim();
   const _sgEl2=document.getElementById('settingSavingsGoal');if(_sgEl2)userSettings.savingsGoal=parseFloat(_sgEl2.value)||0;
   userSettings.incomeSources=userSettings.incomeSources.filter(s=>s.name||s.amount);
   saveSettingsData();
