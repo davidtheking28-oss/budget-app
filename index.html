@@ -3413,37 +3413,44 @@ function _expRowHtml(opts){
   +(open?'<div class="exp-body">'+opts.body+'</div>':'');
 }
 function renderTxCategorized(byCat){
-  const entries=[];
+  let html='';
   if(txListFilter!=='variable'){
-    getEffectiveFixedCats().filter(cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0).forEach(cat=>{
+    const fxEntries=[];
+    const allFixed=getEffectiveFixedCats();
+    allFixed.filter(cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0).forEach(cat=>{
       const auto=!!FIXED_AUTO[cat];
       const amount=_fxMonthly(cat);
       const key='fx:'+cat;
-      const html=auto
+      const rowHtml=auto
         ?_expRowHtml({key,cat,amount,auto:true,body:_expStructListHtml(_EXP_AUTO_KIND[cat])})
         :_expRowHtml({key,cat,amount,planned:true,editable:true,
             onEdit:'_expEditManual(\''+cat.replace(/'/g,"\\'")+'\')',
             onDelete:'_expDeleteManual(\''+cat.replace(/'/g,"\\'")+'\')',
             body:_expTxListHtml(cat,byCat)});
-      entries.push({amount,html});
+      fxEntries.push({amount,html:rowHtml});
     });
+    fxEntries.sort((a,b)=>b.amount-a.amount);
+    html+='<div class="section-header"><div class="section-title">הוצאות קבועות <span class="badge">'+fxEntries.length+'/'+allFixed.length+'</span></div></div>'
+      +(fxEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות מוגדרות עדיין</div>')
+      +'<button type="button" class="exp-add-row" onclick="addCustomFixedCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
   }
   if(txListFilter!=='fixed'){
+    const varEntries=[];
     Object.keys(budgets).filter(c=>EXPENSE_CATS.includes(c)).forEach(cat=>{
       const amount=budgets[cat]||0;
       const key='var:'+cat;
-      const html=_expRowHtml({key,cat,amount,planned:true,editable:true,
+      const rowHtml=_expRowHtml({key,cat,amount,planned:true,editable:true,
         onEdit:'editBudgetCat(\''+cat.replace(/'/g,"\\'")+'\')',
         onDelete:'deleteBudget(\''+cat.replace(/'/g,"\\'")+'\')',
         body:_expTxListHtml(cat,byCat)});
-      entries.push({amount,html});
+      varEntries.push({amount,html:rowHtml});
     });
+    varEntries.sort((a,b)=>b.amount-a.amount);
+    html+='<div class="section-header"><div class="section-title">הוצאות משתנות <span class="badge">'+varEntries.length+'/'+EXPENSE_CATS.length+'</span></div></div>'
+      +(varEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות משתנות מוגדרות עדיין</div>')
+      +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
   }
-  entries.sort((a,b)=>b.amount-a.amount);
-  let html=entries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות או משתנות מוגדרות עדיין</div>';
-  if(txListFilter!=='variable')html+='<button type="button" class="exp-add-row" onclick="addCustomFixedCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
-  if(txListFilter!=='fixed')html+='<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
-  return html;
+  return html||'<div class="budget-tx-empty">אין הוצאות קבועות או משתנות מוגדרות עדיין</div>';
 }
 function toggleAdvancedFilters(){
   const el=document.getElementById('txAdvancedFilters');
