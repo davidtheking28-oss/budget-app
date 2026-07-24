@@ -1801,9 +1801,9 @@
     </div>
     <div class="section">
       <div class="filter-row" id="txFilterChips" style="align-items:center">
-        <button class="filter-chip" data-filter="fixed" onclick="setTxFilter('fixed',this)">קבועות</button>
-        <button class="filter-chip" data-filter="variable" onclick="setTxFilter('variable',this)">משתנות</button>
         <button class="filter-chip active" data-filter="all" onclick="setTxFilter('all',this)">הכל</button>
+        <button class="filter-chip" data-filter="variable" onclick="setTxFilter('variable',this)">משתנות</button>
+        <button class="filter-chip" data-filter="fixed" onclick="setTxFilter('fixed',this)">קבועות</button>
         <button type="button" onclick="toggleAdvancedFilters()" style="margin-inline-start:auto;display:flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--border);border-radius:999px;padding:8px 14px;font-size:0.8rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>סנן</button>
       </div>
       <div id="txAdvancedFilters" style="display:none">
