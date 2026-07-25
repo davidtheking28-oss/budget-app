@@ -37,7 +37,7 @@ function currentInstallments(p, total) {
 }
 
 function addItem(save, key, item) {
-  return save(cur => ({ [key]: [...(cur[key] || []), { id: Date.now(), ...item }] }));
+  return save(cur => ({ [key]: [...(cur[key] || []), { id: Date.now() + Math.random(), ...item }] }));
 }
 function updateItem(save, key, id, patch) {
   return save(cur => ({ [key]: (cur[key] || []).map(x => x.id === id ? { ...x, ...patch } : x) }));
@@ -79,8 +79,8 @@ const ICONS = {
   insurance: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
 };
 
-export default function Subscriptions({ clientUserId }) {
-  const { data, loading, error, reload, save } = useClientBudget(clientUserId);
+export default function Subscriptions({ clientUserId, advisorId }) {
+  const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
   const [subForm, setSubForm] = useState({ name: '', category: SUB_CATEGORIES[0], amount: '', cycle: 'monthly', nextDate: '' });
   const [editingSubId, setEditingSubId] = useState(null);
@@ -94,20 +94,20 @@ export default function Subscriptions({ clientUserId }) {
   const [editingInsId, setEditingInsId] = useState(null);
 
   function resetSubForm() { setSubForm({ name: '', category: SUB_CATEGORIES[0], amount: '', cycle: 'monthly', nextDate: '' }); setEditingSubId(null); }
-  function submitSub() {
+  async function submitSub() {
     const amount = parseFloat(subForm.amount);
     if (!subForm.name.trim()) { toast('מה שם השירות?', 'error'); return; }
     if (!amount || amount <= 0) { toast('כמה עולה המנוי?', 'error'); return; }
     const patch = { name: subForm.name.trim(), category: subForm.category, amount, cycle: subForm.cycle, nextDate: subForm.nextDate };
-    if (editingSubId != null) updateItem(save, 'subscriptions', editingSubId, patch);
-    else addItem(save, 'subscriptions', { ...patch, active: true });
+    const ok = editingSubId != null ? await updateItem(save, 'subscriptions', editingSubId, patch) : await addItem(save, 'subscriptions', { ...patch, active: true });
+    if (!ok) return;
     toast(editingSubId != null ? 'המנוי עודכן' : 'המנוי נוסף', 'success');
     resetSubForm();
   }
   function startEditSub(s) { setEditingSubId(s.id); setSubForm({ name: s.name || '', category: s.category || SUB_CATEGORIES[0], amount: s.amount || '', cycle: s.cycle || 'monthly', nextDate: s.nextDate || '' }); }
 
   function resetLoanForm() { setLoanForm({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' }); setEditingLoanId(null); }
-  function submitLoan() {
+  async function submitLoan() {
     const monthly = parseFloat(loanForm.monthly) || 0;
     if (!loanForm.name.trim() || !monthly) { toast('נדרשים שם הלוואה וסכום חודשי', 'error'); return; }
     const patch = {
@@ -118,42 +118,43 @@ export default function Subscriptions({ clientUserId }) {
       original: parseFloat(loanForm.original) || 0,
       rate: parseFloat(loanForm.rate) || 0
     };
-    if (editingLoanId != null) updateItem(save, 'loans', editingLoanId, patch);
-    else addItem(save, 'loans', patch);
+    const ok = editingLoanId != null ? await updateItem(save, 'loans', editingLoanId, patch) : await addItem(save, 'loans', patch);
+    if (!ok) return;
     toast(editingLoanId != null ? 'ההלוואה עודכנה' : 'הלוואה נוספה', 'success');
     resetLoanForm();
   }
   function startEditLoan(l) { setEditingLoanId(l.id); setLoanForm({ name: l.name || '', lender: l.lender || '', monthly: l.monthly || '', remaining: l.remaining || '', original: l.original || '', rate: l.rate || '' }); }
 
   function resetPaymentForm() { setPaymentForm({ name: '', total: '', current: '', amount: '' }); setEditingPaymentId(null); }
-  function submitPayment() {
+  async function submitPayment() {
     const total = parseFloat(paymentForm.total) || 0;
     const amount = parseFloat(paymentForm.amount) || 0;
     if (!paymentForm.name.trim() || !total || !amount) { toast('נדרשים שם, מספר תשלומים וסכום', 'error'); return; }
     const patch = { name: paymentForm.name.trim(), total, current: parseFloat(paymentForm.current) || 0, amount, currentAnchor: monthKey(new Date().getFullYear(), new Date().getMonth()) };
-    if (editingPaymentId != null) updateItem(save, 'payments', editingPaymentId, patch);
-    else addItem(save, 'payments', patch);
+    const ok = editingPaymentId != null ? await updateItem(save, 'payments', editingPaymentId, patch) : await addItem(save, 'payments', patch);
+    if (!ok) return;
     toast(editingPaymentId != null ? 'התשלום עודכן' : 'התשלום נוסף', 'success');
     resetPaymentForm();
   }
   function startEditPayment(p) { setEditingPaymentId(p.id); setPaymentForm({ name: p.name || '', total: p.total || '', current: p.current || '', amount: p.amount || '' }); }
 
   function resetInsForm() { setInsForm({ name: '', monthly: '' }); setEditingInsId(null); }
-  function submitInsurance() {
+  async function submitInsurance() {
     const monthly = parseFloat(insForm.monthly) || 0;
     if (!insForm.name.trim() || !monthly) { toast('נדרשים שם ביטוח וסכום חודשי', 'error'); return; }
     const patch = { name: insForm.name.trim(), monthly };
-    if (editingInsId != null) updateItem(save, 'insurances', editingInsId, patch);
-    else addItem(save, 'insurances', patch);
+    const ok = editingInsId != null ? await updateItem(save, 'insurances', editingInsId, patch) : await addItem(save, 'insurances', patch);
+    if (!ok) return;
     toast(editingInsId != null ? 'הביטוח עודכן' : 'ביטוח נוסף', 'success');
     resetInsForm();
   }
   function startEditInsurance(x) { setEditingInsId(x.id); setInsForm({ name: x.name || '', monthly: x.monthly || '' }); }
 
-  function submitFixed() {
+  async function submitFixed() {
     const amount = parseFloat(fixedAmount) || 0;
     if (!amount || amount <= 0) { toast('הזן סכום תקין', 'error'); return; }
-    setFixedExpense(save, fixedCat, amount);
+    const ok = await setFixedExpense(save, fixedCat, amount);
+    if (!ok) return;
     toast('הוצאה קבועה עודכנה', 'success');
     setFixedAmount('');
   }

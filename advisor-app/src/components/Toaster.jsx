@@ -51,6 +51,7 @@ export default function Toaster() {
           <span>{i.message}</span>
           {i.action && (
             <button
+              type="button"
               className={styles.undo}
               onClick={() => { i.action.onClick(); dismiss(i.id); }}
             >

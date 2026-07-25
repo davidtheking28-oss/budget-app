@@ -49,15 +49,34 @@ export function useClientBudget(clientUserId, advisorId) {
     const next = { ...prev, ...patch };
     dataRef.current = next;
     setData(next);
+    // invalidate any in-flight reload so it can't overwrite this optimistic update with stale data
+    ++requestIdRef.current;
+    // re-fetch the latest row and shallow-merge object-typed patch fields onto it, so a
+    // concurrent edit to a sibling key in the same jsonb column isn't silently clobbered
+    const { data: freshRow } = await supabase
+      .from('budget_data')
+      .select('*')
+      .eq('user_id', clientUserId)
+      .maybeSingle();
+    const mergedPatch = {};
+    for (const key of Object.keys(patch)) {
+      const freshVal = freshRow?.[key];
+      const patchVal = patch[key];
+      mergedPatch[key] = (freshVal && typeof freshVal === 'object' && !Array.isArray(freshVal) &&
+        patchVal && typeof patchVal === 'object' && !Array.isArray(patchVal))
+        ? { ...freshVal, ...patchVal }
+        : patchVal;
+    }
     const { error } = await supabase
       .from('budget_data')
-      .upsert({ user_id: clientUserId, updated_by: advisorId, ...patch }, { onConflict: 'user_id' });
+      .upsert({ user_id: clientUserId, updated_by: advisorId, ...mergedPatch }, { onConflict: 'user_id' });
     if (error) {
       setError(error);
-      dataRef.current = prev;
-      setData(prev);
+      if (dataRef.current === next) { dataRef.current = prev; setData(prev); }
       toast('שמירה נכשלה, נסה שוב', 'error');
+      return false;
     }
+    return true;
   }, [clientUserId, advisorId]);
 
   return { data, loading, error, save, reload };

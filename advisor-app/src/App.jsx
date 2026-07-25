@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { supabase } from './supabaseClient.js';
 import { useSession } from './auth/useSession.js';
 import Login from './auth/Login.jsx';
 import Shell from './components/Shell.jsx';
@@ -36,12 +37,11 @@ const today = new Date();
 function readUrlState() {
   const params = new URLSearchParams(window.location.search);
   const clientId = params.get('client');
-  const clientEmail = params.get('email');
   const nav = params.get('nav');
   const y = parseInt(params.get('y'), 10);
   const m = parseInt(params.get('m'), 10);
   return {
-    selectedClient: clientId && clientEmail ? { id: clientId, email: clientEmail } : null,
+    selectedClient: clientId ? { id: clientId, email: null } : null,
     nav: NAV.some(n => n.key === nav) ? nav : NAV[0].key,
     ym: Number.isInteger(y) && Number.isInteger(m) ? { year: y, month: m } : { year: today.getFullYear(), month: today.getMonth() }
   };
@@ -54,13 +54,12 @@ export default function App() {
   const [nav, setNav] = useState(initial.nav);
   const [ym, setYm] = useState(initial.ym);
   const [reportMode, setReportMode] = useState(false);
-  const { nextMeeting, openTasks } = useClientSummary(session?.user?.id, selectedClient?.id);
+  const { nextMeeting, openTasks, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
 
   useEffect(() => {
     const params = new URLSearchParams();
     if (selectedClient) {
       params.set('client', selectedClient.id);
-      params.set('email', selectedClient.email);
       params.set('nav', nav);
       params.set('y', ym.year);
       params.set('m', ym.month);
@@ -69,6 +68,22 @@ export default function App() {
     const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
     window.history.replaceState(null, '', url);
   }, [selectedClient, nav, ym]);
+
+  useEffect(() => {
+    if (!session || !selectedClient || selectedClient.email) return;
+    let cancelled = false;
+    supabase
+      .from('advisor_clients')
+      .select('client_email')
+      .eq('advisor_id', session.user.id)
+      .eq('client_id', selectedClient.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data?.client_email) return;
+        setSelectedClient(prev => (prev && prev.id === selectedClient.id ? { ...prev, email: data.client_email } : prev));
+      });
+    return () => { cancelled = true; };
+  }, [session, selectedClient]);
 
   if (loading) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
   if (isRecovery) return (<><Login recovery onRecoveryDone={clearRecovery} /><Toaster /></>);
@@ -122,8 +137,8 @@ export default function App() {
         {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} advisorId={session.user.id} />}
-        {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} />}
-        {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} />}
+        {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} advisorId={session.user.id} />}
+        {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} onChange={refreshClientSummary} />}
       </Shell>
       <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} />
       <Toaster />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
-import { getMonthTx } from './monthUtils.js';
+import { getMonthTx, localISODate } from './monthUtils.js';
 import { EXPENSE_CATS, FIXED_CATS, CHART_PALETTE } from '../categories.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
@@ -24,7 +24,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
 
   const today = new Date();
   const isCurrent = year === today.getFullYear() && month === today.getMonth();
-  const defaultDate = isCurrent ? today.toISOString().slice(0, 10) : `${year}-${String(month + 1).padStart(2, '0')}-01`;
+  const defaultDate = isCurrent ? localISODate(today) : `${year}-${String(month + 1).padStart(2, '0')}-01`;
 
   useEffect(() => { setDate(''); }, [year, month]);
 

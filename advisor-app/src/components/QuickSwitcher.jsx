@@ -18,7 +18,7 @@ export default function QuickSwitcher({ advisorId, onSelect }) {
   useEffect(() => {
     function onKeyDown(e) {
       const isMod = e.metaKey || e.ctrlKey;
-      if (isMod && e.key.toLowerCase() === 'k') {
+      if (isMod && e.key?.toLowerCase() === 'k') {
         e.preventDefault();
         setOpen(prev => !prev);
       } else if (e.key === 'Escape') {

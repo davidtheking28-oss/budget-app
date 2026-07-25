@@ -32,11 +32,12 @@ export function useClientCrm(advisorId, clientId) {
   useEffect(() => { reload(); }, [reload]);
 
   async function addNote(body) {
-    if (!body.trim()) return;
+    if (!body.trim()) return false;
     const { data, error } = await supabase.from('advisor_notes').insert({ advisor_id: advisorId, client_id: clientId, body: body.trim() }).select().single();
-    if (error) { toast('שגיאה בשמירת ההערה', 'error'); return; }
+    if (error) { toast('שגיאה בשמירת ההערה', 'error'); return false; }
     toast('הערה נוספה', 'success');
     setNotes(prev => [data, ...prev]);
+    return true;
   }
 
   async function editNote(id, body) {
@@ -56,11 +57,12 @@ export function useClientCrm(advisorId, clientId) {
   }
 
   async function addTask(title, dueDate) {
-    if (!title.trim()) return;
+    if (!title.trim()) return false;
     const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null }).select().single();
-    if (error) { toast('שגיאה בהוספת המשימה', 'error'); return; }
+    if (error) { toast('שגיאה בהוספת המשימה', 'error'); return false; }
     toast('משימה נוספה', 'success');
     setTasks(prev => [data, ...prev].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
+    return true;
   }
 
   async function toggleTask(id, done) {
@@ -87,11 +89,12 @@ export function useClientCrm(advisorId, clientId) {
   }
 
   async function addMeeting(scheduledAt, notesText) {
-    if (!scheduledAt) return;
+    if (!scheduledAt) return false;
     const { data, error } = await supabase.from('advisor_meetings').insert({ advisor_id: advisorId, client_id: clientId, scheduled_at: scheduledAt, notes: notesText || null }).select().single();
-    if (error) { toast('שגיאה בקביעת הפגישה', 'error'); return; }
+    if (error) { toast('שגיאה בקביעת הפגישה', 'error'); return false; }
     toast('פגישה נקבעה', 'success');
     setMeetings(prev => [...prev, data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
+    return true;
   }
 
   async function editMeeting(id, scheduledAt, notesText) {

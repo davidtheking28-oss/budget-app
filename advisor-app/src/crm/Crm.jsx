@@ -45,13 +45,32 @@ function daysUntil(dateStr) {
   return Math.ceil((target - now) / 86400000);
 }
 
-export default function Crm({ advisorId, clientId }) {
+export default function Crm({ advisorId, clientId, onChange }) {
   const { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTask, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
   const [noteBody, setNoteBody] = useState('');
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDue, setTaskDue] = useState('');
   const [meetingAt, setMeetingAt] = useState('');
   const [meetingNotes, setMeetingNotes] = useState('');
+  const notify = () => { if (onChange) onChange(); };
+
+  async function submitMeeting() {
+    if (!meetingAt) return;
+    const ok = await addMeeting(new Date(meetingAt).toISOString(), meetingNotes);
+    if (ok) { setMeetingAt(''); setMeetingNotes(''); notify(); }
+  }
+  async function submitTask() {
+    if (!taskTitle.trim()) return;
+    const ok = await addTask(taskTitle, taskDue);
+    if (ok) { setTaskTitle(''); setTaskDue(''); notify(); }
+  }
+  async function submitNote() {
+    if (!noteBody.trim()) return;
+    const ok = await addNote(noteBody);
+    if (ok) { setNoteBody(''); notify(); }
+  }
+  async function removeMeeting(id) { await deleteMeeting(id); notify(); }
+  async function removeTask(id) { await deleteTask(id); notify(); }
 
   const [editingNote, setEditingNote] = useState(null);
   const [editNoteBody, setEditNoteBody] = useState('');
@@ -85,9 +104,9 @@ export default function Crm({ advisorId, clientId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconMeetings}>{ICONS.meetings}</span>פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}</div>
         <div className={styles.form}>
-          <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && meetingAt && (addMeeting(new Date(meetingAt).toISOString(), meetingNotes), setMeetingAt(''), setMeetingNotes(''))} />
+          <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
           <input className={styles.input} type="datetime-local" aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
-          <Button disabled={!meetingAt} onClick={() => { addMeeting(meetingAt ? new Date(meetingAt).toISOString() : null, meetingNotes); setMeetingAt(''); setMeetingNotes(''); }}>קבע פגישה</Button>
+          <Button disabled={!meetingAt} onClick={submitMeeting}>קבע פגישה</Button>
         </div>
         {meetings.length ? (
           <div className={styles.list}>
@@ -121,7 +140,7 @@ export default function Crm({ advisorId, clientId }) {
                         <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><path d="M12 14v4M10 16h4" />
                       </svg>
                     </button>
-                    <DeleteButton onClick={() => deleteMeeting(m.id)} />
+                    <DeleteButton onClick={() => removeMeeting(m.id)} />
                   </div>
                 </div>
               );
@@ -133,9 +152,9 @@ export default function Crm({ advisorId, clientId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconTasks}>{ICONS.tasks}</span>משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}</div>
         <div className={styles.form}>
-          <input className={styles.input} aria-label="כותרת המשימה" placeholder="כותרת המשימה" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && taskTitle.trim() && (addTask(taskTitle, taskDue), setTaskTitle(''), setTaskDue(''))} />
+          <input className={styles.input} aria-label="כותרת המשימה" placeholder="כותרת המשימה" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitTask()} />
           <input className={styles.input} type="date" aria-label="תאריך יעד למשימה" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
-          <Button disabled={!taskTitle.trim()} onClick={() => { addTask(taskTitle, taskDue); setTaskTitle(''); setTaskDue(''); }}>הוסף משימה</Button>
+          <Button disabled={!taskTitle.trim()} onClick={submitTask}>הוסף משימה</Button>
         </div>
         {tasks.length ? (
           <div className={styles.list}>
@@ -154,13 +173,13 @@ export default function Crm({ advisorId, clientId }) {
               const overdue = !t.done && t.due_date && t.due_date < todayIso;
               return (
                 <div key={t.id} className={styles.row + ' ' + styles.taskRow} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
-                  <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => toggleTask(t.id, e.target.checked)} />
+                  <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => { toggleTask(t.id, e.target.checked); notify(); }} />
                   <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
                     <div className={styles.name}>{t.title}{overdue && <span className={styles.pastBadge}>באיחור</span>}</div>
                     {t.due_date && <div className={styles.meta}>יעד: {t.due_date}</div>}
                   </div>
                   <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
-                  <DeleteButton onClick={() => deleteTask(t.id)} />
+                  <DeleteButton onClick={() => removeTask(t.id)} />
                 </div>
               );
             })())}
@@ -171,8 +190,8 @@ export default function Crm({ advisorId, clientId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconNotes}>{ICONS.notes}</span>הערות{notes.length > 0 && <span className={styles.countBadge}>{notes.length}</span>}</div>
         <div className={styles.form}>
-          <textarea className={styles.textarea} aria-label="הערה חדשה על הלקוח" placeholder="הערה חדשה על הלקוח" value={noteBody} onChange={e => setNoteBody(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && noteBody.trim() && (e.preventDefault(), addNote(noteBody), setNoteBody(''))} />
-          <Button disabled={!noteBody.trim()} onClick={() => { addNote(noteBody); setNoteBody(''); }}>שמור הערה</Button>
+          <textarea className={styles.textarea} aria-label="הערה חדשה על הלקוח" placeholder="הערה חדשה על הלקוח" value={noteBody} onChange={e => setNoteBody(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), submitNote())} />
+          <Button disabled={!noteBody.trim()} onClick={submitNote}>שמור הערה</Button>
         </div>
         {notes.length ? (
           <div className={styles.list}>

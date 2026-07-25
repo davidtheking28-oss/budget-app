@@ -5,6 +5,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
+import { localISODate } from './monthUtils.js';
 import styles from './Goals.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
@@ -82,7 +83,7 @@ export default function Goals({ clientUserId, advisorId }) {
       const curTx = cur.transactions || [];
       const g = curGoals.find(x => x.id === goalId);
       if (!g) return {};
-      const today = new Date().toISOString().split('T')[0];
+      const today = localISODate();
       let nextGoals, nextTx;
       if (dir === 'withdraw') {
         const actual = Math.min(amt, g.saved || 0);
