@@ -8,7 +8,7 @@ import { useCountUp } from '../useCountUp.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
-import { CHART_PALETTE, chartTheme } from '../categories.js';
+import { catColor, chartTheme } from '../categories.js';
 import styles from './Dashboard.module.css';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
@@ -105,7 +105,7 @@ export default function Dashboard({ clientUserId, year, month }) {
   });
   const catLabels = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
   const catTotal = catLabels.reduce((s, l) => s + byCat[l], 0);
-  const catColors = catLabels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
+  const catColors = catLabels.map(catColor);
 
   const trendMonths = [];
   for (let i = 5; i >= 0; i--) {

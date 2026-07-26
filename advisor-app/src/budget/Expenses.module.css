@@ -63,6 +63,7 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .filterEmpty {
@@ -99,6 +100,7 @@
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   direction: ltr;
+  unicode-bidi: isolate;
   text-align: right;
 }
 
@@ -133,6 +135,7 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   direction: ltr;
+  unicode-bidi: isolate;
   text-align: right;
 }
 
@@ -304,6 +307,7 @@
   font-size: var(--text-sm);
   font-weight: 500;
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .groupBar {
@@ -359,6 +363,37 @@
 .row:hover {
   background: var(--hover);
   transform: translateX(-6px);
+}
+
+.rowDesc {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.txTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: var(--radius-xs);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rowRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.rowAmount, .groupTotal {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
 }
 
 .meta {

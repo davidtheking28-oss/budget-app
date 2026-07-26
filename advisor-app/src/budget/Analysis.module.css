@@ -53,6 +53,7 @@
   min-width: 3.2em;
   text-align: left;
   direction: ltr;
+  unicode-bidi: isolate;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   color: var(--accent);
@@ -92,6 +93,7 @@
   font-weight: 700;
   font-size: var(--text-xl);
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .donutTotalLabel {
@@ -133,6 +135,7 @@
   color: var(--text3);
   font-size: var(--text-sm);
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .legendValue {
@@ -141,6 +144,7 @@
   font-weight: 700;
   font-size: var(--text-sm);
   direction: ltr;
+  unicode-bidi: isolate;
   min-width: fit-content;
   text-align: left;
 }

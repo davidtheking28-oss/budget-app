@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 import Logo from './Logo.jsx';
@@ -59,8 +59,14 @@ function AccountMenu({ email }) {
 }
 
 export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onSearch, email, theme, onToggleTheme, children }) {
+  const activeTabRef = useRef(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, [activeNav]);
+
+  useEffect(() => {
+    activeTabRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'center', behavior: 'smooth' });
   }, [activeNav]);
 
   if (!nav) {
@@ -104,6 +110,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
             {nav.map(n => (
               <button
                 key={n.key}
+                ref={n.key === activeNav ? activeTabRef : null}
                 className={styles.tabItem + (n.key === activeNav ? ' ' + styles.tabItemActive : '')}
                 onClick={() => onNavChange(n.key)}
               >

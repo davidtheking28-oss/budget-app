@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
-import { getMonthTx, localISODate } from './monthUtils.js';
-import { EXPENSE_CATS, INCOME_CATS, FIXED_CATS, CHART_PALETTE } from '../categories.js';
+import { getMonthTx, localISODate, formatDate } from './monthUtils.js';
+import { EXPENSE_CATS, INCOME_CATS, FIXED_CATS, catColor } from '../categories.js';
 import ImportSheet from './ImportSheet.jsx';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
@@ -274,10 +274,13 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
               </button>
               {sOpen && (
                 <div className={styles.superBody}>
-                  {sg.groups.map((g, i) => {
+                  {sg.groups.map(g => {
                     const open = openCats.has(g.cat);
                     const pct = base ? Math.round((g.total / base) * 100) : 0;
-                    const color = CHART_PALETTE[i % CHART_PALETTE.length];
+                    const color = catColor(g.cat);
+                    const isIncome = sg.key === 'income';
+                    const amountClass = isIncome ? styles.flowPos : styles.flowNeg;
+                    const isFixed = FIXED_CATS.includes(g.cat);
                     return (
                       <div key={g.cat} className={styles.group}>
                         <button
@@ -295,7 +298,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                           </div>
                           <div className={styles.groupRight}>
                             <span className={styles.groupPct}>{pct}%</span>
-                            <span style={{ color: 'var(--red)', fontWeight: 700 }}>{fmt(g.total)}</span>
+                            <span className={styles.groupTotal + ' ' + amountClass}>{fmt(g.total)}</span>
                           </div>
                         </button>
                         <div className={styles.groupBar}><div className={styles.groupBarFill} style={{ width: pct + '%', background: color }} /></div>
@@ -304,11 +307,14 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                             {g.items.map(t => (
                               <div key={t.id} className={styles.row}>
                                 <div>
-                                  <div>{t.desc}</div>
-                                  <div className={styles.meta}>{t.date}</div>
+                                  <div className={styles.rowDesc}>
+                                    <span>{t.desc}</span>
+                                    {isFixed && <span className={styles.txTag}>קבועה</span>}
+                                  </div>
+                                  <div className={styles.meta}>{formatDate(t.date)}</div>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                  <div style={{ color: 'var(--red)', fontWeight: 700 }}>
+                                <div className={styles.rowRight}>
+                                  <div className={styles.rowAmount + ' ' + amountClass}>
                                     {fmt(t.amount)}
                                   </div>
                                   <DeleteButton onClick={() => removeTx(t.id)} />

@@ -33,6 +33,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .accountMenu {
@@ -70,6 +72,7 @@
 
 .accountEmail {
   direction: ltr;
+  unicode-bidi: isolate;
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -108,6 +111,7 @@
 .accountPanelEmail {
   display: block;
   direction: ltr;
+  unicode-bidi: isolate;
   text-align: right;
   color: var(--text);
   overflow-wrap: anywhere;
@@ -199,6 +203,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .tabBarBleed {
@@ -341,5 +346,27 @@
   .contentTabs h1 {
     font-size: var(--text-xl);
     margin-bottom: 20px;
+  }
+
+  .topbar {
+    gap: var(--space-3);
+  }
+
+  .accountEmail {
+    max-width: 110px;
+  }
+}
+
+@media (max-width: 560px) {
+  .accountEmail {
+    max-width: 84px;
+  }
+
+  .accountTrigger {
+    padding: 9px 10px;
+  }
+
+  .shellTabs .topbar {
+    flex-wrap: nowrap;
   }
 }

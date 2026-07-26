@@ -65,6 +65,9 @@
     body.dark .budget-chip-icon{color:var(--text2);}         /* was 4.46:1 */
     /* Financial figures: tabular alignment everywhere */
     .card-amount,.metric-val,.hero-stat-val,.hero-balance-num,.tx-amount,.sub-price-amount,.upcoming-amount,.upcoming-day-num,.breakdown-amount,.sr-amount,.budget-avail-num,.goal-amounts-text,.prog-label,.budget-item-amounts,.budget-pct-label,#budgetSummaryTotal,#budgetSummaryPct{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:'tnum' 1,'lnum' 1;letter-spacing:var(--track-num);}
+    /* Signed figures must read LTR inside RTL text — direction alone is inert without isolation */
+    .budget-tx-amt{direction:ltr;unicode-bidi:isolate;}
+    #txPageFlow{direction:ltr;unicode-bidi:isolate;text-align:right;}
     header{position:sticky;top:0;z-index:200;height:var(--header-h);background:#1c1917;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 1px 0 rgba(255,255,255,0.06),0 4px 24px rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.05);padding-top:env(safe-area-inset-top,0);isolation:isolate;}
     /* ── iOS standalone (home-screen) safe-area fixes — Tailwind py-3 was overriding the header inset ── */
     header.sticky{padding-top:calc(0.75rem + env(safe-area-inset-top,0px))!important;height:auto!important;min-height:var(--header-h);}
@@ -3355,25 +3358,25 @@ function renderSpendingFlow(income,fixedExp,varExp){
     fixedSeg.style.width=varSeg.style.width=savings.style.width='0%';
     deficit.style.display='none';incLabel.textContent='';return;
   }
-  incLabel.textContent='סה"כ הכנסות: '+fmt(income);
   const total=fixedExp+varExp;const isDeficit=total>income;
+  const base=isDeficit?total:income;
+  incLabel.textContent='סה"כ הכנסות: '+fmt(income)+' · אחוזים מתוך '+(isDeficit?'סך ההוצאות':'ההכנסות');
   if(isDeficit){
-    const fp=Math.round(fixedExp/total*100);
+    const fp=Math.round(fixedExp/base*100);
     fixedSeg.style.width=fp+'%';varSeg.style.width=(100-fp)+'%';
     savings.style.width='0%';savings.style.display='none';deficit.style.display='none';
   } else {
-    const fp=Math.round(fixedExp/income*100);const vp=Math.round(varExp/income*100);
+    const fp=Math.round(fixedExp/base*100);const vp=Math.round(varExp/base*100);
     fixedSeg.style.width=fp+'%';varSeg.style.width=vp+'%';
     savings.style.width=Math.max(0,100-fp-vp)+'%';
     savings.style.display='';deficit.style.display='none';
   }
   const savedAmt=Math.max(0,income-fixedExp-varExp);
   const deficitAmt=Math.max(0,fixedExp+varExp-income);
-  const fp2=income?Math.round(fixedExp/income*100):0;
-  const vp2=income?Math.round(varExp/income*100):0;
-  const sp2=income?Math.round(savedAmt/income*100):0;
-  const _sfItem=(dotCls,val,valColor,pctTxt,name)=>'<div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:5px"><span class="sf-dot '+dotCls+'"></span><span style="color:var(--text3);font-size:0.7rem">'+name+'</span></div><div style="font-weight:700;color:'+(valColor||'var(--text)')+';font-size:0.82rem">'+val+'</div><div style="color:var(--text3);font-size:0.67rem">'+pctTxt+'</div></div>';
-  labels.innerHTML=_sfItem('sf-fixed',fmt(fixedExp),'',fp2+'%','קבועות')+_sfItem('sf-variable',fmt(varExp),'',vp2+'%','משתנות')+_sfItem(isDeficit?'sf-deficit':'sf-savings',isDeficit?'−'+fmt(deficitAmt):fmt(savedAmt),isDeficit?'var(--red)':'var(--green)',(income?Math.round((isDeficit?deficitAmt:savedAmt)/income*100):0)+'%',isDeficit?'גירעון':'נחסך');
+  const fp2=base?Math.round(fixedExp/base*100):0;
+  const vp2=base?Math.round(varExp/base*100):0;
+  const _sfItem=(dotCls,val,valColor,pctTxt,name)=>'<div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:5px"><span class="sf-dot '+dotCls+'"></span><span style="color:var(--text3);font-size:0.7rem">'+name+'</span></div><div style="font-weight:700;color:'+(valColor||'var(--text)')+';font-size:0.82rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+val+'</div><div style="color:var(--text3);font-size:0.67rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+pctTxt+'</div></div>';
+  labels.innerHTML=_sfItem('sf-fixed',fmt(fixedExp),'',fp2+'%','קבועות')+_sfItem('sf-variable',fmt(varExp),'',vp2+'%','משתנות')+_sfItem(isDeficit?'sf-deficit':'sf-savings',isDeficit?'−'+fmt(deficitAmt):fmt(savedAmt),isDeficit?'var(--red)':'var(--green)',(base?Math.round((isDeficit?deficitAmt:savedAmt)/base*100):0)+'%',isDeficit?'גירעון':'נחסך');
 }
 
 function isFixed(t){if(t.fixed!==undefined)return t.fixed;return t.type==='income'||!!t.recurring;}

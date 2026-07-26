@@ -69,6 +69,7 @@
   font-weight: 700;
   font-size: var(--text-xl);
   direction: ltr;
+  unicode-bidi: isolate;
   text-align: right;
 }
 

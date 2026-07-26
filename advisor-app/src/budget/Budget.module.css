@@ -40,6 +40,7 @@
   gap: var(--space-2);
   font-variant-numeric: tabular-nums;
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .meta {
@@ -161,6 +162,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .bar {

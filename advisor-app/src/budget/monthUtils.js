@@ -7,6 +7,15 @@ export function localISODate(d) {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
+const dateFmt = new Intl.DateTimeFormat('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+export function formatDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return dateFmt.format(new Date(y, m - 1, d));
+}
+
 export function getMonthTx(transactions, y, m) {
   const prefix = mk(y, m);
   return (transactions || []).filter(t => t.date && t.date.startsWith(prefix));

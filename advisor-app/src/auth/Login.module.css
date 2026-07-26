@@ -88,6 +88,7 @@
 
 .input[type="email"] {
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .button {

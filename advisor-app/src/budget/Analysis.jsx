@@ -5,7 +5,7 @@ import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
-import { CHART_PALETTE, chartTheme } from '../categories.js';
+import { catColor, chartTheme } from '../categories.js';
 import styles from './Analysis.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -44,7 +44,7 @@ export default function Analysis({ clientUserId, year, month }) {
   const labels = Object.keys(byCat);
   const values = labels.map(l => byCat[l]);
   const total = values.reduce((s, v) => s + v, 0);
-  const colors = labels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
+  const colors = labels.map(catColor);
 
   const chartData = {
     labels,

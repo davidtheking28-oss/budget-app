@@ -90,6 +90,7 @@
   font-size: var(--text-sm);
   font-weight: 600;
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .tileBalance {
@@ -188,6 +189,7 @@
   font-weight: 700;
   letter-spacing: -0.015em;
   direction: ltr;
+  unicode-bidi: isolate;
   text-align: right;
   line-height: 1.05;
 }
@@ -223,6 +225,7 @@
   font-size: var(--text-lg);
   font-weight: 700;
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .subStatLabel {
@@ -239,6 +242,7 @@
   padding: 2px 6px;
   border-radius: var(--radius-sm);
   direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .trendGood { color: var(--green); background: rgba(var(--green-rgb), 0.12); }
