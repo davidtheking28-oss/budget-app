@@ -8,10 +8,6 @@
 
 @media (max-width: 860px) {
   .bentoGrid { grid-template-columns: 1fr; }
-  .tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileGroupWide, .tileCategories, .tileGoals {
-    grid-column: span 1 !important;
-    grid-row: span 1 !important;
-  }
 }
 
 .tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileCategories, .tileGoals {
@@ -405,4 +401,11 @@
 .goalNote {
   font-size: var(--text-xs);
   color: var(--text3);
+}
+
+@media (max-width: 860px) {
+  .tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileGroupWide, .tileCategories, .tileGoals {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
 }
