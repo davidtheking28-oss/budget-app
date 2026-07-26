@@ -99,6 +99,20 @@
   font-weight: 600;
 }
 
+.accountPanelHint {
+  color: var(--text2);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.accountPanelEmail {
+  display: block;
+  direction: ltr;
+  text-align: right;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
 .accountInput {
   padding: 9px 12px;
   border-radius: var(--radius-sm);

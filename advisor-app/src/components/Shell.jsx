@@ -33,6 +33,7 @@ function AccountMenu({ email }) {
       {open && (
         <div className={styles.accountPanel}>
           <div className={styles.accountPanelLabel}>שנה סיסמה</div>
+          <div className={styles.accountPanelHint}>הסיסמה תתעדכן לחשבון <b className={styles.accountPanelEmail}>{email}</b></div>
           <input
             className={styles.accountInput}
             type="password"
