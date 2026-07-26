@@ -58,6 +58,32 @@
   transform: scale(0.96);
 }
 
+.reportButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.reportButton:hover {
+  border-color: rgba(var(--accent-rgb), 0.6);
+  background: rgba(var(--accent-rgb), 0.2);
+}
+
+.reportButton:active {
+  transform: scale(0.96);
+}
+
 .accountMenu {
   position: relative;
 }
@@ -209,27 +235,36 @@
   gap: var(--space-3);
 }
 
-.infoRow {
+.tabBarBleed {
+  border-bottom: 1px solid var(--border);
+}
+
+.tabRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
   width: 100%;
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
-  margin: var(--space-5) auto 0;
+  margin: 0 auto;
   padding: 0 var(--page-pad);
 }
 
-.tabBarBleed {
-  border-bottom: 1px solid var(--border);
-  margin-top: var(--space-4);
+.infoRow {
+  flex-shrink: 0;
 }
 
 .tabBar {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  width: 100%;
-  max-width: calc(var(--page-max) + var(--page-pad) * 2);
-  margin: 0 auto;
-  padding: 0 var(--page-pad);
+  min-width: 0;
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabBar::-webkit-scrollbar {
+  display: none;
 }
 
 .tabItem {
@@ -308,11 +343,22 @@
 }
 
 @media (max-width: 860px) {
-  :root { --page-pad: 20px; }
-
   .shellTabs .topbar {
     flex-wrap: wrap;
     gap: var(--space-3);
+  }
+
+  .tabRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding-top: var(--space-3);
+  }
+
+  .infoRow {
+    order: -1;
+    display: flex;
+    justify-content: flex-start;
   }
 
   .tabItem {

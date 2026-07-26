@@ -102,20 +102,22 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
         </div>
       </div>
       </div>
-      {sidebarInfo && <div className={styles.infoRow}>{sidebarInfo}</div>}
       <div className={styles.tabBarBleed}>
-        <nav className={styles.tabBar}>
-          {nav.map(n => (
-            <button
-              key={n.key}
-              className={styles.tabItem + (n.key === activeNav ? ' ' + styles.tabItemActive : '')}
-              onClick={() => onNavChange(n.key)}
-            >
-              {n.icon && <span className={styles.tabIcon} aria-hidden="true">{n.icon}</span>}
-              {n.label}
-            </button>
-          ))}
-        </nav>
+        <div className={styles.tabRow}>
+          <nav className={styles.tabBar}>
+            {nav.map(n => (
+              <button
+                key={n.key}
+                className={styles.tabItem + (n.key === activeNav ? ' ' + styles.tabItemActive : '')}
+                onClick={() => onNavChange(n.key)}
+              >
+                {n.icon && <span className={styles.tabIcon} aria-hidden="true">{n.icon}</span>}
+                {n.label}
+              </button>
+            ))}
+          </nav>
+          {sidebarInfo && <div className={styles.infoRow}>{sidebarInfo}</div>}
+        </div>
       </div>
       <div className={styles.contentTabs} key={activeNav}>
         {title && <h1>{title}</h1>}

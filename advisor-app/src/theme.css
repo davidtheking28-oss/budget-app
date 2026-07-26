@@ -63,6 +63,10 @@
   --z-overlay: 1000;
 }
 
+@media (max-width: 860px) {
+  :root { --page-pad: 20px; }
+}
+
 * { box-sizing: border-box; }
 
 html, body { height: 100%; }
