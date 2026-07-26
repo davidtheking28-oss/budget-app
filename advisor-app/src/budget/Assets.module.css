@@ -21,7 +21,7 @@
 }
 
 .kpiValue {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--text-display-sm);
   color: var(--text);
   font-variant-numeric: tabular-nums;
@@ -76,7 +76,7 @@
 }
 
 .donutTotal {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--text-lg);
   font-weight: 700;
   color: var(--text);

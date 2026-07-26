@@ -64,7 +64,7 @@
 
 .statValue {
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: var(--text-xl);
   direction: ltr;

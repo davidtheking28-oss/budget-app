@@ -41,7 +41,7 @@ function HealthRing({ score }) {
           strokeDasharray={c} strokeDashoffset={offset} transform="rotate(-90 50 50)"
           className={styles.healthArc}
         />
-        <text x="50" y="56" textAnchor="middle" fontSize="22" fontWeight="700" fill="var(--text)" fontFamily="var(--font-display)">{display}</text>
+        <text x="50" y="56" textAnchor="middle" fontSize="22" fontWeight="700" fill="var(--text)" fontFamily="var(--font-body)">{display}</text>
       </svg>
       <div className={styles.healthLabel}>{label}</div>
     </div>
@@ -49,9 +49,9 @@ function HealthRing({ score }) {
 }
 
 function TrendBadge({ current, previous, kind }) {
-  if (!previous) return null;
+  if (!previous || previous < 50) return null;
   const pct = Math.round(((current - previous) / previous) * 100);
-  if (pct === 0) return null;
+  if (pct === 0 || Math.abs(pct) > 300) return null;
   const rising = pct > 0;
   const good = kind === 'income' ? rising : !rising;
   return (
@@ -68,9 +68,11 @@ function SubStat({ label, value, prevValue, kind }) {
   const display = useCountUp(value);
   return (
     <div className={styles.subStat}>
-      <span className={styles.subStatValue + ' ' + styles[kind]}>{fmt(display)}</span>
       <span className={styles.subStatLabel}>{label}</span>
-      <TrendBadge current={value} previous={prevValue} kind={kind} />
+      <span className={styles.subStatValueRow}>
+        <span className={styles.subStatValue + ' ' + styles[kind]}>{fmt(display)}</span>
+        <TrendBadge current={value} previous={prevValue} kind={kind} />
+      </span>
     </div>
   );
 }
