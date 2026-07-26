@@ -63,9 +63,11 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
   if (!nav) {
     return (
       <div className={styles.shell} dir="rtl">
-        <div className={styles.topbar}>
-          <div className={styles.logo}><Logo />Budget Advisor</div>
-          <AccountMenu email={email} />
+        <div className={styles.topbarBleed}>
+          <div className={styles.topbar}>
+            <div className={styles.logo}><Logo />Budget Advisor</div>
+            <AccountMenu email={email} />
+          </div>
         </div>
         <div className={styles.content}>
           {title && <h1>{title}</h1>}
@@ -77,6 +79,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
 
   return (
     <div className={styles.shellTabs} dir="rtl">
+      <div className={styles.topbarBleed}>
       <div className={styles.topbar}>
         <div className={styles.topbarStart}>
           <button className={styles.backButton} onClick={onBack}>
@@ -98,19 +101,22 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
           <AccountMenu email={email} />
         </div>
       </div>
+      </div>
       {sidebarInfo && <div className={styles.infoRow}>{sidebarInfo}</div>}
-      <nav className={styles.tabBar}>
-        {nav.map(n => (
-          <button
-            key={n.key}
-            className={styles.tabItem + (n.key === activeNav ? ' ' + styles.tabItemActive : '')}
-            onClick={() => onNavChange(n.key)}
-          >
-            {n.icon && <span className={styles.tabIcon} aria-hidden="true">{n.icon}</span>}
-            {n.label}
-          </button>
-        ))}
-      </nav>
+      <div className={styles.tabBarBleed}>
+        <nav className={styles.tabBar}>
+          {nav.map(n => (
+            <button
+              key={n.key}
+              className={styles.tabItem + (n.key === activeNav ? ' ' + styles.tabItemActive : '')}
+              onClick={() => onNavChange(n.key)}
+            >
+              {n.icon && <span className={styles.tabIcon} aria-hidden="true">{n.icon}</span>}
+              {n.label}
+            </button>
+          ))}
+        </nav>
+      </div>
       <div className={styles.contentTabs} key={activeNav}>
         {title && <h1>{title}</h1>}
         {children}

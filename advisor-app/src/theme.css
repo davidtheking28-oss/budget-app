@@ -14,8 +14,10 @@
   --green-rgb: 82, 201, 154;
   --red-rgb: 232, 117, 106;
   --text: #f2f0ea;
-  --text2: #9a9d9f;
-  --text3: #83878a;
+  --text2: #a8a29a;
+  --text3: #8b857c;
+  --page-max: 1280px;
+  --page-pad: 40px;
   --border: rgba(242, 240, 234, 0.08);
   --border-strong: rgba(242, 240, 234, 0.16);
   --red: #e8756a;

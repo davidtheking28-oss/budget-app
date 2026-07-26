@@ -11,7 +11,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-5) 40px;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: calc(var(--page-max) + var(--page-pad) * 2);
+  margin: 0 auto;
+  padding: var(--space-5) var(--page-pad);
+}
+
+.topbarBleed {
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -164,8 +171,8 @@
 
 .content {
   flex: 1;
-  padding: var(--space-7) 40px var(--space-8);
-  max-width: 1160px;
+  padding: var(--space-7) var(--page-pad) var(--space-8);
+  max-width: calc(var(--page-max) + var(--page-pad) * 2);
   width: 100%;
   margin: 0 auto;
   animation: riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -187,7 +194,7 @@
 }
 
 .shellTabs .topbar {
-  padding: var(--space-4) 40px;
+  padding: var(--space-4) var(--page-pad);
 }
 
 .topbarStart {
@@ -203,7 +210,14 @@
 }
 
 .infoRow {
-  padding: 0 40px;
+  width: 100%;
+  max-width: calc(var(--page-max) + var(--page-pad) * 2);
+  margin: var(--space-5) auto 0;
+  padding: 0 var(--page-pad);
+}
+
+.tabBarBleed {
+  border-bottom: 1px solid var(--border);
   margin-top: var(--space-4);
 }
 
@@ -211,9 +225,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 0 40px;
-  margin-top: var(--space-5);
-  border-bottom: 1px solid var(--border);
+  width: 100%;
+  max-width: calc(var(--page-max) + var(--page-pad) * 2);
+  margin: 0 auto;
+  padding: 0 var(--page-pad);
   overflow-x: auto;
 }
 
@@ -274,8 +289,8 @@
 
 .contentTabs {
   flex: 1;
-  padding: var(--space-6) 40px var(--space-8);
-  max-width: 1280px;
+  padding: var(--space-6) var(--page-pad) var(--space-8);
+  max-width: calc(var(--page-max) + var(--page-pad) * 2);
   width: 100%;
   margin: 0 auto;
   animation: tabIn 0.4s var(--ease-out-expo) both;
@@ -293,14 +308,11 @@
 }
 
 @media (max-width: 860px) {
+  :root { --page-pad: 20px; }
+
   .shellTabs .topbar {
-    padding: var(--space-4) 20px;
     flex-wrap: wrap;
     gap: var(--space-3);
-  }
-
-  .infoRow, .tabBar {
-    padding: 0 20px;
   }
 
   .tabItem {
@@ -309,7 +321,7 @@
   }
 
   .contentTabs {
-    padding: var(--space-5) 20px var(--space-7);
+    padding: var(--space-5) var(--page-pad) var(--space-7);
   }
 
   .contentTabs h1 {
