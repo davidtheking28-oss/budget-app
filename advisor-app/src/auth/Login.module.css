@@ -68,7 +68,7 @@
   padding: 14px 16px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: var(--track);
+  background: var(--input-bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--text-md);
