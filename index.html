@@ -17,8 +17,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Barlow+Condensed:wght@700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet"></noscript>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com data:; connect-src https://fnklrqxwyeibfptaxewf.supabase.co wss://fnklrqxwyeibfptaxewf.supabase.co https://fonts.googleapis.com; img-src 'self' data: blob: https://cdn.simpleicons.org; object-src 'none'; base-uri 'self'; form-action 'self';">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js" integrity="sha384-JWEyvHh+lRf0sN/WWY+QTQwX+CyWqmNg4tkc8GQzAMEtR2wGNrCJlvnu1lHD1kDm" crossorigin="anonymous" defer></script>
@@ -33,8 +33,8 @@
     :root{--accent:#0a7a62;--accent2:#0a7a62;--accent-rgb:10,122,98;--green:#046b4d;--green-light:#d7f0e6;--red:#b02631;--red-light:#fbe6e3;--blue:#2563eb;--blue-light:#dbeafe;--yellow:#a35a06;--yellow-light:#fef3c7;--purple:#7c3aed;--purple-light:#ede9fe;--teal:#0d9488;--teal-light:#ccfbf1;--nav-h:72px;--header-h:60px;--safe-bottom:env(safe-area-inset-bottom,0px);--radius:18px;--radius-sm:12px;--main-px:16px;
       /* ── Typography system ── */
       --font-sans:'Assistant',-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
-      --font-num:'JetBrains Mono','Assistant',ui-monospace,monospace;
-      --font-display:'Barlow Condensed','Assistant',sans-serif;
+      --font-num:var(--font-sans);
+      --font-display:var(--font-sans);
       --fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;--fw-extra:800;
       --lh-tight:1.15;--lh-snug:1.35;--lh-normal:1.55;--lh-relaxed:1.7;
       --track-tight:-0.01em;--track-normal:0em;--track-label:0.04em;--track-num:-0.015em;}
@@ -54,6 +54,15 @@
     body{font-family:var(--font-sans);background:var(--bg);color:var(--text);direction:rtl;min-height:100%;overflow-x:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:var(--lh-normal);letter-spacing:var(--track-normal);font-feature-settings:'kern' 1;text-rendering:optimizeLegibility;}
     /* Hebrew text: neutralize Latin-oriented negative tracking from utility classes */
     h1,h2,h3,h4,h5,h6,p,span,button,label,input,select,textarea,div{letter-spacing:var(--track-normal);}
+    /* Tailwind's .font-mono still points at the removed JetBrains Mono, which
+       would drop those figures to system monospace. Keep them in the one family. */
+    .font-mono{font-family:var(--font-sans);font-variant-numeric:tabular-nums lining-nums;}
+    /* Contrast fixes, measured on rendered pages (all were under 4.5:1) */
+    body:not(.dark) .text-slate-400{color:#64748b;}          /* was 2.56:1 on white */
+    body:not(.dark) .tx-tag.tag-fixed{color:#1d4ed8;}        /* blue on blue-tint, was 4.24:1 */
+    body:not(.dark) .insight-highlight{color:#066552;}       /* accent on tinted card, was 4.33:1 */
+    body.dark .text-slate-400{color:#a1a1aa;}                /* dark:text-zinc-500 was 3.67:1 */
+    body.dark .budget-chip-icon{color:var(--text2);}         /* was 4.46:1 */
     /* Financial figures: tabular alignment everywhere */
     .card-amount,.metric-val,.hero-stat-val,.hero-balance-num,.tx-amount,.sub-price-amount,.upcoming-amount,.upcoming-day-num,.breakdown-amount,.sr-amount,.budget-avail-num,.goal-amounts-text,.prog-label,.budget-item-amounts,.budget-pct-label,#budgetSummaryTotal,#budgetSummaryPct{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:'tnum' 1,'lnum' 1;letter-spacing:var(--track-num);}
     header{position:sticky;top:0;z-index:200;height:var(--header-h);background:#1c1917;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 1px 0 rgba(255,255,255,0.06),0 4px 24px rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.05);padding-top:env(safe-area-inset-top,0);isolation:isolate;}
@@ -255,14 +264,14 @@
     .budget-tx-grouphdr{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;border-top:1px solid var(--border);margin-top:16px;padding:14px 2px 0;cursor:pointer;font-family:inherit;text-align:right;-webkit-tap-highlight-color:transparent;}
     .budget-tx-chevron{width:15px;height:15px;color:var(--text3);flex-shrink:0;transition:transform 0.2s;}
     .budget-tx-chevron-open{transform:rotate(180deg);}
-    .budget-tx-groupsum{font-family:var(--font-num);font-size:0.85rem;font-weight:700;color:var(--text2);flex-shrink:0;}
+    .budget-tx-groupsum{font-family:var(--font-num);font-size:0.85rem;font-weight:700;color:var(--text2);flex-shrink:0;font-variant-numeric:tabular-nums lining-nums;}
     .budget-tx-grouplabel{font-size:0.85rem;font-weight:700;color:var(--text);flex:1;}
     .budget-detail-txlist{margin-top:12px;}
     .budget-tx-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
     .budget-tx-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;cursor:pointer;}
     .budget-tx-desc-wrap{text-align:right;min-width:0;}
     .budget-tx-desc{font-size:0.87rem;font-weight:700;color:var(--text);}
-    .budget-tx-date{font-size:0.74rem;color:var(--text3);margin-top:2px;font-family:var(--font-num);}
+    .budget-tx-date{font-size:0.74rem;color:var(--text3);margin-top:2px;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
     .budget-tx-amt{font-family:var(--font-num);font-weight:800;color:var(--red);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
     .budget-tx-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;}
     .budget-tx-del{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
@@ -313,7 +322,7 @@
     .dash-period-btn{background:none;border:none;border-radius:999px;padding:8px 20px;font-size:0.82rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
     .dash-period-btn.active{background:var(--accent);color:#fff;}
     .dash-bignum{text-align:center;margin-bottom:26px;}
-    .dash-bignum-val{font-family:var(--font-num);font-size:2.6rem;font-weight:800;color:var(--accent);line-height:1.1;}
+    .dash-bignum-val{font-family:var(--font-num);font-size:2.6rem;font-weight:800;color:var(--accent);line-height:1.1;font-variant-numeric:tabular-nums lining-nums;}
     .dash-bignum-label{font-size:0.85rem;color:var(--text3);font-weight:600;margin-top:4px;}
     .dash-goals-card{background:var(--surface);border-radius:20px;padding:18px 16px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.05),0 10px 24px -8px rgba(0,0,0,0.09);}
     body.dark .dash-goals-card{box-shadow:0 1px 0 rgba(255,255,255,0.02);}
@@ -413,8 +422,8 @@
     #wizBody2{flex:1;background:var(--bg)!important;padding:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;}
     .wiz2-amount-section{display:flex;align-items:center;justify-content:center;padding:28px 20px 22px;border-bottom:1px solid var(--border);margin-bottom:6px;flex-shrink:0;}
     .wiz-amount-wrap{display:inline-flex;align-items:baseline;direction:rtl;gap:6px;}
-    .wiz-amount-currency{font-size:1.8rem;font-weight:700;color:var(--accent);font-family:var(--font-num);}
-    .wiz-amount-input{font-family:var(--font-num);font-size:3rem;font-weight:700;color:var(--text);border:none;border-radius:8px;background:transparent;width:6ch;min-width:2ch;text-align:center;letter-spacing:-2px;-moz-appearance:textfield;transition:opacity 0.15s;outline:none;-webkit-tap-highlight-color:transparent;appearance:none;-webkit-appearance:none;}
+    .wiz-amount-currency{font-size:1.8rem;font-weight:700;color:var(--accent);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .wiz-amount-input{font-family:var(--font-num);font-size:3rem;font-weight:700;color:var(--text);border:none;border-radius:8px;background:transparent;width:6ch;min-width:2ch;text-align:center;letter-spacing:-2px;-moz-appearance:textfield;transition:opacity 0.15s;outline:none;-webkit-tap-highlight-color:transparent;appearance:none;-webkit-appearance:none;font-variant-numeric:tabular-nums lining-nums;}
     .wiz-amount-input::placeholder{color:var(--text3);font-weight:300;}
     .wiz-amount-input::-webkit-outer-spin-button,.wiz-amount-input::-webkit-inner-spin-button{-webkit-appearance:none;}
     .wiz-body-padded{padding:0 16px calc(28px + env(safe-area-inset-bottom,0px));background:var(--bg);flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:10px;}
@@ -669,14 +678,14 @@
     .metric-label{font-size:0.68rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
     .metric-trend-txt{font-size:0.68rem;font-weight:700;margin-top:2px;min-height:14px;}
     .metric-trend-txt .card-trend{font-size:0.68rem;}
-    .budget-avail-label{font-size:0.72rem;color:var(--text3);font-weight:600;margin-top:2px;font-family:var(--font-num);white-space:nowrap;}
+    .budget-avail-label{font-size:0.72rem;color:var(--text3);font-weight:600;margin-top:2px;font-family:var(--font-num);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
     .budget-avail-num{font-size:1.1rem;font-weight:800;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;letter-spacing:var(--track-num);line-height:1.1;}
     .budget-avail-num.ok{color:var(--green);}
     .budget-avail-num.warn{color:var(--yellow);}
     .budget-avail-num.danger{color:var(--red);}
     .budget-prog-wrap{height:11px;margin-top:9px;}
     .hero-balance-num{font-family:var(--font-display);font-weight:800;font-size:3.3rem;letter-spacing:-1px;color:white;line-height:1;margin-bottom:4px;transition:color 0.3s;}
-    .card-amount,.metric-val,.hero-stat-val{font-family:var(--font-num);}
+    .card-amount,.metric-val,.hero-stat-val{font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
     .card-amount{letter-spacing:-0.5px;}
     .upcoming-day-num,.upcoming-amount,.breakdown-amount,.sr-amount,.budget-avail-num,#budgetSummaryTotal,#budgetSummaryPct{font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
     .card-amount,.metric-val,.hero-stat-val,.hero-balance-num{font-variant-numeric:tabular-nums lining-nums;}
@@ -772,14 +781,14 @@
     .loan-prog-label{font-size:0.75rem;color:var(--text3);margin-bottom:12px;}
     .loan-stats-row{display:flex;gap:8px;flex-wrap:wrap;}
     .loan-stat{flex:1;min-width:70px;background:var(--surface2);border-radius:10px;padding:8px 10px;text-align:center;}
-    .loan-stat-val{font-size:0.88rem;font-weight:700;color:var(--text);font-family:var(--font-num);}
+    .loan-stat-val{font-size:0.88rem;font-weight:700;color:var(--text);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
     .loan-stat-label{font-size:0.68rem;color:var(--text3);margin-top:2px;}
     .loan-notes{font-size:0.78rem;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
     .loans-summary{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;color:var(--text);}
     .loans-summary.has-loans{background:linear-gradient(135deg,#7c1d1d,#b91c1c);border:none;color:white;}
     .loans-summary.has-loans .loans-summary-title,.loans-summary.has-loans .loans-summary-sub{color:rgba(255,255,255,0.8);}
     .loans-summary-title{font-size:0.78rem;font-weight:700;color:var(--text3);margin-bottom:4px;}
-    .loans-summary-val{font-size:1.8rem;font-weight:800;font-family:var(--font-num);letter-spacing:-1px;color:var(--text);}
+    .loans-summary-val{font-size:1.8rem;font-weight:800;font-family:var(--font-num);letter-spacing:-1px;color:var(--text);font-variant-numeric:tabular-nums lining-nums;}
     .loans-summary-sub{font-size:0.75rem;color:var(--text3);margin-top:4px;}
     .loans-summary.has-loans .loans-summary-val{color:white;}
     /* ===== 4-item nav ===== */
@@ -810,12 +819,12 @@
     .annual-card:nth-child(odd){border-left:1px solid var(--border);}
     .annual-card:nth-child(3),.annual-card:nth-child(4){border-bottom:none;}
     .annual-card-label{font-size:0.72rem;color:var(--text2);font-weight:600;margin-bottom:4px;}
-    .annual-card-val{font-size:1.15rem;font-weight:800;color:var(--text);font-family:var(--font-num);letter-spacing:-0.5px;}
+    .annual-card-val{font-size:1.15rem;font-weight:800;color:var(--text);font-family:var(--font-num);letter-spacing:-0.5px;font-variant-numeric:tabular-nums lining-nums;}
     .annual-card-sub{font-size:0.7rem;color:var(--text3);margin-top:3px;}
     /* ── Daily budget widget ─────────────── */
     .daily-widget{background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(59,130,246,0.08));border:1px solid rgba(99,102,241,0.2);border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
     .daily-widget-label{font-size:0.8rem;color:var(--text2);font-weight:600;}
-    .daily-widget-val{font-size:1.3rem;font-weight:800;color:var(--accent);font-family:var(--font-num);letter-spacing:-1px;}
+    .daily-widget-val{font-size:1.3rem;font-weight:800;color:var(--accent);font-family:var(--font-num);letter-spacing:-1px;font-variant-numeric:tabular-nums lining-nums;}
     .daily-widget-sub{font-size:0.7rem;color:var(--text3);margin-top:2px;}
     /* ── Income quick btn ────────────────── */
     .quick-btn.income{background:rgba(22,163,74,0.1);border-color:rgba(22,163,74,0.2);color:var(--green);}
@@ -824,7 +833,7 @@
     /* ── Splash screen ───────────────────────── */
     #splashScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.18s ease,visibility 0.18s ease;}
     #splashScreen.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-    .splash-logo{font-size:4.5rem;font-weight:700;color:var(--accent);font-family:var(--font-num);letter-spacing:-3px;animation:splashPulse 1s ease-in-out infinite alternate;}
+    .splash-logo{font-size:4.5rem;font-weight:700;color:var(--accent);font-family:var(--font-num);letter-spacing:-3px;animation:splashPulse 1s ease-in-out infinite alternate;font-variant-numeric:tabular-nums lining-nums;}
     .splash-title{font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
     .splash-sub{font-size:0.8rem;color:var(--text3);}
     @keyframes splashPulse{from{opacity:0.7;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
@@ -835,7 +844,7 @@
     .auth-inner{width:100%;max-width:390px;padding:max(7vh,52px) 28px max(6vh,44px);display:flex;flex-direction:column;min-height:100dvh;animation:authSlideUp 0.52s cubic-bezier(0.16,1,0.3,1) both;}
     .auth-hero{display:flex;flex-direction:column;align-items:center;text-align:center;flex:1;justify-content:center;padding-bottom:36px;}
     .auth-app-icon{width:96px;height:96px;border-radius:26px;background:linear-gradient(145deg,#1a3a6e,#0d2250);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 0 0 1px rgba(52,211,169,0.2),0 12px 40px rgba(0,0,0,0.45),0 0 60px rgba(52,211,169,0.08);}
-    .auth-app-icon-sym{font-size:2.8rem;font-weight:900;color:#34d3a9;font-family:var(--font-num);letter-spacing:-2px;line-height:1;}
+    .auth-app-icon-sym{font-size:2.8rem;font-weight:900;color:#34d3a9;font-family:var(--font-num);letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums lining-nums;}
     .auth-app-name{font-size:2rem;font-weight:800;color:var(--text);letter-spacing:-1px;margin-bottom:8px;line-height:1.1;}
     .auth-app-sub{font-size:0.95rem;color:var(--text2);line-height:1.5;margin-bottom:28px;max-width:220px;}
     .auth-trust-row{display:flex;align-items:center;justify-content:center;gap:16px;}
@@ -920,12 +929,12 @@
     .cal-cell.has-tx{background:rgba(220,38,38,0.08);}
     .cal-cell.empty{background:transparent;pointer-events:none;}
     .cal-day{font-size:0.7rem;font-weight:700;color:var(--text2);line-height:1;}
-    .cal-amt{font-size:0.58rem;font-weight:700;color:var(--red);margin-top:3px;font-family:var(--font-num);line-height:1;}
+    .cal-amt{font-size:0.58rem;font-weight:700;color:var(--red);margin-top:3px;font-family:var(--font-num);line-height:1;font-variant-numeric:tabular-nums lining-nums;}
     body.dark .cal-cell.has-tx{background:rgba(248,113,113,0.1);}
     /* ── Forecast card ── */
     .forecast-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(13,148,136,0.09);border:1px solid rgba(13,148,136,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;}
     .forecast-bar-label{font-size:0.78rem;font-weight:600;color:var(--teal);}
-    .forecast-bar-val{font-size:0.95rem;font-weight:800;color:var(--teal);font-family:var(--font-num);letter-spacing:-0.3px;}
+    .forecast-bar-val{font-size:0.95rem;font-weight:800;color:var(--teal);font-family:var(--font-num);letter-spacing:-0.3px;font-variant-numeric:tabular-nums lining-nums;}
     body.dark .forecast-bar{background:rgba(45,212,191,0.08);border-color:rgba(45,212,191,0.15);}
     /* ===== GLOBAL VISUAL POLISH ===== */
     .fab{box-shadow:0 4px 20px rgba(var(--accent-rgb),0.38),0 0 0 5px rgba(var(--accent-rgb),0.08);}
