@@ -1,5 +1,6 @@
 .shell {
   min-height: 100vh;
+  padding-inline-start: var(--rail-w);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -32,56 +33,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.backButton {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-strong);
-  background: var(--hover);
-  color: var(--text2);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
-}
-
-.backButton:hover {
-  border-color: rgba(var(--accent-rgb), 0.5);
-  color: var(--text);
-}
-
-.backButton:active {
-  transform: scale(0.96);
-}
-
-.reportButton {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(var(--accent-rgb), 0.35);
-  background: var(--accent-dim);
-  color: var(--accent);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: border-color 0.2s ease, background 0.2s ease;
-}
-
-.reportButton:hover {
-  border-color: rgba(var(--accent-rgb), 0.6);
-  background: rgba(var(--accent-rgb), 0.2);
-}
-
-.reportButton:active {
-  transform: scale(0.96);
 }
 
 .accountMenu {
@@ -213,6 +164,7 @@
 /* === Tab-bar shell (client workspace) === */
 .shellTabs {
   min-height: 100vh;
+  padding-inline-start: var(--rail-w);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -343,6 +295,8 @@
 }
 
 @media (max-width: 860px) {
+  .shell, .shellTabs { padding-inline-start: 0; }
+
   .shellTabs .topbar {
     flex-wrap: wrap;
     gap: var(--space-3);

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import styles from './QuickSwitcher.module.css';
 
@@ -6,8 +6,14 @@ function initials(email) {
   return (email || '?').trim()[0]?.toUpperCase() || '?';
 }
 
-export default function QuickSwitcher({ advisorId, onSelect }) {
-  const [open, setOpen] = useState(false);
+export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onOpenChange }) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp === undefined ? openState : openProp;
+  const setOpen = useCallback(value => {
+    const next = typeof value === 'function' ? value(open) : value;
+    if (onOpenChange) onOpenChange(next);
+    else setOpenState(next);
+  }, [open, onOpenChange]);
   const [clients, setClients] = useState([]);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
@@ -27,7 +33,7 @@ export default function QuickSwitcher({ advisorId, onSelect }) {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [setOpen]);
 
   useEffect(() => {
     if (!open || !advisorId) return;

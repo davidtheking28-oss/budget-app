@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 import Logo from './Logo.jsx';
+import IconRail from './IconRail.jsx';
+import SearchBar from './SearchBar.jsx';
 import styles from './Shell.module.css';
 
 function AccountMenu({ email }) {
@@ -55,7 +57,7 @@ function AccountMenu({ email }) {
   );
 }
 
-export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, email, children }) {
+export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onSearch, email, children }) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeNav]);
@@ -63,10 +65,14 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
   if (!nav) {
     return (
       <div className={styles.shell} dir="rtl">
+        <IconRail onSearch={onSearch} />
         <div className={styles.topbarBleed}>
           <div className={styles.topbar}>
             <div className={styles.logo}><Logo />Budget Advisor</div>
-            <AccountMenu email={email} />
+            <div className={styles.topbarEnd}>
+              {onSearch && <SearchBar onOpen={onSearch} />}
+              <AccountMenu email={email} />
+            </div>
           </div>
         </div>
         <div className={styles.content}>
@@ -79,25 +85,14 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
 
   return (
     <div className={styles.shellTabs} dir="rtl">
+      <IconRail onBack={onBack} onSearch={onSearch} onPrint={onPrint} />
       <div className={styles.topbarBleed}>
       <div className={styles.topbar}>
         <div className={styles.topbarStart}>
-          <button className={styles.backButton} onClick={onBack}>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-            חזרה ללקוחות
-          </button>
           <div className={styles.logo}><Logo />Budget Advisor</div>
         </div>
         <div className={styles.topbarEnd}>
-          {onPrint && (
-            <button className={styles.reportButton} onClick={onPrint}>
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M6 9V2h9l3 3v4M6 18H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2" />
-                <path d="M6 14h12v8H6z" />
-              </svg>
-              דוח חודשי
-            </button>
-          )}
+          {onSearch && <SearchBar onOpen={onSearch} />}
           <AccountMenu email={email} />
         </div>
       </div>

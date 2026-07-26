@@ -57,6 +57,7 @@ export default function App() {
   const [nav, setNav] = useState(initial.nav);
   const [ym, setYm] = useState(initial.ym);
   const [reportMode, setReportMode] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { nextMeeting, openTasks, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
 
   useEffect(() => {
@@ -101,10 +102,10 @@ export default function App() {
   if (!selectedClient) {
     return (
       <>
-        <Shell title="לוח בקרה" email={session.user.email}>
+        <Shell title="לוח בקרה" email={session.user.email} onSearch={() => setSearchOpen(true)}>
           <ClientList advisorId={session.user.id} onSelect={switchClient} />
         </Shell>
-        <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} />
+        <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />
       </>
     );
@@ -117,7 +118,7 @@ export default function App() {
     return (
       <>
         <Report clientUserId={selectedClient.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setReportMode(false)} />
-        <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} />
+        <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />
       </>
     );
@@ -132,6 +133,7 @@ export default function App() {
         activeNav={nav}
         onNavChange={setNav}
         onPrint={() => setReportMode(true)}
+        onSearch={() => setSearchOpen(true)}
         email={session.user.email}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
       >
@@ -150,7 +152,7 @@ export default function App() {
         {nav === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
         {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} onChange={refreshClientSummary} />}
       </Shell>
-      <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} />
+      <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
       <Toaster />
     </>
   );
