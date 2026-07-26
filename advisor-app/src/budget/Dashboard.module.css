@@ -8,13 +8,13 @@
 
 @media (max-width: 860px) {
   .bentoGrid { grid-template-columns: 1fr; }
-  .tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileGroupWide, .tileCategories {
+  .tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileGroupWide, .tileCategories, .tileGoals {
     grid-column: span 1 !important;
     grid-row: span 1 !important;
   }
 }
 
-.tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileCategories {
+.tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileCategories, .tileGoals {
   min-width: 0;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
@@ -24,7 +24,7 @@
   transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
 }
 
-.tileBalance:hover, .tileHealth:hover, .tileHighlight:hover, .tileTrend:hover, .tileGroup:hover, .tileCategories:hover {
+.tileBalance:hover, .tileHealth:hover, .tileHighlight:hover, .tileTrend:hover, .tileGroup:hover, .tileCategories:hover, .tileGoals:hover {
   border-color: var(--border-strong);
 }
 
@@ -316,4 +316,82 @@
   justify-content: center;
   color: var(--text3);
   font-size: var(--text-base);
+}
+
+.tileGoals {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.goalList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.goalItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.goalHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.goalName {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goalAmt {
+  font-size: var(--text-xs);
+  color: var(--text2);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.goalBarRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.goalBar {
+  flex: 1;
+  height: 8px;
+  background: var(--surface2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.goalFill {
+  height: 100%;
+  background: var(--accent);
+  transform-origin: right center;
+  transition: transform 0.6s var(--ease-out-expo);
+}
+
+.goalFillDone { background: var(--green); }
+
+.goalPct {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+  text-align: left;
+}
+
+.goalNote {
+  font-size: var(--text-xs);
+  color: var(--text3);
 }

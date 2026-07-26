@@ -169,6 +169,35 @@ export default function Dashboard({ clientUserId, year, month }) {
         )}
       </div>
 
+      {(data.goals || []).length > 0 && (
+        <div className={styles.tileGoals}>
+          <div className={styles.colTitle}>יעדים</div>
+          <div className={styles.goalList}>
+            {(data.goals || []).slice(0, 4).map(g => {
+              const target = parseFloat(g.target) || 0;
+              const saved = parseFloat(g.saved) || 0;
+              const pct = target > 0 ? Math.min(100, Math.round((saved / target) * 100)) : 0;
+              const monthly = g.months > 0 ? Math.max(0, target - saved) / g.months : 0;
+              return (
+                <div key={g.id} className={styles.goalItem}>
+                  <div className={styles.goalHead}>
+                    <span className={styles.goalName}>{g.name}</span>
+                    <span className={styles.goalAmt}>{fmt(saved)} / {fmt(target)}</span>
+                  </div>
+                  <div className={styles.goalBarRow}>
+                    <div className={styles.goalBar}>
+                      <div className={styles.goalFill + (pct >= 100 ? ' ' + styles.goalFillDone : '')} style={{ transform: `scaleX(${pct / 100})` }} />
+                    </div>
+                    <span className={styles.goalPct}>{pct}%</span>
+                  </div>
+                  {monthly > 0 && <div className={styles.goalNote}>הפקדה חודשית נדרשת: {fmt(monthly)}</div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className={styles.tileTrend}>
         <div className={styles.colTitle}>מגמת 6 חודשים</div>
         {hasTrendData ? (
