@@ -1,8 +1,10 @@
 .wrap {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: var(--space-4) 0;
-  margin: var(--space-1) 0;
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  padding: var(--space-2) var(--space-2);
 }
 
 .email {
@@ -16,7 +18,6 @@
 .row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2);
 }
 
@@ -53,13 +54,14 @@
 .label {
   font-family: var(--font-body);
   font-size: var(--text-base);
+  font-weight: 600;
   color: var(--text2);
   cursor: pointer;
   text-align: center;
-  flex: 1;
+  min-width: 100px;
   background: none;
   border: none;
-  padding: 0;
+  padding: 0 var(--space-1);
 }
 
 .label:disabled {
