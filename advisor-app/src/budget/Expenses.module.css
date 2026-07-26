@@ -59,6 +59,115 @@
   border-color: rgba(var(--accent-rgb), 0.5);
 }
 
+.superTotal {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+}
+
+.filterEmpty {
+  margin-top: var(--space-5);
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--text3);
+  font-size: var(--text-base);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.flowHero {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.flowLabel {
+  color: var(--text3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.flowValue {
+  margin-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-display-md);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  text-align: right;
+}
+
+.flowPos { color: var(--green); }
+.flowNeg { color: var(--red); }
+
+.flowSplit {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.flowCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+}
+
+.flowCellLabel {
+  color: var(--text3);
+  font-size: var(--text-xs);
+}
+
+.flowCellValue {
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  text-align: right;
+}
+
+.filterRow {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.filterChip {
+  padding: 7px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .18s ease, background .18s ease, border-color .18s ease;
+}
+
+.filterChip:hover { color: var(--text); border-color: var(--border-strong); }
+
+.filterChipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+@media (max-width: 720px) {
+  .flowSplit { grid-template-columns: 1fr; }
+}
+
 .statStrip {
   display: flex;
   flex-wrap: wrap;

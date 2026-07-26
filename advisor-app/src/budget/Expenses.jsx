@@ -24,6 +24,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   const [openSuper, setOpenSuper] = useState(() => new Set());
   const [adding, setAdding] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [filter, setFilter] = useState('all');
 
   function pickType(t) {
     setTxType(t);
@@ -63,29 +64,49 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     );
   }
 
-  const monthTx = getMonthTx(data.transactions, year, month)
-    .filter(t => t.type === 'expense')
+  const allMonthTx = getMonthTx(data.transactions, year, month)
     .slice()
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
-  const groups = [];
-  const groupIndex = {};
-  monthTx.forEach(t => {
-    if (!(t.cat in groupIndex)) {
-      groupIndex[t.cat] = groups.length;
-      groups.push({ cat: t.cat, items: [], total: 0 });
-    }
-    const g = groups[groupIndex[t.cat]];
-    g.items.push(t);
-    g.total += t.amount;
-  });
-  groups.sort((a, b) => b.total - a.total);
-  const grandTotal = groups.reduce((s, g) => s + g.total, 0);
+  const incomeTx = allMonthTx.filter(t => t.type === 'income');
+  const expenseTx = allMonthTx.filter(t => t.type !== 'income');
+  const incomeTotal = incomeTx.reduce((s, t) => s + t.amount, 0);
+  const expenseTotal = expenseTx.reduce((s, t) => s + t.amount, 0);
+  const netFlow = incomeTotal - expenseTotal;
 
-  const superGroups = [
-    { key: 'variable', label: 'הוצאות משתנות', groups: groups.filter(g => !FIXED_CATS.includes(g.cat)) },
-    { key: 'fixed', label: 'הוצאות קבועות', groups: groups.filter(g => FIXED_CATS.includes(g.cat)) }
-  ].filter(sg => sg.groups.length).map(sg => ({ ...sg, total: sg.groups.reduce((s, g) => s + g.total, 0) }));
+  function buildGroups(list) {
+    const out = [];
+    const index = {};
+    list.forEach(t => {
+      if (!(t.cat in index)) {
+        index[t.cat] = out.length;
+        out.push({ cat: t.cat, items: [], total: 0 });
+      }
+      const g = out[index[t.cat]];
+      g.items.push(t);
+      g.total += t.amount;
+    });
+    return out.sort((a, b) => b.total - a.total);
+  }
+
+  const expenseGroups = buildGroups(expenseTx);
+  const incomeGroups = buildGroups(incomeTx);
+
+  const allSuperGroups = [
+    { key: 'income', label: 'הכנסות', tone: 'income', groups: incomeGroups },
+    { key: 'variable', label: 'הוצאות משתנות', groups: expenseGroups.filter(g => !FIXED_CATS.includes(g.cat)) },
+    { key: 'fixed', label: 'הוצאות קבועות', groups: expenseGroups.filter(g => FIXED_CATS.includes(g.cat)) }
+  ];
+  const superGroups = allSuperGroups
+    .filter(sg => sg.groups.length && (filter === 'all' || filter === sg.key))
+    .map(sg => ({ ...sg, total: sg.groups.reduce((s, g) => s + g.total, 0) }));
+
+  const FILTERS = [
+    { key: 'all', label: 'הכל' },
+    { key: 'income', label: 'הכנסות' },
+    { key: 'variable', label: 'משתנות' },
+    { key: 'fixed', label: 'קבועות' }
+  ];
 
   async function addTx() {
     const amt = parseFloat(amount);
@@ -137,14 +158,16 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   }
 
   function exportCsv() {
-    const rows = [['תאריך', 'קטגוריה', 'תיאור', 'סכום']];
-    monthTx.forEach(t => rows.push([t.date, t.cat, t.desc, t.amount]));
+    // Export the whole month's flow, not the current filter, and keep the
+    // income/expense type so the amounts are not ambiguous.
+    const rows = [['תאריך', 'סוג', 'קטגוריה', 'תיאור', 'סכום']];
+    allMonthTx.forEach(t => rows.push([t.date, t.type === 'income' ? 'הכנסה' : 'הוצאה', t.cat, t.desc, t.amount]));
     const csv = '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `expenses-${year}-${String(month + 1).padStart(2, '0')}.csv`;
+    a.download = `cashflow-${year}-${String(month + 1).padStart(2, '0')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -158,7 +181,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         </div>
         <div className={styles.toolbarActions}>
           <Button variant="ghost" onClick={() => setImportOpen(true)}>ייבוא מקובץ</Button>
-          <Button variant="ghost" onClick={exportCsv} disabled={!monthTx.length}>ייצוא ל-CSV</Button>
+          <Button variant="ghost" onClick={exportCsv} disabled={!allMonthTx.length}>ייצוא ל-CSV</Button>
         </div>
       </div>
       <div className={styles.form}>
@@ -171,7 +194,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         <Button onClick={addTx} disabled={adding}>{txType === 'income' ? 'הוסף הכנסה' : 'הוסף הוצאה'}</Button>
       </div>
       {importOpen && <ImportSheet onClose={() => setImportOpen(false)} onImport={importRows} />}
-      {!monthTx.length && (
+      {!allMonthTx.length && (
         <div className={styles.empty}>
           <div className={styles.emptyMark}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -183,17 +206,53 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
           אין תנועות החודש
         </div>
       )}
-      {monthTx.length > 0 && (
-        <div className={styles.statStrip}>
-          <div className={styles.stat}><div className={styles.statValue}>{fmt(grandTotal)}</div><div className={styles.statLabel}>סה"כ החודש</div></div>
-          <div className={styles.stat}><div className={styles.statValue}>{monthTx.length}</div><div className={styles.statLabel}>עסקאות</div></div>
-          {groups[0] && <div className={styles.stat}><div className={styles.statValue}>{groups[0].cat}</div><div className={styles.statLabel}>קטגוריה מובילה</div></div>}
-        </div>
+      {allMonthTx.length > 0 && (
+        <>
+          <div className={styles.flowHero}>
+            <div className={styles.flowLabel}>התזרים החודש</div>
+            <div className={styles.flowValue + ' ' + (netFlow < 0 ? styles.flowNeg : styles.flowPos)}>{fmt(netFlow)}</div>
+            <div className={styles.flowSplit}>
+              <div className={styles.flowCell}>
+                <span className={styles.flowCellLabel}>הכנסות</span>
+                <span className={styles.flowCellValue + ' ' + styles.flowPos}>{fmt(incomeTotal)}</span>
+              </div>
+              <div className={styles.flowCell}>
+                <span className={styles.flowCellLabel}>הוצאות</span>
+                <span className={styles.flowCellValue + ' ' + styles.flowNeg}>{fmt(expenseTotal)}</span>
+              </div>
+              <div className={styles.flowCell}>
+                <span className={styles.flowCellLabel}>עסקאות</span>
+                <span className={styles.flowCellValue}>{allMonthTx.length}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.filterRow} role="tablist" aria-label="סינון תזרים">
+            {FILTERS.map(f => (
+              <button
+                key={f.key}
+                type="button"
+                role="tab"
+                aria-selected={filter === f.key}
+                className={styles.filterChip + (filter === f.key ? ' ' + styles.filterChipActive : '')}
+                onClick={() => setFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      {allMonthTx.length > 0 && !superGroups.length && (
+        <div className={styles.filterEmpty}>אין תנועות בסינון הזה</div>
       )}
       <div className={styles.list}>
         {superGroups.map((sg, si) => {
           const sOpen = openSuper.has(sg.key);
-          const sPct = grandTotal ? Math.round((sg.total / grandTotal) * 100) : 0;
+          // Income and expenses are separate pools: a share of the expense
+          // total is meaningless for an income group.
+          const base = sg.key === 'income' ? incomeTotal : expenseTotal;
+          const sPct = base ? Math.round((sg.total / base) * 100) : 0;
           return (
             <div key={sg.key} className={styles.superGroup}>
               <button
@@ -210,14 +269,14 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                 </div>
                 <div className={styles.groupRight}>
                   <span className={styles.groupPct}>{sPct}%</span>
-                  <span style={{ color: 'var(--red)', fontWeight: 700 }}>{fmt(sg.total)}</span>
+                  <span className={styles.superTotal + ' ' + (sg.key === 'income' ? styles.flowPos : styles.flowNeg)}>{fmt(sg.total)}</span>
                 </div>
               </button>
               {sOpen && (
                 <div className={styles.superBody}>
                   {sg.groups.map((g, i) => {
                     const open = openCats.has(g.cat);
-                    const pct = grandTotal ? Math.round((g.total / grandTotal) * 100) : 0;
+                    const pct = base ? Math.round((g.total / base) * 100) : 0;
                     const color = CHART_PALETTE[i % CHART_PALETTE.length];
                     return (
                       <div key={g.cat} className={styles.group}>
