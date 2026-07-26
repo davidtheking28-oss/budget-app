@@ -1,3 +1,4 @@
+import { relativeTime, isStale } from '../clients/useClientFreshness.js';
 import styles from './ClientContextBar.module.css';
 
 function initials(email) {
@@ -11,8 +12,10 @@ function formatMeeting(iso) {
     ' בשעה ' + d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function ClientContextBar({ email, nextMeeting, openTasks, onOpenCrm }) {
+export default function ClientContextBar({ email, nextMeeting, openTasks, onOpenCrm, freshness }) {
   const meeting = formatMeeting(nextMeeting);
+  const updated = freshness ? relativeTime(freshness.updatedAt) : null;
+  const stale = freshness ? isStale(freshness.updatedAt) : false;
   return (
     <div className={styles.bar}>
       <div className={styles.identity}>
@@ -21,6 +24,12 @@ export default function ClientContextBar({ email, nextMeeting, openTasks, onOpen
         <span className={styles.statusPill}>פעיל</span>
       </div>
       <div className={styles.facts}>
+        {updated && (
+          <span className={styles.fact} title={new Date(freshness.updatedAt).toLocaleString('he-IL')}>
+            <span className={styles.factLabel}>{freshness.byClient ? 'הלקוח עדכן' : 'עודכן'}</span>
+            <span className={styles.factValue + (stale ? ' ' + styles.factStale : '')}>{updated}</span>
+          </span>
+        )}
         {meeting && (
           <span className={styles.fact}>
             <span className={styles.factLabel}>הפגישה הבאה</span>

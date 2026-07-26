@@ -43,6 +43,11 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+
+.cardStandalone {
+  margin-top: var(--space-4);
 }
 
 .cardTitle {
@@ -162,6 +167,13 @@
 }
 
 .assetAmt { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
+
+.note {
+  margin-top: var(--space-3);
+  color: var(--text3);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+}
 
 .empty {
   font-size: var(--text-sm);

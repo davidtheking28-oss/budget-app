@@ -30,7 +30,7 @@ export function useClientList(advisorId) {
     const now = new Date();
 
     const [{ data: budgetRows }, { data: taskRows }] = await Promise.all([
-      supabase.from('budget_data').select('user_id, transactions, budgets').in('user_id', clientIds),
+      supabase.from('budget_data').select('user_id, transactions, budgets, updated_at').in('user_id', clientIds),
       supabase.from('advisor_tasks').select('client_id').eq('advisor_id', advisorId).eq('done', false).in('client_id', clientIds)
     ]);
 
@@ -47,7 +47,8 @@ export function useClientList(advisorId) {
         remaining: summary ? summary.remaining : null,
         hasOverage: summary ? summary.overCats.length > 0 : false,
         openTasks: openTaskCounts[c.client_id] || 0,
-        healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null
+        healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null,
+        updatedAt: budgetRow?.updated_at || null
       };
     });
 

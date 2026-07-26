@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
+import { isStale, relativeTime } from './useClientFreshness.js';
 import { useCountUp } from '../useCountUp.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -183,6 +184,9 @@ export default function ClientList({ advisorId, onSelect }) {
                     <RemainingChip value={c.remaining} />
                     {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}
                     {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
+                    {c.updatedAt && isStale(c.updatedAt) && (
+                      <div className={styles.staleChip}>לא עודכן {relativeTime(c.updatedAt)}</div>
+                    )}
                   </div>
                 </div>
                 {confirming ? (

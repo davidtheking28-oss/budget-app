@@ -169,6 +169,16 @@
   color: var(--red);
 }
 
+.staleChip {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+
 .overageChip, .taskChip {
   font-size: var(--text-xs);
   font-weight: 600;

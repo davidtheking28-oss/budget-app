@@ -81,6 +81,7 @@
 .factLabel { color: var(--text3); }
 .factValue { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
 .factAlert { color: var(--gold); }
+.factStale { color: var(--red); }
 
 @media (max-width: 720px) {
   .bar { border-radius: var(--radius-md); }

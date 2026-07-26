@@ -18,6 +18,7 @@ import Subscriptions from './budget/Subscriptions.jsx';
 import Crm from './crm/Crm.jsx';
 import Report from './budget/Report.jsx';
 import { useClientSummary } from './crm/useClientSummary.js';
+import { useClientFreshness } from './clients/useClientFreshness.js';
 
 const Dashboard = lazy(() => import('./budget/Dashboard.jsx'));
 const Analysis = lazy(() => import('./budget/Analysis.jsx'));
@@ -61,6 +62,7 @@ export default function App() {
   const [reportMode, setReportMode] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const isAdvisor = useIsAdvisor(session?.user?.id);
+  const freshness = useClientFreshness(selectedClient?.id);
   const { nextMeeting, openTasks, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
 
   useEffect(() => {
@@ -147,6 +149,7 @@ export default function App() {
           nextMeeting={nextMeeting}
           openTasks={openTasks}
           onOpenCrm={() => setNav('crm')}
+          freshness={freshness}
         />
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}

@@ -21,12 +21,23 @@ function addAsset(save, item) {
 function removeAsset(save, id) {
   return save(cur => ({ assets: (cur.assets || []).filter(a => a.id !== id) }));
 }
+// Liabilities live in `loans`, the same array the subscriptions tab edits,
+// so both screens stay a single source of truth.
+function addLoan(save, item) {
+  return save(cur => ({ loans: [...(cur.loans || []), { id: Date.now() + Math.random(), ...item }] }));
+}
+function removeLoan(save, id) {
+  return save(cur => ({ loans: (cur.loans || []).filter(l => l.id !== id) }));
+}
 
 export default function Assets({ clientUserId, advisorId }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const [name, setName] = useState('');
   const [category, setCategory] = useState(ASSET_CATS[0]);
   const [amount, setAmount] = useState('');
+  const [loanName, setLoanName] = useState('');
+  const [loanRemaining, setLoanRemaining] = useState('');
+  const [loanMonthly, setLoanMonthly] = useState('');
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -52,6 +63,24 @@ export default function Assets({ clientUserId, advisorId }) {
     toast('נכס נוסף', 'success');
     setName('');
     setAmount('');
+  }
+
+  async function submitLoan() {
+    const rem = parseFloat(loanRemaining);
+    if (!loanName.trim() || !rem || rem <= 0) { toast('הזן שם התחייבות ויתרה תקינה', 'error'); return; }
+    const ok = await addLoan(save, {
+      name: loanName.trim(),
+      lender: '',
+      remaining: rem,
+      monthly: parseFloat(loanMonthly) || 0,
+      original: rem,
+      rate: 0
+    });
+    if (ok === false) return;
+    toast('התחייבות נוספה', 'success');
+    setLoanName('');
+    setLoanRemaining('');
+    setLoanMonthly('');
   }
 
   const byCat = {};
@@ -142,6 +171,37 @@ export default function Assets({ clientUserId, advisorId }) {
             <div className={styles.empty}>אין עדיין נכסים רשומים</div>
           )}
         </div>
+      </div>
+
+      <div className={styles.card + ' ' + styles.cardStandalone}>
+        <div className={styles.cardTitle}>התחייבויות</div>
+        <div className={styles.form}>
+          <input className={styles.input} placeholder="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} />
+          <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} />
+          <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="החזר חודשי" value={loanMonthly} onChange={e => setLoanMonthly(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitLoan()} />
+          <Button onClick={submitLoan}>הוסף</Button>
+        </div>
+        {loans.length ? (
+          <div className={styles.list}>
+            {[...loans].sort((a, b) => (b.remaining || 0) - (a.remaining || 0)).map(l => (
+              <div key={l.id} className={styles.row}>
+                <div>
+                  <div className={styles.assetName}>{l.name}</div>
+                  <div className={styles.assetCat}>
+                    {l.monthly > 0 ? `החזר חודשי ${fmt(l.monthly)}` : 'ללא החזר חודשי'}
+                  </div>
+                </div>
+                <div className={styles.rowActions}>
+                  <span className={styles.assetAmt + ' ' + styles.kpiNeg}>{fmt(l.remaining)}</span>
+                  <DeleteButton onClick={() => removeLoan(save, l.id)} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.empty}>אין עדיין התחייבויות רשומות</div>
+        )}
+        <div className={styles.note}>הלוואות שנוספו כאן מופיעות גם בטאב «מנויים והלוואות», שם אפשר להגדיר ריבית ומלווה.</div>
       </div>
     </div>
   );
