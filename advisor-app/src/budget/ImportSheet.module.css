@@ -101,7 +101,7 @@
 
 .previewDate { color: var(--text3); font-size: var(--text-xs); flex-shrink: 0; width: 78px; }
 .previewDesc { flex: 1; min-width: 0; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.previewAmt { font-variant-numeric: tabular-nums; font-weight: 700; flex-shrink: 0; }
+.previewAmt { font-variant-numeric: tabular-nums; font-weight: 700; flex-shrink: 0; direction: ltr; unicode-bidi: isolate; }
 
 .previewMore {
   text-align: center;

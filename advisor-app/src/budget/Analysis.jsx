@@ -122,7 +122,7 @@ export default function Analysis({ clientUserId, year, month }) {
             aria-label="אחוז צמצום"
             onChange={e => setCutPct(Number(e.target.value))}
           />
-          <span className={styles.whatIfPct}>{cutPct}%-</span>
+          <span className={styles.whatIfPct}>-{cutPct}%</span>
         </div>
         <div className={styles.whatIfResult}>
           חיסכון של <b>{fmt(savings)}</b> בחודש · סה"כ הוצאות יורד ל-<b>{fmt(newTotal)}</b>

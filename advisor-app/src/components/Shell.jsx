@@ -66,7 +66,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
   }, [activeNav]);
 
   useEffect(() => {
-    activeTabRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    activeTabRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
   }, [activeNav]);
 
   if (!nav) {

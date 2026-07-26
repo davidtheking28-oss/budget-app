@@ -101,8 +101,8 @@ export default function ImportSheet({ onClose, onImport }) {
             <div className={styles.summary}>
               <span className={styles.fileTag}>{fileName}</span>
               <span className={styles.sumItem}>{rows.length} שורות</span>
-              <span className={styles.sumItem + ' ' + styles.pos}>+{Math.round(income).toLocaleString('he-IL')} הכנסות</span>
-              <span className={styles.sumItem + ' ' + styles.neg}>-{Math.round(expense).toLocaleString('he-IL')} הוצאות</span>
+              <span className={styles.sumItem + ' ' + styles.pos}><bdi dir="ltr">+{Math.round(income).toLocaleString('he-IL')}</bdi> הכנסות</span>
+              <span className={styles.sumItem + ' ' + styles.neg}><bdi dir="ltr">-{Math.round(expense).toLocaleString('he-IL')}</bdi> הוצאות</span>
             </div>
             <div className={styles.preview}>
               {rows.slice(0, 40).map((r, i) => (
