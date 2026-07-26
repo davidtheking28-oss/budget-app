@@ -2,6 +2,8 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { supabase } from './supabaseClient.js';
 import { useSession } from './auth/useSession.js';
 import Login from './auth/Login.jsx';
+import NotAdvisor from './auth/NotAdvisor.jsx';
+import { useIsAdvisor } from './auth/useIsAdvisor.js';
 import Shell from './components/Shell.jsx';
 import Toaster from './components/Toaster.jsx';
 import QuickSwitcher from './components/QuickSwitcher.jsx';
@@ -58,6 +60,7 @@ export default function App() {
   const [ym, setYm] = useState(initial.ym);
   const [reportMode, setReportMode] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const isAdvisor = useIsAdvisor(session?.user?.id);
   const { nextMeeting, openTasks, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
 
   useEffect(() => {
@@ -92,6 +95,8 @@ export default function App() {
   if (loading) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
   if (isRecovery) return (<><Login recovery onRecoveryDone={clearRecovery} /><Toaster /></>);
   if (!session) return (<><Login /><Toaster /></>);
+  if (isAdvisor === null) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
+  if (!isAdvisor) return (<><NotAdvisor email={session.user.email} /><Toaster /></>);
 
   const switchClient = (clientId, clientEmail) => {
     setSelectedClient({ id: clientId, email: clientEmail });
