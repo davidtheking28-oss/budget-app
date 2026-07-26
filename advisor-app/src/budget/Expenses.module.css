@@ -29,8 +29,8 @@
   transition: background .18s var(--ease-out-expo), color .18s var(--ease-out-expo), border-color .18s var(--ease-out-expo);
 }
 
-.typeBtnIncome { background: rgba(var(--green-rgb), 0.16); border-color: rgba(var(--green-rgb), 0.4); color: var(--green); }
-.typeBtnExpense { background: rgba(var(--red-rgb), 0.16); border-color: rgba(var(--red-rgb), 0.4); color: var(--red); }
+.typeBtnIncome { background: rgba(var(--green-rgb), 0.12); border-color: rgba(var(--green-rgb), 0.4); color: var(--green); }
+.typeBtnExpense { background: rgba(var(--red-rgb), 0.12); border-color: rgba(var(--red-rgb), 0.4); color: var(--red); }
 
 .form {
   display: flex;

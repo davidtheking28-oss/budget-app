@@ -57,7 +57,7 @@
 
 .removeBtn:hover {
   color: var(--red);
-  background: rgba(var(--red-rgb), 0.12);
+  background: rgba(var(--red-rgb), 0.09);
 }
 
 .confirmRemoveGroup {
@@ -72,7 +72,7 @@
   padding: 5px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(var(--red-rgb), 0.4);
-  background: rgba(var(--red-rgb), 0.12);
+  background: rgba(var(--red-rgb), 0.09);
   color: var(--red);
   font-family: var(--font-body);
   font-size: var(--text-xs);
@@ -178,12 +178,12 @@
 
 .overageChip {
   color: var(--red);
-  background: rgba(var(--red-rgb), 0.12);
+  background: rgba(var(--red-rgb), 0.09);
 }
 
 .taskChip {
   color: var(--gold);
-  background: rgba(var(--gold-rgb), 0.12);
+  background: rgba(var(--gold-rgb), 0.09);
 }
 
 .empty {

@@ -102,7 +102,7 @@
 .fillPct {
   position: absolute;
   top: 50%;
-  inset-inline-start: 7px;
+  right: 7px;
   transform: translateY(-50%);
   font-size: var(--text-xs);
   font-weight: 700;

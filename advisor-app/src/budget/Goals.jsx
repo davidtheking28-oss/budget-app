@@ -147,7 +147,7 @@ export default function Goals({ clientUserId, advisorId }) {
                     <div className={styles.fill} style={{ transform: `scaleX(${Math.max(pct, 4) / 100})` }} />
                     {pct >= 12
                       ? <span className={styles.fillPct}>{pct}%</span>
-                      : <span className={styles.pctOutside} style={{ insetInlineStart: `calc(${pct}% + 6px)` }}>{pct}%</span>}
+                      : <span className={styles.pctOutside} style={{ right: `calc(${pct}% + 6px)` }}>{pct}%</span>}
                   </div>
                   {g.months > 0 && <div className={styles.meta}>יעד ל-{g.months} חודשים</div>}
                   {expanded ? (
