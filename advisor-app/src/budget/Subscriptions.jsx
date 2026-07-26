@@ -249,7 +249,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
               const soon = days !== null && days >= 0 && days <= 7;
               const overdue = days !== null && days < 0;
               return (
-                <div key={s.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+                <div key={s.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <div className={styles.rowMain} role="button" tabIndex={0} onClick={() => startEditSub(s)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditSub(s))}>
                     <div className={styles.nameRow}>
                       {subShares.length > 1 && <span className={styles.dot} style={{ background: CHART_PALETTE[subShares.findIndex(x => x.name === s.name) % CHART_PALETTE.length] }} />}
@@ -288,7 +288,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
               const payoff = loanPayoffLabel(l);
               const danger = payoff?.danger;
               return (
-                <div key={l.id} className={`${styles.row} ${styles.rowCard}${pct !== null ? ` ${styles.rowStacked} ${styles.rowWide}` : ''}${danger ? ' ' + styles.rowDanger : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }} role="button" tabIndex={0} onClick={() => startEditLoan(l)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditLoan(l))}>
+                <div key={l.id} className={`${styles.row} ${styles.rowCard}${pct !== null ? ` ${styles.rowStacked} ${styles.rowWide}` : ''}${danger ? ' ' + styles.rowDanger : ''}`} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }} role="button" tabIndex={0} onClick={() => startEditLoan(l)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditLoan(l))}>
                   <div className={styles.rowMain}>
                     <div>
                       <div className={styles.name}>{l.name || 'הלוואה'}</div>
@@ -336,7 +336,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
               const paidPct = total > 0 ? Math.min(100, Math.max(0, Math.round((cur / total) * 100))) : null;
               const showBar = paidPct !== null && !done;
               return (
-                <div key={p.id} className={`${styles.row} ${styles.rowCard}${showBar ? ' ' + styles.rowStacked : ''}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }} role="button" tabIndex={0} onClick={() => startEditPayment(p)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditPayment(p))}>
+                <div key={p.id} className={`${styles.row} ${styles.rowCard}${showBar ? ' ' + styles.rowStacked : ''}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }} role="button" tabIndex={0} onClick={() => startEditPayment(p)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditPayment(p))}>
                   <div className={styles.rowMain}>
                     <div>
                       <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg> הושלם</span>}</div>
@@ -374,7 +374,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         {insurances.length ? (
           <div className={styles.list}>
             {insurances.map((x, i) => (
-              <div key={x.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+              <div key={x.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                 <div className={styles.rowMain} role="button" tabIndex={0} onClick={() => startEditInsurance(x)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditInsurance(x))}>
                   <div className={styles.name}>{x.name}</div>
                   <div className={styles.amount}>{fmt(x.monthly || 0)}</div>
@@ -406,7 +406,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                 <div
                   key={f.id}
                   className={styles.row}
-                  style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}
+                  style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}
                   {...(!auto ? { role: 'button', tabIndex: 0, onClick: () => { setFixedCat(f.id); setFixedAmount(f.amount || ''); }, onKeyDown: e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setFixedCat(f.id), setFixedAmount(f.amount || '')) } : {})}
                 >
                   <div className={styles.name}>{f.id}{auto && <span className={styles.autoBadge}>אוטומטי</span>}</div>

@@ -29,8 +29,14 @@
   --input-bg: #f2f7f5;
   --track: rgba(15, 35, 30, 0.09);
   --scrim: rgba(10, 30, 25, 0.45);
-  --font-display: 'Frank Ruhl Libre', 'Times New Roman', serif;
-  --font-body: 'Heebo', system-ui, sans-serif;
+  /* One family, hierarchy through weight and size. Assistant is also what the
+     client budget app uses, so the two products now read as one system. */
+  --font-body: 'Assistant', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: var(--font-body);
+
+  --motion-fast: 140ms;
+  --motion: 220ms;
+  --motion-slow: 320ms;
   --shadow-card: 0 1px 2px rgba(15, 35, 30, 0.04), 0 8px 24px -12px rgba(15, 35, 30, 0.12);
   --shadow-card-hover: 0 2px 4px rgba(15, 35, 30, 0.05), 0 16px 36px -14px rgba(15, 35, 30, 0.18);
   --shadow-lift: 0 20px 60px -20px rgba(15, 35, 30, 0.28);
@@ -125,8 +131,9 @@ body {
 
 h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   margin: 0;
 }
 

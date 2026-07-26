@@ -90,7 +90,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lift);
-  animation: riseIn 0.2s var(--ease-out-expo) both;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
 .accountPanelLabel {
@@ -166,7 +166,7 @@
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
   width: 100%;
   margin: 0 auto;
-  animation: riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
 .content h1 {
@@ -294,7 +294,7 @@
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
   width: 100%;
   margin: 0 auto;
-  animation: tabIn 0.4s var(--ease-out-expo) both;
+  animation: tabIn var(--motion) var(--ease-out-expo) both;
 }
 
 @keyframes tabIn {

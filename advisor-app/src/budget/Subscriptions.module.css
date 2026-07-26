@@ -50,7 +50,7 @@
   border: 1px solid rgba(var(--gold-rgb), 0.3);
   background: rgba(var(--gold-rgb), 0.06);
   margin-bottom: var(--space-4);
-  animation: riseIn 0.35s var(--ease-out-expo) both;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
 .statStrip {
@@ -60,7 +60,7 @@
   padding-bottom: var(--space-5);
   margin-bottom: var(--space-6);
   border-bottom: 1px solid var(--border);
-  animation: riseIn 0.35s var(--ease-out-expo) both;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
 .stat {
@@ -146,7 +146,7 @@
   overflow: hidden;
   margin-bottom: var(--space-4);
   gap: 2px;
-  animation: riseIn 0.4s var(--ease-out-expo) both;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
 .miniBarSeg {
@@ -188,7 +188,7 @@
   min-width: 0;
   padding: var(--space-3) var(--space-1);
   border-bottom: 1px solid var(--border);
-  animation: riseIn 0.4s var(--ease-out-expo) both;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
   transition: transform 0.25s var(--ease-out-expo);
 }
 

@@ -135,7 +135,7 @@ export default function Goals({ clientUserId, advisorId }) {
               const pct = g.target ? Math.min(Math.round((g.saved / g.target) * 100), 100) : 0;
               const expanded = txCard?.id === g.id;
               return (
-                <div key={g.id} className={styles.item} style={{ animationDelay: Math.min(i * 0.05, 0.3) + 's' }}>
+                <div key={g.id} className={styles.item} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <div className={styles.top}>
                     <div className={styles.name}>{g.name}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

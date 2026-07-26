@@ -18,7 +18,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  animation: riseIn 0.45s var(--ease-out-expo) both;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
 .mark {

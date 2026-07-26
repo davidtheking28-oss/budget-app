@@ -191,7 +191,7 @@ export default function ClientList({ advisorId, onSelect }) {
                 role="button"
                 tabIndex={0}
                 className={styles.card + (urgent ? ' ' + styles.cardWide : '') + (mountedRef.current ? ' ' + styles.cardNoAnim : '')}
-                style={mountedRef.current ? undefined : { animationDelay: Math.min(i * 0.04, 0.3) + 's' }}
+                style={mountedRef.current ? undefined : { animationDelay: Math.min(i * 0.022, 0.12) + 's' }}
                 onClick={() => onSelect(c.client_id, c.client_email)}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(c.client_id, c.client_email); } }}
               >

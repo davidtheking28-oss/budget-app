@@ -169,7 +169,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
           const over = s > l;
           const color = pct >= 100 ? 'var(--red)' : pct >= 80 ? 'var(--yellow)' : 'var(--green)';
           return (
-            <div key={c} className={styles.item + (over ? ' ' + styles.itemOver : '')} style={{ animationDelay: Math.min(i * 0.04, 0.3) + 's' }}>
+            <div key={c} className={styles.item + (over ? ' ' + styles.itemOver : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
               <div className={styles.itemTop}>
                 <span className={styles.catLabel}>{getCategoryIcon(c)}{c}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

@@ -36,7 +36,7 @@
   border: 1px solid var(--border);
   display: inline-block;
   margin-bottom: var(--space-4);
-  animation: riseIn 0.35s var(--ease-out-expo) both;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
 .grid {
@@ -53,7 +53,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--space-4) var(--space-5);
-  animation: riseIn 0.4s var(--ease-out-expo) both;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
   transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
 }
 

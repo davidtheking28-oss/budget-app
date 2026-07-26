@@ -258,7 +258,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
               <button
                 type="button"
                 className={styles.superHeader}
-                style={{ animationDelay: Math.min(si * 0.05, 0.3) + 's' }}
+                style={{ animationDelay: Math.min(si * 0.022, 0.12) + 's' }}
                 onClick={() => toggleSuper(sg.key)}
                 aria-expanded={sOpen}
               >
