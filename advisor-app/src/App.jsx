@@ -19,6 +19,7 @@ import Crm from './crm/Crm.jsx';
 import Report from './budget/Report.jsx';
 import { useClientSummary } from './crm/useClientSummary.js';
 import { useClientFreshness } from './clients/useClientFreshness.js';
+import { useTheme } from './useTheme.js';
 
 const Dashboard = lazy(() => import('./budget/Dashboard.jsx'));
 const Analysis = lazy(() => import('./budget/Analysis.jsx'));
@@ -63,6 +64,7 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const isAdvisor = useIsAdvisor(session?.user?.id);
   const freshness = useClientFreshness(selectedClient?.id);
+  const { theme, toggle: toggleTheme } = useTheme();
   const { nextMeeting, openTasks, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
 
   useEffect(() => {
@@ -109,7 +111,7 @@ export default function App() {
   if (!selectedClient) {
     return (
       <>
-        <Shell title="לוח בקרה" email={session.user.email} onSearch={() => setSearchOpen(true)}>
+        <Shell title="לוח בקרה" email={session.user.email} onSearch={() => setSearchOpen(true)} theme={theme} onToggleTheme={toggleTheme}>
           <ClientList advisorId={session.user.id} onSelect={switchClient} />
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
@@ -141,6 +143,8 @@ export default function App() {
         onNavChange={setNav}
         onPrint={() => setReportMode(true)}
         onSearch={() => setSearchOpen(true)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         email={session.user.email}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
       >

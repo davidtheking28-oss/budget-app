@@ -8,7 +8,7 @@ import { useCountUp } from '../useCountUp.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
-import { CHART_PALETTE, CHART_THEME } from '../categories.js';
+import { CHART_PALETTE, chartTheme } from '../categories.js';
 import styles from './Dashboard.module.css';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
@@ -78,6 +78,7 @@ function SubStat({ label, value, prevValue, kind }) {
 }
 
 export default function Dashboard({ clientUserId, year, month }) {
+  const CT = chartTheme();
   const { data, loading, error, reload } = useClientBudget(clientUserId);
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -116,8 +117,8 @@ export default function Dashboard({ clientUserId, year, month }) {
   const chartData = {
     labels: trendMonths.map(({ month: m }) => MONTH_SHORT[m]),
     datasets: [
-      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: CHART_THEME.green, borderRadius: 5, hoverBackgroundColor: CHART_THEME.greenLight },
-      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: CHART_THEME.red, borderRadius: 5, hoverBackgroundColor: CHART_THEME.redLight }
+      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenLight },
+      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redLight }
     ]
   };
 
@@ -147,11 +148,11 @@ export default function Dashboard({ clientUserId, year, month }) {
           <div className={styles.catBox}>
             <div className={styles.catDonut}>
               <Pie
-                data={{ labels: catLabels, datasets: [{ data: catLabels.map(l => byCat[l]), backgroundColor: catColors, borderColor: CHART_THEME.surface, borderWidth: 2 }] }}
+                data={{ labels: catLabels, datasets: [{ data: catLabels.map(l => byCat[l]), backgroundColor: catColors, borderColor: CT.surface, borderWidth: 2 }] }}
                 options={{
                   maintainAspectRatio: false,
                   cutout: '70%',
-                  plugins: { legend: { display: false }, tooltip: { backgroundColor: CHART_THEME.surface, borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } } }
+                  plugins: { legend: { display: false }, tooltip: { backgroundColor: CT.surface, borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } } }
                 }}
               />
             </div>
@@ -210,12 +211,12 @@ export default function Dashboard({ clientUserId, year, month }) {
                 maintainAspectRatio: false,
                 animation: { duration: 700, easing: 'easeOutQuart' },
                 scales: {
-                  x: { ticks: { color: CHART_THEME.text2, font: { family: 'Heebo' } }, grid: { display: false } },
-                  y: { ticks: { color: CHART_THEME.text2, font: { family: 'Heebo' } }, grid: { color: CHART_THEME.border } }
+                  x: { ticks: { color: CT.text2, font: { family: 'Heebo' } }, grid: { display: false } },
+                  y: { ticks: { color: CT.text2, font: { family: 'Heebo' } }, grid: { color: CT.border } }
                 },
                 plugins: {
-                  legend: { labels: { color: CHART_THEME.text2, font: { family: 'Heebo' } } },
-                  tooltip: { backgroundColor: CHART_THEME.surface, borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
+                  legend: { labels: { color: CT.text2, font: { family: 'Heebo' } } },
+                  tooltip: { backgroundColor: CT.surface, borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
                 }
               }}
             />

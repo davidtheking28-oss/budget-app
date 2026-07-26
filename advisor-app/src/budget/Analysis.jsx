@@ -5,7 +5,7 @@ import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
-import { CHART_PALETTE, CHART_THEME } from '../categories.js';
+import { CHART_PALETTE, chartTheme } from '../categories.js';
 import styles from './Analysis.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -13,6 +13,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 export default function Analysis({ clientUserId, year, month }) {
+  const CT = chartTheme();
   const { data, loading, error, reload } = useClientBudget(clientUserId);
   const [whatIfCat, setWhatIfCat] = useState('');
   const [cutPct, setCutPct] = useState(20);
@@ -50,7 +51,7 @@ export default function Analysis({ clientUserId, year, month }) {
     datasets: [{
       data: values,
       backgroundColor: colors,
-      borderColor: CHART_THEME.bg,
+      borderColor: CT.bg,
       borderWidth: 2
     }]
   };
@@ -72,10 +73,10 @@ export default function Analysis({ clientUserId, year, month }) {
             plugins: {
               legend: { display: false },
               tooltip: {
-                backgroundColor: CHART_THEME.surface,
-                titleColor: CHART_THEME.text,
-                bodyColor: CHART_THEME.text2,
-                borderColor: CHART_THEME.border,
+                backgroundColor: CT.surface,
+                titleColor: CT.text,
+                bodyColor: CT.text2,
+                borderColor: CT.border,
                 borderWidth: 1,
                 padding: 12,
                 titleFont: { family: 'Heebo' },

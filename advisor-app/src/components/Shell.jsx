@@ -58,7 +58,7 @@ function AccountMenu({ email }) {
   );
 }
 
-export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onSearch, email, children }) {
+export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onSearch, email, theme, onToggleTheme, children }) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeNav]);
@@ -66,7 +66,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
   if (!nav) {
     return (
       <div className={styles.shell} dir="rtl">
-        <IconRail onSearch={onSearch} />
+        <IconRail onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
         <div className={styles.topbarBleed}>
           <div className={styles.topbar}>
             <div className={styles.logo}><Logo />Budget Advisor</div>
@@ -86,7 +86,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
 
   return (
     <div className={styles.shellTabs} dir="rtl">
-      <IconRail onBack={onBack} onSearch={onSearch} onPrint={onPrint} />
+      <IconRail onBack={onBack} onSearch={onSearch} onPrint={onPrint} theme={theme} onToggleTheme={onToggleTheme} />
       <div className={styles.topbarBleed}>
       <div className={styles.topbar}>
         <div className={styles.topbarStart}>

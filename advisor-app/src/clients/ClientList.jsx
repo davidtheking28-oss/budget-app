@@ -13,10 +13,28 @@ function initials(email) {
   return (email || '?').trim()[0]?.toUpperCase() || '?';
 }
 
-function HealthDot({ score }) {
+function HealthBadge({ score }) {
   if (score === null) return null;
-  const color = score >= 75 ? 'var(--green)' : score >= 45 ? 'var(--yellow)' : 'var(--red)';
-  return <span className={styles.healthDot} style={{ background: color }} role="img" aria-label={`ציון בריאות: ${score}`} title={`ציון בריאות: ${score}`} />;
+  const tone = score >= 75 ? styles.healthGood : score >= 45 ? styles.healthWarn : styles.healthBad;
+  return (
+    <span className={styles.healthBadge + ' ' + tone} title={`ציון בריאות פיננסית: ${score} מתוך 100`}>
+      {score}
+    </span>
+  );
+}
+
+// Clients arrive in roster order, which buries the ones that need attention.
+// Rank by urgency, then by the weakest health score.
+function urgencyRank(c) {
+  return (c.hasOverage ? 4 : 0)
+    + (c.openTasks > 0 ? 2 : 0)
+    + (c.updatedAt && isStale(c.updatedAt) ? 1 : 0);
+}
+
+function byUrgency(a, b) {
+  const diff = urgencyRank(b) - urgencyRank(a);
+  if (diff !== 0) return diff;
+  return (a.healthScore ?? 101) - (b.healthScore ?? 101);
 }
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
@@ -164,7 +182,7 @@ export default function ClientList({ advisorId, onSelect }) {
         </div>
       ) : (
         <div className={styles.grid}>
-          {clients.map((c, i) => {
+          {[...clients].sort(byUrgency).map((c, i) => {
             const urgent = c.hasOverage || c.openTasks > 0;
             const confirming = confirmingId === c.id;
             return (
@@ -179,7 +197,10 @@ export default function ClientList({ advisorId, onSelect }) {
               >
                 <div className={styles.initial} aria-hidden="true">{initials(c.client_email)}</div>
                 <div className={styles.info}>
-                  <div className={styles.email}><HealthDot score={c.healthScore} /><span className={styles.emailText}>{c.client_email}</span></div>
+                  <div className={styles.email}>
+                    <HealthBadge score={c.healthScore} />
+                    <span className={styles.emailText}>{c.client_email}</span>
+                  </div>
                   <div className={styles.chips}>
                     <RemainingChip value={c.remaining} />
                     {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}

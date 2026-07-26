@@ -146,12 +146,21 @@
   white-space: nowrap;
 }
 
-.healthDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.healthBadge {
   flex-shrink: 0;
+  min-width: 30px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  border: 1px solid transparent;
 }
+
+.healthGood { color: var(--green); background: rgba(var(--green-rgb), 0.10); border-color: rgba(var(--green-rgb), 0.28); }
+.healthWarn { color: var(--yellow); background: rgba(var(--yellow-rgb), 0.10); border-color: rgba(var(--yellow-rgb), 0.28); }
+.healthBad  { color: var(--red);    background: rgba(var(--red-rgb), 0.10);   border-color: rgba(var(--red-rgb), 0.28); }
 
 .chips {
   display: flex;

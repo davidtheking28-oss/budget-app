@@ -3,14 +3,24 @@ export const FIXED_CATS = ['דיור','ועד בית','גז','ארנונה','מ�
 export const BUDGET_CATS = [...EXPENSE_CATS, ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c))];
 export const INCOME_CATS = ['שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'];
 export const CHART_PALETTE = ['#0f766e', '#2dd4a7', '#155e9c', '#7dd3c0', '#b45309', '#5b8def', '#c2410c', '#9a7fd1'];
-export const CHART_THEME = {
-  bg: '#eef3f1',
-  surface: '#ffffff',
-  text: '#0f231e',
-  text2: '#566963',
-  border: 'rgba(15, 35, 30, 0.12)',
-  green: '#14a37a',
-  greenLight: '#2dd4a7',
-  red: '#d4525c',
-  redLight: '#e2717a'
-};
+// Chart.js takes plain colour strings, so it cannot follow CSS variables.
+// Read the live computed values instead, and re-read them whenever the theme
+// changes (callers key their charts on the theme so this re-runs).
+function cssVar(name, fallback) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+
+export function chartTheme() {
+  return {
+    bg: cssVar('--bg', '#eef3f1'),
+    surface: cssVar('--surface', '#ffffff'),
+    text: cssVar('--text', '#0f231e'),
+    text2: cssVar('--text2', '#566963'),
+    border: cssVar('--border', 'rgba(15, 35, 30, 0.12)'),
+    green: cssVar('--green', '#046b4d'),
+    greenLight: cssVar('--accent', '#0a7a62'),
+    red: cssVar('--red', '#b02631'),
+    redLight: cssVar('--red', '#b02631')
+  };
+}
