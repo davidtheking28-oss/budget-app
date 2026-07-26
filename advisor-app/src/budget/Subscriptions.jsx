@@ -29,7 +29,7 @@ function monthsElapsed(fromKey, toKey) {
   return (ty - fy) * 12 + (tm - fm);
 }
 
-function currentInstallments(p, total) {
+export function currentInstallments(p, total) {
   const base = parseFloat(p.current) || 0;
   if (!p.currentAnchor) return base;
   const now = new Date();
@@ -52,7 +52,7 @@ function setFixedExpense(save, cat, amount) {
   });
 }
 
-function loanPayoffMonths(remaining, monthly, annualRate) {
+export function loanPayoffMonths(remaining, monthly, annualRate) {
   if (!remaining || !monthly || remaining <= 0 || monthly <= 0) return null;
   const r = (annualRate || 0) / 1200;
   if (r <= 0) return Math.ceil(remaining / monthly);

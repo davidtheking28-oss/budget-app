@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE } from '../categories.js';
+import { FIXED_CATS, CHART_PALETTE } from '../categories.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';

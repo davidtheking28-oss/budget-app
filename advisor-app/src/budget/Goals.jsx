@@ -31,7 +31,6 @@ export default function Goals({ clientUserId, advisorId }) {
   }
 
   const goals = data.goals || [];
-  const transactions = data.transactions || [];
 
   async function addGoal() {
     const t = parseFloat(target);

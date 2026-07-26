@@ -1,7 +1,36 @@
 .toolbar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
+
+.toolbarActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.typeToggle {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.typeBtn {
+  padding: 9px 18px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-strong);
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .18s var(--ease-out-expo), color .18s var(--ease-out-expo), border-color .18s var(--ease-out-expo);
+}
+
+.typeBtnIncome { background: rgba(var(--green-rgb), 0.16); border-color: rgba(var(--green-rgb), 0.4); color: var(--green); }
+.typeBtnExpense { background: rgba(var(--red-rgb), 0.16); border-color: rgba(var(--red-rgb), 0.4); color: var(--red); }
 
 .form {
   display: flex;

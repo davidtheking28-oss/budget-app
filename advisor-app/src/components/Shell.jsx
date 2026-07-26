@@ -76,44 +76,44 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
   }
 
   return (
-    <div className={styles.shellSidebar} dir="rtl">
-      <aside className={styles.sidebar}>
-        <div className={styles.logo}><Logo />Budget Advisor</div>
-        {sidebarInfo}
-        {onPrint && (
-          <button className={styles.reportButton} onClick={onPrint}>
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M6 9V2h9l3 3v4M6 18H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2" />
-              <path d="M6 14h12v8H6z" />
-            </svg>
-            דוח חודשי
-          </button>
-        )}
-        <nav className={styles.nav}>
-          {nav.map(n => (
-            <button
-              key={n.key}
-              className={styles.navItem + (n.key === activeNav ? ' ' + styles.navItemActive : '')}
-              onClick={() => onNavChange(n.key)}
-            >
-              {n.icon && <span className={styles.navIcon} aria-hidden="true">{n.icon}</span>}
-              {n.label}
-            </button>
-          ))}
-        </nav>
-        <div className={styles.sidebarFooter}>
+    <div className={styles.shellTabs} dir="rtl">
+      <div className={styles.topbar}>
+        <div className={styles.topbarStart}>
           <button className={styles.backButton} onClick={onBack}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
             חזרה ללקוחות
           </button>
+          <div className={styles.logo}><Logo />Budget Advisor</div>
+        </div>
+        <div className={styles.topbarEnd}>
+          {onPrint && (
+            <button className={styles.reportButton} onClick={onPrint}>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 9V2h9l3 3v4M6 18H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2" />
+                <path d="M6 14h12v8H6z" />
+              </svg>
+              דוח חודשי
+            </button>
+          )}
           <AccountMenu email={email} />
         </div>
-      </aside>
-      <div className={styles.mainArea}>
-        <div className={styles.contentSidebar} key={activeNav}>
-          {title && <h1>{title}</h1>}
-          {children}
-        </div>
+      </div>
+      {sidebarInfo && <div className={styles.infoRow}>{sidebarInfo}</div>}
+      <nav className={styles.tabBar}>
+        {nav.map(n => (
+          <button
+            key={n.key}
+            className={styles.tabItem + (n.key === activeNav ? ' ' + styles.tabItemActive : '')}
+            onClick={() => onNavChange(n.key)}
+          >
+            {n.icon && <span className={styles.tabIcon} aria-hidden="true">{n.icon}</span>}
+            {n.label}
+          </button>
+        ))}
+      </nav>
+      <div className={styles.contentTabs} key={activeNav}>
+        {title && <h1>{title}</h1>}
+        {children}
       </div>
     </div>
   );

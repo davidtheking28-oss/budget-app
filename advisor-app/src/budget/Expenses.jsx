@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx, localISODate } from './monthUtils.js';
-import { EXPENSE_CATS, FIXED_CATS, CHART_PALETTE } from '../categories.js';
+import { EXPENSE_CATS, INCOME_CATS, FIXED_CATS, CHART_PALETTE } from '../categories.js';
+import ImportSheet from './ImportSheet.jsx';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -14,6 +15,7 @@ const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 export default function Expenses({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
+  const [txType, setTxType] = useState('expense');
   const [cat, setCat] = useState(EXPENSE_CATS[0]);
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
@@ -21,6 +23,12 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   const [openCats, setOpenCats] = useState(() => new Set());
   const [openSuper, setOpenSuper] = useState(() => new Set());
   const [adding, setAdding] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+
+  function pickType(t) {
+    setTxType(t);
+    setCat(t === 'income' ? INCOME_CATS[0] : EXPENSE_CATS[0]);
+  }
 
   const today = new Date();
   const isCurrent = year === today.getFullYear() && month === today.getMonth();
@@ -84,7 +92,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     if (!amt || amt <= 0) { toast('הזן סכום תקין', 'error'); return; }
     const tx = {
       id: Date.now() + Math.random(),
-      type: 'expense',
+      type: txType,
       cat,
       desc: desc.trim() || cat,
       amount: amt,
@@ -95,10 +103,27 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     setAdding(true);
     await save(cur => ({ transactions: [tx, ...(cur.transactions || [])] }));
     setAdding(false);
-    toast('הוצאה נוספה', 'success');
+    toast(txType === 'income' ? 'הכנסה נוספה' : 'הוצאה נוספה', 'success');
     setDesc('');
     setAmount('');
     setDate('');
+  }
+
+  async function importRows(rows) {
+    const newTx = rows.map(r => ({
+      id: Date.now() + Math.random(),
+      type: r.amount < 0 ? 'expense' : 'income',
+      cat: r.amount < 0 ? EXPENSE_CATS[EXPENSE_CATS.length - 1] : INCOME_CATS[INCOME_CATS.length - 1],
+      desc: r.desc,
+      amount: Math.abs(r.amount),
+      date: r.date,
+      recurring: false,
+      fixed: false
+    }));
+    const ok = await save(cur => ({ transactions: [...newTx, ...(cur.transactions || [])] }));
+    if (ok === false) return;
+    toast(`${newTx.length} תנועות יובאו`, 'success');
+    setImportOpen(false);
   }
 
   async function removeTx(id) {
@@ -127,17 +152,25 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   return (
     <div>
       <div className={styles.toolbar}>
-        <Button variant="ghost" onClick={exportCsv} disabled={!monthTx.length}>ייצוא ל-CSV</Button>
+        <div className={styles.typeToggle}>
+          <button type="button" className={styles.typeBtn + (txType === 'income' ? ' ' + styles.typeBtnIncome : '')} onClick={() => pickType('income')}>+ הכנסה</button>
+          <button type="button" className={styles.typeBtn + (txType === 'expense' ? ' ' + styles.typeBtnExpense : '')} onClick={() => pickType('expense')}>+ הוצאה</button>
+        </div>
+        <div className={styles.toolbarActions}>
+          <Button variant="ghost" onClick={() => setImportOpen(true)}>ייבוא מקובץ</Button>
+          <Button variant="ghost" onClick={exportCsv} disabled={!monthTx.length}>ייצוא ל-CSV</Button>
+        </div>
       </div>
       <div className={styles.form}>
         <select className={styles.select} aria-label="קטגוריה" value={cat} onChange={e => setCat(e.target.value)}>
-          {EXPENSE_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+          {(txType === 'income' ? INCOME_CATS : EXPENSE_CATS).map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input className={styles.input} aria-label="תיאור" placeholder="תיאור" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <input className={styles.input} type="number" inputMode="decimal" aria-label="סכום" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <input className={styles.input} type="date" aria-label="תאריך" value={date || defaultDate} onChange={e => setDate(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
-        <Button onClick={addTx} disabled={adding}>הוסף</Button>
+        <Button onClick={addTx} disabled={adding}>{txType === 'income' ? 'הוסף הכנסה' : 'הוסף הוצאה'}</Button>
       </div>
+      {importOpen && <ImportSheet onClose={() => setImportOpen(false)} onImport={importRows} />}
       {!monthTx.length && (
         <div className={styles.empty}>
           <div className={styles.emptyMark}>

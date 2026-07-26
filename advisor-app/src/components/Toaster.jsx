@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { subscribeToast } from '../toast.js';
 import styles from './Toaster.module.css';
 
@@ -20,13 +20,13 @@ export default function Toaster() {
     timersRef.current.add(id);
   }
 
-  function dismiss(id) {
+  const dismiss = useCallback(id => {
     setLeaving(prev => new Set(prev).add(id));
     setTrackedTimeout(() => {
       setItems(prev => prev.filter(i => i.id !== id));
       setLeaving(prev => { const next = new Set(prev); next.delete(id); return next; });
     }, EXIT_MS);
-  }
+  }, []);
 
   useEffect(() => {
     const timers = timersRef.current;
@@ -39,7 +39,7 @@ export default function Toaster() {
       timers.forEach(clearTimeout);
       timers.clear();
     };
-  }, []);
+  }, [dismiss]);
 
   if (!items.length) return null;
 
