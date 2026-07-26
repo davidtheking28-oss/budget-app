@@ -8,6 +8,7 @@ import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
+import BudgetWizard from './BudgetWizard.jsx';
 import styles from './Budget.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
@@ -19,6 +20,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   const [saving, setSaving] = useState(false);
   const [incName, setIncName] = useState('');
   const [incAmount, setIncAmount] = useState('');
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -76,8 +78,43 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   const activeCats = Object.keys(budgets).filter(c => budgets[c]).sort();
   const overCount = activeCats.filter(c => (spentByCat[c] || 0) > budgets[c]).length;
 
+  if (wizardOpen) {
+    return <BudgetWizard data={data} save={save} onClose={() => setWizardOpen(false)} />;
+  }
+
+  const monthlyIncome = incomeSources.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
+  const totalBudgeted = activeCats.reduce((s, c) => s + (budgets[c] || 0), 0);
+  const totalSpent = activeCats.reduce((s, c) => s + (spentByCat[c] || 0), 0);
+  const flow = monthlyIncome - totalSpent;
+
   return (
     <div>
+      <div className={styles.kpiRow}>
+        <div className={styles.kpi}>
+          <div className={styles.kpiLabel}>סך הכל הכנסות</div>
+          <div className={styles.kpiValue}>{fmt(monthlyIncome)}</div>
+          <div className={styles.kpiSub}>{incomeSources.length ? `${incomeSources.length} מקורות` : 'לא הוגדרו מקורות'}</div>
+        </div>
+        <div className={styles.kpi}>
+          <div className={styles.kpiLabel}>סך הכל הוצאות</div>
+          <div className={styles.kpiValue}>{fmt(totalSpent)}</div>
+          <div className={styles.kpiSub}>{totalBudgeted > 0 ? `מתוך ${fmt(totalBudgeted)} מתוקצב` : 'אין תקציב מוגדר'}</div>
+        </div>
+        <div className={styles.kpi}>
+          <div className={styles.kpiLabel}>תזרים</div>
+          <div className={styles.kpiValue + ' ' + (flow < 0 ? styles.kpiNeg : styles.kpiPos)}>{fmt(flow)}</div>
+          <div className={styles.kpiSub}>{flow < 0 ? 'חריגה מההכנסות' : 'פנוי החודש'}</div>
+        </div>
+      </div>
+
+      <div className={styles.wizardCta}>
+        <div>
+          <div className={styles.wizardCtaTitle}>בניית תקציב עם הלקוח</div>
+          <div className={styles.wizardCtaText}>אשף מודרך: הכנסות, הוצאות קבועות, תקציב משתנה ויעדים. בסיום נשמר ועובר לאפליקציה של הלקוח.</div>
+        </div>
+        <Button onClick={() => setWizardOpen(true)}>פתח אשף</Button>
+      </div>
+
       <div className={styles.section}>
         <div className={styles.sectionTitle}>מקורות הכנסה קבועים</div>
         {incomeSources.length > 0 && (

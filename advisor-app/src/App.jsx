@@ -6,6 +6,7 @@ import Shell from './components/Shell.jsx';
 import Toaster from './components/Toaster.jsx';
 import QuickSwitcher from './components/QuickSwitcher.jsx';
 import MonthNav from './components/MonthNav.jsx';
+import ClientContextBar from './components/ClientContextBar.jsx';
 import Skeleton from './components/Skeleton.jsx';
 import ClientList from './clients/ClientList.jsx';
 import Expenses from './budget/Expenses.jsx';
@@ -132,6 +133,12 @@ export default function App() {
         email={session.user.email}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} email={selectedClient.email} nextMeeting={nextMeeting} openTasks={openTasks} />}
       >
+        <ClientContextBar
+          email={selectedClient.email}
+          nextMeeting={nextMeeting}
+          openTasks={openTasks}
+          onOpenCrm={() => setNav('crm')}
+        />
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
