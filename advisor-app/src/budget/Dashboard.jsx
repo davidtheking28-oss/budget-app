@@ -211,7 +211,7 @@ export default function Dashboard({ clientUserId, year, month }) {
                 animation: { duration: 700, easing: 'easeOutQuart' },
                 scales: {
                   x: { ticks: { color: CHART_THEME.text2, font: { family: 'Heebo' } }, grid: { display: false } },
-                  y: { ticks: { color: CHART_THEME.text2, font: { family: 'Heebo' } }, grid: { color: 'rgba(242,240,234,0.06)' } }
+                  y: { ticks: { color: CHART_THEME.text2, font: { family: 'Heebo' } }, grid: { color: CHART_THEME.border } }
                 },
                 plugins: {
                   legend: { labels: { color: CHART_THEME.text2, font: { family: 'Heebo' } } },

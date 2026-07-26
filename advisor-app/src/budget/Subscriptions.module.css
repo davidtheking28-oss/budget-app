@@ -9,7 +9,7 @@
   padding: 10px var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--input-bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--text-base);
@@ -201,7 +201,8 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(165deg, var(--surface), var(--bg-2));
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
   transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
 }
 
@@ -232,7 +233,7 @@
   flex: 1;
   height: 6px;
   border-radius: var(--radius-xs);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--track);
   overflow: hidden;
 }
 

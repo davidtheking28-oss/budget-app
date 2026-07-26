@@ -53,7 +53,7 @@
   padding: 10px var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--input-bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--text-base);
@@ -97,7 +97,8 @@
   padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: linear-gradient(165deg, var(--surface), var(--bg-2));
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
   animation: riseIn 0.35s var(--ease-out-expo) both;
   transition: border-color 0.2s ease, transform 0.2s var(--ease-out-expo);
 }

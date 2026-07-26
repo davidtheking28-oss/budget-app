@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--scrim);
   backdrop-filter: blur(3px);
   z-index: var(--z-overlay);
   display: flex;
@@ -20,7 +20,8 @@
 .panel {
   width: 480px;
   max-width: 92vw;
-  background: linear-gradient(165deg, var(--surface), var(--bg-2));
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lift);

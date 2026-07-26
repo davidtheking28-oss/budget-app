@@ -26,7 +26,8 @@
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: linear-gradient(165deg, var(--surface), var(--bg-2));
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
 }
 
 .name {
@@ -65,7 +66,7 @@
   gap: 10px;
   margin: 28px 0 8px;
   padding: 18px;
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--hover);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
@@ -74,7 +75,7 @@
   padding: 11px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--input-bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--text-base);
@@ -95,7 +96,8 @@
 
 .item {
   min-width: 0;
-  background: linear-gradient(165deg, var(--surface), var(--bg-2));
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 18px 20px;
@@ -163,7 +165,7 @@
 .bar {
   height: 5px;
   border-radius: var(--radius-xs);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--track);
   overflow: hidden;
 }
 

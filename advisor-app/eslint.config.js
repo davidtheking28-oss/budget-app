@@ -29,5 +29,11 @@ export default [
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-undef': 'error'
     }
+  },
+  {
+    files: ['scripts/**/*.{js,mjs}', '*.config.js'],
+    languageOptions: {
+      globals: { ...globals.node }
+    }
   }
 ];

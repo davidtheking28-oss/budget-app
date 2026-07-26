@@ -145,7 +145,7 @@ export default function ClientList({ advisorId, onSelect }) {
             onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
             onKeyDown={e => e.key === 'Enter' && claimCode()}
           />
-          <Button className={styles.addButton} onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
+          <Button onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
         </div>
       </div>
 

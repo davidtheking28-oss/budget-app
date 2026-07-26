@@ -41,7 +41,7 @@
   padding: 9px 18px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--hover);
   color: var(--text2);
   font-family: var(--font-body);
   font-size: var(--text-base);
@@ -95,7 +95,7 @@
   padding: 9px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--hover);
   color: var(--text2);
   font-family: var(--font-body);
   font-size: var(--text-sm);
@@ -152,7 +152,7 @@
   padding: 9px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--input-bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--text-sm);
@@ -163,7 +163,7 @@
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--hover);
   color: var(--text2);
   font-family: var(--font-body);
   font-size: var(--text-sm);

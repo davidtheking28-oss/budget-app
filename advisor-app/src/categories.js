@@ -2,15 +2,15 @@ export const EXPENSE_CATS = ['מזון לבית','אוכל בחוץ ובילוי
 export const FIXED_CATS = ['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 export const BUDGET_CATS = [...EXPENSE_CATS, ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c))];
 export const INCOME_CATS = ['שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'];
-export const CHART_PALETTE = ['#4f83ff', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'];
+export const CHART_PALETTE = ['#0f766e', '#2dd4a7', '#155e9c', '#7dd3c0', '#b45309', '#5b8def', '#c2410c', '#9a7fd1'];
 export const CHART_THEME = {
-  bg: '#0a0908',
-  surface: '#17130f',
-  text: '#f2f0ea',
-  text2: '#9a9d9f',
-  border: 'rgba(242, 240, 234, 0.1)',
-  green: '#52c99a',
-  greenLight: '#6adcb2',
-  red: '#e8756a',
-  redLight: '#f28e83'
+  bg: '#eef3f1',
+  surface: '#ffffff',
+  text: '#0f231e',
+  text2: '#566963',
+  border: 'rgba(15, 35, 30, 0.12)',
+  green: '#14a37a',
+  greenLight: '#2dd4a7',
+  red: '#d4525c',
+  redLight: '#e2717a'
 };

@@ -50,7 +50,8 @@
 .stat {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: linear-gradient(165deg, var(--surface), var(--bg-2));
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
   padding: var(--space-3);
   animation: riseIn 0.4s var(--ease-out-expo) both;
   animation-delay: 0.05s;
