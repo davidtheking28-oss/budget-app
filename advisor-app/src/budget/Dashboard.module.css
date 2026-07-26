@@ -144,8 +144,10 @@
   grid-row: span 2;
 }
 
+/* A single-item group used to be span 1, which left it alone as a quarter-width
+   runt on its own row; match its siblings so the row reads as one set. */
 .tileGroup {
-  grid-column: span 1;
+  grid-column: span 2;
   grid-row: span 1;
 }
 
