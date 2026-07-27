@@ -49,8 +49,8 @@ export function chartTheme() {
     text2: cssVar('--text2', '#566963'),
     border: cssVar('--border', 'rgba(15, 35, 30, 0.12)'),
     green: cssVar('--green', '#046b4d'),
-    greenLight: cssVar('--accent', '#0a7a62'),
+    greenHover: cssVar('--green-hover', '#068b62'),
     red: cssVar('--red', '#b02631'),
-    redLight: cssVar('--red', '#b02631')
+    redHover: cssVar('--red-hover', '#cd2f3c')
   };
 }

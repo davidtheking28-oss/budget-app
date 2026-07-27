@@ -122,7 +122,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
           {sidebarInfo && <div className={styles.infoRow}>{sidebarInfo}</div>}
         </div>
       </div>
-      <div className={styles.contentTabs} key={activeNav}>
+      <div className={styles.contentTabs}>
         {title && <h1>{title}</h1>}
         {children}
       </div>

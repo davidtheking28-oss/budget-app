@@ -14,7 +14,7 @@
   --green-rgb: 4, 107, 77;
   --red-rgb: 176, 38, 49;
   --text: #0f231e;
-  --text2: #566963;
+  --text2: #455550;
   --text3: #5b6f69;
   --page-max: 1280px;
   --page-pad: 40px;
@@ -23,6 +23,11 @@
   --border-strong: rgba(15, 35, 30, 0.16);
   --red: #b02631;
   --green: #046b4d;
+  --red-hover: #cd2f3c;
+  --green-hover: #068b62;
+  /* Same value as --gold by design, kept as a separate name because it carries a
+     different meaning (warnings, vs gold for loans/tasks/notes). Change one and
+     the other stays put. */
   --yellow: #7c4a06;
   --yellow-rgb: 124, 74, 6;
   --hover: rgba(15, 35, 30, 0.04);
@@ -51,7 +56,6 @@
   --text-xl: 1.3rem;
   --text-display-sm: 1.7rem;
   --text-display-md: 2rem;
-  --text-display-lg: 4.4rem;
 
   /* spacing scale */
   --space-1: 4px;
@@ -93,6 +97,8 @@
   --green-rgb: 61, 219, 168;
   --red: #f28b91;
   --red-rgb: 242, 139, 145;
+  --red-hover: #f7a9ae;
+  --green-hover: #6ae7c0;
   --yellow: #e0b768;
   --yellow-rgb: 224, 183, 104;
   --text: #e8efec;

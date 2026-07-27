@@ -117,8 +117,8 @@ export default function Dashboard({ clientUserId, year, month }) {
   const chartData = {
     labels: trendMonths.map(({ month: m }) => MONTH_SHORT[m]),
     datasets: [
-      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenLight },
-      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redLight }
+      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
     ]
   };
 
