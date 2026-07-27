@@ -14,6 +14,13 @@ Personal budget & investment tracking app — single HTML file on GitHub Pages, 
 CI and deployed alongside the main app to `/advisor/` (see below). Local dev:
 `cd advisor-app && npm run dev`; tests: `npm run test`.
 
+**Do not delete `advisor-app/src/__audit/` or `vite.audit.config.js`.** Supabase
+auth is not automatable, so this mock-client harness is the only way to render
+the advisor screens for visual/contrast verification
+(`npx vite --config vite.audit.config.js`). It has been rebuilt from scratch
+twice after being deleted. It carries no credentials and is excluded from the
+production build. See the `verify` skill for how to drive both apps.
+
 **The Supabase project is shared with the trading-journal app.** Budget owns
 `budget_data`, `households`, `push_subscriptions`, `push_log`, and the
 `parse-receipt` / `parse-expense` / `push-daily` edge functions. Everything else

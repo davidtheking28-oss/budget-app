@@ -48,6 +48,8 @@
 
 .item {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--surface);
   box-shadow: var(--shadow-card);
   border: 1px solid var(--border);
@@ -59,10 +61,13 @@
 
 .item:hover { transform: translateY(-2px); border-color: var(--border-strong); }
 
+/* Reserve two title lines so the progress bar sits at the same offset in every
+   card, however long the goal name is. */
 .top {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  min-height: calc(var(--text-lg) * 1.35 * 2);
   margin-bottom: var(--space-3);
 }
 
@@ -70,6 +75,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--text-lg);
+  line-height: 1.35;
 }
 
 .amounts {
@@ -134,7 +140,8 @@
 .txActions {
   display: flex;
   gap: var(--space-2);
-  margin-top: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-3);
 }
 
 .txBtn, .txBtnNeutral {
@@ -167,7 +174,8 @@
 .txRow {
   display: flex;
   gap: var(--space-2);
-  margin-top: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-3);
 }
 
 .txInput {

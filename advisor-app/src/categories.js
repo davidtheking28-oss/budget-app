@@ -9,12 +9,17 @@ export const CHART_PALETTE = ['#0f766e', '#2dd4a7', '#155e9c', '#7dd3c0', '#b453
 // canonical arrays, not on its rank in whatever list is being rendered.
 const CAT_ORDER = [...BUDGET_CATS, ...INCOME_CATS.filter(c => !BUDGET_CATS.includes(c))];
 
-export function catColor(cat) {
-  const i = CAT_ORDER.indexOf(cat);
+export function stableColor(key, order) {
+  const k = String(key);
+  const i = order ? order.indexOf(k) : -1;
   if (i >= 0) return CHART_PALETTE[i % CHART_PALETTE.length];
   let h = 0;
-  for (let j = 0; j < cat.length; j++) h = (h * 31 + cat.charCodeAt(j)) >>> 0;
+  for (let j = 0; j < k.length; j++) h = (h * 31 + k.charCodeAt(j)) >>> 0;
   return CHART_PALETTE[h % CHART_PALETTE.length];
+}
+
+export function catColor(cat) {
+  return stableColor(cat, CAT_ORDER);
 }
 // Chart.js takes plain colour strings, so it cannot follow CSS variables.
 // Read the live computed values instead, and re-read them whenever the theme

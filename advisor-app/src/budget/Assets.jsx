@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
-import { CHART_PALETTE } from '../categories.js';
+import { stableColor } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -86,7 +86,7 @@ export default function Assets({ clientUserId, advisorId }) {
   const byCat = {};
   assets.forEach(a => { byCat[a.category] = (byCat[a.category] || 0) + (parseFloat(a.amount) || 0); });
   const catLabels = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
-  const catColors = catLabels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
+  const catColors = catLabels.map(l => stableColor(l, ASSET_CATS));
 
   const chartData = {
     labels: catLabels,

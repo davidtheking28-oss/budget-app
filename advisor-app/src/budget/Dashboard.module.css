@@ -7,6 +7,10 @@
 }
 
 @media (max-width: 860px) {
+  .bentoGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
   .bentoGrid { grid-template-columns: 1fr; }
 }
 
@@ -410,6 +414,10 @@
 }
 
 @media (max-width: 860px) {
+  .tileTrend { grid-column: span 2; }
+}
+
+@media (max-width: 560px) {
   .tileBalance, .tileHealth, .tileHighlight, .tileTrend, .tileGroup, .tileGroupWide, .tileCategories, .tileGoals {
     grid-column: span 1;
     grid-row: span 1;

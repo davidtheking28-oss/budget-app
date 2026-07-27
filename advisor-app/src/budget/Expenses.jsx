@@ -263,7 +263,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                 aria-expanded={sOpen}
               >
                 <div className={styles.groupLeft}>
-                  <svg className={styles.chevron + (sOpen ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                  <svg className={styles.chevron + (sOpen ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
                   <span>{sg.label}</span>
                   <span className={styles.groupCount}>{sg.groups.length}</span>
                 </div>
@@ -290,7 +290,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                           aria-expanded={open}
                         >
                           <div className={styles.groupLeft}>
-                            <svg className={styles.chevron + (open ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                            <svg className={styles.chevron + (open ? ' ' + styles.chevronOpen : '')} viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
                             <span className={styles.catDot} style={{ background: color }} />
                             <span className={styles.catIcon}>{getCategoryIcon(g.cat)}</span>
                             <span>{g.cat}</span>

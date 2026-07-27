@@ -16,6 +16,17 @@ export function formatDate(iso) {
   return dateFmt.format(new Date(y, m - 1, d));
 }
 
+const dateTimeFmt = new Intl.DateTimeFormat('he-IL', {
+  day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+});
+
+export function formatDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return dateTimeFmt.format(d);
+}
+
 export function getMonthTx(transactions, y, m) {
   const prefix = mk(y, m);
   return (transactions || []).filter(t => t.date && t.date.startsWith(prefix));

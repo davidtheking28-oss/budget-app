@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useClientCrm } from './useClientCrm.js';
+import { formatDate, formatDateTime } from '../budget/monthUtils.js';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import Skeleton from '../components/Skeleton.jsx';
@@ -127,7 +128,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
                 <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditMeeting(m)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditMeeting(m))}>
                     <div className={styles.name}>
-                      {new Date(m.scheduled_at).toLocaleString('he-IL')}
+                      {formatDateTime(m.scheduled_at)}
                       {soon && <span className={styles.soonBadge}>בעוד {days === 0 ? 'היום' : days + ' ימים'}</span>}
                       {past && <span className={styles.pastBadge}>עברה</span>}
                     </div>
@@ -176,7 +177,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
                   <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => { toggleTask(t.id, e.target.checked); notify(); }} />
                   <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
                     <div className={styles.name}>{t.title}{overdue && <span className={styles.pastBadge}>באיחור</span>}</div>
-                    {t.due_date && <div className={styles.meta}>יעד: {t.due_date}</div>}
+                    {t.due_date && <div className={styles.meta}>יעד: {formatDate(t.due_date)}</div>}
                   </div>
                   <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
                   <DeleteButton onClick={() => removeTask(t.id)} />
@@ -207,7 +208,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
               <div key={n.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                 <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditNote(n)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditNote(n))}>
                   <div>{n.body}</div>
-                  <div className={styles.meta}>{new Date(n.created_at).toLocaleDateString('he-IL')}</div>
+                  <div className={styles.meta}>{formatDate(n.created_at)}</div>
                 </div>
                 <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
                 <DeleteButton onClick={() => deleteNote(n.id)} />

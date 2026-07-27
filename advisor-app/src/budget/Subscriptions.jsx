@@ -4,7 +4,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
-import { CHART_PALETTE, FIXED_CATS } from '../categories.js';
+import { stableColor, FIXED_CATS } from '../categories.js';
 import { toast } from '../toast.js';
 import styles from './Subscriptions.module.css';
 
@@ -232,11 +232,11 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         </div>
         {subShares.length > 1 && (
           <div className={styles.miniBar}>
-            {subShares.map((s, i) => (
+            {subShares.map(s => (
               <div
                 key={s.name}
                 className={styles.miniBarSeg}
-                style={{ width: (s.monthly / monthlySubsCost * 100) + '%', background: CHART_PALETTE[i % CHART_PALETTE.length] }}
+                style={{ width: (s.monthly / monthlySubsCost * 100) + '%', background: stableColor(s.name) }}
                 title={s.name}
               />
             ))}
@@ -252,7 +252,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                 <div key={s.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <div className={styles.rowMain} role="button" tabIndex={0} onClick={() => startEditSub(s)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditSub(s))}>
                     <div className={styles.nameRow}>
-                      {subShares.length > 1 && <span className={styles.dot} style={{ background: CHART_PALETTE[subShares.findIndex(x => x.name === s.name) % CHART_PALETTE.length] }} />}
+                      {subShares.length > 1 && <span className={styles.dot} style={{ background: stableColor(s.name) }} />}
                       <div>
                         <div className={styles.name}>{s.name}{overdue && <span className={styles.overdueBadge}>באיחור</span>}{soon && <span className={styles.soonBadge}>בעוד {days === 0 ? 'היום' : days + ' ימים'}</span>}</div>
                         <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + s.nextDate : ''}</div>

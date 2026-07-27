@@ -211,7 +211,7 @@ export default function Dashboard({ clientUserId, year, month }) {
                 maintainAspectRatio: false,
                 animation: { duration: 700, easing: 'easeOutQuart' },
                 scales: {
-                  x: { ticks: { color: CT.text2, font: { family: 'Heebo' } }, grid: { display: false } },
+                  x: { ticks: { color: CT.text2, font: { family: 'Heebo' }, maxRotation: 0, minRotation: 0 }, grid: { display: false } },
                   y: { ticks: { color: CT.text2, font: { family: 'Heebo' } }, grid: { color: CT.border } }
                 },
                 plugins: {
