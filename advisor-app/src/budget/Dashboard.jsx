@@ -152,7 +152,7 @@ export default function Dashboard({ clientUserId, year, month }) {
                 options={{
                   maintainAspectRatio: false,
                   cutout: '70%',
-                  plugins: { legend: { display: false }, tooltip: { backgroundColor: CT.surface, borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } } }
+                  plugins: { legend: { display: false }, tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } } }
                 }}
               />
             </div>
@@ -209,14 +209,14 @@ export default function Dashboard({ clientUserId, year, month }) {
               data={chartData}
               options={{
                 maintainAspectRatio: false,
-                animation: { duration: 700, easing: 'easeOutQuart' },
+                animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
                 scales: {
-                  x: { ticks: { color: CT.text2, font: { family: 'Heebo' }, maxRotation: 0, minRotation: 0 }, grid: { display: false } },
-                  y: { ticks: { color: CT.text2, font: { family: 'Heebo' } }, grid: { color: CT.border } }
+                  x: { ticks: { color: CT.text2, font: { family: CT.font }, maxRotation: 0, minRotation: 0 }, grid: { display: false } },
+                  y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
                 },
                 plugins: {
-                  legend: { labels: { color: CT.text2, font: { family: 'Heebo' } } },
-                  tooltip: { backgroundColor: CT.surface, borderColor: 'rgba(79,131,255,0.3)', borderWidth: 1, padding: 10, titleFont: { family: 'Heebo' }, bodyFont: { family: 'Heebo' } }
+                  legend: { labels: { color: CT.text2, font: { family: CT.font } } },
+                  tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
                 }
               }}
             />

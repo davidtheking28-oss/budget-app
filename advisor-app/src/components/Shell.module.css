@@ -349,6 +349,7 @@
   }
 
   .topbar {
+    flex-wrap: wrap;
     gap: var(--space-3);
   }
 
@@ -364,9 +365,5 @@
 
   .accountTrigger {
     padding: 9px 10px;
-  }
-
-  .shellTabs .topbar {
-    flex-wrap: nowrap;
   }
 }

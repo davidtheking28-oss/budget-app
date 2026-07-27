@@ -301,7 +301,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                             <span className={styles.groupTotal + ' ' + amountClass}>{fmt(g.total)}</span>
                           </div>
                         </button>
-                        <div className={styles.groupBar}><div className={styles.groupBarFill} style={{ width: pct + '%', background: color }} /></div>
+                        <div className={styles.groupBar}><div className={styles.groupBarFill} style={{ transform: `scaleX(${pct / 100})`, background: color }} /></div>
                         {open && (
                           <div className={styles.groupBody}>
                             {g.items.map(t => (

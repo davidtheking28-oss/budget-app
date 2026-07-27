@@ -46,3 +46,10 @@
   .search { width: 100%; }
   .kbd { display: none; }
 }
+
+/* The icon rail turns horizontal here and already carries a search button, so
+   the topbar pill is redundant — and its width pushed the topbar past the
+   viewport, giving the document a horizontal scroll. */
+@media (max-width: 560px) {
+  .search { display: none; }
+}

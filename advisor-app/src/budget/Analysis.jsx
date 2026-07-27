@@ -79,8 +79,8 @@ export default function Analysis({ clientUserId, year, month }) {
                 borderColor: CT.border,
                 borderWidth: 1,
                 padding: 12,
-                titleFont: { family: 'Heebo' },
-                bodyFont: { family: 'Heebo' }
+                titleFont: { family: CT.font },
+                bodyFont: { family: CT.font }
               }
             }
           }}
