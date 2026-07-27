@@ -70,7 +70,8 @@ function builder(table) {
     upsert(vals) {
       const arr = Array.isArray(vals) ? vals : [vals];
       arr.forEach(v => {
-        const existing = (db[table] || []).find(r => r.user_id === v.user_id);
+        const key = v.user_id !== undefined ? 'user_id' : 'client_id';
+        const existing = (db[table] || []).find(r => r[key] === v[key]);
         if (existing) Object.assign(existing, v);
         else db[table] = [...(db[table] || []), v];
       });
@@ -103,6 +104,8 @@ function builder(table) {
   };
   return api;
 }
+
+export const SUPA_URL = 'https://mock.supabase.co';
 
 export const supabase = {
   from: table => builder(table),

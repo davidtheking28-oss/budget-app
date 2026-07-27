@@ -48,6 +48,17 @@ decoration that competes with the numbers.
 - Both themes are real: light is the default and dark is opt-in via the rail
   toggle; any change must be checked in both.
 
+## מיפוי כלכלי (Economic Mapping)
+A first-meeting tool, separate from the client's ongoing budget: the advisor
+uploads up to 3 months of the client's credit-card statements (PDF or photos),
+AI extracts and categorizes every transaction, and the advisor sees a
+calendar-month average per category — a data-driven starting point before
+building the client's actual budget together. It is deliberately decoupled
+from `budget_data`: a standalone snapshot the advisor references during
+onboarding, not a synced record that feeds the other tabs. Statement files are
+parsed transiently and never stored — only the extracted, aggregated numbers
+persist.
+
 ## Accessibility & Inclusion
 No specific requirements stated. Maintain existing standards already in the
 codebase: visible focus rings (`:focus-visible`), `prefers-reduced-motion` handling,

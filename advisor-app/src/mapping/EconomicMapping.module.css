@@ -1,0 +1,226 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+
+.cardStandalone {
+  margin-top: var(--space-4);
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--text);
+  margin-bottom: var(--space-4);
+}
+
+.dropZone { padding-bottom: var(--space-2); }
+.fileInput { display: none; }
+
+.dropLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-5);
+  color: var(--text2);
+  cursor: pointer;
+  transition: border-color .18s var(--ease-out-expo), color .18s var(--ease-out-expo);
+}
+
+.dropLabel:hover { border-color: var(--accent); color: var(--text); }
+
+.dropHint {
+  font-size: var(--text-xs);
+  color: var(--text3);
+  max-width: 42ch;
+}
+
+.queue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.queueRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.queueName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--text);
+}
+
+.monthSelect {
+  flex-shrink: 0;
+  min-height: 36px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  padding: 0 var(--space-2);
+}
+
+.statusChip {
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  color: var(--text2);
+  min-width: 5ch;
+  text-align: center;
+}
+
+.statusError { color: var(--red); }
+.statusDone { color: var(--green); }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-4);
+}
+
+.coverageNote {
+  font-size: var(--text-sm);
+  color: var(--text2);
+  margin-bottom: var(--space-4);
+}
+
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.barLabel {
+  flex: 0 0 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--text2);
+}
+
+.barTrack {
+  flex: 1;
+  min-width: 0;
+  height: 10px;
+  background: var(--track);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width .3s var(--ease-out-expo);
+}
+
+.barValue {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.toggle {
+  display: block;
+  margin-top: var(--space-5);
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--space-3);
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.txRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.txRow:last-child { border-bottom: none; }
+
+.txDate {
+  flex: 0 0 78px;
+  font-size: var(--text-xs);
+  color: var(--text3);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.txDesc {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--text);
+}
+
+.txCat {
+  flex: 0 0 auto;
+  max-width: 160px;
+  min-height: 32px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text2);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  padding: 0 var(--space-2);
+}
+
+.txAmt {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+@media (max-width: 860px) {
+  .queueRow { flex-wrap: wrap; }
+  .barLabel { flex-basis: 100px; }
+}

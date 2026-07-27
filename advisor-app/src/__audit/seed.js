@@ -113,6 +113,30 @@ const overspent = {
   updated_at: iso(1), updated_by: CLIENT_C
 };
 
+const economicMapping = {
+  id: 'em1',
+  advisor_id: ADVISOR,
+  client_id: CLIENT_A,
+  period_start: `${prev.getFullYear()}-${pad(prev.getMonth() + 1)}-01`,
+  period_end: d(28),
+  months_covered: 2,
+  category_averages: {
+    [EXPENSE_CATS[0]]: 1310, [EXPENSE_CATS[1]]: 240, [EXPENSE_CATS[2]]: 155,
+    [EXPENSE_CATS[3]]: 410, [EXPENSE_CATS[5]]: 599, [EXPENSE_CATS[13]]: 620
+  },
+  transactions: [
+    { date: d(3), desc: 'סופר יוחננוף', amount: 1240.5, category: EXPENSE_CATS[0], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(7), desc: 'רמי לוי', amount: 380, category: EXPENSE_CATS[0], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(5), desc: 'ארוחת ערב במסעדה', amount: 268, category: EXPENSE_CATS[1], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(8), desc: 'סופר פארם', amount: 154.9, category: EXPENSE_CATS[2], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(9), desc: 'דלק פז', amount: 410, category: EXPENSE_CATS[3], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(12), desc: 'קסטרו', amount: 599, category: EXPENSE_CATS[5], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(14), desc: 'מרפאת שיניים', amount: 620, category: EXPENSE_CATS[13], source_month: `${Y}-${pad(M + 1)}` }
+  ],
+  created_at: iso(20),
+  updated_at: iso(2)
+};
+
 export const IDS = { CLIENT_A, CLIENT_B, CLIENT_C, CLIENT_EMPTY, ADVISOR };
 
 export function makeDb(mode) {
@@ -126,6 +150,7 @@ export function makeDb(mode) {
       { id: 'r4', advisor_id: ADVISOR, client_id: CLIENT_EMPTY, client_email: 'new.client@gmail.com', status: 'active', created_at: iso(1) }
     ],
     budget_data: empty ? [] : [full, thin, overspent],
+    economic_mappings: empty ? [] : [economicMapping],
     advisor_notes: empty ? [] : [
       { id: 'n1', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'הלקוחה מעוניינת להגדיל הפרשה לפנסיה ב-2% החל מהרבעון הבא. לבדוק השלכות מס.', created_at: iso(5) },
       { id: 'n2', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'שיחת טלפון קצרה.', created_at: iso(20) }
