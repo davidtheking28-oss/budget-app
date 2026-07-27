@@ -5,6 +5,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { stableColor, FIXED_CATS } from '../categories.js';
+import { formatDate } from './monthUtils.js';
 import { toast } from '../toast.js';
 import styles from './Subscriptions.module.css';
 
@@ -201,7 +202,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <path d="M16 2v4M8 2v4M3 10h18" />
           </svg>
-          {renewingSoon.map(s => `${s.name} מתחדש ב-${s.nextDate}`).join(' · ')}
+          {renewingSoon.map(s => `${s.name} מתחדש ב-${formatDate(s.nextDate)}`).join(' · ')}
         </div>
       )}
       {(subs.length > 0 || loans.length > 0 || payments.length > 0 || fixedExpenses.length > 0 || insurances.length > 0) && (
@@ -255,7 +256,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                       {subShares.length > 1 && <span className={styles.dot} style={{ background: stableColor(s.name) }} />}
                       <div>
                         <div className={styles.name}>{s.name}{overdue && <span className={styles.overdueBadge}>באיחור</span>}{soon && <span className={styles.soonBadge}>בעוד {days === 0 ? 'היום' : days + ' ימים'}</span>}</div>
-                        <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + s.nextDate : ''}</div>
+                        <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + formatDate(s.nextDate) : ''}</div>
                       </div>
                     </div>
                     <div className={styles.amount}>{fmt(s.amount || 0)}</div>

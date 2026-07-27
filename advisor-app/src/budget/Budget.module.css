@@ -161,6 +161,7 @@
 .itemTop span:last-child {
   font-family: var(--font-display);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   direction: ltr;
   unicode-bidi: isolate;
 }

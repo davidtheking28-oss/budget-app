@@ -93,6 +93,7 @@
   color: var(--text3);
   font-size: var(--text-sm);
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   direction: ltr;
   unicode-bidi: isolate;
 }
@@ -245,6 +246,7 @@
   font-weight: 700;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
+  font-variant-numeric: tabular-nums;
   direction: ltr;
   unicode-bidi: isolate;
 }
@@ -413,8 +415,12 @@
   color: var(--text3);
 }
 
+/* Tablet tier: two columns, so the wide tiles have to give up half their span
+   or the grid reads as a single very tall column. */
 @media (max-width: 860px) {
   .tileTrend { grid-column: span 2; }
+  .tileCategories, .tileGoals { grid-column: span 1; }
+  .catBox { flex-direction: column; align-items: stretch; }
 }
 
 @media (max-width: 560px) {

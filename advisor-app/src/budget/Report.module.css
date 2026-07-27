@@ -102,6 +102,11 @@ th, td {
   border-bottom: 1px solid var(--border);
 }
 
+/* every column but the first holds an amount */
+td + td {
+  font-variant-numeric: tabular-nums;
+}
+
 .insight {
   font-size: var(--text-base);
   padding: var(--space-1) 0;

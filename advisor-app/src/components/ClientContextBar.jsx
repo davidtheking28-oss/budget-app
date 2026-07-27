@@ -1,19 +1,13 @@
 import { relativeTime, isStale } from '../clients/useClientFreshness.js';
+import { formatDateTime } from '../budget/monthUtils.js';
 import styles from './ClientContextBar.module.css';
 
 function initials(email) {
   return (email || '?').trim()[0]?.toUpperCase() || '?';
 }
 
-function formatMeeting(iso) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  return d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: '2-digit' }) +
-    ' בשעה ' + d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
-}
-
 export default function ClientContextBar({ email, nextMeeting, openTasks, onOpenCrm, freshness }) {
-  const meeting = formatMeeting(nextMeeting);
+  const meeting = nextMeeting ? formatDateTime(nextMeeting) : null;
   const updated = freshness ? relativeTime(freshness.updatedAt) : null;
   const stale = freshness ? isStale(freshness.updatedAt) : false;
   return (
@@ -25,7 +19,7 @@ export default function ClientContextBar({ email, nextMeeting, openTasks, onOpen
       </div>
       <div className={styles.facts}>
         {updated && (
-          <span className={styles.fact} title={new Date(freshness.updatedAt).toLocaleString('he-IL')}>
+          <span className={styles.fact} title={formatDateTime(freshness.updatedAt)}>
             <span className={styles.factLabel}>{freshness.byClient ? 'הלקוח עדכן' : 'עודכן'}</span>
             <span className={styles.factValue + (stale ? ' ' + styles.factStale : '')}>{updated}</span>
           </span>
