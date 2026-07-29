@@ -18,8 +18,6 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   const [cat, setCat] = useState(BUDGET_CATS[0]);
   const [limit, setLimit] = useState('');
   const [saving, setSaving] = useState(false);
-  const [incName, setIncName] = useState('');
-  const [incAmount, setIncAmount] = useState('');
   const [wizardOpen, setWizardOpen] = useState(false);
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -39,20 +37,6 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   monthTx.filter(t => t.type === 'expense').forEach(t => {
     spentByCat[t.cat] = (spentByCat[t.cat] || 0) + t.amount;
   });
-
-  async function addIncomeSource() {
-    const amt = parseFloat(incAmount);
-    if (!incName.trim() || !amt || amt <= 0) { toast('הזן שם וסכום תקינים', 'error'); return; }
-    await save(cur => ({ settings: { ...(cur.settings || {}), incomeSources: [...(cur.settings?.incomeSources || []), { name: incName.trim(), amount: amt }] } }));
-    toast('מקור הכנסה נוסף', 'success');
-    setIncName('');
-    setIncAmount('');
-  }
-
-  async function removeIncomeSource(i) {
-    await save(cur => ({ settings: { ...(cur.settings || {}), incomeSources: (cur.settings?.incomeSources || []).filter((_, idx) => idx !== i) } }));
-    toast('מקור הכנסה הוסר', 'success');
-  }
 
   async function setBudget() {
     const amt = parseFloat(limit);
@@ -93,7 +77,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>סך הכל הכנסות</div>
           <div className={styles.kpiValue}>{fmt(monthlyIncome)}</div>
-          <div className={styles.kpiSub}>{incomeSources.length ? `${incomeSources.length} מקורות` : 'לא הוגדרו מקורות'}</div>
+          <div className={styles.kpiSub}>{incomeSources.length ? `${incomeSources.length} מקורות` : 'מקורות ההכנסה מנוהלים בתזרים'}</div>
         </div>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>סך הכל הוצאות</div>
@@ -115,28 +99,6 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
         <Button onClick={() => setWizardOpen(true)}>פתח אשף</Button>
       </div>
 
-      <div className={styles.section}>
-        <div className={styles.sectionTitle}>מקורות הכנסה קבועים</div>
-        {incomeSources.length > 0 && (
-          <div className={styles.list}>
-            {incomeSources.map((src, i) => (
-              <div key={i} className={styles.row}>
-                <div className={styles.name}>{src.name}</div>
-                <div className={styles.rowActions}>
-                  <span>{fmt(src.amount)}</span>
-                  <DeleteButton onClick={() => removeIncomeSource(i)} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        <div className={styles.form}>
-          <input className={styles.input} placeholder="שם מקור ההכנסה" value={incName} onChange={e => setIncName(e.target.value)} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" value={incAmount} onChange={e => setIncAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addIncomeSource()} />
-          <Button onClick={addIncomeSource}>הוסף מקור הכנסה</Button>
-        </div>
-        <div className={styles.meta}>משמש כברירת מחדל להכנסת החודש כשאין עדיין תנועות הכנסה רשומות.</div>
-      </div>
       {activeCats.length > 0 && (
         <div className={styles.rollup + ' ' + (overCount > 0 ? styles.rollupWarn : styles.rollupOk)}>
           {overCount > 0 ? `${overCount} מתוך ${activeCats.length} קטגוריות בחריגה` : `כל ${activeCats.length} הקטגוריות בתקציב`}

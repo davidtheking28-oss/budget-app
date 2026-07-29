@@ -25,6 +25,8 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
   const [adding, setAdding] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [incName, setIncName] = useState('');
+  const [incAmount, setIncAmount] = useState('');
 
   function pickType(t) {
     setTxType(t);
@@ -63,6 +65,8 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
       </div>
     );
   }
+
+  const incomeSources = data.settings?.incomeSources || [];
 
   const allMonthTx = getMonthTx(data.transactions, year, month)
     .slice()
@@ -130,6 +134,20 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     setDate('');
   }
 
+  async function addIncomeSource() {
+    const amt = parseFloat(incAmount);
+    if (!incName.trim() || !amt || amt <= 0) { toast('הזן שם וסכום תקינים', 'error'); return; }
+    await save(cur => ({ settings: { ...(cur.settings || {}), incomeSources: [...(cur.settings?.incomeSources || []), { name: incName.trim(), amount: amt }] } }));
+    toast('מקור הכנסה נוסף', 'success');
+    setIncName('');
+    setIncAmount('');
+  }
+
+  async function removeIncomeSource(i) {
+    await save(cur => ({ settings: { ...(cur.settings || {}), incomeSources: (cur.settings?.incomeSources || []).filter((_, idx) => idx !== i) } }));
+    toast('מקור הכנסה הוסר', 'success');
+  }
+
   async function importRows(rows) {
     const newTx = rows.map(r => ({
       id: Date.now() + Math.random(),
@@ -194,6 +212,30 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
         <Button onClick={addTx} disabled={adding}>{txType === 'income' ? 'הוסף הכנסה' : 'הוסף הוצאה'}</Button>
       </div>
       {importOpen && <ImportSheet onClose={() => setImportOpen(false)} onImport={importRows} />}
+
+      <div className={styles.incSection}>
+        <div className={styles.incTitle}>מקורות הכנסה קבועים</div>
+        {incomeSources.length > 0 && (
+          <div className={styles.incList}>
+            {incomeSources.map((src, i) => (
+              <div key={i} className={styles.incRow}>
+                <div className={styles.incName}>{src.name}</div>
+                <div className={styles.incActions}>
+                  <span className={styles.flowPos}>{fmt(src.amount)}</span>
+                  <DeleteButton onClick={() => removeIncomeSource(i)} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className={styles.form}>
+          <input className={styles.input} aria-label="שם מקור ההכנסה" placeholder="שם מקור ההכנסה" value={incName} onChange={e => setIncName(e.target.value)} />
+          <input className={styles.input} type="number" inputMode="decimal" aria-label="סכום חודשי" placeholder="סכום חודשי" value={incAmount} onChange={e => setIncAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addIncomeSource()} />
+          <Button onClick={addIncomeSource}>הוסף מקור הכנסה</Button>
+        </div>
+        <div className={styles.meta}>משמש כברירת מחדל להכנסת החודש כשאין עדיין תנועות הכנסה רשומות.</div>
+      </div>
+
       {!allMonthTx.length && (
         <div className={styles.empty}>
           <div className={styles.emptyMark}>
