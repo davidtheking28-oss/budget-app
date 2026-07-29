@@ -64,7 +64,7 @@ const full = {
   subscriptions: [
     { id: 's1', name: 'Netflix', category: 'סטרימינג', amount: 54.9, cycle: 'monthly', nextDate: d(20), active: true },
     { id: 's2', name: 'Spotify Family', category: 'מוזיקה', amount: 32.9, cycle: 'monthly', nextDate: d(24), active: true },
-    { id: 's3', name: 'iCloud+ 2TB', category: 'אחסון ענן', amount: 399, cycle: 'yearly', nextDate: d(28), active: true },
+    { id: 's3', name: 'iCloud+ 2TB', category: 'אחסון ענן', amount: 399, cycle: 'annual', nextDate: d(28), active: true },
     { id: 's4', name: 'ChatGPT Plus', category: 'כלי AI', amount: 78, cycle: 'monthly', nextDate: d(15), active: true }
   ],
   loans: [

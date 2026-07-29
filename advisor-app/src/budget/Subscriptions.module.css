@@ -63,6 +63,13 @@
   animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
+@media (max-width: 560px) {
+  .statStrip {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .stat {
   padding-inline-end: var(--space-6);
   border-inline-end: 1px solid var(--border);
@@ -161,7 +168,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .list {

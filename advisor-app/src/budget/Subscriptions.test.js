@@ -1,5 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { currentInstallments, loanPayoffMonths } from './Subscriptions.jsx';
+import { currentInstallments, loanPayoffMonths, monthlyEquivalent } from './Subscriptions.jsx';
+
+describe('monthlyEquivalent', () => {
+  it('returns the amount as-is for monthly', () => {
+    expect(monthlyEquivalent('monthly', 100)).toBe(100);
+  });
+
+  it('divides by 12 for annual', () => {
+    expect(monthlyEquivalent('annual', 1200)).toBe(100);
+  });
+
+  it('multiplies by 4.33 for weekly', () => {
+    expect(monthlyEquivalent('weekly', 100)).toBeCloseTo(433);
+  });
+
+  it('falls back to the raw amount for an unknown cycle', () => {
+    expect(monthlyEquivalent('yearly', 1200)).toBe(1200);
+  });
+});
 
 describe('currentInstallments', () => {
   it('returns the raw current value when there is no anchor', () => {

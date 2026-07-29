@@ -10,7 +10,10 @@ import { toast } from '../toast.js';
 import styles from './Subscriptions.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
-const CYCLE_LABELS = { monthly: 'חודשי', yearly: 'שנתי' };
+const CYCLE_LABELS = { monthly: 'חודשי', annual: 'שנתי', weekly: 'שבועי' };
+export function monthlyEquivalent(cycle, amount) {
+  return { monthly: amount, annual: amount / 12, weekly: amount * 4.33 }[cycle] ?? amount;
+}
 const SUB_CATEGORIES = ['סטרימינג', 'מוזיקה', 'פודקאסטים', 'תוכנה', 'כלי AI', 'אחסון ענן', 'כושר', 'משחקי וידאו', 'עיתונות', 'חינוך', 'אחר'];
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
@@ -161,12 +164,12 @@ export default function Subscriptions({ clientUserId, advisorId }) {
   });
   const insurances = [...(data.insurances || [])].sort((a, b) => (b.monthly || 0) - (a.monthly || 0));
   const insurancesMonthly = insurances.reduce((s, x) => s + (x.monthly || 0), 0);
-  const monthlySubsCost = subs.reduce((s, x) => s + (x.cycle === 'yearly' ? (x.amount || 0) / 12 : (x.amount || 0)), 0);
+  const monthlySubsCost = subs.reduce((s, x) => s + monthlyEquivalent(x.cycle, x.amount || 0), 0);
   const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
   const loansMonthly = loans.reduce((s, l) => s + (l.monthly || 0), 0);
   const paymentsLeft = payments.reduce((s, p) => { const total = parseFloat(p.total) || 0; return s + Math.max(0, total - currentInstallments(p, total)) * (parseFloat(p.amount) || 0); }, 0);
   const subShares = subs
-    .map(s => ({ name: s.name, monthly: s.cycle === 'yearly' ? (s.amount || 0) / 12 : (s.amount || 0) }))
+    .map(s => ({ name: s.name, monthly: monthlyEquivalent(s.cycle, s.amount || 0) }))
     .sort((a, b) => b.monthly - a.monthly);
   const in7Days = new Date();
   in7Days.setDate(in7Days.getDate() + 7);
@@ -192,7 +195,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         </div>
       )}
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconSubs}>{ICONS.subs}</span>מנויים<span className={styles.countBadge}>{subs.length}</span></div>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconSubs}>{ICONS.subs}</span>מנויים<span className={styles.countBadge}>{subs.length}</span>{monthlySubsCost > 0 ? ` · ${fmt(monthlySubsCost)} לחודש` : ''}</div>
         {!subs.length && <div className={styles.sectionEmpty}>אין מנויים רשומים</div>}
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם המנוי" value={subForm.name} onChange={e => setSubForm({ ...subForm, name: e.target.value })} />
@@ -202,7 +205,8 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום" value={subForm.amount} onChange={e => setSubForm({ ...subForm, amount: e.target.value })} />
           <select className={styles.input} value={subForm.cycle} onChange={e => setSubForm({ ...subForm, cycle: e.target.value })}>
             <option value="monthly">חודשי</option>
-            <option value="yearly">שנתי</option>
+            <option value="annual">שנתי</option>
+            <option value="weekly">שבועי</option>
           </select>
           <input className={styles.input} type="date" placeholder="חידוש הבא" value={subForm.nextDate} onChange={e => setSubForm({ ...subForm, nextDate: e.target.value })} />
           <Button onClick={submitSub}>{editingSubId != null ? 'שמור' : 'הוסף מנוי'}</Button>
@@ -294,7 +298,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span></div>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</div>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
