@@ -11,14 +11,16 @@ const RATE_LIMIT_MAX = 20
 async function checkRateLimit(req: Request): Promise<boolean> {
   try {
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) return true
+    // Fail closed: a bare anon-key caller resolves to no user, and the anon key is
+    // public. Letting those through meant uncounted, unlimited Groq calls.
+    if (!authHeader) return false
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
       { global: { headers: { Authorization: authHeader } } },
     )
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return true
+    if (!user) return false
     const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
     const { count } = await supabase
       .from('ai_requests')

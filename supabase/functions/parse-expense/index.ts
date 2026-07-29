@@ -1,6 +1,39 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 const CORS = {
-  'Access-Control-Allow-Origin':  '*',
+  'Access-Control-Allow-Origin':  'https://davidtheking28-oss.github.io',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
+const RATE_LIMIT_MAX = 60
+
+async function checkRateLimit(req: Request): Promise<boolean> {
+  try {
+    const authHeader = req.headers.get('Authorization')
+    // Fail closed: a bare anon-key caller resolves to no user, and the anon key is
+    // public. Letting those through meant uncounted, unlimited Groq calls.
+    if (!authHeader) return false
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    )
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return false
+    const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
+    const { count } = await supabase
+      .from('ai_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', since)
+    if ((count ?? 0) >= RATE_LIMIT_MAX) return false
+    await supabase.from('ai_requests').insert({ user_id: user.id })
+    return true
+  } catch (err) {
+    console.error('rate limit check failed', err)
+    return true
+  }
 }
 
 const CATEGORIES = [
@@ -40,6 +73,8 @@ Deno.serve(async (req) => {
   try {
     const GROQ_KEY = Deno.env.get('GROQ_API_KEY')
     if (!GROQ_KEY) return json({ error: 'not_configured' }, 503)
+
+    if (!await checkRateLimit(req)) return json({ error: 'rate_limited' }, 429)
 
     const { message, customCats } = await req.json()
     if (!message) return json({ error: 'missing_message' }, 400)
