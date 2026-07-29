@@ -4,15 +4,13 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
-import { stableColor, FIXED_CATS } from '../categories.js';
+import { stableColor } from '../categories.js';
 import { formatDate } from './monthUtils.js';
 import { toast } from '../toast.js';
 import styles from './Subscriptions.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const CYCLE_LABELS = { monthly: 'חודשי', yearly: 'שנתי' };
-const AUTO_FIXED_CATS = ['החזר הלוואות + חיוב קבוע', 'עסקאות בתשלומים', 'מנויים ושירותים', 'ביטוחים'];
-const MANUAL_FIXED_CATS = FIXED_CATS.filter(c => !AUTO_FIXED_CATS.includes(c));
 const SUB_CATEGORIES = ['סטרימינג', 'מוזיקה', 'פודקאסטים', 'תוכנה', 'כלי AI', 'אחסון ענן', 'כושר', 'משחקי וידאו', 'עיתונות', 'חינוך', 'אחר'];
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
@@ -46,12 +44,6 @@ function updateItem(save, key, id, patch) {
 function removeItem(save, key, id) {
   return save(cur => ({ [key]: (cur[key] || []).filter(x => x.id !== id) }));
 }
-function setFixedExpense(save, cat, amount) {
-  return save(cur => {
-    const list = (cur.fixed_expenses || []).filter(f => f.id !== cat);
-    return { fixed_expenses: amount > 0 ? [...list, { id: cat, amount }] : list };
-  });
-}
 
 export function loanPayoffMonths(remaining, monthly, annualRate) {
   if (!remaining || !monthly || remaining <= 0 || monthly <= 0) return null;
@@ -76,7 +68,6 @@ const ICONS = {
   subs: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg>,
   loans: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg>,
   payments: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></svg>,
-  fixed: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7" /><path d="M5 10v9h14v-9" /></svg>,
   insurance: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
 };
 
@@ -89,8 +80,6 @@ export default function Subscriptions({ clientUserId, advisorId }) {
   const [editingLoanId, setEditingLoanId] = useState(null);
   const [paymentForm, setPaymentForm] = useState({ name: '', total: '', current: '', amount: '' });
   const [editingPaymentId, setEditingPaymentId] = useState(null);
-  const [fixedCat, setFixedCat] = useState(MANUAL_FIXED_CATS[0]);
-  const [fixedAmount, setFixedAmount] = useState('');
   const [insForm, setInsForm] = useState({ name: '', monthly: '' });
   const [editingInsId, setEditingInsId] = useState(null);
 
@@ -151,15 +140,6 @@ export default function Subscriptions({ clientUserId, advisorId }) {
   }
   function startEditInsurance(x) { setEditingInsId(x.id); setInsForm({ name: x.name || '', monthly: x.monthly || '' }); }
 
-  async function submitFixed() {
-    const amount = parseFloat(fixedAmount) || 0;
-    if (!amount || amount <= 0) { toast('הזן סכום תקין', 'error'); return; }
-    const ok = await setFixedExpense(save, fixedCat, amount);
-    if (!ok) return;
-    toast('הוצאה קבועה עודכנה', 'success');
-    setFixedAmount('');
-  }
-
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return (
@@ -179,14 +159,12 @@ export default function Subscriptions({ clientUserId, advisorId }) {
     const leftB = Math.max(0, totalB - currentInstallments(b, totalB)) * (parseFloat(b.amount) || 0);
     return leftB - leftA;
   });
-  const fixedExpenses = data.fixed_expenses || [];
   const insurances = [...(data.insurances || [])].sort((a, b) => (b.monthly || 0) - (a.monthly || 0));
   const insurancesMonthly = insurances.reduce((s, x) => s + (x.monthly || 0), 0);
   const monthlySubsCost = subs.reduce((s, x) => s + (x.cycle === 'yearly' ? (x.amount || 0) / 12 : (x.amount || 0)), 0);
   const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
   const loansMonthly = loans.reduce((s, l) => s + (l.monthly || 0), 0);
   const paymentsLeft = payments.reduce((s, p) => { const total = parseFloat(p.total) || 0; return s + Math.max(0, total - currentInstallments(p, total)) * (parseFloat(p.amount) || 0); }, 0);
-  const fixedMonthly = fixedExpenses.reduce((s, f) => s + (f.amount || 0), 0);
   const subShares = subs
     .map(s => ({ name: s.name, monthly: s.cycle === 'yearly' ? (s.amount || 0) / 12 : (s.amount || 0) }))
     .sort((a, b) => b.monthly - a.monthly);
@@ -205,13 +183,12 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           {renewingSoon.map(s => `${s.name} מתחדש ב-${formatDate(s.nextDate)}`).join(' · ')}
         </div>
       )}
-      {(subs.length > 0 || loans.length > 0 || payments.length > 0 || fixedExpenses.length > 0 || insurances.length > 0) && (
+      {(subs.length > 0 || loans.length > 0 || payments.length > 0 || insurances.length > 0) && (
         <div className={styles.statStrip}>
           {subs.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(monthlySubsCost)}</div><div className={styles.statLabel}>לחודש במנויים</div></div>}
           {loans.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(loansBalance)}</div><div className={styles.statLabel}>יתרת הלוואות</div></div>}
           {payments.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(paymentsLeft)}</div><div className={styles.statLabel}>יתרת תשלומים</div></div>}
           {insurances.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(insurancesMonthly)}</div><div className={styles.statLabel}>לחודש בביטוחים</div></div>}
-          {fixedExpenses.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(fixedMonthly)}</div><div className={styles.statLabel}>לחודש בהוצאות קבועות</div></div>}
         </div>
       )}
       <div className={styles.section}>
@@ -385,41 +362,6 @@ export default function Subscriptions({ clientUserId, advisorId }) {
             ))}
           </div>
         ) : null}
-      </div>
-
-      <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.fixed}</span>הוצאות קבועות<span className={styles.countBadge}>{fixedExpenses.length}</span>{fixedMonthly > 0 ? ` · ${fmt(fixedMonthly)} לחודש` : ''}</div>
-        {!fixedExpenses.length && <div className={styles.sectionEmpty}>אין הוצאות קבועות רשומות</div>}
-        {MANUAL_FIXED_CATS.length > 0 && (
-          <div className={styles.form}>
-            <select className={styles.input} value={fixedCat} onChange={e => setFixedCat(e.target.value)}>
-              {MANUAL_FIXED_CATS.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" value={fixedAmount} onChange={e => setFixedAmount(e.target.value)} />
-            <Button onClick={submitFixed}>עדכן / הוסף</Button>
-          </div>
-        )}
-        {fixedExpenses.length > 0 && (
-          <div className={styles.list}>
-            {fixedExpenses.map((f, i) => {
-              const auto = AUTO_FIXED_CATS.includes(f.id);
-              return (
-                <div
-                  key={f.id}
-                  className={styles.row}
-                  style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}
-                  {...(!auto ? { role: 'button', tabIndex: 0, onClick: () => { setFixedCat(f.id); setFixedAmount(f.amount || ''); }, onKeyDown: e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setFixedCat(f.id), setFixedAmount(f.amount || '')) } : {})}
-                >
-                  <div className={styles.name}>{f.id}{auto && <span className={styles.autoBadge}>אוטומטי</span>}</div>
-                  <div className={styles.rowActions}>
-                    <div className={styles.amount}>{fmt(f.amount || 0)}</div>
-                    {!auto && <DeleteButton onClick={e => { e.stopPropagation(); setFixedExpense(save, f.id, 0); }} />}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
     </div>
   );
