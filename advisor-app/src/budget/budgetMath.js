@@ -1,15 +1,18 @@
 import { getMonthTx } from './monthUtils.js';
 
-export function monthSummary(data, year, month) {
-  const monthTx = getMonthTx(data?.transactions, year, month);
-  const incomeTx = monthTx.filter(t => t.type === 'income');
+export function effectiveIncome(transactions, incomeSources) {
+  const incomeTx = (transactions || []).filter(t => t.type === 'income');
   const manualIncome = incomeTx.reduce((s, t) => s + t.amount, 0);
-  const incomeSources = data?.settings?.incomeSources || [];
   const postedNames = new Set(incomeTx.map(t => (t.desc || '').toLowerCase()));
-  const unpostedIncome = incomeSources
+  const unpostedIncome = (incomeSources || [])
     .filter(src => !postedNames.has((src.name || '').toLowerCase()))
     .reduce((s, src) => s + (parseFloat(src.amount) || 0), 0);
-  const income = manualIncome + unpostedIncome;
+  return { manualIncome, unpostedIncome, income: manualIncome + unpostedIncome };
+}
+
+export function monthSummary(data, year, month) {
+  const monthTx = getMonthTx(data?.transactions, year, month);
+  const { income } = effectiveIncome(monthTx, data?.settings?.incomeSources);
   const expense = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const budgets = data?.budgets || {};
   const spentByCat = {};

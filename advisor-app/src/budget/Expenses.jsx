@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx, localISODate, formatDate } from './monthUtils.js';
+import { effectiveIncome } from './budgetMath.js';
 import { EXPENSE_CATS, INCOME_CATS, FIXED_CATS, catColor } from '../categories.js';
 import ImportSheet from './ImportSheet.jsx';
 import { getCategoryIcon } from '../categoryIcons.jsx';
@@ -74,7 +75,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
 
   const incomeTx = allMonthTx.filter(t => t.type === 'income');
   const expenseTx = allMonthTx.filter(t => t.type !== 'income');
-  const incomeTotal = incomeTx.reduce((s, t) => s + t.amount, 0);
+  const { unpostedIncome, income: incomeTotal } = effectiveIncome(allMonthTx, incomeSources);
   const expenseTotal = expenseTx.reduce((s, t) => s + t.amount, 0);
   const netFlow = incomeTotal - expenseTotal;
 
@@ -257,6 +258,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
               <div className={styles.flowCell}>
                 <span className={styles.flowCellLabel}>הכנסות</span>
                 <span className={styles.flowCellValue + ' ' + styles.flowPos}>{fmt(incomeTotal)}</span>
+                {unpostedIncome > 0 && <span className={styles.meta}>כולל {fmt(unpostedIncome)} ממקורות קבועים שלא נרשמו</span>}
               </div>
               <div className={styles.flowCell}>
                 <span className={styles.flowCellLabel}>הוצאות</span>

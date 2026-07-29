@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { monthSummary } from './budgetMath.js';
+import { monthSummary, effectiveIncome } from './budgetMath.js';
 
 const data = {
   budgets: { 'מזון': 1000, 'בילויים': 500 },
@@ -50,5 +50,35 @@ describe('monthSummary', () => {
   it('handles missing transactions/budgets gracefully', () => {
     const s = monthSummary({}, 2026, 5);
     expect(s).toMatchObject({ income: 0, expense: 0, net: 0, totalBudget: 0, overCats: [], remaining: null });
+  });
+});
+
+describe('effectiveIncome', () => {
+  it('sums manual income transactions when there are no income sources', () => {
+    const r = effectiveIncome([{ type: 'income', amount: 9000, desc: 'משכורת' }], []);
+    expect(r).toEqual({ manualIncome: 9000, unpostedIncome: 0, income: 9000 });
+  });
+
+  it('counts an income source with no matching transaction as unposted', () => {
+    const r = effectiveIncome([], [{ name: 'משכורת', amount: 18400 }]);
+    expect(r).toEqual({ manualIncome: 0, unpostedIncome: 18400, income: 18400 });
+  });
+
+  it('does not double-count an income source already posted as a transaction', () => {
+    const r = effectiveIncome([{ type: 'income', amount: 18400, desc: 'משכורת' }], [{ name: 'משכורת', amount: 18400 }]);
+    expect(r).toEqual({ manualIncome: 18400, unpostedIncome: 0, income: 18400 });
+  });
+
+  it('matches income source names case-insensitively', () => {
+    const r = effectiveIncome([{ type: 'income', amount: 18400, desc: 'MASKORET' }], [{ name: 'maskoret', amount: 18400 }]);
+    expect(r).toEqual({ manualIncome: 18400, unpostedIncome: 0, income: 18400 });
+  });
+
+  it('handles multiple sources with only one posted', () => {
+    const r = effectiveIncome(
+      [{ type: 'income', amount: 18400, desc: 'משכורת' }],
+      [{ name: 'משכורת', amount: 18400 }, { name: 'שכירות', amount: 3000 }]
+    );
+    expect(r).toEqual({ manualIncome: 18400, unpostedIncome: 3000, income: 21400 });
   });
 });
