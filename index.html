@@ -4841,7 +4841,7 @@ function setBudget(){
   budgets[cat]=limit;saveData();
   document.getElementById('budgetLimit').value='';
   const _bb=document.querySelector('#addBudgetSheet .btn-primary');if(_bb){_bb.textContent='✓';_bb.disabled=true;}
-  setTimeout(()=>{closeSheet('addBudgetSheet');showToast('✓ התקציב נשמר בהצלחה');renderBudget();},220);
+  setTimeout(()=>{closeSheet('addBudgetSheet');showToast('✓ התקציב נשמר בהצלחה');renderBudget();renderTxPage();},220);
 }
 function deleteBudget(cat){
   const backup=budgets[cat];
