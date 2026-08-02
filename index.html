@@ -1849,7 +1849,16 @@
         <button class="filter-chip active" data-filter="all" onclick="setTxFilter('all',this)">הכל</button>
         <button class="filter-chip" data-filter="variable" onclick="setTxFilter('variable',this)">משתנות</button>
         <button class="filter-chip" data-filter="fixed" onclick="setTxFilter('fixed',this)">קבועות</button>
-        <button type="button" onclick="toggleAdvancedFilters()" style="margin-inline-start:auto;display:flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--border);border-radius:999px;padding:8px 14px;font-size:0.8rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>סנן</button>
+        <div style="margin-inline-start:auto;flex-shrink:0;">
+          <button id="txOverflowBtn" onclick="toggleTxOverflow()" style="background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:999px;padding:8px 12px;font-size:1rem;cursor:pointer;line-height:1;" aria-label="אפשרויות">⋯</button>
+          <div id="txOverflowMenu" style="display:none;position:fixed;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:250;min-width:180px;overflow:hidden;">
+            <button onclick="exportCSV();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📥 ייצוא CSV</button>
+            <button onclick="toggleCalendarView();toggleTxOverflow()" id="calToggleBtn" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📅 לוח שנה</button>
+            <button onclick="openSmsImport();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📲 ייבא SMS</button>
+            <button onclick="scanReceipt();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;">📷 סרוק קבלה</button>
+          </div>
+        </div>
+        <button type="button" onclick="toggleAdvancedFilters()" style="display:flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--border);border-radius:999px;padding:8px 14px;font-size:0.8rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>סנן</button>
       </div>
       <div id="txAdvancedFilters" style="display:none">
         <input type="search" class="search-input" id="txSearch" placeholder="חפש בעסקאות..." oninput="renderTxPage()" onfocus="this.select()" aria-label="חיפוש בעסקאות"/>
@@ -1874,15 +1883,6 @@
         </div>
       </div>
       <div class="section-body" style="padding-top:4px">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;position:relative;">
-          <button onclick="toggleTxOverflow()" style="background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);border-radius:10px;padding:6px 12px;font-size:1rem;cursor:pointer;line-height:1;" aria-label="אפשרויות">⋯</button>
-          <div id="txOverflowMenu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:50;min-width:180px;overflow:hidden;">
-            <button onclick="exportCSV();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📥 ייצוא CSV</button>
-            <button onclick="toggleCalendarView();toggleTxOverflow()" id="calToggleBtn" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📅 לוח שנה</button>
-            <button onclick="openSmsImport();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📲 ייבא SMS</button>
-            <button onclick="scanReceipt();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;">📷 סרוק קבלה</button>
-          </div>
-        </div>
         <div id="calendarView" style="display:none;margin-bottom:12px;"></div>
         <div class="tx-list" id="allTxList"></div>
       </div>
@@ -6011,6 +6011,12 @@ function toggleTxOverflow(){
   const m=document.getElementById('txOverflowMenu');
   if(!m)return;
   const isOpen=m.style.display!=='none';
+  if(!isOpen){
+    const btn=document.getElementById('txOverflowBtn');
+    const r=btn.getBoundingClientRect();
+    m.style.top=(r.bottom+6)+'px';
+    m.style.left=r.left+'px';
+  }
   m.style.display=isOpen?'none':'block';
   if(!isOpen){
     const close=e=>{if(!m.contains(e.target)&&e.target.getAttribute('onclick')!=='toggleTxOverflow()'){m.style.display='none';document.removeEventListener('click',close);}};
