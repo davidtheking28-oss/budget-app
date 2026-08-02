@@ -3466,7 +3466,7 @@ function _expRowHtml(opts){
     +'<div class="exp-row-right"><span class="exp-cat-icon">'+(CAT_ICONS[opts.cat]||'•')+'</span><span class="exp-name">'+opts.cat+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
       +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
-      +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך ₪'+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
+      +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
       +(opts.editable?'<span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'</span>':_expChevron(open))
     +'</div>'
   +'</button>'
