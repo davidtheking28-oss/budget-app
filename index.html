@@ -3498,10 +3498,9 @@ function renderTxCategorized(byCat){
   if(txListFilter!=='fixed'){
     const varEntries=[];
     Object.keys(budgets).filter(c=>EXPENSE_CATS.includes(c)).forEach(cat=>{
-      const planAmount=budgets[cat]||0;
       const amount=(byCat[cat]||[]).filter(t=>!t.fx).reduce((s,t)=>s+t.amount,0);
       const key='var:'+cat;
-      const rowHtml=_expRowHtml({key,cat,amount,planAmount,editable:true,
+      const rowHtml=_expRowHtml({key,cat,amount,editable:true,
         onEdit:'editBudgetCat(\''+cat.replace(/'/g,"\\'")+'\')',
         onDelete:'deleteBudget(\''+cat.replace(/'/g,"\\'")+'\')',
         body:_expTxListHtml(cat,byCat)});
