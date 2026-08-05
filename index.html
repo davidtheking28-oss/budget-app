@@ -2702,6 +2702,8 @@ function saveDataDebounced(){
 
 function fmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';const str=Math.ceil(Math.abs(n)).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});return sym+str.replace(/[-−]/g,'');}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+// ערך בטוח כמחרוזת JS בגרשיים בודדים בתוך מאפיין HTML בגרשיים כפולים
+function attrArg(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtNum(n){return (n||0).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});}
 function progState(pct,rules){for(const[min,cls]of rules){if(pct>=min)return cls;}return'';}
 function progBarHTML(pct,{wrapClass,fillClass,stateClass}){const w=Math.min(100,Math.max(0,pct));return'<div class="'+wrapClass+'"><div class="'+fillClass+(stateClass?' '+stateClass:'')+'" style="width:'+w+'%"></div></div>';}
@@ -3470,8 +3472,8 @@ function renderTxCategorized(byCat){
       const rowHtml=auto
         ?_expRowHtml({key,cat,amount,auto:true,body:_expStructListHtml(_EXP_AUTO_KIND[cat])})
         :_expRowHtml({key,cat,amount,planned:true,editable:true,
-            onEdit:'_expEditManual(\''+cat.replace(/'/g,"\\'")+'\')',
-            onDelete:'_expDeleteManual(\''+cat.replace(/'/g,"\\'")+'\')',
+            onEdit:'_expEditManual(\''+attrArg(cat)+'\')',
+            onDelete:'_expDeleteManual(\''+attrArg(cat)+'\')',
             body:_expTxListHtml(cat,byCat)});
       fxEntries.push({amount,html:rowHtml});
     });
@@ -3487,8 +3489,8 @@ function renderTxCategorized(byCat){
       const amount=(byCat[cat]||[]).filter(t=>!t.fx).reduce((s,t)=>s+t.amount,0);
       const key='var:'+cat;
       const rowHtml=_expRowHtml({key,cat,amount,editable:true,
-        onEdit:'editBudgetCat(\''+cat.replace(/'/g,"\\'")+'\')',
-        onDelete:'deleteBudget(\''+cat.replace(/'/g,"\\'")+'\')',
+        onEdit:'editBudgetCat(\''+attrArg(cat)+'\')',
+        onDelete:'deleteBudget(\''+attrArg(cat)+'\')',
         body:_expTxListHtml(cat,byCat)});
       varEntries.push({amount,html:rowHtml});
     });
@@ -5283,8 +5285,8 @@ function renderFixedCatPickerBody(){
   const configured=cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0;
   const recommended=OB_FIXED_DEFAULT.filter(c=>getEffectiveFixedCats().includes(c)&&!configured(c));
   const rest=getEffectiveFixedCats().filter(c=>!configured(c)&&!recommended.includes(c));
-  const chip=c=>'<button type="button" onclick="pickFixedCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:10px 16px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.85rem;font-weight:600;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">'+esc(c)+'</button>';
-  const dashedChip=c=>'<button type="button" onclick="pickFixedCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:8px 14px;border-radius:999px;border:1.5px dashed var(--border);background:none;color:var(--text2);font-size:0.8rem;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">+ '+esc(c)+'</button>';
+  const chip=c=>'<button type="button" onclick="pickFixedCat(\''+attrArg(c)+'\')" style="padding:10px 16px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.85rem;font-weight:600;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">'+esc(c)+'</button>';
+  const dashedChip=c=>'<button type="button" onclick="pickFixedCat(\''+attrArg(c)+'\')" style="padding:8px 14px;border-radius:999px;border:1.5px dashed var(--border);background:none;color:var(--text2);font-size:0.8rem;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">+ '+esc(c)+'</button>';
   el.innerHTML=(recommended.length?'<div style="font-size:0.8rem;color:var(--text3);margin-bottom:8px">מומלץ</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">'+recommended.map(chip).join('')+'</div>':'')
     +(rest.length?'<div style="font-size:0.8rem;color:var(--text3);margin-bottom:8px">עוד קטגוריות</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">'+rest.map(dashedChip).join('')+'</div>':'')
     +'<button type="button" class="btn btn-outline btn-full" onclick="closeSheet(\'fixedCatPickerSheet\');addCustomFixedCat()">קטגוריה אחרת (הקלדה חופשית)</button>';
@@ -5369,7 +5371,7 @@ function renderFixed(){
     const cell=auto
       ? '<td class="pay-calc pay-num">'+_payFmt(_fxMonthly(cat))+'</td>'
       : '<td><input class="pay-num" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+esc(_fxRaw(cat))+'" onfocus="this.select()" oninput="setFixedAmount('+i+',this.value)"></td>';
-    const removeBtn=isCustom?'<button type="button" class="pay-del" onclick="removeCustomFixedCat(\''+cat.replace(/'/g,"\\'")+'\')" aria-label="הסר קטגוריה">✕</button>':'';
+    const removeBtn=isCustom?'<button type="button" class="pay-del" onclick="removeCustomFixedCat(\''+attrArg(cat)+'\')" aria-label="הסר קטגוריה">✕</button>':'';
     return '<tr><td class="fx-name">'+esc(cat)+(auto?'<span class="fx-auto">אוטומטי</span>':'')+removeBtn+'</td>'+cell+'</tr>';
   }).join('');
   _fxRefreshTotal();
@@ -5897,7 +5899,7 @@ function loanPayoffHtml(l){
   const chips=[100,250,500].map(x=>{
     const n2=_loanMonths(l.remaining,l.monthly+x,l.rate);
     const saved=(n2&&n2!==Infinity)?n-n2:0;
-    return saved>0?`<button onclick="event.stopPropagation();showToast('💡 תוספת של ${fmt(x)}/חודש ל${esc(l.name).replace(/'/g,'')} תקצר ב-${saved} חודשים')" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px 9px;font-size:0.72rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;">+${fmt(x)} → ${saved} חוד' פחות</button>`:'';
+    return saved>0?`<button onclick="event.stopPropagation();showToast('💡 תוספת של ${fmt(x)}/חודש ל${attrArg(l.name)} תקצר ב-${saved} חודשים')" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px 9px;font-size:0.72rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;">+${fmt(x)} → ${saved} חוד' פחות</button>`:'';
   }).filter(Boolean).join('');
   return '<div style="font-size:0.78rem;color:var(--text2);margin-top:8px;font-weight:600;">'+line+'</div>'
     +(chips?'<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'+chips+'</div>':'');
@@ -6324,7 +6326,7 @@ function renderOnboardStep(){
   const el=document.getElementById('onboardContent');
   if(onboardStep===0){
     const savedName = userSettings.name || '';
-    el.innerHTML='<div style="text-align:center;padding:20px 0 16px;"><div style="font-size:4rem;font-weight:800;color:var(--accent);font-family:monospace;margin-bottom:12px;letter-spacing:-2px;">₪</div><div class="onboard-title">ברוכים לאפליקציית התקציב!</div><div class="onboard-sub">מנהלים את הכסף בפשטות. הכנה לוקחת פחות מדקה.</div></div><div style="margin-top:8px"><div style="font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:8px;">👤 איך קוראים לך?</div><input id="obNameInput" type="text" value="'+savedName+'" placeholder="שמי הוא..." oninput="userSettings.name=this.value" onfocus="this.select()" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1.1rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700"/><div style="font-size:0.75rem;color:var(--text3);margin-top:6px;text-align:center;">אפשר גם לדלג — ניתן להוסיף אחר כך בהגדרות</div></div><div style="margin-top:22px"><div style="font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:8px;text-align:center">💼 יש לך גם עסק שתרצה לנהל בנפרד?</div><div style="display:flex;gap:8px;justify-content:center" id="obBusinessToggle">'+_obBusinessToggleHtml()+'</div></div>';
+    el.innerHTML='<div style="text-align:center;padding:20px 0 16px;"><div style="font-size:4rem;font-weight:800;color:var(--accent);font-family:monospace;margin-bottom:12px;letter-spacing:-2px;">₪</div><div class="onboard-title">ברוכים לאפליקציית התקציב!</div><div class="onboard-sub">מנהלים את הכסף בפשטות. הכנה לוקחת פחות מדקה.</div></div><div style="margin-top:8px"><div style="font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:8px;">👤 איך קוראים לך?</div><input id="obNameInput" type="text" value="'+esc(savedName)+'" placeholder="שמי הוא..." oninput="userSettings.name=this.value" onfocus="this.select()" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1.1rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700"/><div style="font-size:0.75rem;color:var(--text3);margin-top:6px;text-align:center;">אפשר גם לדלג — ניתן להוסיף אחר כך בהגדרות</div></div><div style="margin-top:22px"><div style="font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:8px;text-align:center">💼 יש לך גם עסק שתרצה לנהל בנפרד?</div><div style="display:flex;gap:8px;justify-content:center" id="obBusinessToggle">'+_obBusinessToggleHtml()+'</div></div>';
     setTimeout(()=>{const inp=document.getElementById('obNameInput');if(inp&&!savedName)inp.focus();},200);
   } else if(onboardStep===1){
     const connected=!!_cloudUser;
@@ -6353,18 +6355,18 @@ function renderOnboardStep(){
 function renderObIncomes(){
   const el=document.getElementById('obIncomeRows');
   if(!el)return;
-  el.innerHTML=obIncomes.map((inc,i)=>`<div class="onboard-row"><input style="flex:1;border:none;background:transparent;padding:12px 16px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;" placeholder="שם ההכנסה" value="${inc.name||''}" onfocus="this.select()" oninput="obIncomes[${i}].name=this.value"/><input style="width:90px;border:none;background:transparent;padding:12px 8px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;text-align:center;" type="text" inputmode="decimal" placeholder="סכום" value="${inc.amount||''}" onfocus="this.select()" oninput="obIncomes[${i}].amount=this.value.replace(/[,\s]/g,'')"/>${obIncomes.length>1?`<button class="ob-remove" onclick="obRemoveIncome(${i})" aria-label="הסר">✕</button>`:''}</div>`).join('');
+  el.innerHTML=obIncomes.map((inc,i)=>`<div class="onboard-row"><input style="flex:1;border:none;background:transparent;padding:12px 16px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;" placeholder="שם ההכנסה" value="${esc(inc.name||'')}" onfocus="this.select()" oninput="obIncomes[${i}].name=this.value"/><input style="width:90px;border:none;background:transparent;padding:12px 8px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;text-align:center;" type="text" inputmode="decimal" placeholder="סכום" value="${esc(inc.amount||'')}" onfocus="this.select()" oninput="obIncomes[${i}].amount=this.value.replace(/[,\s]/g,'')"/>${obIncomes.length>1?`<button class="ob-remove" onclick="obRemoveIncome(${i})" aria-label="הסר">✕</button>`:''}</div>`).join('');
 }
 function obAddIncome(){obIncomes.push({name:'',amount:''});renderObIncomes();}
 function obRemoveIncome(i){obIncomes.splice(i,1);renderObIncomes();}
 function renderObFixed(){
   const el=document.getElementById('obFixedRows');
   if(!el)return;
-  el.innerHTML=obFixed.map((f,i)=>'<div class="onboard-row"><span style="padding:12px 16px;flex:1;min-width:0;font-size:0.9rem;color:var(--text);display:flex;align-items:center;gap:8px"><span style="width:18px;height:18px;flex-shrink:0;display:flex">'+catIconSvg(f.cat)+'</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.cat)+'</span></span><input style="width:90px;flex-shrink:0;border:none;background:transparent;padding:12px 8px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;text-align:center;" type="text" inputmode="decimal" placeholder="סכום" value="'+(f.amount||'')+'" onfocus="this.select()" oninput="obFixed['+i+'].amount=this.value.replace(/[,\\s]/g,\'\')"/><button class="ob-remove" onclick="obRemoveFixed('+i+')" aria-label="הסר">✕</button></div>').join('');
+  el.innerHTML=obFixed.map((f,i)=>'<div class="onboard-row"><span style="padding:12px 16px;flex:1;min-width:0;font-size:0.9rem;color:var(--text);display:flex;align-items:center;gap:8px"><span style="width:18px;height:18px;flex-shrink:0;display:flex">'+catIconSvg(f.cat)+'</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.cat)+'</span></span><input style="width:90px;flex-shrink:0;border:none;background:transparent;padding:12px 8px;font-size:0.9rem;font-family:inherit;color:var(--text);outline:none;text-align:center;" type="text" inputmode="decimal" placeholder="סכום" value="'+esc(f.amount||'')+'" onfocus="this.select()" oninput="obFixed['+i+'].amount=this.value.replace(/[,\\s]/g,\'\')"/><button class="ob-remove" onclick="obRemoveFixed('+i+')" aria-label="הסר">✕</button></div>').join('');
   const remaining=getEffectiveFixedCats().filter(c=>!FIXED_AUTO[c]&&!obFixed.some(f=>f.cat===c));
   const moreEl=document.getElementById('obFixedMore');
   if(moreEl){
-    moreEl.innerHTML=remaining.length?('<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">'+remaining.map(c=>'<button type="button" onclick="obAddFixedCat(\''+c.replace(/'/g,"\\'")+'\')" style="padding:8px 14px;border-radius:999px;border:1.5px dashed var(--border);background:none;color:var(--text2);font-size:0.8rem;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">+ '+esc(c)+'</button>').join('')+'</div>'):'';
+    moreEl.innerHTML=remaining.length?('<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">'+remaining.map(c=>'<button type="button" onclick="obAddFixedCat(\''+attrArg(c)+'\')" style="padding:8px 14px;border-radius:999px;border:1.5px dashed var(--border);background:none;color:var(--text2);font-size:0.8rem;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent">+ '+esc(c)+'</button>').join('')+'</div>'):'';
   }
 }
 function obRemoveFixed(i){obFixed.splice(i,1);renderObFixed();}
