@@ -2583,6 +2583,8 @@ const FIXED_AUTO={
   'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
 };
 const BUDGET_CATS=[...EXPENSE_CATS,...FIXED_CATS.filter(c=>!EXPENSE_CATS.includes(c))];
+function getEffectiveExpenseCats(){return [...EXPENSE_CATS,...(userSettings.customCats||[]).filter(c=>!EXPENSE_CATS.includes(c))];}
+function getEffectiveBudgetCats(){const e=getEffectiveExpenseCats();return [...e,...FIXED_CATS.filter(c=>!e.includes(c))];}
 const EXPENSE_CATS_BUSINESS=['שיווק ופרסום','מערכות ותוכנה','ציוד משרדי','שכר עובדים','חשבונאות ומשפטי','שכירות משרד','תקשורת עסקית','נסיעות עסקיות','ייצוג וארוח','אחסון ולוגיסטיקה','מסים ואגרות','ביטוח עסקי','הדרכות והשתלמויות','פיתוח ומחקר','קניות ציוד','אחר'];
 const INCOME_CATS_BUSINESS=['הכנסות ממכירות','שירותים','פרויקטים','מנויים לקוחות','עמלות','ייעוץ','השקעות','אחר'];
 const CAT_SUBCATS={};
@@ -3236,7 +3238,7 @@ function checkRecurringIncome(){
 }
 function advanceSubNextDate(s){
   const nd=new Date(s.nextDate);
-  if(s.cycle==='monthly')nd.setMonth(nd.getMonth()+1);
+  if(s.cycle==='monthly'){const day=nd.getDate();nd.setDate(1);nd.setMonth(nd.getMonth()+1);nd.setDate(Math.min(day,daysInMonth(nd.getFullYear(),nd.getMonth())));}
   else if(s.cycle==='annual')nd.setFullYear(nd.getFullYear()+1);
   else if(s.cycle==='weekly')nd.setDate(nd.getDate()+7);
   s.nextDate=localISO(nd);
@@ -3262,29 +3264,12 @@ function checkSubscriptions(){
     if(paid){advanceSubNextDate(s);advanced=true;}
   });
   if(advanced)saveData();
+  // מנויים חודשיים נספרים דרך השורה המצטברת "מנויים ושירותים" (FIXED_AUTO) —
+  // כאן רק מקדמים את מועד החיוב הבא, בלי ליצור עסקה נפרדת שתיספר פעמיים.
   const active=subscriptions.filter(s=>s.active&&s.cycle==='monthly'&&s.nextDate&&s.nextDate<=today);
   if(!active.length)return;
-  const thisMonthNames=new Set(transactions.filter(t=>t.date.startsWith(monthKey)).map(t=>(t.desc||'').toLowerCase()));
-  const pending=active.filter(s=>!thisMonthNames.has((s.name||'').toLowerCase()));
-  if(!pending.length)return;
-  const storKey='budget_sa_'+monthKey;
-  if(localStorage.getItem(storKey))return;
-  localStorage.setItem(storKey,'1');
-  const addedIds=[];
-  pending.forEach(s=>{
-    const tx={id:Date.now()+Math.random(),type:'expense',cat:s.category||'שונות',desc:s.name,amount:s.amount,date:s.nextDate,recurring:false};
-    addedIds.push(tx.id);
-    transactions.unshift(tx);
-    const prevDate=s.nextDate;advanceSubNextDate(s);s._prevDate=prevDate;
-  });
+  active.forEach(s=>{while(s.nextDate<=today)advanceSubNextDate(s);});
   saveData();refreshAll();
-  showUndoToast('✓ '+pending.length+' מנויים נרשמו אוטומטית',()=>{
-    const idSet=new Set(addedIds);
-    transactions=transactions.filter(t=>!idSet.has(t.id));
-    pending.forEach(s=>{if(s._prevDate){s.nextDate=s._prevDate;delete s._prevDate;}});
-    localStorage.removeItem(storKey);
-    saveData();refreshAll();
-  },()=>{pending.forEach(s=>delete s._prevDate);});
 }
 
 function trendHtml(cur,prev,lowerIsBetter){
@@ -3391,6 +3376,7 @@ function heDate(dateStr){
   const d=new Date(dateStr);d.setHours(0,0,0,0);
   const diff=Math.round((today-d)/86400000);
   if(diff===0)return 'היום';
+  if(diff<0)return d.getDate()+' ב'+HE_MONTHS_LONG[d.getMonth()];
   if(diff===1)return 'אתמול';
   if(diff<=6)return 'לפני '+diff+' ימים';
   if(diff===7)return 'לפני שבוע';
@@ -3496,7 +3482,8 @@ function renderTxCategorized(byCat){
   }
   if(txListFilter!=='fixed'){
     const varEntries=[];
-    Object.keys(budgets).filter(c=>EXPENSE_CATS.includes(c)).forEach(cat=>{
+    const _varCats=getEffectiveExpenseCats();
+    Object.keys(budgets).filter(c=>_varCats.includes(c)).forEach(cat=>{
       const amount=(byCat[cat]||[]).filter(t=>!t.fx).reduce((s,t)=>s+t.amount,0);
       const key='var:'+cat;
       const rowHtml=_expRowHtml({key,cat,amount,editable:true,
@@ -3506,7 +3493,7 @@ function renderTxCategorized(byCat){
       varEntries.push({amount,html:rowHtml});
     });
     varEntries.sort((a,b)=>b.amount-a.amount);
-    html+='<div class="section-header"><div class="section-title">הוצאות משתנות <span class="badge">'+varEntries.length+'/'+EXPENSE_CATS.length+'</span></div></div>'
+    html+='<div class="section-header"><div class="section-title">הוצאות משתנות <span class="badge">'+varEntries.length+'/'+_varCats.length+'</span></div></div>'
       +(varEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות משתנות מוגדרות עדיין</div>')
       +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
   }
@@ -4297,7 +4284,7 @@ function saveEditTx(){
   const amount = parseFloat(document.getElementById('editTxAmount').value);
   const date   = document.getElementById('editTxDate').value;
   const cat    = document.getElementById('editTxCat').value;
-  if(!desc || !amount || !date){ showToast('מלא תיאור, סכום ותאריך'); return; }
+  if(!desc || !amount || amount<=0 || !date){ showToast('מלא תיאור, סכום ותאריך'); return; }
   tx.desc      = desc;
   tx.amount    = amount;
   tx.date      = date;
@@ -4565,7 +4552,8 @@ function renderDashGoals(){
   const bigLabel=document.getElementById('dashBigLabel');
   if(bigNum)bigNum.textContent=fmt(total);
   if(bigLabel)bigLabel.textContent=_dashPeriod==='week'?'ב-7 הימים האחרונים':_dashPeriod==='all'?'סך הכל':'מתחילת החודש';
-  const cats=Object.keys(budgets).filter(c=>EXPENSE_CATS.includes(c)).sort().slice(0,8);
+  const _dashCats=getEffectiveExpenseCats();
+  const cats=Object.keys(budgets).filter(c=>_dashCats.includes(c)).sort().slice(0,8);
   const R=34,C=2*Math.PI*R;
   grid.innerHTML=cats.length?cats.map(cat=>{
     const s=spentByCat[cat]||0,lim=budgets[cat]||0;
@@ -4848,7 +4836,7 @@ function deleteBudget(cat){
   showUndoToast('🗑️ התקציב הוסר',()=>{budgets[cat]=backup;saveData();renderBudget();renderTxPage();},()=>{});
 }
 async function addCustomBudgetCat(){
-  const remaining=EXPENSE_CATS.filter(c=>budgets[c]==null);
+  const remaining=getEffectiveExpenseCats().filter(c=>budgets[c]==null);
   const name=await promptSheet({title:'קטגוריה חדשה',label:'שם קטגוריית ההוצאה המשתנה:'+(remaining.length?' (לדוגמה: '+remaining.slice(0,3).join(', ')+')':'')});
   if(!name||!name.trim())return;
   const cat=name.trim();
@@ -4856,6 +4844,11 @@ async function addCustomBudgetCat(){
   if(val===null)return;
   const amt=parseFloat(val);
   if(amt>0)budgets[cat]=amt;else delete budgets[cat];
+  if(amt>0&&!getEffectiveExpenseCats().includes(cat)){
+    if(!userSettings.customCats)userSettings.customCats=[];
+    userSettings.customCats.push(cat);
+    saveSettingsData();
+  }
   saveData();
   renderBudget();
   renderTxPage();
@@ -4879,18 +4872,29 @@ function toggleBudgetRollover(on){
 }
 function _budgetCarry(cat){
   if(!userSettings.budgetRollover||!budgets[cat])return 0;
-  const prevM=currentMonth===0?11:currentMonth-1;
-  const prevY=currentMonth===0?currentYear-1:currentYear;
-  const prevSpent=getMonthTx(prevY,prevM).filter(t=>t.type==='expense'&&t.cat===cat).reduce((s,t)=>s+t.amount,0);
-  if(!prevSpent&&!getMonthTx(prevY,prevM).length)return 0;
-  return budgets[cat]-prevSpent;
+  // צוברים אחורה על חודשים רצופים עם פעילות, כדי שעודף יצטבר וחריגה לא תיענש פעמיים
+  const prior=[];
+  let m=currentMonth,y=currentYear;
+  for(let i=0;i<24;i++){
+    if(m===0){m=11;y--;}else{m--;}
+    const mTx=getMonthTx(y,m);
+    if(!mTx.length)break;
+    prior.unshift(mTx);
+  }
+  let carry=0;
+  prior.forEach(mTx=>{
+    const spent=mTx.filter(t=>t.type==='expense'&&t.cat===cat).reduce((s,t)=>s+t.amount,0);
+    carry=Math.max(0,budgets[cat]+carry)-spent;
+  });
+  return carry;
 }
 function renderBudget(){
   const rollT=document.getElementById('budgetRolloverToggle');
   if(rollT)rollT.checked=!!userSettings.budgetRollover;
   const mTx=getMonthTx(currentYear,currentMonth);
   const spent={};mTx.filter(t=>t.type==='expense').forEach(t=>{spent[t.cat]=(spent[t.cat]||0)+t.amount;});
-  const allCats=Object.keys(budgets).filter(c=>BUDGET_CATS.includes(c)).sort();
+  const _budCats=getEffectiveBudgetCats();
+  const allCats=Object.keys(budgets).filter(c=>_budCats.includes(c)).sort();
   const carry={};allCats.forEach(c=>{carry[c]=_budgetCarry(c);});
   const effLim=c=>budgets[c]?Math.max(0,budgets[c]+(carry[c]||0)):0;
   const empty=document.getElementById('budgetEmpty');
@@ -5074,7 +5078,7 @@ function addGoal(){
   const _gb=document.querySelector('#addGoalSheet .btn-primary');if(_gb){_gb.textContent='✓';_gb.disabled=true;}
   setTimeout(()=>{closeSheet('addGoalSheet');showToast(editingId!=null?'✓ היעד עודכן':'🎯 יעד חדש נוצר!');renderGoals();},220);
 }
-function deleteGoal(id){const backup=goals.find(g=>g.id===id);const idx=goals.findIndex(g=>g.id===id);goals=goals.filter(g=>g.id!==id);transactions=transactions.filter(t=>!(t.goalTx&&t.goalId===id));saveData();renderGoals();showUndoToast('🗑️ יעד נמחק',()=>{goals.splice(idx,0,backup);saveData();renderGoals();},()=>{});}
+function deleteGoal(id){const backup=goals.find(g=>g.id===id);const idx=goals.findIndex(g=>g.id===id);const txBackup=transactions.filter(t=>t.goalTx&&t.goalId===id);goals=goals.filter(g=>g.id!==id);transactions=transactions.filter(t=>!(t.goalTx&&t.goalId===id));saveData();renderGoals();refreshAll();showUndoToast('🗑️ יעד נמחק',()=>{goals.splice(idx,0,backup);txBackup.forEach(t=>transactions.unshift(t));saveData();renderGoals();refreshAll();},()=>{});}
 let _addToGoalId=null;
 let _goalTxDir='add';
 function addToGoal(id){
@@ -6166,6 +6170,7 @@ function addDetectedSub(i){
   else if(s.cycle==='annual')nd.setFullYear(nd.getFullYear()+1);
   subscriptions.push({id:Date.now(),name:s.name,emoji:match?match.emoji:'🔄',category:match?match.cat:'אחר',amount:s.amount,cycle:s.cycle,nextDate:localISO(nd),active:true});
   saveData();
+  renderSubscriptions();renderUpcoming();refreshAll();
   const btn=document.getElementById('dsbtn'+i);
   if(btn){btn.textContent='✓';btn.disabled=true;btn.style.opacity='0.5';}
 }
@@ -7458,7 +7463,9 @@ setTimeout(autoCarryRecurring,500);
       if(typeof showToast==='function') showToast('\u{1F4CA} קובץ Excel ירד!');
     });
   }
-  var BK_KEYS=['budget_tx','budget_goals','budget_subs','budget_limits','budget_loans','budget_settings','budget_learned_cats','budget_learned_amts','budget_month_review'];
+  var BK_BASE=['budget_tx','budget_goals','budget_subs','budget_limits','budget_loans','budget_payments','budget_fixed','budget_insurances','budget_settings'];
+  var BK_KEYS=BK_BASE.concat(BK_BASE.map(function(k){return k+'_business';}))
+    .concat(['budget_learned_cats','budget_learned_amts','budget_month_review']);
   var DAY=24*3600*1000;   /* daily silent auto-backup */
   function tick(){
     try{
@@ -7543,6 +7550,8 @@ setTimeout(autoCarryRecurring,500);
     var msg='לשחזר מהגיבוי האוטומטי מ-'+d.toLocaleDateString('he-IL')+'? הנתונים הנוכחיים יוחלפו.';
     if(!(await confirmSheet({icon:'♻️',title:'שחזור גיבוי אוטומטי',message:msg,confirmText:'שחזר',danger:true}))) return;
     try{ Object.keys(s.data).forEach(function(k){ localStorage.setItem(k,s.data[k]); }); }catch(e){}
+    // מנקים סימוני מחיקה כדי שהסנכרון לענן לא ימחק שוב את מה ששוחזר
+    try{ localStorage.removeItem('budget_sync_meta'); localStorage.removeItem('budget_sync_meta_business'); }catch(e){}
     location.reload();
   };
   var _sd=window.saveData; if(typeof _sd==='function'){ window.saveData=function(){ var r=_sd.apply(this,arguments); try{tick();}catch(e){} return r; }; }
