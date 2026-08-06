@@ -78,7 +78,8 @@ export default function ClientList({ advisorId, onSelect }) {
     setSubmitting(false);
     if (error) { console.error('claim_advisor_invite', error); toast('שגיאה בחיבור, נסה שוב', 'error'); return; }
     if (data === 'self') { toast('אתה מחובר כרגע עם חשבון הלקוח עצמו - התחבר לפלטפורמה עם חשבון היועץ שלך', 'error'); return; }
-    if (data !== 'ok') { toast('קוד לא תקין או שכבר נוצל', 'error'); return; }
+    if (data === 'rate_limited') { toast('יותר מדי ניסיונות, נסה שוב בעוד 10 דקות', 'error'); return; }
+    if (data !== 'ok') { toast('קוד לא תקין, פג תוקפו או שכבר נוצל', 'error'); return; }
     toast('הלקוח חובר בהצלחה', 'success');
     reload();
     setCode('');

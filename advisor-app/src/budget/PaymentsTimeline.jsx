@@ -61,48 +61,26 @@ export default function PaymentsTimeline({ payments, now = new Date() }) {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.head}>
-        <div className={styles.headMain}>
-          <div className={styles.headLabel}>התשלומים מסתיימים</div>
-          <div className={styles.headValue}>{freeFrom}</div>
-          <div className={styles.headSub}>
-            {horizon === 1 ? 'החודש האחרון' : `עוד ${horizon} חודשים`} · נותרו {fmt(totalLeft)}
-          </div>
-        </div>
-        <div className={styles.headFree}>
-          <div className={styles.headLabel}>ואז יתפנו</div>
-          <div className={styles.headFreeValue}>{fmt(monthlyNow)}</div>
-          <div className={styles.headSub}>לחודש</div>
-        </div>
-      </div>
+      <p className={styles.summary}>
+        היום משלם <b>{fmt(monthlyNow)}</b> לחודש.
+        {' '}ב<b>{freeFrom}</b> הכל נגמר — ויתפנו <b className={styles.free}>{fmt(monthlyNow)}</b> בחודש.
+      </p>
 
-      <ol className={styles.steps}>
-        {periods.map((p, i) => {
-          const width = monthlyNow > 0 ? Math.max(4, Math.round((p.monthly / monthlyNow) * 100)) : 0;
-          const range = p.months === 1
-            ? offsetLabel(p.startOffset, now)
-            : `${offsetLabel(p.startOffset, now)} – ${offsetLabel(p.endOffset, now)}`;
-          return (
-            <li key={i} className={styles.step} style={{ animationDelay: Math.min(i * 0.05, 0.3) + 's' }}>
-              <div className={styles.stepTop}>
-                <span className={styles.range}>{range}</span>
-                <span className={styles.monthly}>{fmt(p.monthly)} <span className={styles.per}>לחודש</span></span>
-              </div>
-              <div className={styles.bar}>
-                <div className={styles.fill} style={{ width: width + '%' }} />
-              </div>
-              <div className={styles.after}>
-                <span className={styles.endsPill}>
-                  מסתיים: {p.ending.map(e => e.name).join(', ')}
-                </span>
-                <span className={styles.freed}>+{fmt(p.freed)} פנוי</span>
-                <span className={styles.thenText}>
-                  {p.monthlyAfter > 0 ? `→ ${fmt(p.monthlyAfter)} לחודש` : '→ אין עוד תשלומים'}
-                </span>
-              </div>
-            </li>
-          );
-        })}
+      <ol className={styles.rows}>
+        {periods.map((p, i) => (
+          <li key={i} className={styles.row} style={{ animationDelay: Math.min(i * 0.05, 0.3) + 's' }}>
+            <span className={styles.when}>עד {offsetLabel(p.endOffset, now)}</span>
+            <span className={styles.amount}>{fmt(p.monthly)}<span className={styles.per}> לחודש</span></span>
+            <span className={styles.note}>
+              {p.ending.map(e => e.name).join(', ')} נגמר — מתפנים {fmt(p.freed)}
+            </span>
+          </li>
+        ))}
+        <li className={styles.done}>
+          <span className={styles.when}>מ{freeFrom}</span>
+          <span className={styles.amountDone}>₪0</span>
+          <span className={styles.note}>אין יותר תשלומים</span>
+        </li>
       </ol>
     </div>
   );

@@ -3892,7 +3892,7 @@ async function createHousehold(){
   const btn=(typeof event!=='undefined'&&event)?event.target:null;
   const prevLabel=btn?btn.textContent:null;
   if(btn){btn.disabled=true;btn.textContent='יוצר קוד...';}
-  const code=Math.random().toString(36).substring(2,8).toUpperCase();
+  const code=genInviteCode();
   const {data,error}=await _sb.from('households').upsert({owner_id:_cloudUser.id,invite_code:code},{onConflict:'owner_id'}).select().single();
   if(error){showToast('❌ שגיאה ביצירת קוד');if(btn){btn.disabled=false;btn.textContent=prevLabel;}return;}
   _cloudHousehold={role:'owner',...data};
@@ -3937,9 +3937,14 @@ async function _loadAdvisorLink(){
   _advisorLink=data||null;
 }
 function genInviteCode(){
+  // crypto, not Math.random: this code is the only thing standing between a stranger and
+  // full access to the user's finances. 9 chars over 31 symbols ≈ 2.6e13 combinations,
+  // and the server throttles claim attempts.
   const chars='23456789ABCDEFGHJKMNPQRSTUVWXYZ'; // no 0/O/1/I/L — avoids copy/type ambiguity
+  const buf=new Uint8Array(9);
+  crypto.getRandomValues(buf);
   let code='';
-  for(let i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  for(let i=0;i<buf.length;i++) code+=chars[buf[i]%chars.length];
   return code;
 }
 async function createAdvisorInvite(){
@@ -3982,7 +3987,7 @@ function renderAdvisorLinkSection(){
       +'<div style="font-size:1.4rem;margin-bottom:4px">🔑</div>'
       +'<div style="font-size:1.4rem;font-weight:800;letter-spacing:6px;font-family:var(--font-num);color:var(--accent);direction:ltr">'+esc(_advisorLink.invite_code)+'</div>'
       +'<button class="btn btn-outline btn-sm" onclick="copyAdvisorCode()" style="margin-top:8px">העתק קוד</button>'
-      +'<div style="font-size:0.72rem;color:var(--text3);margin-top:4px">שתף את הקוד עם היועץ הפיננסי שלך</div></div>'
+      +'<div style="font-size:0.72rem;color:var(--text3);margin-top:4px">שתף את הקוד עם היועץ הפיננסי שלך · תקף ל-24 שעות</div></div>'
       +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">בטל קוד</button>';
     return;
   }
