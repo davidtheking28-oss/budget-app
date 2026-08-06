@@ -124,13 +124,14 @@ export default function Subscriptions({ clientUserId, advisorId }) {
     const total = parseFloat(paymentForm.total) || 0;
     const amount = parseFloat(paymentForm.amount) || 0;
     if (!paymentForm.name.trim() || !total || !amount) { toast('נדרשים שם, מספר תשלומים וסכום', 'error'); return; }
-    const patch = { name: paymentForm.name.trim(), total, current: parseFloat(paymentForm.current) || 0, amount, currentAnchor: monthKey(new Date().getFullYear(), new Date().getMonth()) };
+    const remaining = paymentForm.current === '' ? total : Math.max(0, Math.min(total, parseFloat(paymentForm.current) || 0));
+    const patch = { name: paymentForm.name.trim(), total, current: total - remaining, amount, currentAnchor: monthKey(new Date().getFullYear(), new Date().getMonth()) };
     const ok = editingPaymentId != null ? await updateItem(save, 'payments', editingPaymentId, patch) : await addItem(save, 'payments', patch);
     if (!ok) return;
     toast(editingPaymentId != null ? 'התשלום עודכן' : 'התשלום נוסף', 'success');
     resetPaymentForm();
   }
-  function startEditPayment(p) { setEditingPaymentId(p.id); setPaymentForm({ name: p.name || '', total: p.total || '', current: p.current || '', amount: p.amount || '' }); }
+  function startEditPayment(p) { setEditingPaymentId(p.id); setPaymentForm({ name: p.name || '', total: p.total || '', current: Math.max(0, (parseFloat(p.total) || 0) - (parseFloat(p.current) || 0)), amount: p.amount || '' }); }
 
   function resetInsForm() { setInsForm({ name: '', monthly: '' }); setEditingInsId(null); }
   async function submitInsurance() {
@@ -307,7 +308,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="numeric" placeholder="סה״כ תשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="שולמו עד כה" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלומים שנותרו" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום לתשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
           <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוסף תשלום'}</Button>
           {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
