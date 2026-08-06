@@ -4,6 +4,70 @@ import { toast } from '../toast.js';
 
 const EMPTY = { transactions: [], budgets: {}, goals: [], subscriptions: [], loans: [], payments: [], fixed_expenses: [], insurances: [], assets: [] };
 
+// The client app merges cloud data with its own local copy using last-write-wins on a
+// per-item `u` timestamp, and only forgets an item it still holds locally if a tombstone
+// exists in sync_meta.del (see _mergeArrays / _mergeBudgets in index.html). Advisor writes
+// must speak the same protocol, or the client silently reverts every edit and resurrects
+// every deletion on its next sync.
+const DEL_KEY = {
+  transactions: 'tx', goals: 'goals', subscriptions: 'subs', loans: 'loans',
+  payments: 'payments', fixed_expenses: 'fixed', insurances: 'insurances',
+};
+
+function emptyDel() {
+  return { tx: {}, goals: {}, subs: {}, loans: {}, payments: {}, fixed: {}, insurances: {}, budgets: {} };
+}
+
+export function mergeSyncMeta(a, b) {
+  const out = { del: { ...emptyDel() }, bu: {} };
+  for (const src of [a, b]) {
+    if (!src || typeof src !== 'object') continue;
+    for (const [k, v] of Object.entries(src.del || {})) {
+      out.del[k] = { ...(out.del[k] || {}) };
+      for (const [id, ts] of Object.entries(v || {})) {
+        if (!(id in out.del[k]) || ts > out.del[k][id]) out.del[k][id] = ts;
+      }
+    }
+    for (const [c, ts] of Object.entries(src.bu || {})) {
+      if (!(c in out.bu) || ts > out.bu[c]) out.bu[c] = ts;
+    }
+  }
+  return out;
+}
+
+export function stampSync(prev, patch, now = Date.now()) {
+  const out = { ...patch };
+  const prevMeta = prev?.sync_meta || {};
+  const meta = { del: { ...emptyDel(), ...(prevMeta.del || {}) }, bu: { ...(prevMeta.bu || {}) } };
+  let touched = false;
+
+  for (const [key, delKey] of Object.entries(DEL_KEY)) {
+    if (!Array.isArray(out[key])) continue;
+    touched = true;
+    const before = new Map((prev?.[key] || []).filter(it => it && it.id != null).map(it => [String(it.id), it]));
+    out[key] = out[key].map(it => {
+      if (!it || it.id == null) return it;
+      const old = before.get(String(it.id));
+      const same = old && JSON.stringify({ ...old, u: 0 }) === JSON.stringify({ ...it, u: 0 });
+      return same ? it : { ...it, u: now };
+    });
+    const after = new Set(out[key].filter(it => it && it.id != null).map(it => String(it.id)));
+    meta.del[delKey] = { ...(meta.del[delKey] || {}) };
+    for (const id of before.keys()) if (!after.has(id)) meta.del[delKey][id] = now;
+  }
+
+  if (out.budgets && typeof out.budgets === 'object' && !Array.isArray(out.budgets)) {
+    touched = true;
+    const before = prev?.budgets || {};
+    for (const c of new Set([...Object.keys(before), ...Object.keys(out.budgets)])) {
+      if (before[c] !== out.budgets[c]) meta.bu[c] = now;
+      if (out.budgets[c] == null && before[c] != null) meta.del.budgets[c] = now;
+    }
+  }
+
+  return touched ? { ...out, sync_meta: meta } : out;
+}
+
 const STALE_MS = 30000;
 
 const cache = new Map();
@@ -104,7 +168,8 @@ export function useClientBudget(clientUserId, advisorId) {
   const save = useCallback(async (patchOrFn) => {
     if (!clientUserId) return;
     const prev = cache.get(clientUserId)?.data || { user_id: clientUserId, ...EMPTY };
-    const patch = typeof patchOrFn === 'function' ? patchOrFn(prev) : patchOrFn;
+    const rawPatch = typeof patchOrFn === 'function' ? patchOrFn(prev) : patchOrFn;
+    const patch = stampSync(prev, rawPatch);
     const next = { ...prev, ...patch };
     invalidate(clientUserId);
     setEntry(clientUserId, { data: next, error: null, ts: Date.now() });
@@ -119,6 +184,12 @@ export function useClientBudget(clientUserId, advisorId) {
     for (const key of Object.keys(patch)) {
       const freshVal = freshRow?.[key];
       const patchVal = patch[key];
+      if (key === 'sync_meta') {
+        // union tombstones/budget stamps with whatever landed since, so a concurrent
+        // deletion by the client isn't dropped and then resurrected
+        mergedPatch[key] = mergeSyncMeta(freshVal, patchVal);
+        continue;
+      }
       mergedPatch[key] = (freshVal && typeof freshVal === 'object' && !Array.isArray(freshVal) &&
         patchVal && typeof patchVal === 'object' && !Array.isArray(patchVal))
         ? { ...freshVal, ...patchVal }
@@ -126,7 +197,7 @@ export function useClientBudget(clientUserId, advisorId) {
     }
     const { error } = await supabase
       .from('budget_data')
-      .upsert({ user_id: clientUserId, updated_by: advisorId, ...mergedPatch }, { onConflict: 'user_id' });
+      .upsert({ user_id: clientUserId, updated_by: advisorId, updated_at: new Date().toISOString(), ...mergedPatch }, { onConflict: 'user_id' });
     if (error) {
       // Roll back but leave `error` null: the cache is shared across tabs, and a failed
       // write must not replace every screen's valid data with a full-page error. The

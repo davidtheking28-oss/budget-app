@@ -60,6 +60,13 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   }
 
   const activeCats = Object.keys(budgets).filter(c => budgets[c]).sort();
+  // the client can define custom categories (settings.customCats), so offer those too
+  // instead of only the built-in list — otherwise the advisor can't budget for them
+  const selectableCats = [...new Set([
+    ...BUDGET_CATS,
+    ...(data?.settings?.customCats || []),
+    ...Object.keys(budgets),
+  ])];
   const overCount = activeCats.filter(c => (spentByCat[c] || 0) > budgets[c]).length;
 
   if (wizardOpen) {
@@ -106,7 +113,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
       )}
       <div className={styles.form}>
         <select className={styles.select} aria-label="קטגוריה" value={cat} onChange={e => setCat(e.target.value)}>
-          {BUDGET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+          {selectableCats.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input className={styles.input} type="number" inputMode="decimal" aria-label="תקרה חודשית" placeholder="תקרה חודשית" value={limit} onChange={e => setLimit(e.target.value)} onKeyDown={e => e.key === 'Enter' && setBudget()} />
         <Button onClick={setBudget} disabled={saving}>שמור תקציב</Button>

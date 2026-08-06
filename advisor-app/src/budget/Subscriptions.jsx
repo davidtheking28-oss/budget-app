@@ -164,11 +164,13 @@ export default function Subscriptions({ clientUserId, advisorId }) {
   });
   const insurances = [...(data.insurances || [])].sort((a, b) => (b.monthly || 0) - (a.monthly || 0));
   const insurancesMonthly = insurances.reduce((s, x) => s + (x.monthly || 0), 0);
-  const monthlySubsCost = subs.reduce((s, x) => s + monthlyEquivalent(x.cycle, x.amount || 0), 0);
+  // matches subME() in the client app: an inactive subscription contributes nothing
+  const monthlySubsCost = subs.reduce((s, x) => s + (x.active ? monthlyEquivalent(x.cycle, x.amount || 0) : 0), 0);
   const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
   const loansMonthly = loans.reduce((s, l) => s + (l.monthly || 0), 0);
   const paymentsLeft = payments.reduce((s, p) => { const total = parseFloat(p.total) || 0; return s + Math.max(0, total - currentInstallments(p, total)) * (parseFloat(p.amount) || 0); }, 0);
   const subShares = subs
+    .filter(s => s.active)
     .map(s => ({ name: s.name, monthly: monthlyEquivalent(s.cycle, s.amount || 0) }))
     .sort((a, b) => b.monthly - a.monthly);
   const in7Days = new Date();

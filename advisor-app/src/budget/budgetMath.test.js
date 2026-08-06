@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { monthSummary, effectiveIncome } from './budgetMath.js';
+import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit } from './budgetMath.js';
 
 const data = {
   budgets: { 'מזון': 1000, 'בילויים': 500 },
@@ -80,5 +80,56 @@ describe('effectiveIncome', () => {
       [{ name: 'משכורת', amount: 18400 }, { name: 'שכירות', amount: 3000 }]
     );
     expect(r).toEqual({ manualIncome: 18400, unpostedIncome: 3000, income: 21400 });
+  });
+});
+
+describe('budget rollover parity with the client app', () => {
+  const mkData = (tx, rollover) => ({
+    budgets: { 'מזון לבית': 1000 },
+    transactions: tx,
+    settings: { budgetRollover: rollover },
+  });
+
+  it('is inert when the client has rollover disabled', () => {
+    const data = mkData([{ type: 'income', cat: 'שכר', amount: 5000, date: '2026-01-05' }], false);
+    expect(budgetCarry(data, 'מזון לבית', 2026, 1)).toBe(0);
+    expect(effectiveLimit(data, 'מזון לבית', 2026, 1)).toBe(1000);
+  });
+
+  it('carries an unused surplus into the next month', () => {
+    const data = mkData([{ type: 'income', cat: 'שכר', amount: 5000, date: '2026-01-05' }], true);
+    expect(effectiveLimit(data, 'מזון לבית', 2026, 1)).toBe(2000);
+  });
+
+  it('does not charge an overspend twice', () => {
+    // Jan unused (+1000) -> Feb limit 2000; spending 1500 in Feb is legal
+    const data = mkData([
+      { type: 'income', cat: 'שכר', amount: 5000, date: '2026-01-05' },
+      { type: 'expense', cat: 'מזון לבית', amount: 1500, date: '2026-02-10' },
+    ], true);
+    expect(effectiveLimit(data, 'מזון לבית', 2026, 2)).toBe(1500);
+  });
+
+  it('compounds a surplus across several months', () => {
+    const data = mkData([
+      { type: 'income', cat: 'שכר', amount: 5000, date: '2026-01-05' },
+      { type: 'income', cat: 'שכר', amount: 5000, date: '2026-02-05' },
+    ], true);
+    expect(effectiveLimit(data, 'מזון לבית', 2026, 2)).toBe(3000);
+  });
+
+  it('does not flag over-budget when the carry covers the spend', () => {
+    const data = mkData([
+      { type: 'income', cat: 'שכר', amount: 5000, date: '2026-01-05' },
+      { type: 'expense', cat: 'מזון לבית', amount: 1200, date: '2026-02-10' },
+    ], true);
+    expect(monthSummary(data, 2026, 1).overCats).toEqual([]);
+  });
+
+  it('still flags a genuine overspend', () => {
+    const data = mkData([{ type: 'expense', cat: 'מזון לבית', amount: 1200, date: '2026-02-10' }], false);
+    const over = monthSummary(data, 2026, 1).overCats;
+    expect(over).toHaveLength(1);
+    expect(over[0].over).toBe(200);
   });
 });

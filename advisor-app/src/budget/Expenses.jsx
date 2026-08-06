@@ -361,7 +361,8 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
                                   <div className={styles.rowAmount + ' ' + amountClass}>
                                     {fmt(t.amount)}
                                   </div>
-                                  <DeleteButton onClick={() => removeTx(t.id)} />
+                                  {/* שורות fx נגזרות אוטומטית באפליקציית הלקוח — מחיקה כאן הייתה מתבטלת מיד */}
+                                  {!t.fx && <DeleteButton onClick={() => removeTx(t.id)} />}
                                 </div>
                               </div>
                             ))}
