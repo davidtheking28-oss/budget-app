@@ -1,5 +1,5 @@
 import { useClientBudget } from './useClientBudget.js';
-import { monthSummary } from './budgetMath.js';
+import { monthSummary, effectiveLimit } from './budgetMath.js';
 import { computeInsights, computeHealthScore } from './insights.js';
 import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -61,7 +61,7 @@ export default function Report({ clientUserId, year, month, email, onClose }) {
               {cats.map(c => (
                 <tr key={c}>
                   <td>{c}</td>
-                  <td>{fmt(data.budgets[c])}</td>
+                  <td>{fmt(effectiveLimit(data, c, year, month))}</td>
                   <td>{fmt(summary.spentByCat[c] || 0)}</td>
                 </tr>
               ))}

@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
 import { useClientBudget, BudgetModeContext } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
+import { effectiveLimit } from './budgetMath.js';
 import { BUDGET_CATS, budgetCatsFor } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -71,14 +72,15 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   // `cat` may still hold the other mode's category after a toggle — fall back rather than
   // leaving the select on a value that doesn't exist in this mode
   const selectedCat = selectableCats.includes(cat) ? cat : selectableCats[0];
-  const overCount = activeCats.filter(c => (spentByCat[c] || 0) > budgets[c]).length;
+  const limitOf = c => effectiveLimit(data, c, year, month);
+  const overCount = activeCats.filter(c => (spentByCat[c] || 0) > limitOf(c)).length;
 
   if (wizardOpen) {
     return <BudgetWizard data={data} save={save} onClose={() => setWizardOpen(false)} />;
   }
 
   const monthlyIncome = incomeSources.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
-  const totalBudgeted = activeCats.reduce((s, c) => s + (budgets[c] || 0), 0);
+  const totalBudgeted = activeCats.reduce((s, c) => s + limitOf(c), 0);
   const totalSpent = activeCats.reduce((s, c) => s + (spentByCat[c] || 0), 0);
   const flow = monthlyIncome - totalSpent;
 
@@ -137,7 +139,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
       <div className={styles.grid}>
         {activeCats.map((c, i) => {
           const s = spentByCat[c] || 0;
-          const l = budgets[c];
+          const l = limitOf(c);
           const pct = Math.min(Math.round((s / l) * 100), 100);
           const over = s > l;
           const color = pct >= 100 ? 'var(--red)' : pct >= 80 ? 'var(--yellow)' : 'var(--green)';

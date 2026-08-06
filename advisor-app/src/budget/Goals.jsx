@@ -91,8 +91,11 @@ export default function Goals({ clientUserId, advisorId }) {
           ? [{ id: 'goal|' + g.id + '|' + Date.now(), type: 'income', cat: 'אחר', desc: 'משיכה מיעד: ' + g.name, amount: actual, date: today, recurring: false, goalTx: true, goalId: g.id }, ...curTx]
           : curTx;
       } else {
-        const actual = Math.min(amt, g.target - (g.saved || 0));
-        nextGoals = curGoals.map(x => x.id === g.id ? { ...x, saved: Math.min(x.target, (x.saved || 0) + actual) } : x);
+        // goals created in the client app may have no target; without this the deposit
+        // math yields NaN and persists ₪NaN as the saved amount
+        const target = parseFloat(g.target) || 0;
+        const actual = target > 0 ? Math.min(amt, target - (g.saved || 0)) : amt;
+        nextGoals = curGoals.map(x => x.id === g.id ? { ...x, saved: target > 0 ? Math.min(target, (x.saved || 0) + actual) : (x.saved || 0) + actual } : x);
         nextTx = actual > 0
           ? [{ id: 'goal|' + g.id + '|' + Date.now(), type: 'expense', cat: 'חיסכון ליעד', desc: 'חיסכון: ' + g.name, amount: actual, date: today, recurring: false, goalTx: true, goalId: g.id }, ...curTx]
           : curTx;

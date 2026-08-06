@@ -48,7 +48,9 @@ export function monthSummary(data, year, month) {
   monthTx.filter(t => t.type === 'expense').forEach(t => {
     spentByCat[t.cat] = (spentByCat[t.cat] || 0) + t.amount;
   });
-  const totalBudget = Object.values(budgets).reduce((s, v) => s + (v || 0), 0);
+  // effective, not nominal: with rollover on, the client's real ceiling includes the carry,
+  // otherwise projected-overrun warnings and the "remaining" chip fire on clients who are fine
+  const totalBudget = Object.keys(budgets).reduce((s, c) => s + effectiveLimit(data, c, year, month), 0);
   const overCats = Object.keys(budgets)
     .filter(c => budgets[c])
     .map(c => ({ cat: c, limit: effectiveLimit(data, c, year, month), spent: spentByCat[c] || 0 }))

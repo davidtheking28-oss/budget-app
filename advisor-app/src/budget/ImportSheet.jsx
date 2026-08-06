@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
+import { localISODate } from './monthUtils.js';
 import styles from './ImportSheet.module.css';
 
 const BOM = '﻿';
@@ -43,7 +44,7 @@ function parseCsv(text) {
       if (y.length === 2) y = '20' + y;
       date = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
     }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) date = new Date().toISOString().slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) date = localISODate();
     rows.push({ date, desc: rawDesc, amount });
   });
   return rows;

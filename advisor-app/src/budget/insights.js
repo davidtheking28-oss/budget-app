@@ -21,8 +21,12 @@ export function computeInsights(data, year, month) {
     const d = new Date(year, month - back, 1);
     return getMonthTx(data?.transactions, d.getFullYear(), d.getMonth()).filter(t => t.type === 'expense');
   });
+  // average only over months the client actually has data for — dividing by a fixed 3
+  // understates the baseline for a new client and invents "spikes" out of flat spending
+  const priorWithData = priorMonths.filter(txs => txs.length).length;
   Object.keys(summary.spentByCat).forEach(cat => {
-    const priorAvg = priorMonths.reduce((s, txs) => s + txs.filter(t => t.cat === cat).reduce((s2, t) => s2 + t.amount, 0), 0) / 3;
+    const priorAvg = priorWithData === 0 ? 0
+      : priorMonths.reduce((s, txs) => s + txs.filter(t => t.cat === cat).reduce((s2, t) => s2 + t.amount, 0), 0) / priorWithData;
     const current = summary.spentByCat[cat];
     if (current > 200 && priorAvg > 0 && current >= priorAvg * 1.5) {
       insights.push({ kind: 'warn', text: `${cat}: ${fmt(current)} החודש, פי ${(current / priorAvg).toFixed(1)} מהרגיל (בממוצע ${fmt(priorAvg)})` });

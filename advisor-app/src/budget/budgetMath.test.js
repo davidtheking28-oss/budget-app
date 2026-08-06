@@ -133,3 +133,21 @@ describe('budget rollover parity with the client app', () => {
     expect(over[0].over).toBe(200);
   });
 });
+
+describe('totalBudget reflects the effective ceiling', () => {
+  it('equals the nominal budget when rollover is off', () => {
+    const data = { budgets: { 'מזון לבית': 1000 }, transactions: [], settings: {} };
+    expect(monthSummary(data, 2026, 1).totalBudget).toBe(1000);
+  });
+
+  it('includes the carry when rollover is on, so projections do not false-alarm', () => {
+    const data = {
+      budgets: { 'מזון לבית': 1000 },
+      transactions: [{ type: 'income', cat: 'שכר', amount: 5000, date: '2026-01-05' }],
+      settings: { budgetRollover: true },
+    };
+    const s = monthSummary(data, 2026, 1);
+    expect(s.totalBudget).toBe(2000);
+    expect(s.remaining).toBe(2000);
+  });
+});

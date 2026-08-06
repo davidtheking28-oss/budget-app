@@ -5,6 +5,7 @@ import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
+import { toast } from '../toast.js';
 import styles from './Crm.module.css';
 
 const ICONS = {
@@ -86,8 +87,20 @@ export default function Crm({ advisorId, clientId, onChange }) {
   function saveEditNote(id) { editNote(id, editNoteBody); setEditingNote(null); }
   function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); }
   function saveEditTask(id) { editTask(id, editTaskTitle, editTaskDue); setEditingTask(null); }
-  function startEditMeeting(m) { setEditingMeeting(m.id); setEditMeetingAt(new Date(m.scheduled_at).toISOString().slice(0, 16)); setEditMeetingNotes(m.notes || ''); }
-  function saveEditMeeting(id) { editMeeting(id, new Date(editMeetingAt).toISOString(), editMeetingNotes); setEditingMeeting(null); }
+  // datetime-local speaks LOCAL time; toISOString() emits UTC. Converting one way without
+  // the other shifted every meeting by the UTC offset each time it was opened and saved.
+  function toLocalInput(iso) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  }
+  function startEditMeeting(m) { setEditingMeeting(m.id); setEditMeetingAt(toLocalInput(m.scheduled_at)); setEditMeetingNotes(m.notes || ''); }
+  function saveEditMeeting(id) {
+    const d = new Date(editMeetingAt);
+    if (!editMeetingAt || Number.isNaN(d.getTime())) { toast('בחר תאריך ושעה', 'error'); return; }
+    editMeeting(id, d.toISOString(), editMeetingNotes);
+    setEditingMeeting(null);
+  }
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) {
