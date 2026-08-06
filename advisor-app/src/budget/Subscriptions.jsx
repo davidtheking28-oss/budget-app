@@ -7,6 +7,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { stableColor } from '../categories.js';
 import { formatDate } from './monthUtils.js';
 import { toast } from '../toast.js';
+import PaymentsTimeline from './PaymentsTimeline.jsx';
 import styles from './Subscriptions.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
@@ -302,6 +303,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</div>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
+        <PaymentsTimeline payments={payments} />
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="numeric" placeholder="סה״כ תשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
