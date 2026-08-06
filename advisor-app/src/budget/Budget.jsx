@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useClientBudget } from './useClientBudget.js';
+import { useContext, useState } from 'react';
+import { useClientBudget, BudgetModeContext } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
-import { BUDGET_CATS } from '../categories.js';
+import { BUDGET_CATS, budgetCatsFor } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -15,6 +15,7 @@ const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 export default function Budget({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
+  const mode = useContext(BudgetModeContext);
   const [cat, setCat] = useState(BUDGET_CATS[0]);
   const [limit, setLimit] = useState('');
   const [saving, setSaving] = useState(false);
@@ -42,7 +43,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
     const amt = parseFloat(limit);
     if (!amt || amt <= 0) { toast('הזן תקרה תקינה', 'error'); return; }
     setSaving(true);
-    await save(cur => ({ budgets: { ...(cur.budgets || {}), [cat]: amt } }));
+    await save(cur => ({ budgets: { ...(cur.budgets || {}), [selectedCat]: amt } }));
     setSaving(false);
     toast('תקציב עודכן', 'success');
     setLimit('');
@@ -63,10 +64,13 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
   // the client can define custom categories (settings.customCats), so offer those too
   // instead of only the built-in list — otherwise the advisor can't budget for them
   const selectableCats = [...new Set([
-    ...BUDGET_CATS,
+    ...budgetCatsFor(mode),
     ...(data?.settings?.customCats || []),
     ...Object.keys(budgets),
   ])];
+  // `cat` may still hold the other mode's category after a toggle — fall back rather than
+  // leaving the select on a value that doesn't exist in this mode
+  const selectedCat = selectableCats.includes(cat) ? cat : selectableCats[0];
   const overCount = activeCats.filter(c => (spentByCat[c] || 0) > budgets[c]).length;
 
   if (wizardOpen) {
@@ -112,7 +116,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
         </div>
       )}
       <div className={styles.form}>
-        <select className={styles.select} aria-label="קטגוריה" value={cat} onChange={e => setCat(e.target.value)}>
+        <select className={styles.select} aria-label="קטגוריה" value={selectedCat} onChange={e => setCat(e.target.value)}>
           {selectableCats.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input className={styles.input} type="number" inputMode="decimal" aria-label="תקרה חודשית" placeholder="תקרה חודשית" value={limit} onChange={e => setLimit(e.target.value)} onKeyDown={e => e.key === 'Enter' && setBudget()} />

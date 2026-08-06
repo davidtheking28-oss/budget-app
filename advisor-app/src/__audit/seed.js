@@ -54,6 +54,24 @@ const budgets = {
 
 const full = {
   user_id: CLIENT_A,
+  // business mode lives in its own nested column in the client app; kept distinct from the
+  // personal figures so the advisor's פרטי/עסקי toggle is visibly verifiable
+  business: {
+    transactions: [
+      { id: 'b1', type: 'income', cat: 'הכנסות ממכירות', desc: 'לקוח – ריטיינר', amount: 24000, date: d(2), recurring: false },
+      { id: 'b2', type: 'expense', cat: 'מערכות ותוכנה', desc: 'שרתים וכלי פיתוח', amount: 1450, date: d(4), recurring: false },
+      { id: 'b3', type: 'expense', cat: 'שיווק ופרסום', desc: 'קמפיין ממומן', amount: 3200, date: d(9), recurring: false },
+      { id: 'b4', type: 'expense', cat: 'חשבונאות ומשפטי', desc: 'הנהלת חשבונות', amount: 900, date: d(11), recurring: false }
+    ],
+    budgets: { 'שיווק ופרסום': 2500, 'מערכות ותוכנה': 2000, 'חשבונאות ומשפטי': 1200 },
+    goals: [{ id: 'bg1', name: 'רזרבה תפעולית', target: 50000, saved: 18000, months: 12 }],
+    subscriptions: [{ id: 'bs1', name: 'Google Workspace', category: 'תוכנה', amount: 96, cycle: 'monthly', nextDate: d(18), active: true }],
+    loans: [],
+    payments: [],
+    fixed_expenses: [],
+    insurances: [{ id: 'bi1', name: 'ביטוח אחריות מקצועית', monthly: 260 }],
+    settings: { incomeSources: [{ name: 'ריטיינר קבוע', amount: 24000 }] }
+  },
   transactions: [...transactions, ...prevTx],
   budgets,
   goals: [

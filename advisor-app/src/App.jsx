@@ -18,6 +18,7 @@ import Subscriptions from './budget/Subscriptions.jsx';
 import Crm from './crm/Crm.jsx';
 import Report from './budget/Report.jsx';
 import { useClientSummary } from './crm/useClientSummary.js';
+import { BudgetModeContext, MODES } from './budget/useClientBudget.js';
 import { useClientFreshness } from './clients/useClientFreshness.js';
 import { useTheme } from './useTheme.js';
 
@@ -49,9 +50,11 @@ function readUrlState() {
   const nav = params.get('nav');
   const y = parseInt(params.get('y'), 10);
   const m = parseInt(params.get('m'), 10);
+  const mode = params.get('mode');
   return {
     selectedClient: clientId ? { id: clientId, email: null } : null,
     nav: NAV.some(n => n.key === nav) ? nav : NAV[0].key,
+    budgetMode: MODES.includes(mode) ? mode : 'personal',
     ym: Number.isInteger(y) && Number.isInteger(m) ? { year: y, month: m } : { year: today.getFullYear(), month: today.getMonth() }
   };
 }
@@ -61,6 +64,7 @@ export default function App() {
   const initial = readUrlState();
   const [selectedClient, setSelectedClient] = useState(initial.selectedClient);
   const [nav, setNav] = useState(initial.nav);
+  const [budgetMode, setBudgetMode] = useState(initial.budgetMode);
   const [ym, setYm] = useState(initial.ym);
   const [reportMode, setReportMode] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -76,11 +80,12 @@ export default function App() {
       params.set('nav', nav);
       params.set('y', ym.year);
       params.set('m', ym.month);
+      if (budgetMode !== 'personal') params.set('mode', budgetMode);
     }
     const query = params.toString();
     const url = query ? `${window.location.pathname}?${query}` : window.location.pathname;
     window.history.replaceState(null, '', url);
-  }, [selectedClient, nav, ym]);
+  }, [selectedClient, nav, ym, budgetMode]);
 
   useEffect(() => {
     if (!session || !selectedClient || selectedClient.email) return;
@@ -137,6 +142,7 @@ export default function App() {
 
   return (
     <>
+      <BudgetModeContext.Provider value={budgetMode}>
       <Shell
         title={NAV.find(n => n.key === nav)?.label}
         onBack={() => setSelectedClient(null)}
@@ -156,6 +162,8 @@ export default function App() {
           openTasks={openTasks}
           onOpenCrm={() => setNav('crm')}
           freshness={freshness}
+          budgetMode={budgetMode}
+          onBudgetModeChange={setBudgetMode}
         />
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
@@ -167,6 +175,7 @@ export default function App() {
         {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} onChange={refreshClientSummary} />}
         {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
       </Shell>
+      </BudgetModeContext.Provider>
       <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
       <Toaster />
     </>

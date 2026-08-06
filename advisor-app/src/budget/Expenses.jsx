@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useClientBudget } from './useClientBudget.js';
+import { useContext, useEffect, useState } from 'react';
+import { useClientBudget, BudgetModeContext } from './useClientBudget.js';
 import { getMonthTx, localISODate, formatDate } from './monthUtils.js';
 import { effectiveIncome } from './budgetMath.js';
-import { EXPENSE_CATS, INCOME_CATS, FIXED_CATS, catColor } from '../categories.js';
+import { EXPENSE_CATS, INCOME_CATS, FIXED_CATS, catColor, expenseCatsFor, incomeCatsFor } from '../categories.js';
 import ImportSheet from './ImportSheet.jsx';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
@@ -16,6 +16,9 @@ const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 export default function Expenses({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
+  const mode = useContext(BudgetModeContext);
+  const expenseCats = expenseCatsFor(mode);
+  const incomeCats = incomeCatsFor(mode);
   const [txType, setTxType] = useState('expense');
   const [cat, setCat] = useState(EXPENSE_CATS[0]);
   const [desc, setDesc] = useState('');
@@ -31,8 +34,14 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
 
   function pickType(t) {
     setTxType(t);
-    setCat(t === 'income' ? INCOME_CATS[0] : EXPENSE_CATS[0]);
+    setCat(t === 'income' ? incomeCats[0] : expenseCats[0]);
   }
+
+  // personal and business use different taxonomies — never leave the other mode's
+  // category selected, or the advisor files the entry under a category that doesn't exist there
+  useEffect(() => {
+    setCat(txType === 'income' ? incomeCats[0] : expenseCats[0]);
+  }, [mode]);
 
   const today = new Date();
   const isCurrent = year === today.getFullYear() && month === today.getMonth();
@@ -153,7 +162,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
     const newTx = rows.map(r => ({
       id: Date.now() + Math.random(),
       type: r.amount < 0 ? 'expense' : 'income',
-      cat: r.amount < 0 ? EXPENSE_CATS[EXPENSE_CATS.length - 1] : INCOME_CATS[INCOME_CATS.length - 1],
+      cat: r.amount < 0 ? expenseCats[expenseCats.length - 1] : incomeCats[incomeCats.length - 1],
       desc: r.desc,
       amount: Math.abs(r.amount),
       date: r.date,
@@ -205,7 +214,7 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
       </div>
       <div className={styles.form}>
         <select className={styles.select} aria-label="קטגוריה" value={cat} onChange={e => setCat(e.target.value)}>
-          {(txType === 'income' ? INCOME_CATS : EXPENSE_CATS).map(c => <option key={c} value={c}>{c}</option>)}
+          {(txType === 'income' ? incomeCats : expenseCats).map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <input className={styles.input} aria-label="תיאור" placeholder="תיאור" value={desc} onChange={e => setDesc(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />
         <input className={styles.input} type="number" inputMode="decimal" aria-label="סכום" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTx()} />

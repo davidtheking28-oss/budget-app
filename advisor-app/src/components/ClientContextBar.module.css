@@ -86,3 +86,38 @@
 @media (max-width: 720px) {
   .bar { border-radius: var(--radius-md); }
 }
+
+.modeToggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-full);
+  background: var(--surface-2, rgba(127, 127, 127, 0.12));
+  flex-shrink: 0;
+}
+
+.modeOn,
+.modeOff {
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 3px var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.modeOn {
+  background: var(--accent);
+  color: var(--accent-contrast, #fff);
+}
+
+.modeOff {
+  background: transparent;
+  color: var(--text-2);
+}
+
+.modeOff:hover {
+  color: var(--text-1);
+}

@@ -2,6 +2,14 @@ export const EXPENSE_CATS = ['מזון לבית','אוכל בחוץ ובילוי
 export const FIXED_CATS = ['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 export const BUDGET_CATS = [...EXPENSE_CATS, ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c))];
 export const INCOME_CATS = ['שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'];
+// business mode uses its own taxonomy in the client app (EXPENSE_CATS_BUSINESS /
+// INCOME_CATS_BUSINESS in index.html) — keep these in step with it
+export const EXPENSE_CATS_BUSINESS = ['שיווק ופרסום','מערכות ותוכנה','ציוד משרדי','שכר עובדים','חשבונאות ומשפטי','שכירות משרד','תקשורת עסקית','נסיעות עסקיות','ייצוג וארוח','אחסון ולוגיסטיקה','מסים ואגרות','ביטוח עסקי','הדרכות והשתלמויות','פיתוח ומחקר','קניות ציוד','אחר'];
+export const INCOME_CATS_BUSINESS = ['הכנסות ממכירות','שירותים','פרויקטים','מנויים לקוחות','עמלות','ייעוץ','השקעות','אחר'];
+
+export function expenseCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_BUSINESS : EXPENSE_CATS; }
+export function incomeCatsFor(mode) { return mode === 'business' ? INCOME_CATS_BUSINESS : INCOME_CATS; }
+export function budgetCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_BUSINESS : BUDGET_CATS; }
 export const CHART_PALETTE = ['#0f766e', '#2dd4a7', '#155e9c', '#7dd3c0', '#b45309', '#5b8def', '#c2410c', '#9a7fd1'];
 
 // Free-text keys (subscription names, custom asset labels) have no canonical
