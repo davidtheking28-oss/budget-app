@@ -131,7 +131,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
     toast(editingPaymentId != null ? 'התשלום עודכן' : 'התשלום נוסף', 'success');
     resetPaymentForm();
   }
-  function startEditPayment(p) { setEditingPaymentId(p.id); setPaymentForm({ name: p.name || '', total: p.total || '', current: Math.max(0, (parseFloat(p.total) || 0) - (parseFloat(p.current) || 0)), amount: p.amount || '' }); }
+  function startEditPayment(p) { const total = parseFloat(p.total) || 0; setEditingPaymentId(p.id); setPaymentForm({ name: p.name || '', total: p.total || '', current: Math.max(0, total - currentInstallments(p, total)), amount: p.amount || '' }); }
 
   function resetInsForm() { setInsForm({ name: '', monthly: '' }); setEditingInsId(null); }
   async function submitInsurance() {

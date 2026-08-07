@@ -215,7 +215,7 @@
     .pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
     .pay-field{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:7px 10px 4px;}
     .pay-field label{display:block;font-size:0.68rem;font-weight:700;color:var(--text3);margin-bottom:1px;}
-    .pay-field input{width:100%;height:32px;border:none;background:transparent;color:var(--text);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;font-size:16px;font-weight:700;outline:none;padding:0;text-align:right;}
+    .pay-field input{width:100%;height:44px;border:none;background:transparent;color:var(--text);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;font-size:16px;font-weight:700;outline:none;padding:0;text-align:right;}
     .pay-stat{background:var(--blue-light);border-radius:10px;padding:7px 10px 6px;}
     .pay-stat span{display:block;font-size:0.68rem;font-weight:700;color:var(--blue);opacity:.85;margin-bottom:2px;}
     .pay-stat b{display:block;font-size:0.98rem;font-weight:800;color:var(--blue);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
@@ -2577,7 +2577,7 @@ function budgetChipColor(cat){return BUDGET_CHIP_HEX[BUDGET_CHIP_COLOR[cat]||'gr
 const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
-  'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0,cur=_payCalc(p).current;return s+(tot>0&&amt>0&&cur>=1&&cur<=tot?amt:0);},0),
+  'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&_payCalc(p).left>0?amt:0);},0),
   'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0),
   'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
 };
@@ -5166,11 +5166,13 @@ async function _expEditPayment(id){
     {label:'שם התשלום',value:p.name||''},
     {label:'סכום תשלום חודשי',type:'number',value:p.amount||''},
     {label:'מספר תשלומים סה״כ',type:'number',value:p.total||''},
-    {label:'כמה תשלומים כבר שולמו',type:'number',value:p.currentAnchor?_payCalc(p).current:(p.current||'')}
+    {label:'תשלומים שנותרו',type:'number',value:_payCalc(p).left}
   ]});
   if(!vals)return;
-  const[name,amount,total,current]=vals;
-  p.name=name.trim();p.amount=parseFloat(amount)||0;p.total=parseFloat(total)||0;p.current=parseFloat(current)||0;p.currentAnchor=_curMonthKey();
+  const[name,amount,total,remaining]=vals;
+  const tot=parseFloat(total)||0;
+  const r=remaining===''?tot:Math.max(0,Math.min(tot,parseFloat(remaining)||0));
+  p.name=name.trim();p.amount=parseFloat(amount)||0;p.total=tot;p.current=tot-r;p.currentAnchor=_curMonthKey();
   saveData();renderTxPage();renderPayments();
 }
 async function _expEditInsurance(id){
@@ -5216,12 +5218,17 @@ async function _expAddPayment(){
 }
 function updatePayment(id,field,val){
   const p=payments.find(x=>x.id===id);if(!p)return;
-  p[field]=field==='name'?val:(val===''?'':(parseFloat(val)||0));
-  if(field==='current')p.currentAnchor=_curMonthKey();
+  if(field==='remaining'){
+    const tot=parseFloat(p.total)||0;
+    const r=val===''?tot:Math.max(0,Math.min(tot,parseFloat(val)||0));
+    p.current=tot-r;p.currentAnchor=_curMonthKey();
+  }else{
+    p[field]=field==='name'?val:(val===''?'':(parseFloat(val)||0));
+  }
   const card=document.querySelector('#paymentsBody [data-pid="'+id+'"]');
   if(card){
     const c=_payCalc(p);
-    card.querySelector('[data-cell="left"]').textContent=c.left;
+    card.querySelector('[data-cell="cur"]').textContent=c.left>0?c.current+1:'—';
     card.querySelector('[data-cell="sum"]').textContent=_payFmt(c.sum);
   }
   _payRefreshTotal();
@@ -5245,9 +5252,9 @@ function renderPayments(){
       +'</div>'
       +'<div class="pay-grid">'
         +'<div class="pay-field"><label>מספר תשלומים סה״כ</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(p.total)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'total\',this.value)"></div>'
-        +'<div class="pay-field"><label>התשלום שיורד החודש</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(p.currentAnchor?c.current:p.current)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'current\',this.value)"></div>'
+        +'<div class="pay-field"><label>תשלומים שנותרו</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(c.left)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'remaining\',this.value)"></div>'
         +'<div class="pay-field"><label>סכום תשלום</label><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+esc(p.amount)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'amount\',this.value)"></div>'
-        +'<div class="pay-stat"><span>תשלומים שנותרו</span><b data-cell="left">'+c.left+'</b></div>'
+        +'<div class="pay-stat"><span>התשלום שיורד החודש</span><b data-cell="cur">'+(c.left>0?c.current+1:'—')+'</b></div>'
         +'<div class="pay-stat" style="grid-column:1/-1"><span>נותר לשלם</span><b data-cell="sum">'+_payFmt(c.sum)+'</b></div>'
       +'</div>'
     +'</div>';
