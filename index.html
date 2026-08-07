@@ -212,13 +212,16 @@
     .pay-name-in{flex:1;min-width:0;height:44px;border:none;background:transparent;color:var(--text);font-family:inherit;font-size:16px;font-weight:800;outline:none;padding:0;text-align:right;border-bottom:1.5px solid transparent;}
     .pay-name-in:focus{border-bottom-color:var(--accent);}
     .pay-name-in::placeholder{color:var(--text3);font-weight:600;}
-    .pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-    .pay-field{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:7px 10px 4px;}
-    .pay-field label{display:block;font-size:0.68rem;font-weight:700;color:var(--text3);margin-bottom:1px;}
-    .pay-field input{width:100%;height:44px;border:none;background:transparent;color:var(--text);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;font-size:16px;font-weight:700;outline:none;padding:0;text-align:right;}
-    .pay-stat{background:var(--blue-light);border-radius:10px;padding:7px 10px 6px;}
-    .pay-stat span{display:block;font-size:0.68rem;font-weight:700;color:var(--blue);opacity:.85;margin-bottom:2px;}
-    .pay-stat b{display:block;font-size:0.98rem;font-weight:800;color:var(--blue);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .pay-head{display:flex;align-items:baseline;gap:7px;margin-top:2px;}
+    .pay-head-val{font-size:1.5rem;font-weight:800;color:var(--text);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;letter-spacing:-0.5px;line-height:1.15;}
+    .pay-head-lbl{font-size:0.76rem;font-weight:600;color:var(--text3);}
+    .pay-bar{height:6px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:11px;}
+    .pay-bar-fill{height:100%;border-radius:99px;background:var(--accent);transition:width 0.4s cubic-bezier(0.22,1,0.36,1);}
+    .pay-meta{font-size:0.74rem;font-weight:600;color:var(--text3);margin-top:7px;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .pay-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+    .pay-field label{display:block;font-size:0.66rem;font-weight:700;color:var(--text3);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .pay-field input{width:100%;height:44px;border:none;border-bottom:1.5px solid var(--border);background:transparent;color:var(--text);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;font-size:16px;font-weight:700;outline:none;padding:0;text-align:right;transition:border-color 0.15s;}
+    .pay-field input:focus{border-bottom-color:var(--accent);}
     .pay-sum{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:4px;}
     .pay-sum-label{font-size:0.88rem;font-weight:800;color:var(--text);}
     .pay-sum-val{font-size:1.05rem;font-weight:800;color:var(--text);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
@@ -228,7 +231,6 @@
     @media(hover:hover){.pay-del:hover{opacity:1;color:var(--red);}}
     .pay-del:active{opacity:1;color:var(--red);}
     .pay-card-done{opacity:0.6;}
-    .pay-done-badge{background:var(--green-light);color:var(--green);font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;margin-inline-end:6px;}
     .budget-item{padding:16px 0;border-bottom:1px solid var(--border);}
     .budget-item:last-child{border-bottom:none;}
     .budget-del-x{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.1rem;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;line-height:1;opacity:0.55;transition:opacity .15s,color .15s;-webkit-tap-highlight-color:transparent;}
@@ -5137,6 +5139,12 @@ function _payCalc(p){
   const left=Math.max(0,total-cur);
   return {left,sum:left*amt,current:cur};
 }
+function _payPct(p){const total=parseFloat(p.total)||0;return total>0?Math.round(_payCalc(p).current/total*100):0;}
+function _payMeta(p){
+  const total=parseFloat(p.total)||0, c=_payCalc(p);
+  if(!total)return 'הזן מספר תשלומים';
+  return c.left>0?'תשלום '+(c.current+1)+' מתוך '+total:'שולם במלואו';
+}
 function _migratePayments(){
   let changed=false;
   payments.forEach(p=>{
@@ -5228,8 +5236,10 @@ function updatePayment(id,field,val){
   const card=document.querySelector('#paymentsBody [data-pid="'+id+'"]');
   if(card){
     const c=_payCalc(p);
-    card.querySelector('[data-cell="cur"]').textContent=c.left>0?c.current+1:'—';
     card.querySelector('[data-cell="sum"]').textContent=_payFmt(c.sum);
+    card.querySelector('[data-cell="bar"]').style.width=_payPct(p)+'%';
+    card.querySelector('[data-cell="meta"]').textContent=_payMeta(p);
+    card.classList.toggle('pay-card-done',(parseFloat(p.total)||0)>0&&c.left<=0);
   }
   _payRefreshTotal();
   saveDataDebounced();
@@ -5247,15 +5257,15 @@ function renderPayments(){
     return '<div class="pay-card'+(done?' pay-card-done':'')+'" data-pid="'+p.id+'">'
       +'<div class="pay-card-top">'
         +'<input class="pay-name-in" type="text" value="'+esc(p.name||'')+'" placeholder="לדוגמה: זארה" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" oninput="updatePayment('+p.id+',\'name\',this.value)">'
-        +(done?'<span class="pay-done-badge">✓ הושלם</span>':'')
         +'<button type="button" class="pay-del" onclick="deletePayment('+p.id+')" aria-label="מחק">✕</button>'
       +'</div>'
+      +'<div class="pay-head"><span class="pay-head-val" data-cell="sum">'+_payFmt(c.sum)+'</span><span class="pay-head-lbl">נותר לשלם</span></div>'
+      +'<div class="pay-bar"><div class="pay-bar-fill" data-cell="bar" style="width:'+_payPct(p)+'%"></div></div>'
+      +'<div class="pay-meta" data-cell="meta">'+_payMeta(p)+'</div>'
       +'<div class="pay-grid">'
-        +'<div class="pay-field"><label>מספר תשלומים סה״כ</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(p.total)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'total\',this.value)"></div>'
-        +'<div class="pay-field"><label>תשלומים שנותרו</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(c.left)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'remaining\',this.value)"></div>'
+        +'<div class="pay-field"><label>סה״כ תשלומים</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(p.total)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'total\',this.value)"></div>'
+        +'<div class="pay-field"><label>נותרו</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(c.left)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'remaining\',this.value)"></div>'
         +'<div class="pay-field"><label>סכום תשלום</label><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+esc(p.amount)+'" onfocus="this.select()" oninput="updatePayment('+p.id+',\'amount\',this.value)"></div>'
-        +'<div class="pay-stat"><span>התשלום שיורד החודש</span><b data-cell="cur">'+(c.left>0?c.current+1:'—')+'</b></div>'
-        +'<div class="pay-stat" style="grid-column:1/-1"><span>נותר לשלם</span><b data-cell="sum">'+_payFmt(c.sum)+'</b></div>'
       +'</div>'
     +'</div>';
   }).join('');
