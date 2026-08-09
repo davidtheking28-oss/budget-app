@@ -157,14 +157,18 @@ export default function Dashboard({ clientUserId, year, month }) {
               />
             </div>
             <div className={styles.catList}>
-              {catLabels.slice(0, 4).map((l, i) => (
-                <div key={l} className={styles.catRow}>
-                  <span className={styles.catDot} style={{ background: catColors[i] }} />
-                  <span className={styles.catIconWrap}>{getCategoryIcon(l)}</span>
-                  <span className={styles.catName}>{l}</span>
-                  <span className={styles.catPct}>{Math.round((byCat[l] / catTotal) * 100)}%</span>
-                </div>
-              ))}
+              {catLabels.slice(0, 4).map((l, i) => {
+                const pct = Math.round((byCat[l] / catTotal) * 100);
+                return (
+                  <div key={l} className={styles.catRow}>
+                    <span className={styles.catDot} style={{ background: catColors[i] }} />
+                    <span className={styles.catIconWrap}>{getCategoryIcon(l)}</span>
+                    <span className={styles.catName}>{l}</span>
+                    <span className={styles.catBar}><span className={styles.catBarFill} style={{ width: pct + '%', background: catColors[i] }} /></span>
+                    <span className={styles.catPct}>{pct}%</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         ) : (

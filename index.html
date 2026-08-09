@@ -3687,7 +3687,7 @@ async function _doCloudSave(){
     const changed=_applyMerged(merged);
     const payload={user_id:uid,updated_at:new Date().toISOString(),updated_by:_cloudUser.id};
     if(isBiz){
-      payload.business={...merged,sync_meta:_syncMeta,settings:userSettings};
+      payload.business={...bundle,...merged,sync_meta:_syncMeta,settings:userSettings};
     }else{
       Object.assign(payload,merged,{settings:userSettings,sync_meta:_syncMeta});
       _missingCols.forEach(c=>delete payload[c]);
