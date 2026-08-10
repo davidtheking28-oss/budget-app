@@ -2877,7 +2877,7 @@ function doSearch(q){
   if(!q){list.innerHTML='';return;}
   const items=[];
   transactions.filter(t=>t.desc.toLowerCase().includes(q)||t.cat.toLowerCase().includes(q)).slice(0,6).forEach(t=>{
-    items.push('<div class="sr-item" onclick="closeSearch();showPage(\'transactions\',document.getElementById(\'nav-transactions\'))"><div class="sr-icon">'+catIconSvg(t.cat)+'</div><div class="sr-info"><div class="sr-name">'+esc(t.desc)+'</div><div class="sr-detail">'+heDate(t.date)+' · '+t.cat+'</div></div><div class="sr-amount" style="color:'+(t.type==='income'?'var(--green)':'var(--red)')+'">'+fmt(t.amount)+'</div></div>');
+    items.push('<div class="sr-item" onclick="closeSearch();showPage(\'transactions\',document.getElementById(\'nav-transactions\'))"><div class="sr-icon">'+catIconSvg(t.cat)+'</div><div class="sr-info"><div class="sr-name">'+esc(t.desc)+'</div><div class="sr-detail">'+heDate(t.date)+' · '+esc(t.cat)+'</div></div><div class="sr-amount" style="color:'+(t.type==='income'?'var(--green)':'var(--red)')+'">'+fmt(t.amount)+'</div></div>');
   });
   subscriptions.filter(s=>s.name.toLowerCase().includes(q)).slice(0,3).forEach(s=>{
     items.push('<div class="sr-item" onclick="closeSearch();showPage(\'subscriptions\',document.getElementById(\'nav-subscriptions\'))"><div class="sr-icon">'+s.emoji+'</div><div class="sr-info"><div class="sr-name">'+esc(s.name)+'</div><div class="sr-detail">'+cycleName(s.cycle)+' · '+esc(s.category)+'</div></div><div class="sr-amount" style="color:var(--purple)">'+fmt(s.amount)+'</div></div>');
@@ -2901,16 +2901,19 @@ function setTxType(type){
   if(_td)_td.placeholder=type==='income'?'משכורת, בונוס, מתנה...':'קפה, סופר, דלק...';
 }
 function wizRenderCats(cats){
-  document.getElementById('wizCatList').innerHTML=cats.map((c,i)=>{
+  const list=document.getElementById('wizCatList');
+  list.innerHTML=cats.map((c,i)=>{
     const hasSub=!!CAT_SUBCATS[c];
-    const onclick=hasSub?'wizExpandCat(\''+c+'\',this)':'wizPickCat(\''+c+'\',this)';
-    return '<button type="button" class="wiz-cat-row'+(i===0?' wiz-sel':'')+'" onclick="'+onclick+'">'+
+    return '<button type="button" class="wiz-cat-row'+(i===0?' wiz-sel':'')+'" data-cat="'+esc(c)+'" data-expand="'+(hasSub?'1':'0')+'">'+
       '<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+';color:'+budgetChipColor(c).sel+'">'+catIconSvg(c)+'</div>'+
-      '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+c+'</span>'+
+      '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+esc(c)+'</span>'+
       (hasSub?'<span class="wiz-expand-arrow">›</span>':'<span class="wiz-sel-check">✓</span>')+
       '</button>';
   }).join('')+
   '<div class="wiz-cat-addwrap"><button onclick="openAddCustomCat()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:none;border:1.5px dashed var(--border);border-radius:14px;padding:13px 14px;color:var(--text3);font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף קטגוריה</button></div>';
+  list.querySelectorAll('.wiz-cat-row[data-cat]').forEach(el=>{
+    el.onclick=()=>{el.dataset.expand==='1'?wizExpandCat(el.dataset.cat,el):wizPickCat(el.dataset.cat,el);};
+  });
 }
 function wizPickCat(cat,el){
   txSelectedCat=cat;
@@ -2933,11 +2936,14 @@ function wizExpandCat(cat,el){
   div.id=subId;
   div.className='wiz-sub-list';
   div.innerHTML=subCats.map(sc=>
-    '<button type="button" class="wiz-cat-row wiz-sub-row" onclick="wizPickCat(\''+sc+'\',this)">'+
+    '<button type="button" class="wiz-cat-row wiz-sub-row" data-cat="'+esc(sc)+'">'+
     '<div class="wiz-cat-icon wiz-sub-icon" style="background:'+budgetChipColor(sc).base+';color:'+budgetChipColor(sc).sel+'">'+catIconSvg(sc)+'</div>'+
-    '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+sc+'</span>'+
+    '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+esc(sc)+'</span>'+
     '<span class="wiz-sel-check">✓</span></button>'
   ).join('');
+  div.querySelectorAll('.wiz-cat-row[data-cat]').forEach(el2=>{
+    el2.onclick=()=>wizPickCat(el2.dataset.cat,el2);
+  });
   el.insertAdjacentElement('afterend',div);
   div.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
@@ -3043,7 +3049,7 @@ function setFixedType(type){
   if(vb)vb.classList.toggle('active',type==='variable');
 }
 function populateBudgetCats(){
-  document.getElementById('budgetCat').innerHTML=BUDGET_CATS.map(c=>'<option>'+c+'</option>').join('');
+  document.getElementById('budgetCat').innerHTML=BUDGET_CATS.map(c=>'<option>'+esc(c)+'</option>').join('');
 }
 
 function addTransaction(prefill){
@@ -4319,7 +4325,7 @@ function editTx(id){
   document.getElementById('editTxDate').value   = tx.date  || '';
   const catSel = document.getElementById('editTxCat');
   const cats = tx.type === 'income' ? INCOME_CATS : EXPENSE_CATS;
-  catSel.innerHTML = cats.map(c => `<option${c===tx.cat?' selected':''}>${c}</option>`).join('');
+  catSel.innerHTML = cats.map(c => `<option${c===tx.cat?' selected':''}>${esc(c)}</option>`).join('');
   const recurEl = document.getElementById('editTxRecurring');
   if(recurEl) recurEl.checked = !!tx.recurring;
   const fixedEl = document.getElementById('editTxFixed');
@@ -4639,14 +4645,17 @@ function renderDashGoals(){
     const s=spentByCat[cat]||0,lim=budgets[cat]||0;
     const pct=lim?Math.min(s/lim,1):0;
     const state=progState(Math.round(pct*100),[[90,'danger'],[70,'warn'],[0,'']]);
-    return '<div class="dash-ring-item" onclick="showPage(\'budget\',document.getElementById(\'nav-budget\'));selectBudgetCat(\''+cat+'\')">'
+    return '<div class="dash-ring-item" data-cat="'+esc(cat)+'">'
       +'<svg viewBox="0 0 80 80" class="dash-ring-svg">'
         +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-track"/>'
         +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-fill'+(state?' '+state:'')+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct))+'"/>'
       +'</svg>'
-      +'<div class="dash-ring-label">'+cat+'<div class="dash-ring-frac">'+fmt(s)+'/'+fmt(lim)+'</div></div>'
+      +'<div class="dash-ring-label">'+esc(cat)+'<div class="dash-ring-frac">'+fmt(s)+'/'+fmt(lim)+'</div></div>'
     +'</div>';
   }).join(''):'<div class="budget-tx-empty" style="grid-column:1/-1">עדיין לא הוגדרו תקציבי קטגוריה</div>';
+  grid.querySelectorAll('.dash-ring-item').forEach(el=>{
+    el.onclick=()=>{showPage('budget',document.getElementById('nav-budget'));selectBudgetCat(el.dataset.cat);};
+  });
   const insight=document.getElementById('dashInsightCard');
   const insightText=document.getElementById('dashInsightText');
   const now=new Date();
@@ -4989,12 +4998,15 @@ function renderBudget(){
   strip.innerHTML=allCats.map(cat=>{
     const hex=budgetChipColor(cat);
     const sel=cat===_selectedBudgetCat;
-    return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" data-cat="'+esc(cat)+'" style="background:'+(sel?hex.sel:hex.base)+'" onclick="selectBudgetCat(\''+cat+'\')">'
+    return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" data-cat="'+esc(cat)+'" style="background:'+(sel?hex.sel:hex.base)+'">'
       +'<span class="budget-chip-icon">'+catIconSvg(cat)+'</span>'
-      +'<span class="budget-chip-name">'+cat+'</span>'
+      +'<span class="budget-chip-name">'+esc(cat)+'</span>'
     +'</button>';
   }).join('')
   +'<button type="button" class="budget-chip budget-chip-add" onclick="openSheet(\'addBudgetSheet\')" aria-label="הגדר תקציב לקטגוריה נוספת"><span class="budget-chip-icon">+</span></button>';
+  strip.querySelectorAll('.budget-chip[data-cat]').forEach(el=>{
+    el.onclick=()=>selectBudgetCat(el.dataset.cat);
+  });
   const selEl=strip.querySelector('.budget-chip-sel');
   if(selEl){
     const stripRect=strip.getBoundingClientRect(),elRect=selEl.getBoundingClientRect();
@@ -5100,12 +5112,16 @@ function openMoveTxCat(id){
   _moveTxId=id;
   const t=transactions.find(x=>x.id===id);if(!t)return;
   const cats=getEffectiveCats('expense');
-  document.getElementById('moveCatList').innerHTML=cats.map(c=>
-    '<button type="button" class="wiz-cat-row'+(c===t.cat?' wiz-sel':'')+'" onclick="moveTxToCat(\''+c+'\')">'
+  const moveList=document.getElementById('moveCatList');
+  moveList.innerHTML=cats.map(c=>
+    '<button type="button" class="wiz-cat-row'+(c===t.cat?' wiz-sel':'')+'" data-cat="'+esc(c)+'">'
       +'<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+';color:'+budgetChipColor(c).sel+'">'+catIconSvg(c)+'</div>'
-      +'<span class="wiz-cat-name">'+c+'</span>'
+      +'<span class="wiz-cat-name">'+esc(c)+'</span>'
     +'</button>'
   ).join('');
+  moveList.querySelectorAll('.wiz-cat-row[data-cat]').forEach(el=>{
+    el.onclick=()=>moveTxToCat(el.dataset.cat);
+  });
   openSheet('moveCatSheet');
 }
 function moveTxToCat(cat){
@@ -6197,7 +6213,7 @@ function addSplitRow(cat,amt){
   rowEl.style.gap='8px';
   rowEl.innerHTML='<div class="form-field" style="flex:2"><label>תיאור</label><input type="text" class="split-desc" placeholder="תיאור..." autocomplete="off" autocorrect="off" spellcheck="false" style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;" /></div>'
     +'<div class="form-field" style="flex:1"><label>סכום</label><input type="number" class="split-amt" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+(amt||'')+'" oninput="updateSplitRemaining()" style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:var(--font-num);font-weight:700;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;text-align:center;" /></div>'
-    +'<div class="form-field" style="flex:2"><label>קטגוריה</label><select class="split-cat" style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;">'+cats.map(c=>'<option'+(c===(cat||cats[0])?' selected':'')+'>'+c+'</option>').join('')+'</select></div>'
+    +'<div class="form-field" style="flex:2"><label>קטגוריה</label><select class="split-cat" style="min-height:40px;padding:8px 11px;border:1.5px solid var(--border);border-radius:10px;font-size:0.88rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;width:100%;box-sizing:border-box;">'+cats.map(c=>'<option'+(c===(cat||cats[0])?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select></div>'
     +'<button onclick="this.closest(\'.split-row\').remove();updateSplitRemaining()" aria-label="הסר" style="flex-shrink:0;margin-top:22px;background:transparent;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;padding:6px;min-width:32px">✕</button>';
   document.getElementById('splitRows').appendChild(rowEl);
   if(cat)rowEl.querySelector('.split-desc').value=cat;
@@ -6350,7 +6366,7 @@ function renderSmsParsed(){
       +'</div>'
       +'<div style="display:flex;gap:8px;align-items:center">'
       +'<input type="date" aria-label="תאריך" value="'+p.date+'" oninput="_smsParsed['+i+'].date=this.value" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;" />'
-      +'<select aria-label="קטגוריה" oninput="_smsParsed['+i+'].cat=this.value" style="flex:2;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;">'+cats.map(c=>'<option'+(c===p.cat?' selected':'')+'>'+c+'</option>').join('')+'</select>'
+      +'<select aria-label="קטגוריה" oninput="_smsParsed['+i+'].cat=this.value" style="flex:2;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-size:0.82rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;">'+cats.map(c=>'<option'+(c===p.cat?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>'
       +'<button onclick="_smsParsed.splice('+i+',1);renderSmsParsed()" aria-label="הסר עסקה" style="background:transparent;border:none;color:var(--text3);font-size:1rem;cursor:pointer;min-width:44px;min-height:44px;flex-shrink:0">✕</button>'
       +'</div>'
       +'</div>'

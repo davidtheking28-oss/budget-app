@@ -135,6 +135,19 @@ function fetchEntry(clientUserId, mode) {
   return promise;
 }
 
+// A client can revoke advisor access at any time; the RLS on budget_data then blocks
+// new reads, but anything already sitting in the module-level cache would otherwise
+// stay on screen until the next stale re-fetch (up to STALE_MS later). Watching the
+// grant row itself lets a revoke clear the cache immediately instead of waiting.
+function evictClient(clientUserId) {
+  for (const m of MODES) {
+    const k = keyOf(clientUserId, m);
+    if (!cache.has(k) && !listeners.has(k)) continue;
+    invalidate(k);
+    setEntry(k, { data: null, error: { message: 'access_revoked' }, ts: Date.now() });
+  }
+}
+
 function retainChannel(clientUserId) {
   let entry = channels.get(clientUserId);
   if (!entry) {
@@ -148,6 +161,10 @@ function retainChannel(clientUserId) {
           invalidate(k);
           fetchEntry(clientUserId, m);
         }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'advisor_clients', filter: `client_id=eq.${clientUserId}` }, (payload) => {
+        const status = payload.new?.status;
+        if (payload.eventType === 'DELETE' || (status && status !== 'active')) evictClient(clientUserId);
       })
       .subscribe();
     entry = { channel, count: 0 };
