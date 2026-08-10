@@ -4459,6 +4459,23 @@ Object.assign(NLP_MAP,{
   'ביטוח לאומי':'ביטוח לאומי',
   'ביט':'שונות','paybox':'שונות'
 });
+// שני המילונים נכתבו כשכל האוכל היה קטגוריה אחת, ולכן מסעדות ומשלוחים היגרו יחד
+// עם הסופרים אל "מזון לבית". ההפרדה מוחלת אחרי שכל המילונים נטענו (ראה _splitFoodCats).
+const _FOOD_SPLIT={
+  'מסעדה':'אוכל בחוץ ובילויים','מסעדות':'אוכל בחוץ ובילויים','פיצה':'אוכל בחוץ ובילויים','שווארמה':'אוכל בחוץ ובילויים',
+  'בורגר':'אוכל בחוץ ובילויים','המבורגר':'אוכל בחוץ ובילויים','סושי':'אוכל בחוץ ובילויים','פלאפל':'אוכל בחוץ ובילויים',
+  'חומוס':'אוכל בחוץ ובילויים','שניצליה':'אוכל בחוץ ובילויים','סטייק':'אוכל בחוץ ובילויים','מקדונלדס':'אוכל בחוץ ובילויים',
+  'בורגר קינג':'אוכל בחוץ ובילויים','BBB':'אוכל בחוץ ובילויים','ארומה':'אוכל בחוץ ובילויים','קפה קפה':'אוכל בחוץ ובילויים',
+  'קופיקס':'אוכל בחוץ ובילויים','לנדוור':'אוכל בחוץ ובילויים','גרג':'אוכל בחוץ ובילויים','בית קפה':'אוכל בחוץ ובילויים',
+  'קפה':'אוכל בחוץ ובילויים','וולט':'אוכל בחוץ ובילויים','wolt':'אוכל בחוץ ובילויים','תן ביס':'אוכל בחוץ ובילויים',
+  'משלוח':'אוכל בחוץ ובילויים','סודה':'אוכל בחוץ ובילויים','שתייה':'אוכל בחוץ ובילויים','קינוח':'אוכל בחוץ ובילויים',
+  'גלידה':'אוכל בחוץ ובילויים',
+  'קצב':'מזון לבית','קצביה':'מזון לבית','אטליז':'מזון לבית','ירקן':'מזון לבית','ירקות':'מזון לבית','פירות':'מזון לבית',
+  'מעדנייה':'מזון לבית','מכולת':'מזון לבית','סופר':'מזון לבית','נספרסו':'מזון לבית','מאפיה':'מזון לבית',
+  'לחם':'מזון לבית','חלב':'מזון לבית'
+};
+function _splitFoodCats(){ try{ Object.assign(NLP_MAP,_FOOD_SPLIT); }catch(e){} }
+_splitFoodCats();
 
 // ── מנוע קטגוריזציה לומד ─────────────────────────────────────────
 // שכבה 1: מיפוי אישי שנלמד מהעסקאות שאתה שומר (localStorage). שכבה 2: מילון NLP_MAP.
@@ -4497,12 +4514,15 @@ function categorize(desc, type){
     }
   }
   if(best) return best;
-  // 3) מילון המותגים
+  // 3) מילון המותגים — המפתח הארוך ביותר שמוכל בתיאור, אחרת "סופר פארם" נתפס כ"סופר"
   const lower = String(desc||'').toLowerCase();
+  let bestCat = null, bestKey = 0;
   for(const [k, c] of Object.entries(NLP_MAP)){
-    if(lower.includes(k) && validCats.includes(c)) return c;
+    if(k.length > bestKey && k.length >= 3 && lower.includes(k) && validCats.includes(c)){
+      bestCat = c; bestKey = k.length;
+    }
   }
-  return null;
+  return bestCat;
 }
 function lookupLastAmount(desc){
   const key = normDesc(desc);
@@ -7147,6 +7167,8 @@ function showGif(src, durationMs){
   /* this dictionary predates the current category list — remap its values */
   Object.keys(EXTRA).forEach(function(k){ var n=_CAT_MIGRATE[EXTRA[k]]; if(n)EXTRA[k]=n; });
   try{ if(typeof NLP_MAP!=="undefined") Object.assign(NLP_MAP,EXTRA); }catch(e){}
+  /* EXTRA also predates the eat-out split — reapply it so it wins over both dictionaries */
+  try{ if(typeof _splitFoodCats==="function") _splitFoodCats(); }catch(e){}
   function norm(s){ return (s||"").toString().toLowerCase().replace(/[֑-ׇ]/g,"").replace(/[׳״'"]/g,"").replace(/[־–—_]/g," ").replace(/\s+/g," ").trim(); }
   function uf(s){ return s.replace(/ם/g,"מ").replace(/ן/g,"נ").replace(/ך/g,"כ").replace(/ף/g,"פ").replace(/ץ/g,"צ"); }
   var PREF=["מה","לה","שה","וה","כש","ב","ל","ה","ו","מ","ש","כ"],MEM="מ",DICT=null;
