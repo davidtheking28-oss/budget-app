@@ -89,13 +89,37 @@ const inflight = new Map();
 const generation = new Map();
 const channels = new Map();
 
+// An advisor who browses many clients in one session would otherwise keep every
+// client's full transaction/budget/goal set in memory forever — cap how many
+// client+mode entries stay cached and evict the least-recently-touched ones that
+// nobody is actively viewing.
+const CACHE_CAP = 12;
+
 function emit(key) {
   const set = listeners.get(key);
   if (set) for (const fn of set) fn();
 }
 
-function setEntry(key, entry) {
+function touch(key) {
+  const entry = cache.get(key);
+  if (entry === undefined) return;
+  cache.delete(key);
   cache.set(key, entry);
+}
+
+function evictExcess() {
+  if (cache.size <= CACHE_CAP) return;
+  for (const key of cache.keys()) {
+    if (cache.size <= CACHE_CAP) break;
+    if (listeners.has(key)) continue; // still on screen somewhere
+    cache.delete(key);
+  }
+}
+
+function setEntry(key, entry) {
+  cache.delete(key);
+  cache.set(key, entry);
+  evictExcess();
   emit(key);
 }
 
@@ -185,6 +209,7 @@ export function useClientBudget(clientUserId, advisorId) {
   const mode = useContext(BudgetModeContext);
   const key = clientUserId ? keyOf(clientUserId, mode) : null;
   const entry = key ? cache.get(key) : null;
+  if (key && entry) touch(key);
 
   useEffect(() => {
     if (!clientUserId) return;

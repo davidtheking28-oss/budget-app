@@ -232,6 +232,9 @@
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
+  /* fades both edges so an off-screen tab reads as "scroll for more", not a layout glitch */
+  mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
 }
 
 .tabBar::-webkit-scrollbar {

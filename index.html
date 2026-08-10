@@ -1409,7 +1409,7 @@
   </div>
 </div>
 
-<div class="sheet-overlay" id="addTxSheet" onclick="if(event.target===this)closeSheet('addTxSheet')">
+<div class="sheet-overlay" id="addTxSheet" aria-labelledby="wizTtl" onclick="if(event.target===this)closeSheet('addTxSheet')">
   <div class="sheet wiz-sheet">
     <div class="wiz-hdr" id="wizHdr">
       <div class="wiz-hdr-top">
@@ -1725,7 +1725,7 @@
       </div>
       <div class="font-extrabold font-mono tracking-tight mt-3 relative" id="totalBalance" style="z-index:1;line-height:1.04;color:#fff;font-size:clamp(2.3rem,11.5vw,3.1rem)">0</div>
       <div class="text-xs mt-2 flex items-center gap-1 relative" id="trendBalance" style="z-index:1;color:rgba(255,255,255,0.82)"></div>
-      <div class="text-xs mt-1 relative font-bold" id="heroSavings" style="z-index:1;display:none"></div>
+      <div class="text-xs mt-1 relative font-bold" id="heroSavings" style="z-index:1;display:none;background:rgba(0,0,0,0.45);border-radius:6px;padding:2px 8px;width:fit-content"></div>
 
       <!-- Hidden ring element to satisfy SVG references in JS without breaking the UI -->
       <svg style="display:none" aria-hidden="true"><circle id="heroRingFill" cx="50" cy="50" r="40"/></svg>
@@ -2812,10 +2812,12 @@ function _sheetKeydown(e){
     else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
   }
 }
+let _sheetOpenerEl=null;
 function openSheet(id){
   const ov=document.getElementById(id);
   ov.classList.add('open');
   ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
+  if(!_openSheets.size)_sheetOpenerEl=document.activeElement;
   const b=document.getElementById('installBanner');if(b)b.style.display='none';
   if(!_openSheets.size){_lockBodyScroll();_sheetSetBackgroundInert(true);document.addEventListener('keydown',_sheetKeydown);}
   _openSheets.add(id);
@@ -2825,7 +2827,7 @@ function closeSheet(id){
   const b=document.getElementById('installBanner');if(b)b.style.display='';
   const ov=document.getElementById(id);
   _openSheets.delete(id);
-  if(!_openSheets.size){_unlockBodyScroll();_sheetSetBackgroundInert(false);document.removeEventListener('keydown',_sheetKeydown);}
+  if(!_openSheets.size){_unlockBodyScroll();_sheetSetBackgroundInert(false);document.removeEventListener('keydown',_sheetKeydown);if(_sheetOpenerEl&&document.contains(_sheetOpenerEl)){_sheetOpenerEl.focus();}_sheetOpenerEl=null;}
   const sh=ov.querySelector('.sheet,.wiz-sheet');
   if(sh){
     sh.style.animation='sheetExit 0.22s cubic-bezier(0.4,0,1,1) both';
@@ -3124,7 +3126,7 @@ function txFixedLabel(t){
 }
 function txHtml(t){
   const icon = catIconSvg(t.cat);
-  return '<div class="tx-item" data-txid="'+t.id+'" onclick="editTx('+t.id+')">'
+  return '<div class="tx-item" data-txid="'+t.id+'" tabindex="0" role="button" onclick="editTx('+t.id+')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();editTx('+t.id+');}">'
     +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+icon+'</div>'
     +'<div class="tx-info">'
       +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
@@ -3140,7 +3142,7 @@ function txSwipeHtml(t){
   return '<div class="tx-swipe-wrap">'
     +'<div class="tx-delete-reveal" onclick="deleteTx('+t.id+')">'+delSvg+'</div>'
     +'<div class="tx-swipe-inner">'
-      +'<div class="tx-item" data-txid="'+t.id+'" onclick="swipeTap(this,'+t.id+')">'
+      +'<div class="tx-item" data-txid="'+t.id+'" tabindex="0" role="button" onclick="swipeTap(this,'+t.id+')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();swipeTap(this,'+t.id+');}">'
         +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+icon+'</div>'
         +'<div class="tx-info">'
           +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
