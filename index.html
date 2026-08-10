@@ -30,7 +30,7 @@
     /* --bg/--surface/--surface2/--border/--text/--text2/--text3 for light mode live in the
        "LIGHT-MODE POLISH" block further down (body:not(.dark)) — it always wins over these,
        so no light-mode fallback values are set here to avoid two sources of truth. */
-    :root{--accent:#0a7a62;--accent2:#0a7a62;--accent-rgb:10,122,98;--green:#046b4d;--green-light:#d7f0e6;--red:#b02631;--red-light:#fbe6e3;--blue:#1d4ed8;--blue-light:#dbeafe;--yellow:#a35a06;--yellow-light:#fef3c7;--purple:#7c3aed;--purple-light:#ede9fe;--teal:#0d9488;--teal-light:#ccfbf1;--nav-h:72px;--header-h:60px;--safe-bottom:env(safe-area-inset-bottom,0px);--radius:18px;--radius-sm:12px;--main-px:16px;
+    :root{--accent:#0a7a62;--accent2:#0a7a62;--accent-rgb:10,122,98;--green:#046b4d;--green-light:#d7f0e6;--red:#b02631;--red-light:#fbe6e3;--blue:#1d4ed8;--blue-light:#dbeafe;--yellow:#a35a06;--yellow-light:#fef3c7;--purple:#a8621f;--purple-light:#f7ead9;--teal:#0d9488;--teal-light:#ccfbf1;--nav-h:72px;--header-h:60px;--safe-bottom:env(safe-area-inset-bottom,0px);--radius:18px;--radius-sm:12px;--main-px:16px;
       /* ── Typography system ── */
       --font-sans:'Assistant',-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
       --font-num:var(--font-sans);
@@ -38,7 +38,7 @@
       --fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;--fw-extra:800;
       --lh-tight:1.15;--lh-snug:1.35;--lh-normal:1.55;--lh-relaxed:1.7;
       --track-tight:-0.01em;--track-normal:0em;--track-label:0.04em;--track-num:-0.015em;}
-    body.dark{--bg:#100f0d;--surface:#1a1916;--surface2:#231f1b;--border:rgba(255,255,255,0.08);--text:#f0ebe3;--text2:#9b9089;--text3:#8c8480;--accent:#34d3a9;--accent2:#34d3a9;--accent-rgb:52,211,169;--green:#34d399;--green-light:#0a2a1e;--red:#f87171;--red-light:#2a0a0a;--blue:#60a5fa;--blue-light:#1a2040;--yellow:#fbbf24;--yellow-light:#2a1e0a;--purple:#a78bfa;--purple-light:#1e1630;--teal:#2dd4bf;--teal-light:#0a2020;}
+    body.dark{--bg:#100f0d;--surface:#1a1916;--surface2:#231f1b;--border:rgba(255,255,255,0.08);--text:#f0ebe3;--text2:#9b9089;--text3:#8c8480;--accent:#34d3a9;--accent2:#34d3a9;--accent-rgb:52,211,169;--green:#34d399;--green-light:#0a2a1e;--red:#f87171;--red-light:#2a0a0a;--blue:#60a5fa;--blue-light:#1a2040;--yellow:#fbbf24;--yellow-light:#2a1e0a;--purple:#d69a5c;--purple-light:#2a2015;--teal:#2dd4bf;--teal-light:#0a2020;}
     input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
     input[type="number"]{-moz-appearance:textfield;}
     :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
@@ -65,6 +65,8 @@
     body:not(.dark) .insight-highlight{color:#066552;}       /* accent on tinted card, was 4.33:1 */
     body.dark .text-slate-400{color:#a1a1aa;}                /* dark:text-zinc-500 was 3.67:1 */
     body.dark .budget-chip-icon{color:var(--text2);}         /* was 4.46:1 */
+    body.dark .budget-chip-name{color:var(--text);}
+    body.dark .budget-chip-sel .budget-chip-name,body.dark .budget-chip-sel .budget-chip-icon{color:#0d0d0c;}
     /* Financial figures: tabular alignment everywhere */
     .card-amount,.metric-val,.hero-stat-val,.hero-balance-num,.tx-amount,.sub-price-amount,.upcoming-amount,.upcoming-day-num,.breakdown-amount,.sr-amount,.budget-avail-num,.goal-amounts-text,.prog-label,.budget-item-amounts,.budget-pct-label,#budgetSummaryTotal,#budgetSummaryPct{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:'tnum' 1,'lnum' 1;letter-spacing:var(--track-num);}
     /* Signed figures must read LTR inside RTL text — direction alone is inert without isolation */
@@ -115,6 +117,9 @@
     @keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
     @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 0 rgba(var(--accent-rgb),0.4);}50%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 14px rgba(var(--accent-rgb),0);}}
     main{padding:calc(76px + env(safe-area-inset-top,0px)) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 100px);max-width:600px;margin:0 auto;}
+    @media (min-width:860px){
+      main{max-width:760px;}
+    }
     #rotateLockOverlay{display:none;}
     @media (orientation:landscape) and (pointer:coarse){
       #rotateLockOverlay{display:flex;position:fixed;inset:0;z-index:99999;background:var(--bg);color:var(--text);flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:32px;}
@@ -160,15 +165,17 @@
     .tx-del-btn svg{width:16px;height:16px;stroke-width:2;}
     .tx-del-btn:hover,.tx-del-btn:active{background:var(--red-light);color:var(--red);}
     .tx-item:hover{background:var(--surface2);border-radius:10px;margin:0 -8px;padding:11px 8px;}
-    .tx-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
+    .tx-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text2);}
+    .tx-icon svg{width:19px;height:19px;}
+    .tx-icon.income-icon{color:#16a34a;}
     .tx-icon.income-icon{background:rgba(22,163,74,0.13);border:1.5px solid rgba(22,163,74,0.18);}
     .tx-icon.expense-icon{background:rgba(99,102,241,0.11);border:1.5px solid rgba(99,102,241,0.16);}
-    .tx-icon.cat-blue{background:rgba(37,99,235,0.11);border:1.5px solid rgba(37,99,235,0.18);}
-    .tx-icon.cat-yellow{background:rgba(217,119,6,0.11);border:1.5px solid rgba(217,119,6,0.18);}
-    .tx-icon.cat-purple{background:rgba(124,58,237,0.11);border:1.5px solid rgba(124,58,237,0.18);}
-    .tx-icon.cat-teal{background:rgba(13,148,136,0.11);border:1.5px solid rgba(13,148,136,0.18);}
-    .tx-icon.cat-red{background:rgba(220,38,38,0.11);border:1.5px solid rgba(220,38,38,0.18);}
-    .tx-icon.cat-amber{background:rgba(245,158,11,0.11);border:1.5px solid rgba(245,158,11,0.18);}
+    .tx-icon.cat-blue{background:rgba(37,99,235,0.11);border:1.5px solid rgba(37,99,235,0.18);color:#2563eb;}
+    .tx-icon.cat-yellow{background:rgba(217,119,6,0.11);border:1.5px solid rgba(217,119,6,0.18);color:#d97706;}
+    .tx-icon.cat-purple{background:rgba(168,98,31,0.11);border:1.5px solid rgba(168,98,31,0.18);color:#a8621f;}
+    .tx-icon.cat-teal{background:rgba(13,148,136,0.11);border:1.5px solid rgba(13,148,136,0.18);color:#0d9488;}
+    .tx-icon.cat-red{background:rgba(220,38,38,0.11);border:1.5px solid rgba(220,38,38,0.18);color:#dc2626;}
+    .tx-icon.cat-amber{background:rgba(245,158,11,0.11);border:1.5px solid rgba(245,158,11,0.18);color:#d97706;}
     .tx-info{flex:1;min-width:0;}
     .tx-desc{font-size:0.88rem;font-weight:600;color:var(--text);font-family:var(--font-sans);display:flex;align-items:center;gap:5px;overflow:hidden;}
     .tx-desc-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -256,12 +263,14 @@
     .budget-chip-strip::-webkit-scrollbar{display:none;}
     .budget-chip{flex:0 0 auto;width:88px;height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:14px 6px;border:none;border-radius:26px;cursor:pointer;font-family:inherit;scroll-snap-align:center;opacity:0.7;transform:scale(0.86);transition:transform 0.25s cubic-bezier(0.22,1,0.36,1),opacity 0.25s,box-shadow 0.15s,background 0.15s;-webkit-tap-highlight-color:transparent;}
     .budget-chip:active{transform:scale(0.8);}
-    .budget-chip-icon{font-size:1.9rem;line-height:1;}
+    .budget-chip-icon{line-height:1;color:#1f2937;}
+    .budget-chip-icon svg{width:26px;height:26px;}
     .budget-chip-name{font-size:0.72rem;font-weight:700;color:#1f2937;text-align:center;line-height:1.25;}
     .budget-chip-sel{opacity:1;transform:scale(1);box-shadow:0 6px 16px rgba(0,0,0,0.18);}
     .budget-chip-sel:active{transform:scale(0.96);}
     .budget-chip-add{background:var(--surface2);border:1.5px dashed var(--border-strong,var(--border));opacity:1;transform:scale(0.86);}
-    .budget-chip-add .budget-chip-icon{font-size:1.6rem;color:var(--text3);font-weight:300;}
+    .budget-chip-add .budget-chip-icon{color:var(--text3);}
+    .budget-chip-add .budget-chip-icon svg{width:22px;height:22px;}
     .budget-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,0.05);}
     .budget-detail-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
     .budget-detail-text{min-width:0;}
@@ -304,7 +313,8 @@
     .exp-icon-sm:active{color:var(--red);}
     .exp-icon-sm svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
     .exp-name{font-weight:700;color:var(--text);}
-    .exp-cat-icon{display:flex;flex-shrink:0;font-size:1.15rem;line-height:1;}
+    .exp-cat-icon{display:flex;flex-shrink:0;line-height:1;color:var(--text2);}
+    .exp-cat-icon svg{width:18px;height:18px;}
     .cashflow-page{background:var(--bg);margin:calc(var(--main-px) * -1) calc(var(--main-px) * -1) calc((var(--nav-h) + var(--safe-bottom) + 100px) * -1);padding:var(--main-px) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 100px);min-height:calc(100% + var(--main-px));}
     .cashflow-page .section-header{padding:22px 4px 6px}
     .cashflow-page .badge{background:rgba(0,0,0,0.07);color:var(--text2)}
@@ -451,7 +461,8 @@
     .wiz-cat-row{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:18px 8px;border:1.5px solid var(--border);border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s,transform 0.15s,border-color 0.15s,background 0.15s;width:100%;background:var(--surface);font-family:inherit;text-align:center;}
     .wiz-cat-row:active{opacity:0.7;transform:scale(0.97);}
     .wiz-cat-name{font-size:0.78rem;font-weight:600;color:var(--text);font-family:var(--font-sans);line-height:1.25;}
-    .wiz-cat-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.35rem;line-height:1;}
+    .wiz-cat-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
+    .wiz-cat-icon svg{width:21px;height:21px;}
     .wiz-cat-row.wiz-sel{border-color:var(--accent);background:rgba(var(--accent-rgb),0.06);}
     .wiz-cat-row.wiz-sel .wiz-cat-name{color:var(--accent);font-weight:700;}
     @keyframes wizPulse{0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}}
@@ -623,12 +634,12 @@
     body.dark .nav-item .nav-label{color:rgba(255,255,255,0.35);}
     body.dark .tx-icon.income-icon{background:rgba(22,163,74,0.18);border-color:rgba(22,163,74,0.25);}
     body.dark .tx-icon.expense-icon{background:rgba(99,102,241,0.18);border-color:rgba(99,102,241,0.25);}
-    body.dark .tx-icon.cat-blue{background:rgba(37,99,235,0.2);border-color:rgba(37,99,235,0.3);}
-    body.dark .tx-icon.cat-yellow{background:rgba(217,119,6,0.2);border-color:rgba(217,119,6,0.3);}
-    body.dark .tx-icon.cat-purple{background:rgba(124,58,237,0.2);border-color:rgba(124,58,237,0.3);}
-    body.dark .tx-icon.cat-teal{background:rgba(13,148,136,0.2);border-color:rgba(13,148,136,0.3);}
-    body.dark .tx-icon.cat-red{background:rgba(220,38,38,0.2);border-color:rgba(220,38,38,0.3);}
-    body.dark .tx-icon.cat-amber{background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.3);}
+    body.dark .tx-icon.cat-blue{background:rgba(96,165,250,0.16);border-color:rgba(96,165,250,0.28);color:#60a5fa;}
+    body.dark .tx-icon.cat-yellow{background:rgba(251,191,36,0.16);border-color:rgba(251,191,36,0.28);color:#fbbf24;}
+    body.dark .tx-icon.cat-purple{background:rgba(214,154,92,0.16);border-color:rgba(214,154,92,0.28);color:#d69a5c;}
+    body.dark .tx-icon.cat-teal{background:rgba(45,212,191,0.16);border-color:rgba(45,212,191,0.28);color:#2dd4bf;}
+    body.dark .tx-icon.cat-red{background:rgba(248,113,113,0.16);border-color:rgba(248,113,113,0.28);color:#f87171;}
+    body.dark .tx-icon.cat-amber{background:rgba(251,191,36,0.16);border-color:rgba(251,191,36,0.28);color:#fbbf24;}
     .card.hero{grid-column:1/-1;padding:22px 18px 18px;margin-bottom:0;}
     .card.hero .card-label{font-size:0.78rem;margin-bottom:6px;}
     .card.hero .card-amount{font-size:2.1rem;font-weight:800;letter-spacing:-0.5px;line-height:1;}
@@ -1480,7 +1491,7 @@
 <div class="sheet-overlay" id="addGoalSheet" onclick="if(event.target===this)closeSheet('addGoalSheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title" id="goalSheetTitle">🎯 יעד חיסכון חדש</div>
+    <div class="sheet-title" id="goalSheetTitle">יעד חיסכון חדש</div>
     <div class="form-stack">
       <div class="form-field"><label for="goalName">שם היעד</label><input type="text" id="goalName" placeholder='חופשה לאי"ל' autocomplete="off" autocorrect="off" spellcheck="false" onfocus="this.select()"/></div>
       <div class="form-row">
@@ -1583,7 +1594,7 @@
 <div class="sheet-overlay" id="fixedCatPickerSheet" onclick="if(event.target===this)closeSheet('fixedCatPickerSheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">🏠 הוספת הוצאה קבועה</div>
+    <div class="sheet-title">הוספת הוצאה קבועה</div>
     <div id="fixedCatPickerBody"></div>
   </div>
 </div>
@@ -1804,7 +1815,7 @@
     <!-- Spending Flow: הכנסה → קבועות / משתנות / חיסכון -->
     <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4">
       <div class="flex items-center justify-between" style="margin-bottom:12px">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200">💧 לאן הולך הכסף</h3>
+        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200">לאן הולך הכסף</h3>
         <span class="text-xs text-slate-400 dark:text-zinc-500 font-medium" id="sfIncomeLabel"></span>
       </div>
       <div class="sf-bar">
@@ -1896,11 +1907,11 @@
 
   <div id="page-analytics" class="page">
     <div class="section" id="insightsSection">
-      <div class="section-header"><div class="section-title">💡 תובנות חכמות</div></div>
+      <div class="section-header"><div class="section-title">תובנות חכמות</div></div>
       <div class="section-body" id="insightsList"><div style="color:var(--text3);font-size:0.82rem;text-align:center;padding:8px">אין מספיק נתונים עדיין</div></div>
     </div>
     <div class="section" id="annualSummarySection">
-      <div class="section-header"><div class="section-title">📅 סיכום שנתי · <span id="annualYear"></span></div></div>
+      <div class="section-header"><div class="section-title">סיכום שנתי · <span id="annualYear"></span></div></div>
       <div class="section-body">
         <div class="annual-grid">
           <div class="annual-card"><div class="annual-card-label">סה״כ הכנסות</div><div class="annual-card-val" id="annualIncome">—</div></div>
@@ -2572,6 +2583,14 @@ const BUDGET_CHIP_HEX={
   purple:{base:'#f3e8ff',sel:'#c084fc'},teal:{base:'#ccfbf1',sel:'#2dd4bf'},
   orange:{base:'#ffedd5',sel:'#fb923c'},gray:{base:'#f1f5f9',sel:'#94a3b8'}
 };
+// Same hues, dimmed for dark surfaces — the light pastels above stay bright and
+// jarring on a near-black card if used as-is.
+const BUDGET_CHIP_HEX_DARK={
+  pink:{base:'#3a2230',sel:'#e879a8'},yellow:{base:'#3a3016',sel:'#e0b83a'},
+  green:{base:'#1c3626',sel:'#4ade80'},blue:{base:'#232a4a',sel:'#818cf8'},
+  purple:{base:'#2a2015',sel:'#d69a5c'},teal:{base:'#0f2e2a',sel:'#2dd4bf'},
+  orange:{base:'#3a2712',sel:'#fb923c'},gray:{base:'#232323',sel:'#9ca3af'}
+};
 const BUDGET_CHIP_COLOR={
   'מזון לבית':'teal','אוכל בחוץ ובילויים':'orange','פארם':'blue','דלק וחניה':'green',
   'מתנות לאירועים ולשמחות':'pink','ביגוד והנעלה':'pink','תחב״צ':'blue','כבישי אגרה':'blue',
@@ -2579,7 +2598,10 @@ const BUDGET_CHIP_COLOR={
   'עזרת/שמרטף':'yellow','תיקוני רכב':'blue','בריאות':'teal','בעלי חיים':'yellow',
   'דמי כיס/ילדים':'yellow','יהדות/חגים':'purple','ביטוח לאומי':'blue','שונות':'gray'
 };
-function budgetChipColor(cat){return BUDGET_CHIP_HEX[BUDGET_CHIP_COLOR[cat]||'gray'];}
+function budgetChipColor(cat){
+  const table=document.body.classList.contains('dark')?BUDGET_CHIP_HEX_DARK:BUDGET_CHIP_HEX;
+  return table[BUDGET_CHIP_COLOR[cat]||'gray'];
+}
 const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
@@ -2883,7 +2905,7 @@ function wizRenderCats(cats){
     const hasSub=!!CAT_SUBCATS[c];
     const onclick=hasSub?'wizExpandCat(\''+c+'\',this)':'wizPickCat(\''+c+'\',this)';
     return '<button type="button" class="wiz-cat-row'+(i===0?' wiz-sel':'')+'" onclick="'+onclick+'">'+
-      '<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+'">'+(CAT_ICONS[c]||'•')+'</div>'+
+      '<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+';color:'+budgetChipColor(c).sel+'">'+catIconSvg(c)+'</div>'+
       '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+c+'</span>'+
       (hasSub?'<span class="wiz-expand-arrow">›</span>':'<span class="wiz-sel-check">✓</span>')+
       '</button>';
@@ -2912,7 +2934,7 @@ function wizExpandCat(cat,el){
   div.className='wiz-sub-list';
   div.innerHTML=subCats.map(sc=>
     '<button type="button" class="wiz-cat-row wiz-sub-row" onclick="wizPickCat(\''+sc+'\',this)">'+
-    '<div class="wiz-cat-icon wiz-sub-icon" style="background:'+budgetChipColor(sc).base+'">'+(CAT_ICONS[sc]||'•')+'</div>'+
+    '<div class="wiz-cat-icon wiz-sub-icon" style="background:'+budgetChipColor(sc).base+';color:'+budgetChipColor(sc).sel+'">'+catIconSvg(sc)+'</div>'+
     '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+sc+'</span>'+
     '<span class="wiz-sel-check">✓</span></button>'
   ).join('');
@@ -3091,13 +3113,13 @@ function undismissRecurring(key,monthKey){
 function txFixedLabel(t){
   if(t.type==='income') return t.fixed!==false?'<span class="tx-tag income-fixed">קבועה</span>':'';
   if(t.fixed===true)  return '<span class="tx-tag tag-fixed">קבועה</span>';
-  if(t.fixed===false) return '<span class="tx-tag variable">משתנה</span>';
-  return t.recurring?'<span class="tx-tag tag-fixed">קבועה</span>':'<span class="tx-tag variable">משתנה</span>';
+  if(t.fixed===false) return '';
+  return t.recurring?'<span class="tx-tag tag-fixed">קבועה</span>':'';
 }
 function txHtml(t){
-  const emoji = CAT_ICONS[t.cat] || (t.type==='income'?'💰':'💳');
+  const icon = catIconSvg(t.cat);
   return '<div class="tx-item" data-txid="'+t.id+'" onclick="editTx('+t.id+')">'
-    +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+emoji+'</div>'
+    +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+icon+'</div>'
     +'<div class="tx-info">'
       +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
       +'<div class="tx-meta">'+txFixedLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
@@ -3107,13 +3129,13 @@ function txHtml(t){
   +'</div>';
 }
 function txSwipeHtml(t){
-  const emoji = CAT_ICONS[t.cat] || (t.type==='income'?'💰':'💳');
+  const icon = catIconSvg(t.cat);
   const delSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
   return '<div class="tx-swipe-wrap">'
     +'<div class="tx-delete-reveal" onclick="deleteTx('+t.id+')">'+delSvg+'</div>'
     +'<div class="tx-swipe-inner">'
       +'<div class="tx-item" data-txid="'+t.id+'" onclick="swipeTap(this,'+t.id+')">'
-        +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+emoji+'</div>'
+        +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+icon+'</div>'
         +'<div class="tx-info">'
           +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
           +'<div class="tx-meta">'+txFixedLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
@@ -3473,7 +3495,7 @@ const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','ע�
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
   return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+key+'\')" aria-expanded="'+open+'">'
-    +'<div class="exp-row-right"><span class="exp-cat-icon">'+(CAT_ICONS[opts.cat]||'•')+'</span><span class="exp-name">'+opts.cat+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
+    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.cat)+'</span><span class="exp-name">'+opts.cat+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
       +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
@@ -4968,7 +4990,7 @@ function renderBudget(){
     const hex=budgetChipColor(cat);
     const sel=cat===_selectedBudgetCat;
     return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" data-cat="'+esc(cat)+'" style="background:'+(sel?hex.sel:hex.base)+'" onclick="selectBudgetCat(\''+cat+'\')">'
-      +'<span class="budget-chip-icon">'+(CAT_ICONS[cat]||'•')+'</span>'
+      +'<span class="budget-chip-icon">'+catIconSvg(cat)+'</span>'
       +'<span class="budget-chip-name">'+cat+'</span>'
     +'</button>';
   }).join('')
@@ -5080,7 +5102,7 @@ function openMoveTxCat(id){
   const cats=getEffectiveCats('expense');
   document.getElementById('moveCatList').innerHTML=cats.map(c=>
     '<button type="button" class="wiz-cat-row'+(c===t.cat?' wiz-sel':'')+'" onclick="moveTxToCat(\''+c+'\')">'
-      +'<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+'">'+(CAT_ICONS[c]||'•')+'</div>'
+      +'<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+';color:'+budgetChipColor(c).sel+'">'+catIconSvg(c)+'</div>'
       +'<span class="wiz-cat-name">'+c+'</span>'
     +'</button>'
   ).join('');
@@ -5103,7 +5125,7 @@ function _clearGoalForm(){
 function openAddGoalSheet(){
   _editingGoalId=null;
   _clearGoalForm();
-  const title=document.getElementById('goalSheetTitle');if(title)title.textContent='🎯 יעד חיסכון חדש';
+  const title=document.getElementById('goalSheetTitle');if(title)title.textContent='יעד חיסכון חדש';
   const btn=document.getElementById('goalSaveBtn');if(btn){btn.textContent='הוסף יעד';btn.disabled=false;}
   openSheet('addGoalSheet');
 }
@@ -6415,7 +6437,7 @@ function renderOnboardStep(){
     renderObIncomes();
   } else if(onboardStep===3){
     if(!obFixed.length)obFixed=OB_FIXED_DEFAULT.filter(c=>getEffectiveFixedCats().includes(c)).map(cat=>({cat,amount:''}));
-    el.innerHTML='<div class="onboard-title">🏠 הוצאות קבועות</div><div class="onboard-sub">אילו הוצאות קבועות יש לך כל חודש? מלא סכום רק למה שרלוונטי — אפשר להוסיף עוד קטגוריות למטה, או לשנות הכל בכל שלב מאוחר יותר.</div><div class="onboard-rows" id="obFixedRows"></div><div id="obFixedMore"></div>';
+    el.innerHTML='<div class="onboard-title">הוצאות קבועות</div><div class="onboard-sub">אילו הוצאות קבועות יש לך כל חודש? מלא סכום רק למה שרלוונטי — אפשר להוסיף עוד קטגוריות למטה, או לשנות הכל בכל שלב מאוחר יותר.</div><div class="onboard-rows" id="obFixedRows"></div><div id="obFixedMore"></div>';
     renderObFixed();
   } else {
     const totalIncome=obIncomes.reduce((s,inc)=>s+(parseFloat(inc.amount)||0),0);

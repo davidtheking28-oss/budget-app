@@ -85,7 +85,7 @@
     flex-direction: row;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: var(--space-2) var(--page-pad);
+    padding: var(--space-1) var(--page-pad);
     border-inline-end: none;
     border-bottom: 1px solid var(--border);
   }
@@ -95,6 +95,8 @@
   /* The rail is horizontal here, so a side tooltip would sit over the next
      button — and its width pushed the document into horizontal scroll. */
   .tip { display: none; }
+
+  .mark { width: 28px; height: 28px; }
 
   .railBtn {
     width: 44px;

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
-import Logo from './Logo.jsx';
 import IconRail from './IconRail.jsx';
 import SearchBar from './SearchBar.jsx';
 import styles from './Shell.module.css';
@@ -75,7 +74,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
         <IconRail onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
         <div className={styles.topbarBleed}>
           <div className={styles.topbar}>
-            <div className={styles.logo}><Logo />Budget Advisor</div>
+            <div className={styles.logo}>Budget Advisor</div>
             <div className={styles.topbarEnd}>
               {onSearch && <SearchBar onOpen={onSearch} />}
               <AccountMenu email={email} />
@@ -96,7 +95,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
       <div className={styles.topbarBleed}>
       <div className={styles.topbar}>
         <div className={styles.topbarStart}>
-          <div className={styles.logo}><Logo />Budget Advisor</div>
+          <div className={styles.logo}>Budget Advisor</div>
         </div>
         <div className={styles.topbarEnd}>
           {onSearch && <SearchBar onOpen={onSearch} />}
