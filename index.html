@@ -2753,6 +2753,23 @@ function shiftMonth(d){
 }
 
 let _openSheets=new Set();
+let _scrollLockY=0;
+function _lockBodyScroll(){
+  _scrollLockY=window.scrollY||document.documentElement.scrollTop||0;
+  document.body.style.position='fixed';
+  document.body.style.top=(-_scrollLockY)+'px';
+  document.body.style.left='0';
+  document.body.style.right='0';
+  document.body.style.overflow='hidden';
+}
+function _unlockBodyScroll(){
+  document.body.style.position='';
+  document.body.style.top='';
+  document.body.style.left='';
+  document.body.style.right='';
+  document.body.style.overflow='';
+  window.scrollTo(0,_scrollLockY);
+}
 function _sheetSetBackgroundInert(on){
   document.querySelectorAll('main,.bottom-nav').forEach(el=>{if(on)el.setAttribute('inert','');else el.removeAttribute('inert');});
   ['fab','fabHint'].forEach(id=>{const el=document.getElementById(id);if(el){if(on)el.setAttribute('inert','');else el.removeAttribute('inert');}});
@@ -2774,7 +2791,7 @@ function openSheet(id){
   ov.classList.add('open');
   ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
   const b=document.getElementById('installBanner');if(b)b.style.display='none';
-  if(!_openSheets.size){document.body.style.overflow='hidden';_sheetSetBackgroundInert(true);document.addEventListener('keydown',_sheetKeydown);}
+  if(!_openSheets.size){_lockBodyScroll();_sheetSetBackgroundInert(true);document.addEventListener('keydown',_sheetKeydown);}
   _openSheets.add(id);
   setTimeout(()=>{const f=ov.querySelector('input,select,textarea,button');if(f)f.focus();},50);
 }
@@ -2782,7 +2799,7 @@ function closeSheet(id){
   const b=document.getElementById('installBanner');if(b)b.style.display='';
   const ov=document.getElementById(id);
   _openSheets.delete(id);
-  if(!_openSheets.size){document.body.style.overflow='';_sheetSetBackgroundInert(false);document.removeEventListener('keydown',_sheetKeydown);}
+  if(!_openSheets.size){_unlockBodyScroll();_sheetSetBackgroundInert(false);document.removeEventListener('keydown',_sheetKeydown);}
   const sh=ov.querySelector('.sheet,.wiz-sheet');
   if(sh){
     sh.style.animation='sheetExit 0.22s cubic-bezier(0.4,0,1,1) both';
