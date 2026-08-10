@@ -4445,22 +4445,27 @@ const NLP_MAP = {
 // keyword dictionary was written against the old expense categories — remap its
 // values onto the current list (income values are untouched: not keys in the map)
 Object.keys(NLP_MAP).forEach(k=>{ const n=_CAT_MIGRATE[NLP_MAP[k]]; if(n)NLP_MAP[k]=n; });
-Object.assign(NLP_MAP,{
+// המילון הזה מכיל את הסיווגים המדויקים לפי הקטגוריות הנוכחיות. מילון EXTRA
+// (בהמשך הקובץ) נטען אחרון ומכיל ערכים ישנים/כלליים יותר לחלק מאותן מילות
+// מפתח — לכן הוא מוחל שוב אחרי EXTRA (ראה _reapplyRefinements) כדי שהסיווג
+// המדויק תמיד ינצח.
+const _REFINEMENTS={
   'סופר פארם':'פארם','סופרפארם':'פארם','פארם':'פארם','בי דראגסטור':'פארם','ניו פארם':'פארם',
   'חניה':'דלק וחניה','חנייה':'דלק וחניה','פנגו':'דלק וחניה','סלופארק':'דלק וחניה','דלק':'דלק וחניה',
-  'רב קו':'תחב״צ','רכבת':'תחב״צ','אוטובוס':'תחב״צ','מטרופולין':'תחב״צ','אגד':'תחב״צ','דן':'תחב״צ',
+  'רב קו':'תחב״צ','רב-קו':'תחב״צ','רכבת':'תחב״צ','אוטובוס':'תחב״צ','מטרופולין':'תחב״צ','אגד':'תחב״צ','דן':'תחב״צ',
   'כביש 6':'כבישי אגרה','כביש שש':'כבישי אגרה','דרך ארץ':'כבישי אגרה','כרמלטון':'כבישי אגרה',
   'תספורת':'תספורת וקוסמטיקה','מספרה':'תספורת וקוסמטיקה','קוסמטיקה':'תספורת וקוסמטיקה','ספא':'תספורת וקוסמטיקה',
   'סיגריות':'סיגריות','טבק':'סיגריות','עישון':'סיגריות',
   'שמרטף':'עזרת/שמרטף','בייביסיטר':'עזרת/שמרטף','מטפלת':'עזרת/שמרטף','עוזרת':'עזרת/שמרטף',
-  'מוסך':'תיקוני רכב','צמיגים':'תיקוני רכב','טסט':'תיקוני רכב','טיפול רכב':'תיקוני רכב',
+  'מוסך':'תיקוני רכב','צמיגים':'תיקוני רכב','טסט':'תיקוני רכב','טיפול רכב':'תיקוני רכב','טיפול לרכב':'תיקוני רכב',
   'דמי כיס':'דמי כיס/ילדים','ילדים':'דמי כיס/ילדים',
-  'חג':'יהדות/חגים','בית כנסת':'יהדות/חגים','כשרות':'יהדות/חגים','תרומה':'יהדות/חגים',
+  'חג':'יהדות/חגים','בית כנסת':'יהדות/חגים','כשרות':'יהדות/חגים','פסח':'יהדות/חגים','חנוכה':'יהדות/חגים','תרומה':'יהדות/חגים',
   'ביטוח לאומי':'ביטוח לאומי',
   'ביט':'שונות','paybox':'שונות'
-});
+};
+Object.assign(NLP_MAP,_REFINEMENTS);
 // שני המילונים נכתבו כשכל האוכל היה קטגוריה אחת, ולכן מסעדות ומשלוחים היגרו יחד
-// עם הסופרים אל "מזון לבית". ההפרדה מוחלת אחרי שכל המילונים נטענו (ראה _splitFoodCats).
+// עם הסופרים אל "מזון לבית". ההפרדה מוחלת אחרי שכל המילונים נטענו (ראה _reapplyRefinements).
 const _FOOD_SPLIT={
   'מסעדה':'אוכל בחוץ ובילויים','מסעדות':'אוכל בחוץ ובילויים','פיצה':'אוכל בחוץ ובילויים','שווארמה':'אוכל בחוץ ובילויים',
   'בורגר':'אוכל בחוץ ובילויים','המבורגר':'אוכל בחוץ ובילויים','סושי':'אוכל בחוץ ובילויים','פלאפל':'אוכל בחוץ ובילויים',
@@ -4474,8 +4479,8 @@ const _FOOD_SPLIT={
   'מעדנייה':'מזון לבית','מכולת':'מזון לבית','סופר':'מזון לבית','נספרסו':'מזון לבית','מאפיה':'מזון לבית',
   'לחם':'מזון לבית','חלב':'מזון לבית'
 };
-function _splitFoodCats(){ try{ Object.assign(NLP_MAP,_FOOD_SPLIT); }catch(e){} }
-_splitFoodCats();
+function _reapplyRefinements(){ try{ Object.assign(NLP_MAP,_REFINEMENTS,_FOOD_SPLIT); }catch(e){} }
+_reapplyRefinements();
 
 // ── מנוע קטגוריזציה לומד ─────────────────────────────────────────
 // שכבה 1: מיפוי אישי שנלמד מהעסקאות שאתה שומר (localStorage). שכבה 2: מילון NLP_MAP.
@@ -7167,8 +7172,8 @@ function showGif(src, durationMs){
   /* this dictionary predates the current category list — remap its values */
   Object.keys(EXTRA).forEach(function(k){ var n=_CAT_MIGRATE[EXTRA[k]]; if(n)EXTRA[k]=n; });
   try{ if(typeof NLP_MAP!=="undefined") Object.assign(NLP_MAP,EXTRA); }catch(e){}
-  /* EXTRA also predates the eat-out split — reapply it so it wins over both dictionaries */
-  try{ if(typeof _splitFoodCats==="function") _splitFoodCats(); }catch(e){}
+  /* EXTRA is a stale dictionary loaded last — reapply the accurate mappings so they win */
+  try{ if(typeof _reapplyRefinements==="function") _reapplyRefinements(); }catch(e){}
   function norm(s){ return (s||"").toString().toLowerCase().replace(/[֑-ׇ]/g,"").replace(/[׳״'"]/g,"").replace(/[־–—_]/g," ").replace(/\s+/g," ").trim(); }
   function uf(s){ return s.replace(/ם/g,"מ").replace(/ן/g,"נ").replace(/ך/g,"כ").replace(/ף/g,"פ").replace(/ץ/g,"צ"); }
   var PREF=["מה","לה","שה","וה","כש","ב","ל","ה","ו","מ","ש","כ"],MEM="מ",DICT=null;
