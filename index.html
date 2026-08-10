@@ -406,7 +406,7 @@
     .check-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;}
     .check-row label{font-size:0.84rem;font-weight:600;color:var(--text);cursor:pointer;flex:1;}
     .check-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--accent);flex-shrink:0;}
-    .wiz-sheet{padding:0!important;border-radius:0;overflow:hidden;display:flex;flex-direction:column;height:100dvh;max-height:100dvh;animation:slideUp 0.32s cubic-bezier(0.16,1,0.3,1) both;}
+    .wiz-sheet{padding:0!important;border-radius:0;overflow:hidden;display:flex;flex-direction:column;height:100svh;max-height:100svh;animation:slideUp 0.32s cubic-bezier(0.16,1,0.3,1) both;}
     #addTxSheet{align-items:stretch;background:var(--bg);}
     .wiz-hdr{background:var(--accent);padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 16px;flex-shrink:0;}
     .wiz-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -4326,6 +4326,7 @@ async function openAddCustomCat(){
 
 // ── AI categorization via Edge Function ─────────────────────────
 let _aiCatTimer=null;
+let _wizLastSuggested=null;
 function showWizSuggestion(cat){
   if(!cat)return;
   const bar=document.getElementById('wizSuggestBar');
@@ -4337,10 +4338,12 @@ function showWizSuggestion(cat){
   bar.style.display='block';
   const badge=document.getElementById('wizCatBadge');
   if(badge)badge.innerHTML=`<span style="font-size:1rem">${emoji}</span> ${cat}`;
+  const changed=cat!==_wizLastSuggested;
+  _wizLastSuggested=cat;
   document.querySelectorAll('#wizCatList .wiz-cat-row').forEach(r=>{
     const m=r.querySelector('.wiz-cat-name')?.textContent===cat;
     r.classList.toggle('wiz-sel',m);
-    if(m){r.classList.remove('wiz-just-matched');void r.offsetWidth;r.classList.add('wiz-just-matched');r.scrollIntoView({block:'nearest',behavior:'smooth'});}
+    if(m&&changed){r.classList.remove('wiz-just-matched');void r.offsetWidth;r.classList.add('wiz-just-matched');r.scrollIntoView({block:'nearest',behavior:'smooth'});}
   });
 }
 // ── Receipt scan (Claude vision via edge function) ────────────────
@@ -4515,6 +4518,7 @@ function wizDescNlp(val){
   const bar = document.getElementById('wizSuggestBar');
   if(!val || val.length < 2){
     if(bar) bar.style.display='none';
+    _wizLastSuggested=null;
     clearTimeout(_aiCatTimer);
     return;
   }
