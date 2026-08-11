@@ -4777,7 +4777,7 @@ function renderTxPage(){
   let mTx=(fromDate||toDate)?transactions.slice():getMonthTx(currentYear,currentMonth);
   if(fromDate&&fromDate!=='0000-01-01')mTx=mTx.filter(t=>t.date>=fromDate);
   if(toDate)mTx=mTx.filter(t=>t.date<=toDate);
-  const inc=mTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const inc=(fromDate||toDate)?mTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0):getMonthlyIncome();
   const exp=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const incEl=document.getElementById('txPageIncome');const expEl=document.getElementById('txPageExpense');const rngEl=document.getElementById('txRangeExpense');const flowEl=document.getElementById('txPageFlow');
   if(incEl)incEl.textContent=fmt(inc);
