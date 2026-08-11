@@ -5054,12 +5054,12 @@ function renderBudgetDetail(spent,effLim){
   detail.innerHTML=
     '<div class="budget-detail-header">'
       +'<div class="budget-detail-text">'
-        +'<div class="budget-detail-name">'+cat+'</div>'
+        +'<div class="budget-detail-name">'+esc(cat)+'</div>'
         +'<div class="budget-detail-amount">'+fmt(s)+' <span class="budget-detail-limit">/ '+fmt(lim)+'</span></div>'
       +'</div>'
       +'<div class="budget-detail-actions">'
-        +'<button type="button" class="budget-icon-btn" onclick="deleteBudget(\''+cat+'\')" aria-label="מחק תקציב">'+trashSvg+'</button>'
-        +'<button type="button" class="budget-icon-btn" onclick="editBudgetCat(\''+cat+'\')" aria-label="ערוך תקציב">'+editSvg+'</button>'
+        +'<button type="button" class="budget-icon-btn" data-act="del-budget" aria-label="מחק תקציב">'+trashSvg+'</button>'
+        +'<button type="button" class="budget-icon-btn" data-act="edit-budget" aria-label="ערוך תקציב">'+editSvg+'</button>'
         +'<button type="button" class="budget-icon-btn" onclick="showPage(\'analytics\',document.getElementById(\'nav-analytics\'))" aria-label="ניתוח">'+chartSvg+'</button>'
       +'</div>'
     +'</div>'
@@ -5067,7 +5067,7 @@ function renderBudgetDetail(spent,effLim){
     +'<button type="button" class="budget-tx-grouphdr" onclick="toggleBudgetTxList()">'
       +chevronSvg
       +'<span class="budget-tx-groupsum">'+fmt(s)+'</span>'
-      +'<span class="budget-tx-grouplabel">עסקאות ב'+cat+'</span>'
+      +'<span class="budget-tx-grouplabel">עסקאות ב'+esc(cat)+'</span>'
     +'</button>'
     +'<div class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
       +(mTx.length?mTx.map(t=>
@@ -5083,6 +5083,10 @@ function renderBudgetDetail(spent,effLim){
         +'</div>'
       ).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>')
     +'</div>';
+  const delBtn=detail.querySelector('[data-act="del-budget"]');
+  if(delBtn)delBtn.onclick=()=>deleteBudget(cat);
+  const editBtn=detail.querySelector('[data-act="edit-budget"]');
+  if(editBtn)editBtn.onclick=()=>editBudgetCat(cat);
 }
 let _budgetTxListOpen=true;
 function toggleBudgetTxList(){_budgetTxListOpen=!_budgetTxListOpen;const y=window.scrollY;renderBudget();window.scrollTo(0,y);}
@@ -5835,7 +5839,7 @@ function subLogo(name,small){
   const cls='sub-logo'+(small?' small':'');
   if(iconSlug){
     const url='https://cdn.simpleicons.org/'+iconSlug+'/'+iconColor;
-    const fallback="this.onerror=null;this.parentElement.classList.remove('has-img');this.parentElement.style.background='"+bg+"';this.parentElement.innerHTML='<span>"+letter+"</span>'";
+    const fallback="this.onerror=null;this.parentElement.classList.remove('has-img');this.parentElement.style.background='"+bg+"';this.parentElement.innerHTML='<span>"+attrArg(letter)+"</span>'";
     return '<div class="'+cls+' has-img"><img src="'+url+'" alt="'+esc(name)+'" loading="lazy" decoding="async" onerror="'+fallback+'"></div>';
   }
   return '<div class="'+cls+'" style="background:'+bg+'"><span>'+letter+'</span></div>';
