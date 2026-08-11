@@ -4143,8 +4143,13 @@ function updateHeaderTitle(){
 // ── Export CSV ────────────────────────────────────────────────────
 function csvSafe(v){const s=String(v??'');return /^[=+\-@|\t\r]/.test(s)?'\t'+s:s;}
 function exportCSV(){
+  const fromDate=(document.getElementById('txFromDate')||{}).value||'';
+  const toDate=(document.getElementById('txToDate')||{}).value||'';
+  let mTx=(fromDate||toDate)?transactions.slice():getMonthTx(currentYear,currentMonth);
+  if(fromDate&&fromDate!=='0000-01-01')mTx=mTx.filter(t=>t.date>=fromDate);
+  if(toDate)mTx=mTx.filter(t=>t.date<=toDate);
   const rows = [['תאריך','תיאור','קטגוריה','סוג','סכום','חוזר','קבוע/משתנה']];
-  [...transactions].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
+  [...mTx].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
     rows.push([t.date, csvSafe(t.desc), csvSafe(t.cat), t.type==='income'?'הכנסה':'הוצאה', t.amount, t.recurring?'כן':'לא', isFixed(t)?'קבוע':'משתנה']);
   });
   const csv = '﻿' + rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
