@@ -2580,8 +2580,7 @@ const FIXED_AUTO={
   'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0),
   'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
 };
-const BUDGET_CATS=[...EXPENSE_CATS,...FIXED_CATS.filter(c=>!EXPENSE_CATS.includes(c))];
-function getEffectiveExpenseCats(){return [...EXPENSE_CATS,...(userSettings.customCats||[]).filter(c=>!EXPENSE_CATS.includes(c))];}
+function getEffectiveExpenseCats(){const base=_activeMode==='business'?EXPENSE_CATS_BUSINESS:EXPENSE_CATS;return [...base,...(userSettings.customCats||[]).filter(c=>!base.includes(c))];}
 function getEffectiveBudgetCats(){const e=getEffectiveExpenseCats();return [...e,...FIXED_CATS.filter(c=>!e.includes(c))];}
 const EXPENSE_CATS_BUSINESS=['שיווק ופרסום','מערכות ותוכנה','ציוד משרדי','שכר עובדים','חשבונאות ומשפטי','שכירות משרד','תקשורת עסקית','נסיעות עסקיות','ייצוג וארוח','אחסון ולוגיסטיקה','מסים ואגרות','ביטוח עסקי','הדרכות והשתלמויות','פיתוח ומחקר','קניות ציוד','אחר'];
 const INCOME_CATS_BUSINESS=['הכנסות ממכירות','שירותים','פרויקטים','מנויים לקוחות','עמלות','ייעוץ','השקעות','אחר'];
@@ -3022,7 +3021,7 @@ function setFixedType(type){
   if(vb)vb.classList.toggle('active',type==='variable');
 }
 function populateBudgetCats(){
-  document.getElementById('budgetCat').innerHTML=BUDGET_CATS.map(c=>'<option>'+esc(c)+'</option>').join('');
+  document.getElementById('budgetCat').innerHTML=getEffectiveBudgetCats().map(c=>'<option>'+esc(c)+'</option>').join('');
 }
 
 function addTransaction(prefill){
