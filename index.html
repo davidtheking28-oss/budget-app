@@ -1836,9 +1836,9 @@
         <button class="filter-chip active" data-filter="all" onclick="setTxFilter('all',this)">הכל</button>
         <button class="filter-chip" data-filter="variable" onclick="setTxFilter('variable',this)">משתנות</button>
         <button class="filter-chip" data-filter="fixed" onclick="setTxFilter('fixed',this)">קבועות</button>
-        <div style="margin-inline-start:auto;flex-shrink:0;">
+        <div style="margin-inline-start:auto;flex-shrink:0;position:relative;">
           <button id="txOverflowBtn" onclick="toggleTxOverflow()" style="background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:999px;padding:8px 12px;font-size:1rem;cursor:pointer;line-height:1;min-width:44px;min-height:44px;" aria-label="אפשרויות">⋯</button>
-          <div id="txOverflowMenu" style="display:none;position:fixed;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:250;min-width:180px;overflow:hidden;">
+          <div id="txOverflowMenu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:250;width:max-content;min-width:180px;overflow:hidden;">
             <button onclick="exportCSV();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📥 ייצוא CSV</button>
             <button onclick="toggleCalendarView();toggleTxOverflow()" id="calToggleBtn" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📅 לוח שנה</button>
             <button onclick="openSmsImport();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📲 ייבא SMS</button>
@@ -6110,16 +6110,10 @@ function toggleTxOverflow(){
   const m=document.getElementById('txOverflowMenu');
   if(!m)return;
   const isOpen=m.style.display!=='none';
-  if(!isOpen){
-    const btn=document.getElementById('txOverflowBtn');
-    const r=btn.getBoundingClientRect();
-    m.style.top=(r.bottom+6)+'px';
-    m.style.left=r.left+'px';
-  }
   m.style.display=isOpen?'none':'block';
   if(!isOpen){
-    const close=e=>{if(!m.contains(e.target)&&e.target.getAttribute('onclick')!=='toggleTxOverflow()'){m.style.display='none';document.removeEventListener('click',close);}};
-    setTimeout(()=>document.addEventListener('click',close),0);
+    const close=e=>{if(e&&e.type==='click'&&m.contains(e.target))return;m.style.display='none';document.removeEventListener('click',close);document.removeEventListener('scroll',close,true);};
+    setTimeout(()=>{document.addEventListener('click',close);document.addEventListener('scroll',close,true);},0);
   }
 }
 function toggleCalendarView(){
