@@ -1135,35 +1135,7 @@
     @keyframes aliveFlashGood{0%,100%{filter:none;}30%{filter:drop-shadow(0 0 10px rgba(16,185,129,.7));}}
     @keyframes aliveFlashBad{0%,100%{filter:none;}30%{filter:drop-shadow(0 0 10px rgba(239,68,68,.7));}}
 
-    /* ── 9 · Ambient background that shifts by time of day ──────── */
-    body{transition:background-color .8s ease;background-attachment:fixed;}
-    body[data-daypart="dawn"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(251,146,60,.10),transparent 55%);}
-    body[data-daypart="day"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(59,130,246,.08),transparent 55%);}
-    body[data-daypart="dusk"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(168,85,247,.10),transparent 55%);}
-    body[data-daypart="night"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(6,101,82,.14),transparent 55%);}
-    body.dark[data-daypart="dawn"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(251,146,60,.16),transparent 60%);}
-    body.dark[data-daypart="day"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(56,189,248,.13),transparent 60%);}
-    body.dark[data-daypart="dusk"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(168,85,247,.17),transparent 60%);}
-    body.dark[data-daypart="night"]{background-image:radial-gradient(130% 90% at 50% -8%,rgba(99,102,241,.18),transparent 60%);}
-
-    /* ── 11 · base ambient — visible immediately, even before JS ── */
-    body{background-image:radial-gradient(130% 90% at 50% -6%,rgba(59,130,246,.12),transparent 55%);}
-    body.dark{background-image:radial-gradient(130% 90% at 50% -6%,rgba(56,189,248,.16),transparent 60%);}
-
-    /* ════════════════════════════════════════════════════════════
-       12 · BOLD MODE — amplified, unmistakably-visible motion
-       (later rules / @keyframes override the subtle versions above)
-       ════════════════════════════════════════════════════════════ */
-
-    /* stronger ambient background */
-    body{background-image:radial-gradient(135% 95% at 50% -6%,rgba(59,130,246,.20),transparent 58%)!important;}
-    body.dark{background-image:radial-gradient(135% 95% at 50% -6%,rgba(56,189,248,.26),transparent 60%)!important;}
-    body[data-daypart="dawn"]{background-image:radial-gradient(135% 95% at 50% -6%,rgba(251,146,60,.22),transparent 60%)!important;}
-    body[data-daypart="dusk"]{background-image:radial-gradient(135% 95% at 50% -6%,rgba(168,85,247,.22),transparent 60%)!important;}
-    body[data-daypart="night"]{background-image:radial-gradient(135% 95% at 50% -6%,rgba(49,46,129,.30),transparent 60%)!important;}
-    body.dark[data-daypart="dawn"]{background-image:radial-gradient(135% 95% at 50% -6%,rgba(251,146,60,.26),transparent 62%)!important;}
-    body.dark[data-daypart="dusk"]{background-image:radial-gradient(135% 95% at 50% -6%,rgba(168,85,247,.28),transparent 62%)!important;}
-    body.dark[data-daypart="night"]{background-image:radial-gradient(135% 95% at 50% -6%,rgba(99,102,241,.30),transparent 62%)!important;}
+    /* ── 9 · Ambient background removed — flat var(--bg) only ───── */
 
     /* hero is ALWAYS visibly alive — looping light sweep across the card */
     #page-dashboard .balance-hero::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
@@ -1838,10 +1810,6 @@
   </div>
 
   <div id="page-transactions" class="page cashflow-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <button type="button" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))" style="display:flex;align-items:center;gap:4px;background:none;border:none;color:var(--text2);font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit;padding:6px 0;min-height:44px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>חזרה לעמוד הבית</button>
-      <button type="button" onclick="showToast('💡 תזרים = ההפרש בין מה שנכנס למה שיצא החודש')" style="background:none;border:none;color:var(--accent);font-size:0.8rem;font-weight:700;text-decoration:underline;cursor:pointer;font-family:inherit;min-height:44px;padding:0 6px">מה זה תזרים?</button>
-    </div>
     <div class="balance-hero rounded-3xl p-6 relative overflow-hidden mb-4">
       <div class="balance-hero-bloom" style="top:-32%;right:-14%;width:55%;padding-bottom:55%;"></div>
       <div class="balance-hero-bloom" style="bottom:-38%;left:-10%;width:45%;padding-bottom:45%;opacity:0.55;"></div>
