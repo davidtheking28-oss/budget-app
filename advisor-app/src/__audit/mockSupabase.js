@@ -110,7 +110,7 @@ export const SUPA_URL = 'https://mock.supabase.co';
 export const supabase = {
   from: table => builder(table),
   rpc: async () => ({ data: null, error: { message: 'mock' } }),
-  channel: () => ({ on: () => ({ subscribe: () => ({}) }), subscribe: () => ({}) }),
+  channel: () => { const chan = { on: () => chan, subscribe: () => chan }; return chan; },
   removeChannel: () => {},
   auth: {
     getSession: async () => ({ data: { session } }),
