@@ -4213,14 +4213,19 @@ async function resetAllData(){
 function renderAnnualSummary(){
   const y = currentYear;
   document.getElementById('annualYear').textContent = y;
-  const monthlyInc = getMonthlyIncome();
-  const monthsThisYear = y===new Date().getFullYear() ? new Date().getMonth()+1 : 12;
-  let totalInc=monthlyInc*monthsThisYear, totalExp=0, monthsWithData=0;
+  const now = new Date();
+  let totalInc=0, totalExp=0, monthsWithData=0;
   for(let m=0; m<12; m++){
     const mTx = transactions.filter(t=>t.date.startsWith(mk(y,m)));
+    totalInc += mTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
     const exp = mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
     totalExp += exp;
     if(mTx.length) monthsWithData++;
+  }
+  if(y===now.getFullYear()){
+    const curMonthKey=mk(y,now.getMonth());
+    const postedNames=new Set(transactions.filter(t=>t.type==='income'&&t.date.startsWith(curMonthKey)).map(t=>(t.desc||'').toLowerCase()));
+    totalInc += userSettings.incomeSources.filter(src=>!postedNames.has((src.name||'').toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
   }
   const savings = totalInc - totalExp;
   const savingsPct = totalInc>0 ? Math.round(savings/totalInc*100) : 0;
@@ -4615,7 +4620,8 @@ function renderDashGoals(){
   const cats=Object.keys(budgets).filter(c=>_dashCats.includes(c)).sort().slice(0,8);
   const R=34,C=2*Math.PI*R;
   grid.innerHTML=cats.length?cats.map(cat=>{
-    const s=spentByCat[cat]||0,lim=budgets[cat]||0;
+    const s=spentByCat[cat]||0;
+    const lim=(_dashPeriod==='month'&&budgets[cat])?Math.max(0,budgets[cat]+_budgetCarry(cat)):(budgets[cat]||0);
     const pct=lim?Math.min(s/lim,1):0;
     const state=progState(Math.round(pct*100),[[90,'danger'],[70,'warn'],[0,'']]);
     return '<div class="dash-ring-item" data-cat="'+esc(cat)+'">'
