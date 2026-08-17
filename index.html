@@ -1962,7 +1962,7 @@
       <button class="btn btn-primary btn-sm" onclick="openAddGoalSheet()">+ יעד חדש</button>
     </div>
     <div id="goalsList">
-      <div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>אין יעדים עדיין</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>
+      <div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>הגדר יעד חיסכון</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">עקוב אחרי ההתקדמות שלך חודש אחרי חודש</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>
     </div>
   </div>
 
@@ -2014,7 +2014,7 @@
       <button class="btn btn-primary btn-sm" onclick="openSheet('addSubSheet')">+ מנוי חדש</button>
     </div>
     <div id="subsList">
-      <div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>אין מנויים עדיין</p><button class="btn-empty" onclick="openAddSub()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מנוי ראשון</button></div>
+      <div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>עקוב אחרי המנויים שלך</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">Netflix, Spotify ועוד · דע בדיוק כמה אתה משלם כל חודש</p><button class="btn-empty" onclick="openAddSub()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מנוי ראשון</button></div>
     </div>
   </div>
 
@@ -6667,7 +6667,7 @@ async function obSendEmail(){
     showToast('✓ קוד נשלח למייל');
   }catch(e){
     inp.disabled=false;
-    showToast('שגיאה בשליחת הקוד, נסה שוב');
+    showToast('❌ שגיאה בשליחת הקוד, נסה שוב');
   }
 }
 async function obVerifyOtp(){
@@ -6685,7 +6685,7 @@ async function obVerifyOtp(){
     showToast('✓ מחובר בהצלחה!');
   }catch(e){
     inp.disabled=false;
-    showToast('קוד שגוי, נסה שוב');
+    showToast('❌ קוד שגוי, נסה שוב');
   }
 }
 
@@ -7749,7 +7749,7 @@ setTimeout(autoCarryRecurring,500);
   window.updateAutoBackupLabel=function(){
     var el=document.getElementById('autoBkInfo'); if(!el) return;
     var raw=localStorage.getItem('budget_autobackup');
-    if(!raw){ el.textContent='(אין עדין)'; return; }
+    if(!raw){ el.textContent='(אין עדיין)'; return; }
     try{ var s=JSON.parse(raw); var d=new Date(s.ts); el.textContent='('+d.toLocaleDateString('he-IL')+')'; }catch(e){ el.textContent=''; }
   };
   window.confirmSheet=function(opts){
@@ -7812,7 +7812,7 @@ setTimeout(autoCarryRecurring,500);
   window.restoreAutoBackup=async function(){
     if(typeof closeAllSetDD==='function') closeAllSetDD();
     var raw=localStorage.getItem('budget_autobackup');
-    if(!raw){ if(typeof showToast==='function') showToast('אין עדין גיבוי אוטומטי'); return; }
+    if(!raw){ if(typeof showToast==='function') showToast('אין עדיין גיבוי אוטומטי'); return; }
     var s; try{ s=JSON.parse(raw); }catch(e){ if(typeof showToast==='function') showToast('❌ גיבוי פגום'); return; }
     var d=new Date(s.ts);
     var msg='לשחזר מהגיבוי האוטומטי מ-'+d.toLocaleDateString('he-IL')+'? הנתונים הנוכחיים יוחלפו.';

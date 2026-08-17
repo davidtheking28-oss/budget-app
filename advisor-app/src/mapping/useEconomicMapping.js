@@ -113,7 +113,7 @@ export function useEconomicMapping(clientUserId, advisorId) {
       // write must not replace every screen's valid data with a full-page error. The
       // toast carries the failure; `error` stays reserved for a failed read.
       if (cache.get(clientUserId)?.data === next) setEntry(clientUserId, { data: prev, error: null, ts: Date.now() });
-      toast('שמירה נכשלה, נסה שוב', 'error');
+      toast('שגיאה בשמירה, נסה שוב', 'error');
       return false;
     }
     return true;

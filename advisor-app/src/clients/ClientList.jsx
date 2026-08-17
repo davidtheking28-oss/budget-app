@@ -111,7 +111,7 @@ export default function ClientList({ advisorId, onSelect }) {
     const { data, error } = await supabase.rpc('invite_client_by_email', { p_email: trimmed });
     setInvitingEmail(false);
     if (error) { console.error('invite_client_by_email', error); toast('שגיאה בשליחת ההזמנה, נסה שוב', 'error'); return; }
-    if (data !== 'ok') { toast(INVITE_ERROR_MESSAGES[data] || 'שליחת ההזמנה נכשלה', 'error'); return; }
+    if (data !== 'ok') { toast(INVITE_ERROR_MESSAGES[data] || 'שגיאה בשליחת ההזמנה', 'error'); return; }
     toast('ההזמנה נשלחה', 'success');
     reloadInvites();
     setEmail('');
