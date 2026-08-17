@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
+import { usePendingInvites } from './usePendingInvites.js';
 import { isStale, relativeTime } from './useClientFreshness.js';
 import { useCountUp } from '../useCountUp.js';
 import Skeleton from '../components/Skeleton.jsx';
@@ -66,10 +67,22 @@ function StatSecondary({ label, value, tone }) {
   );
 }
 
+const INVITE_ERROR_MESSAGES = {
+  self: 'לא ניתן להזמין את עצמך',
+  rate_limited: 'יותר מדי הזמנות, נסה שוב בעוד 10 דקות',
+  not_advisor: 'החשבון הזה לא מוגדר כחשבון יועץ',
+  invalid_email: 'כתובת אימייל לא תקינה',
+  already_linked: 'הלקוח כבר מחובר אליך',
+  already_invited: 'כבר קיימת הזמנה פתוחה לכתובת הזו'
+};
+
 export default function ClientList({ advisorId, onSelect }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
+  const { invites: pendingInvites, reload: reloadInvites } = usePendingInvites(advisorId);
   const [code, setCode] = useState('');
+  const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [invitingEmail, setInvitingEmail] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
   const codeInputRef = useRef(null);
   const mountedRef = useRef(false);
@@ -89,6 +102,26 @@ export default function ClientList({ advisorId, onSelect }) {
     toast('הלקוח חובר בהצלחה', 'success');
     reload();
     setCode('');
+  }
+
+  async function inviteByEmail() {
+    const trimmed = email.trim();
+    if (!trimmed) { toast('הזן כתובת אימייל', 'error'); return; }
+    setInvitingEmail(true);
+    const { data, error } = await supabase.rpc('invite_client_by_email', { p_email: trimmed });
+    setInvitingEmail(false);
+    if (error) { console.error('invite_client_by_email', error); toast('שגיאה בשליחת ההזמנה, נסה שוב', 'error'); return; }
+    if (data !== 'ok') { toast(INVITE_ERROR_MESSAGES[data] || 'שליחת ההזמנה נכשלה', 'error'); return; }
+    toast('ההזמנה נשלחה', 'success');
+    reloadInvites();
+    setEmail('');
+  }
+
+  async function removeInvite(id) {
+    const { error } = await supabase.from('advisor_clients').delete().eq('id', id).eq('advisor_id', advisorId);
+    if (error) { toast('שגיאה בביטול ההזמנה', 'error'); return; }
+    toast('ההזמנה בוטלה', 'success');
+    reloadInvites();
   }
 
   async function removeClient(id) {
@@ -172,8 +205,44 @@ export default function ClientList({ advisorId, onSelect }) {
             onKeyDown={e => e.key === 'Enter' && claimCode()}
           />
           <Button onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
+          <input
+            className={styles.addInput}
+            type="email"
+            name="invite-email"
+            autoComplete="off"
+            style={{ textTransform: 'none', width: 'min(220px, 100%)' }}
+            aria-label="הזמן לקוח באימייל"
+            placeholder="הזמן לקוח באימייל"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && inviteByEmail()}
+          />
+          <Button onClick={inviteByEmail} disabled={invitingEmail}>הזמן</Button>
         </div>
       </div>
+
+      {pendingInvites.length > 0 && (
+        <div className={styles.grid} style={{ marginTop: 12, marginBottom: 20 }}>
+          {pendingInvites.map(inv => (
+            <div key={inv.id} className={styles.card} style={{ opacity: 0.75, cursor: 'default', borderStyle: 'dashed' }}>
+              <div className={styles.initial} aria-hidden="true">✉</div>
+              <div className={styles.info}>
+                <div className={styles.email}>
+                  <span className={styles.emailText}>{inv.client_email}</span>
+                </div>
+                <div className={styles.chips}>
+                  <div className={styles.staleChip}>
+                    {inv.client_id ? 'ממתין לאישור הלקוח' : 'ממתין להרשמה לאפליקציה'}
+                  </div>
+                </div>
+              </div>
+              <button type="button" className={styles.removeBtn} style={{ opacity: 1, position: 'static', marginInlineStart: 'auto' }} title="בטל הזמנה" aria-label="בטל הזמנה" onClick={() => removeInvite(inv.id)}>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {!clients.length ? (
         <div className={styles.empty}>

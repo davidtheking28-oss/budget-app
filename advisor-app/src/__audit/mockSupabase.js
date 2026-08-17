@@ -118,7 +118,21 @@ export const SUPA_URL = 'https://mock.supabase.co';
 
 export const supabase = {
   from: table => builder(table),
-  rpc: async () => ({ data: null, error: { message: 'mock' } }),
+  rpc: async (fn, params) => {
+    if (fn === 'invite_client_by_email') {
+      const email = (params?.p_email || '').trim().toLowerCase();
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { data: 'invalid_email', error: null };
+      const existing = (db.advisor_clients || []).find(r => r.client_email === email && r.advisor_id === session.user.id);
+      if (existing && existing.status === 'active') return { data: 'already_linked', error: null };
+      if (existing && existing.status === 'pending') return { data: 'already_invited', error: null };
+      db.advisor_clients = [...(db.advisor_clients || []), {
+        id: 'inv' + Date.now(), advisor_id: session.user.id, client_id: null,
+        client_email: email, invited_email: email, status: 'pending', created_at: new Date().toISOString()
+      }];
+      return { data: 'ok', error: null };
+    }
+    return { data: null, error: { message: 'mock' } };
+  },
   channel: () => { const chan = { on: () => chan, subscribe: () => chan }; return chan; },
   removeChannel: () => {},
   auth: {

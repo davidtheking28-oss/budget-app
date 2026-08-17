@@ -4055,6 +4055,15 @@ async function removeAdvisorLink(){
   _advisorLink=null;
   renderAdvisorLinkSection();
 }
+async function respondAdvisorInvite(accept){
+  if(!_advisorLink||!_sb)return;
+  const {data,error}=await _sb.rpc('respond_advisor_invite',{p_id:_advisorLink.id,p_accept:accept});
+  if(error||data!=='ok'){showToast('❌ הפעולה נכשלה, נסה שוב');return;}
+  showToast(accept?'✅ היועץ חובר בהצלחה':'✓ ההזמנה נדחתה');
+  await _loadAdvisorLink();
+  renderAdvisorLinkSection();
+  if(accept){_loadAdvisorStatus().then(_applyAdvisorGate);_loadFromCloud();_loadAdvisorTasks().then(renderTasksPage);}
+}
 function renderAdvisorLinkSection(){
   const el=document.getElementById('advisorLinkSection');
   if(!el)return;
@@ -4065,6 +4074,17 @@ function renderAdvisorLinkSection(){
   if(!_advisorLink){
     el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">חבר יועץ פיננסי כדי שיוכל לצפות ולערוך את התקציב שלך</div>'
       +'<button class="btn btn-outline btn-full" onclick="createAdvisorInvite()">+ צור קוד ליועץ</button>';
+    return;
+  }
+  if(_advisorLink.status==='pending'&&_advisorLink.advisor_id){
+    el.innerHTML='<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:center">'
+      +'<div style="font-size:1.4rem;margin-bottom:4px">💬</div>'
+      +'<div style="font-size:0.86rem;font-weight:700">יועץ פיננסי מבקש להתחבר לתקציב שלך</div>'
+      +'<div style="font-size:0.72rem;color:var(--text3);margin-top:4px">אישור ייתן לו גישה לצפייה ועריכה של התקציב</div>'
+      +'<div style="display:flex;gap:8px;margin-top:10px">'
+        +'<button class="btn btn-primary btn-sm" style="flex:1" onclick="respondAdvisorInvite(true)">אשר</button>'
+        +'<button class="btn btn-outline btn-sm" style="flex:1;color:var(--red)" onclick="respondAdvisorInvite(false)">דחה</button>'
+      +'</div></div>';
     return;
   }
   if(_advisorLink.status==='pending'){
