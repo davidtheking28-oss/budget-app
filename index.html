@@ -199,6 +199,12 @@
     .goal-card-header{display:flex;justify-content:space-between;align-items:flex-start;}
     .goal-name-text{font-weight:800;font-size:1rem;}
     .goal-actions{display:flex;gap:6px;}
+    .goal-actions .btn-sm{width:40px;height:40px;min-width:40px;min-height:40px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:700;}
+    .goal-actions .btn-success{background:var(--surface2);border:1px solid var(--border);color:var(--green);}
+    .goal-actions .btn-success:active{background:var(--green-light);}
+    .goal-actions .btn-neutral{background:var(--surface2);border:1px solid var(--border);color:var(--text2);}
+    .goal-actions .btn-danger{background:var(--surface2);border:1px solid var(--border);color:var(--text3);}
+    .goal-actions .btn-danger:active{color:var(--red);background:var(--red-light);}
     .goal-amounts-text{font-size:0.82rem;color:var(--text2);margin-top:4px;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
     .prog-wrap{background:var(--border);border-radius:10px;height:10px;overflow:hidden;margin-top:12px;}
     .prog-fill{height:100%;border-radius:10px;background:var(--accent2);transition:background 0.3s;}
@@ -385,6 +391,8 @@
     .sub-next-label{font-size:0.78rem;color:var(--text2);}
     .sub-next-label.soon-txt{color:var(--yellow);font-weight:700;}
     .sub-btns{display:flex;gap:6px;flex-wrap:wrap;}
+    .sub-btns .btn-danger{width:40px;height:40px;min-width:40px;min-height:40px;padding:0;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;}
+    .sub-btns .btn-danger:active{color:var(--red);background:var(--red-light);}
     .soon-tag{position:absolute;top:10px;right:10px;background:var(--yellow);color:white;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:10px;}
     .overdue-tag{position:absolute;top:10px;right:10px;background:var(--red);color:white;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:10px;}
     .btn{min-height:44px;padding:10px 18px;border:none;border-radius:10px;font-size:0.92rem;font-weight:var(--fw-semibold);letter-spacing:var(--track-normal);cursor:pointer;font-family:inherit;transition:background 0.18s,color 0.18s,opacity 0.18s,transform 0.18s,box-shadow 0.18s;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
@@ -793,6 +801,8 @@
     /* ===== LOANS (חובות) ===== */
     .loan-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06);border:1px solid var(--border);animation:itemFadeIn2 0.28s cubic-bezier(0.22,1,0.36,1) both;}
     .loan-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+    .loan-header .btn-danger{width:40px;height:40px;min-width:40px;min-height:40px;padding:0;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;}
+    .loan-header .btn-danger:active{color:var(--red);background:var(--red-light);}
     .loan-emoji{font-size:1.8rem;width:44px;height:44px;background:var(--red-light);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .loan-info{flex:1;min-width:0;}
     .loan-name{font-size:0.95rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -1256,6 +1266,7 @@
     /* Green action button: #059669 + white = 3.75:1 FAIL → emerald-700 = 5.1:1 */
     .btn-success{background:#047857;}
     body.dark .btn-success{background:#065f46;}
+    body.dark .goal-actions .btn-success{background:var(--surface2);color:var(--green);}
     /* Soon/overdue tags: amber (#d97706) + white = 3.2:1 FAIL → dark text = 8.5:1 */
     .soon-tag{color:#451a03;}
     body.dark .soon-tag{background:#b45309;color:white;}
@@ -3569,7 +3580,7 @@ function _expIncomeListHtml(){
     return '<div class="income-source-row">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
         +'<span style="font-size:0.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;">מקור '+(i+1)+'</span>'
-        +'<button onclick="userSettings.incomeSources.splice('+i+',1);saveSettingsData();renderTxPage()" style="background:rgba(220,38,38,0.08);border:none;color:var(--red);cursor:pointer;padding:10px 14px;border-radius:8px;font-size:0.75rem;font-weight:700;min-height:44px;min-width:44px;" aria-label="מחק מקור הכנסה">✕ הסר</button>'
+        +'<button onclick="userSettings.incomeSources.splice('+i+',1);saveSettingsData();renderTxPage()" style="background:var(--red-light);border:none;color:var(--red);cursor:pointer;padding:10px 14px;border-radius:8px;font-size:0.75rem;font-weight:700;min-height:44px;min-width:44px;" aria-label="מחק מקור הכנסה">✕ הסר</button>'
       +'</div>'
       +'<div class="income-source-field" style="margin-bottom:8px;"><label>שם המקור</label><input type="text" placeholder="'+esc(ph)+'..." value="'+esc(src.name||'')+'" autocomplete="off" autocorrect="off" spellcheck="false" oninput="userSettings.incomeSources['+i+'].name=this.value;saveSettingsData()" onfocus="this.select()"/></div>'
       +'<div class="income-source-field"><label>סכום חודשי (₪)</label><input type="number" inputmode="decimal" placeholder="0" value="'+esc(src.amount||'')+'" oninput="userSettings.incomeSources['+i+'].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/></div>'
@@ -4367,7 +4378,7 @@ function renderAnnualSummary(){
 function renderNetWorth(){
   const section=document.getElementById('netWorthSection');
   if(!section)return;
-  if(!_advisorAssets.length){section.style.display='none';return;}
+  if(!_advisorAssets.length&&!loans.length){section.style.display='none';return;}
   section.style.display='';
   const totalAssets=_advisorAssets.reduce((s,a)=>s+(parseFloat(a.amount)||0),0);
   const totalLiabilities=loans.reduce((s,l)=>s+(parseFloat(l.remaining)||0),0);
@@ -4375,7 +4386,7 @@ function renderNetWorth(){
   document.getElementById('netWorthLiabilities').textContent=fmt(totalLiabilities);
   const netEl=document.getElementById('netWorthNet');
   const net=totalAssets-totalLiabilities;
-  netEl.textContent=fmt(net);
+  netEl.textContent=(net<0?'-':'')+fmt(net);
   netEl.style.color=net>=0?'var(--green)':'var(--red)';
   document.getElementById('netWorthList').innerHTML=_advisorAssets.map(a=>
     '<div class="exp-struct-row"><span>'+esc(a.name)+' <span style="color:var(--text3);font-size:0.78rem">· '+esc(a.category||'')+'</span></span><span>'+fmt(parseFloat(a.amount)||0)+'</span></div>'
