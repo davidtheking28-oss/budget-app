@@ -3818,9 +3818,22 @@ function _pushPrefs(){
     advisor:document.getElementById('pushPrefAdvisor')?.checked??true
   };
 }
-function _renderPushPrefs(){
+async function _renderPushPrefs(){
   const wrap=document.getElementById('pushPrefsWrap');
-  if(wrap)wrap.style.display=localStorage.getItem('budget_push_on')?'block':'none';
+  const on=!!localStorage.getItem('budget_push_on');
+  if(wrap)wrap.style.display=on?'block':'none';
+  if(!on||!_cloudUser||!_sb||!_pushSupported())return;
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    if(!sub)return;
+    const {data}=await _sb.from('push_subscriptions').select('prefs').eq('endpoint',sub.endpoint).eq('user_id',_cloudUser.id).maybeSingle();
+    const prefs={daily:true,budget:true,renewals:true,monthly:true,advisor:true,...(data?.prefs||{})};
+    ['daily','budget','renewals','monthly','advisor'].forEach(k=>{
+      const el=document.getElementById('pushPref'+k.charAt(0).toUpperCase()+k.slice(1));
+      if(el)el.checked=!!prefs[k];
+    });
+  }catch(e){_DEBUG&&console.warn('push prefs load',e);}
 }
 async function togglePush(on){
   const cb=document.getElementById('settingPushEnabled');
