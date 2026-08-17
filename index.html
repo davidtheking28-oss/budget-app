@@ -4114,11 +4114,12 @@ function renderTasksPage(){
     +'</div></div></div>'
   ).join(''):'<div class="budget-tx-empty">אין פגישות מתוזמנות</div>';
   const tasksList=document.getElementById('clientTasksList');
-  tasksList.innerHTML=_advisorTasks.length?_advisorTasks.map(t=>
+  const _multiTasks=_advisorTasks.length>1;
+  tasksList.innerHTML=_advisorTasks.length?_advisorTasks.map((t,i)=>
     '<label class="budget-tx-card" style="display:flex;align-items:center;gap:12px;cursor:pointer">'
       +'<input type="checkbox" data-task-id="'+esc(t.id)+'" '+(t.done?'checked':'')+' style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0" aria-label="סמן '+esc(t.title)+' כבוצע"/>'
       +'<div style="flex:1;min-width:0'+(t.done?';opacity:0.5;text-decoration:line-through':'')+'">'
-        +'<div class="budget-tx-desc">'+esc(t.title)+'</div>'
+        +'<div class="budget-tx-desc">'+(_multiTasks?'<span style="color:var(--text3);font-weight:700">'+(i+1)+'. </span>':'')+esc(t.title)+'</div>'
         +(t.due_date?'<div class="budget-tx-date">יעד: '+heDate(t.due_date)+'</div>':'')
       +'</div>'
     +'</label>'

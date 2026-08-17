@@ -65,6 +65,19 @@ export function useClientCrm(advisorId, clientId) {
     return true;
   }
 
+  // `titlesText` is the raw multi-line textarea value — one task per non-empty line,
+  // so the advisor can paste/type a whole list at once instead of one field per task.
+  async function addTasks(titlesText, dueDate, forClient) {
+    const titles = titlesText.split('\n').map(t => t.trim()).filter(Boolean);
+    if (!titles.length) return false;
+    const rows = titles.map(title => ({ advisor_id: advisorId, client_id: clientId, title, due_date: dueDate || null, for_client: !!forClient }));
+    const { data, error } = await supabase.from('advisor_tasks').insert(rows).select();
+    if (error) { toast('שגיאה בהוספת המשימות', 'error'); return false; }
+    toast(titles.length > 1 ? `${titles.length} משימות נוספו` : 'משימה נוספה', 'success');
+    setTasks(prev => [...data, ...prev].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
+    return true;
+  }
+
   async function toggleTask(id, done) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done } : t));
     const { error } = await supabase.from('advisor_tasks').update({ done }).eq('id', id).eq('advisor_id', advisorId);
@@ -113,5 +126,5 @@ export function useClientCrm(advisorId, clientId) {
     toast('הפגישה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addMeeting(removed.scheduled_at, removed.notes, removed.for_client) } : null);
   }
 
-  return { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTask, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting };
+  return { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTask, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting };
 }

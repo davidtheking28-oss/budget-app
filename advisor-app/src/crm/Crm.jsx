@@ -48,7 +48,7 @@ function daysUntil(dateStr) {
 }
 
 export default function Crm({ advisorId, clientId, onChange }) {
-  const { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTask, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
+  const { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
   const [noteBody, setNoteBody] = useState('');
   const [noteForClient, setNoteForClient] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
@@ -66,7 +66,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
   }
   async function submitTask() {
     if (!taskTitle.trim()) return;
-    const ok = await addTask(taskTitle, taskDue, taskForClient);
+    const ok = await addTasks(taskTitle, taskDue, taskForClient);
     if (ok) { setTaskTitle(''); setTaskDue(''); setTaskForClient(false); notify(); }
   }
   async function submitNote() {
@@ -181,8 +181,8 @@ export default function Crm({ advisorId, clientId, onChange }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconTasks}>{ICONS.tasks}</span>משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}</div>
         <div className={styles.form}>
-          <input className={styles.input} aria-label="כותרת המשימה" placeholder="כותרת המשימה" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitTask()} />
-          <input className={styles.input} type="date" aria-label="תאריך יעד למשימה" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
+          <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות — כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
+          <input className={styles.input} type="date" aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
           <label className={styles.forClientLabel}>
             <input type="checkbox" className={styles.checkbox} checked={taskForClient} onChange={e => setTaskForClient(e.target.checked)} />
             גלוי ללקוח
@@ -212,7 +212,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
                 <div key={t.id} className={styles.row + ' ' + styles.taskRow} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => { toggleTask(t.id, e.target.checked); notify(); }} />
                   <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
-                    <div className={styles.name}>{t.title}{overdue && <span className={styles.pastBadge}>באיחור</span>}{t.for_client && <span className={styles.clientBadge}>גלוי ללקוח</span>}</div>
+                    <div className={styles.name}>{tasks.length > 1 && <span className={styles.taskNum}>{i + 1}.</span>}{t.title}{overdue && <span className={styles.pastBadge}>באיחור</span>}{t.for_client && <span className={styles.clientBadge}>גלוי ללקוח</span>}</div>
                     {t.due_date && <div className={styles.meta}>יעד: {formatDate(t.due_date)}</div>}
                   </div>
                   <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>

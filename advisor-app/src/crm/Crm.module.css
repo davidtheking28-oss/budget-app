@@ -146,6 +146,12 @@
   font-weight: 500;
 }
 
+.taskNum {
+  color: var(--text3);
+  font-weight: 700;
+  margin-inline-end: 4px;
+}
+
 .done {
   opacity: 0.5;
   text-decoration: line-through;
