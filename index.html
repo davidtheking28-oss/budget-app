@@ -7012,6 +7012,17 @@ function _initAuthGate(){
     _gateDone=true;
     hideSplash();_proceedToApp();return;
   }
+  // Arm the retry/offline escape hatch unconditionally: a brand-new user with a
+  // cached token but no local data yet (_hasRealData() false below) keeps the
+  // splash up until cloud data arrives, and that wait chain (_loadHousehold /
+  // getSession) has no .catch — without this timer a network hiccup here would
+  // hang the splash forever with no way out.
+  _authGateTimer=setTimeout(()=>{
+    const r=document.getElementById('splashRetry');
+    if(r)r.style.display='flex';
+    const m=document.getElementById('splashMsg');
+    if(m)m.style.display='none';
+  },4000);
   try{
     const sk=Object.keys(localStorage).find(k=>k.startsWith('sb-')&&k.endsWith('-auth-token'));
     if(sk){
@@ -7028,12 +7039,6 @@ function _initAuthGate(){
       }
     }
   }catch(e){}
-  _authGateTimer=setTimeout(()=>{
-    const r=document.getElementById('splashRetry');
-    if(r)r.style.display='flex';
-    const m=document.getElementById('splashMsg');
-    if(m)m.style.display='none';
-  },4000);
 }
 function _authGateResolve(session){
   clearTimeout(_authGateTimer);
