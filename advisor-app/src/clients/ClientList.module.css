@@ -126,7 +126,7 @@
 }
 
 .info {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
 }
 
@@ -169,13 +169,28 @@
   flex-wrap: wrap;
 }
 
-.remaining {
-  font-size: var(--text-xs);
-  color: var(--text3);
-  font-variant-numeric: tabular-nums;
+.remainingStat {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  padding-inline-start: var(--space-4);
+  text-align: left;
 }
 
-.remainingOver {
+.remainingStatValue {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.remainingStatLabel {
+  font-size: var(--text-xs);
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.remainingStatOver .remainingStatValue {
   color: var(--red);
 }
 

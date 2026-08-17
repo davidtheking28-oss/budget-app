@@ -39,11 +39,16 @@ function byUrgency(a, b) {
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
-function RemainingChip({ value }) {
+function RemainingStat({ value }) {
   const display = useCountUp(value ?? 0);
   if (value === null) return null;
-  if (value < 0) return <div className={styles.remaining + ' ' + styles.remainingOver}>{fmt(Math.abs(display))} מעבר לתקציב</div>;
-  return <div className={styles.remaining}>{fmt(display)} נותר</div>;
+  const over = value < 0;
+  return (
+    <div className={styles.remainingStat + (over ? ' ' + styles.remainingStatOver : '')}>
+      <div className={styles.remainingStatValue}>{fmt(Math.abs(display))}</div>
+      <div className={styles.remainingStatLabel}>{over ? 'מעבר לתקציב' : 'נותר החודש'}</div>
+    </div>
+  );
 }
 
 function StatMain({ value }) {
@@ -204,7 +209,6 @@ export default function ClientList({ advisorId, onSelect }) {
                     <span className={styles.emailText}>{c.client_email}</span>
                   </div>
                   <div className={styles.chips}>
-                    <RemainingChip value={c.remaining} />
                     {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}
                     {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
                     {c.updatedAt && isStale(c.updatedAt) && (
@@ -212,6 +216,7 @@ export default function ClientList({ advisorId, onSelect }) {
                     )}
                   </div>
                 </div>
+                <RemainingStat value={c.remaining} />
                 {confirming ? (
                   <div className={styles.confirmRemoveGroup}>
                     <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>

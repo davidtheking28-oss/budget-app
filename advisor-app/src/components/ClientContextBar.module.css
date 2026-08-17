@@ -33,6 +33,7 @@
 }
 
 .email {
+  min-width: 0;
   font-size: var(--text-base);
   font-weight: 600;
   color: var(--text);
@@ -85,6 +86,8 @@
 
 @media (max-width: 720px) {
   .bar { border-radius: var(--radius-md); }
+  .identity { flex-wrap: wrap; }
+  .email { max-width: 160px; }
 }
 
 .modeToggle {
@@ -92,7 +95,7 @@
   gap: 2px;
   padding: 2px;
   border-radius: var(--radius-full);
-  background: var(--surface-2, rgba(127, 127, 127, 0.12));
+  background: var(--surface2);
   flex-shrink: 0;
 }
 
@@ -115,9 +118,9 @@
 
 .modeOff {
   background: transparent;
-  color: var(--text-2);
+  color: var(--text2);
 }
 
 .modeOff:hover {
-  color: var(--text-1);
+  color: var(--text);
 }
