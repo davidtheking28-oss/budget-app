@@ -854,7 +854,7 @@
     /* ── Splash screen ───────────────────────── */
     #splashScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.18s ease,visibility 0.18s ease;}
     #splashScreen.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-    .splash-logo{font-size:4.5rem;font-weight:700;color:var(--accent);font-family:var(--font-num);letter-spacing:-3px;animation:splashPulse 1s ease-in-out infinite alternate;font-variant-numeric:tabular-nums lining-nums;}
+    .splash-logo{width:110px;height:110px;object-fit:contain;border-radius:50%;animation:splashPulse 1s ease-in-out infinite alternate;}
     .splash-title{font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
     .splash-sub{font-size:0.8rem;color:var(--text3);}
     @keyframes splashPulse{from{opacity:0.7;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
@@ -1284,7 +1284,7 @@
 <div id="rotateLockOverlay"><div class="rotate-lock-icon">📱</div><div class="rotate-lock-text">האפליקציה מיועדת לשימוש במצב לאורך בלבד<br>סובבו את המכשיר בחזרה</div></div>
 
 <div id="splashScreen">
-  <div class="splash-logo">₪</div>
+  <img class="splash-logo" src="./icon-192.png" alt=""/>
   <div class="splash-title">תקציב אישי</div>
   <div class="splash-sub" id="splashMsg">מתחבר לענן...</div>
   <div id="splashRetry" style="display:none;margin-top:16px;flex-direction:column;align-items:center;gap:10px">
