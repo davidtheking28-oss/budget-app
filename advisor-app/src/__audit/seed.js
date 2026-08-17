@@ -184,7 +184,7 @@ export function makeDb(mode) {
       { id: 'm2', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: iso(40), notes: 'פגישת היכרות', for_client: true, created_at: iso(45) }
     ],
     households: empty ? [] : [
-      { id: 'h1', owner_id: CLIENT_A, member_id: 'partner-of-' + CLIENT_A, member_email: 'partner.abramovich@gmail.com', invite_code: 'USEDUP1', created_at: iso(80) }
+      { id: 'h1', owner_id: CLIENT_A, owner_email: 'yael.abramovich@gmail.com', member_id: 'partner-of-' + CLIENT_A, member_email: 'partner.abramovich@gmail.com', invite_code: 'USEDUP1', created_at: iso(80) }
     ]
   };
 }

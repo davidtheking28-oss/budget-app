@@ -2117,6 +2117,7 @@
           <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefBudget" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">התראת חריגה מתקציב</label>
           <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefRenewals" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">תזכורת לפני חידוש מנוי</label>
           <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefMonthly" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">סיכום חודשי</label>
+          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefAdvisor" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">משימות והודעות מהיועץ</label>
         </div>
       </div>
       <div class="settings-section">
@@ -3813,7 +3814,8 @@ function _pushPrefs(){
     daily:document.getElementById('pushPrefDaily')?.checked??true,
     budget:document.getElementById('pushPrefBudget')?.checked??true,
     renewals:document.getElementById('pushPrefRenewals')?.checked??true,
-    monthly:document.getElementById('pushPrefMonthly')?.checked??true
+    monthly:document.getElementById('pushPrefMonthly')?.checked??true,
+    advisor:document.getElementById('pushPrefAdvisor')?.checked??true
   };
 }
 function _renderPushPrefs(){
@@ -3951,7 +3953,7 @@ async function createHousehold(){
   const prevLabel=btn?btn.textContent:null;
   if(btn){btn.disabled=true;btn.textContent='יוצר קוד...';}
   const code=genInviteCode();
-  const {data,error}=await _sb.from('households').upsert({owner_id:_cloudUser.id,invite_code:code},{onConflict:'owner_id'}).select().single();
+  const {data,error}=await _sb.from('households').upsert({owner_id:_cloudUser.id,owner_email:_cloudUser.email,invite_code:code},{onConflict:'owner_id'}).select().single();
   if(error){showToast('❌ שגיאה ביצירת קוד');if(btn){btn.disabled=false;btn.textContent=prevLabel;}return;}
   _cloudHousehold={role:'owner',...data};
   renderCloudSection();

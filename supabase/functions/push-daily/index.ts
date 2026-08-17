@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
     const { data: bd } = await admin.from('budget_data').select('transactions,budgets,subscriptions,settings').eq('user_id', dataId).maybeSingle()
     if (!bd) continue
     const tx: any[] = bd.transactions || []
-    const prefs = { daily: true, budget: true, renewals: true, monthly: true, ...(userSubs[0].prefs || {}) }
+    const prefs = { daily: true, budget: true, renewals: true, monthly: true, advisor: true, ...(userSubs[0].prefs || {}) }
     const notifications: { kind: string; key: string; title: string; body: string }[] = []
 
     if (prefs.daily) {
@@ -106,6 +106,27 @@ Deno.serve(async (req) => {
         if (s.active && s.nextDate === tomorrow) {
           notifications.push({ kind: 'renew', key: `${s.id}:${s.nextDate}`, title: 'חידוש מנוי מחר 🔄', body: `${s.name} יתחדש מחר ב-${fmt(s.amount)}` })
         }
+      }
+    }
+
+    if (prefs.advisor) {
+      // unbounded on purpose: push_log's per-item key (below) makes each task/meeting/note
+      // fire exactly once, ever, the first time this cron runs after it's marked for_client —
+      // no date window needed, and none of these existed before today's for_client rollout
+      const [tasksRes, meetingsRes, notesRes] = await Promise.all([
+        admin.from('advisor_tasks').select('id,title').eq('client_id', userId).eq('for_client', true).eq('done', false),
+        admin.from('advisor_meetings').select('id,scheduled_at,notes').eq('client_id', userId).eq('for_client', true).gte('scheduled_at', new Date().toISOString()),
+        admin.from('advisor_notes').select('id,body').eq('client_id', userId).eq('for_client', true),
+      ])
+      for (const t of tasksRes.data || []) {
+        notifications.push({ kind: 'advisor_task', key: t.id, title: 'משימה חדשה מהיועץ 📋', body: t.title })
+      }
+      for (const m of meetingsRes.data || []) {
+        const when = new Date(m.scheduled_at).toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })
+        notifications.push({ kind: 'advisor_meeting', key: m.id, title: 'פגישה נקבעה עם היועץ 🗓️', body: `${m.notes || 'פגישת ייעוץ'} · ${when}` })
+      }
+      for (const n of notesRes.data || []) {
+        notifications.push({ kind: 'advisor_note', key: n.id, title: 'הודעה חדשה מהיועץ ✉️', body: n.body.slice(0, 120) })
       }
     }
 
