@@ -56,9 +56,9 @@ export function useClientCrm(advisorId, clientId) {
     toast('ההערה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addNote(removed.body) } : null);
   }
 
-  async function addTask(title, dueDate) {
+  async function addTask(title, dueDate, forClient) {
     if (!title.trim()) return false;
-    const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null }).select().single();
+    const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null, for_client: !!forClient }).select().single();
     if (error) { toast('שגיאה בהוספת המשימה', 'error'); return false; }
     toast('משימה נוספה', 'success');
     setTasks(prev => [data, ...prev].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
@@ -72,10 +72,10 @@ export function useClientCrm(advisorId, clientId) {
     toast(done ? 'משימה סומנה כהושלמה' : 'משימה סומנה כפתוחה', 'success');
   }
 
-  async function editTask(id, title, dueDate) {
+  async function editTask(id, title, dueDate, forClient) {
     if (!title.trim()) return;
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, title: title.trim(), due_date: dueDate || null } : t));
-    const { error } = await supabase.from('advisor_tasks').update({ title: title.trim(), due_date: dueDate || null }).eq('id', id).eq('advisor_id', advisorId);
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, title: title.trim(), due_date: dueDate || null, for_client: !!forClient } : t));
+    const { error } = await supabase.from('advisor_tasks').update({ title: title.trim(), due_date: dueDate || null, for_client: !!forClient }).eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה בעדכון המשימה', 'error'); reload(); return; }
     toast('המשימה עודכנה', 'success');
   }
@@ -85,7 +85,7 @@ export function useClientCrm(advisorId, clientId) {
     const { error } = await supabase.from('advisor_tasks').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setTasks(prev => prev.filter(t => t.id !== id));
-    toast('המשימה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addTask(removed.title, removed.due_date) } : null);
+    toast('המשימה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addTask(removed.title, removed.due_date, removed.for_client) } : null);
   }
 
   async function addMeeting(scheduledAt, notesText) {

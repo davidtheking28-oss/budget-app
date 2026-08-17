@@ -1877,6 +1877,20 @@
   </div>
 
   <div id="page-analytics" class="page">
+    <div id="tasksNoAdvisor" class="empty" style="display:none"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><p>עוד אין יועץ מקושר</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">כשתתחבר ליועץ פיננסי, המשימות והפגישות שהוא קובע איתך יופיעו כאן</p></div>
+    <div id="tasksContent" style="display:none">
+      <div class="section" id="meetingsSection">
+        <div class="section-header"><div class="section-title">פגישות</div></div>
+        <div class="section-body" id="meetingsList"></div>
+      </div>
+      <div class="section" id="clientTasksSection">
+        <div class="section-header"><div class="section-title">משימות</div></div>
+        <div class="section-body" id="clientTasksList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-insights" class="page">
     <div class="section" id="insightsSection">
       <div class="section-header"><div class="section-title">תובנות חכמות</div></div>
       <div class="section-body" id="insightsList"><div style="color:var(--text3);font-size:0.82rem;text-align:center;padding:8px">אין מספיק נתונים עדיין</div></div>
@@ -2053,6 +2067,10 @@
           <button onclick="leaveHousehold()" class="btn btn-outline btn-sm" style="width:100%;color:var(--red);border-color:var(--red)">✕ בטל שיתוף</button>
         </div>
         <button id="addPartnerBtn" onclick="openPartnerShare()" class="btn btn-outline btn-full" style="margin-bottom:4px">+ הוסף בן/בת זוג</button>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">ניתוח</div>
+        <button onclick="showPage('insights')" class="btn btn-outline btn-full">📊 ניתוח וגרפים</button>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">חשבון עסקי</div>
@@ -2239,11 +2257,11 @@
     <span class="nav-label text-[11px] font-semibold">תקציב</span>
   </button>
 
-  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('analytics',this)" id="nav-analytics" aria-label="ניתוח">
+  <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('analytics',this)" id="nav-analytics" aria-label="משימות">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     </div>
-    <span class="nav-label text-[11px] font-semibold">ניתוח</span>
+    <span class="nav-label text-[11px] font-semibold">משימות</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('settings',this)" id="nav-more" aria-label="הגדרות">
@@ -4018,6 +4036,60 @@ function renderAdvisorLinkSection(){
     +'<div><div style="font-size:0.82rem;font-weight:700;color:var(--green)">מחובר ליועץ פיננסי</div></div></div>'
     +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">נתק יועץ</button>';
 }
+// ── Advisor tasks & meetings (read-only from the advisor's own tables — see
+//    supabase/migrations/023_client_visible_advisor_tasks.sql; not part of the
+//    budget_data sync protocol, so nothing here touches _collections()/_buildMerged) ──
+let _advisorTasks=[];
+let _advisorMeetings=[];
+async function _loadAdvisorTasks(){
+  if(!_sb||!_cloudUser||!_advisorLink||_advisorLink.status!=='active'){_advisorTasks=[];_advisorMeetings=[];return;}
+  const [tasksRes,meetingsRes]=await Promise.all([
+    _sb.from('advisor_tasks').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('due_date',{ascending:true,nullsFirst:false}),
+    _sb.from('advisor_meetings').select('*').eq('client_id',_cloudUser.id).order('scheduled_at',{ascending:true})
+  ]);
+  _advisorTasks=tasksRes.data||[];
+  _advisorMeetings=meetingsRes.data||[];
+}
+function _heDateTime(iso){
+  const d=new Date(iso);
+  return d.getDate()+' ב'+HE_MONTHS_LONG[d.getMonth()]+', '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+async function toggleAdvisorTask(id,done){
+  const t=_advisorTasks.find(x=>x.id===id);if(!t)return;
+  const prev=t.done;t.done=done;renderTasksPage();
+  const {data,error}=await _sb.rpc('set_task_done',{p_task_id:id,p_done:done});
+  if(error||!data){t.done=prev;renderTasksPage();showToast('❌ עדכון המשימה נכשל');}
+}
+function renderTasksPage(){
+  const noAdvisor=document.getElementById('tasksNoAdvisor');
+  const content=document.getElementById('tasksContent');
+  if(!noAdvisor||!content)return;
+  if(!_advisorLink||_advisorLink.status!=='active'){
+    noAdvisor.style.display='';content.style.display='none';
+    return;
+  }
+  noAdvisor.style.display='none';content.style.display='';
+  const meetingsList=document.getElementById('meetingsList');
+  meetingsList.innerHTML=_advisorMeetings.length?_advisorMeetings.map(m=>
+    '<div class="budget-tx-card"><div class="budget-tx-top"><div class="budget-tx-desc-wrap">'
+      +'<div class="budget-tx-desc">'+esc(m.notes||'פגישת ייעוץ')+'</div>'
+      +'<div class="budget-tx-date">'+_heDateTime(m.scheduled_at)+'</div>'
+    +'</div></div></div>'
+  ).join(''):'<div class="budget-tx-empty">אין פגישות מתוזמנות</div>';
+  const tasksList=document.getElementById('clientTasksList');
+  tasksList.innerHTML=_advisorTasks.length?_advisorTasks.map(t=>
+    '<label class="budget-tx-card" style="display:flex;align-items:center;gap:12px;cursor:pointer">'
+      +'<input type="checkbox" data-task-id="'+esc(t.id)+'" '+(t.done?'checked':'')+' style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0" aria-label="סמן '+esc(t.title)+' כבוצע"/>'
+      +'<div style="flex:1;min-width:0'+(t.done?';opacity:0.5;text-decoration:line-through':'')+'">'
+        +'<div class="budget-tx-desc">'+esc(t.title)+'</div>'
+        +(t.due_date?'<div class="budget-tx-date">יעד: '+heDate(t.due_date)+'</div>':'')
+      +'</div>'
+    +'</label>'
+  ).join(''):'<div class="budget-tx-empty">אין משימות פתוחות</div>';
+  tasksList.querySelectorAll('[data-task-id]').forEach(el=>{
+    el.onchange=()=>toggleAdvisorTask(el.dataset.taskId,el.checked);
+  });
+}
 function _subscribeHousehold(){
   if(!_sb||!_getDataUserId())return;
   if(_realtimeChannel){_sb.removeChannel(_realtimeChannel);_realtimeChannel=null;}
@@ -4046,7 +4118,10 @@ document.addEventListener('DOMContentLoaded',function(){
       renderAdvisorLinkSection();
       if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')){
         _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
-        _loadAdvisorLink().then(renderAdvisorLinkSection);
+        _loadAdvisorLink().then(()=>{
+          renderAdvisorLinkSection();
+          if(document.getElementById('page-analytics')?.classList.contains('active'))_loadAdvisorTasks().then(renderTasksPage);
+        });
       }
     });
     _sb.auth.getSession().then(async ({data:{session}})=>{
@@ -5059,7 +5134,7 @@ function renderBudgetDetail(spent,effLim){
       +'<div class="budget-detail-actions">'
         +'<button type="button" class="budget-icon-btn" data-act="del-budget" aria-label="מחק תקציב">'+trashSvg+'</button>'
         +'<button type="button" class="budget-icon-btn" data-act="edit-budget" aria-label="ערוך תקציב">'+editSvg+'</button>'
-        +'<button type="button" class="budget-icon-btn" onclick="showPage(\'analytics\',document.getElementById(\'nav-analytics\'))" aria-label="ניתוח">'+chartSvg+'</button>'
+        +'<button type="button" class="budget-icon-btn" onclick="showPage(\'insights\')" aria-label="ניתוח">'+chartSvg+'</button>'
       +'</div>'
     +'</div>'
     +progBarHTML(pct,{wrapClass:'budget-prog-wrap',fillClass:'budget-prog-fill',stateClass:state})
@@ -6071,7 +6146,8 @@ function showPage(name,btn){
   pg.classList.add('active');
   const navBtn=btn||document.getElementById('nav-'+name);
   if(navBtn){navBtn.classList.add('active');navBtn.setAttribute('aria-current','page');}
-  if(name==='analytics'){renderAnalytics();renderAnnualSummary();renderInsights();}
+  if(name==='analytics'){_loadAdvisorTasks().then(renderTasksPage);}
+  if(name==='insights'){renderAnalytics();renderAnnualSummary();renderInsights();}
   if(name==='transactions') renderTxPage();
   if(name==='goals')        renderGoals();
   if(name==='payments')     renderPayments();
@@ -6376,7 +6452,8 @@ function refreshAll(){
   else if(id==='page-subscriptions')renderSubscriptions();
   else if(id==='page-budget')renderBudget();
   else if(id==='page-loans')renderLoans();
-  else if(id==='page-analytics'){renderAnalytics();renderAnnualSummary();renderInsights();}
+  else if(id==='page-analytics')renderTasksPage();
+  else if(id==='page-insights'){renderAnalytics();renderAnnualSummary();renderInsights();}
   renderMonthGrid();
   document.getElementById('headerMonthLabel').textContent=heMonth(currentYear,currentMonth);
 }
@@ -7479,7 +7556,7 @@ setTimeout(autoCarryRecurring,500);
     try{ localStorage.setItem('budget_dark', dark?'1':'0'); }catch(e){}
     var db=document.getElementById('darkBtn'); if(db&&typeof SUN!=='undefined') db.innerHTML=dark?SUN:MOON;
     var ap=document.querySelector('.page.active');
-    if(ap&&ap.id==='page-analytics'&&typeof renderAnalytics==='function'){ try{ renderAnalytics(); renderAnnualSummary(); renderInsights(); }catch(e){} }
+    if(ap&&ap.id==='page-insights'&&typeof renderAnalytics==='function'){ try{ renderAnalytics(); renderAnnualSummary(); renderInsights(); }catch(e){} }
   }
   window.toggleSetDD=function(id){ var d=document.getElementById(id); if(!d) return; var was=d.classList.contains('open'); document.querySelectorAll('.set-dd.open').forEach(function(x){x.classList.remove('open');}); if(!was) d.classList.add('open'); };
   window.closeAllSetDD=function(){ document.querySelectorAll('.set-dd.open').forEach(function(x){x.classList.remove('open');}); };

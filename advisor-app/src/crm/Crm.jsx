@@ -52,6 +52,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
   const [noteBody, setNoteBody] = useState('');
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDue, setTaskDue] = useState('');
+  const [taskForClient, setTaskForClient] = useState(false);
   const [meetingAt, setMeetingAt] = useState('');
   const [meetingNotes, setMeetingNotes] = useState('');
   const notify = () => { if (onChange) onChange(); };
@@ -63,8 +64,8 @@ export default function Crm({ advisorId, clientId, onChange }) {
   }
   async function submitTask() {
     if (!taskTitle.trim()) return;
-    const ok = await addTask(taskTitle, taskDue);
-    if (ok) { setTaskTitle(''); setTaskDue(''); notify(); }
+    const ok = await addTask(taskTitle, taskDue, taskForClient);
+    if (ok) { setTaskTitle(''); setTaskDue(''); setTaskForClient(false); notify(); }
   }
   async function submitNote() {
     if (!noteBody.trim()) return;
@@ -79,14 +80,15 @@ export default function Crm({ advisorId, clientId, onChange }) {
   const [editingTask, setEditingTask] = useState(null);
   const [editTaskTitle, setEditTaskTitle] = useState('');
   const [editTaskDue, setEditTaskDue] = useState('');
+  const [editTaskForClient, setEditTaskForClient] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [editMeetingAt, setEditMeetingAt] = useState('');
   const [editMeetingNotes, setEditMeetingNotes] = useState('');
 
   function startEditNote(n) { setEditingNote(n.id); setEditNoteBody(n.body); }
   function saveEditNote(id) { editNote(id, editNoteBody); setEditingNote(null); }
-  function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); }
-  function saveEditTask(id) { editTask(id, editTaskTitle, editTaskDue); setEditingTask(null); }
+  function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); }
+  function saveEditTask(id) { editTask(id, editTaskTitle, editTaskDue, editTaskForClient); setEditingTask(null); }
   // datetime-local speaks LOCAL time; toISOString() emits UTC. Converting one way without
   // the other shifted every meeting by the UTC offset each time it was opened and saved.
   function toLocalInput(iso) {
@@ -168,6 +170,10 @@ export default function Crm({ advisorId, clientId, onChange }) {
         <div className={styles.form}>
           <input className={styles.input} aria-label="כותרת המשימה" placeholder="כותרת המשימה" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitTask()} />
           <input className={styles.input} type="date" aria-label="תאריך יעד למשימה" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
+          <label className={styles.forClientLabel}>
+            <input type="checkbox" className={styles.checkbox} checked={taskForClient} onChange={e => setTaskForClient(e.target.checked)} />
+            גלוי ללקוח
+          </label>
           <Button disabled={!taskTitle.trim()} onClick={submitTask}>הוסף משימה</Button>
         </div>
         {tasks.length ? (
@@ -177,6 +183,10 @@ export default function Crm({ advisorId, clientId, onChange }) {
                 <div className={styles.form} style={{ margin: 0, flex: 1 }}>
                   <input className={styles.input} value={editTaskTitle} onChange={e => setEditTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditTask(t.id)} />
                   <input className={styles.input} type="date" value={editTaskDue} onChange={e => setEditTaskDue(e.target.value)} />
+                  <label className={styles.forClientLabel}>
+                    <input type="checkbox" className={styles.checkbox} checked={editTaskForClient} onChange={e => setEditTaskForClient(e.target.checked)} />
+                    גלוי ללקוח
+                  </label>
                   <Button onClick={() => saveEditTask(t.id)}>שמור</Button>
                   <Button variant="ghost" onClick={() => setEditingTask(null)}>ביטול</Button>
                 </div>
@@ -189,7 +199,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
                 <div key={t.id} className={styles.row + ' ' + styles.taskRow} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => { toggleTask(t.id, e.target.checked); notify(); }} />
                   <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
-                    <div className={styles.name}>{t.title}{overdue && <span className={styles.pastBadge}>באיחור</span>}</div>
+                    <div className={styles.name}>{t.title}{overdue && <span className={styles.pastBadge}>באיחור</span>}{t.for_client && <span className={styles.clientBadge}>גלוי ללקוח</span>}</div>
                     {t.due_date && <div className={styles.meta}>יעד: {formatDate(t.due_date)}</div>}
                   </div>
                   <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>

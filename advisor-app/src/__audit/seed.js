@@ -174,10 +174,10 @@ export function makeDb(mode) {
       { id: 'n2', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'שיחת טלפון קצרה.', created_at: iso(20) }
     ],
     advisor_tasks: empty ? [] : [
-      { id: 't1', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'לשלוח דוח רבעוני', due_date: d(Math.min(28, now.getDate() + 3)), done: false, created_at: iso(4) },
-      { id: 't2', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'להשוות מסלולי משכנתא מול שלושה בנקים ולחזור עם המלצה', due_date: d(Math.max(1, now.getDate() - 2)), done: false, created_at: iso(9) },
-      { id: 't3', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'לעדכן תקציב מזון', due_date: null, done: true, created_at: iso(15) },
-      { id: 't4', advisor_id: ADVISOR, client_id: CLIENT_C, title: 'פגישת חירום', due_date: null, done: false, created_at: iso(2) }
+      { id: 't1', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'לשלוח דוח רבעוני', due_date: d(Math.min(28, now.getDate() + 3)), done: false, for_client: false, created_at: iso(4) },
+      { id: 't2', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'להשוות מסלולי משכנתא מול שלושה בנקים ולחזור עם המלצה', due_date: d(Math.max(1, now.getDate() - 2)), done: false, for_client: false, created_at: iso(9) },
+      { id: 't3', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'לעדכן תקציב מזון', due_date: null, done: true, for_client: true, created_at: iso(15) },
+      { id: 't4', advisor_id: ADVISOR, client_id: CLIENT_C, title: 'פגישת חירום', due_date: null, done: false, for_client: false, created_at: iso(2) }
     ],
     advisor_meetings: empty ? [] : [
       { id: 'm1', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: new Date(Date.now() + 4 * 86400000).toISOString(), notes: 'סקירה רבעונית', created_at: iso(10) },
