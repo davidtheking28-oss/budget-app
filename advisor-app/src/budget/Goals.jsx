@@ -128,7 +128,7 @@ export default function Goals({ clientUserId, advisorId }) {
               <circle cx="12" cy="12" r="0.8" fill="currentColor" />
             </svg>
           </div>
-          עדיין אין יעדי חיסכון
+          אין עדיין יעדי חיסכון
         </div>
       ) : (
         <>

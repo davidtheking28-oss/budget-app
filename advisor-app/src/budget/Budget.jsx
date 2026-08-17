@@ -149,7 +149,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
                 <span className={styles.catLabel}>{getCategoryIcon(c)}{c}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span>{fmt(s)} / {fmt(l)}</span>
-                  <DeleteButton title="הסר תקציב" onClick={() => removeBudget(c)} />
+                  <DeleteButton title="מחק תקציב" onClick={() => removeBudget(c)} />
                 </div>
               </div>
               <div className={styles.bar}>

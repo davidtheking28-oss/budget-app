@@ -252,7 +252,7 @@ export default function ClientList({ advisorId, onSelect }) {
               <path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" />
             </svg>
           </div>
-          <div className={styles.emptyTitle}>עדיין אין לקוחות מחוברים</div>
+          <div className={styles.emptyTitle}>אין עדיין לקוחות מחוברים</div>
           <div className={styles.emptyText}>בקש מהלקוח ליצור קוד הזמנה בהגדרות האפליקציה שלו, ואז הדבק אותו כאן</div>
           <Button className={styles.emptyCta} onClick={() => codeInputRef.current?.focus()}>חבר לקוח ראשון</Button>
         </div>
