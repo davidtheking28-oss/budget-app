@@ -170,8 +170,8 @@ export function makeDb(mode) {
     budget_data: empty ? [] : [full, thin, overspent],
     economic_mappings: empty ? [] : [economicMapping],
     advisor_notes: empty ? [] : [
-      { id: 'n1', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'הלקוחה מעוניינת להגדיל הפרשה לפנסיה ב-2% החל מהרבעון הבא. לבדוק השלכות מס.', created_at: iso(5) },
-      { id: 'n2', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'שיחת טלפון קצרה.', created_at: iso(20) }
+      { id: 'n1', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'הלקוחה מעוניינת להגדיל הפרשה לפנסיה ב-2% החל מהרבעון הבא. לבדוק השלכות מס.', for_client: false, created_at: iso(5) },
+      { id: 'n2', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'שיחת טלפון קצרה.', for_client: false, created_at: iso(20) }
     ],
     advisor_tasks: empty ? [] : [
       { id: 't1', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'לשלוח דוח רבעוני', due_date: d(Math.min(28, now.getDate() + 3)), done: false, for_client: false, created_at: iso(4) },
@@ -180,8 +180,11 @@ export function makeDb(mode) {
       { id: 't4', advisor_id: ADVISOR, client_id: CLIENT_C, title: 'פגישת חירום', due_date: null, done: false, for_client: false, created_at: iso(2) }
     ],
     advisor_meetings: empty ? [] : [
-      { id: 'm1', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: new Date(Date.now() + 4 * 86400000).toISOString(), notes: 'סקירה רבעונית', created_at: iso(10) },
-      { id: 'm2', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: iso(40), notes: 'פגישת היכרות', created_at: iso(45) }
+      { id: 'm1', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: new Date(Date.now() + 4 * 86400000).toISOString(), notes: 'סקירה רבעונית', for_client: true, created_at: iso(10) },
+      { id: 'm2', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: iso(40), notes: 'פגישת היכרות', for_client: true, created_at: iso(45) }
+    ],
+    households: empty ? [] : [
+      { id: 'h1', owner_id: CLIENT_A, member_id: 'partner-of-' + CLIENT_A, member_email: 'partner.abramovich@gmail.com', invite_code: 'USEDUP1', created_at: iso(80) }
     ]
   };
 }

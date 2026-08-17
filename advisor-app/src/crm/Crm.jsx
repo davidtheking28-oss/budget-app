@@ -50,17 +50,19 @@ function daysUntil(dateStr) {
 export default function Crm({ advisorId, clientId, onChange }) {
   const { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTask, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
   const [noteBody, setNoteBody] = useState('');
+  const [noteForClient, setNoteForClient] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDue, setTaskDue] = useState('');
   const [taskForClient, setTaskForClient] = useState(false);
   const [meetingAt, setMeetingAt] = useState('');
   const [meetingNotes, setMeetingNotes] = useState('');
+  const [meetingForClient, setMeetingForClient] = useState(true);
   const notify = () => { if (onChange) onChange(); };
 
   async function submitMeeting() {
     if (!meetingAt) return;
-    const ok = await addMeeting(new Date(meetingAt).toISOString(), meetingNotes);
-    if (ok) { setMeetingAt(''); setMeetingNotes(''); notify(); }
+    const ok = await addMeeting(new Date(meetingAt).toISOString(), meetingNotes, meetingForClient);
+    if (ok) { setMeetingAt(''); setMeetingNotes(''); setMeetingForClient(true); notify(); }
   }
   async function submitTask() {
     if (!taskTitle.trim()) return;
@@ -69,14 +71,15 @@ export default function Crm({ advisorId, clientId, onChange }) {
   }
   async function submitNote() {
     if (!noteBody.trim()) return;
-    const ok = await addNote(noteBody);
-    if (ok) { setNoteBody(''); notify(); }
+    const ok = await addNote(noteBody, noteForClient);
+    if (ok) { setNoteBody(''); setNoteForClient(false); notify(); }
   }
   async function removeMeeting(id) { await deleteMeeting(id); notify(); }
   async function removeTask(id) { await deleteTask(id); notify(); }
 
   const [editingNote, setEditingNote] = useState(null);
   const [editNoteBody, setEditNoteBody] = useState('');
+  const [editNoteForClient, setEditNoteForClient] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [editTaskTitle, setEditTaskTitle] = useState('');
   const [editTaskDue, setEditTaskDue] = useState('');
@@ -84,9 +87,10 @@ export default function Crm({ advisorId, clientId, onChange }) {
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [editMeetingAt, setEditMeetingAt] = useState('');
   const [editMeetingNotes, setEditMeetingNotes] = useState('');
+  const [editMeetingForClient, setEditMeetingForClient] = useState(true);
 
-  function startEditNote(n) { setEditingNote(n.id); setEditNoteBody(n.body); }
-  function saveEditNote(id) { editNote(id, editNoteBody); setEditingNote(null); }
+  function startEditNote(n) { setEditingNote(n.id); setEditNoteBody(n.body); setEditNoteForClient(!!n.for_client); }
+  function saveEditNote(id) { editNote(id, editNoteBody, editNoteForClient); setEditingNote(null); }
   function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); }
   function saveEditTask(id) { editTask(id, editTaskTitle, editTaskDue, editTaskForClient); setEditingTask(null); }
   // datetime-local speaks LOCAL time; toISOString() emits UTC. Converting one way without
@@ -96,11 +100,11 @@ export default function Crm({ advisorId, clientId, onChange }) {
     if (Number.isNaN(d.getTime())) return '';
     return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   }
-  function startEditMeeting(m) { setEditingMeeting(m.id); setEditMeetingAt(toLocalInput(m.scheduled_at)); setEditMeetingNotes(m.notes || ''); }
+  function startEditMeeting(m) { setEditingMeeting(m.id); setEditMeetingAt(toLocalInput(m.scheduled_at)); setEditMeetingNotes(m.notes || ''); setEditMeetingForClient(!!m.for_client); }
   function saveEditMeeting(id) {
     const d = new Date(editMeetingAt);
     if (!editMeetingAt || Number.isNaN(d.getTime())) { toast('בחר תאריך ושעה', 'error'); return; }
-    editMeeting(id, d.toISOString(), editMeetingNotes);
+    editMeeting(id, d.toISOString(), editMeetingNotes, editMeetingForClient);
     setEditingMeeting(null);
   }
 
@@ -122,6 +126,10 @@ export default function Crm({ advisorId, clientId, onChange }) {
         <div className={styles.form}>
           <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
           <input className={styles.input} type="datetime-local" aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
+          <label className={styles.forClientLabel}>
+            <input type="checkbox" className={styles.checkbox} checked={meetingForClient} onChange={e => setMeetingForClient(e.target.checked)} />
+            גלוי ללקוח
+          </label>
           <Button disabled={!meetingAt} onClick={submitMeeting}>קבע פגישה</Button>
         </div>
         {meetings.length ? (
@@ -131,6 +139,10 @@ export default function Crm({ advisorId, clientId, onChange }) {
                 <div className={styles.form} style={{ margin: 0, flex: 1 }}>
                   <input className={styles.input} aria-label="נושא הפגישה" value={editMeetingNotes} onChange={e => setEditMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditMeeting(m.id)} />
                   <input className={styles.input} type="datetime-local" aria-label="תאריך ושעת הפגישה" value={editMeetingAt} onChange={e => setEditMeetingAt(e.target.value)} />
+                  <label className={styles.forClientLabel}>
+                    <input type="checkbox" className={styles.checkbox} checked={editMeetingForClient} onChange={e => setEditMeetingForClient(e.target.checked)} />
+                    גלוי ללקוח
+                  </label>
                   <Button onClick={() => saveEditMeeting(m.id)}>שמור</Button>
                   <Button variant="ghost" onClick={() => setEditingMeeting(null)}>ביטול</Button>
                 </div>
@@ -146,6 +158,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
                       {formatDateTime(m.scheduled_at)}
                       {soon && <span className={styles.soonBadge}>בעוד {days === 0 ? 'היום' : days + ' ימים'}</span>}
                       {past && <span className={styles.pastBadge}>עברה</span>}
+                      {!m.for_client && <span className={styles.clientBadge}>פרטי</span>}
                     </div>
                     {m.notes && <div className={styles.meta}>{m.notes}</div>}
                   </div>
@@ -215,6 +228,10 @@ export default function Crm({ advisorId, clientId, onChange }) {
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconNotes}>{ICONS.notes}</span>הערות{notes.length > 0 && <span className={styles.countBadge}>{notes.length}</span>}</div>
         <div className={styles.form}>
           <textarea className={styles.textarea} aria-label="הערה חדשה על הלקוח" placeholder="הערה חדשה על הלקוח" value={noteBody} onChange={e => setNoteBody(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), submitNote())} />
+          <label className={styles.forClientLabel}>
+            <input type="checkbox" className={styles.checkbox} checked={noteForClient} onChange={e => setNoteForClient(e.target.checked)} />
+            גלוי ללקוח
+          </label>
           <Button disabled={!noteBody.trim()} onClick={submitNote}>שמור הערה</Button>
         </div>
         {notes.length ? (
@@ -223,6 +240,10 @@ export default function Crm({ advisorId, clientId, onChange }) {
               <div key={n.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                 <div className={styles.form} style={{ margin: 0, flex: 1 }}>
                   <textarea className={styles.textarea} value={editNoteBody} onChange={e => setEditNoteBody(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), saveEditNote(n.id))} />
+                  <label className={styles.forClientLabel}>
+                    <input type="checkbox" className={styles.checkbox} checked={editNoteForClient} onChange={e => setEditNoteForClient(e.target.checked)} />
+                    גלוי ללקוח
+                  </label>
                   <Button onClick={() => saveEditNote(n.id)}>שמור</Button>
                   <Button variant="ghost" onClick={() => setEditingNote(null)}>ביטול</Button>
                 </div>
@@ -230,7 +251,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
             ) : (
               <div key={n.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                 <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditNote(n)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditNote(n))}>
-                  <div>{n.body}</div>
+                  <div>{n.body}{n.for_client && <span className={styles.clientBadge}>גלוי ללקוח</span>}</div>
                   <div className={styles.meta}>{formatDate(n.created_at)}</div>
                 </div>
                 <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>

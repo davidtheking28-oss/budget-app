@@ -71,7 +71,7 @@ export default function App() {
   const isAdvisor = useIsAdvisor(session?.user?.id);
   const freshness = useClientFreshness(selectedClient?.id);
   const { theme, toggle: toggleTheme } = useTheme();
-  const { nextMeeting, openTasks, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
+  const { nextMeeting, openTasks, household, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -160,6 +160,7 @@ export default function App() {
           email={selectedClient.email}
           nextMeeting={nextMeeting}
           openTasks={openTasks}
+          household={household}
           onOpenCrm={() => setNav('crm')}
           freshness={freshness}
           budgetMode={budgetMode}

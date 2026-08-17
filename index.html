@@ -1887,6 +1887,10 @@
         <div class="section-header"><div class="section-title">משימות</div></div>
         <div class="section-body" id="clientTasksList"></div>
       </div>
+      <div class="section" id="advisorNotesSection">
+        <div class="section-header"><div class="section-title">הודעות מהיועץ</div></div>
+        <div class="section-body" id="advisorNotesList"></div>
+      </div>
     </div>
   </div>
 
@@ -1904,6 +1908,17 @@
           <div class="annual-card"><div class="annual-card-label">חיסכון נטו</div><div class="annual-card-val" id="annualSavings">—</div><div class="annual-card-sub" id="annualSavingsPct"></div></div>
           <div class="annual-card"><div class="annual-card-label">ממוצע חודשי</div><div class="annual-card-val" id="annualMonthlyAvg">—</div><div class="annual-card-sub">הוצאה לחודש</div></div>
         </div>
+      </div>
+    </div>
+    <div class="section" id="netWorthSection" style="display:none">
+      <div class="section-header"><div class="section-title">נכסים והתחייבויות · <span style="font-weight:500;color:var(--text3);font-size:0.78rem">מוזן ע״י היועץ</span></div></div>
+      <div class="section-body">
+        <div class="annual-grid">
+          <div class="annual-card"><div class="annual-card-label">סה״כ נכסים</div><div class="annual-card-val" id="netWorthAssets">—</div></div>
+          <div class="annual-card"><div class="annual-card-label">סה״כ התחייבויות</div><div class="annual-card-val" id="netWorthLiabilities">—</div></div>
+          <div class="annual-card"><div class="annual-card-label">שווי נטו</div><div class="annual-card-val" id="netWorthNet">—</div></div>
+        </div>
+        <div id="netWorthList" style="margin-top:12px"></div>
       </div>
     </div>
     <div class="analytics-summary" id="analyticsSummary">
@@ -3767,6 +3782,9 @@ async function _loadFromCloud(silent){
       const localBu={...(_syncMeta.bu||{})};
       if(cloudMeta)_syncMeta=_mergeMeta(_syncMeta,cloudMeta);
       const changed=_applyMerged(_buildMerged(bundle,localBu,cloudMeta&&cloudMeta.bu));
+      // read-only mirror of the advisor's asset list — never part of _collections()/_buildMerged,
+      // so a client save can never touch or wipe what the advisor entered (see commit 4d0c8a8)
+      _advisorAssets=bundle.assets||[];
       const cloudSettings=bundle.settings;
       if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...cloudSettings};localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
       if(!silent||changed){refreshAll();}
@@ -4036,19 +4054,23 @@ function renderAdvisorLinkSection(){
     +'<div><div style="font-size:0.82rem;font-weight:700;color:var(--green)">מחובר ליועץ פיננסי</div></div></div>'
     +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">נתק יועץ</button>';
 }
+let _advisorAssets=[];
 // ── Advisor tasks & meetings (read-only from the advisor's own tables — see
 //    supabase/migrations/023_client_visible_advisor_tasks.sql; not part of the
 //    budget_data sync protocol, so nothing here touches _collections()/_buildMerged) ──
 let _advisorTasks=[];
 let _advisorMeetings=[];
+let _advisorNotes=[];
 async function _loadAdvisorTasks(){
-  if(!_sb||!_cloudUser||!_advisorLink||_advisorLink.status!=='active'){_advisorTasks=[];_advisorMeetings=[];return;}
-  const [tasksRes,meetingsRes]=await Promise.all([
+  if(!_sb||!_cloudUser||!_advisorLink||_advisorLink.status!=='active'){_advisorTasks=[];_advisorMeetings=[];_advisorNotes=[];return;}
+  const [tasksRes,meetingsRes,notesRes]=await Promise.all([
     _sb.from('advisor_tasks').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('due_date',{ascending:true,nullsFirst:false}),
-    _sb.from('advisor_meetings').select('*').eq('client_id',_cloudUser.id).order('scheduled_at',{ascending:true})
+    _sb.from('advisor_meetings').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('scheduled_at',{ascending:true}),
+    _sb.from('advisor_notes').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('created_at',{ascending:false})
   ]);
   _advisorTasks=tasksRes.data||[];
   _advisorMeetings=meetingsRes.data||[];
+  _advisorNotes=notesRes.data||[];
 }
 function _heDateTime(iso){
   const d=new Date(iso);
@@ -4089,6 +4111,13 @@ function renderTasksPage(){
   tasksList.querySelectorAll('[data-task-id]').forEach(el=>{
     el.onchange=()=>toggleAdvisorTask(el.dataset.taskId,el.checked);
   });
+  const notesList=document.getElementById('advisorNotesList');
+  notesList.innerHTML=_advisorNotes.length?_advisorNotes.map(n=>
+    '<div class="budget-tx-card"><div class="budget-tx-top"><div class="budget-tx-desc-wrap">'
+      +'<div class="budget-tx-desc" style="white-space:pre-wrap">'+esc(n.body)+'</div>'
+      +'<div class="budget-tx-date">'+heDate(n.created_at.slice(0,10))+'</div>'
+    +'</div></div></div>'
+  ).join(''):'<div class="budget-tx-empty">אין הודעות מהיועץ</div>';
 }
 function _subscribeHousehold(){
   if(!_sb||!_getDataUserId())return;
@@ -4314,6 +4343,26 @@ function renderAnnualSummary(){
   document.getElementById('annualSavings').style.color = savings>=0?'var(--green)':'var(--red)';
   document.getElementById('annualSavingsPct').textContent = savingsPct+'% מההכנסות';
   document.getElementById('annualMonthlyAvg').textContent = monthsWithData>0?fmt(totalExp/monthsWithData):'—';
+}
+// Assets are advisor-entered only (_advisorAssets, read-only mirror set in _loadFromCloud);
+// liabilities reuse the client's own `loans` — same math as advisor-app's Assets.jsx so the
+// two apps always agree to the shekel.
+function renderNetWorth(){
+  const section=document.getElementById('netWorthSection');
+  if(!section)return;
+  if(!_advisorAssets.length){section.style.display='none';return;}
+  section.style.display='';
+  const totalAssets=_advisorAssets.reduce((s,a)=>s+(parseFloat(a.amount)||0),0);
+  const totalLiabilities=loans.reduce((s,l)=>s+(parseFloat(l.remaining)||0),0);
+  document.getElementById('netWorthAssets').textContent=fmt(totalAssets);
+  document.getElementById('netWorthLiabilities').textContent=fmt(totalLiabilities);
+  const netEl=document.getElementById('netWorthNet');
+  const net=totalAssets-totalLiabilities;
+  netEl.textContent=fmt(net);
+  netEl.style.color=net>=0?'var(--green)':'var(--red)';
+  document.getElementById('netWorthList').innerHTML=_advisorAssets.map(a=>
+    '<div class="exp-struct-row"><span>'+esc(a.name)+' <span style="color:var(--text3);font-size:0.78rem">· '+esc(a.category||'')+'</span></span><span>'+fmt(parseFloat(a.amount)||0)+'</span></div>'
+  ).join('');
 }
 
 // ── Daily budget widget ───────────────────────────────────────────
@@ -6147,7 +6196,7 @@ function showPage(name,btn){
   const navBtn=btn||document.getElementById('nav-'+name);
   if(navBtn){navBtn.classList.add('active');navBtn.setAttribute('aria-current','page');}
   if(name==='analytics'){_loadAdvisorTasks().then(renderTasksPage);}
-  if(name==='insights'){renderAnalytics();renderAnnualSummary();renderInsights();}
+  if(name==='insights'){renderAnalytics();renderAnnualSummary();renderInsights();renderNetWorth();}
   if(name==='transactions') renderTxPage();
   if(name==='goals')        renderGoals();
   if(name==='payments')     renderPayments();
@@ -6453,7 +6502,7 @@ function refreshAll(){
   else if(id==='page-budget')renderBudget();
   else if(id==='page-loans')renderLoans();
   else if(id==='page-analytics')renderTasksPage();
-  else if(id==='page-insights'){renderAnalytics();renderAnnualSummary();renderInsights();}
+  else if(id==='page-insights'){renderAnalytics();renderAnnualSummary();renderInsights();renderNetWorth();}
   renderMonthGrid();
   document.getElementById('headerMonthLabel').textContent=heMonth(currentYear,currentMonth);
 }
@@ -7556,7 +7605,7 @@ setTimeout(autoCarryRecurring,500);
     try{ localStorage.setItem('budget_dark', dark?'1':'0'); }catch(e){}
     var db=document.getElementById('darkBtn'); if(db&&typeof SUN!=='undefined') db.innerHTML=dark?SUN:MOON;
     var ap=document.querySelector('.page.active');
-    if(ap&&ap.id==='page-insights'&&typeof renderAnalytics==='function'){ try{ renderAnalytics(); renderAnnualSummary(); renderInsights(); }catch(e){} }
+    if(ap&&ap.id==='page-insights'&&typeof renderAnalytics==='function'){ try{ renderAnalytics(); renderAnnualSummary(); renderInsights(); renderNetWorth(); }catch(e){} }
   }
   window.toggleSetDD=function(id){ var d=document.getElementById(id); if(!d) return; var was=d.classList.contains('open'); document.querySelectorAll('.set-dd.open').forEach(function(x){x.classList.remove('open');}); if(!was) d.classList.add('open'); };
   window.closeAllSetDD=function(){ document.querySelectorAll('.set-dd.open').forEach(function(x){x.classList.remove('open');}); };

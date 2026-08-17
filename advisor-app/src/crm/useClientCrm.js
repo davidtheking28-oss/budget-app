@@ -31,19 +31,19 @@ export function useClientCrm(advisorId, clientId) {
 
   useEffect(() => { reload(); }, [reload]);
 
-  async function addNote(body) {
+  async function addNote(body, forClient) {
     if (!body.trim()) return false;
-    const { data, error } = await supabase.from('advisor_notes').insert({ advisor_id: advisorId, client_id: clientId, body: body.trim() }).select().single();
+    const { data, error } = await supabase.from('advisor_notes').insert({ advisor_id: advisorId, client_id: clientId, body: body.trim(), for_client: !!forClient }).select().single();
     if (error) { toast('שגיאה בשמירת ההערה', 'error'); return false; }
     toast('הערה נוספה', 'success');
     setNotes(prev => [data, ...prev]);
     return true;
   }
 
-  async function editNote(id, body) {
+  async function editNote(id, body, forClient) {
     if (!body.trim()) return;
-    setNotes(prev => prev.map(n => n.id === id ? { ...n, body: body.trim() } : n));
-    const { error } = await supabase.from('advisor_notes').update({ body: body.trim() }).eq('id', id).eq('advisor_id', advisorId);
+    setNotes(prev => prev.map(n => n.id === id ? { ...n, body: body.trim(), for_client: !!forClient } : n));
+    const { error } = await supabase.from('advisor_notes').update({ body: body.trim(), for_client: !!forClient }).eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה בעדכון ההערה', 'error'); reload(); return; }
     toast('ההערה עודכנה', 'success');
   }
@@ -53,7 +53,7 @@ export function useClientCrm(advisorId, clientId) {
     const { error } = await supabase.from('advisor_notes').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setNotes(prev => prev.filter(n => n.id !== id));
-    toast('ההערה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addNote(removed.body) } : null);
+    toast('ההערה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addNote(removed.body, removed.for_client) } : null);
   }
 
   async function addTask(title, dueDate, forClient) {
@@ -88,19 +88,19 @@ export function useClientCrm(advisorId, clientId) {
     toast('המשימה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addTask(removed.title, removed.due_date, removed.for_client) } : null);
   }
 
-  async function addMeeting(scheduledAt, notesText) {
+  async function addMeeting(scheduledAt, notesText, forClient = true) {
     if (!scheduledAt) return false;
-    const { data, error } = await supabase.from('advisor_meetings').insert({ advisor_id: advisorId, client_id: clientId, scheduled_at: scheduledAt, notes: notesText || null }).select().single();
+    const { data, error } = await supabase.from('advisor_meetings').insert({ advisor_id: advisorId, client_id: clientId, scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient }).select().single();
     if (error) { toast('שגיאה בקביעת הפגישה', 'error'); return false; }
     toast('פגישה נקבעה', 'success');
     setMeetings(prev => [...prev, data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
     return true;
   }
 
-  async function editMeeting(id, scheduledAt, notesText) {
+  async function editMeeting(id, scheduledAt, notesText, forClient) {
     if (!scheduledAt) return;
-    setMeetings(prev => prev.map(m => m.id === id ? { ...m, scheduled_at: scheduledAt, notes: notesText || null } : m).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
-    const { error } = await supabase.from('advisor_meetings').update({ scheduled_at: scheduledAt, notes: notesText || null }).eq('id', id).eq('advisor_id', advisorId);
+    setMeetings(prev => prev.map(m => m.id === id ? { ...m, scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient } : m).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
+    const { error } = await supabase.from('advisor_meetings').update({ scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient }).eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה בעדכון הפגישה', 'error'); reload(); return; }
     toast('הפגישה עודכנה', 'success');
   }
@@ -110,7 +110,7 @@ export function useClientCrm(advisorId, clientId) {
     const { error } = await supabase.from('advisor_meetings').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setMeetings(prev => prev.filter(m => m.id !== id));
-    toast('הפגישה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addMeeting(removed.scheduled_at, removed.notes) } : null);
+    toast('הפגישה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addMeeting(removed.scheduled_at, removed.notes, removed.for_client) } : null);
   }
 
   return { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTask, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting };

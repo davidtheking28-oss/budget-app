@@ -89,6 +89,15 @@ function builder(table) {
       return api;
     },
     eq(col, val) { filters.push(r => String(r[col]) === String(val)); return api; },
+    // supports exactly the shape useClientSummary.js sends: "col.eq.val,col2.eq.val2"
+    or(expr) {
+      const clauses = expr.split(',').map(c => {
+        const [col, , val] = c.split('.');
+        return r => String(r[col]) === String(val);
+      });
+      filters.push(r => clauses.some(c => c(r)));
+      return api;
+    },
     neq(col, val) { filters.push(r => String(r[col]) !== String(val)); return api; },
     in(col, vals) { filters.push(r => vals.map(String).includes(String(r[col]))); return api; },
     gte(col, val) { filters.push(r => r[col] >= val); return api; },
