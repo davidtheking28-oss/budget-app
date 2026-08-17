@@ -2,7 +2,7 @@
    HTML is network-first (online users always get the latest app; cache is
    the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v16';
+const CACHE = 'budget-app-v17';
 const SHELL = [
   './',
   './index.html',
