@@ -4321,13 +4321,23 @@ if(!userSettings.customCats)    userSettings.customCats    = [];
 if(!userSettings.customFixedCats) userSettings.customFixedCats = [];
 function saveSettingsData(){localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
 
-function getMonthlyIncome(){
-  const monthIncomeTx=getMonthTx(currentYear,currentMonth).filter(t=>t.type==='income');
-  const txIncome=monthIncomeTx.reduce((s,t)=>s+(+t.amount||0),0);
-  const postedNames=new Set(monthIncomeTx.map(t=>(t.desc||'').toLowerCase()));
-  const unpostedSourcesIncome=userSettings.incomeSources.filter(src=>!postedNames.has((src.name||'').toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
+// One definition of "income for a month", used by every screen. Posted income
+// transactions plus any standing source from settings that wasn't posted, so a
+// salaried user who never types their paycheck still gets a real number.
+// A *past* month with no activity at all predates the user's data, so it stays 0
+// rather than inheriting today's salary and inventing history.
+function monthlyIncomeFor(y,m){
+  const monthTx=getMonthTx(y,m);
+  const incomeTx=monthTx.filter(t=>t.type==='income');
+  const txIncome=incomeTx.reduce((s,t)=>s+(+t.amount||0),0);
+  const now=new Date();
+  const isCurrent=(y===now.getFullYear()&&m===now.getMonth());
+  if(!isCurrent&&!monthTx.length)return txIncome;
+  const postedNames=new Set(incomeTx.map(t=>(t.desc||'').toLowerCase()));
+  const unpostedSourcesIncome=(userSettings.incomeSources||[]).filter(src=>!postedNames.has((src.name||'').toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
   return txIncome+unpostedSourcesIncome;
 }
+function getMonthlyIncome(){return monthlyIncomeFor(currentYear,currentMonth);}
 
 
 function openSettings(){
@@ -4470,15 +4480,12 @@ function renderAnnualSummary(){
   let totalInc=0, totalExp=0, monthsWithData=0;
   for(let m=0; m<12; m++){
     const mTx = transactions.filter(t=>t.date.startsWith(mk(y,m)));
-    totalInc += mTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    // same per-month definition the dashboard and the 6-month chart use, so the
+    // yearly total can't disagree with the months it is made of
+    totalInc += monthlyIncomeFor(y,m);
     const exp = mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
     totalExp += exp;
     if(mTx.length) monthsWithData++;
-  }
-  if(y===now.getFullYear()){
-    const curMonthKey=mk(y,now.getMonth());
-    const postedNames=new Set(transactions.filter(t=>t.type==='income'&&t.date.startsWith(curMonthKey)).map(t=>(t.desc||'').toLowerCase()));
-    totalInc += userSettings.incomeSources.filter(src=>!postedNames.has((src.name||'').toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
   }
   const savings = totalInc - totalExp;
   const savingsPct = totalInc>0 ? Math.round(savings/totalInc*100) : 0;
@@ -4988,7 +4995,7 @@ function renderDashboard(){
   if(summaryEl){const n0=new Date();if(currentYear===n0.getFullYear()&&currentMonth===n0.getMonth()&&income>0){const rem=income-expense;const dLeft=daysInMonth(currentYear,currentMonth)-n0.getDate();summaryEl.textContent=rem>=0?'נותר '+fmt(rem)+' · עוד '+dLeft+' ימים':'חרגת ב-'+fmt(Math.abs(rem));}else{summaryEl.textContent='';}}
   const prevM=currentMonth===0?11:currentMonth-1;const prevY=currentMonth===0?currentYear-1:currentYear;
   const pTx=getMonthTx(prevY,prevM);
-  const pIncome=pTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const pIncome=monthlyIncomeFor(prevY,prevM);
   const pExpense=pTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   const pBalance=pIncome-pExpense;
   setTrend('trendBalance',balance,pBalance,false);
@@ -5130,12 +5137,8 @@ function renderAnalytics(){
   for(let i=5;i>=0;i--){
     let y=currentYear,m=currentMonth-i;while(m<0){m+=12;y--;}
     const mTxA=transactions.filter(t=>t.date.startsWith(mk(y,m)));
-    const mIncTx=mTxA.filter(t=>t.type==='income');
-    const txInc=mIncTx.reduce((s,t)=>s+t.amount,0);
-    const postedNames=new Set(mIncTx.map(t=>(t.desc||'').toLowerCase()));
-    const unpostedInc=userSettings.incomeSources.filter(src=>!postedNames.has((src.name||'').toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
     months.push({label:['ינו','פבר','מרץ','אפר','מאי','יוני','יול','אוג','ספט','אוק','נוב','דצמ'][m],
-      inc:txInc+unpostedInc,
+      inc:monthlyIncomeFor(y,m),
       exp:mTxA.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)});
   }
   const ctx2=document.getElementById('monthlyChart').getContext('2d');
@@ -7570,12 +7573,8 @@ setTimeout(autoCarryRecurring,500);
       for(var m=0;m<=upTo;m++){
         var key=mk(y,m);
         var t=transactions.filter(function(tx){return (tx.date||'').slice(0,7)===key;});
-        var incTx=t.filter(function(tx){return tx.type==='income';});
-        var manualInc=incTx.reduce(function(s,tx){return s+(+tx.amount||0);},0);
-        var postedNames={}; incTx.forEach(function(tx){postedNames[(tx.desc||'').toLowerCase()]=true;});
-        var unpostedInc=userSettings.incomeSources.filter(function(src){return !postedNames[(src.name||'').toLowerCase()];}).reduce(function(s,src){return s+(parseFloat(src.amount)||0);},0);
         var exp=t.filter(function(tx){return tx.type==='expense';}).reduce(function(s,tx){return s+(+tx.amount||0);},0);
-        saved+=(unpostedInc+manualInc-exp);
+        saved+=(monthlyIncomeFor(y,m)-exp);
       }
       saved=Math.max(0,saved);
       var pct=target>0?Math.min(100,Math.round(saved/target*100)):0;

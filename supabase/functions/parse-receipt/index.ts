@@ -31,8 +31,10 @@ async function checkRateLimit(req: Request): Promise<boolean> {
     await supabase.from('ai_requests').insert({ user_id: user.id })
     return true
   } catch (err) {
+    // Fail CLOSED: a transient DB/auth hiccup must not hand out an unmetered
+    // pass to a shared paid API key. Better a retryable error than open quota.
     console.error('rate limit check failed', err)
-    return true
+    return false
   }
 }
 
