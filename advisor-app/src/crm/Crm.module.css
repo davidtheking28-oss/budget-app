@@ -1,4 +1,7 @@
+/* The form and the list are capped at 640px, but the divider was not, so on a
+   wide screen the rule ran a full screen-width past the content it separated. */
 .section {
+  max-width: 640px;
   margin-bottom: var(--space-6);
   padding-bottom: var(--space-6);
   border-bottom: 1px solid var(--border);
@@ -77,11 +80,14 @@
   border-color: rgba(var(--accent-rgb), 0.5);
 }
 
+/* One line of height, for a field whose whole purpose is a multi-line numbered
+   list — the placeholder alone wrapped past the box it was in. */
 .textarea {
   flex: 1;
   min-width: 220px;
   resize: vertical;
-  min-height: 40px;
+  min-height: 72px;
+  line-height: 1.5;
 }
 
 .list {
@@ -158,6 +164,14 @@
   transition: opacity 0.25s ease;
 }
 
+/* line-through is inherited, so a completed task drew the rule straight through
+   its "גלוי ללקוח" / "באיחור" badges as well. */
+.done .clientBadge,
+.done .pastBadge,
+.done .soonBadge {
+  text-decoration: none;
+}
+
 .meta {
   color: var(--text3);
   font-size: var(--text-xs);
@@ -206,16 +220,44 @@
   cursor: pointer;
 }
 
+/* The native control under a dark color-scheme paints an unchecked box as a
+   solid grey block, which read as "already ticked". Draw it instead: an empty
+   outlined box, filled with the accent only once it is actually checked. */
 .checkbox {
+  appearance: none;
+  -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  accent-color: var(--accent);
+  margin: 0;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
   cursor: pointer;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s var(--ease-out-expo), background 0.15s ease, border-color 0.15s ease;
+}
+
+.checkbox::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  clip-path: polygon(14% 47%, 0 60%, 40% 100%, 100% 22%, 85% 10%, 38% 72%);
+  background: var(--accent-ink);
+  transform: scale(0);
   transition: transform 0.15s var(--ease-out-expo);
 }
 
-.checkbox:hover { transform: scale(1.15); }
+.checkbox:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.checkbox:checked::after { transform: scale(1); }
+
+.checkbox:hover { transform: scale(1.15); border-color: var(--accent); }
 
 .taskBody {
   flex: 1;

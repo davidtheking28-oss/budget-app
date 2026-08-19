@@ -116,7 +116,7 @@
        "switch the FAB to left/right box centering like the nav bar". */
     .fab{-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;outline:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px);left:0;right:0;margin:0 auto;z-index:190;width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#0d9488,#0a7a62);border:none;color:white;cursor:pointer;box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 6px rgba(var(--accent-rgb),0.10);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;transition:transform 0.22s cubic-bezier(0.22,1,0.36,1),box-shadow 0.22s;will-change:transform;}
     .fab.pulse{animation:fabPulse 1.8s ease-in-out 3;}
-    @keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
     @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 0 rgba(var(--accent-rgb),0.4);}50%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 14px rgba(var(--accent-rgb),0);}}
     main{padding:calc(76px + env(safe-area-inset-top,0px)) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 100px);max-width:600px;margin:0 auto;}
     @media (min-width:860px){
@@ -130,7 +130,10 @@
     }
     .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
     .cards-row.three{grid-template-columns:repeat(3,1fr);}
-    #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:50%!important;transform:translateX(-50%)!important;z-index:200!important;margin:0!important;}
+    /* Centered with left:0;right:0;margin:0 auto — NOT left:50%+translateX(-50%),
+       which renders persistently off-center in a standalone iOS PWA (same bug the
+       .fab hit above). Keep this technique if you touch it. */
+    #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:0!important;right:0!important;width:fit-content!important;max-width:calc(100vw - 24px)!important;transform:none!important;z-index:200!important;margin:0 auto!important;}
     .page{display:none;}.page.active{display:block;min-height:calc(100vh - 76px - env(safe-area-inset-top,0px) - var(--nav-h) - var(--safe-bottom) - 60px);min-height:calc(100lvh - 76px - env(safe-area-inset-top,0px) - var(--nav-h) - var(--safe-bottom) - 60px);}
     @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     .exp-row,.exp-struct-row,.exp-pay-card,.income-source-row,.tx-item,.budget-tx-card,.sub-card{animation:rowIn 0.3s cubic-bezier(0.22,1,0.36,1) both;}
@@ -200,7 +203,7 @@
     .goal-card-header{display:flex;justify-content:space-between;align-items:flex-start;}
     .goal-name-text{font-weight:800;font-size:1rem;}
     .goal-actions{display:flex;gap:6px;}
-    .goal-actions .btn-sm{width:40px;height:40px;min-width:40px;min-height:40px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:700;}
+    .goal-actions .btn-sm{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:700;}
     .goal-actions .btn-success{background:var(--surface2);border:1px solid var(--border);color:var(--green);}
     .goal-actions .btn-success:active{background:var(--green-light);}
     .goal-actions .btn-neutral{background:var(--surface2);border:1px solid var(--border);color:var(--text2);}
@@ -211,6 +214,10 @@
     .prog-fill{height:100%;border-radius:10px;background:var(--accent2);transition:background 0.3s;}
     .prog-fill.low{background:var(--red);}
     .prog-fill.mid{background:var(--yellow);}
+    /* On a savings goal, low progress is not a failure — being 2% into a 10-year
+       goal must not read as "danger". Goals keep the accent at every level; the
+       red/amber states stay for budget overspend, where they mean something. */
+    .goal-card .prog-fill.low,.goal-card .prog-fill.mid{background:var(--accent);}
     .prog-label{font-size:0.73rem;color:var(--text3);margin-top:6px;text-align:left;font-weight:600;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
     .goal-monthly{margin-top:10px;padding:9px 12px;background:var(--blue-light);border-radius:10px;font-size:0.85rem;font-weight:700;color:var(--blue);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;text-align:right;}
     .pay-wrap{border:1px solid var(--border);border-radius:14px;background:var(--surface);box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;}
@@ -267,7 +274,9 @@
     .budget-pct-label.ok{color:var(--text3);}
     .budget-pct-label.warn{color:var(--yellow);}
     .budget-pct-label.danger{color:var(--red);font-weight:700;}
-    .budget-chip-strip{display:flex;align-items:center;gap:10px;overflow-x:auto;padding:10px calc(50% - 47px) 20px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    /* Fade the carousel edges so off-screen chips read as "more to scroll" instead of
+       being sliced flat against the viewport edge. */
+    .budget-chip-strip{display:flex;align-items:center;gap:10px;overflow-x:auto;padding:10px calc(50% - 47px) 20px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 42px,#000 calc(100% - 42px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 42px,#000 calc(100% - 42px),transparent 100%);}
     .budget-chip-strip::-webkit-scrollbar{display:none;}
     .budget-chip{flex:0 0 auto;width:88px;height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:14px 6px;border:none;border-radius:26px;cursor:pointer;font-family:inherit;scroll-snap-align:center;opacity:0.7;transform:scale(0.86);transition:transform 0.25s cubic-bezier(0.22,1,0.36,1),opacity 0.25s,box-shadow 0.15s,background 0.15s;-webkit-tap-highlight-color:transparent;}
     .budget-chip:active{transform:scale(0.8);}
@@ -289,14 +298,14 @@
     .budget-icon-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:background 0.15s;-webkit-tap-highlight-color:transparent;}
     .budget-icon-btn:active{opacity:0.7;}
     .budget-icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-    .budget-tx-grouphdr{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;border-top:1px solid var(--border);margin-top:16px;padding:14px 2px 0;cursor:pointer;font-family:inherit;text-align:right;-webkit-tap-highlight-color:transparent;}
+    .budget-tx-grouphdr{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;border-top:1px solid var(--border);margin-top:16px;padding:14px 2px 6px;min-height:44px;cursor:pointer;font-family:inherit;text-align:right;-webkit-tap-highlight-color:transparent;}
     .budget-tx-chevron{width:15px;height:15px;color:var(--text3);flex-shrink:0;transition:transform 0.2s;}
     .budget-tx-chevron-open{transform:rotate(180deg);}
     .budget-tx-groupsum{font-family:var(--font-num);font-size:0.85rem;font-weight:700;color:var(--text2);flex-shrink:0;font-variant-numeric:tabular-nums lining-nums;}
     .budget-tx-grouplabel{font-size:0.85rem;font-weight:700;color:var(--text);flex:1;}
     .budget-detail-txlist{margin-top:12px;}
     .budget-tx-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
-    .budget-tx-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;cursor:pointer;}
+    .budget-tx-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;min-height:44px;cursor:pointer;}
     .budget-tx-desc-wrap{text-align:right;min-width:0;}
     .budget-tx-desc{font-size:0.87rem;font-weight:700;color:var(--text);}
     .budget-tx-date{font-size:0.74rem;color:var(--text3);margin-top:2px;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
@@ -305,7 +314,7 @@
     .budget-tx-del{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
     .budget-tx-del:active{color:var(--red);}
     .budget-tx-del svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-    .budget-move-btn{flex:1;text-align:center;background:none;border:1.5px solid var(--border);border-radius:999px;padding:9px 14px;font-size:0.78rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+    .budget-move-btn{flex:1;text-align:center;background:none;border:1.5px solid var(--border);border-radius:999px;padding:12px 14px;min-height:44px;font-size:0.78rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
     .budget-move-btn:active{opacity:0.6;}
     .budget-tx-empty{text-align:center;color:var(--text3);font-size:0.85rem;padding:24px 0;}
     .exp-section-title{display:flex;align-items:center;gap:10px;margin:18px 0 12px;font-size:1.02rem;font-weight:800;color:var(--text);}
@@ -325,8 +334,9 @@
     .exp-cat-icon svg{width:18px;height:18px;}
     .cashflow-page{margin:calc(var(--main-px) * -1) calc(var(--main-px) * -1) calc((var(--nav-h) + var(--safe-bottom) + 100px) * -1);padding:var(--main-px) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 100px);min-height:calc(100% + var(--main-px));}
     .cashflow-page .section-header{padding:22px 4px 6px}
-    .cashflow-page .badge{background:rgba(0,0,0,0.07);color:var(--text2)}
-    body.dark .cashflow-page .badge{background:rgba(255,255,255,0.08);color:var(--text2)}
+    /* 10px/700 counter pills: --text2 on the tinted pill was 3.6:1 light / 3.1:1 dark. */
+    .cashflow-page .badge{background:rgba(0,0,0,0.07);color:var(--text)}
+    body.dark .cashflow-page .badge{background:rgba(255,255,255,0.08);color:var(--text)}
     .exp-auto-badge{font-size:0.66rem;color:var(--text3);font-weight:600;}
     .exp-body{padding:2px 4px 4px;margin-top:-4px;margin-bottom:8px;}
     .exp-struct-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:12px;margin-bottom:6px;font-size:0.85rem;}
@@ -392,9 +402,12 @@
     .sub-next-label{font-size:0.78rem;color:var(--text2);}
     .sub-next-label.soon-txt{color:var(--yellow);font-weight:700;}
     .sub-btns{display:flex;gap:6px;flex-wrap:wrap;}
-    .sub-btns .btn-danger{width:40px;height:40px;min-width:40px;min-height:40px;padding:0;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;}
+    .sub-btns .btn-danger{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;}
     .sub-btns .btn-danger:active{color:var(--red);background:var(--red-light);}
-    .soon-tag{position:absolute;top:10px;right:10px;background:var(--yellow);color:white;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:10px;}
+    .soon-tag{position:absolute;top:10px;right:10px;z-index:2;background:var(--yellow);color:white;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:10px;}
+    /* The badge sat on top of the 50px service logo in the same corner and was half
+       hidden behind it; give the flagged card extra head-room so both are readable. */
+    .sub-card.soon{padding-top:38px;}
     .overdue-tag{position:absolute;top:10px;right:10px;background:var(--red);color:white;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:10px;}
     .btn{min-height:44px;padding:10px 18px;border:none;border-radius:10px;font-size:0.92rem;font-weight:var(--fw-semibold);letter-spacing:var(--track-normal);cursor:pointer;font-family:inherit;transition:background 0.18s,color 0.18s,opacity 0.18s,transform 0.18s,box-shadow 0.18s;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
     .btn:active{transform:scale(0.95);}
@@ -496,10 +509,13 @@
     body.dark .wiz-hdr{background:#0a7a62;}
     .chart-wrap{position:relative;height:220px;margin:4px 0;}
     .empty{text-align:center;padding:46px 24px;color:var(--text2);}
-    .empty-icon{margin:0 auto 16px;width:66px;height:66px;display:flex;align-items:center;justify-content:center;background:var(--blue-light);color:var(--accent);border-radius:20px;animation:iconFloat 3.6s ease-in-out infinite;}
+    .empty-icon{margin:0 auto 16px;width:66px;height:66px;display:flex;align-items:center;justify-content:center;background:rgba(var(--accent-rgb),0.11);color:var(--accent);border-radius:20px;animation:iconFloat 3.6s ease-in-out infinite;}
     @keyframes iconFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
     .empty-icon svg{width:30px;height:30px;stroke:var(--accent);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
     .empty p{font-size:0.95rem;line-height:1.6;margin:0 auto 20px;max-width:260px;color:var(--text2);}
+    /* First paragraph is the empty-state headline — it had the same size, weight and
+       colour as the body copy below it, so the block read as one flat grey paragraph. */
+    .empty p:first-of-type{font-size:1.08rem;font-weight:800;color:var(--text);line-height:1.35;margin-bottom:8px;max-width:280px;}
     .empty .btn-empty{display:inline-flex;align-items:center;gap:7px;background:var(--accent2);color:white;border:none;border-radius:14px;padding:12px 22px;font-size:0.9rem;font-weight:var(--fw-bold);cursor:pointer;font-family:inherit;transition:transform 0.15s,box-shadow 0.15s;box-shadow:0 6px 18px -4px rgba(var(--accent-rgb),0.5);}
     .empty .btn-empty:active{transform:scale(0.96);}
     .empty .btn-empty svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
@@ -515,9 +531,9 @@
     body.dark .wiz-fix-btn.active{box-shadow:0 2px 8px rgba(var(--accent-rgb),0.25);}
     body.dark .toggle-opt.active{box-shadow:0 2px 8px rgba(var(--accent-rgb),0.2);}
     body.dark .btn-primary{box-shadow:0 4px 16px rgba(var(--accent-rgb),0.2);}
-    #toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 96px);left:50%;transform:translateX(-50%) translateY(16px);background:#1a1a2e;color:white;padding:10px 22px;border-radius:24px;font-size:0.88rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.22s cubic-bezier(0.22,1,0.36,1),transform 0.22s cubic-bezier(0.22,1,0.36,1);white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+    #toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 96px);left:0;right:0;width:fit-content;max-width:calc(100vw - 32px);margin:0 auto;transform:translateY(16px);background:#1a1a2e;color:white;padding:10px 22px;border-radius:24px;font-size:0.88rem;font-weight:600;line-height:1.45;text-align:center;z-index:9999;opacity:0;transition:opacity 0.22s cubic-bezier(0.22,1,0.36,1),transform 0.22s cubic-bezier(0.22,1,0.36,1);box-shadow:0 4px 20px rgba(0,0,0,0.3);}
     body.dark #toast{background:#30363d;}
-    #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    #toast.show{opacity:1;transform:translateY(0);}
     #toast[data-type=success]{background:rgba(5,150,105,0.97);}
     #toast[data-type=error]{background:rgba(185,28,28,0.97);}
     #toast[data-type=warning]{background:rgba(180,100,0,0.97);}
@@ -802,14 +818,16 @@
     /* ===== LOANS (חובות) ===== */
     .loan-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06);border:1px solid var(--border);animation:itemFadeIn2 0.28s cubic-bezier(0.22,1,0.36,1) both;}
     .loan-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-    .loan-header .btn-danger{width:40px;height:40px;min-width:40px;min-height:40px;padding:0;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;}
+    .loan-header .btn-danger{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;}
     .loan-header .btn-danger:active{color:var(--red);background:var(--red-light);}
     .loan-emoji{font-size:1.8rem;width:44px;height:44px;background:var(--red-light);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .loan-info{flex:1;min-width:0;}
     .loan-name{font-size:0.95rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .loan-lender{font-size:0.78rem;color:var(--text3);margin-top:2px;}
     .loan-prog-wrap{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:5px;}
-    .loan-prog-fill{height:100%;background:linear-gradient(90deg,var(--red),#f87171);border-radius:4px;transition:width 0.6s cubic-bezier(0.22,1,0.36,1);}
+    /* Bar shows how much of the loan is already PAID — that is positive progress,
+       so it uses the accent, not the danger red it used to. */
+    .loan-prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--teal));border-radius:4px;transition:width 0.6s cubic-bezier(0.22,1,0.36,1);}
     .loan-prog-fill.near-done{background:linear-gradient(90deg,var(--green),#4ade80);}
     .loan-prog-label{font-size:0.75rem;color:var(--text3);margin-bottom:12px;}
     .loan-stats-row{display:flex;gap:8px;flex-wrap:wrap;}
@@ -1268,8 +1286,9 @@
     .btn-success{background:#047857;}
     body.dark .btn-success{background:#065f46;}
     body.dark .goal-actions .btn-success{background:var(--surface2);color:var(--green);}
-    /* Soon/overdue tags: amber (#d97706) + white = 3.2:1 FAIL → dark text = 8.5:1 */
-    .soon-tag{color:#451a03;}
+    /* --yellow has since been darkened to #a35a06, so the dark-brown text this rule
+       used to set was only 2.87:1. White on #a35a06 is 5.2:1 — pass. */
+    .soon-tag{color:#fff;}
     body.dark .soon-tag{background:#b45309;color:white;}
     /* Offline banner: amber + white = 3.2:1 FAIL → amber-700 = 4.95:1 */
     #offlineBanner{background:#b45309;}
@@ -1792,12 +1811,12 @@
           <i data-lucide="activity" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
           תנועות אחרונות
         </h3>
-        <button class="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer" style="padding:10px 8px;margin:-10px -8px" onclick="showPage('transactions',document.getElementById('nav-transactions'))">הצג הכל</button>
+        <button class="text-xs font-semibold hover:underline cursor-pointer" style="color:var(--accent);padding:13px 10px;margin:-13px -10px;min-height:44px" onclick="showPage('transactions',document.getElementById('nav-transactions'))">הצג הכל</button>
       </div>
       <div class="divide-y divide-slate-100 dark:divide-zinc-800/50" id="recentTxList">
         <!-- Renders recent transactions from JavaScript -->
       </div>
-      <button type="button" id="recentTxMoreBtn" onclick="toggleDashRecentExpanded()" style="display:none;width:100%;text-align:center;background:none;border:none;color:var(--accent);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;padding:6px 0 0">הצג עוד הוצאות</button>
+      <button type="button" id="recentTxMoreBtn" onclick="toggleDashRecentExpanded()" style="display:none;width:100%;text-align:center;background:none;border:none;color:var(--accent);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;padding:10px 0 4px">הצג עוד הוצאות</button>
     </div>
 
     <!-- Spending Flow: הכנסה → קבועות / משתנות / חיסכון -->
@@ -2261,7 +2280,7 @@
   </div>
 </div>
 
-<div id="fabHint" style="display:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 88px);left:50%;transform:translateX(-50%);background:var(--accent);color:white;padding:8px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;white-space:nowrap;z-index:191;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.4);animation:fadeInUp 0.4s ease;pointer-events:none;">לחץ כאן להוסיף הוצאה ☝️<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--accent);"></div></div>
+<div id="fabHint" style="display:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 88px);left:0;right:0;width:fit-content;margin:0 auto;background:var(--accent);color:white;padding:8px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;white-space:nowrap;z-index:191;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.4);animation:fadeInUp 0.4s ease;pointer-events:none;">לחץ כאן להוסיף הוצאה ☝️<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--accent);"></div></div>
 <button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
 <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-stone-900/98 border-t border-slate-100 dark:border-stone-850 shadow-lg px-2 flex justify-between items-center max-w-md mx-auto" aria-label="ניווט ראשי">
@@ -2639,7 +2658,9 @@ function getEffectiveCats(type){
   return custom.length?[...base.slice(0,-1),...custom,base[base.length-1]]:base;
 }
 const INCOME_CATS =['שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'];
-const COLORS=['#818cf8','#34d399','#34d3a9','#fbbf24','#2dd4bf','#f87171','#a78bfa','#fb923c','#4ade80','#38bdf8','#e879f9','#facc15','#f472b6','#a3e635'];
+/* Ordered so the largest slice lands on the brand teal/green rather than the indigo
+   this list used to lead with — same swatches, brand-first ordering. */
+const COLORS=['#34d3a9','#2dd4bf','#34d399','#4ade80','#a3e635','#fbbf24','#facc15','#fb923c','#f87171','#38bdf8','#818cf8','#a78bfa','#e879f9','#f472b6'];
 
 (function(){
   if(localStorage.getItem('budget_tx')!==null)return;
@@ -4479,7 +4500,8 @@ function editTx(id){
   document.getElementById('editTxAmount').value = tx.amount || '';
   document.getElementById('editTxDate').value   = tx.date  || '';
   const catSel = document.getElementById('editTxCat');
-  const cats = tx.type === 'income' ? INCOME_CATS : EXPENSE_CATS;
+  const cats = getEffectiveCats(tx.type).slice();
+  if(tx.cat && !cats.includes(tx.cat)) cats.unshift(tx.cat);
   catSel.innerHTML = cats.map(c => `<option${c===tx.cat?' selected':''}>${esc(c)}</option>`).join('');
   const recurEl = document.getElementById('editTxRecurring');
   if(recurEl) recurEl.checked = !!tx.recurring;
@@ -6168,7 +6190,7 @@ function loanPayoffHtml(l){
   const chips=[100,250,500].map(x=>{
     const n2=_loanMonths(l.remaining,l.monthly+x,l.rate);
     const saved=(n2&&n2!==Infinity)?n-n2:0;
-    return saved>0?`<button onclick="event.stopPropagation();showToast('💡 תוספת של ${fmt(x)}/חודש ל${attrArg(l.name)} תקצר ב-${saved} חודשים')" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px 9px;font-size:0.72rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;">+${fmt(x)} → ${saved} חוד' פחות</button>`:'';
+    return saved>0?`<button onclick="event.stopPropagation();showToast('💡 תוספת של ${fmt(x)}/חודש ל${attrArg(l.name)} תקצר ב-${saved} חודשים')" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 12px;min-height:44px;display:inline-flex;align-items:center;font-size:0.72rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;">+${fmt(x)} → ${saved} חוד' פחות</button>`:'';
   }).filter(Boolean).join('');
   return '<div style="font-size:0.78rem;color:var(--text2);margin-top:8px;font-weight:600;">'+line+'</div>'
     +(chips?'<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'+chips+'</div>':'');

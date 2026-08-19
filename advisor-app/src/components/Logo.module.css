@@ -3,7 +3,10 @@
   flex-shrink: 0;
   object-fit: contain;
   border-radius: 50%;
-  box-shadow: 0 4px 14px -4px rgba(var(--accent-rgb), 0.6);
+  /* The mark is a dark navy/gold crest, so an accent-tinted glow rimmed it in a
+     green that is nowhere in the artwork. A neutral drop shadow lets it sit on
+     both the light and the dark surface without recolouring its edge. */
+  box-shadow: 0 4px 12px -4px rgba(15, 35, 30, 0.35);
 }
 
 .sm {
@@ -15,5 +18,5 @@
   width: 48px;
   height: 48px;
   margin: 0 auto 20px;
-  box-shadow: 0 8px 24px -6px rgba(var(--accent-rgb), 0.7);
+  box-shadow: 0 8px 20px -6px rgba(15, 35, 30, 0.4);
 }

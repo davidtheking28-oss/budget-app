@@ -25,7 +25,18 @@ jobs:
       - name: Inject Supabase anon key
         env:
           SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
-        run: node -e "const fs=require('fs');let h=fs.readFileSync('index.html','utf8');h=h.replace(/__SUPABASE_ANON__/g,(process.env.SUPABASE_ANON||'').trim());fs.writeFileSync('index.html',h);console.log('injected');"
+        run: |
+          node -e "
+          const fs=require('fs');
+          const key=(process.env.SUPABASE_ANON||'').trim();
+          if(!key){ console.error('SUPABASE_ANON secret is empty — refusing to ship a non-functional app'); process.exit(1); }
+          let h=fs.readFileSync('index.html','utf8');
+          const n=(h.match(/__SUPABASE_ANON__/g)||[]).length;
+          if(n===0){ console.error('placeholder __SUPABASE_ANON__ not found in index.html'); process.exit(1); }
+          h=h.replace(/__SUPABASE_ANON__/g,key);
+          fs.writeFileSync('index.html',h);
+          console.log('injected into '+n+' site(s)');
+          "
 
       - uses: actions/setup-node@v4
         with:
@@ -39,11 +50,25 @@ jobs:
           npm ci
           npm run build
 
+      # Publish an explicit allow-list. `path: '.'` previously shipped the whole
+      # checkout to Pages — including advisor-app/node_modules (~200 MB), the
+      # advisor source, the audit harness, edge-function source and internal docs.
+      - name: Stage site
+        run: |
+          mkdir -p _site
+          cp index.html sw.js manifest.json _site/
+          cp icon-192.png icon-512.png icon-512-maskable.png apple-touch-icon.png _site/
+          cp screenshot-dashboard.png screenshot-analytics.png _site/
+          cp -r advisor _site/advisor
+          touch _site/.nojekyll
+          du -sh _site
+          find _site -maxdepth 2 -type f | sort
+
       - uses: actions/configure-pages@v4
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
 
       - uses: actions/deploy-pages@v4
         id: deployment

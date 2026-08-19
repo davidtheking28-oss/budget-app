@@ -85,6 +85,7 @@ export default function ClientList({ advisorId, onSelect }) {
   const [invitingEmail, setInvitingEmail] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
   const codeInputRef = useRef(null);
+  const emailInputRef = useRef(null);
   const mountedRef = useRef(false);
   useEffect(() => { mountedRef.current = true; }, []);
 
@@ -159,15 +160,19 @@ export default function ClientList({ advisorId, onSelect }) {
 
   return (
     <div>
-      <div className={styles.statBar}>
-        <div className={styles.statMain}>
-          <StatMain value={clients.length} />
-          <div className={styles.statMainLabel}>לקוחות פעילים</div>
+      {/* A brand-new advisor has nothing to count, and three zeroes are the first
+          thing they would otherwise see. Let the empty state be the whole page. */}
+      {clients.length > 0 && (
+        <div className={styles.statBar}>
+          <div className={styles.statMain}>
+            <StatMain value={clients.length} />
+            <div className={styles.statMainLabel}>לקוחות פעילים</div>
+          </div>
+          <div className={styles.statDivider}></div>
+          <StatSecondary label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'statRed' : undefined} />
+          <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} />
         </div>
-        <div className={styles.statDivider}></div>
-        <StatSecondary label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'statRed' : undefined} />
-        <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} />
-      </div>
+      )}
 
       {urgent.length > 0 && (
         <div className={styles.urgentPanel}>
@@ -189,15 +194,14 @@ export default function ClientList({ advisorId, onSelect }) {
       )}
 
       <div className={styles.sectionHead}>
-        <h2 className={styles.sectionTitle}>הלקוחות שלי <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span></h2>
+        <h2 className={styles.sectionTitle}>הלקוחות שלי {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
         <div className={styles.addForm}>
           <input
             ref={codeInputRef}
-            className={styles.addInput}
+            className={styles.addInput + ' ' + styles.addInputCode}
             name="invite-code"
             autoComplete="off"
             dir="ltr"
-            style={{ textAlign: 'center', letterSpacing: '2px' }}
             aria-label="קוד הזמנה מהלקוח"
             placeholder="קוד הזמנה מהלקוח"
             value={code}
@@ -206,11 +210,11 @@ export default function ClientList({ advisorId, onSelect }) {
           />
           <Button onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
           <input
-            className={styles.addInput}
+            ref={emailInputRef}
+            className={styles.addInput + ' ' + styles.addInputEmail}
             type="email"
             name="invite-email"
             autoComplete="off"
-            style={{ textTransform: 'none', width: 'min(220px, 100%)' }}
             aria-label="הזמן לקוח באימייל"
             placeholder="הזמן לקוח באימייל"
             value={email}
@@ -222,25 +226,30 @@ export default function ClientList({ advisorId, onSelect }) {
       </div>
 
       {pendingInvites.length > 0 && (
-        <div className={styles.grid} style={{ marginTop: 12, marginBottom: 20 }}>
-          {pendingInvites.map(inv => (
-            <div key={inv.id} className={styles.card} style={{ opacity: 0.75, cursor: 'default', borderStyle: 'dashed' }}>
-              <div className={styles.initial} aria-hidden="true">✉</div>
-              <div className={styles.info}>
-                <div className={styles.email}>
-                  <span className={styles.emailText}>{inv.client_email}</span>
+        <div className={styles.pendingGroup}>
+          <div className={styles.pendingHead}>הזמנות ממתינות <span className={styles.pendingCount}>{pendingInvites.length}</span></div>
+          <div className={styles.grid + ' ' + styles.pendingGrid}>
+            {pendingInvites.map(inv => (
+              <div key={inv.id} className={styles.card + ' ' + styles.pendingCard}>
+                <div className={styles.initial + ' ' + styles.pendingInitial} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
                 </div>
-                <div className={styles.chips}>
-                  <div className={styles.staleChip}>
-                    {inv.client_id ? 'ממתין לאישור הלקוח' : 'ממתין להרשמה לאפליקציה'}
+                <div className={styles.info}>
+                  <div className={styles.email}>
+                    <span className={styles.emailText}>{inv.client_email}</span>
+                  </div>
+                  <div className={styles.chips}>
+                    <div className={styles.pendingChip + ' ' + (inv.client_id ? styles.pendingChipAccept : styles.pendingChipSignup)}>
+                      {inv.client_id ? 'ממתין לאישור הלקוח' : 'ממתין להרשמה לאפליקציה'}
+                    </div>
                   </div>
                 </div>
+                <button type="button" className={styles.removeBtn + ' ' + styles.pendingRemoveBtn} title="בטל הזמנה" aria-label={`בטל את ההזמנה ל-${inv.client_email}`} onClick={() => removeInvite(inv.id)}>
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                </button>
               </div>
-              <button type="button" className={styles.removeBtn} style={{ opacity: 1, position: 'static', marginInlineStart: 'auto' }} title="בטל הזמנה" aria-label="בטל הזמנה" onClick={() => removeInvite(inv.id)}>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-              </button>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
@@ -253,8 +262,8 @@ export default function ClientList({ advisorId, onSelect }) {
             </svg>
           </div>
           <div className={styles.emptyTitle}>אין עדיין לקוחות מחוברים</div>
-          <div className={styles.emptyText}>בקש מהלקוח ליצור קוד הזמנה בהגדרות האפליקציה שלו, ואז הדבק אותו כאן</div>
-          <Button className={styles.emptyCta} onClick={() => codeInputRef.current?.focus()}>חבר לקוח ראשון</Button>
+          <div className={styles.emptyText}>שלח הזמנה לכתובת האימייל של הלקוח, או בקש ממנו ליצור קוד הזמנה בהגדרות האפליקציה שלו והדבק אותו כאן</div>
+          <Button className={styles.emptyCta} onClick={() => emailInputRef.current?.focus()}>הזמן לקוח ראשון</Button>
         </div>
       ) : (
         <div className={styles.grid}>
