@@ -145,11 +145,11 @@ export default function Assets({ clientUserId, advisorId }) {
         <div className={styles.card}>
           <div className={styles.cardTitle}>שווי נכסים</div>
           <div className={styles.form}>
-            <input className={styles.input} placeholder="שם הנכס" value={name} onChange={e => setName(e.target.value)} />
-            <select className={styles.input} value={category} onChange={e => setCategory(e.target.value)}>
+            <input className={styles.input} placeholder="שם הנכס" aria-label="שם הנכס" value={name} onChange={e => setName(e.target.value)} />
+            <select aria-label="סוג הנכס" className={styles.input} value={category} onChange={e => setCategory(e.target.value)}>
               {ASSET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="סכום" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} />
+            <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום הנכס" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} />
             <Button onClick={submit}>הוסף</Button>
           </div>
           {assets.length ? (
@@ -176,9 +176,9 @@ export default function Assets({ clientUserId, advisorId }) {
       <div className={styles.card + ' ' + styles.cardStandalone}>
         <div className={styles.cardTitle}>התחייבויות</div>
         <div className={styles.form}>
-          <input className={styles.input} placeholder="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} />
-          <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} />
-          <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="החזר חודשי" value={loanMonthly} onChange={e => setLoanMonthly(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitLoan()} />
+          <input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} />
+          <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההתחייבות" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} />
+          <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להתחייבות" value={loanMonthly} onChange={e => setLoanMonthly(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitLoan()} />
           <Button onClick={submitLoan}>הוסף</Button>
         </div>
         {loans.length ? (

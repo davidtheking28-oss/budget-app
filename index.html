@@ -48,7 +48,7 @@
       --fw-regular:400;--fw-medium:500;--fw-semibold:600;--fw-bold:700;--fw-extra:800;
       --lh-tight:1.15;--lh-snug:1.35;--lh-normal:1.55;--lh-relaxed:1.7;
       --track-tight:-0.01em;--track-normal:0em;--track-label:0.04em;--track-num:-0.015em;}
-    body.dark{--bg:#100f0d;--surface:#1a1916;--surface2:#231f1b;--border:rgba(255,255,255,0.08);--text:#f0ebe3;--text2:#9b9089;--text3:#8c8480;--accent:#34d3a9;--accent2:#34d3a9;--accent-rgb:52,211,169;--green:#34d399;--green-light:#0a2a1e;--red:#f87171;--red-light:#2a0a0a;--blue:#60a5fa;--blue-light:#1a2040;--yellow:#fbbf24;--yellow-light:#2a1e0a;--purple:#d69a5c;--purple-light:#2a2015;--teal:#2dd4bf;--teal-light:#0a2020;}
+    body.dark{--bg:#100f0d;--surface:#1a1916;--surface2:#231f1b;--border:rgba(255,255,255,0.08);--text:#f0ebe3;--text2:#9b9089;--text3:#8f8783;--accent:#34d3a9;--accent2:#34d3a9;--accent-rgb:52,211,169;--green:#34d399;--green-light:#0a2a1e;--red:#f87171;--red-light:#2a0a0a;--blue:#60a5fa;--blue-light:#1a2040;--yellow:#fbbf24;--yellow-light:#2a1e0a;--purple:#d69a5c;--purple-light:#2a2015;--teal:#2dd4bf;--teal-light:#0a2020;}
     input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
     input[type="number"]{-moz-appearance:textfield;}
     :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
@@ -1054,9 +1054,9 @@
     main .rounded-2xl.p-4{padding:18px;}
 
     /* ── Gradient balance hero (main focal card) ── */
-    .balance-hero{background:linear-gradient(135deg,#0d9488 0%,#0a7a62 55%,#066552 100%);box-shadow:0 16px 36px -10px rgba(10,122,98,0.55);overflow:hidden;contain:layout paint;width:100%;max-width:100%;}
-    body.dark .balance-hero{background:linear-gradient(140deg,#066552 0%,#0a7a62 55%,#2dd4a7 120%);box-shadow:0 16px 38px -14px rgba(0,0,0,0.65);}
-    .balance-hero-bloom{position:absolute;height:0;border-radius:50%;background:radial-gradient(circle at center,rgba(255,255,255,0.22),transparent 70%);pointer-events:none;z-index:0;}
+    .balance-hero{background:linear-gradient(135deg,#0a7a62 0%,#08705a 55%,#05513f 100%);box-shadow:0 16px 36px -10px rgba(10,122,98,0.55);overflow:hidden;contain:layout paint;width:100%;max-width:100%;}
+    body.dark .balance-hero{background:linear-gradient(140deg,#05513f 0%,#08705a 55%,#0a7a62 120%);box-shadow:0 16px 38px -14px rgba(0,0,0,0.65);}
+    .balance-hero-bloom{position:absolute;height:0;border-radius:50%;background:radial-gradient(circle at center,rgba(255,255,255,0.08),transparent 70%);pointer-events:none;z-index:0;}
     .balance-hero #trendBalance,.balance-hero #trendBalance *{color:rgba(255,255,255,0.85)!important;}
     .balance-hero #heroSummary{color:#fff!important;}
     .range-chip{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);padding:5px 14px;border-radius:18px;font-size:0.74rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;}
@@ -1317,6 +1317,71 @@
     .more-row{transition:background 0.15s;}
     .more-row:active{background:var(--surface2)!important;}
 
+    /* ════════════════════════════════════════════════════════════
+       15 · ACCESSIBILITY FIXES (a11y audit)
+       Placed last so equal-specificity focus rules win the cascade.
+       ════════════════════════════════════════════════════════════ */
+
+    /* A1 · Focus indicators for controls that set outline:none.
+       The global :focus-visible rule (2px accent) loses to later
+       equal-specificity rules, so restate it with higher weight. */
+    .fab:focus-visible,
+    .wiz-pill:focus-visible,
+    .wiz-amount-input:focus-visible,
+    .settings-input:focus-visible,
+    .search-input:focus-visible,
+    .search-bar-input:focus-visible,
+    .whatif-input:focus-visible,
+    .ob-invest-in:focus-visible,
+    .pay-name-in:focus-visible,
+    .pay-table td input:focus-visible,
+    .pay-field input:focus-visible,
+    .income-source-field input:focus-visible,
+    #settingName:focus-visible,
+    #smsTextInput:focus-visible,
+    #householdCodeInput:focus-visible,
+    #obNameInput:focus-visible,
+    #obEmailInput:focus-visible,
+    #obOtpInput:focus-visible,
+    main input:focus-visible,
+    main select:focus-visible,
+    main textarea:focus-visible,
+    .sheet input:focus-visible,
+    .sheet select:focus-visible,
+    .sheet textarea:focus-visible{
+      outline:2px solid var(--accent)!important;
+      outline-offset:2px;
+    }
+    /* FAB sits on a saturated green; a white ring reads in both themes. */
+    .fab:focus-visible{
+      outline:3px solid #fff!important;
+      outline-offset:3px;
+      box-shadow:0 0 0 6px rgba(var(--accent-rgb),0.55);
+    }
+    /* Inside the wizard header (solid accent bg) a white ring has contrast. */
+    .wiz-pill:focus-visible,
+    .wiz-hdr input:focus-visible,
+    .wiz-hdr button:focus-visible{
+      outline:2px solid #fff!important;
+      outline-offset:2px;
+    }
+
+    /* A2 · Dark mode: --accent (#34d3a9) with white text is 1.90:1.
+       Buttons already opt out via the block above; the settings avatar
+       was missed. Use the same #0a7a62 that .btn-primary uses (7.0:1). */
+    body.dark #settingAvatar{
+      background:linear-gradient(135deg,#0a7a62,#066552)!important;
+    }
+
+    /* A3 · --text3 at 60% opacity on --bg measured 2.30:1 (light) /
+       2.61:1 (dark). Drop the opacity; the token alone is >= 4.7:1. */
+    .a11y-fineprint{opacity:1!important;color:var(--text2)!important;}
+
+    /* A4 · Dashboard avatar initial: --accent on a 12% accent tint measured
+       3.83:1 in light mode. --green on the same tint is 4.97:1 and keeps
+       the green-on-green look. Dark mode already passes (10:1). */
+    body:not(.dark) .dash-avatar{color:var(--green);}
+
   </style>
 </head>
 <body class="dark">
@@ -1346,17 +1411,17 @@
       <div class="auth-app-sub">שלוט בכסף שלך. בלי סיסמאות.</div>
       <div class="auth-trust-row">
         <div class="auth-trust-item">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <svg aria-hidden="true" focusable="false" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           מאובטח
         </div>
         <div class="auth-trust-dot"></div>
         <div class="auth-trust-item">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          <svg aria-hidden="true" focusable="false" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
           תובנות חכמות
         </div>
         <div class="auth-trust-dot"></div>
         <div class="auth-trust-item">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+          <svg aria-hidden="true" focusable="false" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
           סנכרון מלא
         </div>
       </div>
@@ -1364,7 +1429,7 @@
     <!-- Landing step -->
     <div id="authStepLanding" class="auth-cta-section">
       <button class="auth-google-btn" onclick="authGoogleSignIn()">
-        <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         המשך עם Gmail
       </button>
       <div class="auth-footer-note">ללא סיסמה · מאובטח עם הצפנה</div>
@@ -1669,13 +1734,13 @@
 </div>
 
 <div id="inlineMonthNav" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:5px 8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.10);">
-  <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(-1)" aria-label="חודש קודם" data-month-arrow><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="9 18 15 12 9 6"/></svg></button>
+  <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(-1)" aria-label="חודש קודם" data-month-arrow><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="9 18 15 12 9 6"/></svg></button>
   <button class="bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-slate-200/60 dark:border-zinc-700/50 rounded-full px-4 py-1.5 text-sm font-medium flex items-center gap-2 transition-all cursor-pointer" onclick="openMonthSheet()">
-    <i data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
+    <i aria-hidden="true" data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
     <span id="headerMonthLabel">טוען...</span>
-    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+    <i aria-hidden="true" data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
   </button>
-  <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(1)" aria-label="חודש הבא" data-month-arrow><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="15 18 9 12 15 6"/></svg></button>
+  <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(1)" aria-label="חודש הבא" data-month-arrow><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="15 18 9 12 15 6"/></svg></button>
 </div>
 
 <main id="main-content">
@@ -1684,7 +1749,7 @@
     <div id="modeSwitcher" style="display:none;justify-content:center;margin:-10px 0 14px;position:relative;">
       <button type="button" id="modeCurrentBtn" class="mode-pill-current" onclick="toggleModeDropdown()">
         <span id="modeCurrentLabel">🏠 פרטי</span>
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <div id="modeDropdown" class="mode-dropdown">
         <button class="mode-btn" data-mode="personal" onclick="pickMode('personal')">🏠 פרטי</button>
@@ -1720,7 +1785,7 @@
     <!-- Recurring Alert -->
     <div id="recurringAlert" class="recurring-alert bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-4 flex gap-3 items-start shadow-sm mb-4">
       <div class="bg-slate-100 dark:bg-zinc-800 text-blue-500 p-2 rounded-xl mt-0.5 flex-shrink-0">
-        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        <i aria-hidden="true" data-lucide="refresh-cw" class="w-4 h-4"></i>
       </div>
       <div class="flex-1">
         <h3 class="text-sm font-semibold text-slate-800 dark:text-zinc-200">הוצאות קבועות קרובות</h3>
@@ -1753,7 +1818,7 @@
       <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-4 shadow-sm">
         <div class="flex items-center gap-2 text-slate-500 dark:text-zinc-400 text-xs font-semibold">
           <div class="bg-emerald-50 dark:bg-emerald-900/20 p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400">
-            <i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i>
+            <i aria-hidden="true" data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i>
           </div>
           <span>הכנסות</span>
         </div>
@@ -1764,7 +1829,7 @@
       <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-4 shadow-sm" style="cursor:pointer" onclick="txListFilter='all';document.querySelectorAll('#txFilterChips .filter-chip').forEach(c=>c.classList.remove('active'));const _ac=document.querySelector('#txFilterChips [data-filter=all]');if(_ac)_ac.classList.add('active');showPage('transactions',document.getElementById('nav-transactions'))">
         <div class="flex items-center gap-2 text-slate-500 dark:text-zinc-400 text-xs font-semibold">
           <div class="bg-rose-50 dark:bg-rose-900/20 p-1.5 rounded-lg text-rose-600 dark:text-rose-400">
-            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            <i aria-hidden="true" data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
           </div>
           <span>הוצאות</span>
         </div>
@@ -1818,7 +1883,7 @@
     <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4 space-y-4">
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
-          <i data-lucide="activity" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
+          <i aria-hidden="true" data-lucide="activity" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
           תנועות אחרונות
         </h3>
         <button class="text-xs font-semibold hover:underline cursor-pointer" style="color:var(--accent);padding:13px 10px;margin:-13px -10px;min-height:44px" onclick="showPage('transactions',document.getElementById('nav-transactions'))">הצג הכל</button>
@@ -1859,11 +1924,11 @@
       <div class="balance-hero-bloom" style="top:-32%;right:-14%;width:55%;padding-bottom:55%;"></div>
       <div class="balance-hero-bloom" style="bottom:-38%;left:-10%;width:45%;padding-bottom:45%;opacity:0.55;"></div>
       <div class="relative" style="z-index:1">
-        <div class="text-sm font-semibold" style="color:rgba(255,255,255,0.88)">התזרים שלך החודש</div>
+        <div class="text-sm font-semibold" style="color:#fff">התזרים שלך החודש</div>
         <div class="font-extrabold font-mono tracking-tight mt-2" id="txPageFlow" style="color:#fff;font-size:clamp(2.1rem,10vw,2.8rem);line-height:1.05;white-space:nowrap">₪0</div>
         <div style="display:flex;gap:10px;margin-top:16px">
-          <div style="flex:1;background:rgba(255,255,255,0.16);border-radius:14px;padding:10px 14px;text-align:center">
-            <div style="font-size:0.72rem;color:rgba(255,255,255,0.85);font-weight:700">הכנסות</div>
+          <div style="flex:1;background:rgba(0,0,0,0.18);border-radius:14px;padding:10px 14px;text-align:center">
+            <div style="font-size:0.72rem;color:#fff;font-weight:700">הכנסות</div>
             <div id="txPageIncome" style="font-weight:800;color:#fff;font-size:1rem;margin-top:2px">₪0</div>
           </div>
           <div style="flex:1;background:rgba(255,255,255,0.95);border-radius:14px;padding:10px 14px;text-align:center">
@@ -1887,7 +1952,7 @@
             <button onclick="scanReceipt();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;">📷 סרוק קבלה</button>
           </div>
         </div>
-        <button type="button" onclick="toggleAdvancedFilters()" style="display:flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--border);border-radius:999px;padding:8px 14px;font-size:0.8rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0;min-height:44px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>סנן</button>
+        <button type="button" onclick="toggleAdvancedFilters()" style="display:flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--border);border-radius:999px;padding:8px 14px;font-size:0.8rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0;min-height:44px"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>סנן</button>
       </div>
       <div id="txAdvancedFilters" style="display:none">
         <input type="search" class="search-input" id="txSearch" placeholder="חפש בעסקאות..." oninput="renderTxPage()" onfocus="this.select()" aria-label="חיפוש בעסקאות"/>
@@ -1919,7 +1984,7 @@
   </div>
 
   <div id="page-analytics" class="page">
-    <div id="tasksNoAdvisor" class="empty" style="display:none"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><p>עוד אין יועץ מקושר</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">כשתתחבר ליועץ פיננסי, המשימות והפגישות שהוא קובע איתך יופיעו כאן</p></div>
+    <div id="tasksNoAdvisor" class="empty" style="display:none"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><p>עוד אין יועץ מקושר</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">כשתתחבר ליועץ פיננסי, המשימות והפגישות שהוא קובע איתך יופיעו כאן</p></div>
     <div id="tasksContent" style="display:none">
       <div class="section" id="meetingsSection">
         <div class="section-header"><div class="section-title">פגישות</div></div>
@@ -1964,7 +2029,7 @@
       </div>
     </div>
     <div class="analytics-summary" id="analyticsSummary">
-      <div class="card balance"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span><div class="card-label">שיעור חיסכון</div><div class="card-amount" id="savingsRatePct" style="color:var(--green)">—</div></div>
+      <div class="card balance"><span class="card-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span><div class="card-label">שיעור חיסכון</div><div class="card-amount" id="savingsRatePct" style="color:var(--green)">—</div></div>
       <div class="card avg"><span class="card-icon" style="font-size:1.3rem;font-weight:800;color:var(--accent)">₪</span><div class="card-label">ממוצע יומי</div><div class="card-amount" id="dailyAvgAmt" style="color:var(--purple)">—</div></div>
     </div>
     <div class="section">
@@ -1982,7 +2047,7 @@
   </div>
 
   <div id="page-budget" class="page">
-    <div id="budgetEmpty" class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg></div><p>קבע תקרה חודשית לקטגוריה כמו "אוכל" או "קניות" ותדע מיד כשחרגת</p><button class="btn-empty" onclick="openSheet('addBudgetSheet')"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הגדר תקציב ראשון</button></div>
+    <div id="budgetEmpty" class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg></div><p>קבע תקרה חודשית לקטגוריה כמו "אוכל" או "קניות" ותדע מיד כשחרגת</p><button class="btn-empty" onclick="openSheet('addBudgetSheet')"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הגדר תקציב ראשון</button></div>
     <div id="budgetChipStrip" class="budget-chip-strip" style="display:none"></div>
     <div id="budgetCatDetail" class="budget-detail-card" style="display:none"></div>
   </div>
@@ -1992,7 +2057,7 @@
       <button class="btn btn-primary btn-sm" onclick="openAddGoalSheet()">+ יעד חדש</button>
     </div>
     <div id="goalsList">
-      <div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>הגדר יעד חיסכון</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">עקוב אחרי ההתקדמות שלך חודש אחרי חודש</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>
+      <div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>הגדר יעד חיסכון</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">עקוב אחרי ההתקדמות שלך חודש אחרי חודש</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>
     </div>
   </div>
 
@@ -2007,7 +2072,7 @@
         <span class="pay-sum-val" id="paymentsTotal">₪0.00</span>
       </div>
     </div>
-    <div id="paymentsEmpty" class="empty" style="display:none"><div class="empty-icon"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p>אין תשלומים עדיין</p><button class="btn-empty" onclick="addPaymentRow()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף תשלום ראשון</button></div>
+    <div id="paymentsEmpty" class="empty" style="display:none"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p>אין תשלומים עדיין</p><button class="btn-empty" onclick="addPaymentRow()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף תשלום ראשון</button></div>
   </div>
 
   <div id="page-fixed" class="page">
@@ -2036,15 +2101,15 @@
 
   <div id="page-subscriptions" class="page">
     <div class="cards-row three">
-      <div class="card subs-count"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><div class="card-label">פעילים</div><div class="card-amount" id="subsCount">0</div></div>
-      <div class="card subs-monthly"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span><div class="card-label">חודשי</div><div class="card-amount" id="subsMonthly">0</div></div>
-      <div class="card subs-annual"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><div class="card-label">שנתי</div><div class="card-amount" id="subsAnnual">0</div></div>
+      <div class="card subs-count"><span class="card-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><div class="card-label">פעילים</div><div class="card-amount" id="subsCount">0</div></div>
+      <div class="card subs-monthly"><span class="card-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span><div class="card-label">חודשי</div><div class="card-amount" id="subsMonthly">0</div></div>
+      <div class="card subs-annual"><span class="card-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><div class="card-label">שנתי</div><div class="card-amount" id="subsAnnual">0</div></div>
     </div>
     <div style="margin-bottom:14px;display:flex;justify-content:flex-start">
       <button class="btn btn-primary btn-sm" onclick="openSheet('addSubSheet')">+ מנוי חדש</button>
     </div>
     <div id="subsList">
-      <div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>עקוב אחרי המנויים שלך</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">Netflix, Spotify ועוד · דע בדיוק כמה אתה משלם כל חודש</p><button class="btn-empty" onclick="openAddSub()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מנוי ראשון</button></div>
+      <div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>עקוב אחרי המנויים שלך</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">Netflix, Spotify ועוד · דע בדיוק כמה אתה משלם כל חודש</p><button class="btn-empty" onclick="openAddSub()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מנוי ראשון</button></div>
     </div>
   </div>
 
@@ -2071,7 +2136,7 @@
           <div style="font-size:0.95rem;font-weight:700;color:var(--text)">יעדי חיסכון</div>
           <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">מעקב התקדמות לעבר יעדים</div>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       <button onclick="showPage('fixed')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;cursor:pointer;text-align:right;font-family:inherit" class="more-row">
         <div style="width:40px;height:40px;border-radius:12px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem">🏠</div>
@@ -2079,25 +2144,25 @@
           <div style="font-size:0.95rem;font-weight:700;color:var(--text)">הוצאות קבועות</div>
           <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">משכנתא, ארנונה, חשמל — פעם אחת לכל חודש</div>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>
     <div style="margin-bottom:8px;font-size:0.72rem;font-weight:700;color:var(--text3);letter-spacing:0.05em;text-transform:uppercase;padding:0 2px">כללי</div>
     <div style="background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)">
       <button onclick="showPage('settings',document.getElementById('nav-more'))" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;cursor:pointer;text-align:right;font-family:inherit" class="more-row">
         <div style="width:40px;height:40px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--text2)"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--text2)"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </div>
         <div style="flex:1;min-width:0">
           <div style="font-size:0.95rem;font-weight:700;color:var(--text)">הגדרות</div>
           <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">פרופיל, חשבון עסקי, ערכת צבעים</div>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>
     <div style="margin-top:32px;text-align:center;display:flex;flex-direction:column;gap:6px;">
       <div style="font-size:0.72rem;font-weight:700;color:var(--text3)">תקציב אישי</div>
-      <div style="font-size:0.65rem;color:var(--text3);opacity:0.6;">הנתונים שלך נשמרים מקומית במכשיר ומוצפנים בענן</div>
+      <div class="a11y-fineprint" style="font-size:0.7rem;color:var(--text2);">הנתונים שלך נשמרים מקומית במכשיר ומוצפנים בענן</div>
     </div>
   </div>
 
@@ -2165,7 +2230,7 @@
       <div class="settings-section">
         <div class="settings-section-title">תצוגה</div>
         <div class="set-dd" id="themeDD">
-          <button type="button" class="set-dd-trigger" onclick="toggleSetDD('themeDD')"><span id="themeDDCur">🌗 תצוגה</span><svg class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <button type="button" class="set-dd-trigger" onclick="toggleSetDD('themeDD')"><span id="themeDDCur">🌗 תצוגה</span><svg aria-hidden="true" focusable="false" class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
           <div class="set-dd-menu">
             <button type="button" class="set-dd-opt" data-v="light" onclick="pickTheme('light')"><span>☀️</span> בהיר</button>
             <button type="button" class="set-dd-opt" data-v="dark" onclick="pickTheme('dark')"><span>🌙</span> כהה</button>
@@ -2177,7 +2242,7 @@
       <div class="settings-section">
         <div class="settings-section-title">נתונים</div>
         <div class="set-dd" id="dataDD">
-          <button type="button" class="set-dd-trigger" onclick="toggleSetDD('dataDD')"><span>💾 ייבוא, ייצוא וגיבוי</span><svg class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <button type="button" class="set-dd-trigger" onclick="toggleSetDD('dataDD')"><span>💾 ייבוא, ייצוא וגיבוי</span><svg aria-hidden="true" focusable="false" class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
           <div class="set-dd-menu">
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();importBankCSV()"><span>🏦</span> ייבא עסקאות מקובץ בנק (CSV)</button>
           </div>
@@ -2291,40 +2356,40 @@
 </div>
 
 <div id="fabHint" style="display:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 88px);left:0;right:0;width:fit-content;margin:0 auto;background:var(--accent);color:white;padding:8px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;white-space:nowrap;z-index:191;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.4);animation:fadeInUp 0.4s ease;pointer-events:none;">לחץ כאן להוסיף הוצאה ☝️<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--accent);"></div></div>
-<button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+<button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
 <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-stone-900/98 border-t border-slate-100 dark:border-stone-850 shadow-lg px-2 flex justify-between items-center max-w-md mx-auto" aria-label="ניווט ראשי">
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('dashboard',this)" id="nav-dashboard" aria-label="ראשי">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     </div>
     <span class="nav-label text-[11px] font-semibold">ראשי</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('transactions',this)" id="nav-transactions" aria-label="הוצאות">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     </div>
     <span class="nav-label text-[11px] font-semibold">הוצאות</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('budget',this)" id="nav-budget" aria-label="תקציב">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
     </div>
     <span class="nav-label text-[11px] font-semibold">תקציב</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('analytics',this)" id="nav-analytics" aria-label="משימות">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
     </div>
     <span class="nav-label text-[11px] font-semibold">משימות</span>
   </button>
 
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('settings',this)" id="nav-more" aria-label="הגדרות">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
-      <svg viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
     <span class="nav-label text-[11px] font-semibold">הגדרות</span>
   </button>
@@ -2439,7 +2504,7 @@ const CAT_ICONS = {
 };
 function catIcon(c){return CAT_ICONS[c]||'•';}
 const CAT_COLOR={'אוכל':'amber','ביגוד והנעלה':'amber','בעלי חיים':'amber','תחבורה ונסיעות':'blue','תקשורת':'blue','שכר דירה':'yellow','חשמל ומים':'yellow','גז':'yellow','ארנונה':'yellow','ביטוח':'yellow','ביטוח לאומי':'yellow','ביטוח בריאות':'yellow','ביטוח רכב':'yellow','ביטוח דירה':'yellow','ביטוח חיים':'yellow','תיקונים ואחזקה':'yellow','בילויים':'purple','חופשות וטיולים':'purple','חגים':'purple','מתנות ואירועים':'purple','בריאות':'teal','ספורט':'teal','חינוך':'teal','צדקה':'teal','הלוואות':'red'};
-const _sv=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const _sv=d=>`<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const CAT_SVGS={
   'תחבורה ונסיעות':_sv('<rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>'),
   'שכר דירה':_sv('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'),
@@ -2804,8 +2869,8 @@ function undoDelete(){
 }
 function getMonthTx(y,m){return transactions.filter(t=>t.date.startsWith(mk(y,m)));}
 
-const MOON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
-const SUN  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+const MOON = `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+const SUN  = `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
 
 let sheetDisplayYear = new Date().getFullYear();
 function openMonthSheet(){sheetDisplayYear=currentYear;renderMonthGrid();document.getElementById('monthSheetOverlay').classList.add('open');}
@@ -2960,7 +3025,7 @@ function wizRenderCats(cats){
       (hasSub?'<span class="wiz-expand-arrow">›</span>':'<span class="wiz-sel-check">✓</span>')+
       '</button>';
   }).join('')+
-  '<div class="wiz-cat-addwrap"><button onclick="openAddCustomCat()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:none;border:1.5px dashed var(--border);border-radius:14px;padding:13px 14px;color:var(--text3);font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף קטגוריה</button></div>';
+  '<div class="wiz-cat-addwrap"><button onclick="openAddCustomCat()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:none;border:1.5px dashed var(--border);border-radius:14px;padding:13px 14px;color:var(--text3);font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף קטגוריה</button></div>';
   list.querySelectorAll('.wiz-cat-row[data-cat]').forEach(el=>{
     el.onclick=()=>{el.dataset.expand==='1'?wizExpandCat(el.dataset.cat,el):wizPickCat(el.dataset.cat,el);};
   });
@@ -3002,7 +3067,7 @@ function wizRender(){
   document.getElementById('wizNextBtn').textContent='✓';
   document.getElementById('wizNextBtn').style.visibility=wizStep===1?'hidden':'visible';
   const _po=document.getElementById('wizPillOuter');if(_po)_po.style.display=wizStep===1?'':'none';
-  document.getElementById('wizStepBtn').innerHTML=wizStep===1?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><polyline points="15 18 21 12 15 6"/><line x1="21" y1="12" x2="3" y2="12"/></svg>';
+  document.getElementById('wizStepBtn').innerHTML=wizStep===1?'<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>':'<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><polyline points="15 18 21 12 15 6"/><line x1="21" y1="12" x2="3" y2="12"/></svg>';
   document.getElementById('wizTtl').textContent=wizStep===1?(txTypeFilter==='income'?'מה מקור ההכנסה?':'על מה הוצאתי?'):(txTypeFilter==='income'?'כמה הרווחתי?':'כמה שילמתי?');
   document.getElementById('wizBody1').style.display=wizStep===1?'':'none';
   document.getElementById('wizBody2').style.display=wizStep===2?'flex':'none';
@@ -3181,12 +3246,12 @@ function txHtml(t){
       +'<div class="tx-meta">'+txFixedLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
     +'</div>'
     +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
-    +'<button class="tx-del-btn" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק עסקה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>'
+    +'<button class="tx-del-btn" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק עסקה"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>'
   +'</div>';
 }
 function txSwipeHtml(t){
   const icon = catIconSvg(t.cat);
-  const delSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+  const delSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
   return '<div class="tx-swipe-wrap">'
     +'<div class="tx-delete-reveal" onclick="deleteTx('+t.id+')">'+delSvg+'</div>'
     +'<div class="tx-swipe-inner">'
@@ -3406,7 +3471,7 @@ function renderUpcoming(){
   });
   items.sort((a,b)=>a.date-b.date);
   const el=document.getElementById('upcomingList');
-  if(!items.length){el.innerHTML='<div class="empty" style="padding:16px"><div class="empty-icon" style="width:52px;height:52px;margin-bottom:10px"><svg viewBox="0 0 24 24" width="24" height="24"><polyline points="20 6 9 17 4 12"/></svg></div><p>אין תשלומים קרובים</p></div>';return;}
+  if(!items.length){el.innerHTML='<div class="empty" style="padding:16px"><div class="empty-icon" style="width:52px;height:52px;margin-bottom:10px"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="24" height="24"><polyline points="20 6 9 17 4 12"/></svg></div><p>אין תשלומים קרובים</p></div>';return;}
   const MONTHS=['ינו','פבר','מרץ','אפר','מאי','יוני','יול','אוג','ספט','אוק','נוב','דצמ'];
   el.innerHTML=items.slice(0,4).map(item=>{
     const days=Math.round((item.date-today)/86400000);
@@ -3493,9 +3558,9 @@ function groupedTxHtml(list,useSwipe){
 }
 
 // ── Categorized expenses view (fixed + variable, grouped by category) ──
-const _expTrashSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
-const _expEditSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
-function _expChevron(open){return '<svg class="exp-chevron'+(open?' exp-chevron-open':'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';}
+const _expTrashSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+const _expEditSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
+function _expChevron(open){return '<svg aria-hidden="true" focusable="false" class="exp-chevron'+(open?' exp-chevron-open':'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';}
 let _expOpenGroups=new Set();
 function toggleExpGroup(key){_expOpenGroups.has(key)?_expOpenGroups.delete(key):_expOpenGroups.add(key);const y=window.scrollY;renderTxPage();window.scrollTo(0,y);}
 function _expTxCardHtml(t){
@@ -3580,7 +3645,7 @@ function renderTxCategorized(byCat){
     fxEntries.sort((a,b)=>b.amount-a.amount);
     html+='<div class="section-header"><div class="section-title">הוצאות קבועות <span class="badge">'+fxEntries.length+'/'+allFixed.length+'</span></div></div>'
       +(fxEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות מוגדרות עדיין</div>')
-      +'<button type="button" class="exp-add-row" onclick="openFixedCatPicker()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
+      +'<button type="button" class="exp-add-row" onclick="openFixedCatPicker()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
   }
   if(txListFilter!=='fixed'){
     const varEntries=[];
@@ -3597,11 +3662,11 @@ function renderTxCategorized(byCat){
     varEntries.sort((a,b)=>b.amount-a.amount);
     html+='<div class="section-header"><div class="section-title">הוצאות משתנות <span class="badge">'+varEntries.length+'/'+_varCats.length+'</span></div></div>'
       +(varEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות משתנות מוגדרות עדיין</div>')
-      +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
+      +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
   }
   html+='<div class="section-header"><div class="section-title">הכנסות <span class="badge">'+userSettings.incomeSources.length+'</span></div></div>'
     +'<div id="txIncomeRows">'+_expIncomeListHtml()+'</div>'
-    +'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>';
+    +'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>';
   return html||'<div class="budget-tx-empty">אין הוצאות קבועות או משתנות מוגדרות עדיין</div>';
 }
 function _expIncomeListHtml(){
@@ -4834,7 +4899,7 @@ function renderDashGoals(){
     const pct=lim?Math.min(s/lim,1):0;
     const state=progState(Math.round(pct*100),[[90,'danger'],[70,'warn'],[0,'']]);
     return '<div class="dash-ring-item" data-cat="'+esc(cat)+'">'
-      +'<svg viewBox="0 0 80 80" class="dash-ring-svg">'
+      +'<svg aria-hidden="true" focusable="false" viewBox="0 0 80 80" class="dash-ring-svg">'
         +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-track"/>'
         +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-fill'+(state?' '+state:'')+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct))+'"/>'
       +'</svg>'
@@ -4951,7 +5016,7 @@ function renderDashboard(){
   renderUpcoming();
   const recentTxAll=[...mTx].filter(t=>t.type==='expense').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const recentTx=_dashRecentExpanded?recentTxAll:recentTxAll.slice(0,5);
-  document.getElementById('recentTxList').innerHTML=recentTx.length?groupedTxHtml(recentTx):'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">חודש נקי ✨</p><p>עדיין לא רשמת הוצאות החודש.<br>לחץ + כדי להתחיל לעקוב</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה ראשונה</button></div>';
+  document.getElementById('recentTxList').innerHTML=recentTx.length?groupedTxHtml(recentTx):'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">חודש נקי ✨</p><p>עדיין לא רשמת הוצאות החודש.<br>לחץ + כדי להתחיל לעקוב</p><button class="btn-empty" onclick="openAddTx()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה ראשונה</button></div>';
   const moreBtn=document.getElementById('recentTxMoreBtn');
   if(moreBtn)moreBtn.style.display=(!_dashRecentExpanded&&recentTxAll.length>5)?'':'none';
   checkRecurring();
@@ -5011,8 +5076,8 @@ function renderTxPage(){
   const _q=(document.getElementById('txSearch').value||'').trim();
   const _hasFilter=_q||fromDate||toDate;
   const _txEmpty=_hasFilter
-    ?'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p>לא נמצאו תוצאות</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">נסה לשנות את מילות החיפוש או הסינון</p></div>'
-    :'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">אין הוצאות החודש</p><p>עדיין לא רשמת הוצאות לחודש זה</p><button class="btn-empty" onclick="openAddTx()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה</button></div>';
+    ?'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p>לא נמצאו תוצאות</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">נסה לשנות את מילות החיפוש או הסינון</p></div>'
+    :'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">אין הוצאות החודש</p><p>עדיין לא רשמת הוצאות לחודש זה</p><button class="btn-empty" onclick="openAddTx()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה</button></div>';
   list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const _useCategorized=!q&&!fromDate&&!toDate;
   if(_useCategorized){
@@ -5095,7 +5160,7 @@ function renderAnalytics(){
     const prev=prevCatT[cat]||0;let trendStr='',trendCls='same';
     if(prev>0){const p=Math.round((amt-prev)/prev*100);if(p>2){trendStr='↑'+p+'%';trendCls='up';}else if(p<-2){trendStr='↓'+Math.abs(p)+'%';trendCls='down';}else{trendStr='≈';trendCls='same';}}
     return '<div class="breakdown-row"><div class="breakdown-name">'+catIconSvg(cat)+' '+esc(cat)+(cat===_hotCat?' <span class="hot-badge" title="הקטגוריה שגדלה הכי הרבה החודש">🔥</span>':'')+'</div><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:'+Math.round(amt/totalE*100)+'%;background:'+COLORS[i%COLORS.length]+'"></div></div><div class="breakdown-amount">'+fmt(amt)+'<br><span style="color:var(--text3)">'+Math.round(amt/totalE*100)+'%</span></div><div class="breakdown-trend '+trendCls+'">'+trendStr+'</div></div>';
-  }).join(''):'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div><p>אין הוצאות לחודש זה</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">הוסף עסקאות כדי לראות את הניתוח</p></div>';
+  }).join(''):'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div><p>אין הוצאות לחודש זה</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">הוסף עסקאות כדי לראות את הניתוח</p></div>';
 }
 
 function setBudget(){
@@ -5251,10 +5316,10 @@ function renderBudgetDetail(spent,effLim){
   const pct=lim?Math.min(Math.round(s/lim*100),100):(baseLim?100:0);
   const state=progState(pct,[[90,'danger'],[70,'warn'],[0,'ok']]);
   const mTx=getMonthTx(currentYear,currentMonth).filter(t=>t.type==='expense'&&t.cat===cat).sort((a,b)=>a.date<b.date?1:-1);
-  const trashSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
-  const editSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
-  const chartSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>';
-  const chevronSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="budget-tx-chevron'+(_budgetTxListOpen?' budget-tx-chevron-open':'')+'"><polyline points="6 9 12 15 18 9"/></svg>';
+  const trashSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+  const editSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
+  const chartSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>';
+  const chevronSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="budget-tx-chevron'+(_budgetTxListOpen?' budget-tx-chevron-open':'')+'"><polyline points="6 9 12 15 18 9"/></svg>';
   detail.innerHTML=
     '<div class="budget-detail-header">'
       +'<div class="budget-detail-text">'
@@ -5671,7 +5736,7 @@ function renderFixed(){
     const isCustom=!FIXED_CATS.includes(cat);
     const cell=auto
       ? '<td class="pay-calc pay-num">'+_payFmt(_fxMonthly(cat))+'</td>'
-      : '<td><input class="pay-num" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" value="'+esc(_fxRaw(cat))+'" onfocus="this.select()" oninput="setFixedAmount('+i+',this.value)"></td>';
+      : '<td><input class="pay-num" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" aria-label="סכום חודשי עבור '+esc(cat)+'" value="'+esc(_fxRaw(cat))+'" onfocus="this.select()" oninput="setFixedAmount('+i+',this.value)"></td>';
     const removeBtn=isCustom?'<button type="button" class="pay-del" onclick="removeCustomFixedCat(\''+attrArg(cat)+'\')" aria-label="הסר קטגוריה">✕</button>':'';
     return '<tr><td class="fx-name">'+esc(cat)+(auto?'<span class="fx-auto">אוטומטי</span>':'')+removeBtn+'</td>'+cell+'</tr>';
   }).join('');
@@ -5679,7 +5744,7 @@ function renderFixed(){
 }
 function renderGoals(){
   const list=document.getElementById('goalsList');
-  if(!goals.length){list.innerHTML='<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>הגדר יעד חיסכון</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">עקוב אחרי ההתקדמות שלך חודש אחרי חודש</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>';return;}
+  if(!goals.length){list.innerHTML='<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>הגדר יעד חיסכון</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">עקוב אחרי ההתקדמות שלך חודש אחרי חודש</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>';return;}
   list.innerHTML=goals.map(g=>{
     const pct=Math.round(g.saved/g.target*100),done=pct>=100;
     const progCls=done?'':progState(pct,[[67,''],[33,'mid'],[0,'low']]);
@@ -6055,7 +6120,7 @@ function renderSubscriptions(){
   document.getElementById('subsMonthly').textContent=fmt(mt);
   document.getElementById('subsAnnual').textContent=fmt(mt*12);
   const list=document.getElementById('subsList');
-  if(!subscriptions.length){list.innerHTML='<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>עקוב אחרי המנויים שלך</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">Netflix, Spotify ועוד · דע בדיוק כמה אתה משלם כל חודש</p><button class="btn-empty" onclick="openAddSub()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מנוי ראשון</button></div>';return;}
+  if(!subscriptions.length){list.innerHTML='<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div><p>עקוב אחרי המנויים שלך</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">Netflix, Spotify ועוד · דע בדיוק כמה אתה משלם כל חודש</p><button class="btn-empty" onclick="openAddSub()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מנוי ראשון</button></div>';return;}
   const sorted=[...subscriptions].sort((a,b)=>(b.active-a.active)||((a.nextDate||'').localeCompare(b.nextDate||'')));
   list.innerHTML=sorted.map(s=>{
     const days=daysUntil(s.nextDate);
@@ -6167,7 +6232,7 @@ function renderLoans(){
   const list=document.getElementById('loansList');
   if(!list)return;
   if(!loans.length){
-    list.innerHTML='<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></div><p>אין הלוואות רשומות</p><button class="btn-empty" onclick="openAddLoanSheet()"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הלוואה ראשונה</button></div>';
+    list.innerHTML='<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></div><p>אין הלוואות רשומות</p><button class="btn-empty" onclick="openAddLoanSheet()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הלוואה ראשונה</button></div>';
     return;
   }
   list.innerHTML=loans.map(l=>{

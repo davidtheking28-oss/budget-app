@@ -202,17 +202,17 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconSubs}>{ICONS.subs}</span>מנויים<span className={styles.countBadge}>{subs.length}</span>{monthlySubsCost > 0 ? ` · ${fmt(monthlySubsCost)} לחודש` : ''}</div>
         {!subs.length && <div className={styles.sectionEmpty}>אין מנויים רשומים</div>}
         <div className={styles.form}>
-          <input className={styles.input} placeholder="שם המנוי" value={subForm.name} onChange={e => setSubForm({ ...subForm, name: e.target.value })} />
-          <select className={styles.input} value={subForm.category} onChange={e => setSubForm({ ...subForm, category: e.target.value })}>
+          <input className={styles.input} placeholder="שם המנוי" aria-label="שם המנוי" value={subForm.name} onChange={e => setSubForm({ ...subForm, name: e.target.value })} />
+          <select aria-label="קטגוריית המנוי" className={styles.input} value={subForm.category} onChange={e => setSubForm({ ...subForm, category: e.target.value })}>
             {SUB_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום" value={subForm.amount} onChange={e => setSubForm({ ...subForm, amount: e.target.value })} />
-          <select className={styles.input} value={subForm.cycle} onChange={e => setSubForm({ ...subForm, cycle: e.target.value })}>
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום המנוי" value={subForm.amount} onChange={e => setSubForm({ ...subForm, amount: e.target.value })} />
+          <select aria-label="תדירות החיוב" className={styles.input} value={subForm.cycle} onChange={e => setSubForm({ ...subForm, cycle: e.target.value })}>
             <option value="monthly">חודשי</option>
             <option value="annual">שנתי</option>
             <option value="weekly">שבועי</option>
           </select>
-          <input className={styles.input} type="date" placeholder="חידוש הבא" value={subForm.nextDate} onChange={e => setSubForm({ ...subForm, nextDate: e.target.value })} />
+          <input className={styles.input} type="date" placeholder="חידוש הבא" aria-label="תאריך החידוש הבא" value={subForm.nextDate} onChange={e => setSubForm({ ...subForm, nextDate: e.target.value })} />
           <Button onClick={submitSub}>{editingSubId != null ? 'שמור' : 'הוסף מנוי'}</Button>
           {editingSubId != null && <Button variant="ghost" onClick={resetSubForm}>ביטול</Button>}
         </div>
@@ -258,12 +258,12 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconLoans}>{ICONS.loans}</span>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</div>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
         <div className={styles.form}>
-          <input className={styles.input} placeholder="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
-          <input className={styles.input} placeholder="גורם מלווה" value={loanForm.lender} onChange={e => setLoanForm({ ...loanForm, lender: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרה" value={loanForm.remaining} onChange={e => setLoanForm({ ...loanForm, remaining: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום מקורי" value={loanForm.original} onChange={e => setLoanForm({ ...loanForm, original: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} />
+          <input className={styles.input} placeholder="שם ההלוואה" aria-label="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
+          <input className={styles.input} placeholder="גורם מלווה" aria-label="גורם מלווה" value={loanForm.lender} onChange={e => setLoanForm({ ...loanForm, lender: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להלוואה" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההלוואה" value={loanForm.remaining} onChange={e => setLoanForm({ ...loanForm, remaining: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום מקורי" aria-label="סכום ההלוואה המקורי" value={loanForm.original} onChange={e => setLoanForm({ ...loanForm, original: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} />
           <Button onClick={submitLoan}>{editingLoanId != null ? 'שמור' : 'הוסף הלוואה'}</Button>
           {editingLoanId != null && <Button variant="ghost" onClick={resetLoanForm}>ביטול</Button>}
         </div>
@@ -306,10 +306,10 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         <PaymentsTimeline payments={payments} />
         <div className={styles.form}>
-          <input className={styles.input} placeholder="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="סה״כ תשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלומים שנותרו" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום לתשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
+          <input className={styles.input} placeholder="שם העסקה" aria-label="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="numeric" placeholder="סה״כ תשלומים" aria-label="סך כל התשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלומים שנותרו" aria-label="תשלומים שנותרו" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום לתשלום" aria-label="סכום לתשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
           <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוסף תשלום'}</Button>
           {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
         </div>
@@ -353,8 +353,8 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.insurance}</span>ביטוחים<span className={styles.countBadge}>{insurances.length}</span>{insurancesMonthly > 0 ? ` · ${fmt(insurancesMonthly)} לחודש` : ''}</div>
         {!insurances.length && <div className={styles.sectionEmpty}>אין ביטוחים רשומים</div>}
         <div className={styles.form}>
-          <input className={styles.input} placeholder="שם הביטוח" value={insForm.name} onChange={e => setInsForm({ ...insForm, name: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" value={insForm.monthly} onChange={e => setInsForm({ ...insForm, monthly: e.target.value })} />
+          <input className={styles.input} placeholder="שם הביטוח" aria-label="שם הביטוח" value={insForm.name} onChange={e => setInsForm({ ...insForm, name: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" aria-label="סכום חודשי לביטוח" value={insForm.monthly} onChange={e => setInsForm({ ...insForm, monthly: e.target.value })} />
           <Button onClick={submitInsurance}>{editingInsId != null ? 'שמור' : 'הוסף ביטוח'}</Button>
           {editingInsId != null && <Button variant="ghost" onClick={resetInsForm}>ביטול</Button>}
         </div>

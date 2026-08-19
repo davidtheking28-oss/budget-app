@@ -113,9 +113,9 @@ export default function Goals({ clientUserId, advisorId }) {
   return (
     <div>
       <div className={styles.form}>
-        <input className={styles.input} placeholder="שם היעד" value={name} onChange={e => setName(e.target.value)} />
-        <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום יעד" value={target} onChange={e => setTarget(e.target.value)} />
-        <input className={styles.input} type="number" inputMode="numeric" placeholder="חודשים" value={months} onChange={e => setMonths(e.target.value)} onKeyDown={e => e.key === 'Enter' && addGoal()} />
+        <input className={styles.input} placeholder="שם היעד" aria-label="שם היעד" value={name} onChange={e => setName(e.target.value)} />
+        <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום יעד" aria-label="סכום היעד" value={target} onChange={e => setTarget(e.target.value)} />
+        <input className={styles.input} type="number" inputMode="numeric" placeholder="חודשים" aria-label="מספר חודשים ליעד" value={months} onChange={e => setMonths(e.target.value)} onKeyDown={e => e.key === 'Enter' && addGoal()} />
         <Button onClick={addGoal} disabled={adding}>הוסף יעד</Button>
       </div>
 
@@ -159,7 +159,7 @@ export default function Goals({ clientUserId, advisorId }) {
                         className={styles.txInput}
                         type="number"
                         inputMode="decimal"
-                        placeholder="סכום"
+                        placeholder="סכום" aria-label="סכום להפקדה ליעד"
                         autoFocus
                         value={amount}
                         onChange={e => setAmount(e.target.value)}
