@@ -2978,7 +2978,7 @@ function wizRender(){
   if(wizStep===2){setTimeout(()=>{document.getElementById('txAmount').focus();},120);}
   document.getElementById('txDesc').style.display=wizStep===1?'block':'none';
   if(wizStep===2){
-    document.getElementById('wizCatBadge').innerHTML='<span style="display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;">'+catIconSvg(txSelectedCat)+'</span>'+txSelectedCat;
+    document.getElementById('wizCatBadge').innerHTML='<span style="display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;">'+catIconSvg(txSelectedCat)+'</span>'+esc(txSelectedCat);
     setFixedType(txFixedType);
 
   } else {
@@ -4388,7 +4388,7 @@ function renderAnnualSummary(){
   const savingsPct = totalInc>0 ? Math.round(savings/totalInc*100) : 0;
   document.getElementById('annualIncome').textContent = fmt(totalInc);
   document.getElementById('annualExpense').textContent = fmt(totalExp);
-  document.getElementById('annualSavings').textContent = fmt(savings);
+  document.getElementById('annualSavings').textContent = (savings<0?'-':'')+fmt(savings);
   document.getElementById('annualSavings').style.color = savings>=0?'var(--green)':'var(--red)';
   document.getElementById('annualSavingsPct').textContent = savingsPct+'% מההכנסות';
   document.getElementById('annualMonthlyAvg').textContent = monthsWithData>0?fmt(totalExp/monthsWithData):'—';
@@ -4445,7 +4445,7 @@ function countUp(elOrId, target){
   const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
   if(!el) return;
   // a re-render with an unchanged value must not replay the 0→value count
-  if(el._cuVal===target){ if(!el._cuRAF) el.textContent=fmt(target); return; }
+  if(el._cuVal===target){ if(!el._cuRAF) el.textContent=(target<0?'-':'')+fmt(target); return; }
   el._cuVal=target;
   // cancel any in-flight animation on this element so competing loops can't freeze it mid-way
   if(el._cuRAF){ cancelAnimationFrame(el._cuRAF); el._cuRAF=0; }
@@ -4454,7 +4454,7 @@ function countUp(elOrId, target){
   const neg = target < 0;
   const duration = 550;
   const start = performance.now();
-  const finalText = fmt(target);
+  const finalText = (neg?'-':'')+fmt(target);
   function tick(now){
     const t = Math.min((now - start) / duration, 1);
     const ease = 1 - Math.pow(1 - t, 3);
@@ -5026,7 +5026,7 @@ function renderAnalytics(){
       var _lg=document.getElementById('anaCatLegend');
       if(!_lg){ _lg=document.createElement('div'); _lg.id='anaCatLegend'; _cw.parentElement.insertBefore(_lg,_cw.nextSibling); }
       _lg.style.cssText='display:flex;flex-direction:column;gap:7px;margin-top:12px;width:100%';
-      _lg.innerHTML=fin.map(function(c,i){var pc=Math.round(c[1]/_sum*100),col=COLORS[i%COLORS.length];return '<div style="display:flex;align-items:center;gap:9px;font-size:0.84rem">'+'<span style="width:12px;height:12px;border-radius:4px;background:'+col+';flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>'+'<span style="color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c[0]+'</span>'+'<span style="margin-inline-start:auto;color:var(--text3);font-weight:700;font-variant-numeric:tabular-nums">'+pc+'%</span>'+'<span style="color:var(--text2);font-weight:700;min-width:70px;text-align:left;font-variant-numeric:tabular-nums">'+fmt(c[1])+'</span>'+'</div>';}).join('');
+      _lg.innerHTML=fin.map(function(c,i){var pc=Math.round(c[1]/_sum*100),col=COLORS[i%COLORS.length];return '<div style="display:flex;align-items:center;gap:9px;font-size:0.84rem">'+'<span style="width:12px;height:12px;border-radius:4px;background:'+col+';flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>'+'<span style="color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c[0])+'</span>'+'<span style="margin-inline-start:auto;color:var(--text3);font-weight:700;font-variant-numeric:tabular-nums">'+pc+'%</span>'+'<span style="color:var(--text2);font-weight:700;min-width:70px;text-align:left;font-variant-numeric:tabular-nums">'+fmt(c[1])+'</span>'+'</div>';}).join('');
     }catch(e){ _DEBUG&&console.warn('anaLegend',e); }
   }
   const months=[];
@@ -5062,7 +5062,7 @@ function renderAnalytics(){
   bd.innerHTML=sorted.length?sorted.map(([cat,amt],i)=>{
     const prev=prevCatT[cat]||0;let trendStr='',trendCls='same';
     if(prev>0){const p=Math.round((amt-prev)/prev*100);if(p>2){trendStr='↑'+p+'%';trendCls='up';}else if(p<-2){trendStr='↓'+Math.abs(p)+'%';trendCls='down';}else{trendStr='≈';trendCls='same';}}
-    return '<div class="breakdown-row"><div class="breakdown-name">'+catIconSvg(cat)+' '+cat+(cat===_hotCat?' <span class="hot-badge" title="הקטגוריה שגדלה הכי הרבה החודש">🔥</span>':'')+'</div><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:'+Math.round(amt/totalE*100)+'%;background:'+COLORS[i%COLORS.length]+'"></div></div><div class="breakdown-amount">'+fmt(amt)+'<br><span style="color:var(--text3)">'+Math.round(amt/totalE*100)+'%</span></div><div class="breakdown-trend '+trendCls+'">'+trendStr+'</div></div>';
+    return '<div class="breakdown-row"><div class="breakdown-name">'+catIconSvg(cat)+' '+esc(cat)+(cat===_hotCat?' <span class="hot-badge" title="הקטגוריה שגדלה הכי הרבה החודש">🔥</span>':'')+'</div><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:'+Math.round(amt/totalE*100)+'%;background:'+COLORS[i%COLORS.length]+'"></div></div><div class="breakdown-amount">'+fmt(amt)+'<br><span style="color:var(--text3)">'+Math.round(amt/totalE*100)+'%</span></div><div class="breakdown-trend '+trendCls+'">'+trendStr+'</div></div>';
   }).join(''):'<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div><p>אין הוצאות לחודש זה</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">הוסף עסקאות כדי לראות את הניתוח</p></div>';
 }
 
@@ -6275,7 +6275,7 @@ function renderForecastCard(){
   const forecastBalance=income-projectedTotal;
   const valEl=document.getElementById('forecastVal');
   const subEl=document.getElementById('forecastSub');
-  if(valEl)valEl.textContent=(forecastBalance>=0?'+':'')+fmt(forecastBalance);
+  if(valEl)valEl.textContent=(forecastBalance>=0?'+':'-')+fmt(forecastBalance);
   if(valEl)valEl.style.color=forecastBalance>=0?'var(--teal)':'var(--red)';
   if(subEl)subEl.textContent='צפי הוצאה: '+fmt(Math.round(projectedTotal))+' · קצב יומי: '+fmt(Math.round(dailyRate));
   card.style.display='flex';
@@ -7545,7 +7545,7 @@ setTimeout(autoCarryRecurring,500);
             var _wrap=cc.parentElement, _lg=document.getElementById('dashCatLegend');
             if(!_lg){ _lg=document.createElement('div'); _lg.id='dashCatLegend'; _wrap.parentElement.insertBefore(_lg,_wrap.nextSibling); }
             _lg.style.cssText='display:flex;flex-direction:column;gap:7px;margin-top:12px;width:100%';
-            _lg.innerHTML=fin.map(function(c,i){var pc=Math.round(c[1]/_sum*100);var col=COLORS[i%COLORS.length];return '<div style="display:flex;align-items:center;gap:9px;font-size:0.82rem">'+'<span style="width:12px;height:12px;border-radius:4px;background:'+col+';flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>'+'<span style="color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c[0]+'</span>'+'<span style="margin-inline-start:auto;color:var(--text3);font-weight:700;font-variant-numeric:tabular-nums">'+pc+'%</span>'+'<span style="color:var(--text2);font-weight:700;min-width:66px;text-align:left;font-variant-numeric:tabular-nums">'+fmt(c[1])+'</span>'+'</div>';}).join('');
+            _lg.innerHTML=fin.map(function(c,i){var pc=Math.round(c[1]/_sum*100);var col=COLORS[i%COLORS.length];return '<div style="display:flex;align-items:center;gap:9px;font-size:0.82rem">'+'<span style="width:12px;height:12px;border-radius:4px;background:'+col+';flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>'+'<span style="color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c[0])+'</span>'+'<span style="margin-inline-start:auto;color:var(--text3);font-weight:700;font-variant-numeric:tabular-nums">'+pc+'%</span>'+'<span style="color:var(--text2);font-weight:700;min-width:66px;text-align:left;font-variant-numeric:tabular-nums">'+fmt(c[1])+'</span>'+'</div>';}).join('');
           }catch(e){ _DEBUG&&console.warn('legend',e); }
         }
       }

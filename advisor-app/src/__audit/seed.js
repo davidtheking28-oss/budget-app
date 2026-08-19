@@ -157,9 +157,36 @@ const economicMapping = {
 
 export const IDS = { CLIENT_A, CLIENT_B, CLIENT_C, CLIENT_EMPTY, ADVISOR };
 
+// ?data=overflow — the stress scenario: a full roster, very long Hebrew strings,
+// and a task list long enough to expose numbering and wrapping problems.
+const bulkClients = Array.from({ length: 26 }, (_, i) => ({
+  id: 'bulk' + i,
+  advisor_id: ADVISOR,
+  client_id: 'bulk-client-' + i,
+  client_email: i % 4 === 0
+    ? `משפחת-אברמוביץ-כהן-לוי-${i}-חשבון-משותף-ארוך-במיוחד@דואר-אלקטרוני-ישראלי.co.il`
+    : `client.number.${i}.with.a.fairly.long.local.part@some-provider-domain-${i}.com`,
+  status: 'active',
+  created_at: iso(i + 1)
+}));
+
+const bulkTasks = Array.from({ length: 32 }, (_, i) => ({
+  id: 'bt' + i,
+  advisor_id: ADVISOR,
+  client_id: CLIENT_A,
+  title: i % 5 === 0
+    ? 'לבדוק מול חברת הביטוח את כפל הכיסויים בפוליסת הבריאות ובפוליסת הסיעוד, ולהכין טבלת השוואה מסודרת עם המלצה סופית ללקוחה לקראת הפגישה הרבעונית הבאה'
+    : `משימה מספר ${i + 1} למעקב`,
+  due_date: i % 3 === 0 ? d(Math.min(28, (i % 27) + 1)) : null,
+  done: i % 7 === 0,
+  for_client: i % 4 === 0,
+  created_at: iso(i)
+}));
+
 export function makeDb(mode) {
   const empty = mode === 'empty';
-  return {
+  const overflow = mode === 'overflow';
+  const base = {
     advisors: [{ user_id: ADVISOR }],
     advisor_clients: empty ? [] : [
       { id: 'r1', advisor_id: ADVISOR, client_id: CLIENT_A, client_email: 'yael.abramovich@gmail.com', status: 'active', created_at: iso(90) },
@@ -188,5 +215,11 @@ export function makeDb(mode) {
     households: empty ? [] : [
       { id: 'h1', owner_id: CLIENT_A, owner_email: 'yael.abramovich@gmail.com', member_id: 'partner-of-' + CLIENT_A, member_email: 'partner.abramovich@gmail.com', invite_code: 'USEDUP1', created_at: iso(80) }
     ]
+  };
+  if (!overflow) return base;
+  return {
+    ...base,
+    advisor_clients: [...base.advisor_clients, ...bulkClients],
+    advisor_tasks: [...base.advisor_tasks, ...bulkTasks]
   };
 }

@@ -4,10 +4,15 @@ const params = new URLSearchParams(window.location.search);
 const mode = params.get('data') || 'full';
 const db = makeDb(mode);
 
-const session = {
+// The harness is pre-authenticated on purpose, so the auth screens are otherwise
+// unreachable. ?auth=out renders the logged-out Login screen, ?auth=notadvisor
+// renders the "this account is not an advisor" screen.
+const authMode = params.get('auth') || 'in';
+const session = authMode === 'out' ? null : {
   user: { id: IDS.ADVISOR, email: 'advisor@budgetadvisor.co.il' },
   access_token: 'mock'
 };
+if (authMode === 'notadvisor') db.advisors = [];
 
 function clone(v) { return JSON.parse(JSON.stringify(v)); }
 

@@ -2,18 +2,19 @@
    HTML is network-first (online users always get the latest app; cache is
    the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v17';
+const CACHE = 'budget-app-v18';
 const SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png',
   './apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js'
 ];
+/* Deliberately NOT precached — fetched on demand, then runtime-cached:
+   exceljs.min.js (201 KB, only on Excel export) and icon-512.png (389 KB,
+   read by the OS only at install time, which always happens online). */
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
