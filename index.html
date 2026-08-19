@@ -54,7 +54,8 @@
     *{scrollbar-width:none;}
     *::-webkit-scrollbar{display:none;}
     body{font-family:var(--font-sans);background:var(--bg);color:var(--text);direction:rtl;min-height:100%;overflow-x:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:var(--lh-normal);letter-spacing:var(--track-normal);font-feature-settings:'kern' 1;text-rendering:optimizeLegibility;}
-    body.dark{background:radial-gradient(ellipse 150% 60% at 50% 6%,#24201a 0%,var(--bg) 62%) fixed;}
+    body.dark{background:var(--bg);}
+    body.dark::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 150% 60% at 50% 6%,#24201a 0%,var(--bg) 62%);}
     /* Hebrew text: neutralize Latin-oriented negative tracking from utility classes */
     h1,h2,h3,h4,h5,h6,p,span,button,label,input,select,textarea,div{letter-spacing:var(--track-normal);}
     /* Tailwind's .font-mono still points at the removed JetBrains Mono, which
@@ -130,7 +131,7 @@
     .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
     .cards-row.three{grid-template-columns:repeat(3,1fr);}
     #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:50%!important;transform:translateX(-50%)!important;z-index:200!important;margin:0!important;}
-    .page{display:none;}.page.active{display:block;min-height:calc(100svh - 76px - env(safe-area-inset-top,0px) - var(--nav-h) - var(--safe-bottom) - 100px);}
+    .page{display:none;}.page.active{display:block;min-height:calc(100vh - 76px - env(safe-area-inset-top,0px) - var(--nav-h) - var(--safe-bottom) - 60px);min-height:calc(100lvh - 76px - env(safe-area-inset-top,0px) - var(--nav-h) - var(--safe-bottom) - 60px);}
     @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     .exp-row,.exp-struct-row,.exp-pay-card,.income-source-row,.tx-item,.budget-tx-card,.sub-card{animation:rowIn 0.3s cubic-bezier(0.22,1,0.36,1) both;}
     .exp-row:nth-of-type(1){animation-delay:.02s}.exp-row:nth-of-type(2){animation-delay:.05s}.exp-row:nth-of-type(3){animation-delay:.08s}.exp-row:nth-of-type(4){animation-delay:.11s}.exp-row:nth-of-type(5){animation-delay:.14s}.exp-row:nth-of-type(6){animation-delay:.17s}
