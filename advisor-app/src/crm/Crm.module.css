@@ -164,11 +164,15 @@
   transition: opacity 0.25s ease;
 }
 
-/* line-through is inherited, so a completed task drew the rule straight through
-   its "גלוי ללקוח" / "באיחור" badges as well. */
-.done .clientBadge,
-.done .pastBadge,
-.done .soonBadge {
+/* text-decoration propagates into descendants and cannot be switched off by
+   them, so a completed task drew its line-through straight through the
+   "גלוי ללקוח" / "באיחור" badges too. An atomic inline-level box is the only
+   thing that stops the propagation. */
+.clientBadge,
+.pastBadge,
+.soonBadge {
+  display: inline-block;
+  vertical-align: middle;
   text-decoration: none;
 }
 
