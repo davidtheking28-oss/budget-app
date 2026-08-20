@@ -1326,8 +1326,6 @@
        The global :focus-visible rule (2px accent) loses to later
        equal-specificity rules, so restate it with higher weight. */
     .fab:focus-visible,
-    .wiz-pill:focus-visible,
-    .wiz-amount-input:focus-visible,
     .settings-input:focus-visible,
     .search-input:focus-visible,
     .search-bar-input:focus-visible,
@@ -1359,11 +1357,35 @@
       box-shadow:0 0 0 6px rgba(var(--accent-rgb),0.55);
     }
     /* Inside the wizard header (solid accent bg) a white ring has contrast. */
-    .wiz-pill:focus-visible,
-    .wiz-hdr input:focus-visible,
     .wiz-hdr button:focus-visible{
       outline:2px solid #fff!important;
       outline-offset:2px;
+    }
+    /* The text field's focus indicator is the pill it already lives in: a boxed
+       outline around the inner input read as a stray rectangle on the green
+       header. Brightening the pill's own 1.5px border is the same AA-contrast
+       signal (white on accent ~5.3:1) without adding a second frame.
+       Needs !important + the body.dark selector to beat the dark-mode override. */
+    .wiz-pill:focus-visible,
+    .wiz-hdr input:focus-visible{outline:none!important;}
+    .wiz-pill-outer:focus-within,
+    body.dark .wiz-pill-outer:focus-within{
+      background:rgba(255,255,255,0.26)!important;
+      border-color:rgba(255,255,255,0.92)!important;
+    }
+    /* The amount is a bare 3rem number with no container to tint, so it gets an
+       underline rather than a ring boxing in the digits. box-shadow, not
+       border-bottom, so the ch-based width isn't nudged on focus. */
+    .sheet .wiz-amount-input:focus-visible,
+    .wiz-amount-input:focus-visible{
+      outline:none!important;
+      /* Painted as a background layer, not a box-shadow: the input carries
+         border-radius:8px, so an offset shadow curled up the sides into a
+         rounded "U" instead of reading as an underline. */
+      background-image:linear-gradient(var(--accent),var(--accent));
+      background-size:100% 3px;
+      background-position:bottom center;
+      background-repeat:no-repeat;
     }
 
     /* A2 · Dark mode: --accent (#34d3a9) with white text is 1.90:1.
