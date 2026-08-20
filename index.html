@@ -4791,6 +4791,13 @@ const _REFINEMENTS={
   'דמי כיס':'דמי כיס/ילדים','ילדים':'דמי כיס/ילדים',
   'חג':'יהדות/חגים','בית כנסת':'יהדות/חגים','כשרות':'יהדות/חגים','פסח':'יהדות/חגים','חנוכה':'יהדות/חגים','תרומה':'יהדות/חגים',
   'ביטוח לאומי':'ביטוח לאומי',
+  // Private policies are tracked as their own entity (מנויים/ביטוחים), not as a
+  // spending category. The stale dictionaries filed car policies under תיקוני רכב
+  // and life/travel policies plus private insurers under ביטוח לאומי — which is the
+  // National Insurance Institute, a FIXED_AUTO category whose total they corrupted.
+  'ביטוח רכב':'שונות','ביטוח חובה':'שונות','ביטוח מקיף':'שונות',
+  'ביטוח חיים':'שונות','ביטוח נסיעות':'שונות','ביטוח משכנתא':'שונות',
+  'הפניקס':'שונות','מנורה':'שונות','כלל ביטוח':'שונות','הכשרה':'שונות',
   'ביט':'שונות','paybox':'שונות'
 };
 Object.assign(NLP_MAP,_REFINEMENTS);
