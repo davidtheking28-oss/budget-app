@@ -3029,7 +3029,9 @@ let wizStep=1;
 function setTxType(type){
   txTypeFilter=type;
   const cats=getEffectiveCats(type);
-  txSelectedCat=cats[0];
+  // Default to the catch-all, not the first category: anything the dictionary
+  // didn't recognise used to be filed as מזון לבית without the user noticing.
+  txSelectedCat=cats.find(c=>c==='שונות'||c==='אחר')||cats[0];
   txFixedType=type==='income'?'fixed':'variable';
   wizRenderCats(cats);
   wizStep=1;
@@ -3672,7 +3674,10 @@ function renderTxCategorized(byCat){
   if(txListFilter!=='fixed'){
     const varEntries=[];
     const _varCats=getEffectiveExpenseCats();
-    Object.keys(budgets).filter(c=>_varCats.includes(c)).forEach(cat=>{
+    // Same fix as renderBudget: list every category that has spending this period,
+    // not just the ones with a budget defined.
+    const _spentCats=Object.keys(byCat).filter(c=>(byCat[c]||[]).some(t=>!t.fx));
+    [...new Set([...Object.keys(budgets),..._spentCats])].filter(c=>_varCats.includes(c)).forEach(cat=>{
       const amount=(byCat[cat]||[]).filter(t=>!t.fx).reduce((s,t)=>s+t.amount,0);
       const key='var:'+cat;
       const rowHtml=_expRowHtml({key,cat,amount,editable:true,
@@ -4791,6 +4796,7 @@ const _REFINEMENTS={
   'דמי כיס':'דמי כיס/ילדים','ילדים':'דמי כיס/ילדים',
   'חג':'יהדות/חגים','בית כנסת':'יהדות/חגים','כשרות':'יהדות/חגים','פסח':'יהדות/חגים','חנוכה':'יהדות/חגים','תרומה':'יהדות/חגים',
   'ביטוח לאומי':'ביטוח לאומי',
+  'בירה':'אוכל בחוץ ובילויים','קולה':'אוכל בחוץ ובילויים',
   // Private policies are tracked as their own entity (מנויים/ביטוחים), not as a
   // spending category. The stale dictionaries filed car policies under תיקוני רכב
   // and life/travel policies plus private insurers under ביטוח לאומי — which is the
@@ -4889,9 +4895,12 @@ function wizDescNlp(val){
   if(matched) showWizSuggestion(matched);
   else if(bar) bar.style.display='none';
 
-  // AI match (debounced, overrides local if better)
+  // AI fills only the gaps the dictionary can't. It used to override every local
+  // hit, which re-filed tuned Israeli terms — "סודה" went from אוכל בחוץ ובילויים
+  // to מזון לבית. The dictionary is deterministic and fixable; the model isn't.
+  // Skipping the call on a hit also cuts AI quota use.
   clearTimeout(_aiCatTimer);
-  if(val.length >= 3){
+  if(!matched && val.length >= 3){
     _aiCatTimer = setTimeout(() => callAiCategorize(val), 600);
   }
 }
@@ -5268,7 +5277,11 @@ function renderBudget(){
   const mTx=getMonthTx(currentYear,currentMonth);
   const spent={};mTx.filter(t=>t.type==='expense').forEach(t=>{spent[t.cat]=(spent[t.cat]||0)+t.amount;});
   const _budCats=getEffectiveBudgetCats();
-  const allCats=Object.keys(budgets).filter(c=>_budCats.includes(c)).sort();
+  // Spending in a category with no budget used to vanish from this page: the list
+  // was built from the budgets object alone. Fold in whatever was actually spent
+  // this month so money can never disappear from the user's view.
+  const allCats=[...new Set([...Object.keys(budgets),...Object.keys(spent)])]
+    .filter(c=>_budCats.includes(c)).sort();
   const carry={};allCats.forEach(c=>{carry[c]=_budgetCarry(c);});
   const effLim=c=>budgets[c]?Math.max(0,budgets[c]+(carry[c]||0)):0;
   const empty=document.getElementById('budgetEmpty');
@@ -5356,7 +5369,7 @@ function renderBudgetDetail(spent,effLim){
     '<div class="budget-detail-header">'
       +'<div class="budget-detail-text">'
         +'<div class="budget-detail-name">'+esc(cat)+'</div>'
-        +'<div class="budget-detail-amount">'+fmt(s)+' <span class="budget-detail-limit">/ '+fmt(lim)+'</span></div>'
+        +'<div class="budget-detail-amount">'+fmt(s)+' <span class="budget-detail-limit">'+(baseLim?'/ '+fmt(lim):'· ללא תקציב')+'</span></div>'
       +'</div>'
       +'<div class="budget-detail-actions">'
         +'<button type="button" class="budget-icon-btn" data-act="del-budget" aria-label="מחק תקציב">'+trashSvg+'</button>'
@@ -7100,7 +7113,7 @@ function importBankCSV(){
           if(date && desc && amount!==0){
             if(existing.has(date+'|'+desc+'|'+Math.abs(amount))){ skippedDup++; return; }
             const type = amount<0?'expense':'income';
-            const cat = categorize(desc, type) || (type==='expense'?EXPENSE_CATS[0]:INCOME_CATS[0]);
+            const cat = categorize(desc, type) || (type==='expense'?'שונות':'אחר');
             transactions.push({
               id:Date.now()+imported,
               type, cat, desc,
@@ -7732,7 +7745,7 @@ setTimeout(autoCarryRecurring,500);
           var imported=0, skippedDup=0;
           function normDate(v){ var m=String(v).match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/); if(!m)return ''; var d=m[1].padStart(2,'0'),mo=m[2].padStart(2,'0'),y=m[3].length===2?'20'+m[3]:m[3]; return y+'-'+mo+'-'+d; }
           function normAmt(v){ var c=String(v).replace(/[₪,\s]/g,'').replace(/[^\d.\-]/g,''); if(!/^-?\d+(\.\d+)?$/.test(c)) return null; return parseFloat(c); }
-          function addTx(date,desc,amount,forceType){ if(!date||!desc||!amount) return; var key=date+'|'+desc+'|'+Math.abs(amount); if(existing.has(key)){skippedDup++;return;} var type=forceType||(amount<0?'expense':'income'); var cat=categorize(desc,type)||(type==='expense'?EXPENSE_CATS[0]:INCOME_CATS[0]); transactions.push({id:Date.now()+Math.random(),type:type,cat:cat,desc:desc,amount:Math.abs(amount),date:date,recurring:false}); existing.add(key); imported++; }
+          function addTx(date,desc,amount,forceType){ if(!date||!desc||!amount) return; var key=date+'|'+desc+'|'+Math.abs(amount); if(existing.has(key)){skippedDup++;return;} var type=forceType||(amount<0?'expense':'income'); var cat=categorize(desc,type)||(type==='expense'?'שונות':'אחר'); transactions.push({id:Date.now()+Math.random(),type:type,cat:cat,desc:desc,amount:Math.abs(amount),date:date,recurring:false}); existing.add(key); imported++; }
           function detectSubs(){ var byDesc={}; transactions.filter(function(t){return t.type==='expense';}).forEach(function(t){var k=(t.desc||'').toLowerCase().trim();if(!byDesc[k])byDesc[k]=[];byDesc[k].push(t);}); var existingNames=new Set(subscriptions.map(function(s){return(s.name||'').toLowerCase();})); var found=[]; Object.keys(byDesc).forEach(function(k){var txs=byDesc[k];if(txs.length<2)return;if(existingNames.has(k))return;txs.sort(function(a,b){return a.date.localeCompare(b.date);}); var amounts=txs.map(function(t){return t.amount;}); var avg=amounts.reduce(function(s,a){return s+a;},0)/amounts.length; var ok=amounts.every(function(a){return Math.abs(a-avg)/avg<0.15;}); if(!ok)return; var dates=txs.map(function(t){return new Date(t.date);}); var intervals=[]; for(var i=1;i<dates.length;i++)intervals.push((dates[i]-dates[i-1])/86400000); var avgI=intervals.reduce(function(s,a){return s+a;},0)/intervals.length; var cycle=avgI>=25&&avgI<=35?'monthly':avgI>=340&&avgI<=390?'annual':null; if(!cycle)return; found.push({name:txs[0].desc,amount:Math.round(avg*100)/100,cycle:cycle});}); return found; }
           function finish(){ if(imported>0){ saveData(); refreshAll(); showPage('dashboard',document.getElementById('nav-dashboard')); var msg='✓ יובאו '+imported+' עסקאות'+(skippedDup>0?' · '+skippedDup+' כפילויות דולגו':''); var subs=detectSubs(); if(subs.length){showDetectedSubs(subs,msg);}else{showToast(msg);} } else if(skippedDup>0){ showToast('כל העסקאות בקובץ כבר קיימות ('+skippedDup+' כפילויות)'); } else { showToast('❌ לא נמצאו עסקאות בקובץ'); } }
 
