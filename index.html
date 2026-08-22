@@ -3833,6 +3833,7 @@ function _applyMerged(m){
     ||JSON.stringify(m.budgets)!==JSON.stringify(budgets);
   transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;fixedExpenses=m.fixed_expenses;insurances=m.insurances;budgets=m.budgets;
   _migrateCats();   // cloud rows may still carry the old category names
+  _fixRefinedCats();
   localStorage.setItem(_modeKey('budget_tx'),JSON.stringify(transactions));
   localStorage.setItem(_modeKey('budget_goals'),JSON.stringify(goals));
   localStorage.setItem(_modeKey('budget_subs'),JSON.stringify(subscriptions));
@@ -4805,6 +4806,7 @@ const _REFINEMENTS={
   // spending category. The stale dictionaries filed car policies under תיקוני רכב
   // and life/travel policies plus private insurers under ביטוח לאומי — which is the
   // National Insurance Institute, a FIXED_AUTO category whose total they corrupted.
+  'ביטוח בריאות':'בריאות',
   'ביטוח רכב':'שונות','ביטוח חובה':'שונות','ביטוח מקיף':'שונות',
   'ביטוח חיים':'שונות','ביטוח נסיעות':'שונות','ביטוח משכנתא':'שונות',
   'הפניקס':'שונות','מנורה':'שונות','כלל ביטוח':'שונות','הכשרה':'שונות',
@@ -4837,6 +4839,32 @@ let learnedAmts = {};
 try{ learnedAmts = JSON.parse(localStorage.getItem('budget_learned_amts')||'{}'); }catch(e){ learnedAmts = {}; }
 function normDesc(s){
   return String(s||'').toLowerCase().replace(/[\d.,!?"'()\[\]{}:;₪$%*+#@\/\\-]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+// תיקון חד-פעמי: תיאורים שהמילון ממפה במפורש היום, אבל נשמרו לפני שהתיקון נכנס
+// — ואז סווגו על ידי ניחוש של ה-AI. מוגבל למפתחות מדויקים כדי שסיווגים
+// שהמשתמש בחר ידנית לא יידרסו.
+const _REFINED_EXACT=Object.assign({},_REFINEMENTS,_FOOD_SPLIT);
+function _fixRefinedCats(){
+  // learnCat() writes on every save, so a learned entry is not proof the user chose
+  // it — the AI's guesses are in there too. Purge the ones the dictionary contradicts
+  // once, then the dictionary is authoritative for these exact words.
+  if(localStorage.getItem('budget_refine_fix')!=='1'){
+    Object.keys(_REFINED_EXACT).forEach(k=>{
+      if(learnedCats[k]&&learnedCats[k]!==_REFINED_EXACT[k])delete learnedCats[k];
+    });
+    try{
+      localStorage.setItem('budget_learned_cats',JSON.stringify(learnedCats));
+      localStorage.setItem('budget_refine_fix','1');
+    }catch(e){}
+  }
+  let changed=false;
+  transactions.forEach(t=>{
+    if(t.type!=='expense'||t.fx)return;
+    const n=_REFINED_EXACT[normDesc(t.desc)];
+    if(n&&n!==t.cat){t.cat=n;changed=true;}
+  });
+  return changed;
 }
 function learnCat(desc, cat, type, amount){
   const key = normDesc(desc);
@@ -6888,7 +6916,8 @@ function finishOnboarding(){
 function init(){
   const _catsMigrated=_migrateCats();         // remap locally-stored data from the old category list
   const _paysMigrated=_migratePayments();     // anchor legacy payment progress to the current month
-  if(_fxApply()||_catsMigrated||_paysMigrated)saveData();  // materialize this month's fixed expenses
+  const _refineFixed=_fixRefinedCats();       // repair rows the AI guessed before the dictionary knew the word
+  if(_fxApply()||_catsMigrated||_paysMigrated||_refineFixed)saveData();  // materialize this month's fixed expenses
   var _tmode=localStorage.getItem('budget_theme');
   if(!_tmode){ var _od=localStorage.getItem('budget_dark'); _tmode=_od==='1'?'dark':(_od==='0'?'light':'system'); }
   var _sysDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -8144,7 +8173,7 @@ setTimeout(autoCarryRecurring,500);
 </script>
 
 <!-- ════ Auto-lock overlay ════ -->
-<div id="autoLockOverlay" onclick="unlockApp()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,12,22,0.97);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:20px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);">
+<div id="autoLockOverlay" role="dialog" aria-modal="true" aria-label="האפליקציה נעולה" tabindex="-1" onclick="unlockApp()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,12,22,0.97);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:20px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);">
   <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">🔒</div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
     <div style="font-size:1.15rem;font-weight:800;color:#f0ebe3;font-family:Assistant,sans-serif;letter-spacing:0;">תקציב אישי</div>
@@ -8160,6 +8189,31 @@ setTimeout(autoCarryRecurring,500);
 
   function getEl(){ return document.getElementById('autoLockOverlay'); }
 
+  // The overlay only paints over the app — a screen reader still read every
+  // balance behind it. inert + aria-hidden take the content out of the a11y tree
+  // too. Elements that were already hidden stay hidden when we release.
+  var _wasHidden = null;
+  function hideBehind(on){
+    var el = getEl();
+    var kids = Array.prototype.slice.call(document.body.children);
+    if(on){
+      _wasHidden = [];
+      kids.forEach(function(c){
+        if(c === el || c.tagName === 'SCRIPT') return;
+        _wasHidden.push([c, c.getAttribute('aria-hidden')]);
+        c.setAttribute('inert', '');
+        c.setAttribute('aria-hidden', 'true');
+      });
+    } else if(_wasHidden){
+      _wasHidden.forEach(function(p){
+        p[0].removeAttribute('inert');
+        if(p[1] === null) p[0].removeAttribute('aria-hidden');
+        else p[0].setAttribute('aria-hidden', p[1]);
+      });
+      _wasHidden = null;
+    }
+  }
+
   function lock(){
     if(_locked) return;
     _locked = true;
@@ -8168,7 +8222,8 @@ setTimeout(autoCarryRecurring,500);
     el.style.opacity = '0';
     el.style.display = 'flex';
     el.style.transition = 'opacity 0.4s';
-    requestAnimationFrame(function(){ el.style.opacity = '1'; });
+    hideBehind(true);
+    requestAnimationFrame(function(){ el.style.opacity = '1'; el.focus(); });
   }
 
   window.unlockApp = function(){
@@ -8176,6 +8231,7 @@ setTimeout(autoCarryRecurring,500);
     var el = getEl(); if(!el) return;
     el.style.transition = 'opacity 0.25s';
     el.style.opacity = '0';
+    hideBehind(false);
     setTimeout(function(){ el.style.display = 'none'; el.style.transition = ''; _locked = false; resetTimer(); }, 260);
   };
 
@@ -8186,6 +8242,10 @@ setTimeout(autoCarryRecurring,500);
 
   ['touchstart','touchend','mousedown','keydown','scroll'].forEach(function(ev){
     document.addEventListener(ev, function(){ if(!_locked) resetTimer(); }, {passive:true});
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(_locked && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); unlockApp(); }
   });
 
   document.addEventListener('visibilitychange', function(){
