@@ -4797,6 +4797,10 @@ const _REFINEMENTS={
   'חג':'יהדות/חגים','בית כנסת':'יהדות/חגים','כשרות':'יהדות/חגים','פסח':'יהדות/חגים','חנוכה':'יהדות/חגים','תרומה':'יהדות/חגים',
   'ביטוח לאומי':'ביטוח לאומי',
   'בירה':'אוכל בחוץ ובילויים','קולה':'אוכל בחוץ ובילויים',
+  // The category is literally named 'אוכל בחוץ ובילויים' but the singular
+  // 'בילוי' matched nothing, so the model guessed and filed nights out
+  // under דלק וחניה.
+  'בילוי':'אוכל בחוץ ובילויים','בילויים':'אוכל בחוץ ובילויים',
   // Private policies are tracked as their own entity (מנויים/ביטוחים), not as a
   // spending category. The stale dictionaries filed car policies under תיקוני רכב
   // and life/travel policies plus private insurers under ביטוח לאומי — which is the
