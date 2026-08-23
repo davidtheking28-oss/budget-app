@@ -106,7 +106,10 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
       <div className={styles.tabBarBleed}>
         <div className={styles.tabRow}>
           <nav className={styles.tabBar}>
-            {nav.map(n => (
+            {nav.map((n, i) => [
+              i > 0 && n.group && n.group !== nav[i - 1].group
+                ? <span key={n.key + '-div'} className={styles.tabDivider} aria-hidden="true" />
+                : null,
               <button
                 key={n.key}
                 ref={n.key === activeNav ? activeTabRef : null}
@@ -116,7 +119,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
                 {n.icon && <span className={styles.tabIcon} aria-hidden="true">{n.icon}</span>}
                 {n.label}
               </button>
-            ))}
+            ])}
           </nav>
           {sidebarInfo && <div className={styles.infoRow}>{sidebarInfo}</div>}
         </div>

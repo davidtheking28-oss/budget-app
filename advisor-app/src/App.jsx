@@ -30,16 +30,19 @@ import { addMonths } from './budget/monthUtils.js';
 
 const svgProps = { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
+// `group` drives the divider Shell renders between clusters — not a data model,
+// just enough to tell the advisor "overview, then relationship + fast entry,
+// then the financial detail tabs" at a glance in a flat nav bar.
 const NAV = [
-  { key: 'dashboard', label: 'דשבורד', icon: <svg {...svgProps}><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="5" rx="1.5" /><rect x="13" y="12" width="8" height="9" rx="1.5" /><rect x="3" y="15" width="8" height="6" rx="1.5" /></svg> },
-  { key: 'expenses', label: 'תזרים', icon: <svg {...svgProps}><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></svg> },
-  { key: 'budget', label: 'תקציב', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
-  { key: 'analysis', label: 'ניתוח', icon: <svg {...svgProps}><path d="M4 20V10M12 20V4M20 20v-7" /></svg> },
-  { key: 'goals', label: 'יעדים', icon: <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></svg> },
-  { key: 'subs', label: 'מנויים והלוואות', icon: <svg {...svgProps}><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg> },
-  { key: 'assets', label: 'נכסים והתחייבויות', icon: <svg {...svgProps}><path d="M3 21h18" /><path d="M5 21V9l7-5 7 5v12" /><path d="M10 21v-6h4v6" /></svg> },
-  { key: 'crm', label: 'לקוח', icon: <svg {...svgProps}><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" /></svg> },
-  { key: 'mapping', label: 'מיפוי כלכלי', icon: <svg {...svgProps}><path d="M4 4h16v16H4z" /><path d="M4 9h16M9 9v11" /></svg> }
+  { key: 'dashboard', label: 'דשבורד', group: 'overview', icon: <svg {...svgProps}><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="5" rx="1.5" /><rect x="13" y="12" width="8" height="9" rx="1.5" /><rect x="3" y="15" width="8" height="6" rx="1.5" /></svg> },
+  { key: 'crm', label: 'לקוח', group: 'tools', icon: <svg {...svgProps}><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" /></svg> },
+  { key: 'mapping', label: 'מיפוי כלכלי', group: 'tools', icon: <svg {...svgProps}><path d="M4 4h16v16H4z" /><path d="M4 9h16M9 9v11" /></svg> },
+  { key: 'expenses', label: 'תזרים', group: 'money', icon: <svg {...svgProps}><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></svg> },
+  { key: 'budget', label: 'תקציב', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
+  { key: 'analysis', label: 'ניתוח', group: 'money', icon: <svg {...svgProps}><path d="M4 20V10M12 20V4M20 20v-7" /></svg> },
+  { key: 'goals', label: 'יעדים', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></svg> },
+  { key: 'subs', label: 'מנויים והלוואות', group: 'money', icon: <svg {...svgProps}><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg> },
+  { key: 'assets', label: 'נכסים והתחייבויות', group: 'money', icon: <svg {...svgProps}><path d="M3 21h18" /><path d="M5 21V9l7-5 7 5v12" /><path d="M10 21v-6h4v6" /></svg> }
 ];
 
 const today = new Date();
@@ -111,7 +114,9 @@ export default function App() {
 
   const switchClient = (clientId, clientEmail) => {
     setSelectedClient({ id: clientId, email: clientEmail });
-    setNav(NAV[0].key);
+    // Deliberately not resetting `nav`: an advisor working through 40+ clients
+    // via Ctrl+K on the same tab (e.g. מיפוי כלכלי) should stay on that tab
+    // across every switch, not restart at "דשבורד" each time.
     setYm({ year: today.getFullYear(), month: today.getMonth() });
   };
 
