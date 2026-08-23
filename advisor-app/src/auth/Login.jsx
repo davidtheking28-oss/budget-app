@@ -70,7 +70,7 @@ export default function Login({ recovery, onRecoveryDone }) {
       <div className={styles.diagonal}></div>
       <div className={styles.card}>
         <Logo size="lg" />
-        <div className={styles.logo}>Budget Advisor</div>
+        <div className={styles.logo}>תקציב אישי · יועץ</div>
         <div className={styles.tagline}>
           {mode === 'login' && 'קונסולת ניהול לקוחות'}
           {mode === 'signup' && 'יצירת חשבון יועץ'}

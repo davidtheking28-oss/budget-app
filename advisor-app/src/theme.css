@@ -9,8 +9,11 @@
   --accent-2: #066552;
   --accent-ink: #ffffff;
   --accent-dim: rgba(10, 122, 98, 0.09);
-  --gold: #7c4a06;
-  --gold-rgb: 124, 74, 6;
+  /* Was #7c4a06 — contrast ratio 1.12 against --red (#b02631), functionally the
+     same color to a fast glance or anyone color-blind. This value keeps 3:1+
+     against white for large stat numbers while separating cleanly from red. */
+  --gold: #c2760a;
+  --gold-rgb: 194, 118, 10;
   --green-rgb: 4, 107, 77;
   --red-rgb: 176, 38, 49;
   --text: #0f231e;
@@ -91,8 +94,9 @@
   --accent-2: #22b78e;
   --accent-ink: #052018;
   --accent-dim: rgba(45, 212, 167, 0.14);
-  --gold: #e0b768;
-  --gold-rgb: 224, 183, 104;
+  /* Was #e0b768 — 1.26:1 against dark --red (#f28b91). Same fix as light mode. */
+  --gold: #f3ca3f;
+  --gold-rgb: 243, 202, 63;
   --green: #3ddba8;
   --green-rgb: 61, 219, 168;
   --red: #f28b91;
