@@ -38,9 +38,20 @@ export default function Login({ recovery, onRecoveryDone }) {
     if (password.length < 6) { setError('הסיסמה חייבת להיות באורך 6 תווים לפחות'); return; }
     setSending(true);
     const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+    if (error) {
+      setSending(false);
+      setError(error.message.includes('already registered') ? 'כבר קיים חשבון עם המייל הזה' : 'שגיאה בהרשמה, נסה שוב');
+      return;
+    }
+    // Signup alone doesn't grant advisor access — someone still has to approve
+    // it. Without this row, the account has no landing spot at all afterward.
+    if (data.user) {
+      await supabase.from('advisor_access_requests').insert({ user_id: data.user.id, email: email.trim() });
+    }
     setSending(false);
-    if (error) { setError(error.message.includes('already registered') ? 'כבר קיים חשבון עם המייל הזה' : 'שגיאה בהרשמה, נסה שוב'); return; }
     if (!data.session) { setMode('signupSent'); return; }
+    // Else: a session exists immediately (email confirmation off). App's own
+    // auth listener picks it up and routes to the pending-approval screen.
   }
 
   async function sendReset() {
@@ -73,8 +84,8 @@ export default function Login({ recovery, onRecoveryDone }) {
         <div className={styles.logo}>תקציב אישי · יועץ</div>
         <div className={styles.tagline}>
           {mode === 'login' && 'קונסולת ניהול לקוחות'}
-          {mode === 'signup' && 'יצירת חשבון יועץ'}
-          {mode === 'signupSent' && 'יצירת חשבון יועץ'}
+          {mode === 'signup' && 'בקשת גישה כיועץ'}
+          {mode === 'signupSent' && 'בקשת גישה כיועץ'}
           {mode === 'forgot' && 'איפוס סיסמה'}
           {mode === 'sent' && 'איפוס סיסמה'}
           {mode === 'newPassword' && 'הגדרת סיסמה חדשה'}
@@ -87,7 +98,7 @@ export default function Login({ recovery, onRecoveryDone }) {
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             </div>
-            נשלח קישור אימות למייל שלך - לחץ עליו כדי להשלים את ההרשמה
+            נשלח קישור אימות למייל שלך — לחץ עליו כדי להשלים את ההרשמה. לאחר מכן הבקשה שלך לגישת יועץ תמתין לאישור ידני.
             <button type="button" className={styles.linkBtn} onClick={() => setMode('login')}>חזרה להתחברות</button>
           </div>
         ) : mode === 'sent' ? (
@@ -149,7 +160,7 @@ export default function Login({ recovery, onRecoveryDone }) {
               <Button className={styles.button} onClick={signIn} disabled={sending}>{sending ? 'מתחבר…' : 'התחבר'}</Button>
             )}
             {mode === 'signup' && (
-              <Button className={styles.button} onClick={signUp} disabled={sending}>{sending ? 'נרשם…' : 'הרשמה'}</Button>
+              <Button className={styles.button} onClick={signUp} disabled={sending}>{sending ? 'שולח…' : 'שליחת בקשה'}</Button>
             )}
             {mode === 'forgot' && (
               <Button className={styles.button} onClick={sendReset} disabled={sending}>{sending ? 'שולח…' : 'שלח קישור לאיפוס'}</Button>
@@ -158,7 +169,7 @@ export default function Login({ recovery, onRecoveryDone }) {
             {mode === 'login' && (
               <>
                 <button type="button" className={styles.linkBtn} onClick={() => { setMode('forgot'); setError(''); }}>שכחת סיסמה?</button>
-                <button type="button" className={styles.linkBtn} onClick={() => { setMode('signup'); setError(''); }}>אין לך חשבון? הרשם</button>
+                <button type="button" className={styles.linkBtn} onClick={() => { setMode('signup'); setError(''); }}>יועץ חדש? בקש גישה</button>
               </>
             )}
             {(mode === 'signup' || mode === 'forgot') && (
