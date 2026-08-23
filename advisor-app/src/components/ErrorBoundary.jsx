@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import styles from './ErrorState.module.css';
+import { reportError } from '../errorReporter';
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -13,6 +14,8 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error) {
     console.error(error);
+    // A render crash never reaches window.onerror — React swallows it here.
+    reportError({ kind: 'react', message: error?.message ?? error, stack: error?.stack });
   }
 
   render() {

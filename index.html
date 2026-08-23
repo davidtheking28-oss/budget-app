@@ -1408,6 +1408,36 @@
 </head>
 <body class="dark">
 <script>(function(){try{var m=localStorage.getItem('budget_theme');if(!m){var o=localStorage.getItem('budget_dark');m=o==='1'?'dark':(o==='0'?'light':'system');}var s=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;document.body.classList.toggle('dark', m==='system'?!!s:(m==='dark'));}catch(e){}})();</script>
+<script>
+// Crash reporting. Installed before anything else so a failure during boot —
+// the one you can least afford to miss — is still captured. Errors queue here
+// and _errInstallSender() (further down, once Supabase is up) drains them.
+(function(){
+  var Q=[], sent=0, seen={}, send=null;
+  var MAX=20;                       // one broken render can fire in a loop
+  function cut(s,n){ s=String(s==null?'':s); return s.length>n?s.slice(0,n):s; }
+  function push(rec){
+    var k=rec.kind+'|'+rec.message+'|'+rec.lineno;
+    if(seen[k]||sent>=MAX)return;
+    seen[k]=1; sent++;
+    rec.app='budget';
+    rec.ua=cut(navigator.userAgent,300);
+    if(send)send(rec); else Q.push(rec);
+  }
+  window.addEventListener('error',function(e){
+    if(!e)return;
+    push({kind:'error',message:cut(e.message,500),source:cut(e.filename,300),
+          lineno:e.lineno|0,colno:e.colno|0,stack:cut(e.error&&e.error.stack,4000)});
+  });
+  window.addEventListener('unhandledrejection',function(e){
+    var r=e&&e.reason;
+    push({kind:'unhandledrejection',message:cut(r&&r.message||r,500),
+          stack:cut(r&&r.stack,4000)});
+  });
+  window._errSetSender=function(fn){ send=fn; var q=Q; Q=[]; q.forEach(fn); };
+  window._errReport=function(kind,message,stack){ push({kind:kind,message:cut(message,500),stack:cut(stack,4000)}); };
+})();
+</script>
 <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
 
 <div id="rotateLockOverlay"><div class="rotate-lock-icon">📱</div><div class="rotate-lock-text">האפליקציה מיועדת לשימוש במצב לאורך בלבד<br>סובבו את המכשיר בחזרה</div></div>
@@ -2267,8 +2297,17 @@
           <button type="button" class="set-dd-trigger" onclick="toggleSetDD('dataDD')"><span>💾 ייבוא, ייצוא וגיבוי</span><svg aria-hidden="true" focusable="false" class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
           <div class="set-dd-menu">
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();importBankCSV()"><span>🏦</span> ייבא עסקאות מקובץ בנק (CSV)</button>
+            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();exportBackup()"><span>💾</span> ייצוא גיבוי מלא (JSON)</button>
+            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();pickBackupFile()"><span>♻️</span> שחזור מקובץ גיבוי</button>
+            <button type="button" class="set-dd-opt" onclick="restoreAutoBackup()"><span>🕘</span> שחזור מגיבוי אוטומטי <span id="autoBkInfo" style="color:var(--text3);font-size:0.78rem;margin-right:4px"></span></button>
+            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();resetAllData()" style="color:var(--red)"><span>🗑️</span> איפוס כל הנתונים</button>
           </div>
         </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">חשבון ופרטיות</div>
+        <button type="button" class="set-dd-opt" style="width:100%" onclick="openSupportSheet()"><span>✉️</span> צור קשר / דיווח על תקלה</button>
+        <button type="button" class="set-dd-opt" style="width:100%;color:var(--red)" onclick="deleteAccount()"><span>⛔</span> מחיקת חשבון לצמיתות</button>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">סנכרון ושיתוף</div>
@@ -2420,6 +2459,34 @@
 <div id="offlineBanner">📶 אין חיבור לאינטרנט: הנתונים נשמרים מקומית</div>
 <div id="toast" role="status" aria-live="polite"></div>
 
+<div class="sheet-overlay" id="supportSheet" onclick="if(event.target===this)closeSheet('supportSheet')">
+  <div class="sheet" style="max-height:86vh">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">✉️ צור קשר<button onclick="closeSheet('supportSheet')" aria-label="סגור" class="sheet-close-x">✕</button></div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:8px;">
+      <div class="form-field">
+        <label for="supportTopic" style="font-size:0.82rem;font-weight:600;color:var(--text2)">נושא</label>
+        <select id="supportTopic" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:0.9rem;color:var(--text);background:var(--surface)">
+          <option value="bug">דיווח על תקלה</option>
+          <option value="delete">בקשת מחיקת נתונים</option>
+          <option value="question">שאלה</option>
+          <option value="other">אחר</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="supportEmail" style="font-size:0.82rem;font-weight:600;color:var(--text2)">מייל לחזרה</label>
+        <input id="supportEmail" type="email" inputmode="email" placeholder="כדי שנוכל לענות לך" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:0.9rem;color:var(--text);background:var(--surface)"/>
+      </div>
+      <div class="form-field">
+        <label for="supportBody" style="font-size:0.82rem;font-weight:600;color:var(--text2)">ההודעה</label>
+        <textarea id="supportBody" rows="5" placeholder="מה קרה? מה ניסית לעשות?" style="width:100%;box-sizing:border-box;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:0.9rem;color:var(--text);background:var(--surface);resize:vertical"></textarea>
+      </div>
+      <div style="font-size:0.75rem;color:var(--text3);line-height:1.6">נשלחים רק הנושא, ההודעה, המייל שהזנת וסוג הדפדפן. הנתונים הפיננסיים שלך לא נשלחים.</div>
+      <button class="btn btn-primary btn-full" onclick="sendSupportMessage()">שליחה</button>
+    </div>
+  </div>
+</div>
+
 <div class="sheet-overlay" id="termsSheet" onclick="if(event.target===this)closeSheet('termsSheet')">
   <div class="sheet" style="max-height:86vh">
     <div class="sheet-handle"></div>
@@ -2494,8 +2561,9 @@
         <ul style="margin:0;padding-right:18px;display:flex;flex-direction:column;gap:6px;">
           <li><strong>עיון</strong> — כל נתוניך גלויים לך בממשק האפליקציה.</li>
           <li><strong>תיקון</strong> — ניתן לערוך כל עסקה ישירות.</li>
-          <li><strong>מחיקה</strong> — "איפוס כל הנתונים" בהגדרות מוחק מהמכשיר. לבקשת מחיקה מהענן, פנה אלינו.</li>
-          <li><strong>ניידות</strong> — "ייצוא גיבוי" בהגדרות מייצא את כל נתוניך.</li>
+          <li><strong>מחיקה</strong> — "מחיקת חשבון לצמיתות" בהגדרות מוחק את כל נתוניך מהענן ומהמכשיר וסוגר את החשבון, מיידית וללא צורך בפנייה. "איפוס כל הנתונים" מוחק את הנתונים ומשאיר את החשבון פתוח.</li>
+          <li><strong>ניידות</strong> — "ייצוא גיבוי מלא (JSON)" בהגדרות מייצא את כל נתוניך בקובץ אחד.</li>
+          <li><strong>פנייה אלינו</strong> — "צור קשר" בהגדרות, בכל נושא הקשור לנתונים שלך.</li>
         </ul>
       </div>
       <div>
@@ -4309,9 +4377,30 @@ function copyInviteCode(){
   const code=_cloudHousehold?.invite_code;if(!code)return;
   navigator.clipboard?.writeText(code).then(()=>showToast('✓ קוד הועתק'));
 }
+// Drain for the boot-time crash queue. Posts straight to PostgREST rather than
+// through _sb, so a failure inside the Supabase client itself can still be
+// reported. user_id rides along only when a session token is already in hand —
+// never blocks the report, and an anonymous stack is still worth having.
+function _errSend(rec){
+  try{
+    const body={kind:rec.kind,message:rec.message,source:rec.source||null,
+                lineno:rec.lineno||null,colno:rec.colno||null,stack:rec.stack||null,
+                app:rec.app,ua:rec.ua};
+    const post=tok=>{
+      const h={'apikey':SUPA_ANON,'Content-Type':'application/json','Prefer':'return=minimal'};
+      h['Authorization']='Bearer '+(tok||SUPA_ANON);
+      if(tok)body.user_id=_cloudUser?.id||null;
+      fetch(SUPA_URL+'/rest/v1/client_errors',{method:'POST',headers:h,body:JSON.stringify(body)}).catch(()=>{});
+    };
+    const tok=_sb?.auth?.getSession?.();
+    if(tok&&tok.then)tok.then(r=>post(r?.data?.session?.access_token)).catch(()=>post(null));
+    else post(null);
+  }catch(e){}
+}
 let _gateShown=false;
 document.addEventListener('DOMContentLoaded',function(){
   _sb=window.supabase?.createClient?.(SUPA_URL,SUPA_ANON,{auth:{persistSession:true,autoRefreshToken:true}})||null;
+  _errSetSender&&_errSetSender(_errSend);
   if(_sb){
     _sb.auth.onAuthStateChange((event,session)=>{
       _cloudUser=session?.user||null;
@@ -4485,6 +4574,68 @@ function importBackup(input){
   };
   reader.readAsText(file);
 }
+// importBackup() wants an <input>; the settings menu has a button, so make one.
+function pickBackupFile(){
+  const input=document.createElement('input');
+  input.type='file'; input.accept='.json,application/json';
+  input.onchange=()=>importBackup(input);
+  input.click();
+}
+
+function openSupportSheet(){
+  closeAllSetDD();
+  const em=document.getElementById('supportEmail');
+  if(em&&!em.value)em.value=_cloudUser?.email||'';
+  openSheet('supportSheet');
+}
+async function sendSupportMessage(){
+  const topic=document.getElementById('supportTopic').value;
+  const email=document.getElementById('supportEmail').value.trim();
+  const body=document.getElementById('supportBody').value.trim();
+  if(body.length<5){showToast('❌ כתוב לנו קצת יותר');return;}
+  const row={topic,email:email||null,body:body.slice(0,4000),app:'budget',
+             ua:String(navigator.userAgent).slice(0,300),user_id:_cloudUser?.id||null};
+  const {error}=await _sb.from('support_messages').insert(row);
+  if(error){showToast('❌ השליחה נכשלה, נסה שוב');return;}
+  document.getElementById('supportBody').value='';
+  closeSheet('supportSheet');
+  showToast('✓ ההודעה נשלחה');
+}
+
+async function deleteAccount(){
+  closeAllSetDD();
+  if(!_cloudUser||!_sb){
+    showToast('אין חשבון ענן — "איפוס כל הנתונים" מוחק את הנתונים מהמכשיר');
+    return;
+  }
+  if(!(await confirmSheet({icon:'⛔',title:'מחיקת חשבון לצמיתות',
+      message:'כל הנתונים שלך יימחקו מהענן ומהמכשיר, והחשבון ייסגר. אין דרך חזרה. מומלץ לייצא גיבוי קודם.',
+      confirmText:'המשך',danger:true})))return;
+  const typed=await promptSheet({title:'אישור אחרון',fields:[{label:'הקלד "מחק" כדי לאשר',value:''}],confirmText:'מחק לצמיתות'});
+  if(String(typed||'').trim()!=='מחק'){showToast('בוטל');return;}
+  showToast('מוחק...');
+  try{
+    const {data:{session}}=await _sb.auth.getSession();
+    const res=await fetch(SUPA_URL+'/functions/v1/delete-account',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+session?.access_token,'apikey':SUPA_ANON,'Content-Type':'application/json'},
+      body:'{}'
+    });
+    const out=await res.json().catch(()=>({}));
+    if(!res.ok){showToast('❌ המחיקה נכשלה — נסה שוב או פנה אלינו');return;}
+    // The login itself survives when the same account is used by another app on
+    // this Supabase project; say so rather than claim a deletion that didn't happen.
+    const msg=out.deleted==='full'?'החשבון נמחק':'הנתונים נמחקו. חשבון ההתחברות נשאר כי הוא משמש אפליקציה נוספת.';
+    try{await _sb.auth.signOut();}catch(e){}
+    try{localStorage.clear();}catch(e){}
+    await confirmSheet({icon:'✓',title:'הושלם',message:msg,okOnly:true,confirmText:'סגור'});
+    location.reload();
+  }catch(e){
+    _errReport&&_errReport('delete-account',e&&e.message,e&&e.stack);
+    showToast('❌ המחיקה נכשלה — נסה שוב או פנה אלינו');
+  }
+}
+
 async function resetAllData(){
   if(!(await confirmSheet({icon:'🗑️',title:'איפוס כל הנתונים',message:'למחוק את כל הנתונים לצמיתות? אין דרך חזרה.',confirmText:'מחק הכל',danger:true}))) return;
   if(_cloudUser&&_sb&&!_householdOwner){

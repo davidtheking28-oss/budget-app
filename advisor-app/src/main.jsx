@@ -3,7 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { Chart as ChartJS } from 'chart.js';
 import App from './App.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
+import { installErrorReporter } from './errorReporter';
 import './theme.css';
+
+installErrorReporter();
 
 // Chart.js draws to canvas, so the global prefers-reduced-motion rule in
 // theme.css cannot reach it. Opt out here instead.

@@ -22,6 +22,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # index.html carries every line of the budget app's logic and has no unit
+      # tests. A parse error there white-screens the whole app, so at minimum
+      # refuse to ship one.
+      - name: Check index.html scripts parse
+        run: |
+          node -e "
+          const fs=require('fs'), vm=require('vm');
+          const h=fs.readFileSync('index.html','utf8');
+          const blocks=h.match(/<script(?![^>]*src=)[^>]*>[\s\S]*?<\/script>/g)||[];
+          if(!blocks.length){ console.error('no inline script blocks found — check the matcher'); process.exit(1); }
+          let bad=0;
+          blocks.forEach((b,i)=>{
+            const src=b.replace(/^<script[^>]*>/,'').replace(/<\/script>$/,'');
+            try{ new vm.Script(src); }
+            catch(e){ bad++; console.error('block '+i+': '+e.message); }
+          });
+          if(bad){ console.error(bad+' script block(s) failed to parse'); process.exit(1); }
+          console.log(blocks.length+' script blocks parsed clean');
+          "
+
       - name: Inject Supabase anon key
         env:
           SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
@@ -48,6 +68,7 @@ jobs:
           VITE_SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
         run: |
           npm ci
+          npm run test
           npm run build
 
       # Publish an explicit allow-list. `path: '.'` previously shipped the whole
