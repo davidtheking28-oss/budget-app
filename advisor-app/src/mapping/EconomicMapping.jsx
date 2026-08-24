@@ -37,6 +37,12 @@ function monthOptions() {
   return [{ value: 'auto', label: 'זוהה אוטומטית' }, ...opts];
 }
 
+function monthLabel(dateStr) {
+  if (!dateStr) return '';
+  const [y, m] = dateStr.split('-');
+  return `${Number(m)}/${y}`;
+}
+
 function monthEndDate(ym) {
   const [y, m] = ym.split('-').map(Number);
   const d = new Date(y, m, 0);
@@ -201,12 +207,23 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     }
     const { averages, monthsCovered } = computeCategoryAverages(allTx);
     const months = [...new Set(allTx.map(t => t.source_month))].sort();
+    // archive the mapping being replaced so the advisor can show the client how the
+    // numbers moved between statement uploads, months later
+    const snapshots = data?.transactions?.length
+      ? [...(data.snapshots || []), {
+          period_start: data.period_start,
+          period_end: data.period_end,
+          transactions: data.transactions,
+          saved_at: data.updated_at || new Date().toISOString()
+        }].slice(-12)
+      : (data?.snapshots || []);
     const ok = await save({
       period_start: `${months[0]}-01`,
       period_end: monthEndDate(months[months.length - 1]),
       transactions: allTx,
       category_averages: averages,
-      months_covered: monthsCovered
+      months_covered: monthsCovered,
+      snapshots
     });
     setProcessing(false);
     if (ok !== false) {
@@ -243,6 +260,19 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     datasets: [
       { label: 'הכנסה חודשית', data: [cashflow.income], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
       { label: 'הוצאה', data: [cashflow.expense], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
+    ]
+  } : null;
+
+  // compares the oldest archived mapping to the current one, so the advisor can show
+  // the client how their cashflow moved between the first upload and now
+  const firstSnapshot = data?.snapshots?.length ? data.snapshots[0] : null;
+  const firstCashflow = firstSnapshot ? computeCashflowSummary(firstSnapshot.transactions) : null;
+  const showComparison = !!(firstCashflow?.hasIncomeData && cashflow?.hasIncomeData);
+  const comparisonChartData = showComparison ? {
+    labels: [monthLabel(firstSnapshot.period_end), monthLabel(data.period_end)],
+    datasets: [
+      { label: 'הכנסה חודשית', data: [firstCashflow.income, cashflow.income], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאה', data: [firstCashflow.expense, cashflow.expense], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
     ]
   } : null;
 
@@ -360,6 +390,42 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
             <div className={styles.cashflowRow}>
               <span className={styles.cashflowRowLabel}>תזרים חודשי ללא הפרשות לחיסכון</span>
               <span className={styles.cashflowRowValue + (cashflow.netExcludingSavings < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netExcludingSavings)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showComparison && (
+        <div className={styles.card + ' ' + styles.cardStandalone}>
+          <div className={styles.cardTitle}>השוואת תזרים: תחילת התהליך מול היום</div>
+          <div className={styles.coverageNote}>{monthLabel(firstSnapshot.period_end)} מול {monthLabel(data.period_end)}</div>
+
+          <div className={styles.cashflowChart}>
+            <Bar
+              data={comparisonChartData}
+              options={{
+                maintainAspectRatio: false,
+                animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
+                scales: {
+                  x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
+                  y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+                },
+                plugins: {
+                  legend: { labels: { color: CT.text2, font: { family: CT.font } } },
+                  tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+                }
+              }}
+            />
+          </div>
+
+          <div className={styles.cashflowRows}>
+            <div className={styles.cashflowRow}>
+              <span className={styles.cashflowRowLabel}>תזרים נטו בתחילת התהליך</span>
+              <span className={styles.cashflowRowValue + (firstCashflow.netInAccount < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(firstCashflow.netInAccount)}</span>
+            </div>
+            <div className={styles.cashflowRow}>
+              <span className={styles.cashflowRowLabel}>תזרים נטו היום</span>
+              <span className={styles.cashflowRowValue + (cashflow.netInAccount < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netInAccount)}</span>
             </div>
           </div>
         </div>
