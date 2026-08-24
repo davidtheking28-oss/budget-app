@@ -166,7 +166,7 @@
   transition: border-color .18s var(--ease-out-expo);
 }
 
-.input:focus-visible { border-color: var(--accent); }
+.input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35); }
 .input::placeholder { color: var(--text3); }
 
 .amountInput { flex: 0 0 120px; font-variant-numeric: tabular-nums; }

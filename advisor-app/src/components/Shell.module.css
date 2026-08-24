@@ -128,6 +128,11 @@
   outline: none;
 }
 
+.accountInput:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.6);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
+}
+
 .accountSaveBtn {
   padding: 8px 12px;
   border-radius: var(--radius-sm);
