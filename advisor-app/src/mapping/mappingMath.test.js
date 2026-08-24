@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeCategoryAverages } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
 
 describe('computeCategoryAverages', () => {
   it('averages a category over 3 full months', () => {
@@ -48,5 +48,54 @@ describe('computeCategoryAverages', () => {
     const { averages, monthsCovered } = computeCategoryAverages([]);
     expect(averages).toEqual({});
     expect(monthsCovered).toBe(1);
+  });
+
+  it('excludes income transactions from category averages', () => {
+    const transactions = [
+      { source_month: '2026-01', category: 'שכר', amount: 8000, type: 'income' },
+      { source_month: '2026-01', category: 'מזון לבית', amount: 900, type: 'expense' }
+    ];
+    const { averages } = computeCategoryAverages(transactions);
+    expect(averages['שכר']).toBeUndefined();
+    expect(averages['מזון לבית']).toBe(900);
+  });
+});
+
+describe('computeCashflowSummary', () => {
+  it('averages income, expense and savings across months present', () => {
+    const transactions = [
+      { source_month: '2026-01', amount: 8000, type: 'income', category: 'שכר' },
+      { source_month: '2026-01', amount: 900, type: 'expense', category: 'מזון לבית' },
+      { source_month: '2026-01', amount: 500, type: 'expense', category: 'הוראת קבע לחסכון' },
+      { source_month: '2026-02', amount: 8000, type: 'income', category: 'שכר' },
+      { source_month: '2026-02', amount: 1300, type: 'expense', category: 'מזון לבית' },
+      { source_month: '2026-02', amount: 500, type: 'expense', category: 'הוראת קבע לחסכון' }
+    ];
+    const s = computeCashflowSummary(transactions);
+    expect(s.monthsCovered).toBe(2);
+    expect(s.income).toBe(8000);
+    expect(s.expense).toBe(1600);
+    expect(s.savings).toBe(500);
+    expect(s.netInAccount).toBe(6400);
+    expect(s.netExcludingSavings).toBe(6900);
+    expect(s.hasIncomeData).toBe(true);
+  });
+
+  it('treats transactions with no type as expense, for mappings saved before income capture existed', () => {
+    const transactions = [
+      { source_month: '2026-01', amount: 900, category: 'מזון לבית' }
+    ];
+    const s = computeCashflowSummary(transactions);
+    expect(s.income).toBe(0);
+    expect(s.expense).toBe(900);
+    expect(s.hasIncomeData).toBe(false);
+  });
+
+  it('returns zeroes for empty input without dividing by zero', () => {
+    const s = computeCashflowSummary([]);
+    expect(s.monthsCovered).toBe(1);
+    expect(s.income).toBe(0);
+    expect(s.expense).toBe(0);
+    expect(s.netInAccount).toBe(0);
   });
 });

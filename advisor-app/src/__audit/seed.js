@@ -143,13 +143,15 @@ const economicMapping = {
     [EXPENSE_CATS[3]]: 410, [EXPENSE_CATS[5]]: 599, [EXPENSE_CATS[13]]: 620
   },
   transactions: [
-    { date: d(3), desc: 'סופר יוחננוף', amount: 1240.5, category: EXPENSE_CATS[0], source_month: `${Y}-${pad(M + 1)}` },
-    { date: d(7), desc: 'רמי לוי', amount: 380, category: EXPENSE_CATS[0], source_month: `${Y}-${pad(M + 1)}` },
-    { date: d(5), desc: 'ארוחת ערב במסעדה', amount: 268, category: EXPENSE_CATS[1], source_month: `${Y}-${pad(M + 1)}` },
-    { date: d(8), desc: 'סופר פארם', amount: 154.9, category: EXPENSE_CATS[2], source_month: `${Y}-${pad(M + 1)}` },
-    { date: d(9), desc: 'דלק פז', amount: 410, category: EXPENSE_CATS[3], source_month: `${Y}-${pad(M + 1)}` },
-    { date: d(12), desc: 'קסטרו', amount: 599, category: EXPENSE_CATS[5], source_month: `${Y}-${pad(M + 1)}` },
-    { date: d(14), desc: 'מרפאת שיניים', amount: 620, category: EXPENSE_CATS[13], source_month: `${Y}-${pad(M + 1)}` }
+    { date: d(1), desc: 'משכורת', amount: 14200, type: 'income', category: 'שכר', source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(3), desc: 'סופר יוחננוף', amount: 1240.5, type: 'expense', category: EXPENSE_CATS[0], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(7), desc: 'רמי לוי', amount: 380, type: 'expense', category: EXPENSE_CATS[0], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(5), desc: 'ארוחת ערב במסעדה', amount: 268, type: 'expense', category: EXPENSE_CATS[1], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(8), desc: 'סופר פארם', amount: 154.9, type: 'expense', category: EXPENSE_CATS[2], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(9), desc: 'דלק פז', amount: 410, type: 'expense', category: EXPENSE_CATS[3], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(12), desc: 'קסטרו', amount: 599, type: 'expense', category: EXPENSE_CATS[5], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(14), desc: 'מרפאת שיניים', amount: 620, type: 'expense', category: EXPENSE_CATS[13], source_month: `${Y}-${pad(M + 1)}` },
+    { date: d(15), desc: 'הפקדה לקרן השתלמות', amount: 900, type: 'expense', category: 'הוראת קבע לחסכון', source_month: `${Y}-${pad(M + 1)}` }
   ],
   created_at: iso(20),
   updated_at: iso(2)

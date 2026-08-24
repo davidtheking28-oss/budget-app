@@ -149,6 +149,44 @@
   unicode-bidi: isolate;
 }
 
+.txAmtIncome { color: var(--green); }
+
+.cashflowChart {
+  height: 220px;
+  margin-bottom: var(--space-4);
+}
+
+.cashflowRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+}
+
+.cashflowRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cashflowRowLabel {
+  font-size: var(--text-sm);
+  color: var(--text2);
+}
+
+.cashflowRowValue {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: var(--text-lg);
+  color: var(--green);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.cashflowRowValueNeg { color: var(--red); }
+
 .toggle {
   display: block;
   margin-top: var(--space-5);

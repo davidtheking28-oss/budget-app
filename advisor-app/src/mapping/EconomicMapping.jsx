@@ -1,13 +1,23 @@
 import { useRef, useState } from 'react';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
-import { computeCategoryAverages } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
 import { resizeImageToJpeg } from './resizeImage.js';
-import { EXPENSE_CATS, catColor } from '../categories.js';
+import { EXPENSE_CATS, INCOME_CATS, catColor, chartTheme } from '../categories.js';
+
+// The mapping's own savings-transfer category doesn't live in EXPENSE_CATS
+// (that's a personal-budget list) — it needs to stay selectable here so a
+// transaction the parser tagged this way doesn't fall off the dropdown.
+const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
+const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS, SAVINGS_CATEGORY];
 import { supabase, SUPA_URL } from '../supabaseClient.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { toast } from '../toast.js';
 import styles from './EconomicMapping.module.css';
 
@@ -109,7 +119,15 @@ async function processQueue(queue, setQueue) {
             ? item.monthTag
             : (t.date && /^\d{4}-\d{2}/.test(t.date) ? t.date.slice(0, 7) : null);
           if (!sourceMonth) continue;
-          allTx.push({ date: t.date || null, desc: t.desc || '', amount: t.amount, category: t.category || 'שונות', source_month: sourceMonth });
+          const type = t.type === 'income' ? 'income' : 'expense';
+          allTx.push({
+            date: t.date || null,
+            desc: t.desc || '',
+            amount: t.amount,
+            type,
+            category: t.category || (type === 'income' ? 'אחר' : 'שונות'),
+            source_month: sourceMonth
+          });
         }
       }
       setQueue(q => q.map(x => (x.id === item.id ? { ...x, status: 'done' } : x)));
@@ -215,6 +233,19 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     : [];
   const maxAvg = categories.length ? data.category_averages[categories[0]] : 0;
 
+  // Only meaningful once the advisor has uploaded full bank-account statements
+  // (income lines included), not a credit-card-only mapping — those never
+  // carry a `type`, so hasIncomeData stays false and this card stays hidden.
+  const cashflow = data?.transactions ? computeCashflowSummary(data.transactions) : null;
+  const CT = chartTheme();
+  const cashflowChartData = cashflow ? {
+    labels: ['ממוצע חודשי'],
+    datasets: [
+      { label: 'הכנסה חודשית', data: [cashflow.income], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאה', data: [cashflow.expense], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
+    ]
+  } : null;
+
   return (
     <div>
       <div className={styles.card}>
@@ -234,7 +265,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               <path d="M12 15V3M7 8l5-5 5 5" />
               <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
             </svg>
-            <span>גרור עד 3 חודשי דפי חשבון (PDF או תמונות) או לחץ לבחירה</span>
+            <span>גרור עד 4 חודשי דפי חשבון (PDF או תמונות) או לחץ לבחירה</span>
             <span className={styles.dropHint}>כל קובץ מיוצג בנפרד — סמן לאיזה חודש קלנדרי הוא שייך.</span>
           </label>
         </div>
@@ -287,14 +318,50 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                 <div key={i} className={styles.txRow}>
                   <span className={styles.txDate}>{t.date || '—'}</span>
                   <span className={styles.txDesc}>{t.desc}</span>
-                  <select className={styles.txCat} value={t.category || 'שונות'} onChange={e => reassignCategory(i, e.target.value)}>
-                    {EXPENSE_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                  <select className={styles.txCat} value={t.category || (t.type === 'income' ? 'אחר' : 'שונות')} onChange={e => reassignCategory(i, e.target.value)}>
+                    {(t.type === 'income' ? INCOME_CATS : MAPPING_EXPENSE_CATS).map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
-                  <span className={styles.txAmt}>{fmt(t.amount)}</span>
+                  <span className={styles.txAmt + (t.type === 'income' ? ' ' + styles.txAmtIncome : '')}>{t.type === 'income' ? '+' : ''}{fmt(t.amount)}</span>
                 </div>
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {cashflow && cashflow.hasIncomeData && (
+        <div className={styles.card + ' ' + styles.cardStandalone}>
+          <div className={styles.cardTitle}>תזרים: הכנסות מול הוצאות</div>
+          <div className={styles.coverageNote}>מבוסס על {cashflow.monthsCovered} חודשים שהועלו</div>
+
+          <div className={styles.cashflowChart}>
+            <Bar
+              data={cashflowChartData}
+              options={{
+                maintainAspectRatio: false,
+                animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
+                scales: {
+                  x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
+                  y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+                },
+                plugins: {
+                  legend: { labels: { color: CT.text2, font: { family: CT.font } } },
+                  tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+                }
+              }}
+            />
+          </div>
+
+          <div className={styles.cashflowRows}>
+            <div className={styles.cashflowRow}>
+              <span className={styles.cashflowRowLabel}>תזרים חודשי בחשבון</span>
+              <span className={styles.cashflowRowValue + (cashflow.netInAccount < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netInAccount)}</span>
+            </div>
+            <div className={styles.cashflowRow}>
+              <span className={styles.cashflowRowLabel}>תזרים חודשי ללא הפרשות לחיסכון</span>
+              <span className={styles.cashflowRowValue + (cashflow.netExcludingSavings < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netExcludingSavings)}</span>
+            </div>
+          </div>
         </div>
       )}
     </div>

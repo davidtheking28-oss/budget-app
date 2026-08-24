@@ -40,13 +40,21 @@ async function checkRateLimit(req: Request): Promise<boolean> {
   }
 }
 
-// Source of truth: advisor-app/src/categories.js EXPENSE_CATS. Deno edge functions
-// can't import across the Vite/React boundary, so this is hardcoded — keep it in sync.
-const CATEGORIES = [
+// Source of truth: advisor-app/src/categories.js. Deno edge functions can't
+// import across the Vite/React boundary, so this is hardcoded — keep it in sync.
+const EXPENSE_CATEGORIES = [
   'מזון לבית','אוכל בחוץ ובילויים','פארם','דלק וחניה','מתנות לאירועים ולשמחות',
   'ביגוד והנעלה','תחב״צ','כבישי אגרה','תספורת וקוסמטיקה','תחביבים','סיגריות',
   'חופשה/טיול','עזרת/שמרטף','תיקוני רכב','בריאות','בעלי חיים','דמי כיס/ילדים',
   'יהדות/חגים','ביטוח לאומי','שונות'
+]
+// A transfer into savings is an expense line on the statement (money leaving the
+// account) but the advisor still needs to see it split out — it is the one
+// category the "cashflow excluding savings" figure subtracts back out.
+const SAVINGS_CATEGORY = 'הוראת קבע לחסכון'
+const ALL_EXPENSE_CATEGORIES = [...EXPENSE_CATEGORIES, SAVINGS_CATEGORY]
+const INCOME_CATEGORIES = [
+  'שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'
 ]
 
 // free-tier availability varies per model; try in order and use the first that answers
@@ -91,11 +99,12 @@ Deno.serve(async (req) => {
 For each transaction:
 1. date: transaction date as YYYY-MM-DD. These are Israeli documents: a comma is a THOUSANDS separator, not a decimal point — "3,770" means 3770, not 3.77. If the year is missing or ambiguous on the page${monthHint ? ` and the advisor has tagged this file as the month ${monthHint}, prefer that month/year` : ''}, use your best judgement from context on the page.
 2. desc: short merchant/description in Hebrew if possible
-3. amount: the transaction amount (positive number, after any discount)
-4. category: exactly one of [${CATEGORIES.join(', ')}]
+3. amount: the transaction amount as a positive number regardless of direction (do not use a minus sign)
+4. type: "income" if money entered the account (salary, deposit, refund, transfer in) or "expense" if money left it (purchase, withdrawal, standing order, transfer out) — this is a bank account statement, not only a credit card, so both directions appear
+5. category: if type is "income", exactly one of [${INCOME_CATEGORIES.join(', ')}]. If type is "expense", exactly one of [${ALL_EXPENSE_CATEGORIES.join(', ')}] — use "${SAVINGS_CATEGORY}" specifically for a standing transfer into a savings/deposit/investment account, not for regular spending.
 
 Output ONLY a JSON object:
-{"transactions":[{"date":"YYYY-MM-DD","desc":"...","amount":123.4,"category":"..."}],"page_looks_like_statement":true}
+{"transactions":[{"date":"YYYY-MM-DD","desc":"...","amount":123.4,"type":"income","category":"..."}],"page_looks_like_statement":true}
 
 If the page is not a statement page with transaction lines (e.g. a cover page, an ad, or unreadable), output {"transactions":[],"page_looks_like_statement":false}.`
 
@@ -118,12 +127,17 @@ If the page is not a statement page with transaction lines (e.g. a cover page, a
 
     const transactions = parsed.transactions
       .filter((t: unknown) => t && typeof (t as { amount?: unknown }).amount === 'number')
-      .map((t: { date?: unknown; desc?: unknown; amount: number; category?: unknown }) => ({
-        date: typeof t.date === 'string' ? t.date : null,
-        desc: typeof t.desc === 'string' ? t.desc : '',
-        amount: t.amount,
-        category: CATEGORIES.includes(t.category as string) ? t.category : null,
-      }))
+      .map((t: { date?: unknown; desc?: unknown; amount: number; type?: unknown; category?: unknown }) => {
+        const type = t.type === 'income' ? 'income' : 'expense'
+        const validCats = type === 'income' ? INCOME_CATEGORIES : ALL_EXPENSE_CATEGORIES
+        return {
+          date: typeof t.date === 'string' ? t.date : null,
+          desc: typeof t.desc === 'string' ? t.desc : '',
+          amount: Math.abs(t.amount),
+          type,
+          category: validCats.includes(t.category as string) ? t.category : null,
+        }
+      })
 
     return json({ transactions, page_looks_like_statement: !!parsed.page_looks_like_statement }, 200)
   } catch (err) {
