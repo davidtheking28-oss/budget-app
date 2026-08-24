@@ -162,6 +162,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [queue, setQueue] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const fileInputRef = useRef(null);
   const opts = monthOptions();
 
@@ -242,9 +243,11 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   }
 
   async function restoreSnapshot(index) {
+    if (restoring) return;
     const snap = data.snapshots[index];
     if (!snap) return;
     if (!window.confirm('לשחזר מיפוי זה כמצב הנוכחי? המצב הנוכחי יישמר בהיסטוריה.')) return;
+    setRestoring(true);
     const { averages, monthsCovered } = computeCategoryAverages(snap.transactions);
     const archivedCurrent = {
       period_start: data.period_start,
@@ -265,27 +268,24 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       months_covered: monthsCovered,
       snapshots
     });
+    setRestoring(false);
     if (ok !== false) toast('המיפוי שוחזר', 'success');
   }
 
   async function reassignCategory(index, category) {
     const transactions = data.transactions.map((t, i) => (i === index ? { ...t, category } : t));
     const { averages, monthsCovered } = computeCategoryAverages(transactions);
-    // archive the pre-edit state too — the before/after chart is a client-facing trust
-    // artifact, so a manual correction shouldn't be able to silently move it
-    const snapshots = [...(data.snapshots || []), {
-      period_start: data.period_start,
-      period_end: data.period_end,
-      transactions: data.transactions,
-      saved_at: data.updated_at || new Date().toISOString()
-    }].slice(-12);
+    // Deliberately NOT archiving a snapshot per edit here: this fires on every single
+    // category-dropdown change, and the snapshots array is capped (see process()) —
+    // a session of fixing several miscategorized transactions would flood the cap and
+    // evict real monthly-upload history. Full-month uploads and restores archive; a
+    // one-field correction doesn't need its own place in the before/after timeline.
     const ok = await save({
       period_start: data.period_start,
       period_end: data.period_end,
       transactions,
       category_averages: averages,
-      months_covered: monthsCovered,
-      snapshots
+      months_covered: monthsCovered
     });
     if (ok !== false) toast('הקטגוריה עודכנה', 'success');
   }
@@ -448,7 +448,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               <div key={i} className={styles.txRow}>
                 <span className={styles.txDate}>{monthLabel(s.period_start)}–{monthLabel(s.period_end)}</span>
                 <span className={styles.txDesc}>{s.saved_at ? new Date(s.saved_at).toLocaleDateString('he-IL') : ''}</span>
-                <Button variant="ghost" onClick={() => restoreSnapshot(i)}>שחזר</Button>
+                <Button variant="ghost" disabled={restoring} onClick={() => restoreSnapshot(i)}>שחזר</Button>
               </div>
             ))}
           </div>
