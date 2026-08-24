@@ -232,6 +232,33 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     }
   }
 
+  async function restoreSnapshot(index) {
+    const snap = data.snapshots[index];
+    if (!snap) return;
+    if (!window.confirm('לשחזר מיפוי זה כמצב הנוכחי? המצב הנוכחי יישמר בהיסטוריה.')) return;
+    const { averages, monthsCovered } = computeCategoryAverages(snap.transactions);
+    const archivedCurrent = {
+      period_start: data.period_start,
+      period_end: data.period_end,
+      transactions: data.transactions,
+      saved_at: data.updated_at || new Date().toISOString()
+    };
+    const snapshots = [
+      ...data.snapshots.slice(0, index),
+      ...data.snapshots.slice(index + 1),
+      archivedCurrent
+    ].slice(-12);
+    const ok = await save({
+      period_start: snap.period_start,
+      period_end: snap.period_end,
+      transactions: snap.transactions,
+      category_averages: averages,
+      months_covered: monthsCovered,
+      snapshots
+    });
+    if (ok !== false) toast('המיפוי שוחזר', 'success');
+  }
+
   async function reassignCategory(index, category) {
     const transactions = data.transactions.map((t, i) => (i === index ? { ...t, category } : t));
     const { averages, monthsCovered } = computeCategoryAverages(transactions);
@@ -391,6 +418,21 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               <span className={styles.cashflowRowLabel}>תזרים חודשי ללא הפרשות לחיסכון</span>
               <span className={styles.cashflowRowValue + (cashflow.netExcludingSavings < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netExcludingSavings)}</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {data?.snapshots?.length > 0 && (
+        <div className={styles.card + ' ' + styles.cardStandalone}>
+          <div className={styles.cardTitle}>היסטוריית מיפויים</div>
+          <div className={styles.list}>
+            {data.snapshots.map((s, i) => (
+              <div key={i} className={styles.txRow}>
+                <span className={styles.txDate}>{monthLabel(s.period_start)}–{monthLabel(s.period_end)}</span>
+                <span className={styles.txDesc}>{s.saved_at ? new Date(s.saved_at).toLocaleDateString('he-IL') : ''}</span>
+                <Button variant="ghost" onClick={() => restoreSnapshot(i)}>שחזר</Button>
+              </div>
+            ))}
           </div>
         </div>
       )}
