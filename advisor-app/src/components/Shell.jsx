@@ -125,7 +125,6 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
         </div>
       </div>
       <div className={styles.contentTabs}>
-        {title && <h1>{title}</h1>}
         {children}
       </div>
     </div>
