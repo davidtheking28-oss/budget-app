@@ -51,6 +51,10 @@
   margin-bottom: var(--space-4);
   flex-wrap: wrap;
   max-width: 640px;
+  padding: var(--space-4);
+  background: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
 .input, .textarea {
@@ -300,12 +304,15 @@
 .empty {
   color: var(--text3);
   font-size: var(--text-md);
-  padding: 56px 0;
+  padding: 40px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-4);
   text-align: center;
+  max-width: 640px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
 }
 
 .emptyMark {
