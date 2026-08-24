@@ -97,7 +97,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
           <div className={styles.kpiValue}>{fmt(totalSpent)}</div>
           <div className={styles.kpiSub}>{totalBudgeted > 0 ? `מתוך ${fmt(totalBudgeted)} מתוקצב` : 'אין תקציב מוגדר'}</div>
         </div>
-        <div className={styles.kpi}>
+        <div className={styles.kpi + ' ' + styles.kpiFlow}>
           <div className={styles.kpiLabel}>תזרים</div>
           <div className={styles.kpiValue + ' ' + (flow < 0 ? styles.kpiNeg : styles.kpiPos)}>{fmt(flow)}</div>
           <div className={styles.kpiSub}>{flow < 0 ? 'חריגה מההכנסות' : 'פנוי החודש'}</div>

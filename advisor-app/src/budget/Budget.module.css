@@ -130,18 +130,35 @@
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Three equal boxes with the same label/value/sub shape read as one repeated
+   template rather than three distinct facts. A single strip with dividers
+   keeps the numbers scannable while letting the flow figure — the one that
+   actually says whether the client is okay — carry more visual weight. */
 .kpiRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-.kpi {
+  display: flex;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+}
+
+.kpi {
+  flex: 1;
+  position: relative;
+  min-width: 0;
   padding: var(--space-4);
+}
+
+.kpi + .kpi::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: var(--space-3);
+  bottom: var(--space-3);
+  width: 1px;
+  background: var(--border);
 }
 
 .kpiLabel {
@@ -156,6 +173,14 @@
   color: var(--text);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+}
+
+.kpiFlow {
+  background: var(--hover);
+}
+
+.kpiFlow .kpiValue {
+  font-size: var(--text-display-md);
 }
 
 .kpiPos { color: var(--green); }
@@ -194,6 +219,7 @@
 }
 
 @media (max-width: 720px) {
-  .kpiRow { grid-template-columns: 1fr; }
+  .kpiRow { flex-direction: column; }
+  .kpi + .kpi::before { inset-inline-start: var(--space-4); inset-inline-end: var(--space-4); top: 0; bottom: auto; width: auto; height: 1px; }
   .wizardCta { flex-direction: column; align-items: stretch; }
 }
