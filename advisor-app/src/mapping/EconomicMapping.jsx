@@ -198,6 +198,9 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     if (!queue.length || processing) return;
     if (data?.transactions?.length &&
       !window.confirm('קיים כבר מיפוי שמור עבור לקוח זה. העלאה חדשה תחליף אותו. להמשיך?')) return;
+    const taggedMonths = queue.map(x => x.monthTag).filter(m => m !== 'auto');
+    const dupMonth = taggedMonths.find((m, i) => taggedMonths.indexOf(m) !== i);
+    if (dupMonth && !window.confirm(`יותר מקובץ אחד מסומן לאותו חודש (${dupMonth}). להמשיך בכל זאת?`)) return;
     setProcessing(true);
     const allTx = await processQueue(queue, setQueue);
     if (!allTx.length) {
@@ -205,6 +208,12 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       setProcessing(false);
       return;
     }
+    // a file that finished without throwing but produced no transactions is more likely
+    // a silent parse miss than a genuinely empty statement — flag it instead of saving quietly
+    const emptyFiles = queue.filter(x =>
+      x.status === 'done' && x.monthTag !== 'auto' && !allTx.some(t => t.source_month === x.monthTag)
+    );
+    if (emptyFiles.length) toast(`שים לב: לא זוהו תנועות בקובץ ${emptyFiles.map(x => x.name).join(', ')}`, 'error');
     const { averages, monthsCovered } = computeCategoryAverages(allTx);
     const months = [...new Set(allTx.map(t => t.source_month))].sort();
     // archive the mapping being replaced so the advisor can show the client how the
@@ -262,12 +271,21 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   async function reassignCategory(index, category) {
     const transactions = data.transactions.map((t, i) => (i === index ? { ...t, category } : t));
     const { averages, monthsCovered } = computeCategoryAverages(transactions);
+    // archive the pre-edit state too — the before/after chart is a client-facing trust
+    // artifact, so a manual correction shouldn't be able to silently move it
+    const snapshots = [...(data.snapshots || []), {
+      period_start: data.period_start,
+      period_end: data.period_end,
+      transactions: data.transactions,
+      saved_at: data.updated_at || new Date().toISOString()
+    }].slice(-12);
     const ok = await save({
       period_start: data.period_start,
       period_end: data.period_end,
       transactions,
       category_averages: averages,
-      months_covered: monthsCovered
+      months_covered: monthsCovered,
+      snapshots
     });
     if (ok !== false) toast('הקטגוריה עודכנה', 'success');
   }
