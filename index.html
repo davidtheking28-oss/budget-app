@@ -7010,10 +7010,10 @@ function renderOnboardStep(){
     if(connected){
       el.innerHTML='<div style="text-align:center;padding:28px 0 16px"><div style="font-size:2.6rem;margin-bottom:14px">✅</div><div class="onboard-title">מחובר לענן!</div><div class="onboard-sub" style="word-break:break-all;margin-top:8px">'+(_cloudUser.email||'')+'</div><div style="margin-top:18px;font-size:0.82rem;color:var(--text3);line-height:1.6">הנתונים שלך יישמרו ויסונכרנו<br>אוטומטית בכל מכשיר</div></div>';
     } else if(_obOtpSent){
-      el.innerHTML='<div class="onboard-title">☁️ גיבוי ענן <span style="font-size:0.78rem;font-weight:600;color:var(--text3);margin-right:6px">(אופציונלי)</span></div><div class="onboard-sub" style="margin-bottom:18px">קוד נשלח ל-<strong>'+_obEmailVal+'</strong></div><input id="obOtpInput" type="text" inputmode="numeric" placeholder="קוד 6 ספרות" maxlength="6" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1.6rem;font-family:var(--font-num);color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700;letter-spacing:8px" oninput="if(this.value.length===6)obVerifyOtp()"/><button class="btn btn-primary btn-full" style="margin-top:10px" onclick="obVerifyOtp()">אמת קוד</button><button style="background:none;border:none;color:var(--text3);font-size:0.8rem;cursor:pointer;margin-top:10px;width:100%;text-align:center;font-family:inherit" onclick="_obOtpSent=false;renderOnboardStep()">שנה מייל</button>';
+      el.innerHTML='<div class="onboard-title">☁️ גיבוי ענן <span style="font-size:0.78rem;font-weight:600;color:var(--text3);margin-right:6px">(אופציונלי)</span></div><div class="onboard-sub" style="margin-bottom:18px">קוד נשלח ל-<strong>'+_obEmailVal+'</strong></div><input id="obOtpInput" type="text" inputmode="numeric" placeholder="קוד 6 ספרות" maxlength="6" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1.6rem;font-family:var(--font-num);color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700;letter-spacing:8px" oninput="if(this.value.length===6)obVerifyOtp()"/><button id="obVerifyOtpBtn" class="btn btn-primary btn-full" style="margin-top:10px" onclick="obVerifyOtp()">אמת קוד</button><button style="background:none;border:none;color:var(--text3);font-size:0.8rem;cursor:pointer;margin-top:10px;width:100%;text-align:center;font-family:inherit" onclick="_obOtpSent=false;renderOnboardStep()">שנה מייל</button>';
       setTimeout(()=>document.getElementById('obOtpInput')?.focus(),200);
     } else {
-      el.innerHTML='<div class="onboard-title">☁️ גיבוי ענן <span style="font-size:0.78rem;font-weight:600;color:var(--text3);margin-right:6px">(אופציונלי)</span></div><div class="onboard-sub" style="margin-bottom:18px">הזן מייל כדי לשמור את הנתונים בענן ולגשת מכל מכשיר.</div><input id="obEmailInput" type="email" inputmode="email" placeholder="כתובת מייל" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:600" value="'+(_obEmailVal||'')+'"/><button class="btn btn-primary btn-full" style="margin-top:10px" onclick="obSendEmail()">שלח קוד אימות</button><div style="text-align:center;margin-top:10px;font-size:0.75rem;color:var(--text3)">בלחיצה על שלח אתה מסכים ל<button onclick="openSheet(\'privacySheet\')" style="background:none;border:none;color:var(--accent);font-size:0.75rem;cursor:pointer;font-family:inherit;padding:0;text-decoration:underline">מדיניות הפרטיות</button></div>';
+      el.innerHTML='<div class="onboard-title">☁️ גיבוי ענן <span style="font-size:0.78rem;font-weight:600;color:var(--text3);margin-right:6px">(אופציונלי)</span></div><div class="onboard-sub" style="margin-bottom:18px">הזן מייל כדי לשמור את הנתונים בענן ולגשת מכל מכשיר.</div><input id="obEmailInput" type="email" inputmode="email" placeholder="כתובת מייל" style="width:100%;box-sizing:border-box;padding:14px 16px;border:2px solid var(--accent);border-radius:14px;font-size:1rem;font-family:inherit;color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:600" value="'+(_obEmailVal||'')+'"/><button id="obSendEmailBtn" class="btn btn-primary btn-full" style="margin-top:10px" onclick="obSendEmail()">שלח קוד אימות</button><div style="text-align:center;margin-top:10px;font-size:0.75rem;color:var(--text3)">בלחיצה על שלח אתה מסכים ל<button onclick="openSheet(\'privacySheet\')" style="background:none;border:none;color:var(--accent);font-size:0.75rem;cursor:pointer;font-family:inherit;padding:0;text-decoration:underline">מדיניות הפרטיות</button></div>';
       setTimeout(()=>document.getElementById('obEmailInput')?.focus(),200);
     }
   } else if(onboardStep===2){
@@ -7071,6 +7071,8 @@ async function obSendEmail(){
   if(!email||!email.includes('@')){showToast('הזן כתובת מייל תקינה');return;}
   _obEmailVal=email;
   inp.disabled=true;
+  const btn=document.getElementById('obSendEmailBtn');
+  if(btn){btn.disabled=true;btn.textContent='שולח…';}
   try{
     if(!_sb)throw new Error('no_sb');
     const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:'https://davidtheking28-oss.github.io/budget-app/'}});
@@ -7080,6 +7082,7 @@ async function obSendEmail(){
     showToast('✓ קוד נשלח למייל');
   }catch(e){
     inp.disabled=false;
+    if(btn){btn.disabled=false;btn.textContent='שלח קוד אימות';}
     showToast('❌ שגיאה בשליחת הקוד, נסה שוב');
   }
 }
@@ -7089,6 +7092,8 @@ async function obVerifyOtp(){
   const code=inp.value.trim();
   if(code.length!==6){showToast('הזן קוד 6 ספרות');return;}
   inp.disabled=true;
+  const btn=document.getElementById('obVerifyOtpBtn');
+  if(btn){btn.disabled=true;btn.textContent='מאמת…';}
   try{
     if(!_sb)throw new Error('no_sb');
     const {error}=await _sb.auth.verifyOtp({email:_obEmailVal,token:code,type:'email'});
@@ -7098,6 +7103,7 @@ async function obVerifyOtp(){
     showToast('✓ מחובר בהצלחה!');
   }catch(e){
     inp.disabled=false;
+    if(btn){btn.disabled=false;btn.textContent='אמת קוד';}
     showToast('❌ קוד שגוי, נסה שוב');
   }
 }
