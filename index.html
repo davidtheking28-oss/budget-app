@@ -967,6 +967,19 @@
     /* ── Install (Add to Home Screen) banner ── */
     .install-banner{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-h) + var(--safe-bottom) + 92px);z-index:7500;display:none;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:11px 14px;box-shadow:0 16px 44px rgba(0,0,0,.32);}
     .install-banner.show{display:flex;animation:cfPop .3s cubic-bezier(.22,1,.36,1);}
+
+    /* ── Advisor-meeting alerts (pending confirmation / same-day reminder) ── */
+    .meeting-alert{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;animation:cfPop .3s cubic-bezier(.22,1,.36,1);}
+    .meeting-alert-reminder{border-color:var(--accent);background:var(--accent-rgb,10,122,98);background:rgba(var(--accent-rgb),.08);}
+    .meeting-alert-ico{font-size:1.4rem;flex-shrink:0;}
+    .meeting-alert-body{flex:1;min-width:0;}
+    .meeting-alert-title{font-weight:700;font-size:0.92rem;}
+    .meeting-alert-sub{color:var(--text2);font-size:0.8rem;margin-top:2px;}
+    .meeting-alert-actions{display:flex;gap:8px;flex-shrink:0;}
+    .meeting-alert-btn{padding:8px 14px;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);}
+    .meeting-alert-btn.confirm{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .meeting-alert-btn.decline:hover{color:var(--red);border-color:var(--red);}
+    @media (max-width:480px){.meeting-alert{flex-wrap:wrap;}.meeting-alert-actions{width:100%;justify-content:flex-end;}}
     .install-ico{font-size:1.7rem;flex-shrink:0;}
     .install-txt{display:flex;flex-direction:column;flex:1;min-width:0;}
     .install-txt b{font-size:0.9rem;color:var(--text);font-weight:800;}
@@ -1797,6 +1810,7 @@
 
 <main id="main-content">
   <div id="page-dashboard" class="page active">
+    <div id="meetingAlerts"></div>
     <!-- Mode switcher -->
     <div id="modeSwitcher" style="display:none;justify-content:center;margin:-10px 0 14px;position:relative;">
       <button type="button" id="modeCurrentBtn" class="mode-pill-current" onclick="toggleModeDropdown()">
@@ -3832,6 +3846,67 @@ function _applyAdvisorGate(){
   document.body.classList.toggle('is-advisor', _isAdvisor);
 }
 
+// ── Advisor-meeting alerts: pending confirmation + same-day reminder ──
+// RLS on advisor_meetings already scopes this to the signed-in client's own rows
+// (see supabase/migrations/031_meeting_confirmation.sql), so no advisor-relationship
+// check is needed here — an unrelated user simply gets an empty result.
+async function _loadMeetingAlerts(){
+  if(!_cloudUser||!_sb)return;
+  try{
+    const todayStart=new Date();todayStart.setHours(0,0,0,0);
+    const {data,error}=await _sb.from('advisor_meetings').select('id,scheduled_at,notes,status')
+      .eq('client_id',_cloudUser.id).eq('for_client',true).neq('status','declined')
+      .gte('scheduled_at',todayStart.toISOString())
+      .order('scheduled_at',{ascending:true});
+    if(error)throw error;
+    _renderMeetingAlerts(data||[]);
+  }catch(e){_DEBUG&&console.warn('meeting alerts load',e);}
+}
+function _renderMeetingAlerts(meetings){
+  const el=document.getElementById('meetingAlerts');
+  if(!el)return;
+  const todayStr=localISO();
+  const html=meetings.map(m=>{
+    const when=new Date(m.scheduled_at);
+    if(m.status==='pending'){
+      const whenStr=when.toLocaleString('he-IL',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'});
+      return '<div class="meeting-alert" data-meeting="'+m.id+'">'
+        +'<div class="meeting-alert-ico">🗓️</div>'
+        +'<div class="meeting-alert-body"><div class="meeting-alert-title">פגישה חדשה עם היועץ שלך</div>'
+        +'<div class="meeting-alert-sub">'+(m.notes?esc(m.notes)+' · ':'')+whenStr+'</div></div>'
+        +'<div class="meeting-alert-actions">'
+        +'<button type="button" class="meeting-alert-btn confirm" onclick="_respondMeeting(\''+m.id+'\',\'confirmed\')">אשר</button>'
+        +'<button type="button" class="meeting-alert-btn decline" onclick="_respondMeeting(\''+m.id+'\',\'declined\')">דחה</button>'
+        +'</div></div>';
+    }
+    if(localISO(when)===todayStr&&!_meetingReminderDismissed(m.id)){
+      const hm=when.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+      return '<div class="meeting-alert meeting-alert-reminder" data-meeting="'+m.id+'">'
+        +'<div class="meeting-alert-ico">📅</div>'
+        +'<div class="meeting-alert-body"><div class="meeting-alert-title">יש לך פגישה היום עם היועץ, בשעה '+hm+'</div>'
+        +(m.notes?'<div class="meeting-alert-sub">'+esc(m.notes)+'</div>':'')+'</div>'
+        +'<div class="meeting-alert-actions"><button type="button" class="meeting-alert-btn" onclick="_dismissMeetingReminder(\''+m.id+'\')">הבנתי</button></div></div>';
+    }
+    return '';
+  }).join('');
+  el.innerHTML=html;
+}
+async function _respondMeeting(id,status){
+  const el=document.querySelector('[data-meeting="'+id+'"]');
+  if(el)el.style.opacity='0.5';
+  const {error}=await _sb.from('advisor_meetings').update({status}).eq('id',id).eq('client_id',_cloudUser.id);
+  if(error){showToast('שגיאה בעדכון הפגישה ❌');if(el)el.style.opacity='1';return;}
+  showToast(status==='confirmed'?'✓ הפגישה אושרה':'הפגישה נדחתה');
+  _loadMeetingAlerts();
+}
+function _meetingReminderDismissed(id){
+  try{return localStorage.getItem('meeting_reminder_seen_'+id)===localISO();}catch(e){return false;}
+}
+function _dismissMeetingReminder(id){
+  try{localStorage.setItem('meeting_reminder_seen_'+id,localISO());}catch(e){}
+  _loadMeetingAlerts();
+}
+
 // ── Merge helpers: timestamp-based, tombstone-aware ──
 let _syncPending=false;
 let _syncRetryTimer=null;
@@ -4413,12 +4488,14 @@ document.addEventListener('DOMContentLoaded',function(){
           renderAdvisorLinkSection();
           if(document.getElementById('page-analytics')?.classList.contains('active'))_loadAdvisorTasks().then(renderTasksPage);
         });
+        _loadMeetingAlerts();
       }
     });
     _sb.auth.getSession().then(async ({data:{session}})=>{
       _cloudUser=session?.user||null;
       await _loadAdvisorStatus();
       _applyAdvisorGate();
+      if(_cloudUser)_loadMeetingAlerts();
       if(_cloudUser){
         await _loadHousehold();
         await _loadFromCloud(true);
@@ -7357,6 +7434,7 @@ function _initAuthGate(){
       if(cached?.user){
         _cloudUser=cached.user;
         _loadAdvisorStatus().then(_applyAdvisorGate);
+        _loadMeetingAlerts();
         _gateDone=true;
         _proceedToApp();
         // returning user with local data → show instantly; empty local (fresh device) → hold
