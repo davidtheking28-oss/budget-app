@@ -1,6 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { supabase } from '../supabaseClient.js';
+import { supabase, SUPA_URL } from '../supabaseClient.js';
 import { toast } from '../toast.js';
+
+// Fire-and-forget: tells the client right away instead of waiting for the daily
+// push cron to pick the meeting up (up to 24h later). A missing subscription or
+// network hiccup here is normal, not an error worth surfacing to the advisor.
+async function notifyMeetingInstant(meetingId) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    await fetch(SUPA_URL + '/functions/v1/push-daily?action=notify-meeting', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+      body: JSON.stringify({ meetingId })
+    });
+  } catch { /* best-effort */ }
+}
 
 export function useClientCrm(advisorId, clientId) {
   const [notes, setNotes] = useState([]);
@@ -107,6 +122,7 @@ export function useClientCrm(advisorId, clientId) {
     if (error) { toast('שגיאה בקביעת הפגישה', 'error'); return false; }
     toast('פגישה נקבעה', 'success');
     setMeetings(prev => [...prev, data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
+    if (forClient) notifyMeetingInstant(data.id);
     return true;
   }
 
