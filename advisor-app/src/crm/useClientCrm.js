@@ -134,6 +134,16 @@ export function useClientCrm(advisorId, clientId) {
     toast('הפגישה עודכנה', 'success');
   }
 
+  // Lets the advisor mark a meeting confirmed/declined directly — e.g. the client
+  // confirmed by phone/WhatsApp instead of tapping the in-app banner. Same RLS path
+  // as a normal edit (advisor_id-scoped), no client action required.
+  async function respondMeeting(id, status) {
+    setMeetings(prev => prev.map(m => m.id === id ? { ...m, status } : m));
+    const { error } = await supabase.from('advisor_meetings').update({ status }).eq('id', id).eq('advisor_id', advisorId);
+    if (error) { toast('שגיאה בעדכון הפגישה', 'error'); reload(); return; }
+    toast(status === 'confirmed' ? 'הפגישה סומנה כמאושרת' : 'הפגישה סומנה כנדחתה', 'success');
+  }
+
   async function deleteMeeting(id) {
     const removed = meetings.find(m => m.id === id);
     const { error } = await supabase.from('advisor_meetings').delete().eq('id', id).eq('advisor_id', advisorId);
@@ -142,5 +152,5 @@ export function useClientCrm(advisorId, clientId) {
     toast('הפגישה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addMeeting(removed.scheduled_at, removed.notes, removed.for_client) } : null);
   }
 
-  return { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTask, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting };
+  return { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTask, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting };
 }

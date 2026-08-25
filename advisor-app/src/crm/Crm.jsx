@@ -48,7 +48,7 @@ function daysUntil(dateStr) {
 }
 
 export default function Crm({ advisorId, clientId, onChange }) {
-  const { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting } = useClientCrm(advisorId, clientId);
+  const { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting } = useClientCrm(advisorId, clientId);
   const [noteBody, setNoteBody] = useState('');
   const [noteForClient, setNoteForClient] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
@@ -167,6 +167,16 @@ export default function Crm({ advisorId, clientId, onChange }) {
                     {m.status === 'declined' && m.decline_note && <div className={styles.meta}>הערת הלקוח: {m.decline_note}</div>}
                   </div>
                   <div className={styles.rowActions}>
+                    {m.for_client && m.status === 'pending' && !past && (
+                      <>
+                        <button type="button" className={styles.icsButton} title="סמן כמאושרת (למשל אם הלקוח אישר בטלפון)" aria-label="סמן פגישה כמאושרת" onClick={() => respondMeeting(m.id, 'confirmed')}>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                        </button>
+                        <button type="button" className={styles.icsButton} title="סמן כנדחתה" aria-label="סמן פגישה כנדחתה" onClick={() => respondMeeting(m.id, 'declined')}>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        </button>
+                      </>
+                    )}
                     <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
                     <button type="button" className={styles.icsButton} title="הורד ליומן" aria-label="הורד ליומן" onClick={() => downloadIcs(m)}>
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
