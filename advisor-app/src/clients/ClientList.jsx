@@ -28,6 +28,7 @@ function HealthBadge({ score }) {
 // Rank by urgency, then by the weakest health score.
 function urgencyRank(c) {
   return (c.hasOverage ? 4 : 0)
+    + (c.hasDeclinedMeeting ? 3 : 0)
     + (c.openTasks > 0 ? 2 : 0)
     + (c.updatedAt && isStale(c.updatedAt) ? 1 : 0);
 }
@@ -175,8 +176,8 @@ export default function ClientList({ advisorId, onSelect }) {
   const overageCount = clients.filter(c => c.hasOverage).length;
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
   const urgent = clients
-    .filter(c => c.hasOverage || c.openTasks > 0)
-    .sort((a, b) => (b.hasOverage - a.hasOverage) || (b.openTasks - a.openTasks))
+    .filter(c => c.hasOverage || c.hasDeclinedMeeting || c.openTasks > 0)
+    .sort((a, b) => (b.hasOverage - a.hasOverage) || (b.hasDeclinedMeeting - a.hasDeclinedMeeting) || (b.openTasks - a.openTasks))
     .slice(0, 4);
 
   return (
@@ -204,12 +205,14 @@ export default function ClientList({ advisorId, onSelect }) {
           <div className={styles.urgentList}>
             {urgent.map(c => (
               <button type="button" key={c.id} className={styles.urgentRow} onClick={() => onSelect(c.client_id, c.client_email)}>
-                <span className={styles.urgentDot + ' ' + (c.hasOverage ? styles.urgentDotRed : styles.urgentDotGold)} aria-hidden="true" />
+                <span className={styles.urgentDot + ' ' + (c.hasOverage || c.hasDeclinedMeeting ? styles.urgentDotRed : styles.urgentDotGold)} aria-hidden="true" />
                 <span className={styles.urgentEmail}>{c.client_email}</span>
                 <span className={styles.urgentReason}>
-                  {c.hasOverage ? 'חריגת תקציב' : ''}
-                  {c.hasOverage && c.openTasks > 0 ? ' · ' : ''}
-                  {c.openTasks > 0 ? `${c.openTasks} משימות פתוחות` : ''}
+                  {[
+                    c.hasOverage && 'חריגת תקציב',
+                    c.hasDeclinedMeeting && 'פגישה נדחתה',
+                    c.openTasks > 0 && `${c.openTasks} משימות פתוחות`
+                  ].filter(Boolean).join(' · ')}
                 </span>
               </button>
             ))}
@@ -312,6 +315,7 @@ export default function ClientList({ advisorId, onSelect }) {
                   </div>
                   <div className={styles.chips}>
                     {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}
+                    {c.hasDeclinedMeeting && <div className={styles.overageChip}>פגישה נדחתה</div>}
                     {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
                     {c.updatedAt && isStale(c.updatedAt) && (
                       <div className={styles.staleChip}>לא עודכן {relativeTime(c.updatedAt)}</div>

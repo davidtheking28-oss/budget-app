@@ -29,15 +29,18 @@ export function useClientList(advisorId) {
     const clientIds = roster.map(c => c.client_id);
     const now = new Date();
 
-    const [{ data: budgetRows }, { data: taskRows }] = await Promise.all([
+    const [{ data: budgetRows }, { data: taskRows }, { data: declinedRows }] = await Promise.all([
       supabase.from('budget_data').select('user_id, transactions, budgets, updated_at').in('user_id', clientIds),
-      supabase.from('advisor_tasks').select('client_id').eq('advisor_id', advisorId).eq('done', false).in('client_id', clientIds)
+      supabase.from('advisor_tasks').select('client_id').eq('advisor_id', advisorId).eq('done', false).in('client_id', clientIds),
+      supabase.from('advisor_meetings').select('client_id, decline_note').eq('advisor_id', advisorId).eq('status', 'declined').gte('scheduled_at', now.toISOString()).in('client_id', clientIds)
     ]);
 
     const budgetByUser = {};
     (budgetRows || []).forEach(r => { budgetByUser[r.user_id] = r; });
     const openTaskCounts = {};
     (taskRows || []).forEach(r => { openTaskCounts[r.client_id] = (openTaskCounts[r.client_id] || 0) + 1; });
+    const declinedByUser = {};
+    (declinedRows || []).forEach(r => { declinedByUser[r.client_id] = (declinedByUser[r.client_id] || 0) + 1; });
 
     const merged = roster.map(c => {
       const budgetRow = budgetByUser[c.client_id];
@@ -47,6 +50,7 @@ export function useClientList(advisorId) {
         remaining: summary ? summary.remaining : null,
         hasOverage: summary ? summary.overCats.length > 0 : false,
         openTasks: openTaskCounts[c.client_id] || 0,
+        hasDeclinedMeeting: !!declinedByUser[c.client_id],
         healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null,
         updatedAt: budgetRow?.updated_at || null
       };
