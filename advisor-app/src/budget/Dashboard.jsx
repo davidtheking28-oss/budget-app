@@ -109,7 +109,7 @@ export default function Dashboard({ clientUserId, year, month }) {
         </div>
       </div>
 
-<div className={styles.tileHighlight + ' ' + styles[topInsight ? topInsight.kind : 'good']}>
+      <div className={styles.tileHighlight + ' ' + styles[topInsight ? topInsight.kind : 'good']}>
         <div className={styles.tileLabel}>{topInsight ? 'לתשומת לבך' : 'מצב כללי'}</div>
         <div className={styles.tileHighlightText}>{topInsight ? topInsight.text : 'אין התראות מיוחדות החודש'}</div>
       </div>
