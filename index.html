@@ -91,7 +91,7 @@
     @supports(backdrop-filter:blur(1px)){header{backdrop-filter:blur(12px);}}
     .header-title{display:flex;align-items:center;gap:8px;}
     .header-title h1{font-size:1.15rem;font-weight:var(--fw-extra);color:white;letter-spacing:var(--track-normal);font-family:var(--font-sans);}
-    .header-month-btn{background:rgba(255,255,255,0.15);border:none;color:white;border-radius:20px;padding:5px 12px;font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;}
+    .header-month-btn{min-height:44px;background:rgba(255,255,255,0.15);border:none;color:white;border-radius:20px;padding:5px 12px;font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;}
     .header-right{display:flex;align-items:center;gap:8px;}
     .icon-btn{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
     .icon-btn:active{background:rgba(255,255,255,0.3);}
@@ -102,7 +102,7 @@
     .month-sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
     .month-sheet-title{font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--text);}
     .month-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-    .month-btn{padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;font-weight:600;cursor:pointer;text-align:center;font-family:inherit;transition:background 0.15s,color 0.15s,border-color 0.15s;}
+    .month-btn{min-height:44px;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.88rem;font-weight:600;cursor:pointer;text-align:center;font-family:inherit;transition:background 0.15s,color 0.15s,border-color 0.15s;}
     .month-btn:hover:not(.active){background:var(--surface);border-color:var(--text3);}
     .month-btn.active{background:var(--accent2);color:white;border-color:var(--accent2);}
     .year-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
@@ -367,7 +367,7 @@
     .dash-greet-date{font-size:0.78rem;color:var(--text3);margin-top:2px;}
     .dash-avatar{width:48px;height:48px;border-radius:50%;background:rgba(var(--accent-rgb),0.12);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0;}
     .dash-period-toggle{display:flex;justify-content:center;gap:6px;background:var(--surface2);border-radius:999px;padding:4px;margin:0 auto 20px;width:fit-content;}
-    .dash-period-btn{background:none;border:none;border-radius:999px;padding:8px 20px;font-size:0.82rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+    .dash-period-btn{min-height:44px;background:none;border:none;border-radius:999px;padding:8px 20px;font-size:0.82rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
     .dash-period-btn.active{background:var(--accent);color:#fff;}
     .dash-bignum{text-align:center;margin-bottom:26px;}
     .dash-bignum-val{font-family:var(--font-num);font-size:2.6rem;font-weight:800;color:var(--accent);line-height:1.1;font-variant-numeric:tabular-nums lining-nums;}
