@@ -89,6 +89,7 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: var(--space-2);
   margin-bottom: var(--space-3);
 }
 
@@ -101,6 +102,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .catLabel svg {
@@ -108,12 +113,20 @@
   flex-shrink: 0;
 }
 
-.itemTop span:last-child {
+.itemAmountRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.itemAmount {
   font-family: var(--font-display);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   direction: ltr;
   unicode-bidi: isolate;
+  white-space: nowrap;
 }
 
 .bar {

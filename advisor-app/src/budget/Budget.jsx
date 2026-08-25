@@ -146,9 +146,9 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
           return (
             <div key={c} className={styles.item + (over ? ' ' + styles.itemOver : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
               <div className={styles.itemTop}>
-                <span className={styles.catLabel}>{getCategoryIcon(c)}{c}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span>{fmt(s)} / {fmt(l)}</span>
+                <span className={styles.catLabel} title={c}>{getCategoryIcon(c)}{c}</span>
+                <div className={styles.itemAmountRow}>
+                  <span className={styles.itemAmount}>{fmt(s)} / {fmt(l)}</span>
                   <DeleteButton title="מחק תקציב" onClick={() => removeBudget(c)} />
                 </div>
               </div>
