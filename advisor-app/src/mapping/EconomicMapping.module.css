@@ -199,7 +199,13 @@
   font-family: inherit;
   font-size: var(--text-sm);
   cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.18s var(--ease-out-expo), color 0.18s ease;
 }
+
+.toggle:hover { text-decoration-color: currentColor; }
 
 .list {
   display: flex;

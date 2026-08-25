@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
 import { localISODate } from './monthUtils.js';
@@ -54,6 +54,7 @@ export default function ImportSheet({ onClose, onImport }) {
   const [fileName, setFileName] = useState('');
   const [rows, setRows] = useState([]);
   const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef(null);
 
   function handleFile(e) {
     const file = e.target.files?.[0];
@@ -87,8 +88,13 @@ export default function ImportSheet({ onClose, onImport }) {
 
         {!rows.length ? (
           <div className={styles.dropZone}>
-            <input id="importFile" className={styles.fileInput} type="file" accept=".csv,text/csv" onChange={handleFile} />
-            <label htmlFor="importFile" className={styles.dropLabel}>
+            <input ref={fileInputRef} id="importFile" className={styles.fileInput} type="file" accept=".csv,text/csv" onChange={handleFile} />
+            <label
+              htmlFor="importFile"
+              className={styles.dropLabel}
+              tabIndex={0}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
+            >
               <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 15V3M7 8l5-5 5 5" />
                 <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
