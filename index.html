@@ -3892,9 +3892,16 @@ function _renderMeetingAlerts(meetings){
   el.innerHTML=html;
 }
 async function _respondMeeting(id,status){
+  let declineNote=null;
+  if(status==='declined'){
+    declineNote=prompt('רוצה לציין למה, או זמן חלופי שמתאים לך? (אפשר גם להשאיר ריק)')||null;
+    if(declineNote!==null)declineNote=declineNote.trim()||null;
+  }
   const el=document.querySelector('[data-meeting="'+id+'"]');
   if(el)el.style.opacity='0.5';
-  const {error}=await _sb.from('advisor_meetings').update({status}).eq('id',id).eq('client_id',_cloudUser.id);
+  const payload={status};
+  if(status==='declined')payload.decline_note=declineNote;
+  const {error}=await _sb.from('advisor_meetings').update(payload).eq('id',id).eq('client_id',_cloudUser.id);
   if(error){showToast('שגיאה בעדכון הפגישה ❌');if(el)el.style.opacity='1';return;}
   showToast(status==='confirmed'?'✓ הפגישה אושרה':'הפגישה נדחתה');
   _loadMeetingAlerts();
