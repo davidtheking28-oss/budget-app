@@ -376,7 +376,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               <div key={cat} className={styles.barRow}>
                 <span className={styles.barLabel}>{cat}</span>
                 <div className={styles.barTrack}>
-                  <div className={styles.barFill} style={{ width: `${maxAvg ? (data.category_averages[cat] / maxAvg) * 100 : 0}%`, background: catColor(cat) }} />
+                  <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: catColor(cat) }} />
                 </div>
                 <span className={styles.barValue}>{fmt(data.category_averages[cat])}</span>
               </div>
