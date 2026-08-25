@@ -4312,9 +4312,12 @@ function genInviteCode(){
 }
 async function createAdvisorInvite(){
   if(!_cloudUser||!_sb)return;
+  const btn=(typeof event!=='undefined'&&event)?event.target:null;
+  const prevLabel=btn?btn.textContent:null;
+  if(btn){btn.disabled=true;btn.textContent='יוצר קוד...';}
   const code=genInviteCode();
   const {data,error}=await _sb.from('advisor_clients').insert({client_id:_cloudUser.id,client_email:_cloudUser.email,invite_code:code,status:'pending'}).select().single();
-  if(error){showToast('❌ שגיאה ביצירת קוד');return;}
+  if(error){showToast('❌ שגיאה ביצירת קוד');if(btn){btn.disabled=false;btn.textContent=prevLabel;}return;}
   _advisorLink=data;
   renderAdvisorLinkSection();
 }
@@ -4329,14 +4332,18 @@ async function copyAdvisorCode(){
 }
 async function removeAdvisorLink(){
   if(!_advisorLink||!_sb)return;
+  const btn=(typeof event!=='undefined'&&event)?event.target:null;
+  if(btn)btn.disabled=true;
   await _sb.from('advisor_clients').delete().eq('id',_advisorLink.id);
   _advisorLink=null;
   renderAdvisorLinkSection();
 }
 async function respondAdvisorInvite(accept){
   if(!_advisorLink||!_sb)return;
+  const btns=(typeof event!=='undefined'&&event)?event.target.parentElement.querySelectorAll('button'):[];
+  btns.forEach(b=>b.disabled=true);
   const {data,error}=await _sb.rpc('respond_advisor_invite',{p_id:_advisorLink.id,p_accept:accept});
-  if(error||data!=='ok'){showToast('❌ הפעולה נכשלה, נסה שוב');return;}
+  if(error||data!=='ok'){showToast('❌ הפעולה נכשלה, נסה שוב');btns.forEach(b=>b.disabled=false);return;}
   showToast(accept?'✅ היועץ חובר בהצלחה':'✓ ההזמנה נדחתה');
   await _loadAdvisorLink();
   renderAdvisorLinkSection();
