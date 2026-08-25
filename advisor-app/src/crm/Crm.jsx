@@ -164,6 +164,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
                       {m.for_client && m.status === 'pending' && !past && <span className={styles.statusPending}>ממתינה לאישור</span>}
                     </div>
                     {m.notes && <div className={styles.meta}>{m.notes}</div>}
+                    {m.status === 'declined' && m.decline_note && <div className={styles.meta}>הערת הלקוח: {m.decline_note}</div>}
                   </div>
                   <div className={styles.rowActions}>
                     <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
