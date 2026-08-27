@@ -144,7 +144,8 @@
     /* Centered with left:0;right:0;margin:0 auto — NOT left:50%+translateX(-50%),
        which renders persistently off-center in a standalone iOS PWA (same bug the
        .fab hit above). Keep this technique if you touch it. */
-    #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:0!important;right:0!important;width:fit-content!important;max-width:calc(100vw - 24px)!important;transform:none!important;z-index:200!important;margin:0 auto!important;}
+    #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:0!important;right:0!important;width:fit-content!important;max-width:calc(100vw - 24px)!important;transform:none!important;z-index:200!important;margin:0 auto!important;transition:top 0.25s cubic-bezier(0.22,1,0.36,1);}
+    #inlineMonthNav.nav-hidden{top:-70px!important;}
     .page{display:none;}.page.active{display:block;min-height:calc(100vh - 76px - env(safe-area-inset-top,0px) - var(--nav-h) - var(--safe-bottom) - 60px);min-height:calc(100lvh - 76px - env(safe-area-inset-top,0px) - var(--nav-h) - var(--safe-bottom) - 60px);}
     @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     .exp-row,.exp-struct-row,.exp-pay-card,.income-source-row,.tx-item,.budget-tx-card,.sub-card{animation:rowIn 0.3s cubic-bezier(0.22,1,0.36,1) both;}
@@ -7196,6 +7197,7 @@ function init(){
   initSheetSwipe();
   initTabSwipe();
   initPullRefresh();
+  initHeaderAutoHide();
   setTimeout(()=>animateHeroNums('dashboard'),200);
   (function(){
     function _syncOffline(){document.body.classList.toggle('offline',!navigator.onLine);}
@@ -7654,6 +7656,26 @@ function initSheetSwipe(){
 // visual right-to-left tab order. Skipped if the gesture started inside a
 // horizontally-scrollable element (chip strips, month nav) so it doesn't
 // steal their native scroll.
+// Hide the floating month-nav pill on scroll-down, bring it back on scroll-up —
+// only #inlineMonthNav's own `top`, never `transform` (that centering technique
+// is transform:none!important on purpose, see the comment above its CSS rule).
+function initHeaderAutoHide(){
+  const pill=document.getElementById('inlineMonthNav');
+  if(!pill) return;
+  let lastY=window.scrollY, ticking=false;
+  function onScroll(){
+    const y=window.scrollY;
+    if(y<40){ pill.classList.remove('nav-hidden'); }
+    else if(y>lastY+4){ pill.classList.add('nav-hidden'); }
+    else if(y<lastY-4){ pill.classList.remove('nav-hidden'); }
+    lastY=y; ticking=false;
+  }
+  window.addEventListener('scroll',()=>{
+    if(ticking) return;
+    ticking=true;
+    requestAnimationFrame(onScroll);
+  },{passive:true});
+}
 // Pull-to-refresh. Only arms at the very top of the page, and never while a
 // sheet is open (those own the vertical gesture). Passive listeners throughout:
 // at scrollY 0 with overscroll-behavior:none there is nothing to preventDefault.
