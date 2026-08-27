@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useReducer } from 'r
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 
-const EMPTY = { transactions: [], budgets: {}, goals: [], subscriptions: [], loans: [], payments: [], fixed_expenses: [], insurances: [], assets: [] };
+const EMPTY = { transactions: [], budgets: {}, goals: [], subscriptions: [], loans: [], payments: [], fixed_expenses: [], insurances: [], assets: [], grooming: [], events: [], education: [], annualExpenses: [] };
 
 // The client app merges cloud data with its own local copy using last-write-wins on a
 // per-item `u` timestamp, and only forgets an item it still holds locally if a tombstone
