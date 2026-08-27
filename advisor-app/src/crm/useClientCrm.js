@@ -3,18 +3,22 @@ import { supabase, SUPA_URL } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 
 // Fire-and-forget: tells the client right away instead of waiting for the daily
-// push cron to pick the meeting up (up to 24h later). A missing subscription or
-// network hiccup here is normal, not an error worth surfacing to the advisor.
+// push cron to pick the meeting up (up to 24h later). A network hiccup here is
+// normal, not worth surfacing — but a client with no active push subscription
+// (never granted permission, or on desktop) is worth telling the advisor about,
+// so the result is returned instead of swallowed.
 async function notifyMeetingInstant(meetingId) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    await fetch(SUPA_URL + '/functions/v1/push-daily?action=notify-meeting', {
+    if (!session) return null;
+    const res = await fetch(SUPA_URL + '/functions/v1/push-daily?action=notify-meeting', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
       body: JSON.stringify({ meetingId })
     });
-  } catch { /* best-effort */ }
+    const body = await res.json().catch(() => null);
+    return body?.sent ?? null;
+  } catch { return null; }
 }
 
 export function useClientCrm(advisorId, clientId) {
@@ -122,7 +126,11 @@ export function useClientCrm(advisorId, clientId) {
     if (error) { toast('שגיאה בקביעת הפגישה', 'error'); return false; }
     toast('פגישה נקבעה', 'success');
     setMeetings(prev => [...prev, data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
-    if (forClient) notifyMeetingInstant(data.id);
+    if (forClient) {
+      notifyMeetingInstant(data.id).then(sent => {
+        if (sent === 0) toast('הפגישה נקבעה — ללקוח אין התראות פעילות כרגע, הוא יראה זאת בכניסה הבאה לאפליקציה', 'info');
+      });
+    }
     return true;
   }
 

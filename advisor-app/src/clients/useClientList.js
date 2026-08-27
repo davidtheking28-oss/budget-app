@@ -49,6 +49,7 @@ export function useClientList(advisorId) {
         ...c,
         remaining: summary ? summary.remaining : null,
         hasOverage: summary ? summary.overCats.length > 0 : false,
+        overageAmount: summary ? summary.overCats.reduce((s, x) => s + x.over, 0) : 0,
         openTasks: openTaskCounts[c.client_id] || 0,
         hasDeclinedMeeting: !!declinedByUser[c.client_id],
         healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null,

@@ -76,13 +76,13 @@ function StatMain({ value }) {
   return <div className={styles.statMainValue}>{Math.round(display)}</div>;
 }
 
-function StatSecondary({ label, value, tone, icon }) {
+function StatSecondary({ label, value, tone, icon, format }) {
   const display = useCountUp(value);
   return (
     <div className={styles.statSecondary}>
       <span className={styles.statIcon + (tone ? ' ' + styles[tone] : '')}>{icon}</span>
       <div className={styles.statSecondaryBody}>
-        <span className={styles.statSecondaryValue + (tone ? ' ' + styles[tone] : '')}>{Math.round(display)}</span>
+        <span className={styles.statSecondaryValue + (tone ? ' ' + styles[tone] : '')}>{format ? format(display) : Math.round(display)}</span>
         <span className={styles.statSecondaryLabel}>{label}</span>
       </div>
     </div>
@@ -174,6 +174,7 @@ export default function ClientList({ advisorId, onSelect }) {
   }
 
   const overageCount = clients.filter(c => c.hasOverage).length;
+  const overageAmountTotal = clients.reduce((s, c) => s + (c.overageAmount || 0), 0);
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
   const urgent = clients
     .filter(c => c.hasOverage || c.hasDeclinedMeeting || c.openTasks > 0)
@@ -195,6 +196,9 @@ export default function ClientList({ advisorId, onSelect }) {
           </div>
           <div className={styles.statDivider}></div>
           <StatSecondary label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'statRed' : undefined} icon={ICON_ALERT} />
+          {overageAmountTotal > 0 && (
+            <StatSecondary label="סה״כ חריגה בכסף" value={overageAmountTotal} tone="statRed" icon={ICON_ALERT} format={fmt} />
+          )}
           <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} icon={ICON_CHECKLIST} />
         </div>
       )}
