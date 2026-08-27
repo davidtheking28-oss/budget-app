@@ -2208,6 +2208,39 @@
       <button class="btn btn-primary btn-sm" onclick="openAddLoanSheet()">+ הלוואה / חוב</button>
     </div>
     <div id="loansList"></div>
+
+    <details class="card" style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:700">🧮 מחשבון שפיצר</summary>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <div class="form-field" style="flex:1;margin:0"><label for="spPrincipal">סכום הלוואה (₪)</label><input type="number" id="spPrincipal" placeholder="100000" min="0" inputmode="decimal" onfocus="this.select()"/></div>
+        <div class="form-field" style="flex:1;margin:0"><label for="spRate">ריבית שנתית (%)</label><input type="number" id="spRate" placeholder="5" min="0" step="0.1" inputmode="decimal" onfocus="this.select()"/></div>
+      </div>
+      <div class="form-field"><label for="spMonths">תקופה (חודשים)</label><input type="number" id="spMonths" placeholder="60" min="1" inputmode="numeric" onfocus="this.select()"/></div>
+      <button class="btn btn-primary btn-sm" onclick="_calcSpitzer()">חשב</button>
+      <div id="spResult" style="margin-top:10px"></div>
+    </details>
+
+    <details class="card" style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:700">🔀 סימולציית איחוד הלוואות</summary>
+      <div id="consolLoansList" style="margin-top:12px;display:flex;flex-direction:column;gap:6px"></div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <div class="form-field" style="flex:1;margin:0"><label for="consolRate">ריבית מוצעת (%)</label><input type="number" id="consolRate" placeholder="4" min="0" step="0.1" inputmode="decimal" onfocus="this.select()"/></div>
+        <div class="form-field" style="flex:1;margin:0"><label for="consolMonths">תקופה מוצעת (חודשים)</label><input type="number" id="consolMonths" placeholder="60" min="1" inputmode="numeric" onfocus="this.select()"/></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="_calcConsolidation()">חשב חיסכון</button>
+      <div id="consolResult" style="margin-top:10px"></div>
+    </details>
+
+    <details class="card" style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:700">🏠 מחשבון משכנתא / יכולת החזר</summary>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <div class="form-field" style="flex:1;margin:0"><label for="mtgRatio">אחוז מקסימלי מההכנסה הפנויה</label><input type="number" id="mtgRatio" value="40" min="1" max="100" inputmode="decimal" onfocus="this.select()"/></div>
+        <div class="form-field" style="flex:1;margin:0"><label for="mtgRate">ריבית שנתית מוצעת (%)</label><input type="number" id="mtgRate" placeholder="4.5" min="0" step="0.1" inputmode="decimal" onfocus="this.select()"/></div>
+      </div>
+      <div class="form-field"><label for="mtgYears">תקופה (שנים)</label><input type="number" id="mtgYears" placeholder="25" min="1" max="40" inputmode="numeric" onfocus="this.select()"/></div>
+      <button class="btn btn-primary btn-sm" onclick="_calcMortgage()">חשב</button>
+      <div id="mtgResult" style="margin-top:10px"></div>
+    </details>
   </div>
 
   <!-- עמוד עוד -->
@@ -6743,7 +6776,7 @@ function renderLoans(){
     list.innerHTML='<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></div><p>אין הלוואות רשומות</p><button class="btn-empty" onclick="openAddLoanSheet()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הלוואה ראשונה</button></div>';
     return;
   }
-  list.innerHTML=loans.map(l=>{
+  function _loanCard(l){
     const pct=l.original>0?Math.min(Math.round((l.original-l.remaining)/l.original*100),100):0;
     const emoji=loanEmoji(l.name);
     const loanBarCls=progState(pct,[[90,'near-done'],[0,'']]);
@@ -6753,8 +6786,13 @@ function renderLoans(){
       l.rate>0?`<div class="loan-stat"><div class="loan-stat-val">${l.rate}%</div><div class="loan-stat-label">ריבית</div></div>`:'',
       l.remaining>0?`<div class="loan-stat"><div class="loan-stat-val">${fmt(l.remaining)}</div><div class="loan-stat-label">יתרה</div></div>`:''
     ].filter(Boolean).join('');
-    return `<div class="loan-card" onclick="editLoan(${l.id})" style="cursor:pointer"><div class="loan-header"><div class="loan-emoji">${emoji}</div><div class="loan-info"><div class="loan-name">${esc(l.name)}</div>${l.lender?'<div class="loan-lender">'+esc(l.lender)+'</div>':''}</div><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteLoan(${l.id})" aria-label="מחק הלוואה">✕</button></div>${progBar}<div class="loan-stats-row">${stats}</div>${loanPayoffHtml(l)}${l.notes?'<div class="loan-notes">'+esc(l.notes)+'</div>':''}</div>`;
-  }).join('');
+    return `<div class="loan-card" onclick="editLoan(${l.id})" style="cursor:pointer"><div class="loan-header"><div class="loan-emoji">${emoji}</div><div class="loan-info"><div class="loan-name">${esc(l.name)}</div>${l.lender?'<div class="loan-lender">'+esc(l.lender)+'</div>':''}</div><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteLoan(${l.id})" aria-label="מחק הלוואה">✕</button></div>${progBar}<div class="loan-stats-row">${stats}</div>${loanPayoffHtml(l)}${!l.monthsLeft?'<div style="font-size:0.72rem;color:var(--text3);margin-top:6px">לא הוזן מס\' תשלומים שנותרו</div>':''}${l.notes?'<div class="loan-notes">'+esc(l.notes)+'</div>':''}</div>`;
+  }
+  const longTerm=loans.filter(l=>(l.monthsLeft||0)>=18);
+  const shortTerm=loans.filter(l=>(l.monthsLeft||0)<18);
+  const group=(title,arr)=>arr.length?`<div class="loan-group-title" style="font-weight:700;font-size:0.85rem;color:var(--text2);margin:14px 0 8px">${title}</div>`+arr.map(_loanCard).join(''):'';
+  list.innerHTML=group('הלוואות ארוכות טווח (18+ תשלומים)',longTerm)+group('הלוואות קצרות טווח (מתחת ל-18 תשלומים)',shortTerm);
+  _renderConsolLoansList();
 }
 function _loanMonths(P,M,annualRate){
   if(!P||!M||P<=0||M<=0)return null;
@@ -6777,6 +6815,72 @@ function loanPayoffHtml(l){
   }).filter(Boolean).join('');
   return '<div style="font-size:0.78rem;color:var(--text2);margin-top:8px;font-weight:600;">'+line+'</div>'
     +(chips?'<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'+chips+'</div>':'');
+}
+
+/* ===== LOAN CALCULATORS: Spitzer / consolidation / mortgage affordability ===== */
+function _pmtSpitzer(P,annualRate,months){
+  if(!P||P<=0||!months||months<=0)return 0;
+  const r=(annualRate||0)/1200;
+  if(r<=0)return P/months;
+  return P*r/(1-Math.pow(1+r,-months));
+}
+function _spitzerPrincipalFromPmt(pmt,annualRate,months){
+  if(!pmt||pmt<=0||!months||months<=0)return 0;
+  const r=(annualRate||0)/1200;
+  if(r<=0)return pmt*months;
+  return pmt*(1-Math.pow(1+r,-months))/r;
+}
+function _calcSpitzer(){
+  const P=parseFloat(document.getElementById('spPrincipal').value)||0;
+  const rate=parseFloat(document.getElementById('spRate').value)||0;
+  const months=parseInt(document.getElementById('spMonths').value)||0;
+  const el=document.getElementById('spResult');
+  if(!P||!months){el.innerHTML='<div style="color:var(--red);font-size:0.82rem">נדרשים סכום ותקופה</div>';return;}
+  const pmt=_pmtSpitzer(P,rate,months);
+  const totalInterest=Math.max(0,pmt*months-P);
+  el.innerHTML=`<div class="loan-stats-row"><div class="loan-stat"><div class="loan-stat-val">${fmt(pmt)}</div><div class="loan-stat-label">החזר חודשי</div></div><div class="loan-stat"><div class="loan-stat-val">${fmt(totalInterest)}</div><div class="loan-stat-label">ריבית כוללת</div></div></div><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="_spitzerToLoan(${P},${rate},${months},${pmt})">➕ הוסף כהלוואה</button>`;
+}
+function _spitzerToLoan(P,rate,months,pmt){
+  openAddLoanSheet();
+  setTimeout(()=>{
+    document.getElementById('loanOriginal').value=P;
+    document.getElementById('loanRemaining').value=P;
+    document.getElementById('loanRate').value=rate;
+    document.getElementById('loanMonthsLeft').value=months;
+    document.getElementById('loanMonthly').value=Math.round(pmt*100)/100;
+    const extras=document.getElementById('loanExtras');if(extras)extras.style.display='flex';
+  },50);
+}
+function _renderConsolLoansList(){
+  const wrap=document.getElementById('consolLoansList');
+  if(!wrap)return;
+  if(!loans.length){wrap.innerHTML='<div style="font-size:0.78rem;color:var(--text3)">אין הלוואות לאיחוד</div>';return;}
+  wrap.innerHTML=loans.map(l=>`<label style="display:flex;align-items:center;gap:8px;font-size:0.85rem"><input type="checkbox" class="consol-check" value="${l.id}" style="width:18px;height:18px"/>${esc(l.name)} · ${fmt(l.monthly)}/חודש</label>`).join('');
+}
+function _calcConsolidation(){
+  const ids=Array.from(document.querySelectorAll('.consol-check:checked')).map(c=>parseFloat(c.value));
+  const el=document.getElementById('consolResult');
+  if(ids.length<2){el.innerHTML='<div style="color:var(--red);font-size:0.82rem">בחר לפחות 2 הלוואות לאיחוד</div>';return;}
+  const picked=loans.filter(l=>ids.includes(l.id));
+  const currentMonthly=picked.reduce((s,l)=>s+(l.monthly||0),0);
+  const currentRemaining=picked.reduce((s,l)=>s+(l.remaining||0),0);
+  const rate=parseFloat(document.getElementById('consolRate').value)||0;
+  const months=parseInt(document.getElementById('consolMonths').value)||0;
+  if(!months){el.innerHTML='<div style="color:var(--red);font-size:0.82rem">נדרשת תקופה מוצעת</div>';return;}
+  const newMonthly=_pmtSpitzer(currentRemaining,rate,months);
+  const diff=currentMonthly-newMonthly;
+  el.innerHTML=`<div class="loan-stats-row"><div class="loan-stat"><div class="loan-stat-val">${fmt(newMonthly)}</div><div class="loan-stat-label">החזר חודשי מאוחד</div></div><div class="loan-stat"><div class="loan-stat-val" style="color:${diff>=0?'var(--green)':'var(--red)'}">${diff>=0?'':'-'}${fmt(Math.abs(diff))}</div><div class="loan-stat-label">${diff>=0?'חיסכון':'עלות נוספת'} לחודש</div></div></div>`;
+}
+function _calcMortgage(){
+  const disposable=Math.max(0,getMonthlyIncome()-getMonthTx(currentYear,currentMonth).filter(t=>t.type==='expense').reduce((s,t)=>s+(+t.amount||0),0));
+  const ratio=parseFloat(document.getElementById('mtgRatio').value)||40;
+  const rate=parseFloat(document.getElementById('mtgRate').value)||0;
+  const years=parseInt(document.getElementById('mtgYears').value)||0;
+  const el=document.getElementById('mtgResult');
+  if(!years){el.innerHTML='<div style="color:var(--red);font-size:0.82rem">נדרשת תקופה בשנים</div>';return;}
+  const maxPmt=disposable*ratio/100;
+  const maxPrincipal=_spitzerPrincipalFromPmt(maxPmt,rate,years*12);
+  el.innerHTML=`<div style="font-size:0.78rem;color:var(--text3);margin-bottom:6px">הכנסה פנויה חודשית מוערכת: ${fmt(disposable)}</div><div class="loan-stats-row"><div class="loan-stat"><div class="loan-stat-val">${fmt(maxPmt)}</div><div class="loan-stat-label">החזר מקסימלי מומלץ</div></div><div class="loan-stat"><div class="loan-stat-val">${fmt(maxPrincipal)}</div><div class="loan-stat-label">משכנתא נתמכת</div></div></div>`;
 }
 
 function animateNumEl(el){
