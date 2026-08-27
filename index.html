@@ -1793,6 +1793,7 @@
           <div class="form-field"><label for="loanRate">ריבית (%)</label><input type="number" id="loanRate" placeholder="3.5" min="0" step="0.1" inputmode="decimal" onfocus="this.select()"/></div>
         </div>
         <div class="form-field"><label for="loanMonthsLeft">חודשים שנשארו</label><input type="number" id="loanMonthsLeft" placeholder="120" min="0" inputmode="numeric" onfocus="this.select()"/></div>
+        <div class="form-field"><label for="loanDueDay">יום חיוב בחודש (אופציונלי)</label><input type="number" id="loanDueDay" placeholder="10" min="1" max="31" inputmode="numeric" onfocus="this.select()"/></div>
         <div class="form-field"><label for="loanNotes">הערות</label><input type="text" id="loanNotes" placeholder="קו שני משכנתא, ריבית פריים..." onfocus="this.select()" autocomplete="off" autocorrect="off" spellcheck="false"/></div>
       </div>
       <button class="btn btn-primary btn-full" id="loanSaveBtn" onclick="saveLoan()">שמור הלוואה</button>
@@ -2128,6 +2129,13 @@
       <div class="section-header"><div class="section-title">פירוט קטגוריות</div></div>
       <div class="section-body" style="padding-top:8px"><div id="breakdown"></div></div>
     </div>
+
+    <details class="card" style="margin-top:14px">
+      <summary style="cursor:pointer;font-weight:700">📅 מעקב יתרת עו״ש לפי ימים</summary>
+      <div class="form-field" style="margin-top:12px"><label for="checkingOpeningInput">יתרת פתיחה לחודש (₪)</label><input type="number" id="checkingOpeningInput" inputmode="decimal" onfocus="this.select()" onchange="userSettings.checkingOpening=parseFloat(this.value)||0;saveSettingsData();_renderCheckingProjection();"/></div>
+      <div class="chart-wrap" style="height:180px"><canvas id="checkingChart"></canvas></div>
+      <div id="checkingProjTable" style="display:flex;flex-direction:column;gap:4px;margin-top:8px"></div>
+    </details>
   </div>
 
   <div id="page-budget" class="page">
@@ -2983,7 +2991,7 @@ let txFixedType   = 'fixed';
 let txSelectedCat = '';
 let _recurRefused = new Set();
 
-let catChart=null, barChart=null;
+let catChart=null, barChart=null, checkingChart=null;
 
 function saveData(){
   _stampChanges();
@@ -5574,6 +5582,41 @@ function renderAnalytics(){
     if(prev>0){const p=Math.round((amt-prev)/prev*100);if(p>2){trendStr='↑'+p+'%';trendCls='up';}else if(p<-2){trendStr='↓'+Math.abs(p)+'%';trendCls='down';}else{trendStr='≈';trendCls='same';}}
     return '<div class="breakdown-row"><div class="breakdown-name">'+catIconSvg(cat)+' '+esc(cat)+(cat===_hotCat?' <span class="hot-badge" title="הקטגוריה שגדלה הכי הרבה החודש">🔥</span>':'')+'</div><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:'+Math.round(amt/totalE*100)+'%;background:'+COLORS[i%COLORS.length]+'"></div></div><div class="breakdown-amount">'+fmt(amt)+'<br><span style="color:var(--text3)">'+Math.round(amt/totalE*100)+'%</span></div><div class="breakdown-trend '+trendCls+'">'+trendStr+'</div></div>';
   }).join(''):'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div><p>אין הוצאות לחודש זה</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">הוסף עסקאות כדי לראות את הניתוח</p></div>';
+  _renderCheckingProjection();
+}
+
+function _checkingProjection(){
+  const days=[1,2,5,10,15,20,25,30];
+  const income=getMonthlyIncome();
+  const otherFixed=getEffectiveFixedCats()
+    .filter(c=>c!=='החזר הלוואות + חיוב קבוע'&&c!=='ביטוחים')
+    .reduce((s,c)=>s+_fxMonthly(c),0);
+  const opening=parseFloat(userSettings.checkingOpening)||0;
+  return days.map(d=>{
+    let bal=opening+income-otherFixed;
+    loans.forEach(l=>{if((l.dueDay||1)<=d)bal-=(parseFloat(l.monthly)||0);});
+    insurances.forEach(i=>{if((i.dueDay||1)<=d)bal-=(parseFloat(i.monthly)||0);});
+    return {day:d,balance:bal};
+  });
+}
+function _renderCheckingProjection(){
+  const input=document.getElementById('checkingOpeningInput');
+  if(input&&document.activeElement!==input)input.value=userSettings.checkingOpening||'';
+  const table=document.getElementById('checkingProjTable');
+  const canvas=document.getElementById('checkingChart');
+  if(!table||!canvas)return;
+  const proj=_checkingProjection();
+  table.innerHTML=proj.map(p=>`<div style="display:flex;justify-content:space-between;font-size:0.82rem;padding:4px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">יום ${p.day}</span><span style="font-weight:700;color:${p.balance<0?'var(--red)':'var(--text)'}">${fmt(p.balance)}</span></div>`).join('');
+  const isDk=document.body.classList.contains('dark');
+  const tickClr=isDk?'#9b9089':'#6b6360';
+  const ctx=canvas.getContext('2d');
+  if(checkingChart)checkingChart.destroy();
+  checkingChart=new Chart(ctx,{type:'line',data:{
+    labels:proj.map(p=>'יום '+p.day),
+    datasets:[{label:'יתרה צפויה',data:proj.map(p=>p.balance),borderColor:isDk?'#34d3a9':'#0a7a62',backgroundColor:isDk?'rgba(52,211,169,0.15)':'rgba(10,122,98,0.12)',tension:0.3,fill:true,pointRadius:3}]
+  },options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{y:{ticks:{callback:v=>v.toLocaleString(),font:{size:10},color:tickClr},grid:{color:isDk?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)'}},x:{ticks:{font:{size:10},color:tickClr}}}}});
 }
 
 function setBudget(){
@@ -5951,11 +5994,12 @@ async function _expEditInsurance(id){
   const vals=await promptSheet({title:'עריכת ביטוח',fields:[
     {label:'שם הביטוח',value:i.name||''},
     {label:'סוג הביטוח',type:'select',options:INSURANCE_TYPES,value:i.type||''},
-    {label:'סכום חודשי',type:'number',value:i.monthly||''}
+    {label:'סכום חודשי',type:'number',value:i.monthly||''},
+    {label:'יום חיוב בחודש (אופציונלי)',type:'number',value:i.dueDay||''}
   ]});
   if(!vals)return;
-  const[name,type,monthly]=vals;
-  i.name=name.trim();i.type=type;i.monthly=parseFloat(monthly)||0;
+  const[name,type,monthly,dueDay]=vals;
+  i.name=name.trim();i.type=type;i.monthly=parseFloat(monthly)||0;i.dueDay=parseInt(dueDay)||0;
   saveData();renderTxPage();
 }
 function _expDeleteInsurance(id){
@@ -5969,11 +6013,12 @@ async function _expAddInsurance(){
   const vals=await promptSheet({title:'ביטוח חדש',fields:[
     {label:'שם הביטוח החדש'},
     {label:'סוג הביטוח',type:'select',options:INSURANCE_TYPES},
-    {label:'סכום חודשי',type:'number'}
+    {label:'סכום חודשי',type:'number'},
+    {label:'יום חיוב בחודש (אופציונלי)',type:'number'}
   ]});
   if(!vals||!vals[0]||!vals[0].trim())return;
-  const[name,type,monthly]=vals;
-  insurances.push({id:Date.now(),name:name.trim(),type,monthly:parseFloat(monthly)||0});
+  const[name,type,monthly,dueDay]=vals;
+  insurances.push({id:Date.now(),name:name.trim(),type,monthly:parseFloat(monthly)||0,dueDay:parseInt(dueDay)||0});
   saveData();renderTxPage();
   showToast('✓ ביטוח נוסף');
 }
@@ -6694,7 +6739,7 @@ function loanEmoji(name){
 }
 let _editingLoanId=null;
 function _clearLoanForm(){
-  ['loanName','loanLender','loanOriginal','loanRemaining','loanMonthly','loanRate','loanMonthsLeft','loanNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['loanName','loanLender','loanOriginal','loanRemaining','loanMonthly','loanRate','loanMonthsLeft','loanDueDay','loanNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 }
 function openAddLoanSheet(){
   _editingLoanId=null;
@@ -6713,8 +6758,9 @@ function editLoan(id){
   document.getElementById('loanOriginal').value=l.original||'';
   document.getElementById('loanRate').value=l.rate||'';
   document.getElementById('loanMonthsLeft').value=l.monthsLeft||'';
+  document.getElementById('loanDueDay').value=l.dueDay||'';
   document.getElementById('loanNotes').value=l.notes||'';
-  if(l.lender||l.original||l.rate||l.monthsLeft||l.notes){
+  if(l.lender||l.original||l.rate||l.monthsLeft||l.dueDay||l.notes){
     const extras=document.getElementById('loanExtras');if(extras)extras.style.display='flex';
   }
   const title=document.getElementById('loanSheetTitle');if(title)title.textContent='✏️ עריכת הלוואה';
@@ -6733,6 +6779,7 @@ function saveLoan(){
     monthly,
     rate:parseFloat(document.getElementById('loanRate').value)||0,
     monthsLeft:parseInt(document.getElementById('loanMonthsLeft').value)||0,
+    dueDay:parseInt(document.getElementById('loanDueDay').value)||0,
     notes:document.getElementById('loanNotes').value.trim()
   };
   const editingId=_editingLoanId;
