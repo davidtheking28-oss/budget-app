@@ -1687,7 +1687,7 @@
             <option>סטרימינג</option><option>מוזיקה</option><option>פודקאסטים</option>
             <option>תוכנה</option><option>כלי AI</option><option>אחסון ענן</option>
             <option>כושר</option><option>משחקי וידאו</option><option>עיתונות</option>
-            <option>חינוך</option><option>אחר</option>
+            <option>חינוך</option><option>אינטרנט וסלולר</option><option>אחר</option>
           </select>
         </div>
         <div class="form-field">
@@ -1726,7 +1726,7 @@
             <option>סטרימינג</option><option>מוזיקה</option><option>פודקאסטים</option>
             <option>תוכנה</option><option>כלי AI</option><option>אחסון ענן</option>
             <option>כושר</option><option>משחקי וידאו</option><option>עיתונות</option>
-            <option>חינוך</option><option>אחר</option>
+            <option>חינוך</option><option>אינטרנט וסלולר</option><option>אחר</option>
           </select>
         </div>
         <div class="form-field">
@@ -2837,12 +2837,16 @@ function budgetChipColor(cat){
   const table=document.body.classList.contains('dark')?BUDGET_CHIP_HEX_DARK:BUDGET_CHIP_HEX;
   return table[BUDGET_CHIP_COLOR[cat]||'gray'];
 }
-const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
+const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','טיפוח וקוסמטיקה','אירועים ומתנות','הוצאות שנתיות','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
   'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&_payCalc(p).left>0?amt:0);},0),
   'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0),
-  'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
+  'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0),
+  'טיפוח וקוסמטיקה':()=>grooming.reduce((s,g)=>s+(parseFloat(g.monthly)||0),0),
+  'אירועים ומתנות':()=>events.reduce((s,e)=>s+(parseFloat(e.annual)||0)/12,0),
+  'חינוך, חוגים וקייטנות':()=>education.reduce((s,e)=>s+(parseFloat(e.monthly)||0),0),
+  'הוצאות שנתיות':()=>annualExpenses.reduce((s,a)=>s+(parseFloat(a.annual)||0)/12,0)
 };
 function getEffectiveExpenseCats(){const base=_activeMode==='business'?EXPENSE_CATS_BUSINESS:EXPENSE_CATS;return [...base,...(userSettings.customCats||[]).filter(c=>!base.includes(c))];}
 function getEffectiveBudgetCats(){const e=getEffectiveExpenseCats();return [...e,...FIXED_CATS.filter(c=>!e.includes(c))];}
@@ -2884,20 +2888,24 @@ let loans         = JSON.parse(localStorage.getItem(_modeKey('budget_loans')) ||
 let payments      = JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
 let fixedExpenses = JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))   ||'[]');
 let insurances    = JSON.parse(localStorage.getItem(_modeKey('budget_insurances'))||'[]');
+let grooming      = JSON.parse(localStorage.getItem(_modeKey('budget_grooming'))||'[]');
+let events        = JSON.parse(localStorage.getItem(_modeKey('budget_events'))||'[]');
+let education     = JSON.parse(localStorage.getItem(_modeKey('budget_education'))||'[]');
+let annualExpenses= JSON.parse(localStorage.getItem(_modeKey('budget_annual_exp'))||'[]');
 
 // ── Sync metadata: per-item timestamps + tombstones for merge-safe cloud sync ──
-function _emptyMeta(){return {del:{tx:{},goals:{},subs:{},loans:{},payments:{},fixed:{},insurances:{},budgets:{}},bu:{}};}
+function _emptyMeta(){return {del:{tx:{},goals:{},subs:{},loans:{},payments:{},fixed:{},insurances:{},grooming:{},events:{},education:{},annualExpenses:{},budgets:{}},bu:{}};}
 function _loadSyncMeta(){
   try{
     const m=JSON.parse(localStorage.getItem(_modeKey('budget_sync_meta'))||'null');
-    if(m&&m.del&&m.bu){if(!m.del.payments)m.del.payments={};if(!m.del.fixed)m.del.fixed={};if(!m.del.insurances)m.del.insurances={};return m;}
+    if(m&&m.del&&m.bu){if(!m.del.payments)m.del.payments={};if(!m.del.fixed)m.del.fixed={};if(!m.del.insurances)m.del.insurances={};if(!m.del.grooming)m.del.grooming={};if(!m.del.events)m.del.events={};if(!m.del.education)m.del.education={};if(!m.del.annualExpenses)m.del.annualExpenses={};return m;}
   }catch(e){}
   return _emptyMeta();
 }
 let _syncMeta=_loadSyncMeta();
 let _syncShadow={};
 function _itemSig(it){if(it.u===undefined)return JSON.stringify(it);const {u,...rest}=it;return JSON.stringify(rest);}
-function _collections(){return [['tx',transactions],['goals',goals],['subs',subscriptions],['loans',loans],['payments',payments],['fixed',fixedExpenses],['insurances',insurances]];}
+function _collections(){return [['tx',transactions],['goals',goals],['subs',subscriptions],['loans',loans],['payments',payments],['fixed',fixedExpenses],['insurances',insurances],['grooming',grooming],['events',events],['education',education],['annualExpenses',annualExpenses]];}
 function _rebuildShadow(){
   _syncShadow={};
   for(const [k,arr] of _collections()){
@@ -2954,6 +2962,10 @@ function saveData(){
   localStorage.setItem(_modeKey('budget_payments'),JSON.stringify(payments));
   localStorage.setItem(_modeKey('budget_fixed'),JSON.stringify(fixedExpenses));
   localStorage.setItem(_modeKey('budget_insurances'),JSON.stringify(insurances));
+  localStorage.setItem(_modeKey('budget_grooming'),JSON.stringify(grooming));
+  localStorage.setItem(_modeKey('budget_events'),JSON.stringify(events));
+  localStorage.setItem(_modeKey('budget_education'),JSON.stringify(education));
+  localStorage.setItem(_modeKey('budget_annual_exp'),JSON.stringify(annualExpenses));
   localStorage.setItem(_modeKey('budget_sync_meta'),JSON.stringify(_syncMeta));
   scheduleCloudSave();
 }
@@ -3710,8 +3722,24 @@ function _expStructListHtml(kind){
     return (rows||'<div class="budget-tx-empty">אין הלוואות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openAddLoanSheet()">+ הוסף הלוואה</button>';
   }
   if(kind==='insurance'){
-    const rows=insurances.map(i=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditInsurance('+i.id+')"><span>'+esc(i.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(i.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteInsurance('+i.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    const rows=insurances.map(i=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditInsurance('+i.id+')"><span>'+esc(i.name)+(i.type?' <span style="color:var(--text3);font-size:0.78em">· '+esc(i.type)+'</span>':'')+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(i.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteInsurance('+i.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
     return (rows||'<div class="budget-tx-empty">אין ביטוחים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddInsurance()">+ הוסף ביטוח</button>';
+  }
+  if(kind==='grooming'){
+    const rows=grooming.map(g=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditGrooming('+g.id+')"><span>'+esc(g.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(g.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteGrooming('+g.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    return (rows||'<div class="budget-tx-empty">אין פריטי טיפוח</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddGrooming()">+ הוסף טיפוח</button>';
+  }
+  if(kind==='events'){
+    const rows=events.map(e=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditEvent('+e.id+')"><span>'+esc(e.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt((parseFloat(e.annual)||0)/12)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteEvent('+e.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    return (rows||'<div class="budget-tx-empty">אין אירועים או מתנות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddEvent()">+ הוסף אירוע/מתנה</button>';
+  }
+  if(kind==='education'){
+    const rows=education.map(e=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditEducation('+e.id+')"><span>'+esc(e.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(e.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteEducation('+e.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    return (rows||'<div class="budget-tx-empty">אין פריטי חינוך או חוגים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddEducation()">+ הוסף חינוך/חוג</button>';
+  }
+  if(kind==='annualExpenses'){
+    const rows=annualExpenses.map(a=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditAnnualExpense('+a.id+')"><span>'+esc(a.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt((parseFloat(a.annual)||0)/12)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteAnnualExpense('+a.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    return (rows||'<div class="budget-tx-empty">אין הוצאות שנתיות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddAnnualExpense()">+ הוסף הוצאה שנתית</button>';
   }
   if(kind==='subs'){
     const active=subscriptions.filter(s=>s.active);
@@ -3737,7 +3765,7 @@ function _expStructListHtml(kind){
   }
   return '';
 }
-const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs','ביטוחים':'insurance'};
+const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs','ביטוחים':'insurance','טיפוח וקוסמטיקה':'grooming','אירועים ומתנות':'events','חינוך, חוגים וקייטנות':'education','הוצאות שנתיות':'annualExpenses'};
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
   return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+key+'\')" aria-expanded="'+open+'">'
@@ -3942,7 +3970,7 @@ let _syncFailedNotified=false;
 // Collections added after the table was created. Each is its own column in personal
 // mode, so on a DB that predates them the whole upsert fails — core data included.
 // Drop such a column for this session instead and keep everything else syncing.
-const _OPTIONAL_COLS=['payments','fixed_expenses','insurances'];
+const _OPTIONAL_COLS=['payments','fixed_expenses','insurances','grooming','events','education','annualExpenses'];
 const _missingCols=new Set();
 function _mergeMeta(a,b){
   const out=_emptyMeta();
@@ -3990,6 +4018,10 @@ function _buildMerged(bundle,localBu,cloudBu){
     payments:_mergeArrays(payments,bundle.payments,_syncMeta.del.payments),
     fixed_expenses:_mergeArrays(fixedExpenses,bundle.fixed_expenses,_syncMeta.del.fixed),
     insurances:_mergeArrays(insurances,bundle.insurances,_syncMeta.del.insurances),
+    grooming:_mergeArrays(grooming,bundle.grooming,_syncMeta.del.grooming),
+    events:_mergeArrays(events,bundle.events,_syncMeta.del.events),
+    education:_mergeArrays(education,bundle.education,_syncMeta.del.education),
+    annualExpenses:_mergeArrays(annualExpenses,bundle.annualExpenses,_syncMeta.del.annualExpenses),
     budgets:_mergeBudgets(budgets,bundle.budgets,localBu,cloudBu,_syncMeta.del.budgets,_syncMeta.bu)
   };
 }
@@ -4001,8 +4033,12 @@ function _applyMerged(m){
     ||JSON.stringify(m.payments)!==JSON.stringify(payments)
     ||JSON.stringify(m.fixed_expenses)!==JSON.stringify(fixedExpenses)
     ||JSON.stringify(m.insurances)!==JSON.stringify(insurances)
+    ||JSON.stringify(m.grooming)!==JSON.stringify(grooming)
+    ||JSON.stringify(m.events)!==JSON.stringify(events)
+    ||JSON.stringify(m.education)!==JSON.stringify(education)
+    ||JSON.stringify(m.annualExpenses)!==JSON.stringify(annualExpenses)
     ||JSON.stringify(m.budgets)!==JSON.stringify(budgets);
-  transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;fixedExpenses=m.fixed_expenses;insurances=m.insurances;budgets=m.budgets;
+  transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;fixedExpenses=m.fixed_expenses;insurances=m.insurances;grooming=m.grooming;events=m.events;education=m.education;annualExpenses=m.annualExpenses;budgets=m.budgets;
   _migrateCats();   // cloud rows may still carry the old category names
   _fixRefinedCats();
   localStorage.setItem(_modeKey('budget_tx'),JSON.stringify(transactions));
@@ -4013,6 +4049,10 @@ function _applyMerged(m){
   localStorage.setItem(_modeKey('budget_payments'),JSON.stringify(payments));
   localStorage.setItem(_modeKey('budget_fixed'),JSON.stringify(fixedExpenses));
   localStorage.setItem(_modeKey('budget_insurances'),JSON.stringify(insurances));
+  localStorage.setItem(_modeKey('budget_grooming'),JSON.stringify(grooming));
+  localStorage.setItem(_modeKey('budget_events'),JSON.stringify(events));
+  localStorage.setItem(_modeKey('budget_education'),JSON.stringify(education));
+  localStorage.setItem(_modeKey('budget_annual_exp'),JSON.stringify(annualExpenses));
   localStorage.setItem(_modeKey('budget_sync_meta'),JSON.stringify(_syncMeta));
   _rebuildShadow();
   return changed;
@@ -4650,7 +4690,7 @@ function exportCSV(){
 // ── Backup / Restore ──────────────────────────────────────────────
 function exportBackup(){
   const data = {
-    transactions, goals, subscriptions, budgets, loans, payments, fixedExpenses, insurances, userSettings,
+    transactions, goals, subscriptions, budgets, loans, payments, fixedExpenses, insurances, grooming, events, education, annualExpenses, userSettings,
     exportDate: new Date().toISOString()
   };
   const a = document.createElement('a');
@@ -4676,6 +4716,10 @@ function importBackup(input){
       payments = data.payments || [];
       fixedExpenses = data.fixedExpenses || [];
       insurances = data.insurances || [];
+      grooming = data.grooming || [];
+      events = data.events || [];
+      education = data.education || [];
+      annualExpenses = data.annualExpenses || [];
       if(data.userSettings) userSettings = data.userSettings;
       saveData();
       saveSettingsData();
@@ -4753,7 +4797,7 @@ async function resetAllData(){
   if(_cloudUser&&_sb&&!_householdOwner){
     try{await _sb.from('budget_data').delete().eq('user_id',_cloudUser.id);}catch(e){}
   }
-  transactions=[]; goals=[]; subscriptions=[]; budgets={}; loans=[]; payments=[]; fixedExpenses=[]; insurances=[];
+  transactions=[]; goals=[]; subscriptions=[]; budgets={}; loans=[]; payments=[]; fixedExpenses=[]; insurances=[]; grooming=[]; events=[]; education=[]; annualExpenses=[];
   userSettings={name:'',savingsGoal:0};
   _syncMeta=_emptyMeta();
   _rebuildShadow();
@@ -5868,15 +5912,17 @@ async function _expEditPayment(id){
   p.name=name.trim();p.amount=parseFloat(amount)||0;p.total=tot;p.current=tot-r;p.currentAnchor=_curMonthKey();
   saveData();renderTxPage();renderPayments();
 }
+const INSURANCE_TYPES=[{value:'בריאות',label:'בריאות'},{value:'חיים',label:'חיים'},{value:'רכוש',label:'רכוש'},{value:'תאונות אישיות',label:'תאונות אישיות'}];
 async function _expEditInsurance(id){
   const i=insurances.find(x=>x.id===id);if(!i)return;
   const vals=await promptSheet({title:'עריכת ביטוח',fields:[
     {label:'שם הביטוח',value:i.name||''},
+    {label:'סוג הביטוח',type:'select',options:INSURANCE_TYPES,value:i.type||''},
     {label:'סכום חודשי',type:'number',value:i.monthly||''}
   ]});
   if(!vals)return;
-  const[name,monthly]=vals;
-  i.name=name.trim();i.monthly=parseFloat(monthly)||0;
+  const[name,type,monthly]=vals;
+  i.name=name.trim();i.type=type;i.monthly=parseFloat(monthly)||0;
   saveData();renderTxPage();
 }
 function _expDeleteInsurance(id){
@@ -5889,13 +5935,130 @@ function _expDeleteInsurance(id){
 async function _expAddInsurance(){
   const vals=await promptSheet({title:'ביטוח חדש',fields:[
     {label:'שם הביטוח החדש'},
+    {label:'סוג הביטוח',type:'select',options:INSURANCE_TYPES},
+    {label:'סכום חודשי',type:'number'}
+  ]});
+  if(!vals||!vals[0]||!vals[0].trim())return;
+  const[name,type,monthly]=vals;
+  insurances.push({id:Date.now(),name:name.trim(),type,monthly:parseFloat(monthly)||0});
+  saveData();renderTxPage();
+  showToast('✓ ביטוח נוסף');
+}
+async function _expEditGrooming(id){
+  const g=grooming.find(x=>x.id===id);if(!g)return;
+  const vals=await promptSheet({title:'עריכת פריט טיפוח',fields:[
+    {label:'שם',value:g.name||''},
+    {label:'סכום חודשי',type:'number',value:g.monthly||''}
+  ]});
+  if(!vals)return;
+  const[name,monthly]=vals;
+  g.name=name.trim();g.monthly=parseFloat(monthly)||0;
+  saveData();renderTxPage();
+}
+function _expDeleteGrooming(id){
+  const idx=grooming.findIndex(g=>g.id===id);if(idx<0)return;
+  const backup=grooming[idx];
+  grooming=grooming.filter(g=>g.id!==id);
+  saveData();renderTxPage();
+  showUndoToast('🗑️ הפריט הוסר',()=>{grooming.splice(idx,0,backup);saveData();renderTxPage();},()=>{});
+}
+async function _expAddGrooming(){
+  const vals=await promptSheet({title:'פריט טיפוח חדש',fields:[
+    {label:'שם (תספורת, ציפורניים...)'},
     {label:'סכום חודשי',type:'number'}
   ]});
   if(!vals||!vals[0]||!vals[0].trim())return;
   const[name,monthly]=vals;
-  insurances.push({id:Date.now(),name:name.trim(),monthly:parseFloat(monthly)||0});
+  grooming.push({id:Date.now(),name:name.trim(),monthly:parseFloat(monthly)||0});
   saveData();renderTxPage();
-  showToast('✓ ביטוח נוסף');
+  showToast('✓ פריט טיפוח נוסף');
+}
+async function _expEditEvent(id){
+  const e=events.find(x=>x.id===id);if(!e)return;
+  const vals=await promptSheet({title:'עריכת אירוע/מתנה',fields:[
+    {label:'שם',value:e.name||''},
+    {label:'עלות שנתית',type:'number',value:e.annual||''}
+  ]});
+  if(!vals)return;
+  const[name,annual]=vals;
+  e.name=name.trim();e.annual=parseFloat(annual)||0;
+  saveData();renderTxPage();
+}
+function _expDeleteEvent(id){
+  const idx=events.findIndex(e=>e.id===id);if(idx<0)return;
+  const backup=events[idx];
+  events=events.filter(e=>e.id!==id);
+  saveData();renderTxPage();
+  showUndoToast('🗑️ האירוע הוסר',()=>{events.splice(idx,0,backup);saveData();renderTxPage();},()=>{});
+}
+async function _expAddEvent(){
+  const vals=await promptSheet({title:'אירוע או מתנה חדשים',fields:[
+    {label:'שם (חתונה, יום הולדת, מתנות לחג...)'},
+    {label:'עלות שנתית משוערת',type:'number'}
+  ]});
+  if(!vals||!vals[0]||!vals[0].trim())return;
+  const[name,annual]=vals;
+  events.push({id:Date.now(),name:name.trim(),annual:parseFloat(annual)||0});
+  saveData();renderTxPage();
+  showToast('✓ נוסף');
+}
+async function _expEditEducation(id){
+  const e=education.find(x=>x.id===id);if(!e)return;
+  const vals=await promptSheet({title:'עריכת פריט חינוך/חוג',fields:[
+    {label:'שם',value:e.name||''},
+    {label:'סכום חודשי',type:'number',value:e.monthly||''}
+  ]});
+  if(!vals)return;
+  const[name,monthly]=vals;
+  e.name=name.trim();e.monthly=parseFloat(monthly)||0;
+  saveData();renderTxPage();
+}
+function _expDeleteEducation(id){
+  const idx=education.findIndex(e=>e.id===id);if(idx<0)return;
+  const backup=education[idx];
+  education=education.filter(e=>e.id!==id);
+  saveData();renderTxPage();
+  showUndoToast('🗑️ הפריט הוסר',()=>{education.splice(idx,0,backup);saveData();renderTxPage();},()=>{});
+}
+async function _expAddEducation(){
+  const vals=await promptSheet({title:'פריט חינוך/חוג חדש',fields:[
+    {label:'שם (בית ספר, גן, חוג...)'},
+    {label:'סכום חודשי',type:'number'}
+  ]});
+  if(!vals||!vals[0]||!vals[0].trim())return;
+  const[name,monthly]=vals;
+  education.push({id:Date.now(),name:name.trim(),monthly:parseFloat(monthly)||0});
+  saveData();renderTxPage();
+  showToast('✓ נוסף');
+}
+async function _expEditAnnualExpense(id){
+  const a=annualExpenses.find(x=>x.id===id);if(!a)return;
+  const vals=await promptSheet({title:'עריכת הוצאה שנתית',fields:[
+    {label:'שם',value:a.name||''},
+    {label:'עלות שנתית',type:'number',value:a.annual||''}
+  ]});
+  if(!vals)return;
+  const[name,annual]=vals;
+  a.name=name.trim();a.annual=parseFloat(annual)||0;
+  saveData();renderTxPage();
+}
+function _expDeleteAnnualExpense(id){
+  const idx=annualExpenses.findIndex(a=>a.id===id);if(idx<0)return;
+  const backup=annualExpenses[idx];
+  annualExpenses=annualExpenses.filter(a=>a.id!==id);
+  saveData();renderTxPage();
+  showUndoToast('🗑️ ההוצאה הוסרה',()=>{annualExpenses.splice(idx,0,backup);saveData();renderTxPage();},()=>{});
+}
+async function _expAddAnnualExpense(){
+  const vals=await promptSheet({title:'הוצאה שנתית חדשה',fields:[
+    {label:'שם (טסט, רישיון רכב, חופשה, ביטוח רכב...)'},
+    {label:'עלות שנתית',type:'number'}
+  ]});
+  if(!vals||!vals[0]||!vals[0].trim())return;
+  const[name,annual]=vals;
+  annualExpenses.push({id:Date.now(),name:name.trim(),annual:parseFloat(annual)||0});
+  saveData();renderTxPage();
+  showToast('✓ נוסף');
 }
 async function _expAddPayment(){
   const vals=await promptSheet({title:'תשלום חדש',fields:[
@@ -6160,6 +6323,11 @@ const SUB_CATALOG={
   nordvpn:{cat:'תוכנה',emoji:'🛡️'},expressvpn:{cat:'תוכנה',emoji:'🛡️'},
   wix:{cat:'תוכנה',emoji:'🌐'},
   squarespace:{cat:'תוכנה',emoji:'🌐'},
+  tradingview:{cat:'תוכנה',emoji:'📈'},
+  // אינטרנט וסלולר
+  בזק:{cat:'אינטרנט וסלולר',emoji:'📡'},פרטנר:{cat:'אינטרנט וסלולר',emoji:'📶'},
+  סלקום:{cat:'אינטרנט וסלולר',emoji:'📶'},הוט:{cat:'אינטרנט וסלולר',emoji:'📡'},
+  פלאפון:{cat:'אינטרנט וסלולר',emoji:'📶'},אינטרנט:{cat:'אינטרנט וסלולר',emoji:'📡'},נייד:{cat:'אינטרנט וסלולר',emoji:'📱'},
   // כלי AI
   chatgpt:{cat:'כלי AI',emoji:'🤖'},openai:{cat:'כלי AI',emoji:'🤖'},
   claude:{cat:'כלי AI',emoji:'🤖'},anthropic:{cat:'כלי AI',emoji:'🤖'},
@@ -7552,6 +7720,10 @@ function switchMode(mode){
   payments=JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
   fixedExpenses=JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))||'[]');
   insurances=JSON.parse(localStorage.getItem(_modeKey('budget_insurances'))||'[]');
+  grooming=JSON.parse(localStorage.getItem(_modeKey('budget_grooming'))||'[]');
+  events=JSON.parse(localStorage.getItem(_modeKey('budget_events'))||'[]');
+  education=JSON.parse(localStorage.getItem(_modeKey('budget_education'))||'[]');
+  annualExpenses=JSON.parse(localStorage.getItem(_modeKey('budget_annual_exp'))||'[]');
   const prevBM=userSettings.businessMode;
   userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
   if(!userSettings.incomeSources)userSettings.incomeSources=[];
@@ -8345,7 +8517,7 @@ setTimeout(autoCarryRecurring,500);
       if(typeof showToast==='function') showToast('\u{1F4CA} קובץ Excel ירד!');
     });
   }
-  var BK_BASE=['budget_tx','budget_goals','budget_subs','budget_limits','budget_loans','budget_payments','budget_fixed','budget_insurances','budget_settings'];
+  var BK_BASE=['budget_tx','budget_goals','budget_subs','budget_limits','budget_loans','budget_payments','budget_fixed','budget_insurances','budget_grooming','budget_events','budget_education','budget_annual_exp','budget_settings'];
   var BK_KEYS=BK_BASE.concat(BK_BASE.map(function(k){return k+'_business';}))
     .concat(['budget_learned_cats','budget_learned_amts','budget_month_review']);
   var DAY=24*3600*1000;   /* daily silent auto-backup */
@@ -8399,11 +8571,21 @@ setTimeout(autoCarryRecurring,500);
       var inputs=fields.map(function(f,i){
         var ff=document.createElement('div'); ff.className='form-field';
         var lbl=document.createElement('label'); lbl.textContent=f.label||''; lbl.style.fontSize='0.82rem'; lbl.style.fontWeight='600'; lbl.style.color='var(--text2)';
-        var inp=document.createElement('input');
-        inp.type=f.type==='number'?'number':'text';
-        if(f.type==='number') inp.inputMode='decimal';
-        inp.value=(f.value!=null?f.value:'');
-        inp.placeholder=f.placeholder||'';
+        var inp;
+        if(f.type==='select'){
+          inp=document.createElement('select');
+          (f.options||[]).forEach(function(o){
+            var opt=document.createElement('option'); opt.value=o.value; opt.textContent=o.label;
+            inp.appendChild(opt);
+          });
+          inp.value=(f.value!=null?f.value:(f.options&&f.options[0]?f.options[0].value:''));
+        } else {
+          inp=document.createElement('input');
+          inp.type=f.type==='number'?'number':'text';
+          if(f.type==='number') inp.inputMode='decimal';
+          inp.value=(f.value!=null?f.value:'');
+          inp.placeholder=f.placeholder||'';
+        }
         inp.setAttribute('aria-label',f.label||'');
         if(i===0) inp.id='promptFieldFirst';
         ff.appendChild(lbl); ff.appendChild(inp); wrap.appendChild(ff);
