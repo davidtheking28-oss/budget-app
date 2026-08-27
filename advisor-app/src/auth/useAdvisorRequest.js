@@ -19,5 +19,12 @@ export function useAdvisorRequest(userId) {
     return () => { cancelled = true; };
   }, [userId]);
 
-  return status;
+  async function submit(userIdToRequest, email) {
+    const { error } = await supabase.from('advisor_access_requests').insert({ user_id: userIdToRequest, email });
+    if (error) return false;
+    setStatus('pending');
+    return true;
+  }
+
+  return { status, submit };
 }

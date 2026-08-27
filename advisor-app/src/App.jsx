@@ -73,7 +73,7 @@ export default function App() {
   const [reportMode, setReportMode] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const isAdvisor = useIsAdvisor(session?.user?.id);
-  const advisorRequestStatus = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
+  const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const freshness = useClientFreshness(selectedClient?.id);
   const { theme, toggle: toggleTheme } = useTheme();
   const { nextMeeting, openTasks, household, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
@@ -114,7 +114,7 @@ export default function App() {
   if (isAdvisor === null) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
   if (!isAdvisor) {
     if (advisorRequestStatus === null) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
-    return (<><NotAdvisor email={session.user.email} requestStatus={advisorRequestStatus} /><Toaster /></>);
+    return (<><NotAdvisor email={session.user.email} userId={session.user.id} requestStatus={advisorRequestStatus} onSubmitRequest={submitAdvisorRequest} /><Toaster /></>);
   }
 
   const switchClient = (clientId, clientEmail) => {

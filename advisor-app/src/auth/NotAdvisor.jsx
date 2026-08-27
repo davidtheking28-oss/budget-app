@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import Button from '../components/Button.jsx';
+import { toast } from '../toast.js';
 import styles from './NotAdvisor.module.css';
 
 const CLOCK_ICON = (
@@ -15,14 +17,23 @@ const LOCK_ICON = (
   </svg>
 );
 
-// Three real states land here, and each used to show the same dead-end
-// message: a client account opening this app by mistake, a signup still
-// waiting on manual approval, and a signup that was declined. Only the first
-// one is actually "wrong account" — the other two are "you did this right,
-// it's just not done yet."
-export default function NotAdvisor({ email, requestStatus }) {
+// Four real states land here, and used to collapse into the same dead-end
+// message: a client account opening this app by mistake, someone who hasn't
+// applied for advisor access yet, an application still waiting on manual
+// approval, and one that was declined. Only "wrong account" is a dead end —
+// "haven't applied" gets a real way to apply, right here.
+export default function NotAdvisor({ email, userId, requestStatus, onSubmitRequest }) {
   const pending = requestStatus === 'pending';
   const declined = requestStatus === 'declined';
+  const none = requestStatus === 'none';
+  const [submitting, setSubmitting] = useState(false);
+
+  async function apply() {
+    setSubmitting(true);
+    const ok = await onSubmitRequest(userId, email);
+    setSubmitting(false);
+    if (!ok) toast('שגיאה בשליחת הבקשה, נסה שוב', 'error');
+  }
 
   return (
     <div className={styles.wrap} dir="rtl">
@@ -44,6 +55,14 @@ export default function NotAdvisor({ email, requestStatus }) {
               בקשת הגישה של <b className={styles.email}>{email}</b> לא אושרה. אם מדובר בטעות, צור איתנו קשר.
             </p>
           </>
+        ) : none ? (
+          <>
+            <h1 className={styles.title}>בקש גישה לפלטפורמת היועצים</h1>
+            <p className={styles.text}>
+              החשבון <b className={styles.email}>{email}</b> עדיין לא רשום כחשבון יועץ. שלח בקשת גישה ונבדוק אותה בהקדם.
+            </p>
+            <Button className={styles.cta} onClick={apply} disabled={submitting}>{submitting ? 'שולח...' : 'שלח בקשת גישה'}</Button>
+          </>
         ) : (
           <>
             <h1 className={styles.title}>אין גישה לפלטפורמת היועצים</h1>
@@ -56,7 +75,7 @@ export default function NotAdvisor({ email, requestStatus }) {
           </>
         )}
 
-        <Button className={styles.cta} onClick={() => supabase.auth.signOut()}>התנתק</Button>
+        <Button variant="ghost" className={styles.cta} onClick={() => supabase.auth.signOut()}>התנתק</Button>
       </div>
     </div>
   );
