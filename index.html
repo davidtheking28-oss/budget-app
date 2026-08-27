@@ -84,15 +84,6 @@
     /* Signed figures must read LTR inside RTL text — direction alone is inert without isolation */
     .budget-tx-amt{direction:ltr;unicode-bidi:isolate;}
     #txPageFlow{direction:ltr;unicode-bidi:isolate;text-align:right;}
-    header{position:sticky;top:0;z-index:200;height:var(--header-h);background:#1c1917;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 1px 0 rgba(255,255,255,0.06),0 4px 24px rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.05);padding-top:env(safe-area-inset-top,0);isolation:isolate;}
-    /* ── iOS standalone (home-screen) safe-area fixes — Tailwind py-3 was overriding the header inset ── */
-    header.sticky{padding-top:calc(0.75rem + env(safe-area-inset-top,0px))!important;height:auto!important;min-height:var(--header-h);}
-
-    @supports(backdrop-filter:blur(1px)){header{backdrop-filter:blur(12px);}}
-    .header-title{display:flex;align-items:center;gap:8px;}
-    .header-title h1{font-size:1.15rem;font-weight:var(--fw-extra);color:white;letter-spacing:var(--track-normal);font-family:var(--font-sans);}
-    .header-month-btn{min-height:44px;background:rgba(255,255,255,0.15);border:none;color:white;border-radius:20px;padding:5px 12px;font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;}
-    .header-right{display:flex;align-items:center;gap:8px;}
     .icon-btn{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
     .icon-btn:active{background:rgba(255,255,255,0.3);}
     .icon-btn svg{width:18px;height:18px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -774,7 +765,6 @@
     .card-amount{letter-spacing:-0.5px;}
     .section{border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,0.04);}
     .card{border:1px solid var(--border);}
-    .header-title h1{font-weight:var(--fw-bold);letter-spacing:var(--track-normal);}
     body.dark .section{box-shadow:none;}
     body.dark .card{box-shadow:none;}
     .btn-primary:active{opacity:0.85;box-shadow:none;}
@@ -1043,6 +1033,7 @@
     input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:text;}
     .card-amount,.tx-amount,.hero-balance-num,#totalBalance,#totalIncome,#totalExpense{-webkit-user-select:text;user-select:text;}
     button{-webkit-tap-highlight-color:transparent;}
+    button,.nav-item,.btn,.icon-btn,a{touch-action:manipulation;}
     /* Tactile press feedback on every tappable surface (bottom nav + FAB excluded) */
     .tx-item,.save-card,.loan-card,.btn,.filter-chip,.quick-btn,.icon-btn,.header-month-btn,.month-btn,.more-item,.btn-empty,.tx-del-btn{
       transition:transform 0.13s cubic-bezier(0.22,1,0.36,1),background 0.15s,box-shadow 0.15s,border-color 0.15s,color 0.15s;
@@ -1060,6 +1051,11 @@
     /* Smoother, slightly richer page transition */
     @keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
     .page.active{animation:pageIn 0.22s cubic-bezier(0.22,1,0.36,1) both;}
+    /* iOS status-bar-style is black-translucent (white status-bar icons), fixed
+       regardless of theme — this strip keeps the safe-area-inset-top region a
+       constant dark color so the icons stay legible even in light mode, where
+       the page background underneath would otherwise be near-white. */
+    #statusBarScrim{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:#100f0d;z-index:999;pointer-events:none;}
     /* Pull-to-refresh — body has overscroll-behavior:none so the browser's own
        PTR never fires; this is the app's replacement for it. */
     .ptr-ind{position:fixed;top:calc(var(--header-h) + env(safe-area-inset-top,0px));left:0;right:0;margin:0 auto;z-index:150;width:34px;height:34px;border-radius:50%;background:var(--surface);border:1px solid var(--border);box-shadow:0 4px 14px rgba(0,0,0,0.14);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transform:translateY(-46px);}
@@ -1427,7 +1423,7 @@
   </style>
 </head>
 <body class="dark">
-<script>(function(){try{var m=localStorage.getItem('budget_theme');if(!m){var o=localStorage.getItem('budget_dark');m=o==='1'?'dark':(o==='0'?'light':'system');}var s=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;document.body.classList.toggle('dark', m==='system'?!!s:(m==='dark'));}catch(e){}})();</script>
+<script>(function(){try{var m=localStorage.getItem('budget_theme');if(!m){var o=localStorage.getItem('budget_dark');m=o==='1'?'dark':(o==='0'?'light':'system');}var s=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;var dark=m==='system'?!!s:(m==='dark');document.body.classList.toggle('dark', dark);var tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.setAttribute('content',dark?'#100f0d':'#eef3f1');}catch(e){}})();</script>
 <script>
 // Crash reporting. Installed before anything else so a failure during boot —
 // the one you can least afford to miss — is still captured. Errors queue here
@@ -1458,6 +1454,7 @@
   window._errReport=function(kind,message,stack){ push({kind:kind,message:cut(message,500),stack:cut(stack,4000)}); };
 })();
 </script>
+<div id="statusBarScrim"></div>
 <a href="#main-content" class="skip-link">דלג לתוכן הראשי</a>
 
 <div id="rotateLockOverlay"><div class="rotate-lock-icon">📱</div><div class="rotate-lock-text">האפליקציה מיועדת לשימוש במצב לאורך בלבד<br>סובבו את המכשיר בחזרה</div></div>
@@ -6660,9 +6657,12 @@ function dismissMonthReview(){
   const el=document.getElementById('monthReviewCard'); if(el)el.style.display='none';
   haptic(4);
 }
+let _pageScrollY={};
 function showPage(name,btn){
   haptic(4);
-  requestAnimationFrame(()=>window.scrollTo(0,0));
+  const _prevPage=document.querySelector('.page.active');
+  if(_prevPage)_pageScrollY[_prevPage.id]=window.scrollY;
+  requestAnimationFrame(()=>window.scrollTo(0,_pageScrollY['page-'+name]||0));
   const wasSettings=document.getElementById('page-settings')?.classList.contains('active');
   if(wasSettings&&name!=='settings'){try{saveSettings();refreshAll();}catch(e){}}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -7198,6 +7198,13 @@ function init(){
   initTabSwipe();
   initPullRefresh();
   initHeaderAutoHide();
+  initBackButton();
+  try{
+    if(new URLSearchParams(location.search).get('action')==='add'){
+      history.replaceState(null,'',location.pathname);
+      setTimeout(()=>openAddTx(),350);
+    }
+  }catch(e){}
   setTimeout(()=>animateHeroNums('dashboard'),200);
   (function(){
     function _syncOffline(){document.body.classList.toggle('offline',!navigator.onLine);}
@@ -7656,6 +7663,32 @@ function initSheetSwipe(){
 // visual right-to-left tab order. Skipped if the gesture started inside a
 // horizontally-scrollable element (chip strips, month nav) so it doesn't
 // steal their native scroll.
+// Android hardware/gesture back button: close an open sheet first, then return
+// to the dashboard tab, and only actually exit the app once already at rest
+// there. Only active when installed standalone — a normal browser tab keeps
+// its ordinary back-navigation (previous page in history), which this must
+// not hijack. One guard history entry is kept armed at a time; it's only
+// re-pushed when a back press actually got intercepted, so switching tabs by
+// tapping the nav (not via back) never grows the stack.
+function initBackButton(){
+  const standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  if(!standalone) return;
+  history.pushState({appGuard:true},'');
+  window.addEventListener('popstate',()=>{
+    const openOverlay=document.querySelector('.sheet-overlay.open,.month-sheet-overlay.open');
+    if(openOverlay){
+      if(openOverlay.id==='monthSheetOverlay') closeMonthSheet(); else closeSheet(openOverlay.id);
+      history.pushState({appGuard:true},'');
+      return;
+    }
+    const activePage=document.querySelector('.page.active');
+    if(activePage&&activePage.id!=='page-dashboard'){
+      const db=document.getElementById('nav-dashboard');
+      if(db) db.click();
+      history.pushState({appGuard:true},'');
+    }
+  });
+}
 // Hide the floating month-nav pill on scroll-down, bring it back on scroll-up —
 // only #inlineMonthNav's own `top`, never `transform` (that centering technique
 // is transform:none!important on purpose, see the comment above its CSS rule).
@@ -8217,6 +8250,7 @@ setTimeout(autoCarryRecurring,500);
     var dark = mode==='system' ? isSysDark() : (mode==='dark');
     document.body.classList.toggle('dark', !!dark);
     try{ localStorage.setItem('budget_dark', dark?'1':'0'); }catch(e){}
+    var tc=document.querySelector('meta[name="theme-color"]'); if(tc) tc.setAttribute('content', dark?'#100f0d':'#eef3f1');
     var db=document.getElementById('darkBtn'); if(db&&typeof SUN!=='undefined') db.innerHTML=dark?SUN:MOON;
     var ap=document.querySelector('.page.active');
     if(ap&&ap.id==='page-insights'&&typeof renderAnalytics==='function'){ try{ renderAnalytics(); renderAnnualSummary(); renderInsights(); renderNetWorth(); }catch(e){} }
