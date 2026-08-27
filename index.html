@@ -1640,6 +1640,9 @@
             <input type="date" id="txDateVisible" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;" oninput="document.getElementById('txDate').value=this.value;wizUpdateDate()"/>
           </div>
         </div>
+        <div id="wizCrossPaidWrap" style="display:none">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--text2);cursor:pointer"><input type="checkbox" id="txCrossPaid" style="width:18px;height:18px"/><span id="txCrossPaidLabel">שולם מהחשבון האחר (חיוב צולב)</span></label>
+        </div>
       </div>
     </div>
   </div>
@@ -2337,6 +2340,9 @@
             <span class="ios-t"></span>
           </label>
         </div>
+        <div id="crossLedgerRow" class="settings-row" style="display:none">
+          <div class="settings-row-label" id="crossLedgerText"></div>
+        </div>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">התראות</div>
@@ -2427,6 +2433,9 @@
           <span>חוזרת מדי חודש <span style="font-size:0.75rem;color:var(--text3);font-weight:400">(שכירות, ביטוח, מנויים)</span></span>
         </label>
         <input type="checkbox" id="editTxFixed" style="display:none">
+      </div>
+      <div id="editCrossPaidWrap" style="display:none;padding:4px 2px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--text2);cursor:pointer"><input type="checkbox" id="editTxCrossPaid" style="width:18px;height:18px"/><span id="editTxCrossPaidLabel">שולם מהחשבון האחר (חיוב צולב)</span></label>
       </div>
       <div class="form-row" style="gap:8px">
         <button class="btn btn-outline" style="flex:1" onclick="closeSheet('editTxSheet')">ביטול</button>
@@ -3144,6 +3153,13 @@ function openAddTx(){
   wizUpdateDate();
   setTxType('expense');
   wizRender();
+  const _cpWrap=document.getElementById('wizCrossPaidWrap');
+  if(_cpWrap){
+    _cpWrap.style.display=userSettings.businessMode?'block':'none';
+    const _cpCb=document.getElementById('txCrossPaid');if(_cpCb)_cpCb.checked=false;
+    const _cpLbl=document.getElementById('txCrossPaidLabel');
+    if(_cpLbl)_cpLbl.textContent='שולם מהחשבון ה'+(_activeMode==='personal'?'עסקי':'אישי')+' (חיוב צולב)';
+  }
   setTimeout(()=>document.getElementById('txDesc').focus(),250);
 }
 function openAddGoal(){openSheet('addGoalSheet');}
@@ -3365,7 +3381,8 @@ function addTransaction(prefill){
     if(!date)             {showToast('📅 בחר תאריך לעסקה');return;}
   }
   const note=prefill?'':(document.getElementById('txNote')?.value.trim()||'');
-  transactions.unshift({id:Date.now()+Math.random(),type,cat,desc,amount,date,recurring,fixed:isFixed,note});
+  const crossPaid=prefill?false:(function(){var e=document.getElementById('txCrossPaid');return e?e.checked:false;})();
+  transactions.unshift({id:Date.now()+Math.random(),type,cat,desc,amount,date,recurring,fixed:isFixed,note,crossPaid});
   if(!prefill) learnCat(desc, cat, type, amount); // לומד את השיוך והסכום לפעם הבאה
   saveData();
   if(!prefill){
@@ -3421,13 +3438,16 @@ function txFixedLabel(t){
   if(t.fixed===false) return '';
   return t.recurring?'<span class="tx-tag tag-fixed">קבועה</span>':'';
 }
+function txCrossPaidLabel(t){
+  return t.crossPaid?'<span class="tx-tag tag-cross">↔ חיוב צולב</span>':'';
+}
 function txHtml(t){
   const icon = catIconSvg(t.cat);
   return '<div class="tx-item" data-txid="'+t.id+'" tabindex="0" role="button" onclick="editTx('+t.id+')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();editTx('+t.id+');}">'
     +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+icon+'</div>'
     +'<div class="tx-info">'
       +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
-      +'<div class="tx-meta">'+txFixedLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
+      +'<div class="tx-meta">'+txFixedLabel(t)+txCrossPaidLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
     +'</div>'
     +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
     +'<button class="tx-del-btn" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק עסקה"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>'
@@ -3443,7 +3463,7 @@ function txSwipeHtml(t){
         +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+icon+'</div>'
         +'<div class="tx-info">'
           +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
-          +'<div class="tx-meta">'+txFixedLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
+          +'<div class="tx-meta">'+txFixedLabel(t)+txCrossPaidLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
         +'</div>'
         +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
       +'</div>'
@@ -4667,6 +4687,27 @@ function openSettings(){
   if(pcb)pcb.checked=!!localStorage.getItem('budget_push_on');
   _renderPushPrefs();
   renderCloudSection();
+  _renderCrossLedger();
+}
+function _txForMode(mode){
+  const k=mode==='personal'?'budget_tx':'budget_tx_business';
+  return JSON.parse(localStorage.getItem(k)||'[]');
+}
+function _crossLedger(){
+  const personalOwed=_txForMode('personal').filter(t=>t.crossPaid).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  const businessOwed=_txForMode('business').filter(t=>t.crossPaid).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+  return {net:personalOwed-businessOwed,personalOwed,businessOwed};
+}
+function _renderCrossLedger(){
+  const row=document.getElementById('crossLedgerRow');
+  const txt=document.getElementById('crossLedgerText');
+  if(!row||!txt)return;
+  if(!userSettings.businessMode){row.style.display='none';return;}
+  row.style.display='flex';
+  const {net}=_crossLedger();
+  if(Math.abs(net)<0.01)txt.textContent='יתרת חיובים צולבים: מאוזן';
+  else if(net>0)txt.textContent='אתה חייב לעסק: '+fmt(net);
+  else txt.textContent='העסק חייב לך: '+fmt(-net);
 }
 
 function updateSettingAvatar(){
@@ -4973,6 +5014,13 @@ function editTx(id){
   if(fixedEl) fixedEl.checked = tx.fixed !== false;
   const delBtn = document.getElementById('editTxDeleteBtn');
   delBtn.onclick = () => { deleteTx(id); closeSheet('editTxSheet'); };
+  const _ecpWrap=document.getElementById('editCrossPaidWrap');
+  if(_ecpWrap){
+    _ecpWrap.style.display=userSettings.businessMode?'block':'none';
+    const _ecpCb=document.getElementById('editTxCrossPaid');if(_ecpCb)_ecpCb.checked=!!tx.crossPaid;
+    const _ecpLbl=document.getElementById('editTxCrossPaidLabel');
+    if(_ecpLbl)_ecpLbl.textContent='שולם מהחשבון ה'+(_activeMode==='personal'?'עסקי':'אישי')+' (חיוב צולב)';
+  }
   openSheet('editTxSheet');
 }
 function saveEditTx(){
@@ -4990,6 +5038,7 @@ function saveEditTx(){
   tx.recurring = !!(document.getElementById('editTxRecurring')?.checked);
   tx.fixed     = !!(document.getElementById('editTxFixed')?.checked);
   tx.note      = document.getElementById('editTxNote')?.value.trim()||'';
+  tx.crossPaid = !!(document.getElementById('editTxCrossPaid')?.checked);
   learnCat(desc, cat, tx.type, amount); // עדכון ידני = הלמידה הכי חזקה
   saveData();
   refreshAll();
