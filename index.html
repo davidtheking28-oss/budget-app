@@ -2105,6 +2105,11 @@
           <div class="annual-card"><div class="annual-card-label">ממוצע חודשי</div><div class="annual-card-val" id="annualMonthlyAvg">—</div><div class="annual-card-sub">הוצאה לחודש</div></div>
         </div>
       </div>
+      <details class="card" style="margin-top:14px">
+        <summary style="cursor:pointer;font-weight:700">📅 פירוט חודשי</summary>
+        <div id="annualBestWorst" style="margin-top:12px"></div>
+        <div id="annualMonthlyList" style="margin-top:8px"></div>
+      </details>
     </div>
     <div class="section" id="netWorthSection" style="display:none">
       <div class="section-header"><div class="section-title">נכסים והתחייבויות · <span style="font-weight:500;color:var(--text3);font-size:0.78rem">מוזן ע״י היועץ</span></div></div>
@@ -4901,14 +4906,18 @@ function renderAnnualSummary(){
   document.getElementById('annualYear').textContent = y;
   const now = new Date();
   let totalInc=0, totalExp=0, monthsWithData=0;
+  const rows=[];
   for(let m=0; m<12; m++){
     const mTx = transactions.filter(t=>t.date.startsWith(mk(y,m)));
     // same per-month definition the dashboard and the 6-month chart use, so the
     // yearly total can't disagree with the months it is made of
-    totalInc += monthlyIncomeFor(y,m);
+    const inc = monthlyIncomeFor(y,m);
+    totalInc += inc;
     const exp = mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
     totalExp += exp;
-    if(mTx.length) monthsWithData++;
+    const hasData = mTx.length>0;
+    if(hasData) monthsWithData++;
+    rows.push({m,label:heMonth(y,m),inc,exp,net:inc-exp,hasData});
   }
   const savings = totalInc - totalExp;
   const savingsPct = totalInc>0 ? Math.round(savings/totalInc*100) : 0;
@@ -4918,6 +4927,21 @@ function renderAnnualSummary(){
   document.getElementById('annualSavings').style.color = savings>=0?'var(--green)':'var(--red)';
   document.getElementById('annualSavingsPct').textContent = savingsPct+'% מההכנסות';
   document.getElementById('annualMonthlyAvg').textContent = monthsWithData>0?fmt(totalExp/monthsWithData):'—';
+  const withData=rows.filter(r=>r.hasData);
+  const bwEl=document.getElementById('annualBestWorst');
+  if(bwEl){
+    if(withData.length<2){bwEl.innerHTML='';}
+    else{
+      const best=withData.reduce((a,b)=>b.net>a.net?b:a);
+      const worst=withData.reduce((a,b)=>b.net<a.net?b:a);
+      bwEl.innerHTML='<div style="font-size:0.82rem;color:var(--green);font-weight:600;margin-bottom:4px">🏆 החודש הכי טוב: '+esc(best.label)+' ('+(best.net>=0?'+':'-')+fmt(best.net)+')</div>'
+        +'<div style="font-size:0.82rem;color:var(--red);font-weight:600">📉 החודש הכי חלש: '+esc(worst.label)+' ('+(worst.net>=0?'+':'-')+fmt(worst.net)+')</div>';
+    }
+  }
+  const listEl=document.getElementById('annualMonthlyList');
+  if(listEl){
+    listEl.innerHTML=rows.map(r=>'<div style="display:flex;justify-content:space-between;font-size:0.82rem;padding:4px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">'+esc(r.label)+'</span><span style="font-weight:700;color:'+(r.net>=0?'var(--green)':'var(--red)')+'">'+(r.net>=0?'+':'-')+fmt(r.net)+'</span></div>').join('');
+  }
 }
 // Assets are advisor-entered only (_advisorAssets, read-only mirror set in _loadFromCloud);
 // liabilities reuse the client's own `loans` — same math as advisor-app's Assets.jsx so the
