@@ -79,6 +79,7 @@ jobs:
           mkdir -p _site
           cp index.html sw.js manifest.json _site/
           cp icon-192.png icon-512.png icon-512-maskable.png apple-touch-icon.png _site/
+          cp apple-splash-*.png _site/
           cp screenshot-dashboard.png screenshot-analytics.png _site/
           cp -r advisor _site/advisor
           touch _site/.nojekyll
