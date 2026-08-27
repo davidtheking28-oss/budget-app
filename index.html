@@ -6655,6 +6655,7 @@ function dismissMonthReview(){
   haptic(4);
 }
 function showPage(name,btn){
+  haptic(4);
   requestAnimationFrame(()=>window.scrollTo(0,0));
   const wasSettings=document.getElementById('page-settings')?.classList.contains('active');
   if(wasSettings&&name!=='settings'){try{saveSettings();refreshAll();}catch(e){}}
@@ -7187,6 +7188,7 @@ function init(){
   refreshAll();
   try{showPage('dashboard',document.getElementById('nav-dashboard'));}catch(e){}
   initSheetSwipe();
+  initTabSwipe();
   setTimeout(()=>animateHeroNums('dashboard'),200);
   (function(){
     function _syncOffline(){document.body.classList.toggle('offline',!navigator.onLine);}
@@ -7638,6 +7640,42 @@ function initSheetSwipe(){
       }
     },{passive:true});
   });
+}
+
+// Swipe between bottom-nav tabs — RTL, so a left swipe (finger moves left,
+// dx<0) advances to the next tab and a right swipe goes back, matching the
+// visual right-to-left tab order. Skipped if the gesture started inside a
+// horizontally-scrollable element (chip strips, month nav) so it doesn't
+// steal their native scroll.
+function initTabSwipe(){
+  const main=document.getElementById('main-content');
+  if(!main) return;
+  function inHScroll(el){
+    while(el && el!==main){
+      const ov=window.getComputedStyle(el).overflowX;
+      if((ov==='auto'||ov==='scroll') && el.scrollWidth>el.clientWidth) return true;
+      el=el.parentElement;
+    }
+    return false;
+  }
+  let sx=0, sy=0, skip=false;
+  main.addEventListener('touchstart', e=>{
+    if(e.touches.length!==1) return;
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
+    skip=inHScroll(e.target);
+  },{passive:true});
+  main.addEventListener('touchend', e=>{
+    if(skip) return;
+    const dx=e.changedTouches[0].clientX-sx;
+    const dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)<70 || Math.abs(dx)<Math.abs(dy)*1.5) return;
+    const navItems=Array.from(document.querySelectorAll('.nav-item'));
+    const curIdx=navItems.findIndex(b=>b.classList.contains('active'));
+    if(curIdx<0) return;
+    const nextIdx=dx<0?curIdx+1:curIdx-1;
+    if(nextIdx<0||nextIdx>=navItems.length) return;
+    navItems[nextIdx].click();
+  },{passive:true});
 }
 
 
