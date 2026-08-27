@@ -1640,9 +1640,6 @@
             <input type="date" id="txDateVisible" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;" oninput="document.getElementById('txDate').value=this.value;wizUpdateDate()"/>
           </div>
         </div>
-        <div id="wizCrossPaidWrap" style="display:none">
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--text2);cursor:pointer"><input type="checkbox" id="txCrossPaid" style="width:18px;height:18px"/><span id="txCrossPaidLabel">שולם מהחשבון האחר (חיוב צולב)</span></label>
-        </div>
       </div>
     </div>
   </div>
@@ -1666,7 +1663,6 @@
         <div class="form-field"><label for="goalTarget">סכום יעד (₪)</label><input type="number" inputmode="decimal" id="goalTarget" placeholder="10000" min="1" onfocus="this.select()"/></div>
         <div class="form-field"><label for="goalMonths">תקופה (חודשים)</label><input type="number" inputmode="numeric" id="goalMonths" placeholder="12" min="1" max="360" onfocus="this.select()"/></div>
       </div>
-      <div class="form-field"><label for="goalType">סוג היעד</label><select id="goalType"><option value="יעד מוגדר">יעד מוגדר</option><option value="קרן חירום">קרן חירום</option><option value="חיסכון לטווח ארוך">חיסכון לטווח ארוך</option><option value="חיסכון לילדים">חיסכון לילדים</option></select></div>
       <button class="btn btn-primary btn-full" id="goalSaveBtn" onclick="addGoal()">הוסף יעד</button>
     </div>
   </div>
@@ -1691,7 +1687,7 @@
             <option>סטרימינג</option><option>מוזיקה</option><option>פודקאסטים</option>
             <option>תוכנה</option><option>כלי AI</option><option>אחסון ענן</option>
             <option>כושר</option><option>משחקי וידאו</option><option>עיתונות</option>
-            <option>חינוך</option><option>אינטרנט וסלולר</option><option>אחר</option>
+            <option>חינוך</option><option>אחר</option>
           </select>
         </div>
         <div class="form-field">
@@ -1730,7 +1726,7 @@
             <option>סטרימינג</option><option>מוזיקה</option><option>פודקאסטים</option>
             <option>תוכנה</option><option>כלי AI</option><option>אחסון ענן</option>
             <option>כושר</option><option>משחקי וידאו</option><option>עיתונות</option>
-            <option>חינוך</option><option>אינטרנט וסלולר</option><option>אחר</option>
+            <option>חינוך</option><option>אחר</option>
           </select>
         </div>
         <div class="form-field">
@@ -1797,7 +1793,6 @@
           <div class="form-field"><label for="loanRate">ריבית (%)</label><input type="number" id="loanRate" placeholder="3.5" min="0" step="0.1" inputmode="decimal" onfocus="this.select()"/></div>
         </div>
         <div class="form-field"><label for="loanMonthsLeft">חודשים שנשארו</label><input type="number" id="loanMonthsLeft" placeholder="120" min="0" inputmode="numeric" onfocus="this.select()"/></div>
-        <div class="form-field"><label for="loanDueDay">יום חיוב בחודש (אופציונלי)</label><input type="number" id="loanDueDay" placeholder="10" min="1" max="31" inputmode="numeric" onfocus="this.select()"/></div>
         <div class="form-field"><label for="loanNotes">הערות</label><input type="text" id="loanNotes" placeholder="קו שני משכנתא, ריבית פריים..." onfocus="this.select()" autocomplete="off" autocorrect="off" spellcheck="false"/></div>
       </div>
       <button class="btn btn-primary btn-full" id="loanSaveBtn" onclick="saveLoan()">שמור הלוואה</button>
@@ -2105,11 +2100,6 @@
           <div class="annual-card"><div class="annual-card-label">ממוצע חודשי</div><div class="annual-card-val" id="annualMonthlyAvg">—</div><div class="annual-card-sub">הוצאה לחודש</div></div>
         </div>
       </div>
-      <details class="card" style="margin-top:14px">
-        <summary style="cursor:pointer;font-weight:700">📅 פירוט חודשי</summary>
-        <div id="annualBestWorst" style="margin-top:12px"></div>
-        <div id="annualMonthlyList" style="margin-top:8px"></div>
-      </details>
     </div>
     <div class="section" id="netWorthSection" style="display:none">
       <div class="section-header"><div class="section-title">נכסים והתחייבויות · <span style="font-weight:500;color:var(--text3);font-size:0.78rem">מוזן ע״י היועץ</span></div></div>
@@ -2138,13 +2128,6 @@
       <div class="section-header"><div class="section-title">פירוט קטגוריות</div></div>
       <div class="section-body" style="padding-top:8px"><div id="breakdown"></div></div>
     </div>
-
-    <details class="card" style="margin-top:14px">
-      <summary style="cursor:pointer;font-weight:700">📅 מעקב יתרת עו״ש לפי ימים</summary>
-      <div class="form-field" style="margin-top:12px"><label for="checkingOpeningInput">יתרת פתיחה לחודש (₪)</label><input type="number" id="checkingOpeningInput" inputmode="decimal" onfocus="this.select()" onchange="userSettings.checkingOpening=parseFloat(this.value)||0;saveSettingsData();_renderCheckingProjection();"/></div>
-      <div class="chart-wrap" style="height:180px"><canvas id="checkingChart"></canvas></div>
-      <div id="checkingProjTable" style="display:flex;flex-direction:column;gap:4px;margin-top:8px"></div>
-    </details>
   </div>
 
   <div id="page-budget" class="page">
@@ -2160,11 +2143,6 @@
     <div id="goalsList">
       <div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>הגדר יעד חיסכון</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">עקוב אחרי ההתקדמות שלך חודש אחרי חודש</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>
     </div>
-
-    <details class="card" style="margin-top:14px">
-      <summary style="cursor:pointer;font-weight:700">🎯 הקצאת תזרים לפי עדיפות</summary>
-      <div id="cashAllocList" style="margin-top:12px"></div>
-    </details>
   </div>
 
   <div id="page-payments" class="page">
@@ -2230,39 +2208,6 @@
       <button class="btn btn-primary btn-sm" onclick="openAddLoanSheet()">+ הלוואה / חוב</button>
     </div>
     <div id="loansList"></div>
-
-    <details class="card" style="margin-top:14px">
-      <summary style="cursor:pointer;font-weight:700">🧮 מחשבון שפיצר</summary>
-      <div style="display:flex;gap:10px;margin-top:12px">
-        <div class="form-field" style="flex:1;margin:0"><label for="spPrincipal">סכום הלוואה (₪)</label><input type="number" id="spPrincipal" placeholder="100000" min="0" inputmode="decimal" onfocus="this.select()"/></div>
-        <div class="form-field" style="flex:1;margin:0"><label for="spRate">ריבית שנתית (%)</label><input type="number" id="spRate" placeholder="5" min="0" step="0.1" inputmode="decimal" onfocus="this.select()"/></div>
-      </div>
-      <div class="form-field"><label for="spMonths">תקופה (חודשים)</label><input type="number" id="spMonths" placeholder="60" min="1" inputmode="numeric" onfocus="this.select()"/></div>
-      <button class="btn btn-primary btn-sm" onclick="_calcSpitzer()">חשב</button>
-      <div id="spResult" style="margin-top:10px"></div>
-    </details>
-
-    <details class="card" style="margin-top:14px">
-      <summary style="cursor:pointer;font-weight:700">🔀 סימולציית איחוד הלוואות</summary>
-      <div id="consolLoansList" style="margin-top:12px;display:flex;flex-direction:column;gap:6px"></div>
-      <div style="display:flex;gap:10px;margin-top:10px">
-        <div class="form-field" style="flex:1;margin:0"><label for="consolRate">ריבית מוצעת (%)</label><input type="number" id="consolRate" placeholder="4" min="0" step="0.1" inputmode="decimal" onfocus="this.select()"/></div>
-        <div class="form-field" style="flex:1;margin:0"><label for="consolMonths">תקופה מוצעת (חודשים)</label><input type="number" id="consolMonths" placeholder="60" min="1" inputmode="numeric" onfocus="this.select()"/></div>
-      </div>
-      <button class="btn btn-primary btn-sm" onclick="_calcConsolidation()">חשב חיסכון</button>
-      <div id="consolResult" style="margin-top:10px"></div>
-    </details>
-
-    <details class="card" style="margin-top:14px">
-      <summary style="cursor:pointer;font-weight:700">🏠 מחשבון משכנתא / יכולת החזר</summary>
-      <div style="display:flex;gap:10px;margin-top:12px">
-        <div class="form-field" style="flex:1;margin:0"><label for="mtgRatio">אחוז מקסימלי מההכנסה הפנויה</label><input type="number" id="mtgRatio" value="40" min="1" max="100" inputmode="decimal" onfocus="this.select()"/></div>
-        <div class="form-field" style="flex:1;margin:0"><label for="mtgRate">ריבית שנתית מוצעת (%)</label><input type="number" id="mtgRate" placeholder="4.5" min="0" step="0.1" inputmode="decimal" onfocus="this.select()"/></div>
-      </div>
-      <div class="form-field"><label for="mtgYears">תקופה (שנים)</label><input type="number" id="mtgYears" placeholder="25" min="1" max="40" inputmode="numeric" onfocus="this.select()"/></div>
-      <button class="btn btn-primary btn-sm" onclick="_calcMortgage()">חשב</button>
-      <div id="mtgResult" style="margin-top:10px"></div>
-    </details>
   </div>
 
   <!-- עמוד עוד -->
@@ -2344,9 +2289,6 @@
             <input type="checkbox" id="settingBusinessMode" onchange="toggleBusinessMode(this.checked)">
             <span class="ios-t"></span>
           </label>
-        </div>
-        <div id="crossLedgerRow" class="settings-row" style="display:none">
-          <div class="settings-row-label" id="crossLedgerText"></div>
         </div>
       </div>
       <div class="settings-section">
@@ -2438,9 +2380,6 @@
           <span>חוזרת מדי חודש <span style="font-size:0.75rem;color:var(--text3);font-weight:400">(שכירות, ביטוח, מנויים)</span></span>
         </label>
         <input type="checkbox" id="editTxFixed" style="display:none">
-      </div>
-      <div id="editCrossPaidWrap" style="display:none;padding:4px 2px">
-        <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--text2);cursor:pointer"><input type="checkbox" id="editTxCrossPaid" style="width:18px;height:18px"/><span id="editTxCrossPaidLabel">שולם מהחשבון האחר (חיוב צולב)</span></label>
       </div>
       <div class="form-row" style="gap:8px">
         <button class="btn btn-outline" style="flex:1" onclick="closeSheet('editTxSheet')">ביטול</button>
@@ -2898,16 +2837,12 @@ function budgetChipColor(cat){
   const table=document.body.classList.contains('dark')?BUDGET_CHIP_HEX_DARK:BUDGET_CHIP_HEX;
   return table[BUDGET_CHIP_COLOR[cat]||'gray'];
 }
-const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','טיפוח וקוסמטיקה','אירועים ומתנות','הוצאות שנתיות','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
+const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
   'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&_payCalc(p).left>0?amt:0);},0),
   'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0),
-  'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0),
-  'טיפוח וקוסמטיקה':()=>grooming.reduce((s,g)=>s+(parseFloat(g.monthly)||0),0),
-  'אירועים ומתנות':()=>events.reduce((s,e)=>s+(parseFloat(e.annual)||0)/12,0),
-  'חינוך, חוגים וקייטנות':()=>education.reduce((s,e)=>s+(parseFloat(e.monthly)||0),0),
-  'הוצאות שנתיות':()=>annualExpenses.reduce((s,a)=>s+(parseFloat(a.annual)||0)/12,0)
+  'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
 };
 function getEffectiveExpenseCats(){const base=_activeMode==='business'?EXPENSE_CATS_BUSINESS:EXPENSE_CATS;return [...base,...(userSettings.customCats||[]).filter(c=>!base.includes(c))];}
 function getEffectiveBudgetCats(){const e=getEffectiveExpenseCats();return [...e,...FIXED_CATS.filter(c=>!e.includes(c))];}
@@ -2949,24 +2884,20 @@ let loans         = JSON.parse(localStorage.getItem(_modeKey('budget_loans')) ||
 let payments      = JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
 let fixedExpenses = JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))   ||'[]');
 let insurances    = JSON.parse(localStorage.getItem(_modeKey('budget_insurances'))||'[]');
-let grooming      = JSON.parse(localStorage.getItem(_modeKey('budget_grooming'))||'[]');
-let events        = JSON.parse(localStorage.getItem(_modeKey('budget_events'))||'[]');
-let education     = JSON.parse(localStorage.getItem(_modeKey('budget_education'))||'[]');
-let annualExpenses= JSON.parse(localStorage.getItem(_modeKey('budget_annual_exp'))||'[]');
 
 // ── Sync metadata: per-item timestamps + tombstones for merge-safe cloud sync ──
-function _emptyMeta(){return {del:{tx:{},goals:{},subs:{},loans:{},payments:{},fixed:{},insurances:{},grooming:{},events:{},education:{},annualExpenses:{},budgets:{}},bu:{}};}
+function _emptyMeta(){return {del:{tx:{},goals:{},subs:{},loans:{},payments:{},fixed:{},insurances:{},budgets:{}},bu:{}};}
 function _loadSyncMeta(){
   try{
     const m=JSON.parse(localStorage.getItem(_modeKey('budget_sync_meta'))||'null');
-    if(m&&m.del&&m.bu){if(!m.del.payments)m.del.payments={};if(!m.del.fixed)m.del.fixed={};if(!m.del.insurances)m.del.insurances={};if(!m.del.grooming)m.del.grooming={};if(!m.del.events)m.del.events={};if(!m.del.education)m.del.education={};if(!m.del.annualExpenses)m.del.annualExpenses={};return m;}
+    if(m&&m.del&&m.bu){if(!m.del.payments)m.del.payments={};if(!m.del.fixed)m.del.fixed={};if(!m.del.insurances)m.del.insurances={};return m;}
   }catch(e){}
   return _emptyMeta();
 }
 let _syncMeta=_loadSyncMeta();
 let _syncShadow={};
 function _itemSig(it){if(it.u===undefined)return JSON.stringify(it);const {u,...rest}=it;return JSON.stringify(rest);}
-function _collections(){return [['tx',transactions],['goals',goals],['subs',subscriptions],['loans',loans],['payments',payments],['fixed',fixedExpenses],['insurances',insurances],['grooming',grooming],['events',events],['education',education],['annualExpenses',annualExpenses]];}
+function _collections(){return [['tx',transactions],['goals',goals],['subs',subscriptions],['loans',loans],['payments',payments],['fixed',fixedExpenses],['insurances',insurances]];}
 function _rebuildShadow(){
   _syncShadow={};
   for(const [k,arr] of _collections()){
@@ -3011,7 +2942,7 @@ let txFixedType   = 'fixed';
 let txSelectedCat = '';
 let _recurRefused = new Set();
 
-let catChart=null, barChart=null, checkingChart=null;
+let catChart=null, barChart=null;
 
 function saveData(){
   _stampChanges();
@@ -3023,10 +2954,6 @@ function saveData(){
   localStorage.setItem(_modeKey('budget_payments'),JSON.stringify(payments));
   localStorage.setItem(_modeKey('budget_fixed'),JSON.stringify(fixedExpenses));
   localStorage.setItem(_modeKey('budget_insurances'),JSON.stringify(insurances));
-  localStorage.setItem(_modeKey('budget_grooming'),JSON.stringify(grooming));
-  localStorage.setItem(_modeKey('budget_events'),JSON.stringify(events));
-  localStorage.setItem(_modeKey('budget_education'),JSON.stringify(education));
-  localStorage.setItem(_modeKey('budget_annual_exp'),JSON.stringify(annualExpenses));
   localStorage.setItem(_modeKey('budget_sync_meta'),JSON.stringify(_syncMeta));
   scheduleCloudSave();
 }
@@ -3158,13 +3085,6 @@ function openAddTx(){
   wizUpdateDate();
   setTxType('expense');
   wizRender();
-  const _cpWrap=document.getElementById('wizCrossPaidWrap');
-  if(_cpWrap){
-    _cpWrap.style.display=userSettings.businessMode?'block':'none';
-    const _cpCb=document.getElementById('txCrossPaid');if(_cpCb)_cpCb.checked=false;
-    const _cpLbl=document.getElementById('txCrossPaidLabel');
-    if(_cpLbl)_cpLbl.textContent='שולם מהחשבון ה'+(_activeMode==='personal'?'עסקי':'אישי')+' (חיוב צולב)';
-  }
   setTimeout(()=>document.getElementById('txDesc').focus(),250);
 }
 function openAddGoal(){openSheet('addGoalSheet');}
@@ -3386,8 +3306,7 @@ function addTransaction(prefill){
     if(!date)             {showToast('📅 בחר תאריך לעסקה');return;}
   }
   const note=prefill?'':(document.getElementById('txNote')?.value.trim()||'');
-  const crossPaid=prefill?false:(function(){var e=document.getElementById('txCrossPaid');return e?e.checked:false;})();
-  transactions.unshift({id:Date.now()+Math.random(),type,cat,desc,amount,date,recurring,fixed:isFixed,note,crossPaid});
+  transactions.unshift({id:Date.now()+Math.random(),type,cat,desc,amount,date,recurring,fixed:isFixed,note});
   if(!prefill) learnCat(desc, cat, type, amount); // לומד את השיוך והסכום לפעם הבאה
   saveData();
   if(!prefill){
@@ -3443,16 +3362,13 @@ function txFixedLabel(t){
   if(t.fixed===false) return '';
   return t.recurring?'<span class="tx-tag tag-fixed">קבועה</span>':'';
 }
-function txCrossPaidLabel(t){
-  return t.crossPaid?'<span class="tx-tag tag-cross">↔ חיוב צולב</span>':'';
-}
 function txHtml(t){
   const icon = catIconSvg(t.cat);
   return '<div class="tx-item" data-txid="'+t.id+'" tabindex="0" role="button" onclick="editTx('+t.id+')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();editTx('+t.id+');}">'
     +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+icon+'</div>'
     +'<div class="tx-info">'
       +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
-      +'<div class="tx-meta">'+txFixedLabel(t)+txCrossPaidLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
+      +'<div class="tx-meta">'+txFixedLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
     +'</div>'
     +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
     +'<button class="tx-del-btn" onclick="event.stopPropagation();deleteTx('+t.id+')" aria-label="מחק עסקה"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>'
@@ -3468,7 +3384,7 @@ function txSwipeHtml(t){
         +'<div class="tx-icon '+(t.type==='income'?'income-icon':('expense-icon'+(CAT_COLOR[t.cat]?' cat-'+CAT_COLOR[t.cat]:'')))+'">'+icon+'</div>'
         +'<div class="tx-info">'
           +'<div class="tx-desc"><span class="tx-desc-name">'+esc(t.desc)+'</span></div>'
-          +'<div class="tx-meta">'+txFixedLabel(t)+txCrossPaidLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
+          +'<div class="tx-meta">'+txFixedLabel(t)+(t.note?'<span style="color:var(--text3);font-size:0.7rem">'+esc(t.note)+'</span>':'')+'</div>'
         +'</div>'
         +'<div class="tx-amount '+(t.type==='income'?'income-amt':'expense-amt')+'">'+fmt(t.amount)+'</div>'
       +'</div>'
@@ -3794,24 +3710,8 @@ function _expStructListHtml(kind){
     return (rows||'<div class="budget-tx-empty">אין הלוואות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openAddLoanSheet()">+ הוסף הלוואה</button>';
   }
   if(kind==='insurance'){
-    const rows=insurances.map(i=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditInsurance('+i.id+')"><span>'+esc(i.name)+(i.type?' <span style="color:var(--text3);font-size:0.78em">· '+esc(i.type)+'</span>':'')+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(i.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteInsurance('+i.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    const rows=insurances.map(i=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditInsurance('+i.id+')"><span>'+esc(i.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(i.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteInsurance('+i.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
     return (rows||'<div class="budget-tx-empty">אין ביטוחים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddInsurance()">+ הוסף ביטוח</button>';
-  }
-  if(kind==='grooming'){
-    const rows=grooming.map(g=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditGrooming('+g.id+')"><span>'+esc(g.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(g.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteGrooming('+g.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
-    return (rows||'<div class="budget-tx-empty">אין פריטי טיפוח</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddGrooming()">+ הוסף טיפוח</button>';
-  }
-  if(kind==='events'){
-    const rows=events.map(e=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditEvent('+e.id+')"><span>'+esc(e.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt((parseFloat(e.annual)||0)/12)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteEvent('+e.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
-    return (rows||'<div class="budget-tx-empty">אין אירועים או מתנות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddEvent()">+ הוסף אירוע/מתנה</button>';
-  }
-  if(kind==='education'){
-    const rows=education.map(e=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditEducation('+e.id+')"><span>'+esc(e.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(e.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteEducation('+e.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
-    return (rows||'<div class="budget-tx-empty">אין פריטי חינוך או חוגים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddEducation()">+ הוסף חינוך/חוג</button>';
-  }
-  if(kind==='annualExpenses'){
-    const rows=annualExpenses.map(a=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditAnnualExpense('+a.id+')"><span>'+esc(a.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt((parseFloat(a.annual)||0)/12)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteAnnualExpense('+a.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
-    return (rows||'<div class="budget-tx-empty">אין הוצאות שנתיות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddAnnualExpense()">+ הוסף הוצאה שנתית</button>';
   }
   if(kind==='subs'){
     const active=subscriptions.filter(s=>s.active);
@@ -3837,7 +3737,7 @@ function _expStructListHtml(kind){
   }
   return '';
 }
-const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs','ביטוחים':'insurance','טיפוח וקוסמטיקה':'grooming','אירועים ומתנות':'events','חינוך, חוגים וקייטנות':'education','הוצאות שנתיות':'annualExpenses'};
+const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs','ביטוחים':'insurance'};
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
   return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+key+'\')" aria-expanded="'+open+'">'
@@ -4042,7 +3942,7 @@ let _syncFailedNotified=false;
 // Collections added after the table was created. Each is its own column in personal
 // mode, so on a DB that predates them the whole upsert fails — core data included.
 // Drop such a column for this session instead and keep everything else syncing.
-const _OPTIONAL_COLS=['payments','fixed_expenses','insurances','grooming','events','education','annualExpenses'];
+const _OPTIONAL_COLS=['payments','fixed_expenses','insurances'];
 const _missingCols=new Set();
 function _mergeMeta(a,b){
   const out=_emptyMeta();
@@ -4090,10 +3990,6 @@ function _buildMerged(bundle,localBu,cloudBu){
     payments:_mergeArrays(payments,bundle.payments,_syncMeta.del.payments),
     fixed_expenses:_mergeArrays(fixedExpenses,bundle.fixed_expenses,_syncMeta.del.fixed),
     insurances:_mergeArrays(insurances,bundle.insurances,_syncMeta.del.insurances),
-    grooming:_mergeArrays(grooming,bundle.grooming,_syncMeta.del.grooming),
-    events:_mergeArrays(events,bundle.events,_syncMeta.del.events),
-    education:_mergeArrays(education,bundle.education,_syncMeta.del.education),
-    annualExpenses:_mergeArrays(annualExpenses,bundle.annualExpenses,_syncMeta.del.annualExpenses),
     budgets:_mergeBudgets(budgets,bundle.budgets,localBu,cloudBu,_syncMeta.del.budgets,_syncMeta.bu)
   };
 }
@@ -4105,12 +4001,8 @@ function _applyMerged(m){
     ||JSON.stringify(m.payments)!==JSON.stringify(payments)
     ||JSON.stringify(m.fixed_expenses)!==JSON.stringify(fixedExpenses)
     ||JSON.stringify(m.insurances)!==JSON.stringify(insurances)
-    ||JSON.stringify(m.grooming)!==JSON.stringify(grooming)
-    ||JSON.stringify(m.events)!==JSON.stringify(events)
-    ||JSON.stringify(m.education)!==JSON.stringify(education)
-    ||JSON.stringify(m.annualExpenses)!==JSON.stringify(annualExpenses)
     ||JSON.stringify(m.budgets)!==JSON.stringify(budgets);
-  transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;fixedExpenses=m.fixed_expenses;insurances=m.insurances;grooming=m.grooming;events=m.events;education=m.education;annualExpenses=m.annualExpenses;budgets=m.budgets;
+  transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;fixedExpenses=m.fixed_expenses;insurances=m.insurances;budgets=m.budgets;
   _migrateCats();   // cloud rows may still carry the old category names
   _fixRefinedCats();
   localStorage.setItem(_modeKey('budget_tx'),JSON.stringify(transactions));
@@ -4121,10 +4013,6 @@ function _applyMerged(m){
   localStorage.setItem(_modeKey('budget_payments'),JSON.stringify(payments));
   localStorage.setItem(_modeKey('budget_fixed'),JSON.stringify(fixedExpenses));
   localStorage.setItem(_modeKey('budget_insurances'),JSON.stringify(insurances));
-  localStorage.setItem(_modeKey('budget_grooming'),JSON.stringify(grooming));
-  localStorage.setItem(_modeKey('budget_events'),JSON.stringify(events));
-  localStorage.setItem(_modeKey('budget_education'),JSON.stringify(education));
-  localStorage.setItem(_modeKey('budget_annual_exp'),JSON.stringify(annualExpenses));
   localStorage.setItem(_modeKey('budget_sync_meta'),JSON.stringify(_syncMeta));
   _rebuildShadow();
   return changed;
@@ -4692,27 +4580,6 @@ function openSettings(){
   if(pcb)pcb.checked=!!localStorage.getItem('budget_push_on');
   _renderPushPrefs();
   renderCloudSection();
-  _renderCrossLedger();
-}
-function _txForMode(mode){
-  const k=mode==='personal'?'budget_tx':'budget_tx_business';
-  return JSON.parse(localStorage.getItem(k)||'[]');
-}
-function _crossLedger(){
-  const personalOwed=_txForMode('personal').filter(t=>t.crossPaid).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
-  const businessOwed=_txForMode('business').filter(t=>t.crossPaid).reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
-  return {net:personalOwed-businessOwed,personalOwed,businessOwed};
-}
-function _renderCrossLedger(){
-  const row=document.getElementById('crossLedgerRow');
-  const txt=document.getElementById('crossLedgerText');
-  if(!row||!txt)return;
-  if(!userSettings.businessMode){row.style.display='none';return;}
-  row.style.display='flex';
-  const {net}=_crossLedger();
-  if(Math.abs(net)<0.01)txt.textContent='יתרת חיובים צולבים: מאוזן';
-  else if(net>0)txt.textContent='אתה חייב לעסק: '+fmt(net);
-  else txt.textContent='העסק חייב לך: '+fmt(-net);
 }
 
 function updateSettingAvatar(){
@@ -4783,7 +4650,7 @@ function exportCSV(){
 // ── Backup / Restore ──────────────────────────────────────────────
 function exportBackup(){
   const data = {
-    transactions, goals, subscriptions, budgets, loans, payments, fixedExpenses, insurances, grooming, events, education, annualExpenses, userSettings,
+    transactions, goals, subscriptions, budgets, loans, payments, fixedExpenses, insurances, userSettings,
     exportDate: new Date().toISOString()
   };
   const a = document.createElement('a');
@@ -4809,10 +4676,6 @@ function importBackup(input){
       payments = data.payments || [];
       fixedExpenses = data.fixedExpenses || [];
       insurances = data.insurances || [];
-      grooming = data.grooming || [];
-      events = data.events || [];
-      education = data.education || [];
-      annualExpenses = data.annualExpenses || [];
       if(data.userSettings) userSettings = data.userSettings;
       saveData();
       saveSettingsData();
@@ -4890,7 +4753,7 @@ async function resetAllData(){
   if(_cloudUser&&_sb&&!_householdOwner){
     try{await _sb.from('budget_data').delete().eq('user_id',_cloudUser.id);}catch(e){}
   }
-  transactions=[]; goals=[]; subscriptions=[]; budgets={}; loans=[]; payments=[]; fixedExpenses=[]; insurances=[]; grooming=[]; events=[]; education=[]; annualExpenses=[];
+  transactions=[]; goals=[]; subscriptions=[]; budgets={}; loans=[]; payments=[]; fixedExpenses=[]; insurances=[];
   userSettings={name:'',savingsGoal:0};
   _syncMeta=_emptyMeta();
   _rebuildShadow();
@@ -4906,18 +4769,14 @@ function renderAnnualSummary(){
   document.getElementById('annualYear').textContent = y;
   const now = new Date();
   let totalInc=0, totalExp=0, monthsWithData=0;
-  const rows=[];
   for(let m=0; m<12; m++){
     const mTx = transactions.filter(t=>t.date.startsWith(mk(y,m)));
     // same per-month definition the dashboard and the 6-month chart use, so the
     // yearly total can't disagree with the months it is made of
-    const inc = monthlyIncomeFor(y,m);
-    totalInc += inc;
+    totalInc += monthlyIncomeFor(y,m);
     const exp = mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
     totalExp += exp;
-    const hasData = mTx.length>0;
-    if(hasData) monthsWithData++;
-    rows.push({m,label:heMonth(y,m),inc,exp,net:inc-exp,hasData});
+    if(mTx.length) monthsWithData++;
   }
   const savings = totalInc - totalExp;
   const savingsPct = totalInc>0 ? Math.round(savings/totalInc*100) : 0;
@@ -4927,21 +4786,6 @@ function renderAnnualSummary(){
   document.getElementById('annualSavings').style.color = savings>=0?'var(--green)':'var(--red)';
   document.getElementById('annualSavingsPct').textContent = savingsPct+'% מההכנסות';
   document.getElementById('annualMonthlyAvg').textContent = monthsWithData>0?fmt(totalExp/monthsWithData):'—';
-  const withData=rows.filter(r=>r.hasData);
-  const bwEl=document.getElementById('annualBestWorst');
-  if(bwEl){
-    if(withData.length<2){bwEl.innerHTML='';}
-    else{
-      const best=withData.reduce((a,b)=>b.net>a.net?b:a);
-      const worst=withData.reduce((a,b)=>b.net<a.net?b:a);
-      bwEl.innerHTML='<div style="font-size:0.82rem;color:var(--green);font-weight:600;margin-bottom:4px">🏆 החודש הכי טוב: '+esc(best.label)+' ('+(best.net>=0?'+':'-')+fmt(best.net)+')</div>'
-        +'<div style="font-size:0.82rem;color:var(--red);font-weight:600">📉 החודש הכי חלש: '+esc(worst.label)+' ('+(worst.net>=0?'+':'-')+fmt(worst.net)+')</div>';
-    }
-  }
-  const listEl=document.getElementById('annualMonthlyList');
-  if(listEl){
-    listEl.innerHTML=rows.map(r=>'<div style="display:flex;justify-content:space-between;font-size:0.82rem;padding:4px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">'+esc(r.label)+'</span><span style="font-weight:700;color:'+(r.net>=0?'var(--green)':'var(--red)')+'">'+(r.net>=0?'+':'-')+fmt(r.net)+'</span></div>').join('');
-  }
 }
 // Assets are advisor-entered only (_advisorAssets, read-only mirror set in _loadFromCloud);
 // liabilities reuse the client's own `loans` — same math as advisor-app's Assets.jsx so the
@@ -5038,13 +4882,6 @@ function editTx(id){
   if(fixedEl) fixedEl.checked = tx.fixed !== false;
   const delBtn = document.getElementById('editTxDeleteBtn');
   delBtn.onclick = () => { deleteTx(id); closeSheet('editTxSheet'); };
-  const _ecpWrap=document.getElementById('editCrossPaidWrap');
-  if(_ecpWrap){
-    _ecpWrap.style.display=userSettings.businessMode?'block':'none';
-    const _ecpCb=document.getElementById('editTxCrossPaid');if(_ecpCb)_ecpCb.checked=!!tx.crossPaid;
-    const _ecpLbl=document.getElementById('editTxCrossPaidLabel');
-    if(_ecpLbl)_ecpLbl.textContent='שולם מהחשבון ה'+(_activeMode==='personal'?'עסקי':'אישי')+' (חיוב צולב)';
-  }
   openSheet('editTxSheet');
 }
 function saveEditTx(){
@@ -5062,7 +4899,6 @@ function saveEditTx(){
   tx.recurring = !!(document.getElementById('editTxRecurring')?.checked);
   tx.fixed     = !!(document.getElementById('editTxFixed')?.checked);
   tx.note      = document.getElementById('editTxNote')?.value.trim()||'';
-  tx.crossPaid = !!(document.getElementById('editTxCrossPaid')?.checked);
   learnCat(desc, cat, tx.type, amount); // עדכון ידני = הלמידה הכי חזקה
   saveData();
   refreshAll();
@@ -5661,41 +5497,6 @@ function renderAnalytics(){
     if(prev>0){const p=Math.round((amt-prev)/prev*100);if(p>2){trendStr='↑'+p+'%';trendCls='up';}else if(p<-2){trendStr='↓'+Math.abs(p)+'%';trendCls='down';}else{trendStr='≈';trendCls='same';}}
     return '<div class="breakdown-row"><div class="breakdown-name">'+catIconSvg(cat)+' '+esc(cat)+(cat===_hotCat?' <span class="hot-badge" title="הקטגוריה שגדלה הכי הרבה החודש">🔥</span>':'')+'</div><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:'+Math.round(amt/totalE*100)+'%;background:'+COLORS[i%COLORS.length]+'"></div></div><div class="breakdown-amount">'+fmt(amt)+'<br><span style="color:var(--text3)">'+Math.round(amt/totalE*100)+'%</span></div><div class="breakdown-trend '+trendCls+'">'+trendStr+'</div></div>';
   }).join(''):'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div><p>אין הוצאות לחודש זה</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">הוסף עסקאות כדי לראות את הניתוח</p></div>';
-  _renderCheckingProjection();
-}
-
-function _checkingProjection(){
-  const days=[1,2,5,10,15,20,25,30];
-  const income=getMonthlyIncome();
-  const otherFixed=getEffectiveFixedCats()
-    .filter(c=>c!=='החזר הלוואות + חיוב קבוע'&&c!=='ביטוחים')
-    .reduce((s,c)=>s+_fxMonthly(c),0);
-  const opening=parseFloat(userSettings.checkingOpening)||0;
-  return days.map(d=>{
-    let bal=opening+income-otherFixed;
-    loans.forEach(l=>{if((l.dueDay||1)<=d)bal-=(parseFloat(l.monthly)||0);});
-    insurances.forEach(i=>{if((i.dueDay||1)<=d)bal-=(parseFloat(i.monthly)||0);});
-    return {day:d,balance:bal};
-  });
-}
-function _renderCheckingProjection(){
-  const input=document.getElementById('checkingOpeningInput');
-  if(input&&document.activeElement!==input)input.value=userSettings.checkingOpening||'';
-  const table=document.getElementById('checkingProjTable');
-  const canvas=document.getElementById('checkingChart');
-  if(!table||!canvas)return;
-  const proj=_checkingProjection();
-  table.innerHTML=proj.map(p=>`<div style="display:flex;justify-content:space-between;font-size:0.82rem;padding:4px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">יום ${p.day}</span><span style="font-weight:700;color:${p.balance<0?'var(--red)':'var(--text)'}">${fmt(p.balance)}</span></div>`).join('');
-  const isDk=document.body.classList.contains('dark');
-  const tickClr=isDk?'#9b9089':'#6b6360';
-  const ctx=canvas.getContext('2d');
-  if(checkingChart)checkingChart.destroy();
-  checkingChart=new Chart(ctx,{type:'line',data:{
-    labels:proj.map(p=>'יום '+p.day),
-    datasets:[{label:'יתרה צפויה',data:proj.map(p=>p.balance),borderColor:isDk?'#34d3a9':'#0a7a62',backgroundColor:isDk?'rgba(52,211,169,0.15)':'rgba(10,122,98,0.12)',tension:0.3,fill:true,pointRadius:3}]
-  },options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false}},
-    scales:{y:{ticks:{callback:v=>v.toLocaleString(),font:{size:10},color:tickClr},grid:{color:isDk?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)'}},x:{ticks:{font:{size:10},color:tickClr}}}}});
 }
 
 function setBudget(){
@@ -5932,7 +5733,7 @@ function moveTxToCat(cat){
 }
 let _editingGoalId=null;
 function _clearGoalForm(){
-  document.getElementById('goalName').value='';document.getElementById('goalTarget').value='';document.getElementById('goalMonths').value='';document.getElementById('goalType').value='יעד מוגדר';
+  document.getElementById('goalName').value='';document.getElementById('goalTarget').value='';document.getElementById('goalMonths').value='';
 }
 function openAddGoalSheet(){
   _editingGoalId=null;
@@ -5947,7 +5748,6 @@ function editGoal(id){
   document.getElementById('goalName').value=g.name||'';
   document.getElementById('goalTarget').value=g.target||'';
   document.getElementById('goalMonths').value=g.months||'';
-  document.getElementById('goalType').value=g.type||'יעד מוגדר';
   const title=document.getElementById('goalSheetTitle');if(title)title.textContent='✏️ עריכת יעד';
   const btn=document.getElementById('goalSaveBtn');if(btn){btn.textContent='שמור שינויים';btn.disabled=false;}
   openSheet('addGoalSheet');
@@ -5958,13 +5758,12 @@ function addGoal(){
   const months=Math.max(0,parseInt(document.getElementById('goalMonths').value)||0);
   if(!name){showToast('✏️ תן שם ליעד החיסכון שלך');return;}
   if(!target||target<=0){showToast('₪ כמה רוצים לחסוך? הזן סכום');return;}
-  const type=document.getElementById('goalType').value||'יעד מוגדר';
   const editingId=_editingGoalId;
   if(editingId!=null){
     const g=goals.find(x=>x.id===editingId);
-    if(g){g.name=name;g.target=target;g.months=months;g.type=type;g.saved=Math.min(g.saved,target);}
+    if(g){g.name=name;g.target=target;g.months=months;g.saved=Math.min(g.saved,target);}
   }else{
-    goals.push({id:Date.now(),name,target,months,type,saved:0});
+    goals.push({id:Date.now(),name,target,months,saved:0});
   }
   saveData();
   _clearGoalForm();
@@ -6069,18 +5868,15 @@ async function _expEditPayment(id){
   p.name=name.trim();p.amount=parseFloat(amount)||0;p.total=tot;p.current=tot-r;p.currentAnchor=_curMonthKey();
   saveData();renderTxPage();renderPayments();
 }
-const INSURANCE_TYPES=[{value:'בריאות',label:'בריאות'},{value:'חיים',label:'חיים'},{value:'רכוש',label:'רכוש'},{value:'תאונות אישיות',label:'תאונות אישיות'}];
 async function _expEditInsurance(id){
   const i=insurances.find(x=>x.id===id);if(!i)return;
   const vals=await promptSheet({title:'עריכת ביטוח',fields:[
     {label:'שם הביטוח',value:i.name||''},
-    {label:'סוג הביטוח',type:'select',options:INSURANCE_TYPES,value:i.type||''},
-    {label:'סכום חודשי',type:'number',value:i.monthly||''},
-    {label:'יום חיוב בחודש (אופציונלי)',type:'number',value:i.dueDay||''}
+    {label:'סכום חודשי',type:'number',value:i.monthly||''}
   ]});
   if(!vals)return;
-  const[name,type,monthly,dueDay]=vals;
-  i.name=name.trim();i.type=type;i.monthly=parseFloat(monthly)||0;i.dueDay=parseInt(dueDay)||0;
+  const[name,monthly]=vals;
+  i.name=name.trim();i.monthly=parseFloat(monthly)||0;
   saveData();renderTxPage();
 }
 function _expDeleteInsurance(id){
@@ -6093,131 +5889,13 @@ function _expDeleteInsurance(id){
 async function _expAddInsurance(){
   const vals=await promptSheet({title:'ביטוח חדש',fields:[
     {label:'שם הביטוח החדש'},
-    {label:'סוג הביטוח',type:'select',options:INSURANCE_TYPES},
-    {label:'סכום חודשי',type:'number'},
-    {label:'יום חיוב בחודש (אופציונלי)',type:'number'}
+    {label:'סכום חודשי',type:'number'}
   ]});
   if(!vals||!vals[0]||!vals[0].trim())return;
-  const[name,type,monthly,dueDay]=vals;
-  insurances.push({id:Date.now(),name:name.trim(),type,monthly:parseFloat(monthly)||0,dueDay:parseInt(dueDay)||0});
+  const[name,monthly]=vals;
+  insurances.push({id:Date.now(),name:name.trim(),monthly:parseFloat(monthly)||0});
   saveData();renderTxPage();
   showToast('✓ ביטוח נוסף');
-}
-async function _expEditGrooming(id){
-  const g=grooming.find(x=>x.id===id);if(!g)return;
-  const vals=await promptSheet({title:'עריכת פריט טיפוח',fields:[
-    {label:'שם',value:g.name||''},
-    {label:'סכום חודשי',type:'number',value:g.monthly||''}
-  ]});
-  if(!vals)return;
-  const[name,monthly]=vals;
-  g.name=name.trim();g.monthly=parseFloat(monthly)||0;
-  saveData();renderTxPage();
-}
-function _expDeleteGrooming(id){
-  const idx=grooming.findIndex(g=>g.id===id);if(idx<0)return;
-  const backup=grooming[idx];
-  grooming=grooming.filter(g=>g.id!==id);
-  saveData();renderTxPage();
-  showUndoToast('🗑️ הפריט הוסר',()=>{grooming.splice(idx,0,backup);saveData();renderTxPage();},()=>{});
-}
-async function _expAddGrooming(){
-  const vals=await promptSheet({title:'פריט טיפוח חדש',fields:[
-    {label:'שם (תספורת, ציפורניים...)'},
-    {label:'סכום חודשי',type:'number'}
-  ]});
-  if(!vals||!vals[0]||!vals[0].trim())return;
-  const[name,monthly]=vals;
-  grooming.push({id:Date.now(),name:name.trim(),monthly:parseFloat(monthly)||0});
-  saveData();renderTxPage();
-  showToast('✓ פריט טיפוח נוסף');
-}
-async function _expEditEvent(id){
-  const e=events.find(x=>x.id===id);if(!e)return;
-  const vals=await promptSheet({title:'עריכת אירוע/מתנה',fields:[
-    {label:'שם',value:e.name||''},
-    {label:'עלות שנתית',type:'number',value:e.annual||''}
-  ]});
-  if(!vals)return;
-  const[name,annual]=vals;
-  e.name=name.trim();e.annual=parseFloat(annual)||0;
-  saveData();renderTxPage();
-}
-function _expDeleteEvent(id){
-  const idx=events.findIndex(e=>e.id===id);if(idx<0)return;
-  const backup=events[idx];
-  events=events.filter(e=>e.id!==id);
-  saveData();renderTxPage();
-  showUndoToast('🗑️ האירוע הוסר',()=>{events.splice(idx,0,backup);saveData();renderTxPage();},()=>{});
-}
-async function _expAddEvent(){
-  const vals=await promptSheet({title:'אירוע או מתנה חדשים',fields:[
-    {label:'שם (חתונה, יום הולדת, מתנות לחג...)'},
-    {label:'עלות שנתית משוערת',type:'number'}
-  ]});
-  if(!vals||!vals[0]||!vals[0].trim())return;
-  const[name,annual]=vals;
-  events.push({id:Date.now(),name:name.trim(),annual:parseFloat(annual)||0});
-  saveData();renderTxPage();
-  showToast('✓ נוסף');
-}
-async function _expEditEducation(id){
-  const e=education.find(x=>x.id===id);if(!e)return;
-  const vals=await promptSheet({title:'עריכת פריט חינוך/חוג',fields:[
-    {label:'שם',value:e.name||''},
-    {label:'סכום חודשי',type:'number',value:e.monthly||''}
-  ]});
-  if(!vals)return;
-  const[name,monthly]=vals;
-  e.name=name.trim();e.monthly=parseFloat(monthly)||0;
-  saveData();renderTxPage();
-}
-function _expDeleteEducation(id){
-  const idx=education.findIndex(e=>e.id===id);if(idx<0)return;
-  const backup=education[idx];
-  education=education.filter(e=>e.id!==id);
-  saveData();renderTxPage();
-  showUndoToast('🗑️ הפריט הוסר',()=>{education.splice(idx,0,backup);saveData();renderTxPage();},()=>{});
-}
-async function _expAddEducation(){
-  const vals=await promptSheet({title:'פריט חינוך/חוג חדש',fields:[
-    {label:'שם (בית ספר, גן, חוג...)'},
-    {label:'סכום חודשי',type:'number'}
-  ]});
-  if(!vals||!vals[0]||!vals[0].trim())return;
-  const[name,monthly]=vals;
-  education.push({id:Date.now(),name:name.trim(),monthly:parseFloat(monthly)||0});
-  saveData();renderTxPage();
-  showToast('✓ נוסף');
-}
-async function _expEditAnnualExpense(id){
-  const a=annualExpenses.find(x=>x.id===id);if(!a)return;
-  const vals=await promptSheet({title:'עריכת הוצאה שנתית',fields:[
-    {label:'שם',value:a.name||''},
-    {label:'עלות שנתית',type:'number',value:a.annual||''}
-  ]});
-  if(!vals)return;
-  const[name,annual]=vals;
-  a.name=name.trim();a.annual=parseFloat(annual)||0;
-  saveData();renderTxPage();
-}
-function _expDeleteAnnualExpense(id){
-  const idx=annualExpenses.findIndex(a=>a.id===id);if(idx<0)return;
-  const backup=annualExpenses[idx];
-  annualExpenses=annualExpenses.filter(a=>a.id!==id);
-  saveData();renderTxPage();
-  showUndoToast('🗑️ ההוצאה הוסרה',()=>{annualExpenses.splice(idx,0,backup);saveData();renderTxPage();},()=>{});
-}
-async function _expAddAnnualExpense(){
-  const vals=await promptSheet({title:'הוצאה שנתית חדשה',fields:[
-    {label:'שם (טסט, רישיון רכב, חופשה, ביטוח רכב...)'},
-    {label:'עלות שנתית',type:'number'}
-  ]});
-  if(!vals||!vals[0]||!vals[0].trim())return;
-  const[name,annual]=vals;
-  annualExpenses.push({id:Date.now(),name:name.trim(),annual:parseFloat(annual)||0});
-  saveData();renderTxPage();
-  showToast('✓ נוסף');
 }
 async function _expAddPayment(){
   const vals=await promptSheet({title:'תשלום חדש',fields:[
@@ -6414,29 +6092,8 @@ function renderGoals(){
     const remaining=g.target-g.saved;
     const monthlyNeeded=g.months&&g.months>0?Math.ceil(remaining/g.months):0;
     const monthlyStr=monthlyNeeded>0?'<div class="goal-monthly">'+fmt(monthlyNeeded)+' לחודש'+(g.months?' · '+g.months+' חודשים':'')+'</div>':'';
-    return '<div class="goal-card"><div class="goal-card-header"><div style="cursor:pointer" onclick="editGoal('+g.id+')"><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+(g.type&&g.type!=='יעד מוגדר'?' <span style="color:var(--text3);font-size:0.78em">· '+esc(g.type)+'</span>':'')+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions">'+(g.saved>0?'<button class="btn btn-neutral btn-sm" onclick="withdrawFromGoal('+g.id+')" aria-label="משוך מהחיסכון">−</button>':'')+'<button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד">✕</button></div></div>'+progBar+'<div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(remaining)+'</div>'+monthlyStr+'</div>';
+    return '<div class="goal-card"><div class="goal-card-header"><div style="cursor:pointer" onclick="editGoal('+g.id+')"><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions">'+(g.saved>0?'<button class="btn btn-neutral btn-sm" onclick="withdrawFromGoal('+g.id+')" aria-label="משוך מהחיסכון">−</button>':'')+'<button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד">✕</button></div></div>'+progBar+'<div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(remaining)+'</div>'+monthlyStr+'</div>';
   }).join('');
-  _renderCashAllocation();
-}
-function _cashAllocation(){
-  const TIERS=['קרן חירום','חיסכון לטווח ארוך','חיסכון לילדים','יעד מוגדר'];
-  const disposable=Math.max(0,getMonthlyIncome()-getMonthTx(currentYear,currentMonth).filter(t=>t.type==='expense').reduce((s,t)=>s+(+t.amount||0),0));
-  let remaining=disposable;
-  const rows=TIERS.map(type=>{
-    const need=goals.filter(g=>(g.type||'יעד מוגדר')===type&&g.months>0)
-      .reduce((s,g)=>s+Math.max(0,Math.ceil((g.target-g.saved)/g.months)),0);
-    const alloc=Math.min(remaining,need);
-    remaining-=alloc;
-    return{type,need,alloc};
-  });
-  return{disposable,rows,bufferLeft:remaining};
-}
-function _renderCashAllocation(){
-  const wrap=document.getElementById('cashAllocList');
-  if(!wrap)return;
-  const {disposable,rows,bufferLeft}=_cashAllocation();
-  const rowsHtml=rows.map(r=>`<div style="display:flex;justify-content:space-between;font-size:0.82rem;padding:4px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">${esc(r.type)}</span><span style="font-weight:700;color:${r.alloc<r.need?'var(--red)':'var(--text)'}">${fmt(r.alloc)}${r.need>r.alloc?' / '+fmt(r.need):''}</span></div>`).join('');
-  wrap.innerHTML=`<div style="font-size:0.78rem;color:var(--text3);margin-bottom:6px">תזרים פנוי החודש: ${fmt(disposable)}</div>${rowsHtml}<div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:8px 0 0;font-weight:700"><span>יתרת ביטחון בעו״ש</span><span style="color:${bufferLeft>=0?'var(--green)':'var(--red)'}">${fmt(bufferLeft)}</span></div>`;
 }
 
 function subME(s){if(!s.active)return 0;return {monthly:s.amount,annual:s.amount/12,weekly:s.amount*4.33}[s.cycle]||s.amount;}
@@ -6503,11 +6160,6 @@ const SUB_CATALOG={
   nordvpn:{cat:'תוכנה',emoji:'🛡️'},expressvpn:{cat:'תוכנה',emoji:'🛡️'},
   wix:{cat:'תוכנה',emoji:'🌐'},
   squarespace:{cat:'תוכנה',emoji:'🌐'},
-  tradingview:{cat:'תוכנה',emoji:'📈'},
-  // אינטרנט וסלולר
-  בזק:{cat:'אינטרנט וסלולר',emoji:'📡'},פרטנר:{cat:'אינטרנט וסלולר',emoji:'📶'},
-  סלקום:{cat:'אינטרנט וסלולר',emoji:'📶'},הוט:{cat:'אינטרנט וסלולר',emoji:'📡'},
-  פלאפון:{cat:'אינטרנט וסלולר',emoji:'📶'},אינטרנט:{cat:'אינטרנט וסלולר',emoji:'📡'},נייד:{cat:'אינטרנט וסלולר',emoji:'📱'},
   // כלי AI
   chatgpt:{cat:'כלי AI',emoji:'🤖'},openai:{cat:'כלי AI',emoji:'🤖'},
   claude:{cat:'כלי AI',emoji:'🤖'},anthropic:{cat:'כלי AI',emoji:'🤖'},
@@ -6841,7 +6493,7 @@ function loanEmoji(name){
 }
 let _editingLoanId=null;
 function _clearLoanForm(){
-  ['loanName','loanLender','loanOriginal','loanRemaining','loanMonthly','loanRate','loanMonthsLeft','loanDueDay','loanNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['loanName','loanLender','loanOriginal','loanRemaining','loanMonthly','loanRate','loanMonthsLeft','loanNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 }
 function openAddLoanSheet(){
   _editingLoanId=null;
@@ -6860,9 +6512,8 @@ function editLoan(id){
   document.getElementById('loanOriginal').value=l.original||'';
   document.getElementById('loanRate').value=l.rate||'';
   document.getElementById('loanMonthsLeft').value=l.monthsLeft||'';
-  document.getElementById('loanDueDay').value=l.dueDay||'';
   document.getElementById('loanNotes').value=l.notes||'';
-  if(l.lender||l.original||l.rate||l.monthsLeft||l.dueDay||l.notes){
+  if(l.lender||l.original||l.rate||l.monthsLeft||l.notes){
     const extras=document.getElementById('loanExtras');if(extras)extras.style.display='flex';
   }
   const title=document.getElementById('loanSheetTitle');if(title)title.textContent='✏️ עריכת הלוואה';
@@ -6881,7 +6532,6 @@ function saveLoan(){
     monthly,
     rate:parseFloat(document.getElementById('loanRate').value)||0,
     monthsLeft:parseInt(document.getElementById('loanMonthsLeft').value)||0,
-    dueDay:parseInt(document.getElementById('loanDueDay').value)||0,
     notes:document.getElementById('loanNotes').value.trim()
   };
   const editingId=_editingLoanId;
@@ -6925,7 +6575,7 @@ function renderLoans(){
     list.innerHTML='<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></div><p>אין הלוואות רשומות</p><button class="btn-empty" onclick="openAddLoanSheet()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הלוואה ראשונה</button></div>';
     return;
   }
-  function _loanCard(l){
+  list.innerHTML=loans.map(l=>{
     const pct=l.original>0?Math.min(Math.round((l.original-l.remaining)/l.original*100),100):0;
     const emoji=loanEmoji(l.name);
     const loanBarCls=progState(pct,[[90,'near-done'],[0,'']]);
@@ -6935,13 +6585,8 @@ function renderLoans(){
       l.rate>0?`<div class="loan-stat"><div class="loan-stat-val">${l.rate}%</div><div class="loan-stat-label">ריבית</div></div>`:'',
       l.remaining>0?`<div class="loan-stat"><div class="loan-stat-val">${fmt(l.remaining)}</div><div class="loan-stat-label">יתרה</div></div>`:''
     ].filter(Boolean).join('');
-    return `<div class="loan-card" onclick="editLoan(${l.id})" style="cursor:pointer"><div class="loan-header"><div class="loan-emoji">${emoji}</div><div class="loan-info"><div class="loan-name">${esc(l.name)}</div>${l.lender?'<div class="loan-lender">'+esc(l.lender)+'</div>':''}</div><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteLoan(${l.id})" aria-label="מחק הלוואה">✕</button></div>${progBar}<div class="loan-stats-row">${stats}</div>${loanPayoffHtml(l)}${!l.monthsLeft?'<div style="font-size:0.72rem;color:var(--text3);margin-top:6px">לא הוזן מס\' תשלומים שנותרו</div>':''}${l.notes?'<div class="loan-notes">'+esc(l.notes)+'</div>':''}</div>`;
-  }
-  const longTerm=loans.filter(l=>(l.monthsLeft||0)>=18);
-  const shortTerm=loans.filter(l=>(l.monthsLeft||0)<18);
-  const group=(title,arr)=>arr.length?`<div class="loan-group-title" style="font-weight:700;font-size:0.85rem;color:var(--text2);margin:14px 0 8px">${title}</div>`+arr.map(_loanCard).join(''):'';
-  list.innerHTML=group('הלוואות ארוכות טווח (18+ תשלומים)',longTerm)+group('הלוואות קצרות טווח (מתחת ל-18 תשלומים)',shortTerm);
-  _renderConsolLoansList();
+    return `<div class="loan-card" onclick="editLoan(${l.id})" style="cursor:pointer"><div class="loan-header"><div class="loan-emoji">${emoji}</div><div class="loan-info"><div class="loan-name">${esc(l.name)}</div>${l.lender?'<div class="loan-lender">'+esc(l.lender)+'</div>':''}</div><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteLoan(${l.id})" aria-label="מחק הלוואה">✕</button></div>${progBar}<div class="loan-stats-row">${stats}</div>${loanPayoffHtml(l)}${l.notes?'<div class="loan-notes">'+esc(l.notes)+'</div>':''}</div>`;
+  }).join('');
 }
 function _loanMonths(P,M,annualRate){
   if(!P||!M||P<=0||M<=0)return null;
@@ -6964,72 +6609,6 @@ function loanPayoffHtml(l){
   }).filter(Boolean).join('');
   return '<div style="font-size:0.78rem;color:var(--text2);margin-top:8px;font-weight:600;">'+line+'</div>'
     +(chips?'<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'+chips+'</div>':'');
-}
-
-/* ===== LOAN CALCULATORS: Spitzer / consolidation / mortgage affordability ===== */
-function _pmtSpitzer(P,annualRate,months){
-  if(!P||P<=0||!months||months<=0)return 0;
-  const r=(annualRate||0)/1200;
-  if(r<=0)return P/months;
-  return P*r/(1-Math.pow(1+r,-months));
-}
-function _spitzerPrincipalFromPmt(pmt,annualRate,months){
-  if(!pmt||pmt<=0||!months||months<=0)return 0;
-  const r=(annualRate||0)/1200;
-  if(r<=0)return pmt*months;
-  return pmt*(1-Math.pow(1+r,-months))/r;
-}
-function _calcSpitzer(){
-  const P=parseFloat(document.getElementById('spPrincipal').value)||0;
-  const rate=parseFloat(document.getElementById('spRate').value)||0;
-  const months=parseInt(document.getElementById('spMonths').value)||0;
-  const el=document.getElementById('spResult');
-  if(!P||!months){el.innerHTML='<div style="color:var(--red);font-size:0.82rem">נדרשים סכום ותקופה</div>';return;}
-  const pmt=_pmtSpitzer(P,rate,months);
-  const totalInterest=Math.max(0,pmt*months-P);
-  el.innerHTML=`<div class="loan-stats-row"><div class="loan-stat"><div class="loan-stat-val">${fmt(pmt)}</div><div class="loan-stat-label">החזר חודשי</div></div><div class="loan-stat"><div class="loan-stat-val">${fmt(totalInterest)}</div><div class="loan-stat-label">ריבית כוללת</div></div></div><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="_spitzerToLoan(${P},${rate},${months},${pmt})">➕ הוסף כהלוואה</button>`;
-}
-function _spitzerToLoan(P,rate,months,pmt){
-  openAddLoanSheet();
-  setTimeout(()=>{
-    document.getElementById('loanOriginal').value=P;
-    document.getElementById('loanRemaining').value=P;
-    document.getElementById('loanRate').value=rate;
-    document.getElementById('loanMonthsLeft').value=months;
-    document.getElementById('loanMonthly').value=Math.round(pmt*100)/100;
-    const extras=document.getElementById('loanExtras');if(extras)extras.style.display='flex';
-  },50);
-}
-function _renderConsolLoansList(){
-  const wrap=document.getElementById('consolLoansList');
-  if(!wrap)return;
-  if(!loans.length){wrap.innerHTML='<div style="font-size:0.78rem;color:var(--text3)">אין הלוואות לאיחוד</div>';return;}
-  wrap.innerHTML=loans.map(l=>`<label style="display:flex;align-items:center;gap:8px;font-size:0.85rem"><input type="checkbox" class="consol-check" value="${l.id}" style="width:18px;height:18px"/>${esc(l.name)} · ${fmt(l.monthly)}/חודש</label>`).join('');
-}
-function _calcConsolidation(){
-  const ids=Array.from(document.querySelectorAll('.consol-check:checked')).map(c=>parseFloat(c.value));
-  const el=document.getElementById('consolResult');
-  if(ids.length<2){el.innerHTML='<div style="color:var(--red);font-size:0.82rem">בחר לפחות 2 הלוואות לאיחוד</div>';return;}
-  const picked=loans.filter(l=>ids.includes(l.id));
-  const currentMonthly=picked.reduce((s,l)=>s+(l.monthly||0),0);
-  const currentRemaining=picked.reduce((s,l)=>s+(l.remaining||0),0);
-  const rate=parseFloat(document.getElementById('consolRate').value)||0;
-  const months=parseInt(document.getElementById('consolMonths').value)||0;
-  if(!months){el.innerHTML='<div style="color:var(--red);font-size:0.82rem">נדרשת תקופה מוצעת</div>';return;}
-  const newMonthly=_pmtSpitzer(currentRemaining,rate,months);
-  const diff=currentMonthly-newMonthly;
-  el.innerHTML=`<div class="loan-stats-row"><div class="loan-stat"><div class="loan-stat-val">${fmt(newMonthly)}</div><div class="loan-stat-label">החזר חודשי מאוחד</div></div><div class="loan-stat"><div class="loan-stat-val" style="color:${diff>=0?'var(--green)':'var(--red)'}">${diff>=0?'':'-'}${fmt(Math.abs(diff))}</div><div class="loan-stat-label">${diff>=0?'חיסכון':'עלות נוספת'} לחודש</div></div></div>`;
-}
-function _calcMortgage(){
-  const disposable=Math.max(0,getMonthlyIncome()-getMonthTx(currentYear,currentMonth).filter(t=>t.type==='expense').reduce((s,t)=>s+(+t.amount||0),0));
-  const ratio=parseFloat(document.getElementById('mtgRatio').value)||40;
-  const rate=parseFloat(document.getElementById('mtgRate').value)||0;
-  const years=parseInt(document.getElementById('mtgYears').value)||0;
-  const el=document.getElementById('mtgResult');
-  if(!years){el.innerHTML='<div style="color:var(--red);font-size:0.82rem">נדרשת תקופה בשנים</div>';return;}
-  const maxPmt=disposable*ratio/100;
-  const maxPrincipal=_spitzerPrincipalFromPmt(maxPmt,rate,years*12);
-  el.innerHTML=`<div style="font-size:0.78rem;color:var(--text3);margin-bottom:6px">הכנסה פנויה חודשית מוערכת: ${fmt(disposable)}</div><div class="loan-stats-row"><div class="loan-stat"><div class="loan-stat-val">${fmt(maxPmt)}</div><div class="loan-stat-label">החזר מקסימלי מומלץ</div></div><div class="loan-stat"><div class="loan-stat-val">${fmt(maxPrincipal)}</div><div class="loan-stat-label">משכנתא נתמכת</div></div></div>`;
 }
 
 function animateNumEl(el){
@@ -7973,10 +7552,6 @@ function switchMode(mode){
   payments=JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
   fixedExpenses=JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))||'[]');
   insurances=JSON.parse(localStorage.getItem(_modeKey('budget_insurances'))||'[]');
-  grooming=JSON.parse(localStorage.getItem(_modeKey('budget_grooming'))||'[]');
-  events=JSON.parse(localStorage.getItem(_modeKey('budget_events'))||'[]');
-  education=JSON.parse(localStorage.getItem(_modeKey('budget_education'))||'[]');
-  annualExpenses=JSON.parse(localStorage.getItem(_modeKey('budget_annual_exp'))||'[]');
   const prevBM=userSettings.businessMode;
   userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
   if(!userSettings.incomeSources)userSettings.incomeSources=[];
@@ -8770,7 +8345,7 @@ setTimeout(autoCarryRecurring,500);
       if(typeof showToast==='function') showToast('\u{1F4CA} קובץ Excel ירד!');
     });
   }
-  var BK_BASE=['budget_tx','budget_goals','budget_subs','budget_limits','budget_loans','budget_payments','budget_fixed','budget_insurances','budget_grooming','budget_events','budget_education','budget_annual_exp','budget_settings'];
+  var BK_BASE=['budget_tx','budget_goals','budget_subs','budget_limits','budget_loans','budget_payments','budget_fixed','budget_insurances','budget_settings'];
   var BK_KEYS=BK_BASE.concat(BK_BASE.map(function(k){return k+'_business';}))
     .concat(['budget_learned_cats','budget_learned_amts','budget_month_review']);
   var DAY=24*3600*1000;   /* daily silent auto-backup */
@@ -8824,21 +8399,11 @@ setTimeout(autoCarryRecurring,500);
       var inputs=fields.map(function(f,i){
         var ff=document.createElement('div'); ff.className='form-field';
         var lbl=document.createElement('label'); lbl.textContent=f.label||''; lbl.style.fontSize='0.82rem'; lbl.style.fontWeight='600'; lbl.style.color='var(--text2)';
-        var inp;
-        if(f.type==='select'){
-          inp=document.createElement('select');
-          (f.options||[]).forEach(function(o){
-            var opt=document.createElement('option'); opt.value=o.value; opt.textContent=o.label;
-            inp.appendChild(opt);
-          });
-          inp.value=(f.value!=null?f.value:(f.options&&f.options[0]?f.options[0].value:''));
-        } else {
-          inp=document.createElement('input');
-          inp.type=f.type==='number'?'number':'text';
-          if(f.type==='number') inp.inputMode='decimal';
-          inp.value=(f.value!=null?f.value:'');
-          inp.placeholder=f.placeholder||'';
-        }
+        var inp=document.createElement('input');
+        inp.type=f.type==='number'?'number':'text';
+        if(f.type==='number') inp.inputMode='decimal';
+        inp.value=(f.value!=null?f.value:'');
+        inp.placeholder=f.placeholder||'';
         inp.setAttribute('aria-label',f.label||'');
         if(i===0) inp.id='promptFieldFirst';
         ff.appendChild(lbl); ff.appendChild(inp); wrap.appendChild(ff);
