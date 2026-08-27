@@ -116,9 +116,10 @@
     .nav-item:active .nav-icon{transform:scale(0.88);}
     .nav-dot{display:none;}
     /* Active nav — unified accent */
-    .nav-item.active .nav-icon{background:rgba(var(--accent-rgb),0.14);}
     .nav-item.active .nav-icon svg{stroke:var(--accent);}
     .nav-item.active .nav-label{color:var(--accent);}
+    .nav-indicator{position:absolute;top:10px;width:42px;height:42px;border-radius:50%;background:rgba(var(--accent-rgb),0.14);transition:transform 0.32s cubic-bezier(0.22,1,0.36,1);pointer-events:none;z-index:0;}
+    .nav-item{position:relative;z-index:1;}
     /* DO NOT center .fab with left:50%+transform:translateX(-50%) — on at least one
        real device (standalone iOS PWA) that renders persistently off-center, while
        left:0;right:0;margin:0 auto (same technique as .bottom-nav below) is exact.
@@ -768,10 +769,6 @@
     .quick-btn.primary .quick-icon{background:var(--accent);color:white;font-size:1.5rem;font-weight:800;border:none;line-height:1;}
     .quick-btn.primary .quick-icon svg{stroke:white;}
     .quick-btn.primary{color:var(--text);}
-    /* === NAV TOP INDICATOR === */
-    .nav-item{position:relative;}
-    .nav-item.active::after{display:none;}
-    @keyframes indicatorIn{from{opacity:0;transform:translateX(-50%) scaleX(0.3);}to{opacity:1;transform:translateX(-50%) scaleX(1);}}
     .hero-balance-num{letter-spacing:-3px;}
     .card-amount{letter-spacing:-0.5px;}
     .section{border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,0.04);}
@@ -2436,6 +2433,7 @@
 <button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
 <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-stone-900/98 border-t border-slate-100 dark:border-stone-850 shadow-lg px-2 flex justify-between items-center max-w-md mx-auto" aria-label="ניווט ראשי">
+  <div class="nav-indicator" aria-hidden="true"></div>
   <button class="nav-item flex-1 flex flex-col items-center gap-1 text-slate-400 dark:text-zinc-500 hover:text-slate-600 dark:hover:text-zinc-300 transition-all cursor-pointer" onclick="showPage('dashboard',this)" id="nav-dashboard" aria-label="ראשי">
     <div class="nav-icon px-3 py-1.5 rounded-xl">
       <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" class="w-5 h-5 stroke-current fill-none stroke-2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -6665,6 +6663,7 @@ function showPage(name,btn){
   pg.classList.add('active');
   const navBtn=btn||document.getElementById('nav-'+name);
   if(navBtn){navBtn.classList.add('active');navBtn.setAttribute('aria-current','page');}
+  _positionNavIndicator();
   if(name==='analytics'){_loadAdvisorTasks().then(renderTasksPage);}
   if(name==='insights'){renderAnalytics();renderAnnualSummary();renderInsights();renderNetWorth();}
   if(name==='transactions') renderTxPage();
@@ -7647,6 +7646,20 @@ function initSheetSwipe(){
 // visual right-to-left tab order. Skipped if the gesture started inside a
 // horizontally-scrollable element (chip strips, month nav) so it doesn't
 // steal their native scroll.
+function _positionNavIndicator(){
+  const nav=document.querySelector('.bottom-nav');
+  const ind=document.querySelector('.nav-indicator');
+  const active=document.querySelector('.nav-item.active');
+  if(!nav||!ind||!active) return;
+  const icon=active.querySelector('.nav-icon')||active;
+  const navRect=nav.getBoundingClientRect();
+  const iconRect=icon.getBoundingClientRect();
+  const x=iconRect.left-navRect.left+(iconRect.width-42)/2;
+  ind.style.transition=ind.dataset.ready?'':'none';
+  ind.dataset.ready='1';
+  ind.style.transform='translateX('+x+'px)';
+}
+window.addEventListener('resize',_positionNavIndicator);
 function initTabSwipe(){
   const main=document.getElementById('main-content');
   if(!main) return;
