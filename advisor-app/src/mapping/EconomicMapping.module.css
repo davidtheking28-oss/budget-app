@@ -51,12 +51,19 @@
 
 .queueRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+}
+
+.queueErrorMsg {
+  flex-basis: 100%;
+  font-size: var(--text-xs);
+  color: var(--red);
 }
 
 .queueName {

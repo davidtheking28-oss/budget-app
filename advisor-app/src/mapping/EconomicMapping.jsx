@@ -359,10 +359,14 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                 <select className={styles.monthSelect} value={item.monthTag} onChange={e => setMonthTag(item.id, e.target.value)} disabled={processing}>
                   {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
-                <span className={styles.statusChip + ' ' + (item.status === 'error' ? styles.statusError : item.status === 'done' ? styles.statusDone : '')}>
+                <span
+                  className={styles.statusChip + ' ' + (item.status === 'error' ? styles.statusError : item.status === 'done' ? styles.statusDone : '')}
+                  title={item.status === 'error' ? item.error : undefined}
+                >
                   {item.status === 'queued' ? 'ממתין' : item.status}
                 </span>
                 {item.status === 'queued' && <DeleteButton onClick={() => removeFile(item.id)} />}
+                {item.status === 'error' && item.error && <span className={styles.queueErrorMsg}>{item.error}</span>}
               </div>
             ))}
           </div>
