@@ -68,7 +68,7 @@ const ICONS = {
 export default function Credit({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
-  const [loanForm, setLoanForm] = useState({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '', monthsLeft: '' });
+  const [loanForm, setLoanForm] = useState({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' });
   const [editingLoanId, setEditingLoanId] = useState(null);
   const [paymentForm, setPaymentForm] = useState({ name: '', total: '', current: '', amount: '' });
   const [editingPaymentId, setEditingPaymentId] = useState(null);
@@ -80,7 +80,7 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
   const [mtgForm, setMtgForm] = useState({ ratio: '40', rate: '', years: '' });
   const [mtgResult, setMtgResult] = useState(null);
 
-  function resetLoanForm() { setLoanForm({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '', monthsLeft: '' }); setEditingLoanId(null); }
+  function resetLoanForm() { setLoanForm({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' }); setEditingLoanId(null); }
   async function submitLoan() {
     const monthly = parseFloat(loanForm.monthly) || 0;
     if (!loanForm.name.trim() || !monthly) { toast('נדרשים שם הלוואה וסכום חודשי', 'error'); return; }
@@ -90,15 +90,14 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
       monthly,
       remaining: parseFloat(loanForm.remaining) || 0,
       original: parseFloat(loanForm.original) || 0,
-      rate: parseFloat(loanForm.rate) || 0,
-      monthsLeft: parseInt(loanForm.monthsLeft) || 0
+      rate: parseFloat(loanForm.rate) || 0
     };
     const ok = editingLoanId != null ? await updateItem(save, 'loans', editingLoanId, patch) : await addItem(save, 'loans', patch);
     if (!ok) return;
     toast(editingLoanId != null ? 'ההלוואה עודכנה' : 'הלוואה נוספה', 'success');
     resetLoanForm();
   }
-  function startEditLoan(l) { setEditingLoanId(l.id); setLoanForm({ name: l.name || '', lender: l.lender || '', monthly: l.monthly || '', remaining: l.remaining || '', original: l.original || '', rate: l.rate || '', monthsLeft: l.monthsLeft || '' }); }
+  function startEditLoan(l) { setEditingLoanId(l.id); setLoanForm({ name: l.name || '', lender: l.lender || '', monthly: l.monthly || '', remaining: l.remaining || '', original: l.original || '', rate: l.rate || '' }); }
 
   function calcSpitzer() {
     const P = parseFloat(spForm.principal) || 0;
@@ -110,7 +109,7 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
   }
   function spitzerToLoan() {
     if (!spResult) return;
-    setLoanForm({ name: 'הלוואה (משפיצר)', lender: '', monthly: String(Math.round(spResult.pmt * 100) / 100), remaining: String(spResult.P), original: String(spResult.P), rate: String(spResult.rate), monthsLeft: String(spResult.months) });
+    setLoanForm({ name: 'הלוואה (משפיצר)', lender: '', monthly: String(Math.round(spResult.pmt * 100) / 100), remaining: String(spResult.P), original: String(spResult.P), rate: String(spResult.rate) });
   }
   function toggleConsol(id) { setConsolChecked(c => ({ ...c, [id]: !c[id] })); }
   function calcConsolidation(loans) {
@@ -161,8 +160,10 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
 
   const disposable = Math.max(0, monthSummary(data, year, month).net);
   const loans = [...(data.loans || [])].sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
-  const longTermLoans = loans.filter(l => (l.monthsLeft || 0) >= 18);
-  const shortTermLoans = loans.filter(l => (l.monthsLeft || 0) < 18);
+  const loanMonthsLeft = l => loanPayoffMonths(l.remaining, l.monthly, l.rate);
+  const longTermLoans = loans.filter(l => { const n = loanMonthsLeft(l); return n === Infinity || n >= 18; });
+  const shortTermLoans = loans.filter(l => { const n = loanMonthsLeft(l); return n !== null && n !== Infinity && n < 18; });
+  const unclassifiedLoans = loans.filter(l => loanMonthsLeft(l) === null);
   const payments = [...(data.payments || [])].sort((a, b) => {
     const totalA = parseFloat(a.total) || 0;
     const totalB = parseFloat(b.total) || 0;
@@ -192,11 +193,10 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
           <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההלוואה" value={loanForm.remaining} onChange={e => setLoanForm({ ...loanForm, remaining: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום מקורי" aria-label="סכום ההלוואה המקורי" value={loanForm.original} onChange={e => setLoanForm({ ...loanForm, original: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלומים שנותרו" aria-label="מספר תשלומים שנותרו" value={loanForm.monthsLeft} onChange={e => setLoanForm({ ...loanForm, monthsLeft: e.target.value })} />
           <Button onClick={submitLoan}>{editingLoanId != null ? 'שמור' : 'הוסף הלוואה'}</Button>
           {editingLoanId != null && <Button variant="ghost" onClick={resetLoanForm}>ביטול</Button>}
         </div>
-        {[['הלוואות ארוכות טווח (18+ תשלומים)', longTermLoans], ['הלוואות קצרות טווח (מתחת ל-18 תשלומים)', shortTermLoans]].map(([groupLabel, groupLoans]) => groupLoans.length ? (
+        {[['הלוואות ארוכות טווח (18+ חודשים לסיום)', longTermLoans], ['הלוואות קצרות טווח (מתחת ל-18 חודשים לסיום)', shortTermLoans], ['לא ניתן לסווג (חסרה יתרה/ריבית)', unclassifiedLoans]].map(([groupLabel, groupLoans]) => groupLoans.length ? (
           <div key={groupLabel}>
             <div className={styles.sectionEmpty} style={{ fontWeight: 700, color: 'var(--text)', textAlign: 'right', padding: '10px 2px 4px' }}>{groupLabel}</div>
             <div className={styles.grid}>
@@ -209,7 +209,7 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
                     <div className={styles.rowMain}>
                       <div>
                         <div className={styles.name}>{l.name || 'הלוואה'}</div>
-                        <div className={styles.meta}>{l.lender ? l.lender + ' · ' : ''}{l.remaining !== undefined ? 'יתרה ' + fmt(l.remaining) + (l.original ? ' מתוך ' + fmt(l.original) : '') : ''}{!l.monthsLeft ? ' · לא הוזן מס\' תשלומים' : ''}</div>
+                        <div className={styles.meta}>{l.lender ? l.lender + ' · ' : ''}{l.remaining !== undefined ? 'יתרה ' + fmt(l.remaining) + (l.original ? ' מתוך ' + fmt(l.original) : '') : ''}</div>
                       </div>
                       <div className={styles.rowActions}>
                         <div className={styles.amount}>{fmt(l.monthly || 0)}</div>
