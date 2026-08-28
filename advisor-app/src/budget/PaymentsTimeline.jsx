@@ -1,4 +1,4 @@
-import { currentInstallments } from './Subscriptions.jsx';
+import { currentInstallments } from './Credit.jsx';
 import styles from './PaymentsTimeline.module.css';
 
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];

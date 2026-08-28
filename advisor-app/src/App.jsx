@@ -16,6 +16,8 @@ import Expenses from './budget/Expenses.jsx';
 import Budget from './budget/Budget.jsx';
 import Goals from './budget/Goals.jsx';
 import Subscriptions from './budget/Subscriptions.jsx';
+import Credit from './budget/Credit.jsx';
+import Planning from './budget/Planning.jsx';
 import Crm from './crm/Crm.jsx';
 import Report from './budget/Report.jsx';
 import { useClientSummary } from './crm/useClientSummary.js';
@@ -42,7 +44,9 @@ const NAV = [
   { key: 'budget', label: 'תקציב', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
   { key: 'analysis', label: 'ניתוח', group: 'money', icon: <svg {...svgProps}><path d="M4 20V10M12 20V4M20 20v-7" /></svg> },
   { key: 'goals', label: 'יעדים', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></svg> },
-  { key: 'subs', label: 'מנויים והלוואות', group: 'money', icon: <svg {...svgProps}><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg> },
+  { key: 'subs', label: 'מנויים', group: 'money', icon: <svg {...svgProps}><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg> },
+  { key: 'credit', label: 'הלוואות ואשראי', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
+  { key: 'planning', label: 'תכנון פיננסי', group: 'money', icon: <svg {...svgProps}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg> },
   { key: 'assets', label: 'נכסים והתחייבויות', group: 'money', icon: <svg {...svgProps}><path d="M3 21h18" /><path d="M5 21V9l7-5 7 5v12" /><path d="M10 21v-6h4v6" /></svg> }
 ];
 
@@ -182,6 +186,8 @@ export default function App() {
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} advisorId={session.user.id} />}
+        {nav === 'credit' && <Credit clientUserId={selectedClient.id} advisorId={session.user.id} />}
+        {nav === 'planning' && <Planning clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
         {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} onChange={refreshClientSummary} />}
         {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}

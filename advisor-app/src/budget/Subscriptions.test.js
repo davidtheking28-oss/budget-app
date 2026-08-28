@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { currentInstallments, loanPayoffMonths, monthlyEquivalent } from './Subscriptions.jsx';
+import { currentInstallments, loanPayoffMonths } from './Credit.jsx';
+import { monthlyEquivalent } from './Subscriptions.jsx';
 
 describe('monthlyEquivalent', () => {
   it('returns the amount as-is for monthly', () => {
