@@ -247,7 +247,7 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
         {spResult && (
           <div className={styles.row} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
             <div>החזר חודשי: <b>{fmt(spResult.pmt)}</b> · ריבית כוללת: <b>{fmt(spResult.totalInterest)}</b></div>
-            <Button variant="ghost" onClick={spitzerToLoan}>➕ הוסף כהלוואה</Button>
+            <Button variant="ghost" onClick={spitzerToLoan}>+ הוסף כהלוואה</Button>
           </div>
         )}
       </div>
