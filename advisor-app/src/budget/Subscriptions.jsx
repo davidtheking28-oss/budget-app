@@ -167,6 +167,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           <div className={styles.stat}><div className={styles.statValue}>{fmt(monthlySubsCost)}</div><div className={styles.statLabel}>לחודש במנויים</div></div>
         </div>
       )}
+      <div className={styles.sectionsGrid}>
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconSubs}>{ICONS.subs}</span>מנויים<span className={styles.countBadge}>{subs.length}</span>{monthlySubsCost > 0 ? ` · ${fmt(monthlySubsCost)} לחודש` : ''}</div>
         {!subs.length && <div className={styles.sectionEmpty}>אין מנויים רשומים</div>}
@@ -347,6 +348,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
             ))}
           </div>
         ) : null}
+      </div>
       </div>
     </div>
   );

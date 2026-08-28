@@ -121,6 +121,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
 
   return (
     <div>
+      <div className={styles.sectionsGrid}>
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconMeetings}>{ICONS.meetings}</span>פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}</div>
         <div className={styles.form}>
@@ -274,6 +275,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
             ))}
           </div>
         ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.notes}</span>אין הערות</div>}
+      </div>
       </div>
     </div>
   );

@@ -236,6 +236,7 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
         ) : null)}
       </div>
 
+      <div className={styles.sectionsGrid}>
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.calc}</span>מחשבון שפיצר</div>
         <div className={styles.form}>
@@ -293,6 +294,7 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
             <div>משכנתא נתמכת: <b>{fmt(mtgResult.maxPrincipal)}</b></div>
           </div>
         )}
+      </div>
       </div>
 
       <div className={styles.section}>

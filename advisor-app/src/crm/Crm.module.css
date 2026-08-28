@@ -1,16 +1,16 @@
-/* The form and the list are capped at 640px, but the divider was not, so on a
-   wide screen the rule ran a full screen-width past the content it separated. */
-.section {
-  max-width: 640px;
-  margin: 0 auto var(--space-6);
-  padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--border);
+.sectionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  gap: var(--space-5);
+  align-items: start;
 }
 
-.section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
 }
 
 .sectionTitle {
