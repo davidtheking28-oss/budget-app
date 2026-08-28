@@ -1,14 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
+import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
 import IconRail from './IconRail.jsx';
 import SearchBar from './SearchBar.jsx';
 import styles from './Shell.module.css';
 
-function AccountMenu({ email }) {
+function AccountMenu({ email, advisorId }) {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
+  const { profile, saveName, saveLogo, removeLogo } = useAdvisorProfile(advisorId);
+  const [name, setName] = useState('');
+  const [savingName, setSavingName] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef(null);
+
+  useEffect(() => { setName(profile?.display_name || ''); }, [profile?.display_name]);
 
   async function changePassword() {
     if (!password || password.length < 6) { toast('הסיסמה חייבת להיות באורך 6 תווים לפחות', 'error'); return; }
@@ -19,6 +27,28 @@ function AccountMenu({ email }) {
     toast('הסיסמה עודכנה', 'success');
     setPassword('');
     setOpen(false);
+  }
+
+  async function submitName() {
+    setSavingName(true);
+    const ok = await saveName(name);
+    setSavingName(false);
+    toast(ok ? 'שם העסק נשמר' : 'שגיאה בשמירת שם העסק', ok ? 'success' : 'error');
+  }
+
+  async function pickLogo(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingLogo(true);
+    const ok = await saveLogo(file);
+    setUploadingLogo(false);
+    toast(ok ? 'הלוגו נשמר' : 'שגיאה בשמירת הלוגו', ok ? 'success' : 'error');
+  }
+
+  async function clearLogo() {
+    const ok = await removeLogo();
+    if (ok) toast('הלוגו הוסר', 'success');
   }
 
   return (
@@ -43,6 +73,26 @@ function AccountMenu({ email }) {
             onKeyDown={e => e.key === 'Enter' && changePassword()}
           />
           <button type="button" className={styles.accountSaveBtn} onClick={changePassword} disabled={saving}>{saving ? 'שומר…' : 'עדכן סיסמה'}</button>
+          <div className={styles.accountDivider} />
+          <div className={styles.accountPanelLabel}>מיתוג לדוחות</div>
+          <div className={styles.accountPanelHint}>שם העסק והלוגו יופיעו בדוח החודשי המודפס ללקוח.</div>
+          <input
+            className={styles.accountInput}
+            placeholder="שם העסק"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && submitName()}
+          />
+          <button type="button" className={styles.accountSaveBtn} onClick={submitName} disabled={savingName}>{savingName ? 'שומר…' : 'שמור שם'}</button>
+          <div className={styles.logoRow}>
+            {profile?.logo_url && <img className={styles.logoPreview} src={profile.logo_url} alt="" />}
+            <input ref={logoInputRef} type="file" accept="image/*" className={styles.fileInputHidden} onChange={pickLogo} />
+            <button type="button" className={styles.accountSaveBtn} onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
+              {uploadingLogo ? 'מעלה…' : profile?.logo_url ? 'החלף לוגו' : 'העלה לוגו'}
+            </button>
+            {profile?.logo_url && <button type="button" className={styles.accountLogoutBtn} onClick={clearLogo}>הסר</button>}
+          </div>
+          <div className={styles.accountDivider} />
           <button type="button" className={styles.accountLogoutBtn} onClick={() => supabase.auth.signOut()}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -57,7 +107,7 @@ function AccountMenu({ email }) {
   );
 }
 
-export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onSearch, email, theme, onToggleTheme, children }) {
+export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onSearch, email, advisorId, theme, onToggleTheme, children }) {
   const activeTabRef = useRef(null);
 
   useEffect(() => {
@@ -77,7 +127,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
             <div className={styles.logo}>תקציב אישי · יועץ</div>
             <div className={styles.topbarEnd}>
               {onSearch && <SearchBar onOpen={onSearch} />}
-              <AccountMenu email={email} />
+              <AccountMenu email={email} advisorId={advisorId} />
             </div>
           </div>
         </div>
@@ -99,7 +149,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
         </div>
         <div className={styles.topbarEnd}>
           {onSearch && <SearchBar onOpen={onSearch} />}
-          <AccountMenu email={email} />
+          <AccountMenu email={email} advisorId={advisorId} />
         </div>
       </div>
       </div>

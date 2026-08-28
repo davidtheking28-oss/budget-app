@@ -1,6 +1,7 @@
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary, effectiveLimit } from './budgetMath.js';
 import { computeInsights } from './insights.js';
+import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
 import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -10,8 +11,9 @@ import styles from './Report.module.css';
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
-export default function Report({ clientUserId, year, month, email, onClose }) {
+export default function Report({ clientUserId, advisorId, year, month, email, onClose }) {
   const { data, loading, error, reload } = useClientBudget(clientUserId);
+  const { profile } = useAdvisorProfile(advisorId);
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return (
@@ -34,9 +36,9 @@ export default function Report({ clientUserId, year, month, email, onClose }) {
       </div>
       <div className={styles.header}>
         <div className={styles.titleRow}>
-          <Logo size="sm" />
+          {profile?.logo_url ? <img className={styles.advisorLogo} src={profile.logo_url} alt="" /> : <Logo size="sm" />}
           <div>
-            <div className={styles.title}>דוח חודשי</div>
+            <div className={styles.title}>{profile?.display_name ? `${profile.display_name} · דוח חודשי` : 'דוח חודשי'}</div>
             <div className={styles.sub}>{email}</div>
           </div>
         </div>

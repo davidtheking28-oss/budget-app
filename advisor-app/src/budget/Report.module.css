@@ -23,6 +23,13 @@
   gap: var(--space-3);
 }
 
+.advisorLogo {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: var(--radius-xs);
+}
+
 .title {
   font-family: var(--font-display);
   font-size: var(--text-xl);

@@ -150,6 +150,30 @@
   color: var(--text);
 }
 
+.accountDivider {
+  border-top: 1px solid var(--border);
+  margin: var(--space-1) 0;
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.logoPreview {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.fileInputHidden {
+  display: none;
+}
+
 .accountLogoutBtn {
   display: flex;
   align-items: center;

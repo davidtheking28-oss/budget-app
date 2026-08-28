@@ -130,7 +130,7 @@ export default function App() {
   if (!selectedClient) {
     return (
       <>
-        <Shell title="לוח בקרה" email={session.user.email} onSearch={() => setSearchOpen(true)} theme={theme} onToggleTheme={toggleTheme}>
+        <Shell title="לוח בקרה" email={session.user.email} advisorId={session.user.id} onSearch={() => setSearchOpen(true)} theme={theme} onToggleTheme={toggleTheme}>
           <ClientList advisorId={session.user.id} onSelect={switchClient} />
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
@@ -145,7 +145,7 @@ export default function App() {
   if (reportMode) {
     return (
       <>
-        <Report clientUserId={selectedClient.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setReportMode(false)} />
+        <Report clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setReportMode(false)} />
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />
       </>
@@ -166,6 +166,7 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         email={session.user.email}
+        advisorId={session.user.id}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
       >
         <ClientContextBar

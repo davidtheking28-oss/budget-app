@@ -140,6 +140,12 @@ export const supabase = {
   },
   channel: () => { const chan = { on: () => chan, subscribe: () => chan }; return chan; },
   removeChannel: () => {},
+  storage: {
+    from: () => ({
+      upload: async () => ({ error: null }),
+      getPublicUrl: () => ({ data: { publicUrl: 'https://placehold.co/64x64' } })
+    })
+  },
   auth: {
     getSession: async () => ({ data: { session } }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
