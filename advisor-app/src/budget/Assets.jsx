@@ -8,27 +8,15 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
+import { addItem, removeItem } from './itemHelpers.js';
 import styles from './Assets.module.css';
 
 ChartJS.register(ArcElement, Tooltip);
 
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const ASSET_CATS = ['עו״ש', 'קרן פנסיה', 'קרן השתלמות', 'קופת גמל', 'תיק השקעות', 'נדל״ן', 'חיסכון', 'אחר'];
-
-function addAsset(save, item) {
-  return save(cur => ({ assets: [...(cur.assets || []), { id: Date.now() + Math.random(), ...item }] }));
-}
-function removeAsset(save, id) {
-  return save(cur => ({ assets: (cur.assets || []).filter(a => a.id !== id) }));
-}
 // Liabilities live in `loans`, the same array the subscriptions tab edits,
 // so both screens stay a single source of truth.
-function addLoan(save, item) {
-  return save(cur => ({ loans: [...(cur.loans || []), { id: Date.now() + Math.random(), ...item }] }));
-}
-function removeLoan(save, id) {
-  return save(cur => ({ loans: (cur.loans || []).filter(l => l.id !== id) }));
-}
 
 export default function Assets({ clientUserId, advisorId }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
@@ -58,7 +46,7 @@ export default function Assets({ clientUserId, advisorId }) {
   async function submit() {
     const amt = parseFloat(amount);
     if (!name.trim() || !amt || amt <= 0) { toast('הזן שם וסכום תקינים', 'error'); return; }
-    const ok = await addAsset(save, { name: name.trim(), category, amount: amt });
+    const ok = await addItem(save, 'assets', { name: name.trim(), category, amount: amt });
     if (ok === false) return;
     toast('נכס נוסף', 'success');
     setName('');
@@ -68,7 +56,7 @@ export default function Assets({ clientUserId, advisorId }) {
   async function submitLoan() {
     const rem = parseFloat(loanRemaining);
     if (!loanName.trim() || !rem || rem <= 0) { toast('הזן שם התחייבות ויתרה תקינה', 'error'); return; }
-    const ok = await addLoan(save, {
+    const ok = await addItem(save, 'loans', {
       name: loanName.trim(),
       lender: '',
       remaining: rem,
@@ -162,7 +150,7 @@ export default function Assets({ clientUserId, advisorId }) {
                   </div>
                   <div className={styles.rowActions}>
                     <span className={styles.assetAmt}>{fmt(a.amount)}</span>
-                    <DeleteButton onClick={() => removeAsset(save, a.id)} />
+                    <DeleteButton onClick={() => removeItem(save, 'assets', a.id)} />
                   </div>
                 </div>
               ))}
@@ -193,7 +181,7 @@ export default function Assets({ clientUserId, advisorId }) {
                 </div>
                 <div className={styles.rowActions}>
                   <span className={styles.assetAmt + ' ' + styles.kpiNeg}>{fmt(l.remaining)}</span>
-                  <DeleteButton onClick={() => removeLoan(save, l.id)} />
+                  <DeleteButton onClick={() => removeItem(save, 'loans', l.id)} />
                 </div>
               </div>
             ))}

@@ -62,7 +62,10 @@ export function spitzerPrincipalFromPmt(pmt, annualRate, months) {
 
 const ICONS = {
   loans: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg>,
-  payments: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></svg>
+  payments: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></svg>,
+  calc: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01" /></svg>,
+  merge: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 3v7a4 4 0 0 0 4 4h4M16 3v7a4 4 0 0 1-4 4M16 3l3 3-3 3M8 3L5 6l3 3" /></svg>,
+  home: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></svg>
 };
 
 export default function Credit({ clientUserId, advisorId, year, month }) {
@@ -234,7 +237,7 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>🧮 מחשבון שפיצר</div>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.calc}</span>מחשבון שפיצר</div>
         <div className={styles.form}>
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום הלוואה" aria-label="סכום הלוואה" value={spForm.principal} onChange={e => setSpForm({ ...spForm, principal: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית" value={spForm.rate} onChange={e => setSpForm({ ...spForm, rate: e.target.value })} />
@@ -250,7 +253,7 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>🔀 סימולציית איחוד הלוואות</div>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.merge}</span>סימולציית איחוד הלוואות</div>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות לאיחוד</div>}
         {loans.length ? (
           <div className={styles.list}>
@@ -276,7 +279,7 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>🏠 מחשבון משכנתא / יכולת החזר</div>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.home}</span>מחשבון משכנתא / יכולת החזר</div>
         <div className={styles.form}>
           <input className={styles.input} type="number" inputMode="decimal" placeholder="אחוז מקסימלי מההכנסה הפנויה" aria-label="אחוז מקסימלי" value={mtgForm.ratio} onChange={e => setMtgForm({ ...mtgForm, ratio: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית מוצעת %" aria-label="ריבית שנתית מוצעת" value={mtgForm.rate} onChange={e => setMtgForm({ ...mtgForm, rate: e.target.value })} />
