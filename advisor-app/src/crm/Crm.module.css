@@ -2,7 +2,7 @@
    wide screen the rule ran a full screen-width past the content it separated. */
 .section {
   max-width: 640px;
-  margin-bottom: var(--space-6);
+  margin: 0 auto var(--space-6);
   padding-bottom: var(--space-6);
   border-bottom: 1px solid var(--border);
 }
@@ -249,6 +249,7 @@
 .checkbox {
   appearance: none;
   -webkit-appearance: none;
+  position: relative;
   width: 18px;
   height: 18px;
   margin: 0;
@@ -261,6 +262,13 @@
   align-items: center;
   justify-content: center;
   transition: transform 0.15s var(--ease-out-expo), background 0.15s ease, border-color 0.15s ease;
+}
+
+/* Expand the actual tap target to ~44px without growing the visible box. */
+.checkbox::before {
+  content: '';
+  position: absolute;
+  inset: -13px;
 }
 
 .checkbox::after {
