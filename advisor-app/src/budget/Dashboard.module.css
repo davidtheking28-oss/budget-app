@@ -330,12 +330,19 @@
 .tileGoals {
   grid-column: span 2;
   grid-row: span 2;
+  display: flex;
+  flex-direction: column;
 }
 
+/* tileGoals shares a row-track with tileCategories (whose donut+legend set the
+   track's height); a short goal list otherwise sits pinned to the top with a
+   dead gap below it. Centering it in the leftover space reads as intentional. */
 .goalList {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: var(--space-4);
+  flex: 1;
   margin-top: var(--space-3);
 }
 
