@@ -375,7 +375,11 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                   className={styles.statusChip + ' ' + (item.status === 'error' ? styles.statusError : item.status === 'done' ? styles.statusDone : '')}
                   title={item.status === 'error' ? item.error : undefined}
                 >
-                  {item.status === 'queued' ? 'ממתין' : item.status}
+                  {item.status === 'queued' ? 'ממתין'
+                    : item.status === 'rasterizing' ? 'ממיר לתמונות'
+                    : item.status === 'done' ? 'הושלם'
+                    : item.status === 'error' ? 'שגיאה'
+                    : item.status}
                 </span>
                 {(item.status === 'queued' || item.status === 'error') && <DeleteButton onClick={() => removeFile(item.id)} />}
                 {item.status === 'error' && item.error && <span className={styles.queueErrorMsg}>{item.error}</span>}
