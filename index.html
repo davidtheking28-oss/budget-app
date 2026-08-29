@@ -120,10 +120,18 @@
     .nav-item .nav-label{display:none;}
     .nav-item:active .nav-icon{transform:scale(0.88);}
     .nav-dot{display:none;}
-    /* Active nav — unified accent */
-    .nav-item.active .nav-icon svg{stroke:var(--accent);}
+    /* Active nav — filled pill, not just a tint: at 20px an accent-tinted
+       stroke read as noise, not "selected". A solid circle + white icon
+       reads unambiguously as pressed, same visual language as .fab. */
+    .nav-item.active .nav-icon svg{stroke:#fff;}
     .nav-item.active .nav-label{color:var(--accent);}
-    .nav-indicator{position:absolute;top:10px;width:42px;height:42px;border-radius:50%;background:rgba(var(--accent-rgb),0.14);transition:transform 0.32s cubic-bezier(0.22,1,0.36,1);pointer-events:none;z-index:0;}
+    /* left:0 anchors the untransformed position to the bar's own left edge —
+       without it, an absolutely-positioned element with no inset in an RTL
+       flex container gets its "static position" guessed by the browser
+       (landed off-screen), which _positionNavIndicator()'s translateX(x)
+       math assumes is 0 (it computes x from getBoundingClientRect, which is
+       always physical/left-relative regardless of RTL). */
+    .nav-indicator{position:absolute;top:10px;left:0;width:42px;height:42px;border-radius:50%;background:var(--accent);box-shadow:0 3px 10px rgba(var(--accent-rgb),0.35);transition:transform 0.32s cubic-bezier(0.22,1,0.36,1);pointer-events:none;z-index:0;}
     .nav-item{position:relative;z-index:1;}
     /* DO NOT center .fab with left:50%+transform:translateX(-50%) — on at least one
        real device (standalone iOS PWA) that renders persistently off-center, while
