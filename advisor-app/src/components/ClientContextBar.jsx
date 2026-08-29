@@ -6,10 +6,34 @@ function initials(email) {
   return (email || '?').trim()[0]?.toUpperCase() || '?';
 }
 
-export default function ClientContextBar({ email, nextMeeting, openTasks, household, onOpenCrm, freshness, budgetMode, onBudgetModeChange }) {
+export default function ClientContextBar({ email, nextMeeting, openTasks, household, onOpenCrm, freshness, budgetMode, onBudgetModeChange, clientView }) {
   const meeting = nextMeeting ? formatDateTime(nextMeeting) : null;
   const updated = freshness ? relativeTime(freshness.updatedAt) : null;
   const stale = freshness ? isStale(freshness.updatedAt) : false;
+
+  if (clientView) {
+    return (
+      <div className={styles.bar}>
+        {onBudgetModeChange && (
+          <span className={styles.modeToggle} role="group" aria-label="מצב תקציב">
+            <button
+              type="button"
+              className={budgetMode !== 'business' ? styles.modeOn : styles.modeOff}
+              aria-pressed={budgetMode !== 'business'}
+              onClick={() => onBudgetModeChange('personal')}
+            >פרטי</button>
+            <button
+              type="button"
+              className={budgetMode === 'business' ? styles.modeOn : styles.modeOff}
+              aria-pressed={budgetMode === 'business'}
+              onClick={() => onBudgetModeChange('business')}
+            >עסקי</button>
+          </span>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={styles.bar}>
       <div className={styles.identity}>
