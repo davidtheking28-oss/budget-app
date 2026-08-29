@@ -74,6 +74,11 @@ export default function App() {
   const [ym, setYm] = useState(initial.ym);
   const [reportMode, setReportMode] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [clientView, setClientView] = useState(false);
+
+  useEffect(() => {
+    if (clientView && (nav === 'crm' || nav === 'mapping')) setNav('dashboard');
+  }, [clientView, nav]);
   const isAdvisor = useIsAdvisor(session?.user?.id);
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const freshness = useClientFreshness(selectedClient?.id);
@@ -158,7 +163,7 @@ export default function App() {
       <Shell
         title={NAV.find(n => n.key === nav)?.label}
         onBack={() => setSelectedClient(null)}
-        nav={NAV}
+        nav={clientView ? NAV.filter(n => n.group !== 'tools') : NAV}
         activeNav={nav}
         onNavChange={setNav}
         onPrint={() => setReportMode(true)}
@@ -168,17 +173,21 @@ export default function App() {
         email={session.user.email}
         advisorId={session.user.id}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
+        clientView={clientView}
+        onToggleClientView={() => setClientView(v => !v)}
       >
-        <ClientContextBar
-          email={selectedClient.email}
-          nextMeeting={nextMeeting}
-          openTasks={openTasks}
-          household={household}
-          onOpenCrm={() => setNav('crm')}
-          freshness={freshness}
-          budgetMode={budgetMode}
-          onBudgetModeChange={setBudgetMode}
-        />
+        {!clientView && (
+          <ClientContextBar
+            email={selectedClient.email}
+            nextMeeting={nextMeeting}
+            openTasks={openTasks}
+            household={household}
+            onOpenCrm={() => setNav('crm')}
+            freshness={freshness}
+            budgetMode={budgetMode}
+            onBudgetModeChange={setBudgetMode}
+          />
+        )}
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
