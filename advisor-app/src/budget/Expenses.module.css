@@ -210,68 +210,95 @@
   flex-shrink: 0;
 }
 
-/* Three equal boxes with the same label/value/sub shape read as one repeated
-   template rather than three distinct facts. A single strip with dividers
-   keeps the numbers scannable while letting the flow figure carry more
-   visual weight — same pattern as the budget screen's KPI row. */
-.kpiRow {
-  display: flex;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  margin-top: var(--space-5);
-  overflow: hidden;
-}
-
-.kpi {
-  flex: 1;
+/* Matches the client-facing budget app's own cash-flow hero (index.html's
+   .balance-hero on #page-transactions) so the advisor sees the same glossy
+   summary card the client sees — same gradient built from the app's own
+   --accent token, same two-pill income/expense layout. */
+.flowHero {
   position: relative;
-  min-width: 0;
-  padding: var(--space-4);
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-top: var(--space-5);
+  background: linear-gradient(135deg, rgb(var(--accent-rgb)) 0%, rgba(var(--accent-rgb), 0.88) 55%, rgba(var(--accent-rgb), 0.7) 100%);
+  box-shadow: 0 16px 36px -10px rgba(var(--accent-rgb), 0.5);
 }
 
-.kpi + .kpi::before {
-  content: '';
+.flowHeroBloom {
   position: absolute;
-  inset-inline-start: 0;
-  top: var(--space-3);
-  bottom: var(--space-3);
-  width: 1px;
-  background: var(--border);
+  height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.12), transparent 70%);
+  pointer-events: none;
 }
 
-.kpiLabel {
-  font-size: var(--text-xs);
-  color: var(--text2);
-  margin-bottom: var(--space-2);
+.flowHeroContent {
+  position: relative;
+  z-index: 1;
 }
 
-.kpiValue {
+.flowLabel {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.flowValue {
+  margin-top: var(--space-1);
   font-family: var(--font-body);
-  font-size: var(--text-display-sm);
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
+  font-size: var(--text-display-md);
+  font-weight: 800;
+  line-height: 1.05;
   letter-spacing: -0.02em;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: right;
+}
+
+.flowPills {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--space-4);
+}
+
+.flowPill {
+  flex: 1;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.flowPillIncome { background: rgba(0, 0, 0, 0.18); }
+.flowPillExpense { background: rgba(255, 255, 255, 0.95); }
+
+.flowPillIncome .flowPillLabel, .flowPillIncome .flowPillValue { color: #fff; }
+.flowPillExpense .flowPillLabel { color: #5b6472; }
+.flowPillExpense .flowPillValue { color: #1a1f2b; }
+
+.flowPillLabel {
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.flowPillValue {
+  font-weight: 800;
+  font-size: var(--text-md);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
   direction: ltr;
   unicode-bidi: isolate;
 }
 
-.kpiFlow { background: var(--hover); }
-.kpiFlow .kpiValue { font-size: var(--text-display-md); }
-
-.kpiPos { color: var(--green); }
-.kpiNeg { color: var(--red); }
-
-.kpiSub {
+.flowHeroMeta {
+  margin-top: var(--space-3);
+  color: rgba(255, 255, 255, 0.75);
   font-size: var(--text-xs);
-  color: var(--text3);
-  margin-top: var(--space-2);
 }
 
 @media (max-width: 720px) {
-  .kpiRow { flex-direction: column; }
-  .kpi + .kpi::before { inset-inline-start: var(--space-4); inset-inline-end: var(--space-4); top: 0; bottom: auto; width: auto; height: 1px; }
+  .flowPills { flex-direction: column; }
 }
 
 .filterRow {

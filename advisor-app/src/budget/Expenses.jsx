@@ -294,21 +294,25 @@ export default function Expenses({ clientUserId, advisorId, year, month, onSelec
       )}
       {allMonthTx.length > 0 && (
         <>
-          <div className={styles.kpiRow}>
-            <div className={styles.kpi}>
-              <div className={styles.kpiLabel}>הכנסות</div>
-              <div className={styles.kpiValue}>{fmt(incomeTotal)}</div>
-              {unpostedIncome > 0 && <div className={styles.kpiSub}>כולל {fmt(unpostedIncome)} ממקורות קבועים שלא נרשמו</div>}
-            </div>
-            <div className={styles.kpi}>
-              <div className={styles.kpiLabel}>הוצאות</div>
-              <div className={styles.kpiValue}>{fmt(expenseTotal)}</div>
-              <div className={styles.kpiSub}>{allMonthTx.length} עסקאות</div>
-            </div>
-            <div className={styles.kpi + ' ' + styles.kpiFlow}>
-              <div className={styles.kpiLabel}>תזרים</div>
-              <div className={styles.kpiValue + ' ' + (netFlow < 0 ? styles.kpiNeg : styles.kpiPos)}>{fmt(netFlow)}</div>
-              <div className={styles.kpiSub}>{netFlow < 0 ? 'חריגה מההכנסות' : 'פנוי החודש'}</div>
+          <div className={styles.flowHero}>
+            <div className={styles.flowHeroBloom} style={{ top: '-32%', insetInlineEnd: '-14%', width: '55%', paddingBottom: '55%' }} />
+            <div className={styles.flowHeroBloom} style={{ bottom: '-38%', insetInlineStart: '-10%', width: '45%', paddingBottom: '45%', opacity: 0.55 }} />
+            <div className={styles.flowHeroContent}>
+              <div className={styles.flowLabel}>התזרים החודש</div>
+              <div className={styles.flowValue}>{fmt(netFlow)}</div>
+              <div className={styles.flowPills}>
+                <div className={styles.flowPill + ' ' + styles.flowPillIncome}>
+                  <div className={styles.flowPillLabel}>הכנסות</div>
+                  <div className={styles.flowPillValue}>{fmt(incomeTotal)}</div>
+                </div>
+                <div className={styles.flowPill + ' ' + styles.flowPillExpense}>
+                  <div className={styles.flowPillLabel}>הוצאות</div>
+                  <div className={styles.flowPillValue}>{fmt(expenseTotal)}</div>
+                </div>
+              </div>
+              <div className={styles.flowHeroMeta}>
+                {allMonthTx.length} עסקאות{unpostedIncome > 0 && ` · כולל ${fmt(unpostedIncome)} ממקורות קבועים שלא נרשמו`}
+              </div>
             </div>
           </div>
 
