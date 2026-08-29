@@ -13,6 +13,13 @@ import styles from './Subscriptions.module.css';
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
+const CREDIT_ICON = (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="2.5" y="5" width="19" height="14" rx="2" />
+    <path d="M2.5 10h19" />
+  </svg>
+);
+
 function monthKey(y, m) { return `${y}-${String(m + 1).padStart(2, '0')}`; }
 
 function monthsElapsed(fromKey, toKey) {
@@ -68,7 +75,7 @@ const ICONS = {
   home: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></svg>
 };
 
-export default function Credit({ clientUserId, advisorId, year, month }) {
+export default function Credit({ clientUserId, advisorId, year, month, onSelectMonth }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
   const [loanForm, setLoanForm] = useState({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' });
@@ -180,6 +187,32 @@ export default function Credit({ clientUserId, advisorId, year, month }) {
 
   return (
     <div>
+      {onSelectMonth && (
+        <div className={styles.monthTabs}>
+          {MONTHS_HE.map((name, i) => (
+            <button
+              key={i}
+              type="button"
+              className={styles.monthTab + (i === month ? ' ' + styles.monthTabActive : '')}
+              onClick={() => onSelectMonth(i)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className={styles.brandHeader}>
+        <div className={styles.brandHeaderLeft}>
+          <span className={styles.brandIcon} aria-hidden="true">{CREDIT_ICON}</span>
+          <div>
+            <div className={styles.brandTitle}>תשלומי אשראי {MONTHS_HE[month]}</div>
+            <div className={styles.brandSub}>מעקב תשלומים חודשי</div>
+          </div>
+        </div>
+        <div className={styles.yearBadge}>שנה: {year}</div>
+      </div>
+
       {(loans.length > 0 || payments.length > 0) && (
         <div className={styles.statStrip}>
           {loans.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(loansBalance)}</div><div className={styles.statLabel}>יתרת הלוואות</div></div>}

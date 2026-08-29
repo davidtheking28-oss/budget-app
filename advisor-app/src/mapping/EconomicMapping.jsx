@@ -24,6 +24,13 @@ import styles from './EconomicMapping.module.css';
 const MAX_DIM = 1500;
 const CONCURRENCY = 3;
 
+const SCAN_ICON = (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 15V3M7 8l5-5 5 5" />
+    <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
+  </svg>
+);
+
 const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 function monthOptions() {
@@ -335,6 +342,16 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   return (
     <div>
+      <div className={styles.brandHeader}>
+        <div className={styles.brandHeaderLeft}>
+          <span className={styles.brandIcon} aria-hidden="true">{SCAN_ICON}</span>
+          <div>
+            <div className={styles.brandTitle}>מיפוי כלכלי</div>
+            <div className={styles.brandSub}>זיהוי אוטומטי של הכנסות והוצאות מדפי חשבון</div>
+          </div>
+        </div>
+      </div>
+
       <div className={styles.card}>
         <div className={styles.cardTitle}>העלאת דפי חשבון</div>
         <div className={styles.dropZone} onDragOver={e => e.preventDefault()} onDrop={onDrop}>

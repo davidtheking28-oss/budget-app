@@ -130,6 +130,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
   }
 
   const subs = data.subscriptions || [];
+  const activeSubsCount = subs.filter(x => x.active).length;
   // matches subME() in the client app: an inactive subscription contributes nothing
   const monthlySubsCost = subs.reduce((s, x) => s + (x.active ? monthlyEquivalent(x.cycle, x.amount || 0) : 0), 0);
   const subShares = subs
@@ -153,6 +154,27 @@ export default function Subscriptions({ clientUserId, advisorId }) {
 
   return (
     <div>
+      <div className={styles.brandHeader}>
+        <div className={styles.brandHeaderLeft}>
+          <span className={styles.brandIcon} aria-hidden="true">{ICONS.subs}</span>
+          <div>
+            <div className={styles.brandTitle}>מנויים וביטוחים</div>
+            <div className={styles.brandSub}>כל ההתחייבויות הקבועות במקום אחד</div>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.kpiRow}>
+        <div className={styles.kpi}>
+          <div className={styles.kpiLabel}>מנויים פעילים</div>
+          <div className={styles.kpiValue}>{activeSubsCount}</div>
+        </div>
+        <div className={styles.kpi}>
+          <div className={styles.kpiLabel}>עלות חודשית כוללת</div>
+          <div className={styles.kpiValue}>{fmt(monthlySubsCost)}</div>
+        </div>
+      </div>
+
       {renewingSoon.length > 0 && (
         <div className={styles.renewalBanner} role="status" aria-live="polite">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
