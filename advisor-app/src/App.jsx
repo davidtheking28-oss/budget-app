@@ -19,6 +19,7 @@ import Subscriptions from './budget/Subscriptions.jsx';
 import Credit from './budget/Credit.jsx';
 import Crm from './crm/Crm.jsx';
 import Report from './budget/Report.jsx';
+import Presentation from './budget/Presentation.jsx';
 import { useClientSummary } from './crm/useClientSummary.js';
 import { BudgetModeContext, MODES } from './budget/useClientBudget.js';
 import { useClientFreshness } from './clients/useClientFreshness.js';
@@ -73,6 +74,7 @@ export default function App() {
   const [budgetMode, setBudgetMode] = useState(initial.budgetMode);
   const [ym, setYm] = useState(initial.ym);
   const [reportMode, setReportMode] = useState(false);
+  const [presentMode, setPresentMode] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const isAdvisor = useIsAdvisor(session?.user?.id);
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
@@ -152,6 +154,16 @@ export default function App() {
     );
   }
 
+  if (presentMode) {
+    return (
+      <>
+        <Presentation clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setPresentMode(false)} />
+        <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <>
       <BudgetModeContext.Provider value={budgetMode}>
@@ -162,6 +174,7 @@ export default function App() {
         activeNav={nav}
         onNavChange={setNav}
         onPrint={() => setReportMode(true)}
+        onPresent={() => setPresentMode(true)}
         onSearch={() => setSearchOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}

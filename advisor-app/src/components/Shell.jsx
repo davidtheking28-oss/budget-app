@@ -107,7 +107,7 @@ function AccountMenu({ email, advisorId }) {
   );
 }
 
-export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onSearch, email, advisorId, theme, onToggleTheme, children }) {
+export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, children }) {
   const activeTabRef = useRef(null);
 
   useEffect(() => {
@@ -141,7 +141,7 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
 
   return (
     <div className={styles.shellTabs} dir="rtl">
-      <IconRail onBack={onBack} onSearch={onSearch} onPrint={onPrint} theme={theme} onToggleTheme={onToggleTheme} />
+      <IconRail onBack={onBack} onSearch={onSearch} onPrint={onPrint} onPresent={onPresent} theme={theme} onToggleTheme={onToggleTheme} />
       <div className={styles.topbarBleed}>
       <div className={styles.topbar}>
         <div className={styles.topbarStart}>

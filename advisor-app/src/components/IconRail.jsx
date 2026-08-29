@@ -3,7 +3,7 @@ import styles from './IconRail.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
-export default function IconRail({ onBack, onSearch, onPrint, theme, onToggleTheme }) {
+export default function IconRail({ onBack, onSearch, onPrint, onPresent, theme, onToggleTheme }) {
   const actions = [
     onBack && {
       key: 'clients',
@@ -22,6 +22,12 @@ export default function IconRail({ onBack, onSearch, onPrint, theme, onToggleThe
       label: 'דוח חודשי',
       onClick: onPrint,
       icon: <svg {...svgProps}><path d="M6 9V2h9l3 3v4M6 18H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2" /><path d="M6 14h12v8H6z" /></svg>
+    },
+    onPresent && {
+      key: 'present',
+      label: 'תמונת מצב ללקוח',
+      onClick: onPresent,
+      icon: <svg {...svgProps}><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3.2" /></svg>
     }
   ].filter(Boolean);
 
