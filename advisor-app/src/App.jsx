@@ -157,7 +157,9 @@ export default function App() {
   if (presentMode) {
     return (
       <>
-        <Presentation clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setPresentMode(false)} />
+        <BudgetModeContext.Provider value={budgetMode}>
+          <Presentation clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setPresentMode(false)} />
+        </BudgetModeContext.Provider>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />
       </>

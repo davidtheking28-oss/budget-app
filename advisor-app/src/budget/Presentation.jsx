@@ -51,6 +51,9 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
     );
   }
 
+  const today = new Date();
+  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+
   const summary = monthSummary(data, year, month);
   const cats = Object.keys(data.budgets || {}).filter(c => data.budgets[c]).sort();
   const CT = chartTheme();
@@ -68,17 +71,17 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
   const fixed = data.fixed_expenses || [];
 
   const loans = data.loans || [];
-  const loansFinishingSoon = loans.filter(l => {
+  const loansFinishingSoon = isCurrentMonth ? loans.filter(l => {
     const n = loanPayoffMonths(l.remaining, l.monthly, l.rate);
     return n !== null && n !== Infinity && n <= 1;
-  });
+  }) : [];
 
   const payments = data.payments || [];
-  const paymentsFinishingSoon = payments.filter(p => {
+  const paymentsFinishingSoon = isCurrentMonth ? payments.filter(p => {
     const total = parseFloat(p.total) || 0;
     const left = Math.max(0, total - currentInstallments(p, total));
-    return total > 0 && left <= 1;
-  });
+    return total > 0 && left === 1;
+  }) : [];
 
   const goals = data.goals || [];
   const assets = data.assets || [];
@@ -114,7 +117,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
             indexAxis: 'y',
             animation: ChartJS.defaults.animation === false ? false : { duration: 600, easing: 'easeOutQuart' },
             scales: {
-              x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } },
+              x: { reverse: true, ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } },
               y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } }
             },
             plugins: { legend: { labels: { color: CT.text2, font: { family: CT.font } } } }
