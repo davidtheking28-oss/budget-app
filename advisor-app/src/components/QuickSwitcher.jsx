@@ -6,7 +6,7 @@ function initials(email) {
   return (email || '?').trim()[0]?.toUpperCase() || '?';
 }
 
-export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onOpenChange, disabled }) {
+export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onOpenChange }) {
   const [openState, setOpenState] = useState(false);
   const open = openProp === undefined ? openState : openProp;
   const setOpen = useCallback(value => {
@@ -23,7 +23,6 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
 
   useEffect(() => {
     function onKeyDown(e) {
-      if (disabled) return;
       const isMod = e.metaKey || e.ctrlKey;
       if (isMod && e.key?.toLowerCase() === 'k') {
         e.preventDefault();
@@ -34,7 +33,7 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [setOpen, disabled]);
+  }, [setOpen]);
 
   useEffect(() => {
     if (!open || !advisorId) return;
@@ -56,7 +55,7 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
     };
   }, [open, advisorId]);
 
-  if (!open || disabled) return null;
+  if (!open) return null;
 
   const filtered = clients.filter(c => c.client_email.toLowerCase().includes(query.toLowerCase()));
 

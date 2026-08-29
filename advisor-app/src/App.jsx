@@ -77,7 +77,7 @@ export default function App() {
   const [clientView, setClientView] = useState(false);
 
   useEffect(() => {
-    if (clientView && NAV.find(n => n.key === nav)?.group === 'tools') setNav('dashboard');
+    if (clientView && (nav === 'crm' || nav === 'mapping')) setNav('dashboard');
   }, [clientView, nav]);
   const isAdvisor = useIsAdvisor(session?.user?.id);
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
@@ -162,12 +162,12 @@ export default function App() {
       <BudgetModeContext.Provider value={budgetMode}>
       <Shell
         title={NAV.find(n => n.key === nav)?.label}
-        onBack={clientView ? undefined : () => setSelectedClient(null)}
+        onBack={() => setSelectedClient(null)}
         nav={clientView ? NAV.filter(n => n.group !== 'tools') : NAV}
         activeNav={nav}
         onNavChange={setNav}
         onPrint={() => setReportMode(true)}
-        onSearch={clientView ? undefined : () => setSearchOpen(true)}
+        onSearch={() => setSearchOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
         email={session.user.email}
@@ -176,17 +176,18 @@ export default function App() {
         clientView={clientView}
         onToggleClientView={() => setClientView(v => !v)}
       >
-        <ClientContextBar
-          email={selectedClient.email}
-          nextMeeting={nextMeeting}
-          openTasks={openTasks}
-          household={household}
-          onOpenCrm={() => setNav('crm')}
-          freshness={freshness}
-          budgetMode={budgetMode}
-          onBudgetModeChange={setBudgetMode}
-          clientView={clientView}
-        />
+        {!clientView && (
+          <ClientContextBar
+            email={selectedClient.email}
+            nextMeeting={nextMeeting}
+            openTasks={openTasks}
+            household={household}
+            onOpenCrm={() => setNav('crm')}
+            freshness={freshness}
+            budgetMode={budgetMode}
+            onBudgetModeChange={setBudgetMode}
+          />
+        )}
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
@@ -199,7 +200,7 @@ export default function App() {
         {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
       </Shell>
       </BudgetModeContext.Provider>
-      <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} disabled={clientView} />
+      <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
       <Toaster />
     </>
   );
