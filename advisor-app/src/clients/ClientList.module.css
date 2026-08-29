@@ -344,6 +344,7 @@
   border: 1px solid rgba(var(--red-rgb), 0.25);
   background: rgba(var(--red-rgb), 0.04);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
   padding: var(--space-4);
   margin-bottom: var(--space-6);
   animation: riseIn var(--motion) var(--ease-out-expo) both;
@@ -397,7 +398,8 @@
   unicode-bidi: isolate;
   font-weight: 600;
   font-size: var(--text-base);
-  min-width: 0;
+  flex-shrink: 0;
+  max-width: 40%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -406,7 +408,16 @@
 .urgentReason {
   color: var(--text3);
   font-size: var(--text-sm);
-  margin-inline-start: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.urgentReason::before {
+  content: '·';
+  margin-inline-end: 8px;
+  color: var(--border-strong);
 }
 
 .sectionHead {
