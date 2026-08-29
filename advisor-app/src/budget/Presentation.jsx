@@ -2,6 +2,7 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Lege
 import { Bar } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
+import { initials } from '../clientIdentity.js';
 import { monthSummary, effectiveLimit } from './budgetMath.js';
 import { loanPayoffMonths, currentInstallments } from './Credit.jsx';
 import { monthlyEquivalent } from './Subscriptions.jsx';
@@ -99,7 +100,10 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
           {profile?.logo_url ? <img className={styles.advisorLogo} src={profile.logo_url} alt="" /> : <Logo size="sm" />}
           <div>
             <h1 className={styles.title}>{profile?.display_name ? `${profile.display_name} · תמונת מצב` : 'תמונת מצב'}</h1>
-            <div className={styles.sub}>{email}</div>
+            <div className={styles.sub + ' ' + styles.clientRow}>
+              <span className={styles.clientAvatar} aria-hidden="true">{initials(email)}</span>
+              {email}
+            </div>
           </div>
         </div>
         <div className={styles.sub}>{MONTH_NAMES[month]} {year}</div>

@@ -1,10 +1,7 @@
 import { relativeTime, isStale } from '../clients/useClientFreshness.js';
 import { formatDateTime } from '../budget/monthUtils.js';
+import { initials } from '../clientIdentity.js';
 import styles from './ClientContextBar.module.css';
-
-function initials(email) {
-  return (email || '?').trim()[0]?.toUpperCase() || '?';
-}
 
 export default function ClientContextBar({ email, nextMeeting, openTasks, household, onOpenCrm, freshness, budgetMode, onBudgetModeChange }) {
   const meeting = nextMeeting ? formatDateTime(nextMeeting) : null;

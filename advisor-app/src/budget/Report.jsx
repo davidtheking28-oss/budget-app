@@ -2,6 +2,7 @@ import { useClientBudget } from './useClientBudget.js';
 import { monthSummary, effectiveLimit } from './budgetMath.js';
 import { computeInsights } from './insights.js';
 import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
+import { initials } from '../clientIdentity.js';
 import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -39,7 +40,10 @@ export default function Report({ clientUserId, advisorId, year, month, email, on
           {profile?.logo_url ? <img className={styles.advisorLogo} src={profile.logo_url} alt="" /> : <Logo size="sm" />}
           <div>
             <h1 className={styles.title}>{profile?.display_name ? `${profile.display_name} · דוח חודשי` : 'דוח חודשי'}</h1>
-            <div className={styles.sub}>{email}</div>
+            <div className={styles.sub + ' ' + styles.clientRow}>
+              <span className={styles.clientAvatar} aria-hidden="true">{initials(email)}</span>
+              {email}
+            </div>
           </div>
         </div>
         <div className={styles.sub}>{MONTH_NAMES[month]} {year}</div>

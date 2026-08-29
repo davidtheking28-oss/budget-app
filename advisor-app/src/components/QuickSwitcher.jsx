@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
+import { initials } from '../clientIdentity.js';
 import styles from './QuickSwitcher.module.css';
-
-function initials(email) {
-  return (email || '?').trim()[0]?.toUpperCase() || '?';
-}
 
 export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onOpenChange }) {
   const [openState, setOpenState] = useState(false);

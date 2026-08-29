@@ -8,11 +8,8 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
+import { initials } from '../clientIdentity.js';
 import styles from './ClientList.module.css';
-
-function initials(email) {
-  return (email || '?').trim()[0]?.toUpperCase() || '?';
-}
 
 function HealthBadge({ score }) {
   if (score === null) return null;
