@@ -32,6 +32,9 @@
   font-size: var(--text-base);
   outline: none;
   transition: border-color 0.2s ease;
+  flex: 1;
+  min-width: 140px;
+  height: 40px;
 }
 
 .select:focus-visible, .input:focus-visible {

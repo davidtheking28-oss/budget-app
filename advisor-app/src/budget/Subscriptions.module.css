@@ -21,9 +21,11 @@
   outline: none;
 }
 
-.form input {
+.form input,
+.form select {
   flex: 1;
   min-width: 130px;
+  height: 40px;
 }
 
 .form input[type="date"],
