@@ -214,14 +214,14 @@
   border: 1px solid var(--border);
 }
 
-.overageChip, .taskChip {
+.overageChip, .taskChip, .uploadErrorChip {
   font-size: var(--text-xs);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
 }
 
-.overageChip {
+.overageChip, .uploadErrorChip {
   color: var(--red);
   background: rgba(var(--red-rgb), 0.09);
 }

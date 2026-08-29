@@ -119,11 +119,28 @@ export function useEconomicMapping(clientUserId, advisorId) {
     return true;
   }, [clientUserId, advisorId]);
 
+  // A plain column update, not an upsert: a failed batch shouldn't need to satisfy
+  // the table's NOT NULL period_start/period_end — and if no mapping row exists yet
+  // for this client, the update is a harmless no-op.
+  const markUploadFailure = useCallback(async (failedNames) => {
+    if (!clientUserId) return;
+    const last_upload_error = failedNames.length ? failedNames.join(', ') : null;
+    const last_upload_at = failedNames.length ? new Date().toISOString() : null;
+    const prev = cache.get(clientUserId)?.data;
+    if (prev) setEntry(clientUserId, { data: { ...prev, last_upload_error, last_upload_at }, error: null, ts: Date.now() });
+    await supabase
+      .from('economic_mappings')
+      .update({ last_upload_error, last_upload_at })
+      .eq('advisor_id', advisorId)
+      .eq('client_id', clientUserId);
+  }, [clientUserId, advisorId]);
+
   return {
     data: entry?.data ?? null,
     loading: !!clientUserId && !entry,
     error: entry?.error ?? null,
     save,
-    reload
+    reload,
+    markUploadFailure
   };
 }

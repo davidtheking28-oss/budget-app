@@ -162,7 +162,7 @@ function addFiles(setQueue, fileList, defaultMonth) {
 }
 
 export default function EconomicMapping({ clientUserId, advisorId }) {
-  const { data, loading, error, save, reload } = useEconomicMapping(clientUserId, advisorId);
+  const { data, loading, error, save, reload, markUploadFailure } = useEconomicMapping(clientUserId, advisorId);
   const [queue, setQueue] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -210,6 +210,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     const { allTx, finalItems } = await processQueue(queue, setQueue);
     if (!allTx.length) {
       toast('לא זוהו תנועות בקבצים שהועלו', 'error');
+      markUploadFailure(finalItems.filter(x => x.status === 'error').map(x => x.name));
       setProcessing(false);
       return;
     }
@@ -231,20 +232,23 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           saved_at: data.updated_at || new Date().toISOString()
         }].slice(-12)
       : (data?.snapshots || []);
+    const failed = finalItems.filter(x => x.status === 'error');
     const ok = await save({
       period_start: `${months[0]}-01`,
       period_end: monthEndDate(months[months.length - 1]),
       transactions: allTx,
       category_averages: averages,
       months_covered: monthsCovered,
-      snapshots
+      snapshots,
+      // clears any previously-flagged failure the moment a batch fully succeeds
+      last_upload_error: failed.length ? failed.map(x => x.name).join(', ') : null,
+      last_upload_at: failed.length ? new Date().toISOString() : null
     });
     setProcessing(false);
     if (ok !== false) {
       toast('המיפוי נשמר', 'success');
       // keep failed files visible instead of wiping them along with the successful
       // ones — otherwise a partial-batch failure disappears the moment the save succeeds
-      const failed = finalItems.filter(x => x.status === 'error');
       setQueue(failed);
       if (failed.length) toast(`${failed.length} קבצים לא עובדו בהצלחה — ניתן להסיר או להעלות מחדש`, 'error');
     }

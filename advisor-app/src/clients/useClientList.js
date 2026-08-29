@@ -29,10 +29,11 @@ export function useClientList(advisorId) {
     const clientIds = roster.map(c => c.client_id);
     const now = new Date();
 
-    const [{ data: budgetRows }, { data: taskRows }, { data: declinedRows }] = await Promise.all([
+    const [{ data: budgetRows }, { data: taskRows }, { data: declinedRows }, { data: uploadErrorRows }] = await Promise.all([
       supabase.from('budget_data').select('user_id, transactions, budgets, updated_at').in('user_id', clientIds),
       supabase.from('advisor_tasks').select('client_id').eq('advisor_id', advisorId).eq('done', false).in('client_id', clientIds),
-      supabase.from('advisor_meetings').select('client_id, decline_note').eq('advisor_id', advisorId).eq('status', 'declined').gte('scheduled_at', now.toISOString()).in('client_id', clientIds)
+      supabase.from('advisor_meetings').select('client_id, decline_note').eq('advisor_id', advisorId).eq('status', 'declined').gte('scheduled_at', now.toISOString()).in('client_id', clientIds),
+      supabase.from('economic_mappings').select('client_id, last_upload_error').eq('advisor_id', advisorId).not('last_upload_error', 'is', null).in('client_id', clientIds)
     ]);
 
     const budgetByUser = {};
@@ -41,6 +42,8 @@ export function useClientList(advisorId) {
     (taskRows || []).forEach(r => { openTaskCounts[r.client_id] = (openTaskCounts[r.client_id] || 0) + 1; });
     const declinedByUser = {};
     (declinedRows || []).forEach(r => { declinedByUser[r.client_id] = (declinedByUser[r.client_id] || 0) + 1; });
+    const uploadErrorByUser = {};
+    (uploadErrorRows || []).forEach(r => { uploadErrorByUser[r.client_id] = true; });
 
     const merged = roster.map(c => {
       const budgetRow = budgetByUser[c.client_id];
@@ -52,6 +55,7 @@ export function useClientList(advisorId) {
         overageAmount: summary ? summary.overCats.reduce((s, x) => s + x.over, 0) : 0,
         openTasks: openTaskCounts[c.client_id] || 0,
         hasDeclinedMeeting: !!declinedByUser[c.client_id],
+        hasFailedUpload: !!uploadErrorByUser[c.client_id],
         healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null,
         updatedAt: budgetRow?.updated_at || null
       };

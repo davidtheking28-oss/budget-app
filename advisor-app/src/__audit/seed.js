@@ -157,6 +157,22 @@ const economicMapping = {
   updated_at: iso(2)
 };
 
+// a client whose last statement upload failed — exercises the ClientList "העלאה נכשלה" signal
+const economicMappingFailed = {
+  id: 'em2',
+  advisor_id: ADVISOR,
+  client_id: CLIENT_C,
+  period_start: `${prev.getFullYear()}-${pad(prev.getMonth() + 1)}-01`,
+  period_end: d(28),
+  months_covered: 1,
+  category_averages: {},
+  transactions: [],
+  last_upload_error: 'דף_חשבון_מרץ.pdf',
+  last_upload_at: iso(1),
+  created_at: iso(30),
+  updated_at: iso(30)
+};
+
 export const IDS = { CLIENT_A, CLIENT_B, CLIENT_C, CLIENT_EMPTY, ADVISOR };
 
 // ?data=overflow — the stress scenario: a full roster, very long Hebrew strings,
@@ -199,7 +215,7 @@ export function makeDb(mode) {
       { id: 'r6', advisor_id: ADVISOR, client_id: null, client_email: 'not.signed.up.yet@gmail.com', invited_email: 'not.signed.up.yet@gmail.com', status: 'pending', created_at: iso(1) }
     ],
     budget_data: empty ? [] : [full, thin, overspent],
-    economic_mappings: empty ? [] : [economicMapping],
+    economic_mappings: empty ? [] : [economicMapping, economicMappingFailed],
     advisor_notes: empty ? [] : [
       { id: 'n1', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'הלקוחה מעוניינת להגדיל הפרשה לפנסיה ב-2% החל מהרבעון הבא. לבדוק השלכות מס.', for_client: false, created_at: iso(5) },
       { id: 'n2', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'שיחת טלפון קצרה.', for_client: false, created_at: iso(20) }

@@ -108,6 +108,10 @@ function builder(table) {
     gte(col, val) { filters.push(r => r[col] >= val); return api; },
     lte(col, val) { filters.push(r => r[col] <= val); return api; },
     is(col, val) { filters.push(r => r[col] === val); return api; },
+    not(col, op, val) {
+      if (op === 'is' && val === null) filters.push(r => r[col] !== null && r[col] !== undefined);
+      return api;
+    },
     order(col, opts) { order = { col, asc: opts?.ascending !== false }; return api; },
     limit(n) { limit = n; return api; },
     maybeSingle() { single = 'maybe'; return api; },
