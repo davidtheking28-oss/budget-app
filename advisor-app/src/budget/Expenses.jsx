@@ -13,8 +13,16 @@ import { toast } from '../toast.js';
 import styles from './Expenses.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
+const MONTH_NAMES = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
-export default function Expenses({ clientUserId, advisorId, year, month }) {
+const CALENDAR_ICON = (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3.5" y="5" width="17" height="15" rx="2" />
+    <path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" />
+  </svg>
+);
+
+export default function Expenses({ clientUserId, advisorId, year, month, onSelectMonth }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const mode = useContext(BudgetModeContext);
   const expenseCats = expenseCatsFor(mode);
@@ -202,6 +210,32 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
 
   return (
     <div>
+      {onSelectMonth && (
+        <div className={styles.monthTabs}>
+          {MONTH_NAMES.map((name, i) => (
+            <button
+              key={i}
+              type="button"
+              className={styles.monthTab + (i === month ? ' ' + styles.monthTabActive : '')}
+              onClick={() => onSelectMonth(i)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className={styles.brandHeader}>
+        <div className={styles.brandHeaderLeft}>
+          <span className={styles.brandIcon} aria-hidden="true">{CALENDAR_ICON}</span>
+          <div>
+            <div className={styles.brandTitle}>תזרים {MONTH_NAMES[month]}</div>
+            <div className={styles.brandSub}>הכנסות מול הוצאות בפועל</div>
+          </div>
+        </div>
+        <div className={styles.yearBadge}>שנה: {year}</div>
+      </div>
+
       <div className={styles.toolbar}>
         <div className={styles.typeToggle}>
           <button type="button" className={styles.typeBtn + (txType === 'income' ? ' ' + styles.typeBtnIncome : '')} onClick={() => pickType('income')}>+ הכנסה</button>
@@ -260,23 +294,21 @@ export default function Expenses({ clientUserId, advisorId, year, month }) {
       )}
       {allMonthTx.length > 0 && (
         <>
-          <div className={styles.flowHero}>
-            <div className={styles.flowLabel}>התזרים החודש</div>
-            <div className={styles.flowValue + ' ' + (netFlow < 0 ? styles.flowNeg : styles.flowPos)}>{fmt(netFlow)}</div>
-            <div className={styles.flowSplit}>
-              <div className={styles.flowCell}>
-                <span className={styles.flowCellLabel}>הכנסות</span>
-                <span className={styles.flowCellValue + ' ' + styles.flowPos}>{fmt(incomeTotal)}</span>
-                {unpostedIncome > 0 && <span className={styles.meta}>כולל {fmt(unpostedIncome)} ממקורות קבועים שלא נרשמו</span>}
-              </div>
-              <div className={styles.flowCell}>
-                <span className={styles.flowCellLabel}>הוצאות</span>
-                <span className={styles.flowCellValue + ' ' + styles.flowNeg}>{fmt(expenseTotal)}</span>
-              </div>
-              <div className={styles.flowCell}>
-                <span className={styles.flowCellLabel}>עסקאות</span>
-                <span className={styles.flowCellValue}>{allMonthTx.length}</span>
-              </div>
+          <div className={styles.kpiRow}>
+            <div className={styles.kpi}>
+              <div className={styles.kpiLabel}>הכנסות</div>
+              <div className={styles.kpiValue}>{fmt(incomeTotal)}</div>
+              {unpostedIncome > 0 && <div className={styles.kpiSub}>כולל {fmt(unpostedIncome)} ממקורות קבועים שלא נרשמו</div>}
+            </div>
+            <div className={styles.kpi}>
+              <div className={styles.kpiLabel}>הוצאות</div>
+              <div className={styles.kpiValue}>{fmt(expenseTotal)}</div>
+              <div className={styles.kpiSub}>{allMonthTx.length} עסקאות</div>
+            </div>
+            <div className={styles.kpi + ' ' + styles.kpiFlow}>
+              <div className={styles.kpiLabel}>תזרים</div>
+              <div className={styles.kpiValue + ' ' + (netFlow < 0 ? styles.kpiNeg : styles.kpiPos)}>{fmt(netFlow)}</div>
+              <div className={styles.kpiSub}>{netFlow < 0 ? 'חריגה מההכנסות' : 'פנוי החודש'}</div>
             </div>
           </div>
 

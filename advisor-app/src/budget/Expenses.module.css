@@ -125,67 +125,153 @@
   border-radius: var(--radius-md);
 }
 
-.flowHero {
-  margin-top: var(--space-5);
-  padding: var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
-}
-
-.flowLabel {
-  color: var(--text2);
-  font-size: var(--text-lg);
-  font-weight: 700;
-}
-
-.flowValue {
-  margin-top: var(--space-1);
-  font-family: var(--font-body);
-  font-size: var(--text-display-md);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  direction: ltr;
-  unicode-bidi: isolate;
-  text-align: right;
-}
-
 .flowPos { color: var(--green); }
 .flowNeg { color: var(--red); }
 
-.flowSplit {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
-
-.flowCell {
+.monthTabs {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  gap: 4px;
+  overflow-x: auto;
+  padding: 4px;
+  margin-bottom: var(--space-4);
   background: var(--surface2);
+  border-radius: var(--radius-md);
 }
 
-.flowCellLabel {
-  color: var(--text3);
-  font-size: var(--text-xs);
+.monthTab {
+  flex: 1 0 auto;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
-.flowCellValue {
-  font-family: var(--font-body);
-  font-size: var(--text-xl);
+.monthTab:hover { color: var(--text); }
+
+.monthTabActive {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.brandHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.brandHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brandIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--accent-dim);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brandTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
   font-weight: 700;
+  color: var(--text);
+}
+
+.brandSub {
+  font-size: var(--text-sm);
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.yearBadge {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text2);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  flex-shrink: 0;
+}
+
+/* Three equal boxes with the same label/value/sub shape read as one repeated
+   template rather than three distinct facts. A single strip with dividers
+   keeps the numbers scannable while letting the flow figure carry more
+   visual weight — same pattern as the budget screen's KPI row. */
+.kpiRow {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  margin-top: var(--space-5);
+  overflow: hidden;
+}
+
+.kpi {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+.kpi + .kpi::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: var(--space-3);
+  bottom: var(--space-3);
+  width: 1px;
+  background: var(--border);
+}
+
+.kpiLabel {
+  font-size: var(--text-xs);
+  color: var(--text2);
+  margin-bottom: var(--space-2);
+}
+
+.kpiValue {
+  font-family: var(--font-body);
+  font-size: var(--text-display-sm);
+  color: var(--text);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
   direction: ltr;
   unicode-bidi: isolate;
-  text-align: right;
+}
+
+.kpiFlow { background: var(--hover); }
+.kpiFlow .kpiValue { font-size: var(--text-display-md); }
+
+.kpiPos { color: var(--green); }
+.kpiNeg { color: var(--red); }
+
+.kpiSub {
+  font-size: var(--text-xs);
+  color: var(--text3);
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 720px) {
+  .kpiRow { flex-direction: column; }
+  .kpi + .kpi::before { inset-inline-start: var(--space-4); inset-inline-end: var(--space-4); top: 0; bottom: auto; width: auto; height: 1px; }
 }
 
 .filterRow {
@@ -214,10 +300,6 @@
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
-}
-
-@media (max-width: 720px) {
-  .flowSplit { grid-template-columns: 1fr; }
 }
 
 .statStrip {
