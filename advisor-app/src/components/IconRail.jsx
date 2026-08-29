@@ -3,7 +3,7 @@ import styles from './IconRail.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
-export default function IconRail({ onBack, onSearch, onPrint, theme, onToggleTheme }) {
+export default function IconRail({ onBack, onSearch, onPrint, clientView, onToggleClientView, theme, onToggleTheme }) {
   const actions = [
     onBack && {
       key: 'clients',
@@ -48,6 +48,18 @@ export default function IconRail({ onBack, onSearch, onPrint, theme, onToggleThe
             ? <svg {...svgProps}><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2M12 19.5v2M4.5 12h-2M21.5 12h-2M6.3 6.3 4.9 4.9M19.1 19.1l-1.4-1.4M17.7 6.3l1.4-1.4M4.9 19.1l1.4-1.4" /></svg>
             : <svg {...svgProps}><path d="M20 13.2A8.2 8.2 0 0 1 10.8 4a8.5 8.5 0 1 0 9.2 9.2z" /></svg>}
           <span className={styles.tip}>{theme === 'dark' ? 'מצב בהיר' : 'מצב כהה'}</span>
+        </button>
+      )}
+      {onToggleClientView && (
+        <button
+          type="button"
+          className={styles.railBtn + (clientView ? ' ' + styles.railBtnActive : '')}
+          onClick={onToggleClientView}
+          aria-label={clientView ? 'סגור תצוגת לקוח' : 'פתח תצוגת לקוח'}
+          aria-pressed={clientView}
+        >
+          <svg {...svgProps}><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3.2" /></svg>
+          <span className={styles.tip}>{clientView ? 'סגור תצוגת לקוח' : 'תצוגת לקוח'}</span>
         </button>
       )}
     </div>

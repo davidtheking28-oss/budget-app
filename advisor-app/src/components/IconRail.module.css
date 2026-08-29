@@ -78,6 +78,15 @@
 
 .railBtn:active { transform: scale(0.94); }
 
+/* Persistent accent fill while client-view mode is on — unlike :hover, this
+   has to stay visible without the pointer sitting on the button, so the
+   advisor can tell at a glance the mode is still active mid-meeting. */
+.railBtnActive {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-color: rgba(var(--accent-rgb), 0.35);
+}
+
 @media (max-width: 860px) {
   .rail {
     position: static;
