@@ -38,8 +38,8 @@
   margin: 28px 0 8px;
   flex-wrap: wrap;
   padding: 18px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: 1px dashed var(--border-strong);
   border-radius: var(--radius-md);
 }
 

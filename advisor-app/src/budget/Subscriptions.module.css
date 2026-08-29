@@ -5,8 +5,8 @@
   flex-wrap: wrap;
   max-width: 640px;
   padding: var(--space-4);
-  background: var(--hover);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: 1px dashed var(--border-strong);
   border-radius: var(--radius-md);
 }
 
