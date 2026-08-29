@@ -202,12 +202,18 @@
 
 .itemName::placeholder { color: var(--text3); font-weight: 400; }
 
-.itemAmountBox {
+.itemAmountBox, .itemActualBox {
   flex: 0 0 110px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 4px var(--space-2);
+  text-align: center;
+}
+
+.itemAmountBoxLabel {
+  font-size: var(--text-xs);
+  color: var(--text3);
 }
 
 .itemAmountInput {
@@ -224,6 +230,14 @@
 }
 
 .itemAmountInput::placeholder { color: var(--text3); font-weight: 400; }
+
+.itemActualValue {
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text2);
+  font-variant-numeric: tabular-nums;
+}
 
 .goalRow {
   border: 1px solid var(--border);

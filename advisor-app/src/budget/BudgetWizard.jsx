@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FIXED_CATS, CHART_PALETTE } from '../categories.js';
+import { getMonthTx } from './monthUtils.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -17,9 +18,30 @@ function sumAmounts(list) {
   return list.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
 }
 
-export default function BudgetWizard({ data, save, onClose }) {
+export default function BudgetWizard({ data, save, year, month, onClose }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+
+  // Income sources and fixed expenses aren't month-scoped in storage — they're the
+  // recurring plan and already apply to every month by default. What's missing is
+  // showing this month's actual next to that plan, matched by name (income) / category
+  // (fixed), the same way transactions already resolve against them elsewhere.
+  const monthTx = useMemo(() => getMonthTx(data?.transactions, year, month), [data, year, month]);
+  const incomeActual = useMemo(() => {
+    const map = {};
+    monthTx.filter(t => t.type === 'income').forEach(t => {
+      const key = (t.desc || '').trim().toLowerCase();
+      map[key] = (map[key] || 0) + t.amount;
+    });
+    return map;
+  }, [monthTx]);
+  const fixedActual = useMemo(() => {
+    const map = {};
+    monthTx.filter(t => t.type === 'expense' && FIXED_CATS.includes(t.cat)).forEach(t => {
+      map[t.cat] = (map[t.cat] || 0) + t.amount;
+    });
+    return map;
+  }, [monthTx]);
 
   const [incomes, setIncomes] = useState(() => {
     const existing = data?.settings?.incomeSources || [];
@@ -101,7 +123,7 @@ export default function BudgetWizard({ data, save, onClose }) {
   ].filter(b => b.value > 0);
   const breakdownTotal = breakdown.reduce((s, b) => s + b.value, 0) || 1;
 
-  function rowList(list, setter, placeholder, suggestions) {
+  function rowList(list, setter, placeholder, suggestions, actualOf) {
     return (
       <>
         {suggestions.length > 0 && (
@@ -125,6 +147,7 @@ export default function BudgetWizard({ data, save, onClose }) {
                 onChange={e => updateRow(setter, i, { name: e.target.value })}
               />
               <div className={styles.itemAmountBox}>
+                <div className={styles.itemAmountBoxLabel}>תכנון</div>
                 <input
                   className={styles.itemAmountInput}
                   type="number"
@@ -135,6 +158,12 @@ export default function BudgetWizard({ data, save, onClose }) {
                   onChange={e => updateRow(setter, i, { amount: e.target.value })}
                 />
               </div>
+              {actualOf && (
+                <div className={styles.itemActualBox}>
+                  <div className={styles.itemAmountBoxLabel}>ביצוע</div>
+                  <div className={styles.itemActualValue}>{fmt(actualOf(r.name))}</div>
+                </div>
+              )}
               <DeleteButton onClick={() => removeRow(setter, i)} />
             </div>
           ))}
@@ -189,14 +218,14 @@ export default function BudgetWizard({ data, save, onClose }) {
         {step === 0 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>מאיפה מגיע הכסף?</div>
-            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME)}
+            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, name => incomeActual[(name || '').trim().toLowerCase()] || 0)}
           </div>
         )}
 
         {step === 1 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>מה יוצא כל חודש בלי קשר להתנהגות</div>
-            {rowList(fixed, setFixed, 'שם ההוצאה הקבועה', SUGGESTED_FIXED)}
+            {rowList(fixed, setFixed, 'שם ההוצאה הקבועה', SUGGESTED_FIXED, name => fixedActual[name] || 0)}
           </div>
         )}
 

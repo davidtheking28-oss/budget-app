@@ -84,7 +84,7 @@ export default function Budget({ clientUserId, advisorId, year, month, onSelectM
   const overCount = activeCats.filter(c => (spentByCat[c] || 0) > limitOf(c)).length;
 
   if (wizardOpen) {
-    return <BudgetWizard data={data} save={save} onClose={() => setWizardOpen(false)} />;
+    return <BudgetWizard data={data} save={save} year={year} month={month} onClose={() => setWizardOpen(false)} />;
   }
 
   const monthlyIncome = incomeSources.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
