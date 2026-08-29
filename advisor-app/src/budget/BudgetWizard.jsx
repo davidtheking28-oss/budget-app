@@ -115,23 +115,26 @@ export default function BudgetWizard({ data, save, onClose }) {
         )}
         <div className={styles.rows}>
           {list.map((r, i) => (
-            <div className={styles.row} key={i}>
+            <div className={styles.itemRow} key={i}>
+              <span className={styles.itemIcon} aria-hidden="true">{getCategoryIcon(r.name)}</span>
               <input
-                className={styles.input}
+                className={styles.itemName}
                 aria-label="שם"
                 placeholder={placeholder}
                 value={r.name}
                 onChange={e => updateRow(setter, i, { name: e.target.value })}
               />
-              <input
-                className={styles.input + ' ' + styles.amountInput}
-                type="number"
-                inputMode="decimal"
-                aria-label="סכום חודשי"
-                placeholder="0"
-                value={r.amount}
-                onChange={e => updateRow(setter, i, { amount: e.target.value })}
-              />
+              <div className={styles.itemAmountBox}>
+                <input
+                  className={styles.itemAmountInput}
+                  type="number"
+                  inputMode="decimal"
+                  aria-label="סכום חודשי"
+                  placeholder="0"
+                  value={r.amount}
+                  onChange={e => updateRow(setter, i, { amount: e.target.value })}
+                />
+              </div>
               <DeleteButton onClick={() => removeRow(setter, i)} />
             </div>
           ))}

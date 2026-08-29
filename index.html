@@ -319,6 +319,12 @@
     .budget-detail-name{font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:4px;}
     .budget-detail-amount{font-family:var(--font-num);font-size:1.5rem;font-weight:800;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
     .budget-detail-limit{font-size:1rem;font-weight:600;color:var(--text3);}
+    .budget-detail-planrow{display:flex;gap:8px;margin-top:6px;}
+    .budget-detail-planbox{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 12px;text-align:center;}
+    .budget-detail-planbox-over{border-color:var(--red);}
+    .budget-detail-planlabel{font-size:0.68rem;color:var(--text3);}
+    .budget-detail-planvalue{font-family:var(--font-num);font-size:1.05rem;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums lining-nums;}
+    .budget-detail-planbox-over .budget-detail-planvalue{color:var(--red);}
     .budget-detail-actions{display:flex;gap:8px;flex-shrink:0;}
     .budget-icon-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:background 0.15s;-webkit-tap-highlight-color:transparent;}
     .budget-icon-btn:active{opacity:0.7;}
@@ -5672,7 +5678,12 @@ function renderBudgetDetail(spent,effLim){
     '<div class="budget-detail-header">'
       +'<div class="budget-detail-text">'
         +'<div class="budget-detail-name">'+esc(cat)+'</div>'
-        +'<div class="budget-detail-amount">'+fmt(s)+' <span class="budget-detail-limit">'+(baseLim?'/ '+fmt(lim):'· ללא תקציב')+'</span></div>'
+        +(baseLim
+          ?'<div class="budget-detail-planrow">'
+            +'<div class="budget-detail-planbox"><div class="budget-detail-planlabel">תכנון</div><div class="budget-detail-planvalue">'+fmt(lim)+'</div></div>'
+            +'<div class="budget-detail-planbox'+(s>lim?' budget-detail-planbox-over':'')+'"><div class="budget-detail-planlabel">ביצוע</div><div class="budget-detail-planvalue">'+fmt(s)+'</div></div>'
+          +'</div>'
+          :'<div class="budget-detail-amount">'+fmt(s)+' <span class="budget-detail-limit">· ללא תקציב</span></div>')
       +'</div>'
       +'<div class="budget-detail-actions">'
         +'<button type="button" class="budget-icon-btn" data-act="del-budget" aria-label="מחק תקציב">'+trashSvg+'</button>'

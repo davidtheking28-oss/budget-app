@@ -172,6 +172,59 @@
 .amountInput { flex: 0 0 120px; font-variant-numeric: tabular-nums; }
 .monthsInput { flex: 0 0 74px; font-variant-numeric: tabular-nums; }
 
+.itemRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  transition: border-color .18s var(--ease-out-expo);
+}
+
+.itemRow:focus-within { border-color: var(--border-strong); }
+
+.itemIcon { color: var(--text3); flex-shrink: 0; }
+
+.itemName {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 600;
+  padding: 0;
+  outline: none;
+}
+
+.itemName::placeholder { color: var(--text3); font-weight: 400; }
+
+.itemAmountBox {
+  flex: 0 0 110px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px var(--space-2);
+}
+
+.itemAmountInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-base);
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.itemAmountInput::placeholder { color: var(--text3); font-weight: 400; }
+
 .goalRow {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
