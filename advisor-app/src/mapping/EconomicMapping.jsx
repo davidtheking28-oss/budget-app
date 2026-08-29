@@ -106,6 +106,7 @@ async function callParseStatement(page, monthHint) {
 
 async function processQueue(queue, setQueue) {
   const allTx = [];
+  const finalItems = [];
   for (const item of queue) {
     setQueue(q => q.map(x => (x.id === item.id ? { ...x, status: 'rasterizing' } : x)));
     try {
@@ -137,11 +138,14 @@ async function processQueue(queue, setQueue) {
         }
       }
       setQueue(q => q.map(x => (x.id === item.id ? { ...x, status: 'done' } : x)));
+      finalItems.push({ ...item, status: 'done' });
     } catch (err) {
-      setQueue(q => q.map(x => (x.id === item.id ? { ...x, status: 'error', error: String(err?.message || err) } : x)));
+      const message = String(err?.message || err);
+      setQueue(q => q.map(x => (x.id === item.id ? { ...x, status: 'error', error: message } : x)));
+      finalItems.push({ ...item, status: 'error', error: message });
     }
   }
-  return allTx;
+  return { allTx, finalItems };
 }
 
 function addFiles(setQueue, fileList, defaultMonth) {
@@ -203,7 +207,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     const dupMonth = taggedMonths.find((m, i) => taggedMonths.indexOf(m) !== i);
     if (dupMonth && !window.confirm(`יותר מקובץ אחד מסומן לאותו חודש (${dupMonth}). להמשיך בכל זאת?`)) return;
     setProcessing(true);
-    const allTx = await processQueue(queue, setQueue);
+    const { allTx, finalItems } = await processQueue(queue, setQueue);
     if (!allTx.length) {
       toast('לא זוהו תנועות בקבצים שהועלו', 'error');
       setProcessing(false);
@@ -238,7 +242,11 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     setProcessing(false);
     if (ok !== false) {
       toast('המיפוי נשמר', 'success');
-      setQueue([]);
+      // keep failed files visible instead of wiping them along with the successful
+      // ones — otherwise a partial-batch failure disappears the moment the save succeeds
+      const failed = finalItems.filter(x => x.status === 'error');
+      setQueue(failed);
+      if (failed.length) toast(`${failed.length} קבצים לא עובדו בהצלחה — ניתן להסיר או להעלות מחדש`, 'error');
     }
   }
 
@@ -365,7 +373,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                 >
                   {item.status === 'queued' ? 'ממתין' : item.status}
                 </span>
-                {item.status === 'queued' && <DeleteButton onClick={() => removeFile(item.id)} />}
+                {(item.status === 'queued' || item.status === 'error') && <DeleteButton onClick={() => removeFile(item.id)} />}
                 {item.status === 'error' && item.error && <span className={styles.queueErrorMsg}>{item.error}</span>}
               </div>
             ))}
