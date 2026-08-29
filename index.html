@@ -340,6 +340,9 @@
     .budget-tx-desc-wrap{text-align:right;min-width:0;}
     .budget-tx-desc{font-size:0.87rem;font-weight:700;color:var(--text);}
     .budget-tx-date{font-size:0.74rem;color:var(--text3);margin-top:2px;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .meeting-summary{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+    .meeting-summary-label{font-size:0.68rem;color:var(--text3);margin-bottom:3px;}
+    .meeting-summary-body{font-size:0.82rem;color:var(--text2);line-height:1.5;}
     .budget-tx-amt{font-family:var(--font-num);font-weight:800;color:var(--red);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
     .budget-tx-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;}
     .budget-tx-del{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
@@ -2091,10 +2094,6 @@
       <div class="section" id="clientTasksSection">
         <div class="section-header"><div class="section-title">משימות</div></div>
         <div class="section-body" id="clientTasksList"></div>
-      </div>
-      <div class="section" id="advisorNotesSection">
-        <div class="section-header"><div class="section-title">הודעות מהיועץ</div></div>
-        <div class="section-body" id="advisorNotesList"></div>
       </div>
     </div>
   </div>
@@ -4424,17 +4423,14 @@ let _advisorAssets=[];
 //    budget_data sync protocol, so nothing here touches _collections()/_buildMerged) ──
 let _advisorTasks=[];
 let _advisorMeetings=[];
-let _advisorNotes=[];
 async function _loadAdvisorTasks(){
-  if(!_sb||!_cloudUser||!_advisorLink||_advisorLink.status!=='active'){_advisorTasks=[];_advisorMeetings=[];_advisorNotes=[];return;}
-  const [tasksRes,meetingsRes,notesRes]=await Promise.all([
+  if(!_sb||!_cloudUser||!_advisorLink||_advisorLink.status!=='active'){_advisorTasks=[];_advisorMeetings=[];return;}
+  const [tasksRes,meetingsRes]=await Promise.all([
     _sb.from('advisor_tasks').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('due_date',{ascending:true,nullsFirst:false}),
-    _sb.from('advisor_meetings').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('scheduled_at',{ascending:true}),
-    _sb.from('advisor_notes').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('created_at',{ascending:false})
+    _sb.from('advisor_meetings').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('scheduled_at',{ascending:true})
   ]);
   _advisorTasks=tasksRes.data||[];
   _advisorMeetings=meetingsRes.data||[];
-  _advisorNotes=notesRes.data||[];
 }
 function _heDateTime(iso){
   const d=new Date(iso);
@@ -4460,7 +4456,9 @@ function renderTasksPage(){
     '<div class="budget-tx-card"><div class="budget-tx-top"><div class="budget-tx-desc-wrap">'
       +'<div class="budget-tx-desc">'+esc(m.notes||'פגישת ייעוץ')+'</div>'
       +'<div class="budget-tx-date">'+_heDateTime(m.scheduled_at)+'</div>'
-    +'</div></div></div>'
+    +'</div></div>'
+    +(m.summary?'<div class="meeting-summary"><div class="meeting-summary-label">סיכום הפגישה</div><div class="meeting-summary-body">'+esc(m.summary).replace(/\n/g,'<br>')+'</div></div>':'')
+    +'</div>'
   ).join(''):'<div class="budget-tx-empty">אין פגישות מתוזמנות</div>';
   const tasksList=document.getElementById('clientTasksList');
   const _multiTasks=_advisorTasks.length>1;
@@ -4476,13 +4474,6 @@ function renderTasksPage(){
   tasksList.querySelectorAll('[data-task-id]').forEach(el=>{
     el.onchange=()=>toggleAdvisorTask(el.dataset.taskId,el.checked);
   });
-  const notesList=document.getElementById('advisorNotesList');
-  notesList.innerHTML=_advisorNotes.length?_advisorNotes.map(n=>
-    '<div class="budget-tx-card"><div class="budget-tx-top"><div class="budget-tx-desc-wrap">'
-      +'<div class="budget-tx-desc" style="white-space:pre-wrap">'+esc(n.body)+'</div>'
-      +'<div class="budget-tx-date">'+heDate(n.created_at.slice(0,10))+'</div>'
-    +'</div></div></div>'
-  ).join(''):'<div class="budget-tx-empty">אין הודעות מהיועץ</div>';
 }
 function _subscribeHousehold(){
   if(!_sb||!_getDataUserId())return;
