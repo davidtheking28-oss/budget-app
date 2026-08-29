@@ -38,7 +38,7 @@ export default function Report({ clientUserId, advisorId, year, month, email, on
         <div className={styles.titleRow}>
           {profile?.logo_url ? <img className={styles.advisorLogo} src={profile.logo_url} alt="" /> : <Logo size="sm" />}
           <div>
-            <div className={styles.title}>{profile?.display_name ? `${profile.display_name} · דוח חודשי` : 'דוח חודשי'}</div>
+            <h1 className={styles.title}>{profile?.display_name ? `${profile.display_name} · דוח חודשי` : 'דוח חודשי'}</h1>
             <div className={styles.sub}>{email}</div>
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function Report({ clientUserId, advisorId, year, month, email, on
 
       {cats.length > 0 && (
         <>
-          <div className={styles.sectionTitle}>תקציב מול ביצוע</div>
+          <h2 className={styles.sectionTitle}>תקציב מול ביצוע</h2>
           <table>
             <thead><tr><th>קטגוריה</th><th>תקציב</th><th>בפועל</th></tr></thead>
             <tbody>
@@ -71,14 +71,14 @@ export default function Report({ clientUserId, advisorId, year, month, email, on
 
       {insights.length > 0 && (
         <>
-          <div className={styles.sectionTitle}>תובנות</div>
+          <h2 className={styles.sectionTitle}>תובנות</h2>
           {insights.map((ins, i) => <div key={i} className={styles.insight}>{ins.text}</div>)}
         </>
       )}
 
       {(data.goals || []).length > 0 && (
         <>
-          <div className={styles.sectionTitle}>יעדי חיסכון</div>
+          <h2 className={styles.sectionTitle}>יעדי חיסכון</h2>
           <table>
             <thead><tr><th>יעד</th><th>נחסך</th><th>מטרה</th></tr></thead>
             <tbody>

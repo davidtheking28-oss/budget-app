@@ -98,7 +98,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
         <div className={styles.titleRow}>
           {profile?.logo_url ? <img className={styles.advisorLogo} src={profile.logo_url} alt="" /> : <Logo size="sm" />}
           <div>
-            <div className={styles.title}>{profile?.display_name ? `${profile.display_name} · תמונת מצב` : 'תמונת מצב'}</div>
+            <h1 className={styles.title}>{profile?.display_name ? `${profile.display_name} · תמונת מצב` : 'תמונת מצב'}</h1>
             <div className={styles.sub}>{email}</div>
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
 
       {cats.length > 0 && (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>תקציב מול ביצוע</div>
+          <h2 className={styles.sectionTitle}>תקציב מול ביצוע</h2>
           {cats.map(c => {
             const limit = effectiveLimit(data, c, year, month);
             const spent = summary.spentByCat[c] || 0;
@@ -146,7 +146,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
 
       {subs.length > 0 && (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>מנויים פעילים</div>
+          <h2 className={styles.sectionTitle}>מנויים פעילים</h2>
           {subs.map(s => (
             <div key={s.id} className={styles.listRow}>
               <div>
@@ -160,7 +160,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
 
       {fixed.length > 0 && (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>הוצאות קבועות</div>
+          <h2 className={styles.sectionTitle}>הוצאות קבועות</h2>
           {fixed.map(f => (
             <div key={f.id} className={styles.listRow}>
               <div className={styles.listName}>{f.id}</div>
@@ -172,7 +172,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
 
       {loans.length > 0 && (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>הלוואות</div>
+          <h2 className={styles.sectionTitle}>הלוואות</h2>
           {loans.map(l => (
             <div key={l.id} className={styles.listRow}>
               <div>
@@ -187,7 +187,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
 
       {payments.length > 0 && (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>תשלומים בכרטיס אשראי</div>
+          <h2 className={styles.sectionTitle}>תשלומים בכרטיס אשראי</h2>
           {payments.map(p => (
             <div key={p.id} className={styles.listRow}>
               <div>
@@ -201,14 +201,14 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
 
       {goals.length > 0 && (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>יעדי חיסכון</div>
+          <h2 className={styles.sectionTitle}>יעדי חיסכון</h2>
           {goals.map(g => <Bar1 key={g.id} label={g.name} value={g.saved || 0} max={g.target || 0} over={false} />)}
         </div>
       )}
 
       {assets.length > 0 && (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>נכסים <span style={{ color: 'var(--text3)', fontWeight: 400 }}>· סה״כ {fmt(assetsTotal)}</span></div>
+          <h2 className={styles.sectionTitle}>נכסים <span style={{ color: 'var(--text3)', fontWeight: 400 }}>· סה״כ {fmt(assetsTotal)}</span></h2>
           {assets.map(a => (
             <div key={a.id} className={styles.listRow}>
               <div>
