@@ -3,6 +3,7 @@
   grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
   gap: var(--space-5);
   align-items: start;
+  margin-bottom: var(--space-6);
 }
 
 .section {
