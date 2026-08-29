@@ -87,6 +87,8 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
   const assets = data.assets || [];
   const assetsTotal = assets.reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
 
+  const hasAnyData = cats.length > 0 || subs.length > 0 || fixed.length > 0 || loans.length > 0 || payments.length > 0 || goals.length > 0 || assets.length > 0;
+
   return (
     <div className={styles.page} dir="rtl">
       <div className={styles.topBar}>
@@ -124,6 +126,12 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
           }}
         />
       </div>
+
+      {!hasAnyData && (
+        <div className={styles.section}>
+          <div className={styles.sub}>אין עדיין נתונים להצגה עבור {MONTH_NAMES[month]} {year}</div>
+        </div>
+      )}
 
       {cats.length > 0 && (
         <div className={styles.section}>

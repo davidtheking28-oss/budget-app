@@ -147,7 +147,9 @@ export default function App() {
   if (reportMode) {
     return (
       <>
-        <Report clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setReportMode(false)} />
+        <BudgetModeContext.Provider value={budgetMode}>
+          <Report clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} email={selectedClient.email} onClose={() => setReportMode(false)} />
+        </BudgetModeContext.Provider>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />
       </>
