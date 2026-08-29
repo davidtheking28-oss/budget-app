@@ -70,10 +70,9 @@
 }
 
 .incTitle {
-  color: var(--text3);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  color: var(--text2);
+  font-size: var(--text-lg);
+  font-weight: 700;
 }
 
 .incList {
@@ -136,9 +135,9 @@
 }
 
 .flowLabel {
-  color: var(--text3);
-  font-size: var(--text-sm);
-  font-weight: 600;
+  color: var(--text2);
+  font-size: var(--text-lg);
+  font-weight: 700;
 }
 
 .flowValue {
@@ -181,7 +180,7 @@
 
 .flowCellValue {
   font-family: var(--font-body);
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   direction: ltr;
