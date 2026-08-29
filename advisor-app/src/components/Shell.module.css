@@ -334,7 +334,11 @@
 }
 
 .contentTabs {
-  flex: 1;
+  /* Not flex:1 — stretching this to fill leftover viewport height turned any
+     screen shorter than the viewport (e.g. Goals with few cards) into a
+     content box with a large dead area at its own bottom. Its natural
+     content height is enough; .shellTabs still keeps min-height:100vh so the
+     page background covers the full viewport regardless. */
   padding: var(--space-6) var(--page-pad) var(--space-8);
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
   width: 100%;
