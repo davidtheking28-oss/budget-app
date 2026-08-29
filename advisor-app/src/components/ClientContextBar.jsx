@@ -15,7 +15,6 @@ export default function ClientContextBar({ email, nextMeeting, openTasks, househ
       <div className={styles.identity}>
         <span className={styles.avatar} aria-hidden="true">{initials(email)}</span>
         <span className={styles.email}>{email || '—'}</span>
-        <span className={styles.statusPill}>פעיל</span>
         {household && (
           <span className={styles.fact} title={household.partnerEmail ? `משותף עם ${household.partnerEmail}` : 'התקציב משותף עם בן/בת זוג'}>
             <span className={styles.factLabel}>שיתוף</span>
