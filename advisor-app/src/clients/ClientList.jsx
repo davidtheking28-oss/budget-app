@@ -44,7 +44,13 @@ const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 function RemainingStat({ value }) {
   const display = useCountUp(value ?? 0);
-  if (value === null) return null;
+  if (value === null) {
+    return (
+      <div className={styles.remainingStat + ' ' + styles.remainingStatEmpty}>
+        <div className={styles.remainingStatLabel}>אין עדיין נתונים</div>
+      </div>
+    );
+  }
   const over = value < 0;
   return (
     <div className={styles.remainingStat + (over ? ' ' + styles.remainingStatOver : '')}>
@@ -241,7 +247,7 @@ export default function ClientList({ advisorId, onSelect }) {
             onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
             onKeyDown={e => e.key === 'Enter' && claimCode()}
           />
-          <Button onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
+          <Button variant="ghost" onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
           <input
             ref={emailInputRef}
             className={styles.addInput + ' ' + styles.addInputEmail}

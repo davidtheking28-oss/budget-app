@@ -204,6 +204,10 @@
   color: var(--red);
 }
 
+.remainingStatEmpty .remainingStatLabel {
+  margin-top: 0;
+}
+
 .staleChip {
   font-size: var(--text-xs);
   font-weight: 600;
