@@ -13,8 +13,16 @@ import BudgetWizard from './BudgetWizard.jsx';
 import styles from './Budget.module.css';
 
 const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
+const MONTH_NAMES = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
-export default function Budget({ clientUserId, advisorId, year, month }) {
+const CALENDAR_ICON = (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3.5" y="5" width="17" height="15" rx="2" />
+    <path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" />
+  </svg>
+);
+
+export default function Budget({ clientUserId, advisorId, year, month, onSelectMonth }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const mode = useContext(BudgetModeContext);
   const [cat, setCat] = useState(BUDGET_CATS[0]);
@@ -86,6 +94,32 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
 
   return (
     <div>
+      {onSelectMonth && (
+        <div className={styles.monthTabs}>
+          {MONTH_NAMES.map((name, i) => (
+            <button
+              key={i}
+              type="button"
+              className={styles.monthTab + (i === month ? ' ' + styles.monthTabActive : '')}
+              onClick={() => onSelectMonth(i)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className={styles.brandHeader}>
+        <div className={styles.brandHeaderLeft}>
+          <span className={styles.brandIcon} aria-hidden="true">{CALENDAR_ICON}</span>
+          <div>
+            <div className={styles.brandTitle}>תקציב {MONTH_NAMES[month]}</div>
+            <div className={styles.brandSub}>תכנון מול ביצוע בפועל</div>
+          </div>
+        </div>
+        <div className={styles.yearBadge}>שנה: {year}</div>
+      </div>
+
       <div className={styles.kpiRow}>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>סך הכל הכנסות</div>
@@ -136,25 +170,24 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
           עדיין לא הוגדרו תקציבי קטגוריה
         </div>
       )}
-      <div className={styles.grid}>
+      <div className={styles.rows}>
         {activeCats.map((c, i) => {
           const s = spentByCat[c] || 0;
           const l = limitOf(c);
-          const pct = Math.min(Math.round((s / l) * 100), 100);
           const over = s > l;
-          const color = pct >= 100 ? 'var(--red)' : pct >= 80 ? 'var(--yellow)' : 'var(--green)';
           return (
-            <div key={c} className={styles.item + (over ? ' ' + styles.itemOver : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
-              <div className={styles.itemTop}>
-                <span className={styles.catLabel} title={c}>{getCategoryIcon(c)}{c}</span>
-                <div className={styles.itemAmountRow}>
-                  <span className={styles.itemAmount}>{fmt(s)} / {fmt(l)}</span>
-                  <DeleteButton title="מחק תקציב" onClick={() => removeBudget(c)} />
-                </div>
+            <div key={c} className={styles.catRow + (over ? ' ' + styles.catRowOver : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
+              <span className={styles.catRowIcon} aria-hidden="true">{getCategoryIcon(c)}</span>
+              <span className={styles.catRowName} title={c}>{c}</span>
+              <div className={styles.catRowField}>
+                <div className={styles.catRowLabel}>תכנון</div>
+                <div className={styles.catRowValue}>{fmt(l)}</div>
               </div>
-              <div className={styles.bar}>
-                <div className={styles.fill} style={{ transform: `scaleX(${pct / 100})`, background: color }} />
+              <div className={styles.catRowField}>
+                <div className={styles.catRowLabel}>ביצוע</div>
+                <div className={styles.catRowValue + (over ? ' ' + styles.catRowValueOver : '')}>{fmt(s)}</div>
               </div>
+              <DeleteButton title="מחק תקציב" onClick={() => removeBudget(c)} />
             </div>
           );
         })}
