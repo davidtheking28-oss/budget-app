@@ -3348,19 +3348,41 @@ function addTransaction(prefill){
 function deleteTx(id){
   const backup=transactions.find(t=>t.id===id);
   const idx=transactions.findIndex(t=>t.id===id);
-  if(backup&&backup.recurring){
-    const nowKey=mk(new Date().getFullYear(),new Date().getMonth());
-    if(backup.date.startsWith(nowKey)) dismissRecurring(backup.desc+'|'+backup.cat,nowKey);
-  }
-  transactions=transactions.filter(t=>t.id!==id);
-  saveData();refreshAll();haptic(6);
-  showUndoToast('🗑️ נמחק',()=>{
+  const commit=()=>{
     if(backup&&backup.recurring){
       const nowKey=mk(new Date().getFullYear(),new Date().getMonth());
-      undismissRecurring(backup.desc+'|'+backup.cat,nowKey);
+      if(backup.date.startsWith(nowKey)) dismissRecurring(backup.desc+'|'+backup.cat,nowKey);
     }
-    transactions.splice(idx,0,backup);saveData();refreshAll();
-  },()=>{});
+    transactions=transactions.filter(t=>t.id!==id);
+    saveData();refreshAll();haptic(6);
+    showUndoToast('🗑️ נמחק',()=>{
+      if(backup&&backup.recurring){
+        const nowKey=mk(new Date().getFullYear(),new Date().getMonth());
+        undismissRecurring(backup.desc+'|'+backup.cat,nowKey);
+      }
+      transactions.splice(idx,0,backup);saveData();refreshAll();
+    },()=>{});
+  };
+  const row=document.querySelector('.page.active [data-txid="'+id+'"]')||document.querySelector('[data-txid="'+id+'"]');
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!row){commit();return;}
+  const swipeInner=row.closest('.tx-swipe-inner');
+  const target=swipeInner||row;
+  target.style.animation='none';
+  if(reduce){
+    target.style.transition='opacity 0.12s ease';
+    void target.offsetHeight;
+    target.style.opacity='0';
+    setTimeout(commit,120);
+    return;
+  }
+  target.style.transition=swipeInner
+    ?'transform 0.2s cubic-bezier(0.25,1,0.5,1),opacity 0.2s cubic-bezier(0.25,1,0.5,1)'
+    :'transform 0.18s cubic-bezier(0.4,0,1,1),opacity 0.18s cubic-bezier(0.4,0,1,1)';
+  void target.offsetHeight;
+  target.style.transform='translateX(-100%)';
+  target.style.opacity='0';
+  setTimeout(commit,swipeInner?200:180);
 }
 function dismissRecurring(key,monthKey){
   try{const k=_modeKey('budget_dismissed_rec_'+monthKey);const s=new Set(JSON.parse(localStorage.getItem(k)||'[]'));s.add(key);localStorage.setItem(k,JSON.stringify([...s]));}catch(e){}
@@ -3702,7 +3724,7 @@ function _expChevron(open){return '<svg aria-hidden="true" focusable="false" cla
 let _expOpenGroups=new Set();
 function toggleExpGroup(key){_expOpenGroups.has(key)?_expOpenGroups.delete(key):_expOpenGroups.add(key);const y=window.scrollY;renderTxPage();window.scrollTo(0,y);}
 function _expTxCardHtml(t){
-  return '<div class="budget-tx-card">'
+  return '<div class="budget-tx-card" data-txid="'+t.id+'">'
     +'<div class="budget-tx-top" onclick="event.stopPropagation();editTx('+t.id+')">'
       +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
       +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
@@ -3728,7 +3750,7 @@ function _expStructListHtml(kind){
   }
   if(kind==='subs'){
     const active=subscriptions.filter(s=>s.active);
-    const rows=active.map(s=>'<div class="exp-struct-row" onclick="event.stopPropagation();editSub('+s.id+')"><span>'+esc(s.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(subME(s))+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteSub('+s.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    const rows=active.map(s=>'<div class="exp-struct-row" onclick="event.stopPropagation();editSub('+s.id+')"><span>'+esc(s.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(subME(s))+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteSub('+s.id+',this)" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
     return (rows||'<div class="budget-tx-empty">אין מנויים פעילים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openSheet(\'addSubSheet\')">+ הוסף מנוי</button>';
   }
   if(kind==='payments'){
@@ -5515,8 +5537,24 @@ function setBudget(){
 }
 function deleteBudget(cat){
   const backup=budgets[cat];
-  delete budgets[cat];saveData();renderBudget();renderTxPage();
-  showUndoToast('🗑️ התקציב הוסר',()=>{budgets[cat]=backup;saveData();renderBudget();renderTxPage();},()=>{});
+  const commit=()=>{
+    delete budgets[cat];saveData();renderBudget();renderTxPage();
+    showUndoToast('🗑️ התקציב הוסר',()=>{budgets[cat]=backup;saveData();renderBudget();renderTxPage();},()=>{});
+  };
+  const chip=document.querySelector('.budget-chip[data-cat="'+attrArg(cat)+'"]');
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!chip){commit();return;}
+  if(reduce){
+    chip.style.transition='opacity 0.12s ease';
+    chip.style.opacity='0';
+    setTimeout(commit,120);
+    return;
+  }
+  chip.style.transition='transform 0.18s cubic-bezier(0.4,0,1,1),opacity 0.18s cubic-bezier(0.4,0,1,1)';
+  void chip.offsetHeight;
+  chip.style.transform='scale(0.85)';
+  chip.style.opacity='0';
+  setTimeout(commit,180);
 }
 async function addCustomBudgetCat(){
   const remaining=getEffectiveExpenseCats().filter(c=>budgets[c]==null);
@@ -5690,7 +5728,7 @@ function renderBudgetDetail(spent,effLim){
     +'</button>'
     +'<div class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
       +(mTx.length?mTx.map(t=>
-        '<div class="budget-tx-card">'
+        '<div class="budget-tx-card" data-txid="'+t.id+'">'
           +'<div class="budget-tx-top" onclick="editTx('+t.id+')">'
             +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
             +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
@@ -6273,19 +6311,37 @@ function addSubscription(){
   const _sb2=document.querySelector('#addSubSheet .btn-primary');if(_sb2){_sb2.textContent='✓';_sb2.disabled=true;}
   setTimeout(()=>{closeSheet('addSubSheet');showToast('✓ המנוי נוסף!');renderSubscriptions();renderTxPage();},220);
 }
-function deleteSub(id){
+function deleteSub(id,btn){
   const s=subscriptions.find(sub=>sub.id===id);if(!s)return;
   const backup=s,idx=subscriptions.findIndex(sub=>sub.id===id);
-  const subName=(s.name||'').toLowerCase();
-  const unrecurredIds=[];
-  transactions.forEach(t=>{if(t.recurring&&(t.desc||'').toLowerCase()===subName){t.recurring=false;unrecurredIds.push(t.id);}});
-  subscriptions=subscriptions.filter(sub=>sub.id!==id);
-  saveData();renderSubscriptions();renderUpcoming();renderTxPage();
-  showUndoToast('🗑️ מנוי נמחק',()=>{
-    subscriptions.splice(idx,0,backup);
-    transactions.forEach(t=>{if(unrecurredIds.includes(t.id))t.recurring=true;});
+  const commit=()=>{
+    const subName=(s.name||'').toLowerCase();
+    const unrecurredIds=[];
+    transactions.forEach(t=>{if(t.recurring&&(t.desc||'').toLowerCase()===subName){t.recurring=false;unrecurredIds.push(t.id);}});
+    subscriptions=subscriptions.filter(sub=>sub.id!==id);
     saveData();renderSubscriptions();renderUpcoming();renderTxPage();
-  },()=>{});
+    showUndoToast('🗑️ מנוי נמחק',()=>{
+      subscriptions.splice(idx,0,backup);
+      transactions.forEach(t=>{if(unrecurredIds.includes(t.id))t.recurring=true;});
+      saveData();renderSubscriptions();renderUpcoming();renderTxPage();
+    },()=>{});
+  };
+  const row=btn?btn.closest('.exp-struct-row,.sub-card'):null;
+  if(!row){commit();return;}
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  row.style.animation='none';
+  if(reduce){
+    row.style.transition='opacity 0.12s ease';
+    void row.offsetHeight;
+    row.style.opacity='0';
+    setTimeout(commit,120);
+    return;
+  }
+  row.style.transition='transform 0.18s cubic-bezier(0.4,0,1,1),opacity 0.18s cubic-bezier(0.4,0,1,1)';
+  void row.offsetHeight;
+  row.style.transform='translateX(-100%)';
+  row.style.opacity='0';
+  setTimeout(commit,180);
 }
 function toggleSub(id){
   const s=subscriptions.find(s=>s.id===id);if(!s)return;
@@ -6486,7 +6542,7 @@ function renderSubscriptions(){
     const barCls=progState(pct,[[90,'danger'],[70,'warn'],[0,'']]);
     const cycleBar=s.active&&s.nextDate?progBarHTML(pct,{wrapClass:'sub-cycle-bar',fillClass:'sub-cycle-fill',stateClass:barCls}):'';
     const stillUsedBtn=(soon||over)&&s.active?'<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();toggleSub('+s.id+')" aria-label="השהה את '+esc(s.name)+'">עדיין בשימוש?</button>':'';
-    return '<div class="sub-card'+(s.active?'':' paused')+(soon||over?' soon':'')+'" onclick="editSub('+s.id+')" style="cursor:pointer">'+( soon?'<span class="soon-tag">קרוב!</span>':'')+(over?'<span class="overdue-tag">באיחור</span>':'')+'<div class="sub-row1"><div class="sub-identity"><div class="sub-emoji-big" style="display:none">'+s.emoji+'</div>'+subLogo(s.name)+'<div><div class="sub-name-text">'+esc(s.name)+'</div><span class="sub-cat-chip">'+esc(s.category)+'</span></div></div><div class="sub-price"><div class="sub-price-amount">'+fmt(s.amount)+'</div><div class="sub-price-cycle">'+cycleName(s.cycle)+'</div>'+(s.cycle!=='monthly'?'<div class="sub-price-cycle">≈'+fmt(subME(s))+'/חודש</div>':'')+'</div></div>'+cycleBar+'<div class="sub-row2"><div class="sub-next-label'+(soon||over?' soon-txt':'')+'">'+nl+'</div><div class="sub-btns">'+stillUsedBtn+'<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteSub('+s.id+')" aria-label="מחק מנוי">✕</button></div></div></div>';
+    return '<div class="sub-card'+(s.active?'':' paused')+(soon||over?' soon':'')+'" onclick="editSub('+s.id+')" style="cursor:pointer">'+( soon?'<span class="soon-tag">קרוב!</span>':'')+(over?'<span class="overdue-tag">באיחור</span>':'')+'<div class="sub-row1"><div class="sub-identity"><div class="sub-emoji-big" style="display:none">'+s.emoji+'</div>'+subLogo(s.name)+'<div><div class="sub-name-text">'+esc(s.name)+'</div><span class="sub-cat-chip">'+esc(s.category)+'</span></div></div><div class="sub-price"><div class="sub-price-amount">'+fmt(s.amount)+'</div><div class="sub-price-cycle">'+cycleName(s.cycle)+'</div>'+(s.cycle!=='monthly'?'<div class="sub-price-cycle">≈'+fmt(subME(s))+'/חודש</div>':'')+'</div></div>'+cycleBar+'<div class="sub-row2"><div class="sub-next-label'+(soon||over?' soon-txt':'')+'">'+nl+'</div><div class="sub-btns">'+stillUsedBtn+'<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteSub('+s.id+',this)" aria-label="מחק מנוי">✕</button></div></div></div>';
   }).join('');
 }
 
