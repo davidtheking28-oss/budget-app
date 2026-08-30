@@ -3016,7 +3016,7 @@ function closeMonthSheet(){
   const sh=ov.querySelector('.month-sheet');
   if(sh){
     sh.style.animation='sheetExit 0.22s cubic-bezier(0.4,0,1,1) both';
-    setTimeout(()=>{ov.classList.remove('open');sh.style.animation='';},210);
+    setTimeout(()=>{ov.classList.remove('open');sh.style.animation='';},220);
   } else {
     ov.classList.remove('open');
   }
@@ -3090,7 +3090,7 @@ function closeSheet(id){
   const sh=ov.querySelector('.sheet,.wiz-sheet');
   if(sh){
     sh.style.animation='sheetExit 0.22s cubic-bezier(0.4,0,1,1) both';
-    setTimeout(()=>{ov.classList.remove('open');sh.style.animation='';},210);
+    setTimeout(()=>{ov.classList.remove('open');sh.style.animation='';},220);
   } else {
     ov.classList.remove('open');
   }
