@@ -140,9 +140,10 @@
        "switch the FAB to left/right box centering like the nav bar". */
     .fab{-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;outline:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 20px);left:0;right:0;margin:0 auto;z-index:190;width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#0d9488,#0a7a62);border:none;color:white;cursor:pointer;box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 6px rgba(var(--accent-rgb),0.10);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;transition:transform 0.22s cubic-bezier(0.22,1,0.36,1),box-shadow 0.22s;will-change:transform;}
     .fab.pulse{animation:fabPulse 1.8s ease-in-out 3;}
+    [data-month-arrow]{width:44px!important;height:44px!important;}
     @keyframes fadeInUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
     @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 0 rgba(var(--accent-rgb),0.4);}50%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 14px rgba(var(--accent-rgb),0);}}
-    main{padding:calc(76px + env(safe-area-inset-top,0px)) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 100px);max-width:600px;margin:0 auto;}
+    main{padding:calc(76px + env(safe-area-inset-top,0px)) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 140px);max-width:600px;margin:0 auto;}
     @media (min-width:860px){
       main{max-width:760px;}
     }
@@ -2300,7 +2301,7 @@
             <div style="font-size:0.75rem;color:var(--text3);margin-top:2px;">נתונים נפרדים לעסק ולחשבון הפרטי</div>
           </div>
           <label class="ios-toggle">
-            <input type="checkbox" id="settingBusinessMode" onchange="toggleBusinessMode(this.checked)">
+            <input type="checkbox" id="settingBusinessMode" onchange="toggleBusinessMode(this.checked)" aria-label="הפרד חשבון עסקי">
             <span class="ios-t"></span>
           </label>
         </div>
@@ -2313,7 +2314,7 @@
             <div style="font-size:0.75rem;color:var(--text3);margin-top:2px;">תזכורות, חריגות תקציב וחידושי מנויים</div>
           </div>
           <label class="ios-toggle">
-            <input type="checkbox" id="settingPushEnabled" onchange="togglePush(this.checked)">
+            <input type="checkbox" id="settingPushEnabled" onchange="togglePush(this.checked)" aria-label="התראות Push">
             <span class="ios-t"></span>
           </label>
         </div>
@@ -5280,7 +5281,7 @@ function renderDashGoals(){
     const lim=(_dashPeriod==='month'&&budgets[cat])?Math.max(0,budgets[cat]+_budgetCarry(cat)):(budgets[cat]||0);
     const pct=lim?Math.min(s/lim,1):0;
     const state=progState(Math.round(pct*100),[[90,'danger'],[70,'warn'],[0,'']]);
-    return '<div class="dash-ring-item" data-cat="'+esc(cat)+'">'
+    return '<div class="dash-ring-item" data-cat="'+esc(cat)+'" title="'+esc(cat)+'">'
       +'<svg aria-hidden="true" focusable="false" viewBox="0 0 80 80" class="dash-ring-svg">'
         +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-track"/>'
         +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-fill'+(state?' '+state:'')+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct))+'"/>'
