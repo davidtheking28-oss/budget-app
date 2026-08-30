@@ -949,8 +949,9 @@
     .mode-pill-current{display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1.5px solid var(--border);border-radius:999px;padding:8px 18px;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent;}
     .mode-pill-current svg{transition:transform 0.2s;flex-shrink:0;}
     .mode-pill-current.open svg{transform:rotate(180deg);}
-    .mode-dropdown{display:none;flex-direction:column;gap:2px;position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,0.16);z-index:20;min-width:130px;}
-    .mode-dropdown.open{display:flex;}
+    .mode-dropdown{display:none;flex-direction:column;gap:2px;position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);transform-origin:top center;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,0.16);z-index:20;min-width:130px;}
+    .mode-dropdown.open{display:flex;animation:modeDropIn 0.16s cubic-bezier(0.22,1,0.36,1) both;}
+    @keyframes modeDropIn{from{opacity:0;transform:translateX(-50%) scale(0.92) translateY(-4px);}to{opacity:1;transform:translateX(-50%) scale(1) translateY(0);}}
     .mode-btn{padding:8px 18px;border-radius:10px;border:none;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text2);background:transparent;transition:background 0.18s,color 0.18s;white-space:nowrap;text-align:center;}
     .mode-btn.active{background:var(--accent);color:#fff;}
     /* ── iOS toggle ──────────────────────────── */
@@ -3010,7 +3011,16 @@ const SUN  = `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill
 
 let sheetDisplayYear = new Date().getFullYear();
 function openMonthSheet(){sheetDisplayYear=currentYear;renderMonthGrid();document.getElementById('monthSheetOverlay').classList.add('open');}
-function closeMonthSheet(){document.getElementById('monthSheetOverlay').classList.remove('open');}
+function closeMonthSheet(){
+  const ov=document.getElementById('monthSheetOverlay');
+  const sh=ov.querySelector('.month-sheet');
+  if(sh){
+    sh.style.animation='sheetExit 0.22s cubic-bezier(0.4,0,1,1) both';
+    setTimeout(()=>{ov.classList.remove('open');sh.style.animation='';},210);
+  } else {
+    ov.classList.remove('open');
+  }
+}
 function sheetYear(d){sheetDisplayYear+=d;renderMonthGrid();}
 function renderMonthGrid(){
   document.getElementById('sheetYear').textContent=sheetDisplayYear;
@@ -3447,6 +3457,7 @@ function closeAllSwipes(){
     closeAllSwipes();
     const inner=wrap.querySelector('.tx-swipe-inner');
     let startX=e.clientX,startY=e.clientY,dir=null,moved=false;
+    let lastX=e.clientX,lastT=performance.now(),vx=0;
     function onMove(e2){
       const dx=e2.clientX-startX,dy=e2.clientY-startY;
       if(!dir){
@@ -3455,6 +3466,8 @@ function closeAllSwipes(){
       }
       if(dir!=='h')return;
       moved=true;
+      const now=performance.now(),dt=now-lastT;
+      if(dt>0){vx=(e2.clientX-lastX)/dt;lastX=e2.clientX;lastT=now;} // px/ms, signed
       const clamped=Math.max(-SWIPE_W,Math.min(dx,0)); // drag left reveals delete
       inner.style.transform='translateX('+clamped+'px)';
     }
@@ -3462,7 +3475,9 @@ function closeAllSwipes(){
       inner.classList.remove('swiping');
       if(moved){
         const cur=parseFloat((inner.style.transform||'').replace(/[^-\d.]/g,''))||0;
-        inner.style.transform=cur<-SWIPE_W/2?'translateX(-'+SWIPE_W+'px)':'';
+        // a fast flick commits/cancels by direction regardless of position; otherwise fall back to the halfway point
+        const open=vx<-0.3?true:(vx>0.3?false:cur<-SWIPE_W/2);
+        inner.style.transform=open?'translateX(-'+SWIPE_W+'px)':'';
         _lastSwipeEnd=Date.now();
       }
       cleanup();
