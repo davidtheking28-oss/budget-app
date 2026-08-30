@@ -823,7 +823,7 @@
     .tx-swipe-inner{position:relative;z-index:2;transition:transform 0.2s cubic-bezier(0.25,1,0.5,1);background:var(--surface);border-radius:12px;}
     .tx-swipe-inner.swiping{transition:none;}
     /* Delete sits hidden behind the row; swiping the row left reveals a compact red chip */
-    .tx-delete-reveal{position:absolute;top:0;left:0;z-index:1;height:100%;width:64px;display:flex;align-items:center;justify-content:center;background:transparent;cursor:pointer;}
+    .tx-delete-reveal{position:absolute;top:0;right:0;z-index:1;height:100%;width:64px;display:flex;align-items:center;justify-content:center;background:transparent;cursor:pointer;}
     .tx-delete-reveal::before{content:'';position:absolute;width:40px;height:40px;border-radius:12px;background:var(--red,#ef4444);}
     .tx-delete-reveal svg{position:relative;width:18px;height:18px;stroke:white;stroke-width:2.2;}
     .tx-swipe-inner .tx-item{border-bottom:none;padding:11px 12px;}
