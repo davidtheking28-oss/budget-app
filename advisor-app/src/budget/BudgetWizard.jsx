@@ -8,7 +8,7 @@ import { toast } from '../toast.js';
 import styles from './BudgetWizard.module.css';
 import { fmt } from '../format.js';
 
-const STEPS = ['הכנסות', 'הוצאות קבועות', 'תקציב משתנה', 'יעדים', 'סיכום'];
+const STEPS = ['הכנסות', 'תקציב מול ביצוע', 'יעדים', 'סיכום'];
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
 const SUGGESTED_FIXED = ['דיור', 'ארנונה', 'חשמל', 'מים וביוב', 'ביטוחים', 'חינוך, חוגים וקייטנות'];
 const SUGGESTED_VAR = ['מזון לבית', 'אוכל בחוץ ובילויים', 'דלק וחניה', 'ביגוד והנעלה', 'בריאות', 'תחביבים'];
@@ -37,6 +37,13 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
   const fixedActual = useMemo(() => {
     const map = {};
     monthTx.filter(t => t.type === 'expense' && FIXED_CATS.includes(t.cat)).forEach(t => {
+      map[t.cat] = (map[t.cat] || 0) + t.amount;
+    });
+    return map;
+  }, [monthTx]);
+  const variableActual = useMemo(() => {
+    const map = {};
+    monthTx.filter(t => t.type === 'expense' && !FIXED_CATS.includes(t.cat)).forEach(t => {
       map[t.cat] = (map[t.cat] || 0) + t.amount;
     });
     return map;
@@ -235,19 +242,15 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
 
         {step === 1 && (
           <div className={styles.card}>
-            <div className={styles.cardTitle}>מה יוצא כל חודש בלי קשר להתנהגות</div>
+            <div className={styles.cardTitle}>תקציב מול ביצוע — לפי קטגוריה</div>
+            <div className={styles.groupTitle}>הוצאות קבועות</div>
             {rowList(fixed, setFixed, 'שם ההוצאה הקבועה', SUGGESTED_FIXED, name => fixedActual[name] || 0)}
+            <div className={styles.groupTitle}>הוצאות משתנות</div>
+            {rowList(variable, setVariable, 'שם הקטגוריה', SUGGESTED_VAR, name => variableActual[name] || 0)}
           </div>
         )}
 
         {step === 2 && (
-          <div className={styles.card}>
-            <div className={styles.cardTitle}>כמה להקצות לכל קטגוריה משתנה</div>
-            {rowList(variable, setVariable, 'שם הקטגוריה', SUGGESTED_VAR)}
-          </div>
-        )}
-
-        {step === 3 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>למה חוסכים</div>
             <div className={styles.rows}>
@@ -279,7 +282,7 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
           </div>
         )}
 
-        {step === 4 && (
+        {step === 3 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>סיכום התקציב</div>
             <div className={styles.kpiRow}>
