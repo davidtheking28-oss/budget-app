@@ -29,8 +29,10 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
   const incomeActual = useMemo(() => {
     const map = {};
     monthTx.filter(t => t.type === 'income').forEach(t => {
-      const key = (t.desc || '').trim().toLowerCase();
-      map[key] = (map[key] || 0) + t.amount;
+      const descKey = (t.desc || '').trim().toLowerCase();
+      if (descKey) map[descKey] = (map[descKey] || 0) + t.amount;
+      const catKey = (t.cat || '').trim().toLowerCase();
+      if (catKey) map[catKey] = (map[catKey] || 0) + t.amount;
     });
     return map;
   }, [monthTx]);
