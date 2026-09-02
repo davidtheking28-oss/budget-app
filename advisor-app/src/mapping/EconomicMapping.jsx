@@ -20,6 +20,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { toast } from '../toast.js';
 import styles from './EconomicMapping.module.css';
+import { fmt } from '../format.js';
 
 const MAX_DIM = 1500;
 const CONCURRENCY = 3;
@@ -30,8 +31,6 @@ const SCAN_ICON = (
     <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
   </svg>
 );
-
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 function monthOptions() {
   const now = new Date();

@@ -10,10 +10,10 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import { addItem, removeItem } from './itemHelpers.js';
 import styles from './Assets.module.css';
+import { fmt } from '../format.js';
 
 ChartJS.register(ArcElement, Tooltip);
 
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 const ASSET_CATS = ['עו״ש', 'קרן פנסיה', 'קרן השתלמות', 'קופת גמל', 'תיק השקעות', 'נדל״ן', 'חיסכון', 'אחר'];
 // Liabilities live in `loans`, the same array the subscriptions tab edits,
 // so both screens stay a single source of truth.

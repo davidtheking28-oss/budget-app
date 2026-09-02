@@ -11,8 +11,8 @@ import { toast } from '../toast.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
 import styles from './Budget.module.css';
+import { fmt } from '../format.js';
 
-const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const MONTH_NAMES = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 const CALENDAR_ICON = (

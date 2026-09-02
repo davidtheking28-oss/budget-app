@@ -8,8 +8,8 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import styles from './Report.module.css';
+import { fmt } from '../format.js';
 
-const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
 export default function Report({ clientUserId, advisorId, year, month, email, onClose }) {

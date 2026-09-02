@@ -9,8 +9,8 @@ import { formatDate } from './monthUtils.js';
 import { toast } from '../toast.js';
 import { addItem, updateItem, removeItem } from './itemHelpers.js';
 import styles from './Subscriptions.module.css';
+import { fmt } from '../format.js';
 
-const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const CYCLE_LABELS = { monthly: 'חודשי', annual: 'שנתי', weekly: 'שבועי' };
 export function monthlyEquivalent(cycle, amount) {
   return { monthly: amount, annual: amount / 12, weekly: amount * 4.33 }[cycle] ?? amount;

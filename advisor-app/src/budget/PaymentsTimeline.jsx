@@ -1,10 +1,9 @@
 import { currentInstallments } from './Credit.jsx';
 import styles from './PaymentsTimeline.module.css';
+import { fmt } from '../format.js';
 
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 const MONTHS_HE_SHORT = ['ינו׳', 'פבר׳', 'מרץ', 'אפר׳', 'מאי', 'יוני', 'יולי', 'אוג׳', 'ספט׳', 'אוק׳', 'נוב׳', 'דצמ׳'];
-
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
 
 export function offsetLabel(offset, now = new Date(), long = false) {
   const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);

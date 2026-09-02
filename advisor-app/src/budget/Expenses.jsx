@@ -11,8 +11,8 @@ import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import styles from './Expenses.module.css';
+import { fmt } from '../format.js';
 
-const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const MONTH_NAMES = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 const CALENDAR_ICON = (

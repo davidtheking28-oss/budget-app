@@ -10,6 +10,7 @@ import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
 import { initials } from '../clientIdentity.js';
 import styles from './ClientList.module.css';
+import { fmt } from '../format.js';
 
 function HealthBadge({ score }) {
   if (score === null) return null;
@@ -36,8 +37,6 @@ function byUrgency(a, b) {
   if (diff !== 0) return diff;
   return (a.healthScore ?? 101) - (b.healthScore ?? 101);
 }
-
-const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 function RemainingStat({ value }) {
   const display = useCountUp(value ?? 0);

@@ -6,8 +6,7 @@ import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import styles from './BudgetWizard.module.css';
-
-const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+import { fmt } from '../format.js';
 
 const STEPS = ['הכנסות', 'הוצאות קבועות', 'תקציב משתנה', 'יעדים', 'סיכום'];
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];

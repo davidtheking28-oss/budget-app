@@ -10,10 +10,10 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { catColor, chartTheme } from '../categories.js';
 import styles from './Dashboard.module.css';
+import { fmt } from '../format.js';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
 
-const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
 
 function NetHero({ value }) {

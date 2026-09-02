@@ -9,8 +9,8 @@ import { addItem, updateItem, removeItem } from './itemHelpers.js';
 import PaymentsTimeline from './PaymentsTimeline.jsx';
 import { monthSummary } from './budgetMath.js';
 import styles from './Subscriptions.module.css';
+import { fmt } from '../format.js';
 
-const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 const CREDIT_ICON = (

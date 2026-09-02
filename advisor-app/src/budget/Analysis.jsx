@@ -7,10 +7,9 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { catColor, chartTheme } from '../categories.js';
 import styles from './Analysis.module.css';
+import { fmt } from '../format.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
-
-const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
 
 export default function Analysis({ clientUserId, year, month }) {
   const CT = chartTheme();

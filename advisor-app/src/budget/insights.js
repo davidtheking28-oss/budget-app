@@ -1,7 +1,6 @@
 import { getMonthTx } from './monthUtils.js';
 import { monthSummary } from './budgetMath.js';
-
-const fmt = n => '₪' + Math.ceil(n).toLocaleString('he-IL');
+import { fmt } from '../format.js';
 
 export function computeInsights(data, year, month) {
   const insights = [];
