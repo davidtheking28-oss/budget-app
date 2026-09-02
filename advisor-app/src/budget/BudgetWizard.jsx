@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { FIXED_CATS, CHART_PALETTE } from '../categories.js';
+import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
@@ -10,8 +10,6 @@ import { fmt } from '../format.js';
 
 const STEPS = ['הכנסות', 'הוצאות קבועות', 'הוצאות משתנות', 'סיכום'];
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
-const SUGGESTED_FIXED = ['דיור', 'ארנונה', 'חשמל', 'מים וביוב', 'ביטוחים', 'חינוך, חוגים וקייטנות'];
-const SUGGESTED_VAR = ['מזון לבית', 'אוכל בחוץ ובילויים', 'דלק וחניה', 'ביגוד והנעלה', 'בריאות', 'תחביבים'];
 
 function sumAmounts(list) {
   return list.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
@@ -63,14 +61,14 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
     const existing = data?.settings?.incomeSources || [];
     return existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '' })) : [{ name: 'שכר', amount: '' }];
   });
-  const [fixed, setFixed] = useState(() =>
-    (data?.fixed_expenses || []).map(f => ({ name: f.id, amount: f.amount ?? '' }))
-  );
-  const [variable, setVariable] = useState(() =>
-    Object.entries(data?.budgets || {})
-      .filter(([c]) => !FIXED_CATS.includes(c))
-      .map(([name, amount]) => ({ name, amount }))
-  );
+  const [fixed, setFixed] = useState(() => {
+    const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
+    return FIXED_CATS.map(name => ({ name, amount: existing[name] ?? '' }));
+  });
+  const [variable, setVariable] = useState(() => {
+    const existing = data?.budgets || {};
+    return EXPENSE_CATS.map(name => ({ name, amount: existing[name] ?? '' }));
+  });
   const [goals] = useState(() =>
     (data?.goals || []).map(g => ({ id: g.id, name: g.name || '', target: g.target ?? '', months: g.months ?? '', saved: g.saved || 0 }))
   );
@@ -249,14 +247,14 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
         {step === 1 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>הוצאות קבועות</div>
-            {rowList(fixed, setFixed, 'שם ההוצאה הקבועה', SUGGESTED_FIXED, name => fixedActual[name] || 0)}
+            {rowList(fixed, setFixed, 'שם ההוצאה הקבועה', [], name => fixedActual[name] || 0)}
           </div>
         )}
 
         {step === 2 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>הוצאות משתנות</div>
-            {rowList(variable, setVariable, 'שם הקטגוריה', SUGGESTED_VAR, name => variableActual[name] || 0)}
+            {rowList(variable, setVariable, 'שם הקטגוריה', [], name => variableActual[name] || 0)}
           </div>
         )}
 
