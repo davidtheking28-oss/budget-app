@@ -21,6 +21,25 @@ async function notifyMeetingInstant(meetingId) {
   } catch { return null; }
 }
 
+// Best-effort: turns a saved meeting summary into suggested client tasks via the
+// summarize-meeting edge function. Never throws — callers treat null as "no suggestion".
+export async function suggestTasksFromSummary(summary) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return null;
+    const res = await fetch(SUPA_URL + '/functions/v1/summarize-meeting', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+      body: JSON.stringify({ summary })
+    });
+    if (!res.ok) return null;
+    const body = await res.json().catch(() => null);
+    const tasks = body?.tasks;
+    if (!Array.isArray(tasks) || !tasks.length) return null;
+    return tasks;
+  } catch { return null; }
+}
+
 export function useClientCrm(advisorId, clientId) {
   const [notes, setNotes] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -148,8 +167,9 @@ export function useClientCrm(advisorId, clientId) {
   async function setMeetingSummary(id, summary) {
     setMeetings(prev => prev.map(m => m.id === id ? { ...m, summary: summary || null } : m));
     const { error } = await supabase.from('advisor_meetings').update({ summary: summary || null }).eq('id', id).eq('advisor_id', advisorId);
-    if (error) { toast('שגיאה בשמירת הסיכום', 'error'); reload(); return; }
+    if (error) { toast('שגיאה בשמירת הסיכום', 'error'); reload(); return false; }
     toast('סיכום הפגישה נשמר', 'success');
+    return true;
   }
 
   async function respondMeeting(id, status) {

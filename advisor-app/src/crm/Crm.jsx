@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useClientCrm } from './useClientCrm.js';
+import { useClientCrm, suggestTasksFromSummary } from './useClientCrm.js';
 import { formatDate, formatDateTime } from '../budget/monthUtils.js';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -214,7 +214,16 @@ export default function Crm({ advisorId, clientId, onChange }) {
                     />
                     {summaryDirty && (
                       <Button
-                        onClick={() => { setMeetingSummary(m.id, summaryValue.trim()); setSummaryDrafts(prev => { const next = { ...prev }; delete next[m.id]; return next; }); }}
+                        onClick={async () => {
+                          const trimmed = summaryValue.trim();
+                          const ok = await setMeetingSummary(m.id, trimmed);
+                          setSummaryDrafts(prev => { const next = { ...prev }; delete next[m.id]; return next; });
+                          if (ok && trimmed) {
+                            const tasks = await suggestTasksFromSummary(trimmed);
+                            if (tasks) { setTaskTitle(tasks.join('\n')); setTaskForClient(true); }
+                            else toast('לא הצלחתי להציע משימות, אפשר להקליד ידנית', 'info');
+                          }
+                        }}
                       >
                         שמור סיכום
                       </Button>
