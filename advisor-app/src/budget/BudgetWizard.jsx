@@ -146,6 +146,23 @@ export default function BudgetWizard({ data, save, year, month }) {
   const breakdownTotal = breakdown.reduce((s, b) => s + b.value, 0) || 1;
 
   function rowList(list, setter, placeholder, suggestions, actualOf, compact = false, dayField = false) {
+    const dayBox = (r, i) => dayField && (
+      <div className={styles.itemAmountBox}>
+        <div className={styles.itemAmountBoxLabel}>יום בחודש</div>
+        <input
+          className={styles.itemAmountInput}
+          type="number"
+          inputMode="numeric"
+          min="1"
+          max="28"
+          aria-label="יום קבלת ההכנסה בחודש"
+          placeholder="—"
+          value={r.day || ''}
+          onChange={e => updateRow(setter, i, { day: e.target.value })}
+        />
+      </div>
+    );
+
     const amounts = (r, i) => (
       <>
         <div className={styles.itemAmountBox}>
@@ -194,7 +211,7 @@ export default function BudgetWizard({ data, save, year, month }) {
                 />
                 <DeleteButton onClick={() => removeRow(setter, i)} />
               </div>
-              <div className={styles.itemCardAmounts}>{amounts(r, i)}</div>
+              <div className={styles.itemCardAmounts}>{dayBox(r, i)}{amounts(r, i)}</div>
             </div>
           ) : (
             <div className={styles.itemRow} key={i}>
@@ -206,22 +223,7 @@ export default function BudgetWizard({ data, save, year, month }) {
                 value={r.name}
                 onChange={e => updateRow(setter, i, { name: e.target.value })}
               />
-              {dayField && (
-                <div className={styles.itemAmountBox}>
-                  <div className={styles.itemAmountBoxLabel}>יום בחודש</div>
-                  <input
-                    className={styles.itemAmountInput}
-                    type="number"
-                    inputMode="numeric"
-                    min="1"
-                    max="28"
-                    aria-label="יום קבלת ההכנסה בחודש"
-                    placeholder="—"
-                    value={r.day || ''}
-                    onChange={e => updateRow(setter, i, { day: e.target.value })}
-                  />
-                </div>
-              )}
+              {dayBox(r, i)}
               {amounts(r, i)}
               <DeleteButton onClick={() => removeRow(setter, i)} />
             </div>
@@ -262,7 +264,7 @@ export default function BudgetWizard({ data, save, year, month }) {
         {step === 0 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>מאיפה מגיע הכסף?</div>
-            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, false, true)}
+            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, true, true)}
           </div>
         )}
 
