@@ -20,7 +20,7 @@
   font-family: var(--font-body);
   font-size: var(--text-base);
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--motion) var(--ease-out-expo);
 }
 
 .input:focus-visible {
@@ -152,7 +152,7 @@
   font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color var(--motion) var(--ease-out-expo), background var(--motion) var(--ease-out-expo);
   font-family: var(--font-body);
 }
 
