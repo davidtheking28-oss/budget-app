@@ -52,8 +52,9 @@ export default function Budget({ clientUserId, advisorId, year, month, onSelectM
     const amt = parseFloat(limit);
     if (!amt || amt <= 0) { toast('הזן תקרה תקינה', 'error'); return; }
     setSaving(true);
-    await save(cur => ({ budgets: { ...(cur.budgets || {}), [selectedCat]: amt } }));
+    const ok = await save(cur => ({ budgets: { ...(cur.budgets || {}), [selectedCat]: amt } }));
     setSaving(false);
+    if (!ok) return;
     toast('תקציב עודכן', 'success');
     setLimit('');
   }

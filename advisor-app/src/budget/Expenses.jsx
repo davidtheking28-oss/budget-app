@@ -144,8 +144,9 @@ export default function Expenses({ clientUserId, advisorId, year, month, onSelec
       fixed: false
     };
     setAdding(true);
-    await save(cur => ({ transactions: [tx, ...(cur.transactions || [])] }));
+    const ok = await save(cur => ({ transactions: [tx, ...(cur.transactions || [])] }));
     setAdding(false);
+    if (!ok) return;
     toast(txType === 'income' ? 'הכנסה נוספה' : 'הוצאה נוספה', 'success');
     setDesc('');
     setAmount('');

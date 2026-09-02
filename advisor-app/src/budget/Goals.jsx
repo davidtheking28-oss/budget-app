@@ -38,8 +38,9 @@ export default function Goals({ clientUserId, advisorId }) {
     const m = Math.max(0, parseInt(months, 10) || 0);
     const goal = { id: Date.now(), name: name.trim(), target: t, months: m, saved: 0 };
     setAdding(true);
-    await save(cur => ({ goals: [...(cur.goals || []), goal] }));
+    const ok = await save(cur => ({ goals: [...(cur.goals || []), goal] }));
     setAdding(false);
+    if (!ok) return;
     toast('יעד נוצר', 'success');
     setName(''); setTarget(''); setMonths('');
   }
