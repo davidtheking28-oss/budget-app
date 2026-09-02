@@ -17,6 +17,14 @@ function sumAmounts(list) {
   return list.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
 }
 
+// Loose match so a suggestion chip doesn't offer a category the advisor already added
+// under a different custom name (e.g. "ביטוחים" vs. an existing "ביטוח בריאות") — compares
+// the first few characters of each word so a shared root counts as the same category.
+function sameCategory(a, b) {
+  const words = s => s.trim().split(/\s+/);
+  return words(a).some(wa => words(b).some(wb => wa.slice(0, 4) === wb.slice(0, 4)));
+}
+
 export default function BudgetWizard({ data, save, year, month, onClose }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -94,7 +102,7 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
   function removeRow(setter, i) { setter(prev => prev.filter((_, idx) => idx !== i)); }
 
   function pickSuggestion(setter, list, name) {
-    if (list.some(r => r.name === name)) { toast('כבר ברשימה', 'info'); return; }
+    if (list.some(r => sameCategory(r.name, name))) { toast('כבר ברשימה', 'info'); return; }
     addRow(setter, name);
   }
 
@@ -148,7 +156,7 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
       <>
         {suggestions.length > 0 && (
           <div className={styles.chips}>
-            {suggestions.filter(s => !list.some(r => r.name === s)).map(s => (
+            {suggestions.filter(s => !list.some(r => sameCategory(r.name, s))).map(s => (
               <button type="button" key={s} className={styles.chip} onClick={() => pickSuggestion(setter, list, s)}>
                 {getCategoryIcon(s)}{s}
               </button>
