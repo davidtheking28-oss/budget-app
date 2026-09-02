@@ -435,7 +435,7 @@
 
 .totalsStrip {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: var(--space-2);
 }
 
@@ -452,6 +452,7 @@
 
 .totalIncome { background: rgba(var(--green-rgb), 0.1); color: var(--green); }
 .totalExpense { background: rgba(var(--red-rgb), 0.1); color: var(--red); }
+.totalGoal { background: rgba(var(--accent-rgb), 0.1); color: var(--accent); }
 .totalFlowOk { background: rgba(var(--green-rgb), 0.1); color: var(--green); }
 .totalFlowBad { background: rgba(var(--red-rgb), 0.1); color: var(--red); }
 .totalCell span:last-child { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
