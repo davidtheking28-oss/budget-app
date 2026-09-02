@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
 import { usePendingInvites } from './usePendingInvites.js';
+import PipelineTable from './PipelineTable.jsx';
 import { isStale, relativeTime } from './useClientFreshness.js';
 import { useCountUp } from '../useCountUp.js';
 import Skeleton from '../components/Skeleton.jsx';
@@ -201,6 +202,8 @@ export default function ClientList({ advisorId, onSelect }) {
           <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} icon={ICON_CHECKLIST} />
         </div>
       )}
+
+      <PipelineTable advisorId={advisorId} />
 
       <div className={styles.sectionHead}>
         <h2 className={styles.sectionTitle}>הלקוחות שלי {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>

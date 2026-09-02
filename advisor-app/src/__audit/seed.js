@@ -230,6 +230,12 @@ export function makeDb(mode) {
       { id: 'm1', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: new Date(Date.now() + 4 * 86400000).toISOString(), notes: 'סקירה רבעונית', for_client: true, created_at: iso(10) },
       { id: 'm2', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: iso(40), notes: 'פגישת היכרות', for_client: true, created_at: iso(45) }
     ],
+    advisor_leads: empty ? [] : [
+      { id: 'p1', advisor_id: ADVISOR, name: 'משפחת כהן', case_owner: 'דוד', savings_goal: 'קרן חירום', last_meeting: d(Math.max(1, now.getDate() - 27)), next_meeting: d(Math.min(28, now.getDate() + 6)), stage: 'monthly_tracking', created_at: iso(60) },
+      { id: 'p2', advisor_id: ADVISOR, name: 'משפחת לוי', case_owner: 'דוד', savings_goal: 'סגירת חובות', last_meeting: d(Math.max(1, now.getDate() - 12)), next_meeting: d(Math.min(28, now.getDate() + 3)), stage: 'building_plan', created_at: iso(40) },
+      { id: 'p3', advisor_id: ADVISOR, name: 'עסק — סטודיו נטע', case_owner: 'דוד', savings_goal: 'תזרים עסקי', last_meeting: d(Math.max(1, now.getDate() - 5)), next_meeting: d(Math.min(28, now.getDate() + 1)), stage: 'intro_meeting', created_at: iso(10) },
+      { id: 'p4', advisor_id: ADVISOR, name: 'משפחת אברהמי', case_owner: 'דוד', savings_goal: 'חריגת אשראי', last_meeting: d(Math.max(1, now.getDate() - 20)), next_meeting: d(Math.max(1, now.getDate() - 1)), stage: 'needs_attention', created_at: iso(70) }
+    ],
     households: empty ? [] : [
       { id: 'h1', owner_id: CLIENT_A, owner_email: 'yael.abramovich@gmail.com', member_id: 'partner-of-' + CLIENT_A, member_email: 'partner.abramovich@gmail.com', invite_code: 'USEDUP1', created_at: iso(80) }
     ]
