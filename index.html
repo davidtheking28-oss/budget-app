@@ -3075,6 +3075,8 @@ function _sheetKeydown(e){
 let _sheetOpenerEl=null;
 function openSheet(id){
   const ov=document.getElementById(id);
+  if(id==='addBudgetSheet'){const b=ov.querySelector('.btn-primary');if(b){b.textContent='שמור תקציב';b.disabled=false;}}
+  if(id==='addSubSheet'){const b=ov.querySelector('.btn-primary');if(b){b.textContent='הוסף מנוי';b.disabled=false;}}
   ov.classList.add('open');
   ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
   if(!_openSheets.size)_sheetOpenerEl=document.activeElement;
