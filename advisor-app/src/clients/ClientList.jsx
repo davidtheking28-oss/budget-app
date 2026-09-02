@@ -179,10 +179,6 @@ export default function ClientList({ advisorId, onSelect }) {
   const overageCount = clients.filter(c => c.hasOverage).length;
   const overageAmountTotal = clients.reduce((s, c) => s + (c.overageAmount || 0), 0);
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
-  const urgent = clients
-    .filter(c => c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting || c.openTasks > 0)
-    .sort((a, b) => (b.hasOverage - a.hasOverage) || (b.hasFailedUpload - a.hasFailedUpload) || (b.hasDeclinedMeeting - a.hasDeclinedMeeting) || (b.openTasks - a.openTasks))
-    .slice(0, 4);
 
   return (
     <div className={styles.page}>
@@ -203,28 +199,6 @@ export default function ClientList({ advisorId, onSelect }) {
             <StatSecondary label="סה״כ חריגה בכסף" value={overageAmountTotal} tone="statRed" icon={ICON_ALERT} format={fmt} />
           )}
           <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} icon={ICON_CHECKLIST} />
-        </div>
-      )}
-
-      {urgent.length > 0 && (
-        <div className={styles.urgentPanel}>
-          <div className={styles.urgentTitle}>דורש טיפול היום</div>
-          <div className={styles.urgentList}>
-            {urgent.map(c => (
-              <button type="button" key={c.id} className={styles.urgentRow} onClick={() => onSelect(c.client_id, c.client_email)}>
-                <span className={styles.urgentDot + ' ' + (c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting ? styles.urgentDotRed : styles.urgentDotGold)} aria-hidden="true" />
-                <span className={styles.urgentEmail}>{c.client_email}</span>
-                <span className={styles.urgentReason}>
-                  {[
-                    c.hasOverage && 'חריגת תקציב',
-                    c.hasFailedUpload && 'העלאה נכשלה',
-                    c.hasDeclinedMeeting && 'פגישה נדחתה',
-                    c.openTasks > 0 && `${c.openTasks} משימות פתוחות`
-                  ].filter(Boolean).join(' · ')}
-                </span>
-              </button>
-            ))}
-          </div>
         </div>
       )}
 
@@ -318,7 +292,10 @@ export default function ClientList({ advisorId, onSelect }) {
                 onClick={() => onSelect(c.client_id, c.client_email)}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(c.client_id, c.client_email); } }}
               >
-                <div className={styles.initial} aria-hidden="true">{initials(c.client_email)}</div>
+                <div className={styles.initial} aria-hidden="true">
+                  {initials(c.client_email)}
+                  {(c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting) && <span className={styles.alertDot} title="דורש טיפול" />}
+                </div>
                 <div className={styles.info}>
                   <div className={styles.email}>
                     <HealthBadge score={c.healthScore} />

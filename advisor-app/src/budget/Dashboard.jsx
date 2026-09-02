@@ -4,7 +4,6 @@ import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
 import { computeInsights } from './insights.js';
 import { addMonths, getMonthTx } from './monthUtils.js';
-import { useCountUp } from '../useCountUp.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -15,44 +14,6 @@ import { fmt } from '../format.js';
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend);
 
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
-
-function NetHero({ value }) {
-  const display = useCountUp(value);
-  return (
-    <div className={styles.netValue + ' ' + (value < 0 ? styles.expense : styles.net)}>
-      {fmt(display)}
-    </div>
-  );
-}
-
-function TrendBadge({ current, previous, kind }) {
-  if (!previous || previous < 50) return null;
-  const pct = Math.round(((current - previous) / previous) * 100);
-  if (pct === 0 || Math.abs(pct) > 300) return null;
-  const rising = pct > 0;
-  const good = kind === 'income' ? rising : !rising;
-  return (
-    <span className={styles.trendBadge + ' ' + (good ? styles.trendGood : styles.trendBad)}>
-      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        {rising ? <path d="M6 15l6-6 6 6" /> : <path d="M6 9l6 6 6-6" />}
-      </svg>
-      {Math.abs(pct)}%
-    </span>
-  );
-}
-
-function SubStat({ label, value, prevValue, kind }) {
-  const display = useCountUp(value);
-  return (
-    <div className={styles.subStat}>
-      <span className={styles.subStatLabel}>{label}</span>
-      <span className={styles.subStatValueRow}>
-        <span className={styles.subStatValue + ' ' + styles[kind]}>{fmt(display)}</span>
-        <TrendBadge current={value} previous={prevValue} kind={kind} />
-      </span>
-    </div>
-  );
-}
 
 export default function Dashboard({ clientUserId, year, month }) {
   const CT = chartTheme();
@@ -73,7 +34,13 @@ export default function Dashboard({ clientUserId, year, month }) {
     { key: 'good', title: 'מגמות חיוביות' }
   ].map(g => ({ ...g, items: insights.filter(ins => ins.kind === g.key) })).filter(g => g.items.length > 0);
 
-  const topInsight = ['danger', 'warn', 'tip', 'good'].map(k => insights.find(ins => ins.kind === k)).find(Boolean);
+  const SAVINGS_TARGET = 15;
+  const savingsRate = summary.income > 0 ? (summary.net / summary.income) * 100 : 0;
+  const financialStatus = insights.some(i => i.kind === 'danger')
+    ? { label: 'קריטי', tone: 'danger' }
+    : insights.some(i => i.kind === 'warn')
+      ? { label: 'לתשומת לב', tone: 'warn' }
+      : { label: 'בתקן', tone: 'good' };
 
   const byCat = {};
   getMonthTx(data.transactions, year, month).filter(t => t.type === 'expense').forEach(t => {
@@ -100,18 +67,33 @@ export default function Dashboard({ clientUserId, year, month }) {
 
   return (
     <div className={styles.bentoGrid}>
-      <div className={styles.tileBalance}>
-        <div className={styles.heroLabel}>מאזן החודש</div>
-        <NetHero value={summary.net} />
-        <div className={styles.subStats}>
-          <SubStat label="הכנסות" value={summary.income} prevValue={trendData[trendData.length - 2]?.income} kind="income" />
-          <SubStat label="הוצאות" value={summary.expense} prevValue={trendData[trendData.length - 2]?.expense} kind="expense" />
+      <div className={styles.statRow}>
+        <div className={styles.statTile}>
+          <div className={styles.statTileLabel}>סך הכנסות</div>
+          <div className={styles.statTileValue + ' ' + styles.income}>{fmt(summary.income)}</div>
+          <div className={styles.statTileMeta}>ממוצע חודשי, בית + עסק</div>
         </div>
-      </div>
-
-      <div className={styles.tileHighlight + ' ' + styles[topInsight ? topInsight.kind : 'good']}>
-        <div className={styles.tileLabel}>{topInsight ? 'לתשומת לבך' : 'מצב כללי'}</div>
-        <div className={styles.tileHighlightText}>{topInsight ? topInsight.text : 'אין התראות מיוחדות החודש'}</div>
+        <div className={styles.statTile}>
+          <div className={styles.statTileLabel}>סך הוצאות</div>
+          <div className={styles.statTileValue + ' ' + styles.expense}>{fmt(summary.expense)}</div>
+          <div className={styles.statTileMeta}>קבועות + משתנות</div>
+        </div>
+        <div className={styles.statTile}>
+          <div className={styles.statTileLabel}>עודף תזרימי</div>
+          <div className={styles.statTileValue + ' ' + (summary.net < 0 ? styles.expense : styles.net)}>{fmt(summary.net)}</div>
+          <div className={styles.statTileMeta}>לפני הפרשה לחיסכון</div>
+        </div>
+        <div className={styles.statTile}>
+          <div className={styles.statTileLabel}>אחוז חיסכון מהכנסה</div>
+          <div className={styles.statTileValue}>{savingsRate.toFixed(1)}%</div>
+          <div className={styles.statTileMeta}>יעד: {SAVINGS_TARGET}%+</div>
+        </div>
+        <div className={styles.statTile}>
+          <div className={styles.statTileLabel}>סטטוס פיננסי</div>
+          <span className={styles.statusBadge + ' ' + styles[financialStatus.tone]}>
+            <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
+          </span>
+        </div>
       </div>
 
       <div className={styles.tileCategories}>

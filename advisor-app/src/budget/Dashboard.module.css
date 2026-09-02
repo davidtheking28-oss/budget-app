@@ -14,7 +14,7 @@
   .bentoGrid { grid-template-columns: 1fr; }
 }
 
-.tileBalance, .tileHighlight, .tileTrend, .tileGroup, .tileCategories, .tileGoals {
+.tileTrend, .tileGroup, .tileCategories, .tileGoals {
   min-width: 0;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
@@ -25,9 +25,81 @@
   transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
 }
 
-.tileBalance:hover, .tileHighlight:hover, .tileTrend:hover, .tileGroup:hover, .tileCategories:hover, .tileGoals:hover {
+.tileTrend:hover, .tileGroup:hover, .tileCategories:hover, .tileGoals:hover {
   border-color: var(--border-strong);
 }
+
+/* Top-of-dashboard KPI strip — flat, scannable tiles instead of a hero
+   balance card, so income/expenses/surplus/savings-rate/status read at a
+   glance without needing to parse a big number's sign or subtract mentally. */
+.statRow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 860px) {
+  .statRow { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .statRow { grid-template-columns: 1fr; }
+}
+
+.statTile {
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
+  transition: border-color 0.25s ease;
+}
+
+.statTile:hover { border-color: var(--border-strong); }
+
+.statTileLabel {
+  color: var(--text3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin-bottom: var(--space-2);
+}
+
+.statTileValue {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-body);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: right;
+}
+
+.statTileMeta {
+  color: var(--text3);
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.statusDot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.statusBadge.good { color: var(--green); background: rgba(var(--green-rgb), 0.12); }
+.statusBadge.warn { color: var(--yellow); background: rgba(var(--yellow-rgb), 0.12); }
+.statusBadge.danger { color: var(--red); background: rgba(var(--red-rgb), 0.12); }
 
 .tileCategories {
   grid-column: span 2;
@@ -114,45 +186,6 @@
   unicode-bidi: isolate;
 }
 
-.tileBalance {
-  grid-column: span 2;
-  grid-row: span 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.tileHighlight {
-  grid-column: span 1;
-  grid-row: span 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.tileHighlight.danger { border-color: rgba(var(--red-rgb), 0.3); }
-.tileHighlight.warn { border-color: rgba(var(--yellow-rgb), 0.3); }
-.tileHighlight.tip { border-color: rgba(var(--accent-rgb), 0.3); }
-.tileHighlight.good { border-color: rgba(var(--green-rgb), 0.3); }
-
-.tileLabel {
-  color: var(--text3);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  margin-bottom: 10px;
-}
-
-.tileHighlightText {
-  font-size: var(--text-lg);
-  line-height: 1.4;
-}
-
-.tileHighlight.danger .tileHighlightText { color: var(--red); }
-.tileHighlight.warn .tileHighlightText { color: var(--yellow); }
-.tileHighlight.tip .tileHighlightText { color: var(--text); }
-.tileHighlight.good .tileHighlightText { color: var(--green); }
-
 .tileTrend {
   grid-column: span 4;
   grid-row: span 2;
@@ -174,81 +207,6 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
 }
-
-.heroLabel {
-  color: var(--text3);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
-}
-
-.netValue {
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-body);
-  font-size: var(--text-display-sm);
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  direction: ltr;
-  unicode-bidi: isolate;
-  text-align: right;
-  line-height: 1.05;
-}
-
-.subStats {
-  display: flex;
-  gap: var(--space-3);
-  margin-top: var(--space-5);
-  flex-wrap: wrap;
-}
-
-.subStat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 120px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-3);
-}
-
-.subStatValueRow {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-}
-
-.subStatValue {
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-body);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  direction: ltr;
-  unicode-bidi: isolate;
-}
-
-.subStatLabel {
-  color: var(--text3);
-  font-size: var(--text-xs);
-}
-
-.trendBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: var(--text-xs);
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  font-variant-numeric: tabular-nums;
-  direction: ltr;
-  unicode-bidi: isolate;
-}
-
-.trendGood { color: var(--green); background: rgba(var(--green-rgb), 0.12); }
-.trendBad { color: var(--red); background: rgba(var(--red-rgb), 0.12); }
 
 .net { color: var(--text); }
 .income { color: var(--green); }
@@ -436,7 +394,7 @@
 }
 
 @media (max-width: 560px) {
-  .tileBalance, .tileHighlight, .tileTrend, .tileCategories, .tileGoals {
+  .tileTrend, .tileCategories, .tileGoals {
     grid-column: span 1;
     grid-row: span 1;
   }

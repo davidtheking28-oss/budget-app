@@ -127,6 +127,7 @@
    initials (accent-dim fill, accent text) — this card used to render a bare
    colored letter instead, the one place initials weren't a badge. */
 .initial {
+  position: relative;
   width: 40px;
   height: 40px;
   flex-shrink: 0;
@@ -145,6 +146,19 @@
 .card:hover .initial {
   background: rgba(var(--accent-rgb), 0.22);
   transform: scale(1.05);
+}
+
+/* Replaces the old standalone "דורש טיפול היום" panel — the same signal now
+   lives right on the client it concerns instead of a separate list to cross-reference. */
+.alertDot {
+  position: absolute;
+  top: -1px;
+  inset-inline-end: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--red);
+  border: 2px solid var(--surface);
 }
 
 .info {
@@ -361,86 +375,6 @@
 
 .statRed { color: var(--red); }
 .statGold { color: var(--gold); }
-
-.urgentPanel {
-  border: 1px solid rgba(var(--red-rgb), 0.25);
-  background: rgba(var(--red-rgb), 0.04);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  padding: var(--space-4);
-  margin-bottom: var(--space-6);
-  animation: riseIn var(--motion) var(--ease-out-expo) both;
-}
-
-.urgentTitle {
-  color: var(--red);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  margin-bottom: 10px;
-}
-
-.urgentList {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.urgentRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 6px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: none;
-  font-family: var(--font-body);
-  text-align: right;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.urgentRow:hover {
-  background: var(--hover);
-}
-
-.urgentDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.urgentDotRed { background: var(--red); }
-.urgentDotGold { background: var(--gold); }
-
-.urgentEmail {
-  direction: ltr;
-  unicode-bidi: isolate;
-  font-weight: 600;
-  font-size: var(--text-base);
-  flex-shrink: 0;
-  max-width: 40%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.urgentReason {
-  color: var(--text3);
-  font-size: var(--text-sm);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.urgentReason::before {
-  content: '·';
-  margin-inline-end: 8px;
-  color: var(--border-strong);
-}
 
 .sectionHead {
   display: flex;
