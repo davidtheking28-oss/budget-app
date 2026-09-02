@@ -337,8 +337,8 @@ export default function BudgetWizard({ data, save, year, month }) {
                     return (
                       <div className={styles.reviewItem} key={key}>
                         <span className={styles.reviewName}>{r.name}</span>
-                        <span className={styles.reviewAmt}>-{fmt(plan)}</span>
-                        <span className={styles.reviewAmt + ' ' + (actual > plan ? styles.negative : styles.positive)}>-{fmt(actual)}</span>
+                        <span className={styles.reviewAmt}>{fmt(plan)}</span>
+                        <span className={styles.reviewAmt + ' ' + (actual > plan ? styles.negative : styles.positive)}>{fmt(actual)}</span>
                       </div>
                     );
                   };
@@ -358,15 +358,15 @@ export default function BudgetWizard({ data, save, year, month }) {
             <div className={styles.totalsStripLabel}>תכנון</div>
             <div className={styles.totalsStrip}>
               <div className={styles.totalCell + ' ' + styles.totalIncome}><span>סה״כ הכנסות</span><span>{fmt(totalIncome)}</span></div>
-              <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>-{fmt(totalFixed + totalVar)}</span></div>
-              {goalsMonthly > 0 && <div className={styles.totalCell + ' ' + styles.totalGoal}><span>הפרשה ליעדים</span><span>-{fmt(goalsMonthly)}</span></div>}
+              <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>{fmt(totalFixed + totalVar)}</span></div>
+              {goalsMonthly > 0 && <div className={styles.totalCell + ' ' + styles.totalGoal}><span>הפרשה ליעדים</span><span>{fmt(goalsMonthly)}</span></div>}
               <div className={styles.totalCell + ' ' + (left < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(left)}</span></div>
             </div>
 
             <div className={styles.totalsStripLabel}>בפועל</div>
             <div className={styles.totalsStrip}>
               <div className={styles.totalCell + ' ' + styles.totalIncome}><span>סה״כ הכנסות</span><span>{fmt(totalIncomeActual)}</span></div>
-              <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>-{fmt(totalFixedActual + totalVarActual)}</span></div>
+              <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>{fmt(totalFixedActual + totalVarActual)}</span></div>
               <div className={styles.totalCell + ' ' + (actualFlow < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(actualFlow)}</span></div>
             </div>
 
