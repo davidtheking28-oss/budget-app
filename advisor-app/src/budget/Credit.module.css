@@ -166,15 +166,13 @@
 .iconFixed { background: rgba(var(--green-rgb), 0.12); color: var(--green); }
 
 .sectionsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
-  gap: var(--space-5);
-  align-items: start;
+  columns: 2 480px;
+  column-gap: var(--space-5);
   margin-bottom: var(--space-6);
 }
 
 @media (max-width: 560px) {
-  .sectionsGrid { grid-template-columns: 1fr; }
+  .sectionsGrid { columns: 1; }
 }
 
 .section {
@@ -187,7 +185,8 @@
 }
 
 .sectionsGrid .section {
-  margin-bottom: 0;
+  break-inside: avoid;
+  margin-bottom: var(--space-5);
 }
 
 .sectionTitle {

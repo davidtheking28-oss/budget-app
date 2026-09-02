@@ -152,6 +152,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
   const educationMonthly = education.reduce((s, x) => s + (x.monthly || 0), 0);
   const annualExpenses = [...(data.annualExpenses || [])].sort((a, b) => (b.annual || 0) - (a.annual || 0));
   const annualExpensesMonthly = annualExpenses.reduce((s, x) => s + (x.annual || 0) / 12, 0);
+  const totalMonthlyCommitments = monthlySubsCost + insurancesMonthly + groomingMonthly + eventsMonthly + educationMonthly + annualExpensesMonthly;
 
   return (
     <div>
@@ -168,7 +169,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         </div>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>עלות חודשית כוללת</div>
-          <div className={styles.kpiValue}>{fmt(monthlySubsCost)}</div>
+          <div className={styles.kpiValue}>{fmt(totalMonthlyCommitments)}</div>
         </div>
       </div>
 
