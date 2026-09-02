@@ -3657,7 +3657,7 @@ function renderUpcoming(){
     const amtColor=item.type==='income'?'var(--green)':'var(--red)';
     const amtSign=item.type==='income'?'+':'';
     const clickAttr=item.subId?'onclick="editSub('+item.subId+')" style="cursor:pointer"':'';
-    return '<div class="upcoming-item" '+clickAttr+'><div class="upcoming-date-col"><div class="upcoming-day-num">'+dayNum+'</div><div class="upcoming-day-label">'+dayLabel+'</div></div><div class="upcoming-emoji">'+item.logoHtml+'</div><div class="upcoming-info"><div class="upcoming-name">'+soonTag+esc(item.name)+'</div><div class="upcoming-meta">'+item.meta+'</div></div><div class="upcoming-amount" style="color:'+amtColor+'">'+amtSign+fmt(item.amount)+'</div></div>';
+    return '<div class="upcoming-item" '+clickAttr+'><div class="upcoming-date-col"><div class="upcoming-day-num">'+dayNum+'</div><div class="upcoming-day-label">'+dayLabel+'</div></div><div class="upcoming-emoji">'+item.logoHtml+'</div><div class="upcoming-info"><div class="upcoming-name">'+soonTag+esc(item.name)+'</div><div class="upcoming-meta">'+esc(item.meta)+'</div></div><div class="upcoming-amount" style="color:'+amtColor+'">'+amtSign+fmt(item.amount)+'</div></div>';
   }).join('');
 }
 
@@ -3791,8 +3791,8 @@ function _expStructListHtml(kind){
 const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs','ביטוחים':'insurance'};
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
-  return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+key+'\')" aria-expanded="'+open+'">'
-    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.cat)+'</span><span class="exp-name">'+opts.cat+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
+  return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+attrArg(key)+'\')" aria-expanded="'+open+'">'
+    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.cat)+'</span><span class="exp-name">'+esc(opts.cat)+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
       +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
@@ -4979,7 +4979,7 @@ function showWizSuggestion(cat){
   document.getElementById('wizSuggestLabel').textContent=cat;
   bar.style.display='block';
   const badge=document.getElementById('wizCatBadge');
-  if(badge)badge.innerHTML=`<span style="font-size:1rem">${emoji}</span> ${cat}`;
+  if(badge)badge.innerHTML=`<span style="font-size:1rem">${emoji}</span> ${esc(cat)}`;
   const changed=cat!==_wizLastSuggested;
   _wizLastSuggested=cat;
   document.querySelectorAll('#wizCatList .wiz-cat-row').forEach(r=>{
@@ -6742,7 +6742,7 @@ function renderMonthReview(){
     +'<button onclick="dismissMonthReview()" style="background:none;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;padding:2px 6px" aria-label="סגור">✕</button></div>'
     +'<div style="font-size:0.82rem;color:var(--text2);line-height:1.7">'
     +'סך הוצאות: <b style="color:var(--text)">'+fmt(lTot)+'</b>'+(delta?' · '+delta:'')
-    +(hot?'<br>הקטגוריה שגדלה הכי הרבה: <b style="color:var(--text)">'+hot+'</b> (+'+fmt(hotD)+')':'')
+    +(hot?'<br>הקטגוריה שגדלה הכי הרבה: <b style="color:var(--text)">'+esc(hot)+'</b> (+'+fmt(hotD)+')':'')
     +(rate!==null?'<br>שיעור חיסכון: <b style="color:'+(rate>=10?'var(--green)':rate>=0?'var(--yellow)':'var(--red)')+'">'+rate+'%</b>':'')
     +'</div></div>';
   el.style.display='block';
@@ -7358,13 +7358,13 @@ function generateInsights(){
     const pct = Math.round(topCat[1]/totalExp*100);
     const icon = CAT_ICONS[topCat[0]]||'📌';
     if(pct > 40){
-      insights.push({icon, type:'info', text:`<span class="insight-highlight">${topCat[0]}</span> מהווה ${pct}% מסך ההוצאות: ${fmt(topCat[1])}`});
+      insights.push({icon, type:'info', text:`<span class="insight-highlight">${esc(topCat[0])}</span> מהווה ${pct}% מסך ההוצאות: ${fmt(topCat[1])}`});
     }
     // Compare this category to prev month
     if(prevCatTotals[topCat[0]] && prevCatTotals[topCat[0]]>0){
       const catDiff = Math.round((topCat[1]-prevCatTotals[topCat[0]])/prevCatTotals[topCat[0]]*100);
       if(Math.abs(catDiff)>25){
-        insights.push({icon, type: catDiff>0?'warn':'good', text:`הוצאות על <span class="insight-highlight">${topCat[0]}</span> ${catDiff>0?'עלו':'ירדו'} ב-${Math.abs(catDiff)}% לעומת חודש שעבר`});
+        insights.push({icon, type: catDiff>0?'warn':'good', text:`הוצאות על <span class="insight-highlight">${esc(topCat[0])}</span> ${catDiff>0?'עלו':'ירדו'} ב-${Math.abs(catDiff)}% לעומת חודש שעבר`});
       }
     }
   }
