@@ -42,6 +42,14 @@ export default function BudgetWizard({ data, save, year, month }) {
     });
     return map;
   }, [monthTx]);
+  // Matches the client app's own definition of "income for the month" (monthlyIncomeFor
+  // in index.html): a standing source the client never bothered to log a transaction for
+  // still counts at its planned amount, so a salary nobody manually posts isn't shown as 0.
+  const incomeActualFor = (name, plannedAmount) => {
+    const posted = incomeActual[(name || '').trim().toLowerCase()];
+    if (posted) return posted;
+    return parseFloat(plannedAmount) || 0;
+  };
   const fixedActual = useMemo(() => {
     const map = {};
     monthTx.filter(t => t.type === 'expense' && FIXED_CATS.includes(t.cat)).forEach(t => {
@@ -87,9 +95,11 @@ export default function BudgetWizard({ data, save, year, month }) {
   const allocated = totalFixed + totalVar + goalsMonthly;
   const left = totalIncome - allocated;
 
-  // income actual is keyed by both desc and cat per transaction (see incomeActual above),
-  // so summing its values would double-count — sum straight off the month's transactions instead
-  const totalIncomeActual = useMemo(() => monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0), [monthTx]);
+  const totalIncomeActual = useMemo(
+    () => incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
+      .reduce((s, r) => s + (incomeActual[(r.name || '').trim().toLowerCase()] || parseFloat(r.amount) || 0), 0),
+    [incomes, incomeActual]
+  );
   const totalFixedActual = useMemo(() => Object.values(fixedActual).reduce((s, v) => s + v, 0), [fixedActual]);
   const totalVarActual = useMemo(() => Object.values(variableActual).reduce((s, v) => s + v, 0), [variableActual]);
   const actualFlow = totalIncomeActual - (totalFixedActual + totalVarActual);
@@ -161,7 +171,7 @@ export default function BudgetWizard({ data, save, year, month }) {
         {actualOf && (
           <div className={styles.itemActualBox}>
             <div className={styles.itemAmountBoxLabel}>ביצוע</div>
-            <div className={styles.itemActualValue}>{fmt(actualOf(r.name))}</div>
+            <div className={styles.itemActualValue}>{fmt(actualOf(r.name, r.amount))}</div>
           </div>
         )}
       </>
@@ -260,7 +270,7 @@ export default function BudgetWizard({ data, save, year, month }) {
         {step === 0 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>מאיפה מגיע הכסף?</div>
-            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, name => incomeActual[(name || '').trim().toLowerCase()] || 0, false, true)}
+            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, false, true)}
           </div>
         )}
 
@@ -302,7 +312,7 @@ export default function BudgetWizard({ data, save, year, month }) {
                       <div className={styles.reviewItemHead}><span /><span>תכנון</span><span>בפועל</span></div>
                       {cleanIncomes.map((r, i) => {
                         const plan = parseFloat(r.amount);
-                        const actual = incomeActual[(r.name || '').trim().toLowerCase()] || 0;
+                        const actual = incomeActualFor(r.name, r.amount);
                         return (
                           <div className={styles.reviewItem} key={i}>
                             <span className={styles.reviewName}>{r.name}</span>
