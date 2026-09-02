@@ -1878,7 +1878,10 @@
       <div class="dash-bignum-label" id="dashBigLabel">מתחילת החודש</div>
     </div>
     <div class="dash-goals-card">
-      <div class="dash-goals-title">המטרות שלי</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div class="dash-goals-title">התקציב החודשי שלי</div>
+        <button onclick="showPage('goals')" style="background:none;border:none;color:var(--accent);font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;padding:8px;margin:-8px;min-height:44px">🎯 יעדי חיסכון</button>
+      </div>
       <div class="dash-rings-grid" id="dashRingsGrid"></div>
     </div>
     <div class="dash-insight-card" id="dashInsightCard" style="display:none">
