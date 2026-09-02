@@ -59,7 +59,7 @@ export default function BudgetWizard({ data, save, year, month }) {
 
   const [incomes, setIncomes] = useState(() => {
     const existing = data?.settings?.incomeSources || [];
-    return existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '' })) : [{ name: 'שכר', amount: '' }];
+    return existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '' })) : [{ name: 'שכר', amount: '', day: '' }];
   });
   const [fixed, setFixed] = useState(() => {
     const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
@@ -98,7 +98,7 @@ export default function BudgetWizard({ data, save, year, month }) {
 
   async function finish() {
     const cleanIncomes = incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
-      .map(r => ({ name: r.name.trim(), amount: parseFloat(r.amount) }));
+      .map(r => ({ name: r.name.trim(), amount: parseFloat(r.amount), day: parseInt(r.day, 10) || undefined }));
     const cleanFixed = fixed.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
       .map(r => ({ id: r.name.trim(), amount: parseFloat(r.amount) }));
     const cleanVar = variable.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
@@ -136,7 +136,7 @@ export default function BudgetWizard({ data, save, year, month }) {
   ].filter(b => b.value > 0);
   const breakdownTotal = breakdown.reduce((s, b) => s + b.value, 0) || 1;
 
-  function rowList(list, setter, placeholder, suggestions, actualOf, compact = false) {
+  function rowList(list, setter, placeholder, suggestions, actualOf, compact = false, dayField = false) {
     const amounts = (r, i) => (
       <>
         <div className={styles.itemAmountBox}>
@@ -197,6 +197,22 @@ export default function BudgetWizard({ data, save, year, month }) {
                 value={r.name}
                 onChange={e => updateRow(setter, i, { name: e.target.value })}
               />
+              {dayField && (
+                <div className={styles.itemAmountBox}>
+                  <div className={styles.itemAmountBoxLabel}>יום בחודש</div>
+                  <input
+                    className={styles.itemAmountInput}
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    max="28"
+                    aria-label="יום קבלת ההכנסה בחודש"
+                    placeholder="—"
+                    value={r.day || ''}
+                    onChange={e => updateRow(setter, i, { day: e.target.value })}
+                  />
+                </div>
+              )}
               {amounts(r, i)}
               <DeleteButton onClick={() => removeRow(setter, i)} />
             </div>
@@ -237,7 +253,7 @@ export default function BudgetWizard({ data, save, year, month }) {
         {step === 0 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>מאיפה מגיע הכסף?</div>
-            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, name => incomeActual[(name || '').trim().toLowerCase()] || 0)}
+            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, name => incomeActual[(name || '').trim().toLowerCase()] || 0, false, true)}
           </div>
         )}
 

@@ -3882,12 +3882,13 @@ function _expIncomeListHtml(){
         +'<button onclick="userSettings.incomeSources.splice('+i+',1);saveSettingsData();renderTxPage()" style="background:var(--red-light);border:none;color:var(--red);cursor:pointer;padding:10px 14px;border-radius:8px;font-size:0.75rem;font-weight:700;min-height:44px;min-width:44px;" aria-label="מחק מקור הכנסה">✕ הסר</button>'
       +'</div>'
       +'<div class="income-source-field" style="margin-bottom:8px;"><label>שם המקור</label><input type="text" placeholder="'+esc(ph)+'..." value="'+esc(src.name||'')+'" autocomplete="off" autocorrect="off" spellcheck="false" oninput="userSettings.incomeSources['+i+'].name=this.value;saveSettingsData()" onfocus="this.select()"/></div>'
-      +'<div class="income-source-field"><label>סכום חודשי (₪)</label><input type="number" inputmode="decimal" placeholder="0" value="'+esc(src.amount||'')+'" oninput="userSettings.incomeSources['+i+'].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/></div>'
+      +'<div class="income-source-field" style="margin-bottom:8px;"><label>סכום חודשי (₪)</label><input type="number" inputmode="decimal" placeholder="0" value="'+esc(src.amount||'')+'" oninput="userSettings.incomeSources['+i+'].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/></div>'
+      +'<div class="income-source-field"><label>יום קבלה בחודש (לתזכורת אוטומטית)</label><input type="number" inputmode="numeric" placeholder="—" value="'+esc(src.day||'')+'" oninput="userSettings.incomeSources['+i+'].day=this.value;saveSettingsData()" min="1" max="28" onfocus="this.select()"/></div>'
     +'</div>';
   }).join('');
 }
 function addIncomeSource(){
-  userSettings.incomeSources.push({name:'',amount:''});
+  userSettings.incomeSources.push({name:'',amount:'',day:''});
   saveSettingsData();
   renderTxPage();
 }
