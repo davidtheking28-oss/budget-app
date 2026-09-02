@@ -34,6 +34,7 @@
 .stepDot {
   flex: 1;
   min-width: 96px;
+  min-height: 44px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text2);
