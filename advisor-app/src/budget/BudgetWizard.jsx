@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
@@ -23,7 +23,7 @@ function sameCategory(a, b) {
   return words(a).some(wa => words(b).some(wb => wa.slice(0, 4) === wb.slice(0, 4)));
 }
 
-export default function BudgetWizard({ data, save, year, month, onClose }) {
+export default function BudgetWizard({ data, save, year, month }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
 
@@ -72,14 +72,6 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
   const [goals] = useState(() =>
     (data?.goals || []).map(g => ({ id: g.id, name: g.name || '', target: g.target ?? '', months: g.months ?? '', saved: g.saved || 0 }))
   );
-
-  const initialSnapshot = useRef(JSON.stringify({ incomes, fixed, variable, goals }));
-  const dirty = JSON.stringify({ incomes, fixed, variable, goals }) !== initialSnapshot.current;
-
-  function handleClose() {
-    if (dirty && !window.confirm('לצאת בלי לשמור? השינויים יאבדו')) return;
-    onClose();
-  }
 
   const totalIncome = useMemo(() => sumAmounts(incomes), [incomes]);
   const totalFixed = useMemo(() => sumAmounts(fixed), [fixed]);
@@ -134,7 +126,6 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
     setSaving(false);
     if (ok === false) return;
     toast('התקציב נשמר ועבר לאפליקציה של הלקוח', 'success');
-    onClose();
   }
 
   const breakdown = [
@@ -202,7 +193,6 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
           <div className={styles.title}>בניית תקציב עם הלקוח</div>
           <div className={styles.subtitle}>{STEPS[step]} · שלב {step + 1} מתוך {STEPS.length}</div>
         </div>
-        <Button variant="ghost" onClick={handleClose}>סגור</Button>
       </div>
 
       <div className={styles.stepper}>
