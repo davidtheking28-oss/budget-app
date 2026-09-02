@@ -5011,12 +5011,14 @@ async function _onReceiptPicked(input){
   const file=input.files&&input.files[0];
   input.value='';
   if(!file)return;
+  const {data:{session}}=_sb?await _sb.auth.getSession():{data:{session:null}};
+  if(!session){showToast('יש להתחבר כדי להשתמש בתכונה הזו');return;}
   showToast('📷 קורא את הקבלה...');
   try{
     const img=await _resizeImage(file,1200);
     const res=await fetch(SUPA_URL+'/functions/v1/parse-receipt',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPA_ANON},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPA_ANON},
       body:JSON.stringify({image:img.data,mediaType:img.type,customCats:userSettings.customCats||[]})
     });
     const data=await res.json().catch(()=>({}));
@@ -5037,10 +5039,12 @@ async function _onReceiptPicked(input){
 
 async function callAiCategorize(val){
   try{
+    const {data:{session}}=_sb?await _sb.auth.getSession():{data:{session:null}};
+    if(!session)return;
     const allCats=getEffectiveCats(txTypeFilter);
     const res=await fetch(`${SUPA_URL}/functions/v1/parse-expense`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPA_ANON}`},
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`,'apikey':SUPA_ANON},
       body:JSON.stringify({message:val,customCats:userSettings.customCats||[]})
     });
     if(!res.ok)return;
