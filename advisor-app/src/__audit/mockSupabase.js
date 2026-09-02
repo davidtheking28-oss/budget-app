@@ -125,12 +125,8 @@ function builder(table) {
 
 export const SUPA_URL = 'https://mock.supabase.co';
 
-window.__fromCalls = [];
-let __authListeners = [];
-window.__emitAuthEvent = (event, s) => __authListeners.forEach(cb => cb(event, s));
-
 export const supabase = {
-  from: table => { window.__fromCalls.push(table); return builder(table); },
+  from: table => builder(table),
   rpc: async (fn, params) => {
     if (fn === 'invite_client_by_email') {
       const email = (params?.p_email || '').trim().toLowerCase();
@@ -156,10 +152,7 @@ export const supabase = {
   },
   auth: {
     getSession: async () => ({ data: { session } }),
-    onAuthStateChange: cb => {
-      __authListeners.push(cb);
-      return { data: { subscription: { unsubscribe: () => { __authListeners = __authListeners.filter(f => f !== cb); } } } };
-    },
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     signOut: async () => ({ error: null }),
     signInWithPassword: async () => ({ error: null }),
     signInWithOtp: async () => ({ error: null }),
