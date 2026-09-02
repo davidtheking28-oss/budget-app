@@ -162,7 +162,7 @@ export default function ClientList({ advisorId, onSelect }) {
 
   if (loading) {
     return (
-      <div>
+      <div className={styles.page}>
         <Skeleton height="64px" radius="14px" style={{ marginBottom: 36 }} />
         <div className={styles.grid}>
           {[0, 1, 2].map(i => (
@@ -185,7 +185,7 @@ export default function ClientList({ advisorId, onSelect }) {
     .slice(0, 4);
 
   return (
-    <div>
+    <div className={styles.page}>
       {/* A brand-new advisor has nothing to count, and three zeroes are the first
           thing they would otherwise see. Let the empty state be the whole page. */}
       {clients.length > 0 && (
@@ -303,7 +303,10 @@ export default function ClientList({ advisorId, onSelect }) {
       ) : (
         <div className={styles.grid}>
           {[...clients].sort(byUrgency).map((c, i) => {
-            const urgent = c.hasOverage || c.openTasks > 0;
+            // Only real red-flag signals earn the full-width row — open tasks alone are
+            // common enough that treating them as "wide" collapsed the grid to a single
+            // stretched column for nearly every client, instead of an actual multi-column grid.
+            const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting;
             const confirming = confirmingId === c.id;
             return (
               <div

@@ -1,3 +1,13 @@
+/* At the shell's full 1720px page width this screen is mostly short rows and
+   small stat tiles — none of it needs that much horizontal room, and letting
+   it stretch edge to edge read as sprawling rather than organized. Capping it
+   like Presentation.jsx's own narrower `.page` keeps every section a
+   deliberate width instead of the browser's. */
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
 /* Fixed columns squeezed cards to ~245px on a 1440 screen, which truncated the
    client email — the primary identifier. Let the track size drive the count. */
 .grid {
