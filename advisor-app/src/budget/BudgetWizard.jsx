@@ -101,6 +101,10 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
     const ok = await save(cur => {
       const nextBudgets = { ...(cur.budgets || {}) };
       Object.keys(nextBudgets).forEach(c => { if (!FIXED_CATS.includes(c)) delete nextBudgets[c]; });
+      // keep the Budget tab's per-category budgets in sync with this fixed-expenses list,
+      // so the two screens don't show different numbers for the same fixed category
+      (cur.fixed_expenses || []).forEach(f => { if (!cleanFixed.some(r => r.id === f.id)) delete nextBudgets[f.id]; });
+      cleanFixed.forEach(r => { nextBudgets[r.id] = r.amount; });
       cleanVar.forEach(r => { nextBudgets[r.name.trim()] = parseFloat(r.amount); });
       return {
         settings: { ...(cur.settings || {}), incomeSources: cleanIncomes },
