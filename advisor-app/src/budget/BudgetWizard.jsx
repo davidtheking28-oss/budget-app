@@ -84,16 +84,9 @@ export default function BudgetWizard({ data, save, year, month }) {
   const totalIncome = useMemo(() => sumAmounts(incomes), [incomes]);
   const totalFixed = useMemo(() => sumAmounts(fixed), [fixed]);
   const totalVar = useMemo(() => sumAmounts(variable), [variable]);
-  const goalsMonthly = useMemo(
-    () => goals.reduce((s, g) => {
-      const t = parseFloat(g.target) || 0;
-      const m = parseFloat(g.months) || 0;
-      return s + (m > 0 ? Math.max(0, t - (g.saved || 0)) / m : 0);
-    }, 0),
-    [goals]
-  );
-  const allocated = totalFixed + totalVar + goalsMonthly;
-  const left = totalIncome - allocated;
+  // goal contributions aren't something the advisor enters in this wizard (goal editing
+  // lives in the separate יעדים screen) — don't silently deduct them from cash flow here
+  const left = totalIncome - (totalFixed + totalVar);
 
   const totalIncomeActual = useMemo(
     () => incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
@@ -148,7 +141,6 @@ export default function BudgetWizard({ data, save, year, month }) {
   const breakdown = [
     { label: 'הוצאות קבועות', value: totalFixed, color: CHART_PALETTE[0] },
     { label: 'תקציב משתנה', value: totalVar, color: CHART_PALETTE[1] },
-    { label: 'הפרשה ליעדים', value: goalsMonthly, color: CHART_PALETTE[2] },
     { label: 'נותר פנוי', value: Math.max(0, left), color: CHART_PALETTE[5] }
   ].filter(b => b.value > 0);
   const breakdownTotal = breakdown.reduce((s, b) => s + b.value, 0) || 1;
@@ -359,7 +351,6 @@ export default function BudgetWizard({ data, save, year, month }) {
             <div className={styles.totalsStrip}>
               <div className={styles.totalCell + ' ' + styles.totalIncome}><span>סה״כ הכנסות</span><span>{fmt(totalIncome)}</span></div>
               <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>{fmt(totalFixed + totalVar)}</span></div>
-              {goalsMonthly > 0 && <div className={styles.totalCell + ' ' + styles.totalGoal}><span>הפרשה חודשית ליעדי חיסכון קיימים</span><span>{fmt(goalsMonthly)}</span></div>}
               <div className={styles.totalCell + ' ' + (left < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(left)}</span></div>
             </div>
 
