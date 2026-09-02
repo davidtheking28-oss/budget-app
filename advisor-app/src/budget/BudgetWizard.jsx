@@ -275,14 +275,29 @@ export default function BudgetWizard({ data, save, year, month }) {
               </div>
               <div className={styles.reviewCol}>
                 <div className={styles.reviewColTitle}>הוצאות</div>
-                {[...fixed, ...variable].filter(r => r.name.trim() && parseFloat(r.amount) > 0).length
-                  ? [...fixed, ...variable].filter(r => r.name.trim() && parseFloat(r.amount) > 0).map((r, i) => (
-                    <div className={styles.reviewItem} key={i}>
-                      <span className={styles.reviewName}>{r.name}</span>
-                      <span className={styles.reviewAmt + ' ' + styles.negative}>-{fmt(parseFloat(r.amount))}</span>
-                    </div>
-                  ))
-                  : <div className={styles.reviewEmpty}>לא הוגדרו הוצאות</div>}
+                {(() => {
+                  const cleanFixed = fixed.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
+                  const cleanVar = variable.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
+                  if (!cleanFixed.length && !cleanVar.length) return <div className={styles.reviewEmpty}>לא הוגדרו הוצאות</div>;
+                  return (
+                    <>
+                      {cleanFixed.length > 0 && <div className={styles.groupTitle}>הוצאות קבועות</div>}
+                      {cleanFixed.map((r, i) => (
+                        <div className={styles.reviewItem} key={'f' + i}>
+                          <span className={styles.reviewName}>{r.name}</span>
+                          <span className={styles.reviewAmt + ' ' + styles.negative}>-{fmt(parseFloat(r.amount))}</span>
+                        </div>
+                      ))}
+                      {cleanVar.length > 0 && <div className={styles.groupTitle}>הוצאות משתנות</div>}
+                      {cleanVar.map((r, i) => (
+                        <div className={styles.reviewItem} key={'v' + i}>
+                          <span className={styles.reviewName}>{r.name}</span>
+                          <span className={styles.reviewAmt + ' ' + styles.negative}>-{fmt(parseFloat(r.amount))}</span>
+                        </div>
+                      ))}
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
