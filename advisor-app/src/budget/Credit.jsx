@@ -10,7 +10,7 @@ import PaymentsTimeline from './PaymentsTimeline.jsx';
 import { monthSummary } from './budgetMath.js';
 import { MONTH_NAMES as MONTHS_HE } from './monthUtils.js';
 import MonthTabs from '../components/MonthTabs.jsx';
-import styles from './Subscriptions.module.css';
+import styles from './Credit.module.css';
 import { fmt } from '../format.js';
 
 const CREDIT_ICON = (
