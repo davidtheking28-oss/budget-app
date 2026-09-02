@@ -22,7 +22,6 @@ import Report from './budget/Report.jsx';
 import Presentation from './budget/Presentation.jsx';
 import { useClientSummary } from './crm/useClientSummary.js';
 import { BudgetModeContext, MODES } from './budget/useClientBudget.js';
-import { useClientFreshness } from './clients/useClientFreshness.js';
 import { useTheme } from './useTheme.js';
 
 const Dashboard = lazy(() => import('./budget/Dashboard.jsx'));
@@ -78,7 +77,6 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const isAdvisor = useIsAdvisor(session?.user?.id);
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
-  const freshness = useClientFreshness(selectedClient?.id);
   const { theme, toggle: toggleTheme } = useTheme();
   const { nextMeeting, openTasks, household, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
 
@@ -192,7 +190,6 @@ export default function App() {
           openTasks={openTasks}
           household={household}
           onOpenCrm={() => setNav('crm')}
-          freshness={freshness}
           budgetMode={budgetMode}
           onBudgetModeChange={setBudgetMode}
         />

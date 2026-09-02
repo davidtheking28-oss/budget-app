@@ -1,12 +1,9 @@
-import { relativeTime, isStale } from '../clients/useClientFreshness.js';
 import { formatDateTime } from '../budget/monthUtils.js';
 import { initials } from '../clientIdentity.js';
 import styles from './ClientContextBar.module.css';
 
-export default function ClientContextBar({ email, nextMeeting, openTasks, household, onOpenCrm, freshness, budgetMode, onBudgetModeChange }) {
+export default function ClientContextBar({ email, nextMeeting, openTasks, household, onOpenCrm, budgetMode, onBudgetModeChange }) {
   const meeting = nextMeeting ? formatDateTime(nextMeeting) : null;
-  const updated = freshness ? relativeTime(freshness.updatedAt) : null;
-  const stale = freshness ? isStale(freshness.updatedAt) : false;
   return (
     <div className={styles.bar}>
       <div className={styles.identity}>
@@ -36,12 +33,6 @@ export default function ClientContextBar({ email, nextMeeting, openTasks, househ
         )}
       </div>
       <div className={styles.facts}>
-        {updated && (
-          <span className={styles.fact} title={formatDateTime(freshness.updatedAt)}>
-            <span className={styles.factLabel}>{freshness.byClient ? 'הלקוח עדכן' : 'עודכן'}</span>
-            <span className={styles.factValue + (stale ? ' ' + styles.factStale : '')}>{updated}</span>
-          </span>
-        )}
         {meeting && (
           <span className={styles.fact}>
             <span className={styles.factLabel}>הפגישה הבאה</span>
