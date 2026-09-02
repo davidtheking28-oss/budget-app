@@ -80,7 +80,7 @@
   font-size: var(--text-md);
   margin-bottom: 14px;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--motion) var(--ease-out-expo);
   text-align: center;
 }
 
@@ -145,7 +145,7 @@
   /* Two of these sit side by side on the login screen; with 4px of padding they
      ran together into one unreadable string. */
   padding: 6px 10px;
-  transition: color 0.2s ease;
+  transition: color var(--motion) var(--ease-out-expo);
 }
 
 .linkBtn:hover {
