@@ -3696,19 +3696,6 @@ function renderUpcoming(){
   }).join('');
 }
 
-function calcWhatIf(goalId,inputEl){
-  const monthly=parseFloat(inputEl.value);
-  const g=goals.find(g=>g.id===goalId);
-  const resultEl=document.getElementById('whatif-result-'+goalId);
-  if(!resultEl)return;
-  if(!monthly||monthly<=0||!g){resultEl.textContent='';return;}
-  const remaining=g.target-g.saved;
-  if(remaining<=0){resultEl.textContent='🎉 הגעת ליעד!';return;}
-  const months=Math.ceil(remaining/monthly);
-  const targetDate=new Date();targetDate.setMonth(targetDate.getMonth()+months);
-  const heMonthNames=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-  resultEl.textContent='→ תגיע ב'+heMonthNames[targetDate.getMonth()]+' '+targetDate.getFullYear()+' ('+months+' חודשים)';
-}
 
 function renderSpendingFlow(income,fixedExp,varExp){
   const deficit=document.getElementById('sfDeficit');
@@ -5294,11 +5281,6 @@ function wizAcceptSuggest(){
 }
 
 let _dashPeriod='month';
-function setDashPeriod(p){
-  _dashPeriod=p;
-  document.querySelectorAll('#dashPeriodToggle .dash-period-btn').forEach(b=>b.classList.toggle('active',b.dataset.period===p));
-  renderDashGoals();
-}
 function _dashPeriodTx(){
   if(_dashPeriod==='week'){
     const cutoff=new Date();cutoff.setDate(cutoff.getDate()-6);
@@ -6410,14 +6392,6 @@ function toggleSub(id){
   s.active=!s.active;saveData();renderSubscriptions();renderUpcoming();
   showUndoToast(s.active?'✓ המנוי הופעל מחדש':'⏸️ המנוי הושהה',()=>{s.active=!s.active;saveData();renderSubscriptions();renderUpcoming();},()=>{});
 }
-function subToExpense(id){
-  const s=subscriptions.find(s=>s.id===id);if(!s)return;
-  const today=localISO();
-  transactions.unshift({id:Date.now(),type:'expense',cat:'שונות',desc:s.name,amount:s.amount,date:today,recurring:false});
-  if(!s.nextDate)s.nextDate=today;
-  advanceSubNextDate(s);
-  saveData();showToast('✓ '+s.name+' נוסף');refreshAll();
-}
 const BRAND_ICONS={
   // Streaming & Entertainment
   netflix:'netflix',spotify:'spotify',youtube:'youtube',
@@ -6825,30 +6799,6 @@ function showPage(name,btn){
   if(name==='budget')       renderBudget();
   if(name==='loans')        renderLoans();
   if(name==='settings')     openSettings();
-}
-
-// ── Feature 2: Cash Flow Forecast ────────────────────────────────
-function renderForecastCard(){
-  const card=document.getElementById('forecastCard');
-  if(!card)return;
-  const now=new Date();
-  if(currentYear!==now.getFullYear()||currentMonth!==now.getMonth()){card.style.display='none';return;}
-  const income=getMonthlyIncome();
-  if(!income){card.style.display='none';return;}
-  const mTx=getMonthTx(currentYear,currentMonth);
-  const expense=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const dayOfMonth=now.getDate();
-  const totalDays=daysInMonth(currentYear,currentMonth);
-  const daysLeft=totalDays-dayOfMonth;
-  const dailyRate=dayOfMonth>0?expense/dayOfMonth:0;
-  const projectedTotal=expense+dailyRate*daysLeft;
-  const forecastBalance=income-projectedTotal;
-  const valEl=document.getElementById('forecastVal');
-  const subEl=document.getElementById('forecastSub');
-  if(valEl)valEl.textContent=(forecastBalance>=0?'+':'-')+fmt(forecastBalance);
-  if(valEl)valEl.style.color=forecastBalance>=0?'var(--teal)':'var(--red)';
-  if(subEl)subEl.textContent='צפי הוצאה: '+fmt(Math.round(projectedTotal))+' · קצב יומי: '+fmt(Math.round(dailyRate));
-  card.style.display='flex';
 }
 
 // ── Feature 6: Calendar View ──────────────────────────────────────
@@ -7744,27 +7694,6 @@ function authSkip(){
   hideAuthScreen(()=>_proceedToApp());
 }
 
-// ── WhatsApp share ────────────────────────────────────────────────
-function shareMonthly(){
-  const mTx = getMonthTx(currentYear, currentMonth);
-  const income = getMonthlyIncome();
-  const expense = mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-  const balance = income - expense;
-  const month = heMonth(currentYear, currentMonth);
-  const catTotals = {};
-  mTx.filter(t=>t.type==='expense').forEach(t=>{ catTotals[t.cat]=(catTotals[t.cat]||0)+t.amount; });
-  const top3 = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const lines = [
-    'סיכום תקציב - ' + month,
-    '',
-    'הכנסות: ' + fmt(income),
-    'הוצאות: ' + fmt(expense),
-    (balance>=0?'יתרה: ':'חריגה: ') + fmt(Math.abs(balance)),
-    ''
-  ];
-  if(top3.length){ lines.push('הוצאות עיקריות:'); top3.forEach(([cat,amt])=>{ lines.push((CAT_ICONS[cat]||'') + ' ' + cat + ': ' + fmt(amt)); }); }
-  window.open('https://wa.me/?text=' + encodeURIComponent(lines.join('\n')), '_blank');
-}
 function initSheetSwipe(){
   function getScrollParent(el, limit){
     while(el && el !== limit){
