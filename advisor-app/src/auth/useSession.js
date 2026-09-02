@@ -15,6 +15,10 @@ export function useSession() {
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       gotEvent = true;
       if (event === 'PASSWORD_RECOVERY') setIsRecovery(true);
+      // TOKEN_REFRESHED fires roughly hourly for an open session and never changes
+      // the signed-in user — skip it so downstream effects keyed on `session`
+      // (e.g. App.jsx's advisor_clients lookup) don't rerun on every refresh.
+      if (event === 'TOKEN_REFRESHED') { setLoading(false); return; }
       setSession(session);
       setLoading(false);
     });
