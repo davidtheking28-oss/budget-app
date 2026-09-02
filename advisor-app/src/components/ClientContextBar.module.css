@@ -82,6 +82,8 @@
   .bar { border-radius: var(--radius-md); }
   .identity { flex-wrap: wrap; }
   .email { max-width: 160px; }
+  .modeOn,
+  .modeOff { min-height: 44px; }
 }
 
 .modeToggle {
@@ -98,6 +100,7 @@
   border: none;
   border-radius: var(--radius-full);
   padding: 3px var(--space-3);
+  min-height: 32px;
   font-size: var(--text-xs);
   font-weight: 700;
   font-family: inherit;
