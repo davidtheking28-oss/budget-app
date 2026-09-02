@@ -3038,7 +3038,7 @@ function undoDelete(){
   const t=document.getElementById('toast');t.classList.remove('show');
   if(_undoFn){_undoFn();_undoFn=null;}
 }
-function getMonthTx(y,m){return transactions.filter(t=>t.date.startsWith(mk(y,m)));}
+function getMonthTx(y,m){return transactions.filter(t=>(t.date||'').startsWith(mk(y,m)));}
 
 const MOON = `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 const SUN  = `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
@@ -3173,7 +3173,7 @@ function doSearch(q){
   const list=document.getElementById('searchResultsList');
   if(!q){list.innerHTML='';return;}
   const items=[];
-  transactions.filter(t=>t.desc.toLowerCase().includes(q)||t.cat.toLowerCase().includes(q)).slice(0,6).forEach(t=>{
+  transactions.filter(t=>(t.desc||'').toLowerCase().includes(q)||(t.cat||'').toLowerCase().includes(q)).slice(0,6).forEach(t=>{
     items.push('<div class="sr-item" onclick="closeSearch();showPage(\'transactions\',document.getElementById(\'nav-transactions\'))"><div class="sr-icon">'+catIconSvg(t.cat)+'</div><div class="sr-info"><div class="sr-name">'+esc(t.desc)+'</div><div class="sr-detail">'+heDate(t.date)+' · '+esc(t.cat)+'</div></div><div class="sr-amount" style="color:'+(t.type==='income'?'var(--green)':'var(--red)')+'">'+fmt(t.amount)+'</div></div>');
   });
   subscriptions.filter(s=>s.name.toLowerCase().includes(q)).slice(0,3).forEach(s=>{
@@ -3538,8 +3538,8 @@ function checkRecurring(){
   const monthKey=mk(now.getFullYear(),now.getMonth());
   if(mk(currentYear,currentMonth)!==monthKey){alertEl.classList.remove('show');return;}
   let recs=[];
-  for(let i=1;i<=3&&!recs.length;i++){let lm=now.getMonth()-i,ly=now.getFullYear();while(lm<0){lm+=12;ly--;}recs=transactions.filter(t=>t.recurring&&t.date.startsWith(mk(ly,lm)));}
-  const already=new Set(transactions.filter(t=>t.date.startsWith(monthKey)).map(t=>t.desc+'|'+t.cat));
+  for(let i=1;i<=3&&!recs.length;i++){let lm=now.getMonth()-i,ly=now.getFullYear();while(lm<0){lm+=12;ly--;}recs=transactions.filter(t=>t.recurring&&(t.date||'').startsWith(mk(ly,lm)));}
+  const already=new Set(transactions.filter(t=>(t.date||'').startsWith(monthKey)).map(t=>(t.desc||'')+'|'+t.cat));
   let _dismissed=new Set();try{_dismissed=new Set(JSON.parse(localStorage.getItem(_modeKey('budget_dismissed_rec_'+monthKey))||'[]'));}catch(e){}
   const pending=recs.filter(t=>!already.has(t.desc+'|'+t.cat)&&!_dismissed.has(t.desc+'|'+t.cat));
   alertEl.classList.remove('show');
@@ -3594,7 +3594,7 @@ function checkRecurringIncome(){
   const todayDay=now.getDate();
   const sources=(userSettings.incomeSources||[]).filter(s=>s.name&&s.amount&&s.day&&todayDay>=parseInt(s.day));
   if(!sources.length)return;
-  const thisMonthIncomeNames=new Set(transactions.filter(t=>t.type==='income'&&t.date.startsWith(monthKey)).map(t=>(t.desc||'').toLowerCase()));
+  const thisMonthIncomeNames=new Set(transactions.filter(t=>t.type==='income'&&(t.date||'').startsWith(monthKey)).map(t=>(t.desc||'').toLowerCase()));
   const pending=sources.filter(s=>!thisMonthIncomeNames.has((s.name||'').toLowerCase()));
   if(!pending.length)return;
   const storKey=_modeKey('budget_ri_'+monthKey);
@@ -3672,8 +3672,8 @@ function renderUpcoming(){
   const nowKey=mk(today.getFullYear(),today.getMonth());
   const prevM=today.getMonth()===0?11:today.getMonth()-1;
   const prevY=today.getMonth()===0?today.getFullYear()-1:today.getFullYear();
-  const recs=transactions.filter(t=>t.recurring&&t.date.startsWith(mk(prevY,prevM)));
-  const already=new Set(transactions.filter(t=>t.date.startsWith(nowKey)).map(t=>t.desc+'|'+t.cat));
+  const recs=transactions.filter(t=>t.recurring&&(t.date||'').startsWith(mk(prevY,prevM)));
+  const already=new Set(transactions.filter(t=>(t.date||'').startsWith(nowKey)).map(t=>(t.desc||'')+'|'+t.cat));
   let dismissed=new Set();
   try{dismissed=new Set(JSON.parse(localStorage.getItem(_modeKey('budget_dismissed_rec_'+nowKey))||'[]'));}catch(e){}
   recs.filter(t=>!already.has(t.desc+'|'+t.cat)&&!dismissed.has(t.desc+'|'+t.cat)).forEach(t=>{
@@ -4842,7 +4842,7 @@ function renderAnnualSummary(){
   const now = new Date();
   let totalInc=0, totalExp=0, monthsWithData=0;
   for(let m=0; m<12; m++){
-    const mTx = transactions.filter(t=>t.date.startsWith(mk(y,m)));
+    const mTx = transactions.filter(t=>(t.date||'').startsWith(mk(y,m)));
     // same per-month definition the dashboard and the 6-month chart use, so the
     // yearly total can't disagree with the months it is made of
     totalInc += monthlyIncomeFor(y,m);
@@ -5490,7 +5490,7 @@ function renderTxPage(){
   if(txListFilter==='fixed') list=list.filter(t=>isFixed(t));
   else if(txListFilter==='variable') list=list.filter(t=>!isFixed(t));
   const q=(document.getElementById('txSearch').value||'').toLowerCase();
-  if(q)list=list.filter(t=>t.desc.toLowerCase().includes(q)||t.cat.toLowerCase().includes(q));
+  if(q)list=list.filter(t=>(t.desc||'').toLowerCase().includes(q)||(t.cat||'').toLowerCase().includes(q));
   const _q=(document.getElementById('txSearch').value||'').trim();
   const _hasFilter=_q||fromDate||toDate;
   const _txEmpty=_hasFilter
@@ -5547,7 +5547,7 @@ function renderAnalytics(){
   const months=[];
   for(let i=5;i>=0;i--){
     let y=currentYear,m=currentMonth-i;while(m<0){m+=12;y--;}
-    const mTxA=transactions.filter(t=>t.date.startsWith(mk(y,m)));
+    const mTxA=transactions.filter(t=>(t.date||'').startsWith(mk(y,m)));
     months.push({label:['ינו','פבר','מרץ','אפר','מאי','יוני','יול','אוג','ספט','אוק','נוב','דצמ'][m],
       inc:monthlyIncomeFor(y,m),
       exp:mTxA.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)});
