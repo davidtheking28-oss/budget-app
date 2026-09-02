@@ -13,6 +13,7 @@ import styles from './Subscriptions.module.css';
 import { fmt } from '../format.js';
 
 const CYCLE_LABELS = { monthly: 'חודשי', annual: 'שנתי', weekly: 'שבועי' };
+const CYCLE_AMOUNT_SUFFIX = { monthly: '', annual: ' לשנה', weekly: ' לשבוע' };
 export function monthlyEquivalent(cycle, amount) {
   return { monthly: amount, annual: amount / 12, weekly: amount * 4.33 }[cycle] ?? amount;
 }
@@ -207,16 +208,27 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           {editingSubId != null && <Button variant="ghost" onClick={resetSubForm}>ביטול</Button>}
         </div>
         {subShares.length > 1 && (
-          <div className={styles.miniBar}>
-            {subShares.map(s => (
-              <div
-                key={s.name}
-                className={styles.miniBarSeg}
-                style={{ width: (s.monthly / monthlySubsCost * 100) + '%', background: stableColor(s.name) }}
-                title={s.name}
-              />
-            ))}
-          </div>
+          <>
+            <div className={styles.miniBar}>
+              {subShares.map(s => (
+                <div
+                  key={s.name}
+                  className={styles.miniBarSeg}
+                  style={{ width: (s.monthly / monthlySubsCost * 100) + '%', background: stableColor(s.name) }}
+                  title={s.name}
+                />
+              ))}
+            </div>
+            <div className={styles.miniBarLegend}>
+              {subShares.map(s => (
+                <div className={styles.miniBarLegendRow} key={s.name}>
+                  <span className={styles.dot} style={{ background: stableColor(s.name) }} />
+                  <span className={styles.miniBarLegendName}>{s.name}</span>
+                  <span className={styles.miniBarLegendPct}>{Math.round(s.monthly / monthlySubsCost * 100)}%</span>
+                </div>
+              ))}
+            </div>
+          </>
         )}
         {subs.length ? (
           <div className={styles.list}>
@@ -234,7 +246,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                         <div className={styles.meta}>{CYCLE_LABELS[s.cycle] || s.cycle}{s.nextDate ? ' · חידוש ' + formatDate(s.nextDate) : ''}</div>
                       </div>
                     </div>
-                    <div className={styles.amount}>{fmt(s.amount || 0)}</div>
+                    <div className={styles.amount}>{fmt(s.amount || 0)}<span className={styles.amountSuffix}>{CYCLE_AMOUNT_SUFFIX[s.cycle] || ''}</span></div>
                   </div>
                   <DeleteButton onClick={() => removeItem(save, 'subscriptions', s.id)} />
                 </div>

@@ -171,9 +171,8 @@
   height: var(--space-2);
   border-radius: var(--radius-xs);
   overflow: hidden;
-  margin-bottom: var(--space-4);
+  margin: var(--space-4) 0 var(--space-2);
   gap: 2px;
-  max-width: 640px;
   animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
@@ -184,6 +183,24 @@
 .miniBarSeg:hover {
   opacity: 0.8;
 }
+
+.miniBarLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.miniBarLegendRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text2);
+}
+
+.miniBarLegendName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+.miniBarLegendPct { color: var(--text3); font-variant-numeric: tabular-nums; }
 
 .grid {
   display: grid;
@@ -320,6 +337,14 @@
   font-family: var(--font-body);
   font-weight: 700;
   direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.amountSuffix {
+  font-weight: 400;
+  font-size: var(--text-xs);
+  color: var(--text3);
+  margin: 0 3px;
   unicode-bidi: isolate;
 }
 
