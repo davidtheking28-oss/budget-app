@@ -88,6 +88,7 @@ const listeners = new Map();
 const inflight = new Map();
 const generation = new Map();
 const channels = new Map();
+const saveQueue = new Map();
 
 // An advisor who browses many clients in one session would otherwise keep every
 // client's full transaction/budget/goal set in memory forever — cap how many
@@ -204,6 +205,57 @@ function retainChannel(clientUserId) {
   };
 }
 
+// Runs one save to completion. Callers chain this onto saveQueue so saves to the same
+// client+mode always run in order, each starting from the true prior result rather than
+// a snapshot taken before an earlier queued save finished.
+async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
+  const prev = cache.get(k)?.data || { user_id: clientUserId, ...EMPTY };
+  const rawPatch = typeof patchOrFn === 'function' ? patchOrFn(prev) : patchOrFn;
+  const patch = stampSync(prev, rawPatch);
+  const next = { ...prev, ...patch };
+  invalidate(k);
+  setEntry(k, { data: next, error: null, ts: Date.now() });
+  // re-fetch the latest row and shallow-merge object-typed patch fields onto it, so a
+  // concurrent edit to a sibling key in the same jsonb column isn't silently clobbered
+  const { data: freshRow } = await supabase
+    .from('budget_data')
+    .select('*')
+    .eq('user_id', clientUserId)
+    .maybeSingle();
+  // in business mode every collection lives inside the single `business` jsonb column
+  const freshBundle = mode === 'business' ? (freshRow?.business || {}) : (freshRow || {});
+  const mergedPatch = {};
+  for (const key of Object.keys(patch)) {
+    const freshVal = freshBundle[key];
+    const patchVal = patch[key];
+    if (key === 'sync_meta') {
+      // union tombstones/budget stamps with whatever landed since, so a concurrent
+      // deletion by the client isn't dropped and then resurrected
+      mergedPatch[key] = mergeSyncMeta(freshVal, patchVal);
+      continue;
+    }
+    mergedPatch[key] = (freshVal && typeof freshVal === 'object' && !Array.isArray(freshVal) &&
+      patchVal && typeof patchVal === 'object' && !Array.isArray(patchVal))
+      ? { ...freshVal, ...patchVal }
+      : patchVal;
+  }
+  const row = { user_id: clientUserId, updated_by: advisorId, updated_at: new Date().toISOString() };
+  if (mode === 'business') row.business = { ...freshBundle, ...mergedPatch };
+  else Object.assign(row, mergedPatch);
+  const { error } = await supabase
+    .from('budget_data')
+    .upsert(row, { onConflict: 'user_id' });
+  if (error) {
+    // Roll back but leave `error` null: the cache is shared across tabs, and a failed
+    // write must not replace every screen's valid data with a full-page error. The
+    // toast carries the failure; `error` stays reserved for a failed read.
+    if (cache.get(k)?.data === next) setEntry(k, { data: prev, error: null, ts: Date.now() });
+    toast('שגיאה בשמירה, נסה שוב', 'error');
+    return false;
+  }
+  return true;
+}
+
 export function useClientBudget(clientUserId, advisorId) {
   const [, rerender] = useReducer(n => n + 1, 0);
   const mode = useContext(BudgetModeContext);
@@ -230,54 +282,13 @@ export function useClientBudget(clientUserId, advisorId) {
     return fetchEntry(clientUserId, mode);
   }, [clientUserId, mode]);
 
-  const save = useCallback(async (patchOrFn) => {
-    if (!clientUserId) return;
+  const save = useCallback((patchOrFn) => {
+    if (!clientUserId) return Promise.resolve(false);
     const k = keyOf(clientUserId, mode);
-    const prev = cache.get(k)?.data || { user_id: clientUserId, ...EMPTY };
-    const rawPatch = typeof patchOrFn === 'function' ? patchOrFn(prev) : patchOrFn;
-    const patch = stampSync(prev, rawPatch);
-    const next = { ...prev, ...patch };
-    invalidate(k);
-    setEntry(k, { data: next, error: null, ts: Date.now() });
-    // re-fetch the latest row and shallow-merge object-typed patch fields onto it, so a
-    // concurrent edit to a sibling key in the same jsonb column isn't silently clobbered
-    const { data: freshRow } = await supabase
-      .from('budget_data')
-      .select('*')
-      .eq('user_id', clientUserId)
-      .maybeSingle();
-    // in business mode every collection lives inside the single `business` jsonb column
-    const freshBundle = mode === 'business' ? (freshRow?.business || {}) : (freshRow || {});
-    const mergedPatch = {};
-    for (const key of Object.keys(patch)) {
-      const freshVal = freshBundle[key];
-      const patchVal = patch[key];
-      if (key === 'sync_meta') {
-        // union tombstones/budget stamps with whatever landed since, so a concurrent
-        // deletion by the client isn't dropped and then resurrected
-        mergedPatch[key] = mergeSyncMeta(freshVal, patchVal);
-        continue;
-      }
-      mergedPatch[key] = (freshVal && typeof freshVal === 'object' && !Array.isArray(freshVal) &&
-        patchVal && typeof patchVal === 'object' && !Array.isArray(patchVal))
-        ? { ...freshVal, ...patchVal }
-        : patchVal;
-    }
-    const row = { user_id: clientUserId, updated_by: advisorId, updated_at: new Date().toISOString() };
-    if (mode === 'business') row.business = { ...freshBundle, ...mergedPatch };
-    else Object.assign(row, mergedPatch);
-    const { error } = await supabase
-      .from('budget_data')
-      .upsert(row, { onConflict: 'user_id' });
-    if (error) {
-      // Roll back but leave `error` null: the cache is shared across tabs, and a failed
-      // write must not replace every screen's valid data with a full-page error. The
-      // toast carries the failure; `error` stays reserved for a failed read.
-      if (cache.get(k)?.data === next) setEntry(k, { data: prev, error: null, ts: Date.now() });
-      toast('שגיאה בשמירה, נסה שוב', 'error');
-      return false;
-    }
-    return true;
+    const run = () => doSave(k, clientUserId, mode, advisorId, patchOrFn);
+    const queued = (saveQueue.get(k) || Promise.resolve()).then(run, run);
+    saveQueue.set(k, queued);
+    return queued;
   }, [clientUserId, advisorId, mode]);
 
   return {
