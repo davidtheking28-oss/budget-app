@@ -1238,7 +1238,7 @@
     @keyframes aliveHeroSweep{0%{transform:translateX(-100%);}62%,100%{transform:translateX(100%);}}
 
     /* deeper "breathing" */
-    .balance-hero-bloom{animation-duration:6s!important;}
+    @media(prefers-reduced-motion:no-preference){.balance-hero-bloom{animation-duration:6s!important;}}
     @keyframes aliveBreath{0%,100%{transform:scale(1);opacity:var(--bloom-o,1);}
       50%{transform:scale(1.28);opacity:calc(var(--bloom-o,1) * .5);}}
 
@@ -1249,8 +1249,8 @@
     .alive-dot{width:9px;height:9px;}
 
     /* brighter bar sheen */
-    .prog-fill::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent)!important;
-      animation-duration:2.6s!important;}
+    @media(prefers-reduced-motion:no-preference){.prog-fill::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent)!important;
+      animation-duration:2.6s!important;}}
 
 
     /* ════════════════════════════════════════════════════════════
