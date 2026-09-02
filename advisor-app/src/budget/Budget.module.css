@@ -31,7 +31,7 @@
   font-family: var(--font-body);
   font-size: var(--text-base);
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--motion) var(--ease-out-expo);
   flex: 1;
   min-width: 140px;
   height: 40px;
