@@ -12,7 +12,6 @@ import MonthNav from './components/MonthNav.jsx';
 import ClientContextBar from './components/ClientContextBar.jsx';
 import Skeleton from './components/Skeleton.jsx';
 import ClientList from './clients/ClientList.jsx';
-import Expenses from './budget/Expenses.jsx';
 import Budget from './budget/Budget.jsx';
 import Goals from './budget/Goals.jsx';
 import Subscriptions from './budget/Subscriptions.jsx';
@@ -39,7 +38,6 @@ const NAV = [
   { key: 'dashboard', label: 'דשבורד', group: 'overview', icon: <svg {...svgProps}><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="5" rx="1.5" /><rect x="13" y="12" width="8" height="9" rx="1.5" /><rect x="3" y="15" width="8" height="6" rx="1.5" /></svg> },
   { key: 'crm', label: 'לקוח', group: 'tools', icon: <svg {...svgProps}><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" /></svg> },
   { key: 'mapping', label: 'מיפוי כלכלי', group: 'tools', icon: <svg {...svgProps}><path d="M4 4h16v16H4z" /><path d="M4 9h16M9 9v11" /></svg> },
-  { key: 'expenses', label: 'תזרים', group: 'money', icon: <svg {...svgProps}><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></svg> },
   { key: 'budget', label: 'תקציב', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
   { key: 'analysis', label: 'ניתוח', group: 'money', icon: <svg {...svgProps}><path d="M4 20V10M12 20V4M20 20v-7" /></svg> },
   { key: 'goals', label: 'יעדים', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></svg> },
@@ -193,7 +191,6 @@ export default function App() {
           onBudgetModeChange={setBudgetMode}
         />
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
-        {nav === 'expenses' && <Expenses clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} onSelectMonth={m => setYm(prev => ({ year: prev.year, month: m }))} />}
         {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} onSelectMonth={m => setYm(prev => ({ year: prev.year, month: m }))} />}
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} advisorId={session.user.id} />}
