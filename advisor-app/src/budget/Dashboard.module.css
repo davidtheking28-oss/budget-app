@@ -158,17 +158,21 @@
   grid-row: span 2;
 }
 
-/* A single-item group used to be span 1, which left it alone as a quarter-width
-   runt on its own row; match its siblings so the row reads as one set. */
 .tileGroup {
-  grid-column: span 2;
-  grid-row: span 1;
   display: flex;
   flex-direction: column;
 }
 
-.tileGroupWide {
-  grid-column: span 2;
+/* Insight tiles (danger/warn/tip/good) used to live directly in the 4-column
+   bento grid at span 2 each — an odd count (commonly 3) always orphaned the
+   last tile alone on its own row with two empty columns beside it. A
+   dedicated auto-fit row sized to however many groups actually exist avoids
+   that dead space at any count. */
+.insightsRow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
 }
 
 .heroLabel {
@@ -432,7 +436,7 @@
 }
 
 @media (max-width: 560px) {
-  .tileBalance, .tileHighlight, .tileTrend, .tileGroup, .tileGroupWide, .tileCategories, .tileGoals {
+  .tileBalance, .tileHighlight, .tileTrend, .tileCategories, .tileGoals {
     grid-column: span 1;
     grid-row: span 1;
   }

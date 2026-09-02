@@ -202,19 +202,23 @@ export default function Dashboard({ clientUserId, year, month }) {
         )}
       </div>
 
-      {insightGroups.map(group => (
-        <div key={group.key} className={styles.tileGroup + (group.items.length > 1 ? ' ' + styles.tileGroupWide : '')}>
-          <div className={styles.groupTitle + ' ' + styles[group.key]}>{group.title}</div>
-          <div className={styles.insights}>
-            {group.items.map((ins, i) => (
-              <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>
-                <span className={styles.insightDot} />
-                {ins.text}
+      {insightGroups.length > 0 && (
+        <div className={styles.insightsRow}>
+          {insightGroups.map(group => (
+            <div key={group.key} className={styles.tileGroup}>
+              <div className={styles.groupTitle + ' ' + styles[group.key]}>{group.title}</div>
+              <div className={styles.insights}>
+                {group.items.map((ins, i) => (
+                  <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>
+                    <span className={styles.insightDot} />
+                    {ins.text}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
