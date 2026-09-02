@@ -135,6 +135,10 @@
   margin-bottom: var(--space-6);
 }
 
+@media (max-width: 560px) {
+  .sectionsGrid { grid-template-columns: 1fr; }
+}
+
 .section {
   background: var(--surface);
   border: 1px solid var(--border);
