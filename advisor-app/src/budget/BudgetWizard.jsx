@@ -8,7 +8,7 @@ import { toast } from '../toast.js';
 import styles from './BudgetWizard.module.css';
 import { fmt } from '../format.js';
 
-const STEPS = ['הכנסות', 'תקציב מול ביצוע', 'יעדים', 'סיכום'];
+const STEPS = ['הכנסות', 'הוצאות קבועות', 'הוצאות משתנות', 'סיכום'];
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
 const SUGGESTED_FIXED = ['דיור', 'ארנונה', 'חשמל', 'מים וביוב', 'ביטוחים', 'חינוך, חוגים וקייטנות'];
 const SUGGESTED_VAR = ['מזון לבית', 'אוכל בחוץ ובילויים', 'דלק וחניה', 'ביגוד והנעלה', 'בריאות', 'תחביבים'];
@@ -71,7 +71,7 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
       .filter(([c]) => !FIXED_CATS.includes(c))
       .map(([name, amount]) => ({ name, amount }))
   );
-  const [goals, setGoals] = useState(() =>
+  const [goals] = useState(() =>
     (data?.goals || []).map(g => ({ id: g.id, name: g.name || '', target: g.target ?? '', months: g.months ?? '', saved: g.saved || 0 }))
   );
 
@@ -105,10 +105,6 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
     if (list.some(r => sameCategory(r.name, name))) { toast('כבר ברשימה', 'info'); return; }
     addRow(setter, name);
   }
-
-  function addGoal() { setGoals(prev => [...prev, { id: Date.now() + Math.random(), name: '', target: '', months: '', saved: 0 }]); }
-  function updateGoal(i, patch) { setGoals(prev => prev.map((g, idx) => idx === i ? { ...g, ...patch } : g)); }
-  function removeGoal(i) { setGoals(prev => prev.filter((_, idx) => idx !== i)); }
 
   async function finish() {
     const cleanIncomes = incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
@@ -252,43 +248,15 @@ export default function BudgetWizard({ data, save, year, month, onClose }) {
 
         {step === 1 && (
           <div className={styles.card}>
-            <div className={styles.cardTitle}>תקציב מול ביצוע — לפי קטגוריה</div>
-            <div className={styles.groupTitle}>הוצאות קבועות</div>
+            <div className={styles.cardTitle}>הוצאות קבועות</div>
             {rowList(fixed, setFixed, 'שם ההוצאה הקבועה', SUGGESTED_FIXED, name => fixedActual[name] || 0)}
-            <div className={styles.groupTitle}>הוצאות משתנות</div>
-            {rowList(variable, setVariable, 'שם הקטגוריה', SUGGESTED_VAR, name => variableActual[name] || 0)}
           </div>
         )}
 
         {step === 2 && (
           <div className={styles.card}>
-            <div className={styles.cardTitle}>למה חוסכים</div>
-            <div className={styles.rows}>
-              {goals.map((g, i) => {
-                const t = parseFloat(g.target) || 0;
-                const m = parseFloat(g.months) || 0;
-                const monthly = m > 0 ? Math.max(0, t - (g.saved || 0)) / m : 0;
-                const pct = t > 0 ? Math.min(100, Math.round(((g.saved || 0) / t) * 100)) : 0;
-                return (
-                  <div className={styles.goalRow} key={g.id}>
-                    <div className={styles.row}>
-                      <input className={styles.input} aria-label="שם היעד" placeholder="שם היעד" value={g.name} onChange={e => updateGoal(i, { name: e.target.value })} />
-                      <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" aria-label="סכום יעד" placeholder="סכום" value={g.target} onChange={e => updateGoal(i, { target: e.target.value })} />
-                      <input className={styles.input + ' ' + styles.monthsInput} type="number" inputMode="numeric" aria-label="תוך כמה חודשים" placeholder="חוד'" value={g.months} onChange={e => updateGoal(i, { months: e.target.value })} />
-                      <DeleteButton onClick={() => removeGoal(i)} />
-                    </div>
-                    <div className={styles.goalMeta}>
-                      <div className={styles.goalBar}>
-                        <div className={styles.goalFill} style={{ transform: `scaleX(${pct / 100})` }} />
-                      </div>
-                      <span className={styles.pctChip}>{pct}%</span>
-                      {monthly > 0 && <span className={styles.goalNote}>{fmt(monthly)} לחודש</span>}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <Button variant="ghost" onClick={addGoal}>+ הוסף יעד</Button>
+            <div className={styles.cardTitle}>הוצאות משתנות</div>
+            {rowList(variable, setVariable, 'שם הקטגוריה', SUGGESTED_VAR, name => variableActual[name] || 0)}
           </div>
         )}
 
