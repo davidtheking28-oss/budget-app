@@ -359,7 +359,7 @@ export default function BudgetWizard({ data, save, year, month }) {
             <div className={styles.totalsStrip}>
               <div className={styles.totalCell + ' ' + styles.totalIncome}><span>סה״כ הכנסות</span><span>{fmt(totalIncome)}</span></div>
               <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>{fmt(totalFixed + totalVar)}</span></div>
-              {goalsMonthly > 0 && <div className={styles.totalCell + ' ' + styles.totalGoal}><span>הפרשה ליעדים</span><span>{fmt(goalsMonthly)}</span></div>}
+              {goalsMonthly > 0 && <div className={styles.totalCell + ' ' + styles.totalGoal}><span>הפרשה חודשית ליעדי חיסכון קיימים</span><span>{fmt(goalsMonthly)}</span></div>}
               <div className={styles.totalCell + ' ' + (left < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(left)}</span></div>
             </div>
 
