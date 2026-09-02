@@ -1,8 +1,8 @@
 import { currentInstallments } from './Credit.jsx';
+import { MONTH_NAMES as MONTHS_HE } from './monthUtils.js';
 import styles from './PaymentsTimeline.module.css';
 import { fmt } from '../format.js';
 
-const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 const MONTHS_HE_SHORT = ['ינו׳', 'פבר׳', 'מרץ', 'אפר׳', 'מאי', 'יוני', 'יולי', 'אוג׳', 'ספט׳', 'אוק׳', 'נוב׳', 'דצמ׳'];
 
 export function offsetLabel(offset, now = new Date(), long = false) {

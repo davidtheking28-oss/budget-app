@@ -6,6 +6,7 @@ import { initials } from '../clientIdentity.js';
 import { monthSummary, effectiveLimit } from './budgetMath.js';
 import { loanPayoffMonths, currentInstallments } from './Credit.jsx';
 import { monthlyEquivalent } from './Subscriptions.jsx';
+import { MONTH_NAMES } from './monthUtils.js';
 import { chartTheme } from '../categories.js';
 import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -15,8 +16,6 @@ import styles from './Presentation.module.css';
 import { fmt } from '../format.js';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
-
-const MONTH_NAMES = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 function inSelectedMonth(dateStr, year, month) {
   if (!dateStr) return false;

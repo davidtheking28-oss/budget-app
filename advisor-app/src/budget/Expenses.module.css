@@ -128,38 +128,6 @@
 .flowPos { color: var(--green); }
 .flowNeg { color: var(--red); }
 
-.monthTabs {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  padding: 4px;
-  margin-bottom: var(--space-4);
-  background: var(--surface2);
-  border-radius: var(--radius-md);
-}
-
-.monthTab {
-  flex: 1 0 auto;
-  padding: 8px 14px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text2);
-  font-family: inherit;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.18s ease, color 0.18s ease;
-}
-
-.monthTab:hover { color: var(--text); }
-
-.monthTabActive {
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
 .yearBadge {
   font-size: var(--text-sm);
   font-weight: 600;

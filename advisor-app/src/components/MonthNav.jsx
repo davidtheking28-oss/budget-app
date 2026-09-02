@@ -1,6 +1,5 @@
+import { MONTH_NAMES } from '../budget/monthUtils.js';
 import styles from './MonthNav.module.css';
-
-const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
 export default function MonthNav({ year, month, onChange, onReset }) {
   const now = new Date();

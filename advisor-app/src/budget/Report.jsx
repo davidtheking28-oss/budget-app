@@ -7,10 +7,9 @@ import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import Skeleton from '../components/Skeleton.jsx';
+import { MONTH_NAMES } from './monthUtils.js';
 import styles from './Report.module.css';
 import { fmt } from '../format.js';
-
-const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
 export default function Report({ clientUserId, advisorId, year, month, email, onClose }) {
   const { data, loading, error, reload } = useClientBudget(clientUserId);

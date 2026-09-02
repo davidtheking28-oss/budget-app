@@ -8,10 +8,10 @@ import { toast } from '../toast.js';
 import { addItem, updateItem, removeItem } from './itemHelpers.js';
 import PaymentsTimeline from './PaymentsTimeline.jsx';
 import { monthSummary } from './budgetMath.js';
+import { MONTH_NAMES as MONTHS_HE } from './monthUtils.js';
+import MonthTabs from '../components/MonthTabs.jsx';
 import styles from './Subscriptions.module.css';
 import { fmt } from '../format.js';
-
-const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 const CREDIT_ICON = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -187,20 +187,7 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
 
   return (
     <div>
-      {onSelectMonth && (
-        <div className={styles.monthTabs}>
-          {MONTHS_HE.map((name, i) => (
-            <button
-              key={i}
-              type="button"
-              className={styles.monthTab + (i === month ? ' ' + styles.monthTabActive : '')}
-              onClick={() => onSelectMonth(i)}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      )}
+      {onSelectMonth && <MonthTabs month={month} onSelectMonth={onSelectMonth} />}
 
       <div className={styles.brandHeader}>
         <div className={styles.brandHeaderLeft}>

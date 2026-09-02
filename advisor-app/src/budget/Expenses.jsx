@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { useClientBudget, BudgetModeContext } from './useClientBudget.js';
-import { getMonthTx, localISODate, formatDate } from './monthUtils.js';
+import { getMonthTx, localISODate, formatDate, MONTH_NAMES } from './monthUtils.js';
 import { effectiveIncome } from './budgetMath.js';
 import { EXPENSE_CATS, INCOME_CATS, FIXED_CATS, catColor, expenseCatsFor, incomeCatsFor } from '../categories.js';
 import ImportSheet from './ImportSheet.jsx';
@@ -11,10 +11,9 @@ import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import ModuleHeader from '../components/ModuleHeader.jsx';
+import MonthTabs from '../components/MonthTabs.jsx';
 import styles from './Expenses.module.css';
 import { fmt } from '../format.js';
-
-const MONTH_NAMES = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 const CALENDAR_ICON = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -212,20 +211,7 @@ export default function Expenses({ clientUserId, advisorId, year, month, onSelec
 
   return (
     <div>
-      {onSelectMonth && (
-        <div className={styles.monthTabs}>
-          {MONTH_NAMES.map((name, i) => (
-            <button
-              key={i}
-              type="button"
-              className={styles.monthTab + (i === month ? ' ' + styles.monthTabActive : '')}
-              onClick={() => onSelectMonth(i)}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      )}
+      {onSelectMonth && <MonthTabs month={month} onSelectMonth={onSelectMonth} />}
 
       <ModuleHeader
         icon={CALENDAR_ICON}

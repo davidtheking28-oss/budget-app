@@ -1,3 +1,5 @@
+export const MONTH_NAMES = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+
 export function mk(y, m) {
   return y + '-' + String(m + 1).padStart(2, '0');
 }
