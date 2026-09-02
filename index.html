@@ -3011,7 +3011,7 @@ function saveDataDebounced(){
   _saveDataDebounceTimer=setTimeout(saveData,400);
 }
 
-function fmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';const str=Math.ceil(Math.abs(n)).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});return sym+str.replace(/[-−]/g,'');}
+function fmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';const str=Math.round(Math.abs(n)).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});return sym+str.replace(/[-−]/g,'');}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 // ערך בטוח כמחרוזת JS בגרשיים בודדים בתוך מאפיין HTML בגרשיים כפולים
 function attrArg(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
