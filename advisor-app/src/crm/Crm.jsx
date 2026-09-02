@@ -19,7 +19,6 @@ const CONTACT_ICON = (
 const ICONS = {
   meetings: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
   tasks: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>,
-  notes: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4V4z" /></svg>,
   edit: <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
 };
 
@@ -56,8 +55,7 @@ function daysUntil(dateStr) {
 }
 
 export default function Crm({ advisorId, clientId, onChange }) {
-  const { notes, tasks, meetings, loading, error, reload, addNote, editNote, deleteNote, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId);
-  const [noteBody, setNoteBody] = useState('');
+  const { tasks, meetings, loading, error, reload, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId);
   const [summaryDrafts, setSummaryDrafts] = useState({});
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDue, setTaskDue] = useState('');
@@ -77,16 +75,9 @@ export default function Crm({ advisorId, clientId, onChange }) {
     const ok = await addTasks(taskTitle, taskDue, taskForClient);
     if (ok) { setTaskTitle(''); setTaskDue(''); setTaskForClient(false); notify(); }
   }
-  async function submitNote() {
-    if (!noteBody.trim()) return;
-    const ok = await addNote(noteBody, false);
-    if (ok) { setNoteBody(''); notify(); }
-  }
   async function removeMeeting(id) { await deleteMeeting(id); notify(); }
   async function removeTask(id) { await deleteTask(id); notify(); }
 
-  const [editingNote, setEditingNote] = useState(null);
-  const [editNoteBody, setEditNoteBody] = useState('');
   const [editingTask, setEditingTask] = useState(null);
   const [editTaskTitle, setEditTaskTitle] = useState('');
   const [editTaskDue, setEditTaskDue] = useState('');
@@ -96,8 +87,6 @@ export default function Crm({ advisorId, clientId, onChange }) {
   const [editMeetingNotes, setEditMeetingNotes] = useState('');
   const [editMeetingForClient, setEditMeetingForClient] = useState(true);
 
-  function startEditNote(n) { setEditingNote(n.id); setEditNoteBody(n.body); }
-  function saveEditNote(id) { editNote(id, editNoteBody, false); setEditingNote(null); }
   function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); }
   function saveEditTask(id) { editTask(id, editTaskTitle, editTaskDue, editTaskForClient); setEditingTask(null); }
   // datetime-local speaks LOCAL time; toISOString() emits UTC. Converting one way without
@@ -131,7 +120,7 @@ export default function Crm({ advisorId, clientId, onChange }) {
       <ModuleHeader
         icon={CONTACT_ICON}
         title="ניהול קשר לקוח"
-        subtitle="משימות, פגישות והערות במקום אחד"
+        subtitle="משימות ופגישות במקום אחד"
       />
 
       <div className={styles.sectionsGrid}>
@@ -282,35 +271,6 @@ export default function Crm({ advisorId, clientId, onChange }) {
         ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.tasks}</span>אין משימות</div>}
       </div>
 
-      <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconNotes}>{ICONS.notes}</span>הערות{notes.length > 0 && <span className={styles.countBadge}>{notes.length}</span>}</div>
-        <div className={styles.form}>
-          <textarea className={styles.textarea} aria-label="הערה חדשה" placeholder="הערה חדשה (פרטית, ליועץ בלבד)" value={noteBody} onChange={e => setNoteBody(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), submitNote())} />
-          <Button disabled={!noteBody.trim()} onClick={submitNote}>שמור הערה</Button>
-        </div>
-        {notes.length ? (
-          <div className={styles.list}>
-            {notes.map((n, i) => editingNote === n.id ? (
-              <div key={n.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
-                <div className={styles.form} style={{ margin: 0, flex: 1 }}>
-                  <textarea className={styles.textarea} value={editNoteBody} onChange={e => setEditNoteBody(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), saveEditNote(n.id))} />
-                  <Button onClick={() => saveEditNote(n.id)}>שמור</Button>
-                  <Button variant="ghost" onClick={() => setEditingNote(null)}>ביטול</Button>
-                </div>
-              </div>
-            ) : (
-              <div key={n.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
-                <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditNote(n)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditNote(n))}>
-                  <div>{n.body}{n.for_client && <span className={styles.clientBadge}>גלוי ללקוח</span>}</div>
-                  <div className={styles.meta}>{formatDate(n.created_at)}</div>
-                </div>
-                <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
-                <DeleteButton onClick={() => deleteNote(n.id)} />
-              </div>
-            ))}
-          </div>
-        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.notes}</span>אין הערות</div>}
-      </div>
       </div>
     </div>
   );

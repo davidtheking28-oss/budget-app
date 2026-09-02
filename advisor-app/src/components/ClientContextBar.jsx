@@ -1,14 +1,11 @@
 import { formatDateTime } from '../budget/monthUtils.js';
-import { initials } from '../clientIdentity.js';
 import styles from './ClientContextBar.module.css';
 
-export default function ClientContextBar({ email, nextMeeting, openTasks, household, onOpenCrm, budgetMode, onBudgetModeChange }) {
+export default function ClientContextBar({ nextMeeting, openTasks, household, onOpenCrm, budgetMode, onBudgetModeChange }) {
   const meeting = nextMeeting ? formatDateTime(nextMeeting) : null;
   return (
     <div className={styles.bar}>
       <div className={styles.identity}>
-        <span className={styles.avatar} aria-hidden="true">{initials(email)}</span>
-        <span className={styles.email}>{email || '—'}</span>
         {household && (
           <span className={styles.fact} title={household.partnerEmail ? `משותף עם ${household.partnerEmail}` : 'התקציב משותף עם בן/בת זוג'}>
             <span className={styles.factLabel}>שיתוף</span>

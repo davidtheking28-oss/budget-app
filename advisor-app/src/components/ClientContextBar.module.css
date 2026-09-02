@@ -18,30 +18,6 @@
   min-width: 0;
 }
 
-.avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-full);
-  background: var(--accent-dim);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: var(--text-sm);
-  flex-shrink: 0;
-}
-
-.email {
-  min-width: 0;
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .facts {
   display: flex;
   align-items: center;
@@ -80,7 +56,6 @@
 @media (max-width: 720px) {
   .bar { border-radius: var(--radius-md); }
   .identity { flex-wrap: wrap; }
-  .email { max-width: 160px; }
   .modeOn,
   .modeOff { min-height: 44px; }
 }

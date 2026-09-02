@@ -185,7 +185,6 @@ export default function App() {
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
       >
         <ClientContextBar
-          email={selectedClient.email}
           nextMeeting={nextMeeting}
           openTasks={openTasks}
           household={household}
