@@ -5299,8 +5299,15 @@ function renderDashGoals(){
   const total=pTx.reduce((s,t)=>s+t.amount,0);
   const bigNum=document.getElementById('dashBigNum');
   const bigLabel=document.getElementById('dashBigLabel');
-  if(bigNum)bigNum.textContent=fmt(total);
-  if(bigLabel)bigLabel.textContent=_dashPeriod==='week'?'ב-7 הימים האחרונים':_dashPeriod==='all'?'סך הכל':'מתחילת החודש';
+  const _dashIncome=_dashPeriod==='month'?getMonthlyIncome():0;
+  if(_dashPeriod==='month'&&_dashIncome>0){
+    const remaining=_dashIncome-total;
+    if(bigNum){bigNum.textContent=fmt(remaining);bigNum.style.color=remaining<0?'var(--red)':'var(--accent)';}
+    if(bigLabel)bigLabel.textContent=(remaining>=0?'נשאר לך':'חרגת')+' · הוצאת '+fmt(total)+' מתחילת החודש';
+  } else {
+    if(bigNum){bigNum.textContent=fmt(total);bigNum.style.color='var(--accent)';}
+    if(bigLabel)bigLabel.textContent=_dashPeriod==='week'?'ב-7 הימים האחרונים':_dashPeriod==='all'?'סך הכל':'מתחילת החודש';
+  }
   const _dashCats=getEffectiveExpenseCats();
   const cats=Object.keys(budgets).filter(c=>_dashCats.includes(c)).sort().slice(0,8);
   const R=34,C=2*Math.PI*R;
