@@ -87,6 +87,13 @@ export default function BudgetWizard({ data, save, year, month }) {
   const allocated = totalFixed + totalVar + goalsMonthly;
   const left = totalIncome - allocated;
 
+  // income actual is keyed by both desc and cat per transaction (see incomeActual above),
+  // so summing its values would double-count — sum straight off the month's transactions instead
+  const totalIncomeActual = useMemo(() => monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0), [monthTx]);
+  const totalFixedActual = useMemo(() => Object.values(fixedActual).reduce((s, v) => s + v, 0), [fixedActual]);
+  const totalVarActual = useMemo(() => Object.values(variableActual).reduce((s, v) => s + v, 0), [variableActual]);
+  const actualFlow = totalIncomeActual - (totalFixedActual + totalVarActual);
+
   function addRow(setter, name = '') { setter(prev => [...prev, { name, amount: '' }]); }
   function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...patch } : r)); }
   function removeRow(setter, i) { setter(prev => prev.filter((_, idx) => idx !== i)); }
@@ -287,14 +294,26 @@ export default function BudgetWizard({ data, save, year, month }) {
             <div className={styles.reviewCols}>
               <div className={styles.reviewCol}>
                 <div className={styles.reviewColTitle}>הכנסות</div>
-                {incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0).length
-                  ? incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0).map((r, i) => (
-                    <div className={styles.reviewItem} key={i}>
-                      <span className={styles.reviewName}>{r.name}</span>
-                      <span className={styles.reviewAmt + ' ' + styles.positive}>{fmt(parseFloat(r.amount))}</span>
-                    </div>
-                  ))
-                  : <div className={styles.reviewEmpty}>לא הוגדרו מקורות הכנסה</div>}
+                {(() => {
+                  const cleanIncomes = incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
+                  if (!cleanIncomes.length) return <div className={styles.reviewEmpty}>לא הוגדרו מקורות הכנסה</div>;
+                  return (
+                    <>
+                      <div className={styles.reviewItemHead}><span /><span>תכנון</span><span>בפועל</span></div>
+                      {cleanIncomes.map((r, i) => {
+                        const plan = parseFloat(r.amount);
+                        const actual = incomeActual[(r.name || '').trim().toLowerCase()] || 0;
+                        return (
+                          <div className={styles.reviewItem} key={i}>
+                            <span className={styles.reviewName}>{r.name}</span>
+                            <span className={styles.reviewAmt}>{fmt(plan)}</span>
+                            <span className={styles.reviewAmt + ' ' + (actual < plan ? styles.negative : styles.positive)}>{fmt(actual)}</span>
+                          </div>
+                        );
+                      })}
+                    </>
+                  );
+                })()}
               </div>
               <div className={styles.reviewCol}>
                 <div className={styles.reviewColTitle}>הוצאות</div>
@@ -302,32 +321,42 @@ export default function BudgetWizard({ data, save, year, month }) {
                   const cleanFixed = fixed.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
                   const cleanVar = variable.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
                   if (!cleanFixed.length && !cleanVar.length) return <div className={styles.reviewEmpty}>לא הוגדרו הוצאות</div>;
+                  const expenseRow = (r, key, actualOf) => {
+                    const plan = parseFloat(r.amount);
+                    const actual = actualOf(r.name) || 0;
+                    return (
+                      <div className={styles.reviewItem} key={key}>
+                        <span className={styles.reviewName}>{r.name}</span>
+                        <span className={styles.reviewAmt}>-{fmt(plan)}</span>
+                        <span className={styles.reviewAmt + ' ' + (actual > plan ? styles.negative : styles.positive)}>-{fmt(actual)}</span>
+                      </div>
+                    );
+                  };
                   return (
                     <>
+                      <div className={styles.reviewItemHead}><span /><span>תכנון</span><span>בפועל</span></div>
                       {cleanFixed.length > 0 && <div className={styles.groupTitle}>הוצאות קבועות</div>}
-                      {cleanFixed.map((r, i) => (
-                        <div className={styles.reviewItem} key={'f' + i}>
-                          <span className={styles.reviewName}>{r.name}</span>
-                          <span className={styles.reviewAmt + ' ' + styles.negative}>-{fmt(parseFloat(r.amount))}</span>
-                        </div>
-                      ))}
+                      {cleanFixed.map((r, i) => expenseRow(r, 'f' + i, name => fixedActual[name]))}
                       {cleanVar.length > 0 && <div className={styles.groupTitle}>הוצאות משתנות</div>}
-                      {cleanVar.map((r, i) => (
-                        <div className={styles.reviewItem} key={'v' + i}>
-                          <span className={styles.reviewName}>{r.name}</span>
-                          <span className={styles.reviewAmt + ' ' + styles.negative}>-{fmt(parseFloat(r.amount))}</span>
-                        </div>
-                      ))}
+                      {cleanVar.map((r, i) => expenseRow(r, 'v' + i, name => variableActual[name]))}
                     </>
                   );
                 })()}
               </div>
             </div>
 
+            <div className={styles.totalsStripLabel}>תכנון</div>
             <div className={styles.totalsStrip}>
               <div className={styles.totalCell + ' ' + styles.totalIncome}><span>סה״כ הכנסות</span><span>{fmt(totalIncome)}</span></div>
               <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>-{fmt(totalFixed + totalVar)}</span></div>
               <div className={styles.totalCell + ' ' + (left < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(left)}</span></div>
+            </div>
+
+            <div className={styles.totalsStripLabel}>בפועל</div>
+            <div className={styles.totalsStrip}>
+              <div className={styles.totalCell + ' ' + styles.totalIncome}><span>סה״כ הכנסות</span><span>{fmt(totalIncomeActual)}</span></div>
+              <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>-{fmt(totalFixedActual + totalVarActual)}</span></div>
+              <div className={styles.totalCell + ' ' + (actualFlow < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(actualFlow)}</span></div>
             </div>
 
             {breakdown.length > 0 && (
