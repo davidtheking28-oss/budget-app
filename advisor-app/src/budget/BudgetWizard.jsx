@@ -136,7 +136,30 @@ export default function BudgetWizard({ data, save, year, month }) {
   ].filter(b => b.value > 0);
   const breakdownTotal = breakdown.reduce((s, b) => s + b.value, 0) || 1;
 
-  function rowList(list, setter, placeholder, suggestions, actualOf) {
+  function rowList(list, setter, placeholder, suggestions, actualOf, compact = false) {
+    const amounts = (r, i) => (
+      <>
+        <div className={styles.itemAmountBox}>
+          <div className={styles.itemAmountBoxLabel}>תכנון</div>
+          <input
+            className={styles.itemAmountInput}
+            type="number"
+            inputMode="decimal"
+            aria-label="סכום חודשי"
+            placeholder="0"
+            value={r.amount}
+            onChange={e => updateRow(setter, i, { amount: e.target.value })}
+          />
+        </div>
+        {actualOf && (
+          <div className={styles.itemActualBox}>
+            <div className={styles.itemAmountBoxLabel}>ביצוע</div>
+            <div className={styles.itemActualValue}>{fmt(actualOf(r.name))}</div>
+          </div>
+        )}
+      </>
+    );
+
     return (
       <>
         {suggestions.length > 0 && (
@@ -148,8 +171,23 @@ export default function BudgetWizard({ data, save, year, month }) {
             ))}
           </div>
         )}
-        <div className={styles.rows}>
-          {list.map((r, i) => (
+        <div className={compact ? styles.rowsGrid : styles.rows}>
+          {list.map((r, i) => compact ? (
+            <div className={styles.itemCard} key={i}>
+              <div className={styles.itemCardHead}>
+                <span className={styles.itemIcon} aria-hidden="true">{getCategoryIcon(r.name)}</span>
+                <input
+                  className={styles.itemName}
+                  aria-label="שם"
+                  placeholder={placeholder}
+                  value={r.name}
+                  onChange={e => updateRow(setter, i, { name: e.target.value })}
+                />
+                <DeleteButton onClick={() => removeRow(setter, i)} />
+              </div>
+              <div className={styles.itemCardAmounts}>{amounts(r, i)}</div>
+            </div>
+          ) : (
             <div className={styles.itemRow} key={i}>
               <span className={styles.itemIcon} aria-hidden="true">{getCategoryIcon(r.name)}</span>
               <input
@@ -159,24 +197,7 @@ export default function BudgetWizard({ data, save, year, month }) {
                 value={r.name}
                 onChange={e => updateRow(setter, i, { name: e.target.value })}
               />
-              <div className={styles.itemAmountBox}>
-                <div className={styles.itemAmountBoxLabel}>תכנון</div>
-                <input
-                  className={styles.itemAmountInput}
-                  type="number"
-                  inputMode="decimal"
-                  aria-label="סכום חודשי"
-                  placeholder="0"
-                  value={r.amount}
-                  onChange={e => updateRow(setter, i, { amount: e.target.value })}
-                />
-              </div>
-              {actualOf && (
-                <div className={styles.itemActualBox}>
-                  <div className={styles.itemAmountBoxLabel}>ביצוע</div>
-                  <div className={styles.itemActualValue}>{fmt(actualOf(r.name))}</div>
-                </div>
-              )}
+              {amounts(r, i)}
               <DeleteButton onClick={() => removeRow(setter, i)} />
             </div>
           ))}
@@ -223,14 +244,14 @@ export default function BudgetWizard({ data, save, year, month }) {
         {step === 1 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>הוצאות קבועות</div>
-            {rowList(fixed, setFixed, 'שם ההוצאה הקבועה', [], name => fixedActual[name] || 0)}
+            {rowList(fixed, setFixed, 'שם ההוצאה הקבועה', [], name => fixedActual[name] || 0, true)}
           </div>
         )}
 
         {step === 2 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>הוצאות משתנות</div>
-            {rowList(variable, setVariable, 'שם הקטגוריה', [], name => variableActual[name] || 0)}
+            {rowList(variable, setVariable, 'שם הקטגוריה', [], name => variableActual[name] || 0, true)}
           </div>
         )}
 
