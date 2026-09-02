@@ -6840,7 +6840,7 @@ function renderCalendarView(){
   const mTx=getMonthTx(y,m).filter(t=>t.type==='expense');
   const byDay={};
   mTx.forEach(t=>{const d=parseInt(t.date.slice(8,10));byDay[d]=(byDay[d]||0)+t.amount;});
-  const firstDay=(new Date(y,m,1).getDay()+1)%7; // 0=Sun adjusted for RTL (Sun=0→display rightmost)
+  const firstDay=new Date(y,m,1).getDay(); // 0=Sun, matches the Sunday-first RTL header (days[0]='א')
   // RTL: days go right-to-left: ש ו ה ד ג ב א (Sat→Sun)
   const days=['א','ב','ג','ד','ה','ו','ש'];
   const totalDays=daysInMonth(y,m);
