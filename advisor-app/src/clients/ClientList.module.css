@@ -113,20 +113,28 @@
   grid-column: 1 / -1;
 }
 
+/* Same circle-avatar treatment as QuickSwitcher/Report/Presentation's client
+   initials (accent-dim fill, accent text) — this card used to render a bare
+   colored letter instead, the one place initials weren't a badge. */
 .initial {
-  width: 34px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
-  text-align: center;
-  color: var(--text3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--accent-dim);
+  color: var(--accent);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--text-display-sm);
-  line-height: 1;
-  transition: color 0.2s ease;
+  font-size: var(--text-md);
+  transition: background 0.2s ease, transform 0.2s var(--ease-out-expo);
 }
 
 .card:hover .initial {
-  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.22);
+  transform: scale(1.05);
 }
 
 .info {
@@ -547,11 +555,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--surface2);
   color: var(--text3);
 }
 
 .pendingCard:hover .pendingInitial {
+  background: var(--surface2);
   color: var(--text3);
+  transform: none;
 }
 
 .pendingRemoveBtn {
