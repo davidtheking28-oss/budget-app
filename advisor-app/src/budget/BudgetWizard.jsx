@@ -210,20 +210,6 @@ export default function BudgetWizard({ data, save, year, month }) {
         ))}
       </div>
 
-      <div className={styles.tally}>
-        <div className={styles.tallyItem}>
-          <div className={styles.tallyLabel}>הכנסות</div>
-          <div className={styles.tallyValue}>{fmt(totalIncome)}</div>
-        </div>
-        <div className={styles.tallyItem}>
-          <div className={styles.tallyLabel}>הוקצה</div>
-          <div className={styles.tallyValue}>{fmt(allocated)}</div>
-        </div>
-        <div className={styles.tallyItem + ' ' + styles.tallyMain}>
-          <div className={styles.tallyLabel}>נותר לתקצוב</div>
-          <div className={styles.tallyValue + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</div>
-        </div>
-      </div>
       {left < 0 && <div className={styles.warn}>ההקצאה חורגת מההכנסות ב-{fmt(Math.abs(left))} לחודש</div>}
 
       <div className={styles.body}>
