@@ -4275,7 +4275,7 @@ function renderCloudSection(){
       +'<div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:8px">👨‍👩‍👧 תקציב משפחתי</div>'
       +'<button class="btn btn-outline btn-full" onclick="createHousehold()" style="margin-bottom:8px">+ צור קוד שיתוף לבן/בת זוג</button>'
       +'<div style="font-size:0.75rem;color:var(--text3);margin-bottom:6px;text-align:center">— או הצטרף לתקציב קיים —</div>'
-      +'<input id="householdCodeInput" type="text" maxlength="6" placeholder="קוד 6 תווים" autocomplete="off" autocorrect="off" spellcheck="false" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:4px;text-transform:uppercase" />'
+      +'<input id="householdCodeInput" type="text" maxlength="9" placeholder="קוד 9 תווים" autocomplete="off" autocorrect="off" spellcheck="false" style="width:100%;border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:10px 12px;font-size:1rem;font-family:var(--font-num);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:8px;text-align:center;letter-spacing:4px;text-transform:uppercase" />'
       +'<button class="btn btn-primary btn-full" onclick="joinHousehold()">הצטרף לתקציב</button>'
       +'</div>';
   } else if(_cloudHousehold.role==='owner'){
@@ -4334,7 +4334,7 @@ async function createHousehold(){
 }
 async function joinHousehold(){
   const code=(document.getElementById('householdCodeInput')?.value||'').trim().toUpperCase();
-  if(!code||code.length<6){showToast('הזן קוד בן 6 תווים');return;}
+  if(!code||code.length<9){showToast('הזן קוד בן 9 תווים');return;}
   const btn=(typeof event!=='undefined'&&event)?event.target:null;
   const prevLabel=btn?btn.textContent:null;
   if(btn){btn.disabled=true;btn.textContent='מצטרף...';}
