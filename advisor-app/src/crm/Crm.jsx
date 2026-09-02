@@ -6,6 +6,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { toast } from '../toast.js';
+import ModuleHeader from '../components/ModuleHeader.jsx';
 import styles from './Crm.module.css';
 
 const CONTACT_ICON = (
@@ -127,15 +128,11 @@ export default function Crm({ advisorId, clientId, onChange }) {
 
   return (
     <div>
-      <div className={styles.brandHeader}>
-        <div className={styles.brandHeaderLeft}>
-          <span className={styles.brandIcon} aria-hidden="true">{CONTACT_ICON}</span>
-          <div>
-            <div className={styles.brandTitle}>ניהול קשר לקוח</div>
-            <div className={styles.brandSub}>משימות, פגישות והערות במקום אחד</div>
-          </div>
-        </div>
-      </div>
+      <ModuleHeader
+        icon={CONTACT_ICON}
+        title="ניהול קשר לקוח"
+        subtitle="משימות, פגישות והערות במקום אחד"
+      />
 
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>

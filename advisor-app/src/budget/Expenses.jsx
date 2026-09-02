@@ -10,6 +10,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
+import ModuleHeader from '../components/ModuleHeader.jsx';
 import styles from './Expenses.module.css';
 import { fmt } from '../format.js';
 
@@ -226,16 +227,12 @@ export default function Expenses({ clientUserId, advisorId, year, month, onSelec
         </div>
       )}
 
-      <div className={styles.brandHeader}>
-        <div className={styles.brandHeaderLeft}>
-          <span className={styles.brandIcon} aria-hidden="true">{CALENDAR_ICON}</span>
-          <div>
-            <div className={styles.brandTitle}>תזרים {MONTH_NAMES[month]}</div>
-            <div className={styles.brandSub}>הכנסות מול הוצאות בפועל</div>
-          </div>
-        </div>
-        <div className={styles.yearBadge}>שנה: {year}</div>
-      </div>
+      <ModuleHeader
+        icon={CALENDAR_ICON}
+        title={`תזרים ${MONTH_NAMES[month]}`}
+        subtitle="הכנסות מול הוצאות בפועל"
+        right={<div className={styles.yearBadge}>שנה: {year}</div>}
+      />
 
       {allMonthTx.length > 0 && (
         <div className={styles.flowHero}>

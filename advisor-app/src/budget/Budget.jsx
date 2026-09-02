@@ -10,6 +10,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
+import ModuleHeader from '../components/ModuleHeader.jsx';
 import styles from './Budget.module.css';
 import { fmt } from '../format.js';
 
@@ -110,16 +111,12 @@ export default function Budget({ clientUserId, advisorId, year, month, onSelectM
         </div>
       )}
 
-      <div className={styles.brandHeader}>
-        <div className={styles.brandHeaderLeft}>
-          <span className={styles.brandIcon} aria-hidden="true">{CALENDAR_ICON}</span>
-          <div>
-            <div className={styles.brandTitle}>תקציב {MONTH_NAMES[month]}</div>
-            <div className={styles.brandSub}>תכנון מול ביצוע בפועל</div>
-          </div>
-        </div>
-        <div className={styles.yearBadge}>שנה: {year}</div>
-      </div>
+      <ModuleHeader
+        icon={CALENDAR_ICON}
+        title={`תקציב ${MONTH_NAMES[month]}`}
+        subtitle="תכנון מול ביצוע בפועל"
+        right={<div className={styles.yearBadge}>שנה: {year}</div>}
+      />
 
       <div className={styles.kpiRow}>
         <div className={styles.kpi}>

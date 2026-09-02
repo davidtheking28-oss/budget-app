@@ -19,6 +19,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { toast } from '../toast.js';
+import ModuleHeader from '../components/ModuleHeader.jsx';
 import styles from './EconomicMapping.module.css';
 import { fmt } from '../format.js';
 
@@ -341,15 +342,11 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   return (
     <div>
-      <div className={styles.brandHeader}>
-        <div className={styles.brandHeaderLeft}>
-          <span className={styles.brandIcon} aria-hidden="true">{SCAN_ICON}</span>
-          <div>
-            <div className={styles.brandTitle}>מיפוי כלכלי</div>
-            <div className={styles.brandSub}>זיהוי אוטומטי של הכנסות והוצאות מדפי חשבון</div>
-          </div>
-        </div>
-      </div>
+      <ModuleHeader
+        icon={SCAN_ICON}
+        title="מיפוי כלכלי"
+        subtitle="זיהוי אוטומטי של הכנסות והוצאות מדפי חשבון"
+      />
 
       <div className={styles.card}>
         <div className={styles.cardTitle}>העלאת דפי חשבון</div>
