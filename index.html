@@ -2829,6 +2829,7 @@ function _migrateCats(){
   changed=_mergeFixedCatInto(['מניות'],'הוראת קבע לחסכון')||changed;
   changed=_migrateInsuranceCats()||changed;
   transactions.forEach(t=>{
+    if(t.fx&&SAVING_FIXED_CATS.includes(t.cat)&&t.type==='expense'){t.type='saving';changed=true;}
     if(t.type!=='expense'||t.fx)return;
     const n=_CAT_MIGRATE[t.cat];
     if(n){t.cat=n;changed=true;}
@@ -2884,6 +2885,9 @@ function budgetChipColor(cat){
   return table[BUDGET_CHIP_COLOR[cat]||'gray'];
 }
 const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וביוב','חשמל','תרומות בהוראת קבע','חינוך, חוגים וקייטנות','ביטוחים','הוראת קבע לחסכון','ריבית על המינוס','עמלת פעולות בערוץ ישיר','עמלת SMS','דמי כרטיס אשראי','החזר הלוואות + חיוב קבוע','עסקאות בתשלומים','מנויים ושירותים'];
+// Fixed cats that are money moved to savings, not actually spent — kept out of
+// every expense total (see _fxUpsert's transaction type and _fxRefreshTotal).
+const SAVING_FIXED_CATS=['הוראת קבע לחסכון'];
 const FIXED_AUTO={
   'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
   'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&_payCalc(p).left>0?amt:0);},0),
@@ -3827,7 +3831,7 @@ function _expRowHtml(opts){
     +'<div class="exp-row-left">'
       +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
-      +(opts.editable?'<span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'</span>':_expChevron(open))
+      +(opts.editable?'<span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'</span>':'')+_expChevron(open)
     +'</div>'
   +'</button>'
   +(open?'<div class="exp-body">'+opts.body+'</div>':'');
@@ -3837,7 +3841,8 @@ function renderTxCategorized(byCat){
   if(txListFilter!=='variable'){
     const fxEntries=[];
     const allFixed=getEffectiveFixedCats();
-    allFixed.filter(cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0).forEach(cat=>{
+    const nonSavingFixed=allFixed.filter(cat=>!SAVING_FIXED_CATS.includes(cat));
+    nonSavingFixed.filter(cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0).forEach(cat=>{
       const auto=!!FIXED_AUTO[cat];
       const amount=_fxMonthly(cat);
       const key='fx:'+cat;
@@ -3850,9 +3855,24 @@ function renderTxCategorized(byCat){
       fxEntries.push({amount,html:rowHtml});
     });
     fxEntries.sort((a,b)=>b.amount-a.amount);
-    html+='<div class="section-header"><div class="section-title">הוצאות קבועות <span class="badge">'+fxEntries.length+'/'+allFixed.length+'</span></div></div>'
+    html+='<div class="section-header"><div class="section-title">הוצאות קבועות <span class="badge">'+fxEntries.length+'/'+nonSavingFixed.length+'</span></div></div>'
       +(fxEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות מוגדרות עדיין</div>')
       +'<button type="button" class="exp-add-row" onclick="openFixedCatPicker()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
+
+    const savingEntries=[];
+    allFixed.filter(cat=>SAVING_FIXED_CATS.includes(cat)&&_fxMonthly(cat)>0).forEach(cat=>{
+      const amount=_fxMonthly(cat);
+      const key='sv:'+cat;
+      const rowHtml=_expRowHtml({key,cat,amount,planned:true,editable:true,
+        onEdit:'_expEditManual(\''+attrArg(cat)+'\')',
+        onDelete:'_expDeleteManual(\''+attrArg(cat)+'\')',
+        body:_expTxListHtml(cat,byCat)});
+      savingEntries.push({amount,html:rowHtml});
+    });
+    if(savingEntries.length){
+      html+='<div class="section-header"><div class="section-title">חסכונות <span class="badge">'+savingEntries.length+'</span></div></div>'
+        +savingEntries.map(e=>e.html).join('');
+    }
   }
   if(txListFilter!=='fixed'){
     const varEntries=[];
@@ -6131,7 +6151,8 @@ function _fxUpsert(mkey,cat,amount,overwrite){
   const id=_fxTxId(mkey,cat);
   const i=transactions.findIndex(t=>String(t.id)===id);
   if(amount<=0){if(i>=0){transactions.splice(i,1);return true;}return false;}
-  if(i<0){transactions.unshift({id,type:'expense',cat,desc:cat,amount,date:mkey+'-01',recurring:false,fixed:true,fx:true});return true;}
+  const type=SAVING_FIXED_CATS.includes(cat)?'saving':'expense';
+  if(i<0){transactions.unshift({id,type,cat,desc:cat,amount,date:mkey+'-01',recurring:false,fixed:true,fx:true});return true;}
   if(overwrite&&transactions[i].amount!==amount){transactions[i].amount=amount;return true;}
   return false;
 }
@@ -6150,7 +6171,7 @@ function _fxPushMonth(cat){
   _fxUpsert(mkey,cat,_fxMonthly(cat),true);
 }
 function _fxRefreshTotal(){
-  let t=0;getEffectiveFixedCats().forEach(c=>t+=_fxMonthly(c));
+  let t=0;getEffectiveFixedCats().filter(c=>!SAVING_FIXED_CATS.includes(c)).forEach(c=>t+=_fxMonthly(c));
   const el=document.getElementById('fixedTotal');if(el)el.textContent=_payFmt(t);
 }
 function setFixedAmount(i,val){
