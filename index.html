@@ -5298,8 +5298,8 @@ function renderDashGoals(){
   const _dashIncome=_dashPeriod==='month'?getMonthlyIncome():0;
   if(_dashPeriod==='month'&&_dashIncome>0){
     const remaining=_dashIncome-total;
-    if(bigNum){bigNum.textContent=fmt(remaining);bigNum.style.color=remaining<0?'var(--red)':'var(--accent)';}
-    if(bigLabel)bigLabel.textContent=(remaining>=0?'נשאר לך':'חרגת')+' · הוצאת '+fmt(total)+' מתחילת החודש';
+    if(bigNum){bigNum.textContent=fmt(total);bigNum.style.color=remaining<0?'var(--red)':'var(--accent)';}
+    if(bigLabel)bigLabel.textContent='הוצאת מתחילת החודש · '+(remaining>=0?'נשאר לך '+fmt(remaining):'חרגת ב-'+fmt(Math.abs(remaining)));
   } else {
     if(bigNum){bigNum.textContent=fmt(total);bigNum.style.color='var(--accent)';}
     if(bigLabel)bigLabel.textContent=_dashPeriod==='week'?'ב-7 הימים האחרונים':_dashPeriod==='all'?'סך הכל':'מתחילת החודש';
@@ -6791,7 +6791,7 @@ function showPage(name,btn){
   const navBtn=btn||document.getElementById('nav-'+name);
   if(navBtn){navBtn.classList.add('active');navBtn.setAttribute('aria-current','page');}
   _positionNavIndicator();
-  if(name==='analytics'){_loadAdvisorTasks().then(renderTasksPage);}
+  if(name==='analytics'){renderTasksPage();_loadAdvisorTasks().then(renderTasksPage);}
   if(name==='insights'){renderAnalytics();renderAnnualSummary();renderInsights();renderNetWorth();}
   if(name==='transactions') renderTxPage();
   if(name==='goals')        renderGoals();
