@@ -3123,8 +3123,13 @@ function closeSheet(id){
   if(!_openSheets.size){_unlockBodyScroll();_sheetSetBackgroundInert(false);document.removeEventListener('keydown',_sheetKeydown);if(_sheetOpenerEl&&document.contains(_sheetOpenerEl)){_sheetOpenerEl.focus();}_sheetOpenerEl=null;}
   const sh=ov.querySelector('.sheet,.wiz-sheet');
   if(sh){
-    sh.style.animation='sheetExit 0.22s cubic-bezier(0.4,0,1,1) both';
-    setTimeout(()=>{ov.classList.remove('open');sh.style.animation='';},220);
+    if(sh.style.transform&&sh.style.transform!=='none'){
+      sh.style.transition='transform 0.22s cubic-bezier(0.4,0,1,1)';
+      sh.style.transform='translateY(105%)';
+    } else {
+      sh.style.animation='sheetExit 0.22s cubic-bezier(0.4,0,1,1) both';
+    }
+    setTimeout(()=>{ov.classList.remove('open');sh.style.animation='';sh.style.transition='';sh.style.transform='';},220);
   } else {
     ov.classList.remove('open');
   }
@@ -7718,11 +7723,13 @@ function initSheetSwipe(){
     },{passive:true});
     sheet.addEventListener('touchend', e=>{
       const dy = e.changedTouches[0].clientY - startY;
-      sheet.style.transition='';
-      sheet.style.transform='';
       if(dy > 80 && startScrollTop <= 0){
         const overlay = sheet.closest('.sheet-overlay');
         if(overlay) closeSheet(overlay.id);
+      } else {
+        sheet.style.transition='transform 0.28s cubic-bezier(0.22,1,0.36,1)';
+        sheet.style.transform='';
+        setTimeout(()=>{sheet.style.transition='';},280);
       }
     },{passive:true});
   });
