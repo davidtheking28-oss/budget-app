@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useClientCrm, suggestTasksFromSummary } from './useClientCrm.js';
+import { useClientProfile } from './useClientProfile.js';
 import { formatDate, formatDateTime } from '../budget/monthUtils.js';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -19,6 +20,7 @@ const CONTACT_ICON = (
 const ICONS = {
   meetings: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
   tasks: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>,
+  profile: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2" /><circle cx="8" cy="11" r="2" /><path d="M4 17c0-1.8 1.8-3 4-3s4 1.2 4 3" /><line x1="14" y1="9" x2="19" y2="9" /><line x1="14" y1="13" x2="19" y2="13" /></svg>,
   edit: <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
 };
 
@@ -54,8 +56,21 @@ function daysUntil(dateStr) {
   return Math.ceil((target - now) / 86400000);
 }
 
-export default function Crm({ advisorId, clientId, onChange }) {
+export default function Crm({ advisorId, clientId, email, onChange }) {
   const { tasks, meetings, loading, error, reload, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId);
+  const { profile, save: saveProfile } = useClientProfile(advisorId, clientId);
+  const [phoneDraft, setPhoneDraft] = useState('');
+  const [backgroundDraft, setBackgroundDraft] = useState('');
+  const [profileDirty, setProfileDirty] = useState(false);
+  useEffect(() => {
+    if (!profile || profileDirty) return;
+    setPhoneDraft(profile.phone || '');
+    setBackgroundDraft(profile.background || '');
+  }, [profile, profileDirty]);
+  async function saveProfileFields() {
+    const ok = await saveProfile({ phone: phoneDraft, background: backgroundDraft });
+    if (ok) setProfileDirty(false);
+  }
   const [summaryDrafts, setSummaryDrafts] = useState({});
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDue, setTaskDue] = useState('');
@@ -124,6 +139,24 @@ export default function Crm({ advisorId, clientId, onChange }) {
       />
 
       <div className={styles.sectionsGrid}>
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconProfile}>{ICONS.profile}</span>פרטי קשר ורקע</div>
+        <div className={styles.form} style={{ maxWidth: 'none' }}>
+          <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
+          <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" style={{ flex: '0 0 160px' }} value={phoneDraft} onChange={e => { setPhoneDraft(e.target.value); setProfileDirty(true); }} />
+        </div>
+        <textarea
+          className={styles.textarea}
+          style={{ width: '100%', marginTop: 'var(--space-3)', minHeight: 72 }}
+          aria-label="רקע על הלקוח"
+          placeholder="רקע על הלקוח — מצב משפחתי, מטרות, הקשר שכדאי לזכור..."
+          value={backgroundDraft}
+          onChange={e => { setBackgroundDraft(e.target.value); setProfileDirty(true); }}
+        />
+        <div style={{ marginTop: 'var(--space-3)' }}>
+          <Button onClick={saveProfileFields} disabled={!profileDirty}>שמור</Button>
+        </div>
+      </div>
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconMeetings}>{ICONS.meetings}</span>פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}</div>
         <div className={styles.form}>

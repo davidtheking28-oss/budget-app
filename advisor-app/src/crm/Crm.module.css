@@ -44,6 +44,7 @@
 
 .iconMeetings { background: var(--accent-dim); color: var(--accent); }
 .iconTasks { background: rgba(var(--green-rgb), 0.12); color: var(--green); }
+.iconProfile { background: rgba(var(--gold-rgb), 0.12); color: var(--gold); }
 
 .countBadge {
   color: var(--text3);

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
 import { usePendingInvites } from './usePendingInvites.js';
-import PipelineTable from './PipelineTable.jsx';
+import { usePipeline } from './usePipeline.js';
+import PipelineModal from './PipelineModal.jsx';
 import { isStale, relativeTime } from './useClientFreshness.js';
 import { formatDateTime } from '../budget/monthUtils.js';
 import { useCountUp } from '../useCountUp.js';
@@ -76,21 +77,32 @@ const ICON_CHECKLIST = (
   </svg>
 );
 
+const ICON_FUNNEL = (
+  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3Z" />
+  </svg>
+);
+
 function StatMain({ value }) {
   const display = useCountUp(value);
   return <div className={styles.statMainValue}>{Math.round(display)}</div>;
 }
 
-function StatSecondary({ label, value, tone, icon, format }) {
+function StatSecondary({ label, value, tone, icon, format, onClick }) {
   const display = useCountUp(value);
+  const Tag = onClick ? 'button' : 'div';
   return (
-    <div className={styles.statSecondary}>
+    <Tag
+      type={onClick ? 'button' : undefined}
+      className={styles.statSecondary + (onClick ? ' ' + styles.statSecondaryClickable : '')}
+      onClick={onClick}
+    >
       <span className={styles.statIcon + (tone ? ' ' + styles[tone] : '')}>{icon}</span>
       <div className={styles.statSecondaryBody}>
         <span className={styles.statSecondaryValue + (tone ? ' ' + styles[tone] : '')}>{format ? format(display) : Math.round(display)}</span>
         <span className={styles.statSecondaryLabel}>{label}</span>
       </div>
-    </div>
+    </Tag>
   );
 }
 
@@ -106,6 +118,8 @@ const INVITE_ERROR_MESSAGES = {
 export default function ClientList({ advisorId, onSelect }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
   const { invites: pendingInvites, reload: reloadInvites } = usePendingInvites(advisorId);
+  const { leads, loading: leadsLoading, addLead, setStage: setLeadStage, deleteLead } = usePipeline(advisorId);
+  const [pipelineOpen, setPipelineOpen] = useState(false);
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -185,8 +199,10 @@ export default function ClientList({ advisorId, onSelect }) {
   return (
     <div className={styles.page}>
       {/* A brand-new advisor has nothing to count, and three zeroes are the first
-          thing they would otherwise see. Let the empty state be the whole page. */}
-      {clients.length > 0 && (
+          thing they would otherwise see. Let the empty state be the whole page —
+          unless they already have pipeline prospects, whose only access point is
+          this bar's KPI tile. */}
+      {(clients.length > 0 || leads.length > 0) && (
         <div className={styles.statBar}>
           <div className={styles.statMain}>
             <span className={styles.statIcon + ' ' + styles.statAccentIcon}>{ICON_USERS}</span>
@@ -201,10 +217,20 @@ export default function ClientList({ advisorId, onSelect }) {
             <StatSecondary label="סה״כ חריגה בכסף" value={overageAmountTotal} tone="statRed" icon={ICON_ALERT} format={fmt} />
           )}
           <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} icon={ICON_CHECKLIST} />
+          <StatSecondary label="לקוחות חדשים בטיפול" value={leads.length} icon={ICON_FUNNEL} onClick={() => setPipelineOpen(true)} />
         </div>
       )}
 
-      <PipelineTable advisorId={advisorId} />
+      {pipelineOpen && (
+        <PipelineModal
+          leads={leads}
+          loading={leadsLoading}
+          addLead={addLead}
+          setStage={setLeadStage}
+          deleteLead={deleteLead}
+          onClose={() => setPipelineOpen(false)}
+        />
+      )}
 
       <div className={styles.sectionHead}>
         <h2 className={styles.sectionTitle}>הלקוחות שלי {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>

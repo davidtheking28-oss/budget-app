@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { usePipeline } from './usePipeline.js';
 import { formatDate } from '../budget/monthUtils.js';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -16,10 +15,10 @@ function stageInfo(key) {
   return STAGES.find(s => s.key === key) || STAGES[0];
 }
 
-export default function PipelineTable({ advisorId }) {
-  const { leads, loading, addLead, setStage, deleteLead } = usePipeline(advisorId);
+export default function PipelineTable({ leads, loading, addLead, setStage, deleteLead }) {
   const [filter, setFilter] = useState('all');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [caseOwner, setCaseOwner] = useState('');
   const [nextMeeting, setNextMeeting] = useState('');
   const [stage, setNewStage] = useState('intro_meeting');
@@ -28,9 +27,9 @@ export default function PipelineTable({ advisorId }) {
   async function submit() {
     if (!name.trim()) return;
     setSubmitting(true);
-    const ok = await addLead({ name, case_owner: caseOwner || null, next_meeting: nextMeeting || null, stage });
+    const ok = await addLead({ name, phone: phone || null, case_owner: caseOwner || null, next_meeting: nextMeeting || null, stage });
     setSubmitting(false);
-    if (ok) { setName(''); setCaseOwner(''); setNextMeeting(''); setNewStage('intro_meeting'); }
+    if (ok) { setName(''); setPhone(''); setCaseOwner(''); setNextMeeting(''); setNewStage('intro_meeting'); }
   }
 
   const visible = filter === 'all' ? leads : leads.filter(l => l.stage === filter);
@@ -59,6 +58,7 @@ export default function PipelineTable({ advisorId }) {
             <thead>
               <tr>
                 <th>לקוח / יחידה</th>
+                <th>טלפון</th>
                 <th>סטטוס</th>
                 <th>פגישה אחרונה</th>
                 <th>פגישה הבאה</th>
@@ -73,6 +73,7 @@ export default function PipelineTable({ advisorId }) {
                 return (
                   <tr key={l.id}>
                     <td>{l.name}</td>
+                    <td>{l.phone ? <a href={'tel:' + l.phone} dir="ltr" onClick={e => e.stopPropagation()}>{l.phone}</a> : '—'}</td>
                     <td>
                       <select className={styles.stageSelect + ' ' + styles[info.tone]} value={l.stage} onChange={e => setStage(l.id, e.target.value)}>
                         {STAGES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
@@ -97,6 +98,7 @@ export default function PipelineTable({ advisorId }) {
         <div className={styles.addFormTitle}>הוספת לקוח חדש</div>
         <div className={styles.addFormRow}>
           <input className={styles.input} aria-label="שם לקוח / יחידה" placeholder="שם לקוח / יחידה" value={name} onChange={e => setName(e.target.value)} />
+          <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" value={phone} onChange={e => setPhone(e.target.value)} />
           <select className={styles.input} aria-label="שלב בצינור" value={stage} onChange={e => setNewStage(e.target.value)}>
             {STAGES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
           </select>

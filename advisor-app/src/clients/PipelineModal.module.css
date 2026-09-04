@@ -1,0 +1,47 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--scrim);
+  backdrop-filter: blur(3px);
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 6vh 16px;
+  overflow-y: auto;
+  animation: fadeIn 0.15s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.panel {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  animation: riseIn var(--motion) var(--ease-out-expo) both;
+}
+
+.closeBtn {
+  position: absolute;
+  top: calc(var(--space-5) + 4px);
+  inset-inline-end: calc(var(--space-5) + 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface2);
+  color: var(--text2);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.closeBtn:hover {
+  background: var(--border);
+  color: var(--text);
+}

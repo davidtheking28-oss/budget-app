@@ -197,7 +197,7 @@ export default function App() {
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'credit' && <Credit clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} onSelectMonth={m => setYm(prev => ({ year: prev.year, month: m }))} />}
         {nav === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
-        {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} onChange={refreshClientSummary} />}
+        {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={refreshClientSummary} />}
         {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
       </Shell>
       </BudgetModeContext.Provider>

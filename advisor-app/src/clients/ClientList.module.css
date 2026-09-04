@@ -337,6 +337,16 @@
 
 .statMain:hover, .statSecondary:hover { border-color: var(--border-strong); transform: translateY(-2px); }
 
+.statSecondaryClickable {
+  cursor: pointer;
+  font-family: inherit;
+  text-align: inherit;
+  width: 100%;
+}
+
+.statSecondaryClickable:hover { border-color: var(--accent); }
+.statSecondaryClickable:active { transform: translateY(0); }
+
 .statSecondaryBody {
   display: flex;
   flex-direction: column;
