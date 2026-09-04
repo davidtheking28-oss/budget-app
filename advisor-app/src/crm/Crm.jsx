@@ -63,6 +63,9 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
   const [backgroundDraft, setBackgroundDraft] = useState('');
   const [profileDirty, setProfileDirty] = useState(false);
   useEffect(() => {
+    setProfileDirty(false);
+  }, [clientId]);
+  useEffect(() => {
     if (!profile || profileDirty) return;
     setPhoneDraft(profile.phone || '');
     setBackgroundDraft(profile.background || '');
