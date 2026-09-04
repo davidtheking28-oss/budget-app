@@ -7498,7 +7498,12 @@ function importBankCSV(){
               if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else inQ=false; }
               else cur+=ch;
             } else {
-              if(ch==='"') inQ=true;
+              // Only a quote at the very start of a field opens quoting (proper CSV
+              // rule) — Israeli merchant names routinely carry a mid-field gershayim
+              // as a plain ASCII quote (בע"מ, עו"ד...), which used to be misread as a
+              // quote-open and silently dropped the whole row (comma swallowed into
+              // the field, cols.length < 3).
+              if(ch==='"' && cur==='') inQ=true;
               else if(ch===',' ){out.push(cur);cur='';}
               else cur+=ch;
             }
@@ -8300,7 +8305,7 @@ setTimeout(autoCarryRecurring,500);
           var buf=ev.target.result;
           var text=new TextDecoder('utf-8').decode(buf);
           if(text.indexOf('�')!==-1){ try{ text=new TextDecoder('windows-1255').decode(buf); }catch(_e){} }
-          function parseLine(line){ var out=[],cur='',inQ=false; for(var i=0;i<line.length;i++){ var ch=line[i]; if(inQ){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else inQ=false; } else cur+=ch; } else { if(ch==='"')inQ=true; else if(ch===','){out.push(cur);cur='';} else cur+=ch; } } out.push(cur); return out.map(function(c){return c.trim();}); }
+          function parseLine(line){ var out=[],cur='',inQ=false; for(var i=0;i<line.length;i++){ var ch=line[i]; if(inQ){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else inQ=false; } else cur+=ch; } else { if(ch==='"'&&cur==='')inQ=true; else if(ch===','){out.push(cur);cur='';} else cur+=ch; } } out.push(cur); return out.map(function(c){return c.trim();}); }
           var rawRows=text.split(/\r?\n/).filter(function(r){return r.trim();});
           if(!rawRows.length){ if(typeof showToast==='function') showToast('❌ לא נמצאו עסקאות בקובץ'); return; }
           var existing=new Set(transactions.map(function(t){return t.date+'|'+t.desc+'|'+Math.abs(t.amount);}));
