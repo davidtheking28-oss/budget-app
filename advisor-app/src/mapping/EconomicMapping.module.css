@@ -88,6 +88,12 @@
   padding: 0 var(--space-2);
 }
 
+.monthSelect:disabled {
+  background: var(--surface2);
+  color: var(--text3);
+  cursor: not-allowed;
+}
+
 .statusChip {
   flex-shrink: 0;
   font-size: var(--text-xs);
