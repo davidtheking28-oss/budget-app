@@ -76,6 +76,12 @@
   outline: none;
 }
 
+.input:disabled {
+  background: var(--surface2);
+  color: var(--text3);
+  cursor: not-allowed;
+}
+
 .form input[type="text"],
 .form input:not([type]) {
   flex: 1;
