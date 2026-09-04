@@ -5089,7 +5089,7 @@ async function _onReceiptPicked(input){
     document.getElementById('txAmount').value=data.amount;
     if(data.date&&/^\d{4}-\d{2}-\d{2}$/.test(data.date)){document.getElementById('txDate').value=data.date;wizUpdateDate();}
     const cats=getEffectiveCats('expense');
-    txSelectedCat=(data.category&&cats.includes(data.category))?data.category:(categorize(data.description||'','expense')||'שונות');
+    txSelectedCat=(data.category&&cats.includes(data.category))?data.category:(categorize(data.description||'','expense')||(_activeMode==='business'?'אחר':'שונות'));
     wizStep=2;wizRender();
     haptic(6);
     showToast('✓ הקבלה נקראה — בדוק ואשר');
@@ -5200,6 +5200,36 @@ const _FOOD_SPLIT={
 function _reapplyRefinements(){ try{ Object.assign(NLP_MAP,_REFINEMENTS,_FOOD_SPLIT); }catch(e){} }
 _reapplyRefinements();
 
+// מילון מיפוי לעסקאות במצב עסקי (_activeMode==='business') — אל מול
+// EXPENSE_CATS_BUSINESS / INCOME_CATS_BUSINESS, לא הקטגוריות האישיות.
+const BUSINESS_NLP_MAP = {
+  'פייסבוק אדס':'שיווק ופרסום','גוגל אדס':'שיווק ופרסום','פרסום':'שיווק ופרסום','שיווק':'שיווק ופרסום',
+  'אינסטגרם':'שיווק ופרסום','טאבולה':'שיווק ופרסום','גוגל תקציב':'שיווק ופרסום','קמפיין':'שיווק ופרסום',
+  'אחסון אתר':'מערכות ותוכנה','hosting':'מערכות ותוכנה','דומיין':'מערכות ותוכנה','תוכנה':'מערכות ותוכנה',
+  'office 365':'מערכות ותוכנה','microsoft':'מערכות ותוכנה','google workspace':'מערכות ותוכנה','אדובי':'מערכות ותוכנה',
+  'סאבסקריפשן':'מערכות ותוכנה','saas':'מערכות ותוכנה','שרת':'מערכות ותוכנה',
+  'ציוד משרדי':'ציוד משרדי','מדפסת':'ציוד משרדי','טונר':'ציוד משרדי','נייר משרדי':'ציוד משרדי','אופיס דיפו':'ציוד משרדי',
+  'שכר עובדים':'שכר עובדים','משכורת עובד':'שכר עובדים','תלוש שכר':'שכר עובדים',
+  'רואה חשבון':'חשבונאות ומשפטי','עורך דין':'חשבונאות ומשפטי','עו"ד':'חשבונאות ומשפטי',
+  'ייעוץ משפטי':'חשבונאות ומשפטי','הנהלת חשבונות':'חשבונאות ומשפטי',
+  'שכירות משרד':'שכירות משרד','שכ"ד משרד':'שכירות משרד',
+  'סלולר עסקי':'תקשורת עסקית','אינטרנט משרד':'תקשורת עסקית','בזק בינלאומי':'תקשורת עסקית',
+  'טיסה עסקית':'נסיעות עסקיות','מלון עסקי':'נסיעות עסקיות','רכב שכור':'נסיעות עסקיות','נסיעת עבודה':'נסיעות עסקיות',
+  'ארוחה עסקית':'ייצוג וארוח','מסעדה עסקית':'ייצוג וארוח','אירוח לקוח':'ייצוג וארוח','ייצוג':'ייצוג וארוח',
+  'שילוח':'אחסון ולוגיסטיקה','דואר שליחים':'אחסון ולוגיסטיקה','מחסן':'אחסון ולוגיסטיקה','לוגיסטיקה':'אחסון ולוגיסטיקה',
+  'מע"מ':'מסים ואגרות','מס הכנסה':'מסים ואגרות','אגרת רישום':'מסים ואגרות','ביטוח לאומי עסק':'מסים ואגרות',
+  'ביטוח עסקי':'ביטוח עסקי','ביטוח אחריות מקצועית':'ביטוח עסקי',
+  'קורס עסקי':'הדרכות והשתלמויות','סדנה':'הדרכות והשתלמויות','כנס':'הדרכות והשתלמויות','השתלמות':'הדרכות והשתלמויות',
+  'מחקר ופיתוח':'פיתוח ומחקר',
+  'ציוד ייצור':'קניות ציוד','רכישת ציוד':'קניות ציוד',
+  'חשבונית מכירה':'הכנסות ממכירות','תשלום לקוח':'הכנסות ממכירות','מכירה':'הכנסות ממכירות',
+  'שירות ללקוח':'שירותים',
+  'תשלום פרויקט':'פרויקטים','אבן דרך':'פרויקטים','פרויקט':'פרויקטים',
+  'מנוי לקוח':'מנויים לקוחות',
+  'עמלת סליקה':'עמלות','עמלה':'עמלות',
+  'ייעוץ עסקי':'ייעוץ',
+};
+
 // ── מנוע קטגוריזציה לומד ─────────────────────────────────────────
 // שכבה 1: מיפוי אישי שנלמד מהעסקאות שאתה שומר (localStorage). שכבה 2: מילון NLP_MAP.
 let learnedCats = {};
@@ -5250,7 +5280,8 @@ function learnCat(desc, cat, type, amount){
   try{ localStorage.setItem('budget_learned_cats', JSON.stringify(learnedCats)); }catch(e){}
 }
 function categorize(desc, type){
-  const validCats = type === 'income' ? INCOME_CATS : EXPENSE_CATS;
+  const isBiz = _activeMode==='business';
+  const validCats = isBiz ? getEffectiveCats(type) : (type === 'income' ? INCOME_CATS : EXPENSE_CATS);
   const key = normDesc(desc);
   if(!key) return null;
   // 1) התאמה מדויקת ממה שנלמד
@@ -5263,10 +5294,12 @@ function categorize(desc, type){
     }
   }
   if(best) return best;
-  // 3) מילון המותגים — המפתח הארוך ביותר שמוכל בתיאור, אחרת "סופר פארם" נתפס כ"סופר"
+  // 3) מילון המותגים — עסקי או אישי לפי המצב הפעיל — המפתח הארוך ביותר שמוכל
+  // בתיאור, אחרת "סופר פארם" נתפס כ"סופר"
+  const dict = isBiz ? BUSINESS_NLP_MAP : NLP_MAP;
   const lower = String(desc||'').toLowerCase();
   let bestCat = null, bestKey = 0;
-  for(const [k, c] of Object.entries(NLP_MAP)){
+  for(const [k, c] of Object.entries(dict)){
     if(k.length > bestKey && k.length >= 3 && lower.includes(k) && validCats.includes(c)){
       bestCat = c; bestKey = k.length;
     }
@@ -7052,7 +7085,7 @@ function parseSmsText(){
         if(Math.abs(today-cand)<370*86400000)date=cand.getFullYear()+'-'+String(cand.getMonth()+1).padStart(2,'0')+'-'+String(cand.getDate()).padStart(2,'0');
       }
     }
-    const cat=isIncome?'אחר':(categorize(desc,'expense')||'שונות');
+    const cat=isIncome?'אחר':(categorize(desc,'expense')||(_activeMode==='business'?'אחר':'שונות'));
     _smsParsed.push({amount,desc,cat,date,type:isIncome?'income':'expense',raw:line});
   });
   renderSmsParsed();
@@ -7547,7 +7580,7 @@ function importBankCSV(){
           if(date && desc && amount!==0){
             if(existing.has(date+'|'+desc+'|'+Math.abs(amount))){ skippedDup++; return; }
             const type = amount<0?'expense':'income';
-            const cat = categorize(desc, type) || (type==='expense'?'שונות':'אחר');
+            const cat = categorize(desc, type) || (type==='expense'?(_activeMode==='business'?'אחר':'שונות'):'אחר');
             transactions.push({
               id:Date.now()+imported,
               type, cat, desc,
@@ -8107,9 +8140,12 @@ function showGif(src, durationMs){
   function uf(s){ return s.replace(/ם/g,"מ").replace(/ן/g,"נ").replace(/ך/g,"כ").replace(/ף/g,"פ").replace(/ץ/g,"צ"); }
   var PREF=["מה","לה","שה","וה","כש","ב","ל","ה","ו","מ","ש","כ"],MEM="מ",DICT=null;
   function forms(tok){ var f=[{v:tok,p:""}]; for(var i=0;i<PREF.length;i++){ var p=PREF[i]; if(tok.length>p.length+1&&tok.indexOf(p)===0) f.push({v:tok.slice(p.length),p:p}); } return f; }
-  function build(){ var d={}; try{Object.keys(NLP_MAP).forEach(function(k){d[k]=NLP_MAP[k];});}catch(e){} var l=Object.keys(d).map(function(k){var nk=uf(norm(k));return{key:nk,cat:d[k],phrase:/\s/.test(nk)};}).filter(function(e){return e.key.length>=2;}); l.sort(function(a,b){return b.key.length-a.key.length;}); return l; }
+  // כולל גם BUSINESS_NLP_MAP כשורות נפרדות (לא ממוזג לתוך אותו מפתח) — כדי
+  // שמילה שקיימת בשני המילונים לא תדרוס אחת את השנייה; smart() מסנן בכל מקרה
+  // לפי valid (העסקי/האישי) בהתאם ל-_activeMode.
+  function build(){ var l=[]; try{Object.keys(NLP_MAP).forEach(function(k){l.push({k:k,c:NLP_MAP[k]});});}catch(e){} try{if(typeof BUSINESS_NLP_MAP!=="undefined")Object.keys(BUSINESS_NLP_MAP).forEach(function(k){l.push({k:k,c:BUSINESS_NLP_MAP[k]});});}catch(e){} var out=l.map(function(e){var nk=uf(norm(e.k));return{key:nk,cat:e.c,phrase:/\s/.test(nk)};}).filter(function(e){return e.key.length>=2;}); out.sort(function(a,b){return b.key.length-a.key.length;}); return out; }
   function smart(desc,valid){ if(!DICT)DICT=build(); var input=uf(norm(desc)); if(!input||input.length<2)return null; var toks=input.split(" "); for(var i=0;i<DICT.length;i++){ var e=DICT[i]; if(valid.indexOf(e.cat)===-1)continue; if(e.phrase){ if(input.indexOf(e.key)!==-1)return e.cat; continue;} var sh=e.key.length<=3; for(var t=0;t<toks.length;t++){ var c=forms(toks[t]); for(var j=0;j<c.length;j++){ var f=c[j]; if(sh){ if(f.p.charAt(0)!==MEM&&f.v===e.key)return e.cat;} else { if(f.v===e.key||f.v.indexOf(e.key)!==-1)return e.cat;} } } } return null; }
-  window.categorize=function(desc,type){ try{ var valid=type==="income"?INCOME_CATS:EXPENSE_CATS; var k=normDesc(desc); if(!k)return null; if(learnedCats[k]&&valid.indexOf(learnedCats[k])!==-1)return learnedCats[k]; var best=null,bl=0; for(var lk in learnedCats){ if(lk.length>bl&&lk.length>=3&&k.indexOf(lk)!==-1&&valid.indexOf(learnedCats[lk])!==-1){best=learnedCats[lk];bl=lk.length;} } if(best)return best; return smart(desc,valid); }catch(e){ return null; } };
+  window.categorize=function(desc,type){ try{ var valid=(typeof _activeMode!=="undefined"&&_activeMode==='business')?getEffectiveCats(type):(type==="income"?INCOME_CATS:EXPENSE_CATS); var k=normDesc(desc); if(!k)return null; if(learnedCats[k]&&valid.indexOf(learnedCats[k])!==-1)return learnedCats[k]; var best=null,bl=0; for(var lk in learnedCats){ if(lk.length>bl&&lk.length>=3&&k.indexOf(lk)!==-1&&valid.indexOf(learnedCats[lk])!==-1){best=learnedCats[lk];bl=lk.length;} } if(best)return best; return smart(desc,valid); }catch(e){ return null; } };
 })();
 
 
@@ -8312,7 +8348,7 @@ setTimeout(autoCarryRecurring,500);
           var imported=0, skippedDup=0;
           function normDate(v){ var m=String(v).match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/); if(!m)return ''; var d=m[1].padStart(2,'0'),mo=m[2].padStart(2,'0'),y=m[3].length===2?'20'+m[3]:m[3]; return y+'-'+mo+'-'+d; }
           function normAmt(v){ var c=String(v).replace(/[₪,\s]/g,'').replace(/[^\d.\-]/g,''); if(!/^-?\d+(\.\d+)?$/.test(c)) return null; return parseFloat(c); }
-          function addTx(date,desc,amount,forceType){ if(!date||!desc||!amount) return; var key=date+'|'+desc+'|'+Math.abs(amount); if(existing.has(key)){skippedDup++;return;} var type=forceType||(amount<0?'expense':'income'); var cat=categorize(desc,type)||(type==='expense'?'שונות':'אחר'); transactions.push({id:Date.now()+Math.random(),type:type,cat:cat,desc:desc,amount:Math.abs(amount),date:date,recurring:false}); existing.add(key); imported++; }
+          function addTx(date,desc,amount,forceType){ if(!date||!desc||!amount) return; var key=date+'|'+desc+'|'+Math.abs(amount); if(existing.has(key)){skippedDup++;return;} var type=forceType||(amount<0?'expense':'income'); var cat=categorize(desc,type)||(type==='expense'?(_activeMode==='business'?'אחר':'שונות'):'אחר'); transactions.push({id:Date.now()+Math.random(),type:type,cat:cat,desc:desc,amount:Math.abs(amount),date:date,recurring:false}); existing.add(key); imported++; }
           function detectSubs(){ var byDesc={}; transactions.filter(function(t){return t.type==='expense';}).forEach(function(t){var k=(t.desc||'').toLowerCase().trim();if(!byDesc[k])byDesc[k]=[];byDesc[k].push(t);}); var existingNames=new Set(subscriptions.map(function(s){return(s.name||'').toLowerCase();})); var found=[]; Object.keys(byDesc).forEach(function(k){var txs=byDesc[k];if(txs.length<2)return;if(existingNames.has(k))return;txs.sort(function(a,b){return a.date.localeCompare(b.date);}); var amounts=txs.map(function(t){return t.amount;}); var avg=amounts.reduce(function(s,a){return s+a;},0)/amounts.length; var ok=amounts.every(function(a){return Math.abs(a-avg)/avg<0.15;}); if(!ok)return; var dates=txs.map(function(t){return new Date(t.date);}); var intervals=[]; for(var i=1;i<dates.length;i++)intervals.push((dates[i]-dates[i-1])/86400000); var avgI=intervals.reduce(function(s,a){return s+a;},0)/intervals.length; var cycle=avgI>=25&&avgI<=35?'monthly':avgI>=340&&avgI<=390?'annual':null; if(!cycle)return; found.push({name:txs[0].desc,amount:Math.round(avg*100)/100,cycle:cycle});}); return found; }
           function finish(){ if(imported>0){ saveData(); refreshAll(); showPage('dashboard',document.getElementById('nav-dashboard')); var msg='✓ יובאו '+imported+' עסקאות'+(skippedDup>0?' · '+skippedDup+' כפילויות דולגו':''); var subs=detectSubs(); if(subs.length){showDetectedSubs(subs,msg);}else{showToast(msg);} } else if(skippedDup>0){ showToast('כל העסקאות בקובץ כבר קיימות ('+skippedDup+' כפילויות)'); } else { showToast('❌ לא נמצאו עסקאות בקובץ'); } }
 
