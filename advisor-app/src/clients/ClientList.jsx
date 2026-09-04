@@ -4,6 +4,7 @@ import { useClientList } from './useClientList.js';
 import { usePendingInvites } from './usePendingInvites.js';
 import PipelineTable from './PipelineTable.jsx';
 import { isStale, relativeTime } from './useClientFreshness.js';
+import { formatDateTime } from '../budget/monthUtils.js';
 import { useCountUp } from '../useCountUp.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -308,6 +309,9 @@ export default function ClientList({ advisorId, onSelect }) {
                     {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}
                     {c.hasFailedUpload && <div className={styles.uploadErrorChip}>העלאה נכשלה</div>}
                     {c.hasDeclinedMeeting && <div className={styles.overageChip}>פגישה נדחתה</div>}
+                    {c.nextMeetingAt && <div className={styles.nextMeetingChip}>פגישה הבאה: {formatDateTime(c.nextMeetingAt)}</div>}
+                    {c.lastMeetingAt && <div className={styles.staleChip}>פגישה אחרונה {relativeTime(c.lastMeetingAt)}</div>}
+                    {c.totalTasks > 0 && <div className={styles.staleChip}>בוצעו {c.doneTasks}/{c.totalTasks} משימות</div>}
                     {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
                     {c.updatedAt && isStale(c.updatedAt) && (
                       <div className={styles.staleChip}>לא עודכן {relativeTime(c.updatedAt)}</div>

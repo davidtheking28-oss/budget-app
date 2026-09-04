@@ -29,19 +29,40 @@ export function useClientList(advisorId) {
     const clientIds = roster.map(c => c.client_id);
     const now = new Date();
 
-    const [{ data: budgetRows }, { data: taskRows }, { data: declinedRows }, { data: uploadErrorRows }] = await Promise.all([
+    const [{ data: budgetRows }, { data: taskRows }, { data: meetingRows }, { data: uploadErrorRows }] = await Promise.all([
       supabase.from('budget_data').select('user_id, transactions, budgets, updated_at').in('user_id', clientIds),
-      supabase.from('advisor_tasks').select('client_id').eq('advisor_id', advisorId).eq('done', false).in('client_id', clientIds),
-      supabase.from('advisor_meetings').select('client_id, decline_note').eq('advisor_id', advisorId).eq('status', 'declined').gte('scheduled_at', now.toISOString()).in('client_id', clientIds),
+      supabase.from('advisor_tasks').select('client_id, done').eq('advisor_id', advisorId).in('client_id', clientIds),
+      supabase.from('advisor_meetings').select('client_id, scheduled_at, status').eq('advisor_id', advisorId).in('client_id', clientIds),
       supabase.from('economic_mappings').select('client_id, last_upload_error').eq('advisor_id', advisorId).not('last_upload_error', 'is', null).in('client_id', clientIds)
     ]);
 
     const budgetByUser = {};
     (budgetRows || []).forEach(r => { budgetByUser[r.user_id] = r; });
-    const openTaskCounts = {};
-    (taskRows || []).forEach(r => { openTaskCounts[r.client_id] = (openTaskCounts[r.client_id] || 0) + 1; });
+    const openTaskCounts = {}, doneTaskCounts = {}, totalTaskCounts = {};
+    (taskRows || []).forEach(r => {
+      totalTaskCounts[r.client_id] = (totalTaskCounts[r.client_id] || 0) + 1;
+      if (r.done) doneTaskCounts[r.client_id] = (doneTaskCounts[r.client_id] || 0) + 1;
+      else openTaskCounts[r.client_id] = (openTaskCounts[r.client_id] || 0) + 1;
+    });
+    // Last meeting we actually held (nearest past, not declined) and the next
+    // one coming up (nearest future, not declined) — one pass over every
+    // meeting per client, keeping only the closest on each side of "now".
     const declinedByUser = {};
-    (declinedRows || []).forEach(r => { declinedByUser[r.client_id] = (declinedByUser[r.client_id] || 0) + 1; });
+    const lastMeetingByUser = {}, nextMeetingByUser = {};
+    const nowMs = now.getTime();
+    (meetingRows || []).forEach(r => {
+      const t = new Date(r.scheduled_at).getTime();
+      if (!Number.isFinite(t)) return;
+      if (r.status === 'declined') {
+        if (t >= nowMs) declinedByUser[r.client_id] = (declinedByUser[r.client_id] || 0) + 1;
+        return;
+      }
+      if (t <= nowMs) {
+        if (!lastMeetingByUser[r.client_id] || t > lastMeetingByUser[r.client_id]) lastMeetingByUser[r.client_id] = t;
+      } else if (!nextMeetingByUser[r.client_id] || t < nextMeetingByUser[r.client_id]) {
+        nextMeetingByUser[r.client_id] = t;
+      }
+    });
     const uploadErrorByUser = {};
     (uploadErrorRows || []).forEach(r => { uploadErrorByUser[r.client_id] = true; });
 
@@ -54,6 +75,10 @@ export function useClientList(advisorId) {
         hasOverage: summary ? summary.overCats.length > 0 : false,
         overageAmount: summary ? summary.overCats.reduce((s, x) => s + x.over, 0) : 0,
         openTasks: openTaskCounts[c.client_id] || 0,
+        doneTasks: doneTaskCounts[c.client_id] || 0,
+        totalTasks: totalTaskCounts[c.client_id] || 0,
+        lastMeetingAt: lastMeetingByUser[c.client_id] ? new Date(lastMeetingByUser[c.client_id]).toISOString() : null,
+        nextMeetingAt: nextMeetingByUser[c.client_id] ? new Date(nextMeetingByUser[c.client_id]).toISOString() : null,
         hasDeclinedMeeting: !!declinedByUser[c.client_id],
         hasFailedUpload: !!uploadErrorByUser[c.client_id],
         healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null,
