@@ -2010,16 +2010,16 @@
       <button type="button" id="recentTxMoreBtn" onclick="toggleDashRecentExpanded()" style="display:none;width:100%;text-align:center;background:none;border:none;color:var(--accent);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;padding:10px 0 4px">הצג עוד הוצאות</button>
     </div>
 
-    <!-- Spending Flow: הכנסה → קבועות / משתנות / חיסכון -->
+    <!-- Spending Flow: הכנסה → חיסכון / קבועות / משתנות -->
     <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-3">
       <div class="flex items-center justify-between" style="margin-bottom:12px">
         <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200">לאן הולך הכסף</h3>
         <span class="text-xs text-slate-400 dark:text-zinc-500 font-medium" id="sfIncomeLabel"></span>
       </div>
       <div class="sf-bar">
+        <div class="sf-seg sf-savings" id="sfSavings" style="width:0%"></div>
         <div class="sf-seg sf-fixed" id="sfFixed" style="width:0%"></div>
         <div class="sf-seg sf-variable" id="sfVariable" style="width:0%"></div>
-        <div class="sf-seg sf-savings" id="sfSavings" style="width:0%"></div>
       </div>
       <div id="sfDeficit" style="display:none;color:var(--red);font-size:0.75rem;font-weight:700;margin-top:8px">⚠️ ההוצאות החודש גבוהות מההכנסות</div>
       <div id="sfLabels" style="display:grid;grid-template-columns:repeat(3,1fr);margin-top:12px;font-size:0.75rem;gap:8px"></div>
@@ -3732,7 +3732,7 @@ function renderSpendingFlow(income,fixedExp,varExp){
   const fp2=base?Math.round(fixedExp/base*100):0;
   const vp2=base?Math.round(varExp/base*100):0;
   const _sfItem=(dotCls,val,valColor,pctTxt,name)=>'<div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:5px"><span class="sf-dot '+dotCls+'"></span><span style="color:var(--text3);font-size:0.7rem">'+name+'</span></div><div style="font-weight:700;color:'+(valColor||'var(--text)')+';font-size:0.82rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+val+'</div><div style="color:var(--text3);font-size:0.67rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+pctTxt+'</div></div>';
-  labels.innerHTML=_sfItem('sf-fixed',fmt(fixedExp),'',fp2+'%','קבועות')+_sfItem('sf-variable',fmt(varExp),'',vp2+'%','משתנות')+_sfItem(isDeficit?'sf-deficit':'sf-savings',isDeficit?'−'+fmt(deficitAmt):fmt(savedAmt),isDeficit?'var(--red)':'var(--green)',(base?Math.round((isDeficit?deficitAmt:savedAmt)/base*100):0)+'%',isDeficit?'גירעון':'נחסך');
+  labels.innerHTML=_sfItem(isDeficit?'sf-deficit':'sf-savings',isDeficit?'−'+fmt(deficitAmt):fmt(savedAmt),isDeficit?'var(--red)':'var(--green)',(base?Math.round((isDeficit?deficitAmt:savedAmt)/base*100):0)+'%',isDeficit?'גירעון':'נחסך')+_sfItem('sf-fixed',fmt(fixedExp),'',fp2+'%','קבועות')+_sfItem('sf-variable',fmt(varExp),'',vp2+'%','משתנות');
 }
 
 function isFixed(t){if(t.fixed!==undefined)return t.fixed;return t.type==='income'||!!t.recurring;}
