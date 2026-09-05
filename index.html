@@ -617,6 +617,7 @@
     .sf-dot.sf-variable{background:var(--purple);}
     .sf-dot.sf-savings{background:var(--green);}
     .sf-dot.sf-deficit{background:var(--red);}
+    .sf-dot.sf-income{background:var(--teal);}
     .sf-val{font-weight:700;color:var(--text);}
     .sf-pct{color:var(--text3);font-size:0.67rem;}
     .sf-empty{text-align:center;padding:10px 0;font-size:0.82rem;color:var(--text3);}
@@ -2014,7 +2015,6 @@
     <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-3">
       <div class="flex items-center justify-between" style="margin-bottom:12px">
         <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200">לאן הולך הכסף</h3>
-        <span class="text-xs text-slate-400 dark:text-zinc-500 font-medium" id="sfIncomeLabel"></span>
       </div>
       <div class="sf-bar">
         <div class="sf-seg sf-savings" id="sfSavings" style="width:0%"></div>
@@ -2022,7 +2022,7 @@
         <div class="sf-seg sf-variable" id="sfVariable" style="width:0%"></div>
       </div>
       <div id="sfDeficit" style="display:none;color:var(--red);font-size:0.75rem;font-weight:700;margin-top:8px">⚠️ ההוצאות החודש גבוהות מההכנסות</div>
-      <div id="sfLabels" style="display:grid;grid-template-columns:repeat(3,1fr);margin-top:12px;font-size:0.75rem;gap:8px"></div>
+      <div id="sfLabels" style="display:grid;grid-template-columns:repeat(4,1fr);margin-top:12px;font-size:0.75rem;gap:8px"></div>
     </div>
 
     <!-- Annual savings widget -->
@@ -3708,15 +3708,13 @@ function renderSpendingFlow(income,fixedExp,varExp){
   const fixedSeg=document.getElementById('sfFixed');
   const varSeg=document.getElementById('sfVariable');
   const labels=document.getElementById('sfLabels');
-  const incLabel=document.getElementById('sfIncomeLabel');
   if(!income){
     labels.innerHTML='<span class="sf-empty">אין הכנסות לחודש</span>';
     fixedSeg.style.width=varSeg.style.width=savings.style.width='0%';
-    deficit.style.display='none';incLabel.textContent='';return;
+    deficit.style.display='none';return;
   }
   const total=fixedExp+varExp;const isDeficit=total>income;
   const base=isDeficit?total:income;
-  incLabel.textContent='סה"כ הכנסות: '+fmt(income)+' · אחוזים מתוך '+(isDeficit?'סך ההוצאות':'ההכנסות');
   if(isDeficit){
     const fp=Math.round(fixedExp/base*100);
     fixedSeg.style.width=fp+'%';varSeg.style.width=(100-fp)+'%';
@@ -3732,7 +3730,8 @@ function renderSpendingFlow(income,fixedExp,varExp){
   const fp2=base?Math.round(fixedExp/base*100):0;
   const vp2=base?Math.round(varExp/base*100):0;
   const _sfItem=(dotCls,val,valColor,pctTxt,name)=>'<div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:5px"><span class="sf-dot '+dotCls+'"></span><span style="color:var(--text3);font-size:0.7rem">'+name+'</span></div><div style="font-weight:700;color:'+(valColor||'var(--text)')+';font-size:0.82rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+val+'</div><div style="color:var(--text3);font-size:0.67rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+pctTxt+'</div></div>';
-  labels.innerHTML=_sfItem(isDeficit?'sf-deficit':'sf-savings',isDeficit?'−'+fmt(deficitAmt):fmt(savedAmt),isDeficit?'var(--red)':'var(--green)',(base?Math.round((isDeficit?deficitAmt:savedAmt)/base*100):0)+'%',isDeficit?'גירעון':'נחסך')+_sfItem('sf-fixed',fmt(fixedExp),'',fp2+'%','קבועות')+_sfItem('sf-variable',fmt(varExp),'',vp2+'%','משתנות');
+  const incPct=isDeficit?(base?Math.round(income/base*100):0):100;
+  labels.innerHTML=_sfItem('sf-income',fmt(income),'',incPct+'%','הכנסות')+_sfItem(isDeficit?'sf-deficit':'sf-savings',isDeficit?'−'+fmt(deficitAmt):fmt(savedAmt),isDeficit?'var(--red)':'var(--green)',(base?Math.round((isDeficit?deficitAmt:savedAmt)/base*100):0)+'%',isDeficit?'גירעון':'נחסך')+_sfItem('sf-fixed',fmt(fixedExp),'',fp2+'%','קבועות')+_sfItem('sf-variable',fmt(varExp),'',vp2+'%','משתנות');
 }
 
 function isFixed(t){if(t.fixed!==undefined)return t.fixed;return t.type==='income'||!!t.recurring;}
