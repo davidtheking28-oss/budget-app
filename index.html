@@ -317,7 +317,7 @@
     .budget-chip-add{background:var(--surface2);border:1.5px dashed var(--border-strong,var(--border));opacity:1;transform:scale(0.86);}
     .budget-chip-add .budget-chip-icon{color:var(--text3);}
     .budget-chip-add .budget-chip-icon svg{width:22px;height:22px;}
-    .budget-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,0.05);}
+    .budget-detail-inner{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,0.05);}
     .budget-detail-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
     .budget-detail-text{min-width:0;}
     .budget-detail-name{font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:4px;}
@@ -956,7 +956,10 @@
     .auth-skip-btn:active{color:var(--text2);}
     /* keeps per-category/per-list content from changing #page-budget/goals/subscriptions/loans'
        total height (which retriggers the mobile toolbar hide/show and jumps .bottom-nav) —
-       must target the real list/detail containers, not a stale ".section" class */
+       must target the real list/detail containers, not a stale ".section" class.
+       #budgetCatDetail itself stays unstyled (no background/border) so this reserved
+       height doesn't read as a visible card trailing off past its real content —
+       the actual card look lives on the inner .budget-detail-inner wrapper instead. */
     #budgetCatDetail,#goalsList,#subsList,#loansList,#tasksContent{min-height:20lvh;}
     /* ── Mode switcher ──────────────────────── */
     #modeSwitcher{display:none;align-items:center;justify-content:center;padding:0;margin-top:-10px;}
@@ -2162,7 +2165,7 @@
   <div id="page-budget" class="page">
     <div id="budgetEmpty" class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg></div><p>קבע תקרה חודשית לקטגוריה כמו "אוכל" או "קניות" ותדע מיד כשחרגת</p><button class="btn-empty" onclick="openSheet('addBudgetSheet')"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הגדר תקציב ראשון</button></div>
     <div id="budgetChipStrip" class="budget-chip-strip" style="display:none"></div>
-    <div id="budgetCatDetail" class="budget-detail-card" style="display:none"></div>
+    <div id="budgetCatDetail" style="display:none"></div>
   </div>
 
   <div id="page-goals" class="page">
@@ -5796,7 +5799,8 @@ function renderBudgetDetail(spent,effLim){
   const chartSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>';
   const chevronSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="budget-tx-chevron'+(_budgetTxListOpen?' budget-tx-chevron-open':'')+'"><polyline points="6 9 12 15 18 9"/></svg>';
   detail.innerHTML=
-    '<div class="budget-detail-header">'
+    '<div class="budget-detail-inner">'
+    +'<div class="budget-detail-header">'
       +'<div class="budget-detail-text">'
         +'<div class="budget-detail-name">'+esc(cat)+'</div>'
         +(baseLim
@@ -5831,6 +5835,7 @@ function renderBudgetDetail(spent,effLim){
           +'</div>'
         +'</div>'
       ).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>')
+    +'</div>'
     +'</div>';
   const delBtn=detail.querySelector('[data-act="del-budget"]');
   if(delBtn)delBtn.onclick=()=>deleteBudget(cat);
