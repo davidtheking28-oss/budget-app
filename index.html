@@ -339,7 +339,8 @@
     .budget-tx-groupsum{font-family:var(--font-num);font-size:0.85rem;font-weight:700;color:var(--text2);flex-shrink:0;font-variant-numeric:tabular-nums lining-nums;}
     .budget-tx-grouplabel{font-size:0.85rem;font-weight:700;color:var(--text);flex:1;}
     .budget-detail-txlist{margin-top:12px;}
-    .budget-tx-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+    .budget-tx-card{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+    .budget-tx-card.budget-tx-expense{border-inline-start:3px solid var(--red);}
     .budget-tx-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;min-height:44px;cursor:pointer;}
     .budget-tx-desc-wrap{text-align:right;min-width:0;}
     .budget-tx-desc{font-size:0.87rem;font-weight:700;color:var(--text);}
@@ -3771,7 +3772,7 @@ function _expChevron(open){return '<svg aria-hidden="true" focusable="false" cla
 let _expOpenGroups=new Set();
 function toggleExpGroup(key){_expOpenGroups.has(key)?_expOpenGroups.delete(key):_expOpenGroups.add(key);const y=window.scrollY;renderTxPage();window.scrollTo(0,y);}
 function _expTxCardHtml(t){
-  return '<div class="budget-tx-card" data-txid="'+t.id+'">'
+  return '<div class="budget-tx-card budget-tx-expense" data-txid="'+t.id+'">'
     +'<div class="budget-tx-top" onclick="event.stopPropagation();editTx('+t.id+')">'
       +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
       +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
@@ -5819,7 +5820,7 @@ function renderBudgetDetail(spent,effLim){
     +'</button>'
     +'<div class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
       +(mTx.length?mTx.map(t=>
-        '<div class="budget-tx-card" data-txid="'+t.id+'">'
+        '<div class="budget-tx-card budget-tx-expense" data-txid="'+t.id+'">'
           +'<div class="budget-tx-top" onclick="editTx('+t.id+')">'
             +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
             +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
