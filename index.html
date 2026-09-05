@@ -3023,7 +3023,6 @@ function fmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.curre
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 // ערך בטוח כמחרוזת JS בגרשיים בודדים בתוך מאפיין HTML בגרשיים כפולים
 function attrArg(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function fmtNum(n){return (n||0).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});}
 function progState(pct,rules){for(const[min,cls]of rules){if(pct>=min)return cls;}return'';}
 function progBarHTML(pct,{wrapClass,fillClass,stateClass}){const w=Math.min(100,Math.max(0,pct));return'<div class="'+wrapClass+'"><div class="'+fillClass+(stateClass?' '+stateClass:'')+'" style="width:'+w+'%"></div></div>';}
 function localISO(d){d=d||new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().split('T')[0];}
@@ -3159,7 +3158,6 @@ function openAddTx(){
   wizRender();
   setTimeout(()=>document.getElementById('txDesc').focus(),250);
 }
-function openAddGoal(){openSheet('addGoalSheet');}
 function subCycleChanged(cycle,dateInputId){
   const el=document.getElementById(dateInputId);if(!el)return;
   const nd=new Date();
@@ -3179,7 +3177,6 @@ function openAddSub(){
   setTimeout(()=>document.getElementById('subName').focus(),250);
 }
 
-function openSearch(){document.getElementById('searchOverlay').classList.add('open');setTimeout(()=>document.getElementById('globalSearchInput').focus(),100);}
 function closeSearch(){document.getElementById('searchOverlay').classList.remove('open');document.getElementById('globalSearchInput').value='';document.getElementById('searchResultsList').innerHTML='';}
 function doSearch(q){
   q=q.trim().toLowerCase();
@@ -3332,12 +3329,6 @@ function applyLastAmt(){
   if(el&&_wizLastAmt){ el.value=_wizLastAmt; el.focus(); }
   const chip=document.getElementById('wizLastAmtChip'); if(chip)chip.style.display='none';
   haptic(6);
-}
-function setWizDate(offset){
-  const d=new Date(); d.setDate(d.getDate()+offset);
-  const el=document.getElementById('txDate');
-  if(el){ el.value=localISO(d); if(typeof wizUpdateDate==='function')wizUpdateDate(); }
-  haptic(4);
 }
 function wizBack(){
   if(wizStep===1){closeSheet('addTxSheet');}
@@ -4048,6 +4039,8 @@ function _dismissMeetingReminder(id){
 let _syncPending=false;
 let _syncRetryTimer=null;
 let _syncFailedNotified=false;
+let _cloudSaveInFlight=false;
+let _cloudSaveQueued=false;
 // Collections added after the table was created. Each is its own column in personal
 // mode, so on a DB that predates them the whole upsert fails — core data included.
 // Drop such a column for this session instead and keep everything else syncing.
@@ -4145,7 +4138,9 @@ function scheduleCloudSave(){
 }
 async function _doCloudSave(){
   if(!_cloudUser||!_sb) return;
+  if(_cloudSaveInFlight){_syncPending=true;_cloudSaveQueued=true;return;}
   const uid=_getDataUserId();if(!uid)return;
+  _cloudSaveInFlight=true;
   _setSyncState('syncing');
   try{
     const isBiz=_activeMode!=='personal';
@@ -4185,6 +4180,9 @@ async function _doCloudSave(){
     if(!_syncFailedNotified){_syncFailedNotified=true;showToast('⚠️ בעיה בסנכרון לענן — ננסה שוב');}
     clearTimeout(_syncRetryTimer);
     _syncRetryTimer=setTimeout(()=>{if(_syncPending)_doCloudSave();},30000);
+  }finally{
+    _cloudSaveInFlight=false;
+    if(_cloudSaveQueued){_cloudSaveQueued=false;scheduleCloudSave();}
   }
 }
 async function _loadFromCloud(silent){
@@ -4931,11 +4929,6 @@ function renderDailyWidget(){
 }
 
 // ── Open income quickly ───────────────────────────────────────────
-function openAddIncome(){
-  openAddTx();
-  setTimeout(()=>setTxType('income'),50);
-}
-
 // ── countUp: animates a number from 0 to target ──────────────────
 function countUp(elOrId, target){
   const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
@@ -5684,16 +5677,6 @@ async function addCustomBudgetCat(){
   renderBudget();
   renderTxPage();
   showToast('✓ קטגוריה נוספה');
-}
-function budgetBarColorClass(pct){
-  if(pct>=90) return 'bg-rose-500';
-  if(pct>=70) return 'bg-amber-500';
-  return 'bg-blue-500';
-}
-function budgetTextColorClass(pct){
-  if(pct>=90) return 'text-rose-600 dark:text-rose-400 font-bold';
-  if(pct>=70) return 'text-amber-600 dark:text-amber-400';
-  return 'text-slate-700 dark:text-zinc-400';
 }
 function toggleBudgetRollover(on){
   userSettings.budgetRollover=!!on;
