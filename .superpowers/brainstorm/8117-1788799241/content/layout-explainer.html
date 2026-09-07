@@ -1,0 +1,67 @@
+<h2>איפה נמצא הדבר הזה?</h2>
+<p class="subtitle">ככה נראה היום המסך, וככה זה ייראה אחרי המיזוג. הכל בתוך "כספים" — לא משנה מסכים אחרים.</p>
+
+<div dir="rtl" style="font-family:inherit">
+
+<div class="label">היום — 9 טאבים בשורה אחת</div>
+<div class="mockup" style="margin-bottom:28px">
+  <div class="mockup-header">Shell</div>
+  <div class="mockup-body">
+    <div style="display:flex;gap:6px;padding:10px;border-bottom:2px solid #444;flex-wrap:wrap;font-size:13px">
+      <span style="padding:6px 10px;border-radius:8px;background:#333">דשבורד</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#333">לקוח</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#333">מיפוי כלכלי</span>
+      <span style="width:1px;background:#555;margin:2px 4px"></span>
+      <span style="padding:6px 10px;border-radius:8px;background:#3a5">תקציב</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#3a5">ניתוח</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#3a5">יעדים</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#3a5">מנויים</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#3a5">הלוואות ואשראי</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#3a5">נכסים והתחייבויות</span>
+    </div>
+    <div class="placeholder" style="margin:14px">תוכן העמוד</div>
+  </div>
+</div>
+
+<div class="label">אחרי המיזוג — שורה ראשית + שורת תת-טאבים חדשה מתחתיה</div>
+<div class="mockup">
+  <div class="mockup-header">Shell</div>
+  <div class="mockup-body">
+    <div style="display:flex;gap:6px;padding:10px;border-bottom:2px solid #444;font-size:13px">
+      <span style="padding:6px 10px;border-radius:8px;background:#333">דשבורד</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#333">לקוח</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#333">מיפוי כלכלי</span>
+      <span style="padding:6px 10px;border-radius:8px;background:#3a5;font-weight:700">כספים</span>
+    </div>
+    <div style="display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid #444;font-size:12px;background:rgba(255,255,255,.03)">
+      <em style="opacity:.6;margin-left:6px;font-style:normal">↳ תת-טאבים:</em>
+      <span style="padding:5px 9px;border-radius:14px;background:#3a5;font-weight:700">תקציב</span>
+      <span style="padding:5px 9px;border-radius:14px;background:#333">ניתוח</span>
+      <span style="padding:5px 9px;border-radius:14px;background:#333">יעדים</span>
+      <span style="padding:5px 9px;border-radius:14px;background:#333">מנויים</span>
+      <span style="padding:5px 9px;border-radius:14px;background:#333">הלוואות ואשראי</span>
+      <span style="padding:5px 9px;border-radius:14px;background:#333">נכסים והתחייבויות</span>
+    </div>
+    <div class="placeholder" style="margin:14px">תוכן: מסך התקציב (או כל תת-טאב שנבחר)</div>
+  </div>
+</div>
+
+</div>
+
+<h3 style="margin-top:32px">עכשיו: כשנכנסים ל"כספים" — איזה תת-טאב נפתח קודם?</h3>
+<div class="options">
+  <div class="option" data-choice="first" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>תמיד "תקציב"</h3>
+      <p>קבוע, פשוט, צפוי — אותו מקום כל פעם</p>
+    </div>
+  </div>
+  <div class="option" data-choice="last" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>התת-טאב האחרון שהיה פתוח</h3>
+      <p>נשמר לכל יועץ, נוח כשחוזרים לאמצע עבודה</p>
+    </div>
+  </div>
+</div>
