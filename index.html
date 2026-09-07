@@ -318,6 +318,12 @@
     .budget-chip-add .budget-chip-icon{color:var(--text3);}
     .budget-chip-add .budget-chip-icon svg{width:22px;height:22px;}
     .budget-detail-inner{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,0.05);}
+    /* Dashboard cards: route through the design-token system instead of the
+       Tailwind slate/zinc utilities they used to carry, so they theme the
+       same way as the rest of the app instead of a parallel palette. */
+    .dash-card{background:var(--surface);border-color:var(--border);}
+    .dash-card-title{color:var(--text);}
+    .dash-card-sub{color:var(--text3);}
     .budget-detail-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
     .budget-detail-text{min-width:0;}
     .budget-detail-name{font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:4px;}
@@ -340,7 +346,6 @@
     .budget-tx-grouplabel{font-size:0.85rem;font-weight:700;color:var(--text);flex:1;}
     .budget-detail-txlist{margin-top:12px;}
     .budget-tx-card{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
-    .budget-tx-card.budget-tx-expense{border-inline-start:3px solid var(--red);}
     .budget-tx-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;min-height:44px;cursor:pointer;}
     .budget-tx-desc-wrap{text-align:right;min-width:0;}
     .budget-tx-desc{font-size:0.87rem;font-weight:700;color:var(--text);}
@@ -1626,7 +1631,7 @@
     <div class="nlp-hint" id="nlpHint"></div>
     <input type="date" id="txDate" onchange="wizUpdateDate()" style="display:none;" aria-label="תאריך עסקה"/>
     <div class="wiz-body" id="wizBody1">
-      <div id="wizSuggestBar" style="display:none;margin:0 0 10px;background:var(--accent);border-radius:12px;padding:10px 14px;cursor:pointer;" onclick="wizAcceptSuggest()">
+      <div id="wizSuggestBar" role="button" tabindex="0" style="display:none;margin:0 0 10px;background:var(--accent);border-radius:12px;padding:10px 14px;cursor:pointer;" onclick="wizAcceptSuggest()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();wizAcceptSuggest();}">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
           <div style="display:flex;align-items:center;gap:10px;">
             <span id="wizSuggestEmoji" style="font-size:1.3rem"></span>
@@ -1651,7 +1656,7 @@
         <div id="wizLastAmtChip" style="display:none;text-align:center;margin-bottom:2px;"><button onclick="applyLastAmt()" style="background:var(--surface);border:1.5px dashed var(--border);color:var(--text2);padding:7px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;">פעם קודמת: <span id="wizLastAmtVal"></span> — להשתמש?</button></div>
         <div>
           <div class="wiz2-label">קטגוריה</div>
-          <div class="wiz2-card wiz2-cat-row" onclick="wizBack()">
+          <div class="wiz2-card wiz2-cat-row" role="button" tabindex="0" onclick="wizBack()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();wizBack();}">
             <div class="wiz-cat-badge" id="wizCatBadge" style="display:flex;flex:1;margin:0;border:none;padding:0;background:none;gap:8px;font-size:0.95rem;font-weight:700;"></div>
             <span class="wiz2-cat-arrow">‹</span>
           </div>
@@ -1904,13 +1909,13 @@
     </div>
 
     <!-- Recurring Alert -->
-    <div id="recurringAlert" class="recurring-alert bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-4 flex gap-3 items-start shadow-sm mb-3">
+    <div id="recurringAlert" class="recurring-alert dash-card border rounded-2xl p-4 flex gap-3 items-start shadow-sm mb-3">
       <div class="bg-slate-100 dark:bg-zinc-800 text-blue-500 p-2 rounded-xl mt-0.5 flex-shrink-0">
         <i aria-hidden="true" data-lucide="refresh-cw" class="w-4 h-4"></i>
       </div>
       <div class="flex-1">
-        <h3 class="text-sm font-semibold text-slate-800 dark:text-zinc-200">הוצאות קבועות קרובות</h3>
-        <div id="recurringAlertBody" class="text-xs text-slate-500 dark:text-zinc-400 mt-1 space-y-1"></div>
+        <h3 class="text-sm font-semibold dash-card-title">הוצאות קבועות קרובות</h3>
+        <div id="recurringAlertBody" class="text-xs dash-card-sub mt-1 space-y-1"></div>
         <button class="mt-2.5 bg-blue-600 hover:bg-blue-700 text-white px-3 rounded-lg text-xs font-semibold cursor-pointer transition-colors" style="padding-top:10px;padding-bottom:10px;min-height:40px" onclick="addAllRecurring()">✓ הוסף אוטומטית</button>
       </div>
     </div>
@@ -2001,10 +2006,10 @@
 
 
     <!-- Recent Transactions -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-3 space-y-4">
+    <div class="dash-card border rounded-2xl p-5 shadow-sm mb-3 space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2">
-          <i aria-hidden="true" data-lucide="activity" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
+        <h3 class="text-sm font-bold dash-card-title flex items-center gap-2">
+          <i aria-hidden="true" data-lucide="activity" class="w-4 h-4 dash-card-sub"></i>
           תנועות אחרונות
         </h3>
         <button class="text-xs font-semibold hover:underline cursor-pointer" style="color:var(--accent);padding:13px 10px;margin:-13px -10px;min-height:44px" onclick="showPage('transactions',document.getElementById('nav-transactions'))">הצג הכל</button>
@@ -2016,9 +2021,9 @@
     </div>
 
     <!-- Spending Flow: הכנסה → חיסכון / קבועות / משתנות -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-3">
+    <div class="dash-card border rounded-2xl p-5 shadow-sm mb-3">
       <div class="flex items-center justify-between" style="margin-bottom:12px">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200">לאן הולך הכסף</h3>
+        <h3 class="text-sm font-bold dash-card-title">לאן הולך הכסף</h3>
       </div>
       <div class="sf-bar">
         <div class="sf-seg sf-savings" id="sfSavings" style="width:0%"></div>
@@ -2030,10 +2035,10 @@
     </div>
 
     <!-- Annual savings widget -->
-    <div id="annualSavingsWidget" style="display:none" class="bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm mb-4">
+    <div id="annualSavingsWidget" style="display:none" class="dash-card border rounded-2xl p-5 shadow-sm mb-4">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-2"><span>🎯</span> חיסכון שנתי</h3>
-        <span id="annualSavingsText" class="text-xs font-bold text-slate-500 dark:text-zinc-400" style="font-variant-numeric:tabular-nums"></span>
+        <h3 class="text-sm font-bold dash-card-title flex items-center gap-2"><span>🎯</span> חיסכון שנתי</h3>
+        <span id="annualSavingsText" class="text-xs font-bold dash-card-sub" style="font-variant-numeric:tabular-nums"></span>
       </div>
       <div class="prog-wrap" style="height:10px;background:var(--surface2);border-radius:6px;overflow:hidden;"><div id="annualSavingsBar" class="prog-fill" style="width:0%;height:100%;background:linear-gradient(90deg,#10b981,#059669);border-radius:6px;transition:width .9s cubic-bezier(.22,1,.36,1)"></div></div>
     </div>
@@ -3775,7 +3780,7 @@ function _expChevron(open){return '<svg aria-hidden="true" focusable="false" cla
 let _expOpenGroups=new Set();
 function toggleExpGroup(key){_expOpenGroups.has(key)?_expOpenGroups.delete(key):_expOpenGroups.add(key);const y=window.scrollY;renderTxPage();window.scrollTo(0,y);}
 function _expTxCardHtml(t){
-  return '<div class="budget-tx-card budget-tx-expense" data-txid="'+t.id+'">'
+  return '<div class="budget-tx-card" data-txid="'+t.id+'">'
     +'<div class="budget-tx-top" onclick="event.stopPropagation();editTx('+t.id+')">'
       +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
       +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
@@ -5824,7 +5829,7 @@ function renderBudgetDetail(spent,effLim){
     +'</button>'
     +'<div class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
       +(mTx.length?mTx.map(t=>
-        '<div class="budget-tx-card budget-tx-expense" data-txid="'+t.id+'">'
+        '<div class="budget-tx-card" data-txid="'+t.id+'">'
           +'<div class="budget-tx-top" onclick="editTx('+t.id+')">'
             +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
             +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
