@@ -108,14 +108,8 @@ function AccountMenu({ email, advisorId }) {
 }
 
 export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, children }) {
-  const activeTabRef = useRef(null);
-
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [activeNav]);
-
-  useEffect(() => {
-    activeTabRef.current?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
   }, [activeNav]);
 
   if (!nav) {
@@ -141,40 +135,30 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
 
   return (
     <div className={styles.shellTabs} dir="rtl">
-      <IconRail onBack={onBack} onSearch={onSearch} onPrint={onPrint} onPresent={onPresent} theme={theme} onToggleTheme={onToggleTheme} />
+      <IconRail
+        onBack={onBack}
+        onSearch={onSearch}
+        onPrint={onPrint}
+        onPresent={onPresent}
+        nav={nav}
+        activeNav={activeNav}
+        onNavChange={onNavChange}
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+      />
       <div className={styles.topbarBleed}>
-      <div className={styles.topbar}>
-        <div className={styles.topbarStart}>
-          <div className={styles.logo}>תקציב אישי · יועץ</div>
-        </div>
-        <div className={styles.topbarEnd}>
-          {onSearch && <SearchBar onOpen={onSearch} />}
-          <AccountMenu email={email} advisorId={advisorId} />
-        </div>
-      </div>
-      </div>
-      <div className={styles.tabBarBleed}>
-        <div className={styles.tabRow}>
-          <nav className={styles.tabBar}>
-            {nav.map((n, i) => [
-              i > 0 && n.group && n.group !== nav[i - 1].group
-                ? <span key={n.key + '-div'} className={styles.tabDivider} aria-hidden="true" />
-                : null,
-              <button
-                key={n.key}
-                ref={n.key === activeNav ? activeTabRef : null}
-                className={styles.tabItem + (n.key === activeNav ? ' ' + styles.tabItemActive : '')}
-                onClick={() => onNavChange(n.key)}
-              >
-                {n.icon && <span className={styles.tabIcon} aria-hidden="true">{n.icon}</span>}
-                {n.label}
-              </button>
-            ])}
-          </nav>
-          {sidebarInfo && <div className={styles.infoRow}>{sidebarInfo}</div>}
+        <div className={styles.topbar}>
+          <div className={styles.topbarStart}>
+            <div className={styles.logo}>תקציב אישי · יועץ</div>
+          </div>
+          <div className={styles.topbarEnd}>
+            {onSearch && <SearchBar onOpen={onSearch} />}
+            <AccountMenu email={email} advisorId={advisorId} />
+          </div>
         </div>
       </div>
       <div className={styles.contentTabs}>
+        {sidebarInfo && <div className={styles.infoRow}>{sidebarInfo}</div>}
         {children}
       </div>
     </div>
