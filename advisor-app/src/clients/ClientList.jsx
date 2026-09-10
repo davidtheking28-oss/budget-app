@@ -178,14 +178,9 @@ export default function ClientList({ advisorId, onSelect }) {
     return (
       <div className={styles.page}>
         <Skeleton height="64px" radius="14px" style={{ marginBottom: 36 }} />
-        <div className={styles.grid}>
-          {[0, 1, 2].map(i => (
-            <div key={i} className={styles.card}>
-              <Skeleton width="42px" height="42px" radius="50%" />
-              <Skeleton width="160px" />
-            </div>
-          ))}
-        </div>
+        {[0, 1, 2].map(i => (
+          <Skeleton key={i} height="64px" radius="10px" style={{ marginBottom: 12 }} />
+        ))}
       </div>
     );
   }
@@ -319,7 +314,11 @@ export default function ClientList({ advisorId, onSelect }) {
                 const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting;
                 const confirming = confirmingId === c.id;
                 return (
-                  <tr key={c.id} className={styles.clientRow + (urgent ? ' ' + styles.rowUrgent : '')}>
+                  <tr
+                    key={c.id}
+                    className={styles.clientRow + (urgent ? ' ' + styles.rowUrgent : '')}
+                    onClick={e => { if (e.target.closest('button')) return; onSelect(c.client_id, c.client_email); }}
+                  >
                     <td data-label="לקוח">
                       <button type="button" className={styles.clientCellBtn} onClick={() => onSelect(c.client_id, c.client_email)}>
                         <div className={styles.initial} aria-hidden="true">

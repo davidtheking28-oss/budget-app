@@ -71,14 +71,6 @@
   background: rgba(var(--red-rgb), 0.09);
 }
 
-.confirmRemoveGroup {
-  position: absolute;
-  top: var(--space-3);
-  inset-inline-end: var(--space-3);
-  display: flex;
-  gap: var(--space-2);
-}
-
 .confirmRemoveBtn {
   padding: 5px 10px;
   border-radius: var(--radius-sm);
@@ -254,15 +246,6 @@
 .taskChip {
   color: var(--gold);
   background: rgba(var(--gold-rgb), 0.09);
-}
-
-.nextMeetingChip {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  color: var(--accent);
-  background: var(--accent-dim);
 }
 
 .empty {
@@ -594,6 +577,7 @@
 
 .clientRow {
   transition: background 0.15s ease;
+  cursor: pointer;
 }
 
 .clientRow:hover {
@@ -652,6 +636,8 @@
    one card per client, each cell labeled via data-label. */
 @media (max-width: 560px) {
   .tableWrap { overflow-x: visible; }
+
+  .rowRemoveBtn { opacity: 1; }
 
   .table, .table thead, .table tbody, .table tr, .table td { display: block; width: 100%; }
   .table thead { position: absolute; inset-inline-start: -9999px; }
