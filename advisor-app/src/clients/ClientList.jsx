@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
 import { usePendingInvites } from './usePendingInvites.js';
@@ -127,8 +127,6 @@ export default function ClientList({ advisorId, onSelect }) {
   const [confirmingId, setConfirmingId] = useState(null);
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
-  const mountedRef = useRef(false);
-  useEffect(() => { mountedRef.current = true; }, []);
 
   async function claimCode() {
     const trimmed = code.trim().toUpperCase();
@@ -305,63 +303,75 @@ export default function ClientList({ advisorId, onSelect }) {
           <Button className={styles.emptyCta} onClick={() => emailInputRef.current?.focus()}>הזמן לקוח ראשון</Button>
         </div>
       ) : (
-        <div className={styles.grid}>
-          {[...clients].sort(byUrgency).map((c, i) => {
-            // Only real red-flag signals earn the full-width row — open tasks alone are
-            // common enough that treating them as "wide" collapsed the grid to a single
-            // stretched column for nearly every client, instead of an actual multi-column grid.
-            const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting;
-            const confirming = confirmingId === c.id;
-            return (
-              <div
-                key={c.id}
-                role="button"
-                tabIndex={0}
-                className={styles.card + (urgent ? ' ' + styles.cardWide : '') + (mountedRef.current ? ' ' + styles.cardNoAnim : '')}
-                style={mountedRef.current ? undefined : { animationDelay: Math.min(i * 0.022, 0.12) + 's' }}
-                onClick={() => onSelect(c.client_id, c.client_email)}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(c.client_id, c.client_email); } }}
-              >
-                <div className={styles.initial} aria-hidden="true">
-                  {initials(c.client_email)}
-                  {(c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting) && <span className={styles.alertDot} title="דורש טיפול" />}
-                </div>
-                <div className={styles.info}>
-                  <div className={styles.email}>
-                    <HealthBadge score={c.healthScore} />
-                    <span className={styles.emailText} title={c.client_email}>{c.client_email}</span>
-                  </div>
-                  <div className={styles.chips}>
-                    {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}
-                    {c.hasFailedUpload && <div className={styles.uploadErrorChip}>העלאה נכשלה</div>}
-                    {c.hasDeclinedMeeting && <div className={styles.overageChip}>פגישה נדחתה</div>}
-                    {c.nextMeetingAt && <div className={styles.nextMeetingChip}>פגישה הבאה: {formatDateTime(c.nextMeetingAt)}</div>}
-                    {c.lastMeetingAt && <div className={styles.staleChip}>פגישה אחרונה {relativeTime(c.lastMeetingAt)}</div>}
-                    {c.totalTasks > 0 && <div className={styles.staleChip}>בוצעו {c.doneTasks}/{c.totalTasks} משימות</div>}
-                    {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
-                    {c.updatedAt && isStale(c.updatedAt) && (
-                      <div className={styles.staleChip}>לא עודכן {relativeTime(c.updatedAt)}</div>
-                    )}
-                  </div>
-                </div>
-                <RemainingStat value={c.remaining} />
-                {confirming ? (
-                  <div className={styles.confirmRemoveGroup}>
-                    <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>
-                      לאשר ניתוק?
-                    </button>
-                    <button type="button" className={styles.cancelRemoveBtn} onClick={e => { e.stopPropagation(); setConfirmingId(null); }}>
-                      ביטול
-                    </button>
-                  </div>
-                ) : (
-                  <button type="button" className={styles.removeBtn} title="נתק לקוח" aria-label="נתק לקוח" onClick={e => { e.stopPropagation(); setConfirmingId(c.id); }}>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                  </button>
-                )}
-              </div>
-            );
-          })}
+        <div className={styles.tableWrap} role="region" aria-label="טבלת לקוחות, גלול לצפייה בכל העמודות" tabIndex={0}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>לקוח</th>
+                <th>סטטוס</th>
+                <th>יתרה החודש</th>
+                <th>פגישה הבאה</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...clients].sort(byUrgency).map(c => {
+                const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting;
+                const confirming = confirmingId === c.id;
+                return (
+                  <tr key={c.id} className={styles.clientRow + (urgent ? ' ' + styles.rowUrgent : '')}>
+                    <td data-label="לקוח">
+                      <button type="button" className={styles.clientCellBtn} onClick={() => onSelect(c.client_id, c.client_email)}>
+                        <div className={styles.initial} aria-hidden="true">
+                          {initials(c.client_email)}
+                          {urgent && <span className={styles.alertDot} title="דורש טיפול" />}
+                        </div>
+                        <div className={styles.info}>
+                          <div className={styles.email}>
+                            <HealthBadge score={c.healthScore} />
+                            <span className={styles.emailText} title={c.client_email}>{c.client_email}</span>
+                          </div>
+                        </div>
+                      </button>
+                    </td>
+                    <td data-label="סטטוס">
+                      <div className={styles.chips}>
+                        {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}
+                        {c.hasFailedUpload && <div className={styles.uploadErrorChip}>העלאה נכשלה</div>}
+                        {c.hasDeclinedMeeting && <div className={styles.overageChip}>פגישה נדחתה</div>}
+                        {c.lastMeetingAt && <div className={styles.staleChip}>פגישה אחרונה {relativeTime(c.lastMeetingAt)}</div>}
+                        {c.totalTasks > 0 && <div className={styles.staleChip}>בוצעו {c.doneTasks}/{c.totalTasks} משימות</div>}
+                        {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
+                        {c.updatedAt && isStale(c.updatedAt) && (
+                          <div className={styles.staleChip}>לא עודכן {relativeTime(c.updatedAt)}</div>
+                        )}
+                      </div>
+                    </td>
+                    <td data-label="יתרה החודש" className={styles.remainingCell}>
+                      <RemainingStat value={c.remaining} />
+                    </td>
+                    <td data-label="פגישה הבאה">{c.nextMeetingAt ? formatDateTime(c.nextMeetingAt) : '—'}</td>
+                    <td data-label="" className={styles.actionsCell}>
+                      {confirming ? (
+                        <div className={styles.rowConfirmGroup}>
+                          <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>
+                            לאשר ניתוק?
+                          </button>
+                          <button type="button" className={styles.cancelRemoveBtn} onClick={e => { e.stopPropagation(); setConfirmingId(null); }}>
+                            ביטול
+                          </button>
+                        </div>
+                      ) : (
+                        <button type="button" className={styles.removeBtn + ' ' + styles.rowRemoveBtn} title="נתק לקוח" aria-label="נתק לקוח" onClick={e => { e.stopPropagation(); setConfirmingId(c.id); }}>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
