@@ -72,18 +72,18 @@ export default function PipelineTable({ leads, loading, addLead, setStage, delet
                 const info = stageInfo(l.stage);
                 return (
                   <tr key={l.id}>
-                    <td>{l.name}</td>
-                    <td>{l.phone ? <a href={'tel:' + l.phone} dir="ltr" onClick={e => e.stopPropagation()}>{l.phone}</a> : '—'}</td>
-                    <td>
+                    <td data-label="לקוח / יחידה">{l.name}</td>
+                    <td data-label="טלפון">{l.phone ? <a href={'tel:' + l.phone} dir="ltr" onClick={e => e.stopPropagation()}>{l.phone}</a> : '—'}</td>
+                    <td data-label="סטטוס">
                       <select className={styles.stageSelect + ' ' + styles[info.tone]} value={l.stage} onChange={e => setStage(l.id, e.target.value)}>
                         {STAGES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                       </select>
                     </td>
-                    <td>{formatDate(l.last_meeting) || '—'}</td>
-                    <td>{formatDate(l.next_meeting) || '—'}</td>
-                    <td>{l.savings_goal || '—'}</td>
-                    <td>{l.case_owner || '—'}</td>
-                    <td><DeleteButton onClick={() => deleteLead(l.id)} /></td>
+                    <td data-label="פגישה אחרונה">{formatDate(l.last_meeting) || '—'}</td>
+                    <td data-label="פגישה הבאה">{formatDate(l.next_meeting) || '—'}</td>
+                    <td data-label="יעד חיסכון">{l.savings_goal || '—'}</td>
+                    <td data-label="בעל תיק">{l.case_owner || '—'}</td>
+                    <td data-label=""><DeleteButton onClick={() => deleteLead(l.id)} /></td>
                   </tr>
                 );
               })}

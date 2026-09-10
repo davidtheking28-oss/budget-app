@@ -222,8 +222,6 @@ export default function Expenses({ clientUserId, advisorId, year, month, onSelec
 
       {allMonthTx.length > 0 && (
         <div className={styles.flowHero}>
-          <div className={styles.flowHeroBloom} style={{ top: '-32%', insetInlineEnd: '-14%', width: '55%', paddingBottom: '55%' }} />
-          <div className={styles.flowHeroBloom} style={{ bottom: '-38%', insetInlineStart: '-10%', width: '45%', paddingBottom: '45%', opacity: 0.55 }} />
           <div className={styles.flowHeroContent}>
             <div className={styles.flowLabel}>התזרים החודש</div>
             <div className={styles.flowValue}>{fmt(netFlow)}</div>
