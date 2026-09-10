@@ -3,8 +3,8 @@ import styles from './IconRail.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
-export default function IconRail({ onBack, onSearch, onPrint, onPresent, theme, onToggleTheme }) {
-  const actions = [
+export default function IconRail({ onBack, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme }) {
+  const globalActions = [
     onBack && {
       key: 'clients',
       label: 'הלקוחות שלי',
@@ -16,7 +16,10 @@ export default function IconRail({ onBack, onSearch, onPrint, onPresent, theme, 
       label: 'חיפוש לקוח',
       onClick: onSearch,
       icon: <svg {...svgProps}><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
-    },
+    }
+  ].filter(Boolean);
+
+  const trailingActions = [
     onPrint && {
       key: 'report',
       label: 'דוח חודשי',
@@ -34,11 +37,39 @@ export default function IconRail({ onBack, onSearch, onPrint, onPresent, theme, 
   return (
     <div className={styles.rail}>
       <div className={styles.mark} aria-hidden="true"><Logo /></div>
-      <nav className={styles.actions} aria-label="פעולות">
-        {actions.map(a => (
+      <nav className={styles.actions} aria-label="ניווט">
+        {globalActions.map(a => (
           <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}>
             {a.icon}
-            <span className={styles.tip}>{a.label}</span>
+            <span className={styles.label}>{a.label}</span>
+          </button>
+        ))}
+
+        {globalActions.length > 0 && nav && nav.length > 0 && <span className={styles.divider} aria-hidden="true" />}
+
+        {nav && nav.map((n, i) => [
+          i > 0 && n.group && n.group !== nav[i - 1].group
+            ? <span key={n.key + '-div'} className={styles.divider} aria-hidden="true" />
+            : null,
+          <button
+            key={n.key}
+            type="button"
+            className={styles.railBtn + (n.key === activeNav ? ' ' + styles.railBtnActive : '')}
+            onClick={() => onNavChange(n.key)}
+            aria-label={n.label}
+            aria-current={n.key === activeNav ? 'page' : undefined}
+          >
+            {n.icon}
+            <span className={styles.label}>{n.label}</span>
+          </button>
+        ])}
+
+        {nav && nav.length > 0 && trailingActions.length > 0 && <span className={styles.divider} aria-hidden="true" />}
+
+        {trailingActions.map(a => (
+          <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}>
+            {a.icon}
+            <span className={styles.label}>{a.label}</span>
           </button>
         ))}
       </nav>
@@ -53,7 +84,7 @@ export default function IconRail({ onBack, onSearch, onPrint, onPresent, theme, 
           {theme === 'dark'
             ? <svg {...svgProps}><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2M12 19.5v2M4.5 12h-2M21.5 12h-2M6.3 6.3 4.9 4.9M19.1 19.1l-1.4-1.4M17.7 6.3l1.4-1.4M4.9 19.1l1.4-1.4" /></svg>
             : <svg {...svgProps}><path d="M20 13.2A8.2 8.2 0 0 1 10.8 4a8.5 8.5 0 1 0 9.2 9.2z" /></svg>}
-          <span className={styles.tip}>{theme === 'dark' ? 'מצב בהיר' : 'מצב כהה'}</span>
+          <span className={styles.label}>{theme === 'dark' ? 'מצב בהיר' : 'מצב כהה'}</span>
         </button>
       )}
     </div>
