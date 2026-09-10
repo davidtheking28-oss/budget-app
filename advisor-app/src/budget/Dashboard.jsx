@@ -65,6 +65,14 @@ export default function Dashboard({ clientUserId, year, month }) {
     ]
   };
 
+  const monthBarData = {
+    labels: ['החודש'],
+    datasets: [
+      { label: 'הכנסות', data: [summary.income], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [summary.expense], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
+    ]
+  };
+
   return (
     <div className={styles.bentoGrid}>
       <div className={styles.statRow}>
@@ -93,6 +101,27 @@ export default function Dashboard({ clientUserId, year, month }) {
           <span className={styles.statusBadge + ' ' + styles[financialStatus.tone]}>
             <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
           </span>
+        </div>
+      </div>
+
+      <div className={styles.tileMonthBar}>
+        <div className={styles.colTitle}>הכנסות מול הוצאות · החודש</div>
+        <div className={styles.monthBarChart}>
+          <Bar
+            data={monthBarData}
+            options={{
+              maintainAspectRatio: false,
+              animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
+              scales: {
+                x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
+                y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+              },
+              plugins: {
+                legend: { labels: { color: CT.text2, font: { family: CT.font } } },
+                tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+              }
+            }}
+          />
         </div>
       </div>
 

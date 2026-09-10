@@ -14,7 +14,7 @@
   .bentoGrid { grid-template-columns: 1fr; }
 }
 
-.tileTrend, .tileGroup, .tileCategories, .tileGoals {
+.tileTrend, .tileGroup, .tileCategories, .tileGoals, .tileMonthBar {
   min-width: 0;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
@@ -25,8 +25,22 @@
   transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
 }
 
-.tileTrend:hover, .tileGroup:hover, .tileCategories:hover, .tileGoals:hover {
+.tileTrend:hover, .tileGroup:hover, .tileCategories:hover, .tileGoals:hover, .tileMonthBar:hover {
   border-color: var(--border-strong);
+}
+
+.tileMonthBar {
+  grid-column: span 2;
+}
+
+.monthBarChart {
+  height: 140px;
+  min-width: 0;
+  position: relative;
+}
+
+@media (max-width: 860px) {
+  .tileMonthBar { grid-column: 1 / -1; }
 }
 
 /* Top-of-dashboard KPI strip — flat, scannable tiles instead of a hero
