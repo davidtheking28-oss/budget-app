@@ -119,11 +119,11 @@ export default function ImportSheet({ onClose, onImport }) {
                   <span className={styles.previewAmt + ' ' + (r.amount < 0 ? styles.neg : styles.pos)}>{r.amount < 0 ? '-' : '+'}{Math.abs(Math.round(r.amount)).toLocaleString('he-IL')}</span>
                 </div>
               ))}
-              {rows.length > 40 && <div className={styles.previewMore}>ועוד {rows.length - 40} שורות...</div>}
+              {rows.length > 40 && <div className={styles.previewMore}>ועוד {rows.length - 40} שורות…</div>}
             </div>
             <div className={styles.footer}>
               <Button variant="ghost" onClick={() => setRows([])}>בחר קובץ אחר</Button>
-              <Button onClick={confirm} disabled={importing}>{importing ? 'מייבא...' : `ייבא ${rows.length} תנועות`}</Button>
+              <Button onClick={confirm} disabled={importing}>{importing ? 'מייבא…' : `ייבא ${rows.length} תנועות`}</Button>
             </div>
           </>
         )}

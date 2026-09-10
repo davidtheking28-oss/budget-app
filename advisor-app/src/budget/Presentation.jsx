@@ -96,7 +96,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
       </div>
       <div className={styles.header}>
         <div className={styles.titleRow}>
-          {profile?.logo_url ? <img className={styles.advisorLogo} src={profile.logo_url} alt="" /> : <Logo size="sm" />}
+          {profile?.logo_url ? <img className={styles.advisorLogo} src={profile.logo_url} width="30" height="30" alt="" /> : <Logo size="sm" />}
           <div>
             <h1 className={styles.title}>{profile?.display_name ? `${profile.display_name} · תמונת מצב` : 'תמונת מצב'}</h1>
             <div className={styles.sub + ' ' + styles.clientRow}>

@@ -200,6 +200,12 @@
   unicode-bidi: isolate;
 }
 
+.catMore {
+  color: var(--text3);
+  font-size: var(--text-xs);
+  margin-top: 2px;
+}
+
 .tileTrend {
   grid-column: span 4;
   grid-row: span 2;

@@ -36,7 +36,7 @@ export default function Report({ clientUserId, advisorId, year, month, email, on
       </div>
       <div className={styles.header}>
         <div className={styles.titleRow}>
-          {profile?.logo_url ? <img className={styles.advisorLogo} src={profile.logo_url} alt="" /> : <Logo size="sm" />}
+          {profile?.logo_url ? <img className={styles.advisorLogo} src={profile.logo_url} width="26" height="26" alt="" /> : <Logo size="sm" />}
           <div>
             <h1 className={styles.title}>{profile?.display_name ? `${profile.display_name} · דוח חודשי` : 'דוח חודשי'}</h1>
             <div className={styles.sub + ' ' + styles.clientRow}>

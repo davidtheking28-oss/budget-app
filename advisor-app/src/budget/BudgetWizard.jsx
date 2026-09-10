@@ -391,7 +391,7 @@ export default function BudgetWizard({ data, save, year, month }) {
         <Button variant="ghost" onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0}>הקודם</Button>
         {step < STEPS.length - 1
           ? <Button onClick={() => setStep(s => Math.min(STEPS.length - 1, s + 1))}>הבא</Button>
-          : <Button onClick={finish} disabled={saving}>{saving ? 'שומר...' : 'שמור ושלח ללקוח'}</Button>}
+          : <Button onClick={finish} disabled={saving}>{saving ? 'שומר…' : 'שמור ושלח ללקוח'}</Button>}
       </div>
     </div>
   );

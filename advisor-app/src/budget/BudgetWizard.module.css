@@ -210,6 +210,8 @@
 
 .itemName::placeholder { color: var(--text3); font-weight: 400; }
 
+.itemName:focus-visible { box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35); border-radius: var(--radius-xs); }
+
 .itemAmountBox, .itemActualBox {
   flex: 0 0 110px;
   background: var(--surface2);
@@ -238,6 +240,8 @@
 }
 
 .itemAmountInput::placeholder { color: var(--text3); font-weight: 400; }
+
+.itemAmountInput:focus-visible { box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35); border-radius: var(--radius-xs); }
 
 .itemActualValue {
   font-family: inherit;

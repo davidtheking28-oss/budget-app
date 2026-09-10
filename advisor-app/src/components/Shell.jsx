@@ -85,7 +85,7 @@ function AccountMenu({ email, advisorId }) {
           />
           <button type="button" className={styles.accountSaveBtn} onClick={submitName} disabled={savingName}>{savingName ? 'שומר…' : 'שמור שם'}</button>
           <div className={styles.logoRow}>
-            {profile?.logo_url && <img className={styles.logoPreview} src={profile.logo_url} alt="" />}
+            {profile?.logo_url && <img className={styles.logoPreview} src={profile.logo_url} width="28" height="28" alt="" />}
             <input ref={logoInputRef} type="file" accept="image/*" className={styles.fileInputHidden} onChange={pickLogo} />
             <button type="button" className={styles.accountSaveBtn} onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
               {uploadingLogo ? 'מעלה…' : profile?.logo_url ? 'החלף לוגו' : 'העלה לוגו'}

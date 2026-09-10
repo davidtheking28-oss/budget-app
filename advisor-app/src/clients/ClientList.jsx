@@ -275,7 +275,7 @@ export default function ClientList({ advisorId, onSelect }) {
                 </div>
                 <div className={styles.info}>
                   <div className={styles.email}>
-                    <span className={styles.emailText}>{inv.client_email}</span>
+                    <span className={styles.emailText} title={inv.client_email}>{inv.client_email}</span>
                   </div>
                   <div className={styles.chips}>
                     <div className={styles.pendingChip + ' ' + (inv.client_id ? styles.pendingChipAccept : styles.pendingChipSignup)}>
@@ -329,7 +329,7 @@ export default function ClientList({ advisorId, onSelect }) {
                 <div className={styles.info}>
                   <div className={styles.email}>
                     <HealthBadge score={c.healthScore} />
-                    <span className={styles.emailText}>{c.client_email}</span>
+                    <span className={styles.emailText} title={c.client_email}>{c.client_email}</span>
                   </div>
                   <div className={styles.chips}>
                     {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}

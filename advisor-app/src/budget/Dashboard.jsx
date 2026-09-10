@@ -152,6 +152,11 @@ export default function Dashboard({ clientUserId, year, month }) {
                   </div>
                 );
               })}
+              {catLabels.length > 4 && (
+                <div className={styles.catMore}>
+                  ועוד {catLabels.length - 4} קטגוריות ({Math.round(catLabels.slice(4).reduce((s, l) => s + byCat[l], 0) / catTotal * 100)}%)
+                </div>
+              )}
             </div>
           </div>
         ) : (

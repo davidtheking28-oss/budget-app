@@ -52,7 +52,7 @@ export default function NotAdvisor({ email, userId, requestStatus, onSubmitReque
           <>
             <h1 className={styles.title}>הבקשה לא אושרה</h1>
             <p className={styles.text}>
-              בקשת הגישה של <b className={styles.email}>{email}</b> לא אושרה. אם מדובר בטעות, צור איתנו קשר.
+              בקשת הגישה של <b className={styles.email}>{email}</b> לא אושרה. אם מדובר בטעות, <a href="mailto:davidtheking27@gmail.com">צור איתנו קשר</a>.
             </p>
           </>
         ) : none ? (
@@ -61,7 +61,7 @@ export default function NotAdvisor({ email, userId, requestStatus, onSubmitReque
             <p className={styles.text}>
               החשבון <b className={styles.email}>{email}</b> עדיין לא רשום כחשבון יועץ. שלח בקשת גישה ונבדוק אותה בהקדם.
             </p>
-            <Button className={styles.cta} onClick={apply} disabled={submitting}>{submitting ? 'שולח...' : 'שלח בקשת גישה'}</Button>
+            <Button className={styles.cta} onClick={apply} disabled={submitting}>{submitting ? 'שולח…' : 'שלח בקשת גישה'}</Button>
           </>
         ) : (
           <>

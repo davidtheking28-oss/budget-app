@@ -35,10 +35,19 @@ export function usePipeline(advisorId) {
   }
 
   async function deleteLead(id) {
+    const removed = leads.find(l => l.id === id);
     const { error } = await supabase.from('advisor_leads').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setLeads(prev => prev.filter(l => l.id !== id));
-    toast('הוסר מהצינור', 'success');
+    toast('הוסר מהצינור', 'success', removed ? {
+      label: 'בטל',
+      onClick: async () => {
+        const { id: _oldId, created_at: _createdAt, ...rest } = removed;
+        const { data, error: reErr } = await supabase.from('advisor_leads').insert({ advisor_id: advisorId, ...rest }).select().single();
+        if (reErr) { toast('שגיאה בשחזור', 'error'); return; }
+        setLeads(prev => [data, ...prev]);
+      }
+    } : undefined);
   }
 
   return { leads, loading, error, reload, addLead, setStage, deleteLead };

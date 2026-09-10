@@ -53,7 +53,7 @@ export default function PipelineTable({ leads, loading, addLead, setStage, delet
       </div>
 
       {visible.length ? (
-        <div className={styles.tableWrap}>
+        <div className={styles.tableWrap} role="region" aria-label="טבלת צינור הטיפול, גלול לצפייה בכל העמודות" tabIndex={0}>
           <table className={styles.table}>
             <thead>
               <tr>
@@ -98,7 +98,7 @@ export default function PipelineTable({ leads, loading, addLead, setStage, delet
         <div className={styles.addFormTitle}>הוספת לקוח חדש</div>
         <div className={styles.addFormRow}>
           <input className={styles.input} aria-label="שם לקוח / יחידה" placeholder="שם לקוח / יחידה" value={name} onChange={e => setName(e.target.value)} />
-          <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" value={phone} onChange={e => setPhone(e.target.value)} />
+          <input className={styles.input} type="tel" inputMode="tel" aria-label="טלפון" placeholder="טלפון" dir="ltr" value={phone} onChange={e => setPhone(e.target.value)} />
           <select className={styles.input} aria-label="שלב בצינור" value={stage} onChange={e => setNewStage(e.target.value)}>
             {STAGES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
           </select>

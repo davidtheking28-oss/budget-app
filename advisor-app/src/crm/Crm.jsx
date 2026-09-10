@@ -152,7 +152,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
           className={styles.textarea}
           style={{ width: '100%', marginTop: 'var(--space-3)', minHeight: 72 }}
           aria-label="רקע על הלקוח"
-          placeholder="רקע על הלקוח — מצב משפחתי, מטרות, הקשר שכדאי לזכור..."
+          placeholder="רקע על הלקוח: מצב משפחתי, מטרות, הקשר שכדאי לזכור…"
           value={backgroundDraft}
           onChange={e => { setBackgroundDraft(e.target.value); setProfileDirty(true); }}
         />
@@ -264,7 +264,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconTasks}>{ICONS.tasks}</span>משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}</div>
         <div className={styles.form}>
-          <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות — כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
+          <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
           <input className={styles.input} type="date" aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
           <label className={styles.forClientLabel}>
             <input type="checkbox" className={styles.checkbox} checked={taskForClient} onChange={e => setTaskForClient(e.target.checked)} />

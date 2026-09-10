@@ -111,6 +111,27 @@
   margin-top: var(--space-4);
 }
 
+.confirmBanner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(var(--yellow-rgb), 0.1);
+  border: 1px solid rgba(var(--yellow-rgb), 0.35);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--text2);
+}
+
+.confirmBannerActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
 .coverageNote {
   font-size: var(--text-sm);
   color: var(--text2);

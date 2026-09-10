@@ -107,7 +107,7 @@ async function callParseStatement(page, monthHint) {
     body: JSON.stringify({ image: page.data, mediaType: page.mediaType, monthHint })
   });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok || body.error) throw new Error(body.error || 'request_failed');
+  if (!res.ok || body.error) throw new Error(body.error || 'שגיאה בעיבוד הקובץ');
   return body;
 }
 
@@ -147,7 +147,8 @@ async function processQueue(queue, setQueue) {
       setQueue(q => q.map(x => (x.id === item.id ? { ...x, status: 'done' } : x)));
       finalItems.push({ ...item, status: 'done' });
     } catch (err) {
-      const message = String(err?.message || err);
+      const raw = String(err?.message || err);
+      const message = raw === 'Failed to fetch' || raw.includes('NetworkError') ? 'שגיאת תקשורת, נסה שוב' : raw;
       setQueue(q => q.map(x => (x.id === item.id ? { ...x, status: 'error', error: message } : x)));
       finalItems.push({ ...item, status: 'error', error: message });
     }
@@ -174,6 +175,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [processing, setProcessing] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [confirmText, setConfirmText] = useState(null);
+  const [confirmingRestoreIndex, setConfirmingRestoreIndex] = useState(null);
   const fileInputRef = useRef(null);
   const opts = monthOptions();
 
@@ -206,13 +209,17 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     setQueue(q => q.map(x => (x.id === id ? { ...x, monthTag: value } : x)));
   }
 
-  async function process() {
+  async function process(confirmed) {
     if (!queue.length || processing) return;
-    if (data?.transactions?.length &&
-      !window.confirm('קיים כבר מיפוי שמור עבור לקוח זה. העלאה חדשה תחליף אותו. להמשיך?')) return;
-    const taggedMonths = queue.map(x => x.monthTag).filter(m => m !== 'auto');
-    const dupMonth = taggedMonths.find((m, i) => taggedMonths.indexOf(m) !== i);
-    if (dupMonth && !window.confirm(`יותר מקובץ אחד מסומן לאותו חודש (${dupMonth}). להמשיך בכל זאת?`)) return;
+    if (!confirmed) {
+      const reasons = [];
+      if (data?.transactions?.length) reasons.push('קיים כבר מיפוי שמור עבור לקוח זה, העלאה חדשה תחליף אותו.');
+      const taggedMonths = queue.map(x => x.monthTag).filter(m => m !== 'auto');
+      const dupMonth = taggedMonths.find((m, i) => taggedMonths.indexOf(m) !== i);
+      if (dupMonth) reasons.push(`יותר מקובץ אחד מסומן לאותו חודש (${dupMonth}).`);
+      if (reasons.length) { setConfirmText(reasons.join(' ') + ' להמשיך?'); return; }
+    }
+    setConfirmText(null);
     setProcessing(true);
     const { allTx, finalItems } = await processQueue(queue, setQueue);
     if (!allTx.length) {
@@ -261,11 +268,12 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     }
   }
 
-  async function restoreSnapshot(index) {
+  async function restoreSnapshot(index, confirmed) {
     if (restoring) return;
     const snap = data.snapshots[index];
     if (!snap) return;
-    if (!window.confirm('לשחזר מיפוי זה כמצב הנוכחי? המצב הנוכחי יישמר בהיסטוריה.')) return;
+    if (!confirmed) { setConfirmingRestoreIndex(index); return; }
+    setConfirmingRestoreIndex(null);
     setRestoring(true);
     const { averages, monthsCovered } = computeCategoryAverages(snap.transactions);
     const archivedCurrent = {
@@ -380,7 +388,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           <div className={styles.queue}>
             {queue.map(item => (
               <div key={item.id} className={styles.queueRow}>
-                <span className={styles.queueName}>{item.name}</span>
+                <span className={styles.queueName} title={item.name}>{item.name}</span>
                 <select className={styles.monthSelect} value={item.monthTag} onChange={e => setMonthTag(item.id, e.target.value)} disabled={processing}>
                   {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
@@ -401,8 +409,17 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           </div>
         )}
 
+        {confirmText && (
+          <div className={styles.confirmBanner}>
+            <span>{confirmText}</span>
+            <div className={styles.confirmBannerActions}>
+              <Button onClick={() => process(true)}>כן, המשך</Button>
+              <Button variant="ghost" onClick={() => setConfirmText(null)}>ביטול</Button>
+            </div>
+          </div>
+        )}
         <div className={styles.actions}>
-          <Button onClick={process} disabled={!queue.length || processing}>{processing ? 'מעבד...' : 'עבד וחשב מיפוי'}</Button>
+          <Button onClick={() => process(false)} disabled={!queue.length || processing}>{processing ? 'מעבד…' : 'עבד וחשב מיפוי'}</Button>
         </div>
       </div>
 
@@ -431,7 +448,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               {data.transactions.map((t, i) => (
                 <div key={i} className={styles.txRow}>
                   <span className={styles.txDate}>{t.date || '—'}</span>
-                  <span className={styles.txDesc}>{t.desc}</span>
+                  <span className={styles.txDesc} title={t.desc}>{t.desc}</span>
                   <select className={styles.txCat} value={t.category || (t.type === 'income' ? 'אחר' : 'שונות')} onChange={e => reassignCategory(i, e.target.value)}>
                     {(t.type === 'income' ? INCOME_CATS : MAPPING_EXPENSE_CATS).map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -487,7 +504,14 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               <div key={i} className={styles.txRow}>
                 <span className={styles.txDate}>{monthLabel(s.period_start)}–{monthLabel(s.period_end)}</span>
                 <span className={styles.txDesc}>{s.saved_at ? new Date(s.saved_at).toLocaleDateString('he-IL') : ''}</span>
-                <Button variant="ghost" disabled={restoring} onClick={() => restoreSnapshot(i)}>שחזר</Button>
+                {confirmingRestoreIndex === i ? (
+                  <div className={styles.confirmBannerActions}>
+                    <Button onClick={() => restoreSnapshot(i, true)}>אשר שחזור</Button>
+                    <Button variant="ghost" onClick={() => setConfirmingRestoreIndex(null)}>ביטול</Button>
+                  </div>
+                ) : (
+                  <Button variant="ghost" disabled={restoring} onClick={() => restoreSnapshot(i, false)}>שחזר</Button>
+                )}
               </div>
             ))}
           </div>

@@ -179,7 +179,7 @@
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: var(--accent-ink);
   font-variant-numeric: tabular-nums;
   direction: ltr;
   unicode-bidi: isolate;
@@ -202,7 +202,7 @@
 .flowPillIncome { background: rgba(0, 0, 0, 0.18); }
 .flowPillExpense { background: rgba(255, 255, 255, 0.95); }
 
-.flowPillIncome .flowPillLabel, .flowPillIncome .flowPillValue { color: #fff; }
+.flowPillIncome .flowPillLabel, .flowPillIncome .flowPillValue { color: var(--accent-ink); }
 .flowPillExpense .flowPillLabel { color: #5b6472; }
 .flowPillExpense .flowPillValue { color: #1a1f2b; }
 
