@@ -1,3 +1,5 @@
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx, MONTH_NAMES } from './monthUtils.js';
 import { effectiveLimit } from './budgetMath.js';
@@ -6,8 +8,11 @@ import ErrorState from '../components/ErrorState.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
 import ModuleHeader from '../components/ModuleHeader.jsx';
 import MonthTabs from '../components/MonthTabs.jsx';
+import { chartTheme } from '../categories.js';
 import styles from './Budget.module.css';
 import { fmt } from '../format.js';
+
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
 
 const CALENDAR_ICON = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -45,6 +50,15 @@ export default function Budget({ clientUserId, advisorId, year, month, onSelectM
   const totalSpent = activeCats.reduce((s, c) => s + (spentByCat[c] || 0), 0);
   const flow = monthlyIncome - totalSpent;
 
+  const CT = chartTheme();
+  const summaryChartData = {
+    labels: ['החודש'],
+    datasets: [
+      { label: 'הכנסות', data: [monthlyIncome], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalSpent], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
+    ]
+  };
+
   return (
     <div>
       {onSelectMonth && <MonthTabs month={month} onSelectMonth={onSelectMonth} />}
@@ -73,6 +87,26 @@ export default function Budget({ clientUserId, advisorId, year, month, onSelectM
           <div className={styles.kpiSub}>{flow < 0 ? 'חריגה מההכנסות' : 'פנוי החודש'}</div>
         </div>
       </div>
+
+      {(monthlyIncome > 0 || totalSpent > 0) && (
+        <div className={styles.summaryChart}>
+          <Bar
+            data={summaryChartData}
+            options={{
+              maintainAspectRatio: false,
+              animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
+              scales: {
+                x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
+                y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+              },
+              plugins: {
+                legend: { labels: { color: CT.text2, font: { family: CT.font } } },
+                tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+              }
+            }}
+          />
+        </div>
+      )}
 
       <BudgetWizard data={data} save={save} year={year} month={month} />
     </div>

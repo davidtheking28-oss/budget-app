@@ -6,7 +6,9 @@ import { initials } from '../clientIdentity.js';
 import { monthSummary, effectiveLimit } from './budgetMath.js';
 import { loanPayoffMonths, currentInstallments } from './Credit.jsx';
 import { monthlyEquivalent } from './Subscriptions.jsx';
-import { MONTH_NAMES } from './monthUtils.js';
+import { getMonthTx, MONTH_NAMES } from './monthUtils.js';
+
+const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 import { chartTheme } from '../categories.js';
 import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -55,6 +57,9 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
   const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
 
   const summary = monthSummary(data, year, month);
+  const monthTx = getMonthTx(data.transactions, year, month);
+  const savingsDeposit = monthTx.filter(t => t.type === 'expense' && t.cat === SAVINGS_CATEGORY).reduce((s, t) => s + t.amount, 0);
+  const netWithoutSavings = summary.net + savingsDeposit;
   const cats = Object.keys(data.budgets || {}).filter(c => data.budgets[c]).sort();
   const CT = chartTheme();
   const chartData = {
@@ -111,7 +116,14 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
       <div className={styles.statsRow}>
         <div className={styles.stat}><div className={styles.statLabel}>הכנסות</div><div className={styles.statValue + ' ' + styles.income}>{fmt(summary.income)}</div></div>
         <div className={styles.stat}><div className={styles.statLabel}>הוצאות</div><div className={styles.statValue + ' ' + styles.expense}>{fmt(summary.expense)}</div></div>
-        <div className={styles.stat}><div className={styles.statLabel}>תזרים</div><div className={styles.statValue + ' ' + (summary.net < 0 ? styles.expense : styles.net)}>{fmt(summary.net)}</div></div>
+        {savingsDeposit > 0 ? (
+          <>
+            <div className={styles.stat}><div className={styles.statLabel}>תזרים ללא הפקדה לחיסכון</div><div className={styles.statValue + ' ' + (netWithoutSavings < 0 ? styles.expense : styles.net)}>{fmt(netWithoutSavings)}</div></div>
+            <div className={styles.stat}><div className={styles.statLabel}>תזרים עם הפקדה לחיסכון</div><div className={styles.statValue + ' ' + (summary.net < 0 ? styles.expense : styles.net)}>{fmt(summary.net)}</div></div>
+          </>
+        ) : (
+          <div className={styles.stat}><div className={styles.statLabel}>תזרים</div><div className={styles.statValue + ' ' + (summary.net < 0 ? styles.expense : styles.net)}>{fmt(summary.net)}</div></div>
+        )}
       </div>
 
       <div className={styles.chartCard}>
