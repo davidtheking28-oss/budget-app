@@ -443,6 +443,12 @@
   gap: var(--space-2);
 }
 
+.summaryChart {
+  height: 140px;
+  max-width: 280px;
+  min-width: 0;
+}
+
 .totalCell {
   display: flex;
   align-items: center;

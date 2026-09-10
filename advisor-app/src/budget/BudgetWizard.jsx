@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
-import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE } from '../categories.js';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
@@ -8,8 +10,11 @@ import { toast } from '../toast.js';
 import styles from './BudgetWizard.module.css';
 import { fmt } from '../format.js';
 
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
+
 const STEPS = ['הכנסות', 'הוצאות קבועות', 'הוצאות משתנות', 'סיכום'];
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
+const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
 function sumAmounts(list) {
   return list.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
@@ -96,6 +101,20 @@ export default function BudgetWizard({ data, save, year, month }) {
   const totalFixedActual = useMemo(() => Object.values(fixedActual).reduce((s, v) => s + v, 0), [fixedActual]);
   const totalVarActual = useMemo(() => Object.values(variableActual).reduce((s, v) => s + v, 0), [variableActual]);
   const actualFlow = totalIncomeActual - (totalFixedActual + totalVarActual);
+
+  // "left"/actualFlow already have the savings standing-order subtracted as an ordinary
+  // fixed expense — that's "with a savings deposit". Add it back for the "without" figure.
+  const plannedSavings = parseFloat(fixed.find(r => r.name.trim() === SAVINGS_CATEGORY)?.amount) || 0;
+  const actualSavings = fixedActual[SAVINGS_CATEGORY] || 0;
+
+  const CT = chartTheme();
+  const summaryChartData = {
+    labels: ['החודש'],
+    datasets: [
+      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
+    ]
+  };
 
   function addRow(setter, name = '') { setter(prev => [...prev, { name, amount: '' }]); }
   function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...patch } : r)); }
@@ -353,14 +372,28 @@ export default function BudgetWizard({ data, save, year, month }) {
             <div className={styles.totalsStrip}>
               <div className={styles.totalCell + ' ' + styles.totalIncome}><span>סה״כ הכנסות</span><span>{fmt(totalIncome)}</span></div>
               <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>{fmt(totalFixed + totalVar)}</span></div>
-              <div className={styles.totalCell + ' ' + (left < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(left)}</span></div>
+              {plannedSavings > 0 ? (
+                <>
+                  <div className={styles.totalCell + ' ' + ((left + plannedSavings) < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים ללא הפקדה לחיסכון</span><span>{fmt(left + plannedSavings)}</span></div>
+                  <div className={styles.totalCell + ' ' + (left < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים עם הפקדה לחיסכון</span><span>{fmt(left)}</span></div>
+                </>
+              ) : (
+                <div className={styles.totalCell + ' ' + (left < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(left)}</span></div>
+              )}
             </div>
 
             <div className={styles.totalsStripLabel}>בפועל</div>
             <div className={styles.totalsStrip}>
               <div className={styles.totalCell + ' ' + styles.totalIncome}><span>סה״כ הכנסות</span><span>{fmt(totalIncomeActual)}</span></div>
               <div className={styles.totalCell + ' ' + styles.totalExpense}><span>סה״כ הוצאות</span><span>{fmt(totalFixedActual + totalVarActual)}</span></div>
-              <div className={styles.totalCell + ' ' + (actualFlow < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(actualFlow)}</span></div>
+              {actualSavings > 0 ? (
+                <>
+                  <div className={styles.totalCell + ' ' + ((actualFlow + actualSavings) < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים ללא הפקדה לחיסכון</span><span>{fmt(actualFlow + actualSavings)}</span></div>
+                  <div className={styles.totalCell + ' ' + (actualFlow < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים עם הפקדה לחיסכון</span><span>{fmt(actualFlow)}</span></div>
+                </>
+              ) : (
+                <div className={styles.totalCell + ' ' + (actualFlow < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים</span><span>{fmt(actualFlow)}</span></div>
+              )}
             </div>
 
             {breakdown.length > 0 && (
@@ -382,6 +415,25 @@ export default function BudgetWizard({ data, save, year, month }) {
                 </div>
               </>
             )}
+
+            <div className={styles.summaryChart}>
+              <Bar
+                data={summaryChartData}
+                options={{
+                  maintainAspectRatio: false,
+                  animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
+                  scales: {
+                    x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
+                    y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+                  },
+                  plugins: {
+                    legend: { labels: { color: CT.text2, font: { family: CT.font } } },
+                    tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+                  }
+                }}
+              />
+            </div>
+
             <div className={styles.summaryNote}>השמירה תעדכן את התקציב, ההוצאות הקבועות, מקורות ההכנסה והיעדים באפליקציה של הלקוח.</div>
           </div>
         )}
