@@ -47,24 +47,27 @@ export default function IconRail({ onBack, onSearch, onPrint, onPresent, nav, ac
 
         {globalActions.length > 0 && nav && nav.length > 0 && <span className={styles.divider} aria-hidden="true" />}
 
-        {nav && nav.map((n, i) => [
-          i > 0 && n.group && n.group !== nav[i - 1].group
-            ? <span key={n.key + '-div'} className={styles.divider} aria-hidden="true" />
-            : null,
-          <button
-            key={n.key}
-            type="button"
-            className={styles.railBtn + (n.key === activeNav ? ' ' + styles.railBtnActive : '')}
-            onClick={() => onNavChange(n.key)}
-            aria-label={n.label}
-            aria-current={n.key === activeNav ? 'page' : undefined}
-          >
-            {n.icon}
-            <span className={styles.label}>{n.label}</span>
-          </button>
-        ])}
+        {nav && nav.map((n, i) => {
+          const groupStart = i === 0 || n.group !== nav[i - 1].group;
+          return [
+            groupStart && n.groupLabel
+              ? <div key={n.key + '-label'} className={styles.groupLabel} aria-hidden="true">{n.groupLabel}</div>
+              : (groupStart && i > 0 ? <span key={n.key + '-div'} className={styles.divider} aria-hidden="true" /> : null),
+            <button
+              key={n.key}
+              type="button"
+              className={styles.railBtn + (n.key === activeNav ? ' ' + styles.railBtnActive : '')}
+              onClick={() => onNavChange(n.key)}
+              aria-label={n.label}
+              aria-current={n.key === activeNav ? 'page' : undefined}
+            >
+              {n.icon}
+              <span className={styles.label}>{n.label}</span>
+            </button>
+          ];
+        })}
 
-        {nav && nav.length > 0 && trailingActions.length > 0 && <span className={styles.divider} aria-hidden="true" />}
+        {nav && nav.length > 0 && trailingActions.length > 0 && <div className={styles.groupLabel} aria-hidden="true">כלים</div>}
 
         {trailingActions.map(a => (
           <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}>
