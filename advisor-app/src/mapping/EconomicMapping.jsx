@@ -148,7 +148,9 @@ async function processQueue(queue, setQueue) {
   return { allTx, finalItems };
 }
 
-function addFiles(setQueue, fileList, defaultMonth) {
+const MAX_MONTHS = 3;
+
+function addFiles(setQueue, fileList, defaultMonth, onDropped) {
   const added = Array.from(fileList).map(file => ({
     id: Date.now() + Math.random(),
     file,
@@ -158,7 +160,11 @@ function addFiles(setQueue, fileList, defaultMonth) {
     status: 'queued',
     error: null
   }));
-  setQueue(q => [...q, ...added]);
+  setQueue(q => {
+    const room = Math.max(0, MAX_MONTHS - q.length);
+    if (added.length > room && onDropped) onDropped(added.length - room);
+    return [...q, ...added.slice(0, room)];
+  });
 }
 
 export default function EconomicMapping({ clientUserId, advisorId }) {
@@ -184,7 +190,9 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   function pickFiles(fileList) {
     if (!fileList?.length) return;
-    addFiles(setQueue, fileList, opts[1].value);
+    addFiles(setQueue, fileList, opts[1].value, dropped => {
+      toast(`ניתן להעלות עד ${MAX_MONTHS} חודשים בבת אחת — ${dropped} קבצים לא נוספו`, 'error');
+    });
   }
 
   function onDrop(e) {
@@ -374,20 +382,20 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
             accept="image/*,application/pdf"
             multiple
             onChange={e => { pickFiles(e.target.files); e.target.value = ''; }}
-            disabled={processing}
+            disabled={processing || queue.length >= MAX_MONTHS}
           />
           <label
             className={styles.dropLabel}
             role="button"
-            tabIndex={processing ? -1 : 0}
-            onClick={() => !processing && fileInputRef.current?.click()}
-            onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && !processing) { e.preventDefault(); fileInputRef.current?.click(); } }}
+            tabIndex={processing || queue.length >= MAX_MONTHS ? -1 : 0}
+            onClick={() => !processing && queue.length < MAX_MONTHS && fileInputRef.current?.click()}
+            onKeyDown={e => { if ((e.key === 'Enter' || e.key === ' ') && !processing && queue.length < MAX_MONTHS) { e.preventDefault(); fileInputRef.current?.click(); } }}
           >
             <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M12 15V3M7 8l5-5 5 5" />
               <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
             </svg>
-            <span>גרור עד 4 חודשי דפי חשבון (PDF או תמונות) או לחץ לבחירה</span>
+            <span>גרור עד {MAX_MONTHS} חודשי דפי חשבון — 3 החודשים האחרונים (PDF או תמונות) או לחץ לבחירה</span>
             <span className={styles.dropHint}>כל קובץ מיוצג בנפרד — סמן לאיזה חודש קלנדרי הוא שייך.</span>
           </label>
         </div>
