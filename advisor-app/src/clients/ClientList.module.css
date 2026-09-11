@@ -2,9 +2,10 @@
    small stat tiles — none of it needs that much horizontal room, and letting
    it stretch edge to edge read as sprawling rather than organized. Capping it
    like Presentation.jsx's own narrower `.page` keeps every section a
-   deliberate width instead of the browser's. */
+   deliberate width instead of the browser's — but 1180px left a visible dead
+   gap between the sidebar and the content, so this is wider than that cap. */
 .page {
-  max-width: 1180px;
+  max-width: 1520px;
   margin: 0 auto;
 }
 
