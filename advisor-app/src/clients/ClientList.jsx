@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
+import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
+import { countNewThisWeek } from './clientStats.js';
 import { usePendingInvites } from './usePendingInvites.js';
 import { usePipeline } from './usePipeline.js';
 import PipelineModal from './PipelineModal.jsx';
@@ -39,6 +41,13 @@ function byUrgency(a, b) {
   const diff = urgencyRank(b) - urgencyRank(a);
   if (diff !== 0) return diff;
   return (a.healthScore ?? 101) - (b.healthScore ?? 101);
+}
+
+function greetingText() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return 'בוקר טוב';
+  if (h >= 12 && h < 18) return 'צהריים טובים';
+  return 'ערב טוב';
 }
 
 function RemainingStat({ value }) {
@@ -83,10 +92,11 @@ const ICON_FUNNEL = (
   </svg>
 );
 
-function StatMain({ value }) {
-  const display = useCountUp(value);
-  return <div className={styles.statMainValue}>{Math.round(display)}</div>;
-}
+const ICON_NEW = (
+  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" />
+  </svg>
+);
 
 function StatSecondary({ label, value, tone, icon, format, onClick }) {
   const display = useCountUp(value);
@@ -115,8 +125,10 @@ const INVITE_ERROR_MESSAGES = {
   already_invited: 'כבר קיימת הזמנה פתוחה לכתובת הזו'
 };
 
-export default function ClientList({ advisorId, onSelect }) {
+export default function ClientList({ advisorId, advisorEmail, onSelect }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
+  const { profile } = useAdvisorProfile(advisorId);
+  const advisorName = profile?.display_name || advisorEmail?.split('@')[0] || '';
   const { invites: pendingInvites, reload: reloadInvites } = usePendingInvites(advisorId);
   const { leads, loading: leadsLoading, addLead, setStage: setLeadStage, deleteLead } = usePipeline(advisorId);
   const [pipelineOpen, setPipelineOpen] = useState(false);
@@ -188,6 +200,7 @@ export default function ClientList({ advisorId, onSelect }) {
   const overageCount = clients.filter(c => c.hasOverage).length;
   const overageAmountTotal = clients.reduce((s, c) => s + (c.overageAmount || 0), 0);
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
+  const newThisWeek = countNewThisWeek(clients);
 
   return (
     <div className={styles.page}>
@@ -196,22 +209,25 @@ export default function ClientList({ advisorId, onSelect }) {
           unless they already have pipeline prospects, whose only access point is
           this bar's KPI tile. */}
       {(clients.length > 0 || leads.length > 0) && (
-        <div className={styles.statBar}>
-          <div className={styles.statMain}>
-            <span className={styles.statIcon + ' ' + styles.statAccentIcon}>{ICON_USERS}</span>
-            <div className={styles.statSecondaryBody}>
-              <StatMain value={clients.length} />
-              <div className={styles.statMainLabel}>לקוחות פעילים</div>
+        <>
+          <div className={styles.welcomeHeader}>
+            <div className={styles.welcomeGreeting}>{greetingText()}{advisorName ? `, ${advisorName}` : ''}</div>
+            <div className={styles.welcomeActions}>
+              <Button onClick={() => { emailInputRef.current?.scrollIntoView({ block: 'center' }); emailInputRef.current?.focus(); }}>לקוח חדש +</Button>
+              <Button variant="ghost" disabled title="בקרוב">פגישה מיידית</Button>
             </div>
           </div>
-          <div className={styles.statDivider}></div>
-          <StatSecondary label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'statRed' : undefined} icon={ICON_ALERT} />
-          {overageAmountTotal > 0 && (
-            <StatSecondary label="סה״כ חריגה בכסף" value={overageAmountTotal} tone="statRed" icon={ICON_ALERT} format={fmt} />
-          )}
-          <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} icon={ICON_CHECKLIST} />
-          <StatSecondary label="לקוחות חדשים בטיפול" value={leads.length} icon={ICON_FUNNEL} onClick={() => setPipelineOpen(true)} />
-        </div>
+          <div className={styles.statBar}>
+            <StatSecondary label="לקוחות פעילים" value={clients.length} tone="statAccent" icon={ICON_USERS} />
+            <StatSecondary label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'statRed' : undefined} icon={ICON_ALERT} />
+            {overageAmountTotal > 0 && (
+              <StatSecondary label="סה״כ חריגה בכסף" value={overageAmountTotal} tone="statRed" icon={ICON_ALERT} format={fmt} />
+            )}
+            <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} icon={ICON_CHECKLIST} />
+            <StatSecondary label="לקוחות חדשים בטיפול" value={leads.length} icon={ICON_FUNNEL} onClick={() => setPipelineOpen(true)} />
+            <StatSecondary label="לקוחות חדשים השבוע" value={newThisWeek} icon={ICON_NEW} />
+          </div>
+        </>
       )}
 
       {pipelineOpen && (

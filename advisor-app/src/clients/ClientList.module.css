@@ -287,6 +287,26 @@
   margin-top: 4px;
 }
 
+.welcomeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+}
+
+.welcomeGreeting {
+  font-family: var(--font-display);
+  font-size: var(--text-display-sm);
+  font-weight: 700;
+}
+
+.welcomeActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
 .statBar {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -296,7 +316,7 @@
   animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
-.statMain, .statSecondary {
+.statSecondary {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -307,7 +327,7 @@
   transition: border-color .25s ease, transform .25s var(--ease-out-expo);
 }
 
-.statMain:hover, .statSecondary:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+.statSecondary:hover { border-color: var(--border-strong); transform: translateY(-2px); }
 
 .statSecondaryClickable {
   cursor: pointer;
@@ -327,9 +347,9 @@
 
 .statIcon {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-sm);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,33 +357,30 @@
   background: var(--hover);
 }
 
-.statAccentIcon { color: var(--accent); background: var(--accent-dim); }
+.statIcon.statAccent { color: var(--accent); background: var(--accent-dim); }
 .statIcon.statRed { color: var(--red); background: rgba(var(--red-rgb), 0.10); }
 .statIcon.statGold { color: var(--gold); background: rgba(var(--gold-rgb), 0.10); }
 
-.statMainValue, .statSecondaryValue {
+.statSecondaryValue {
   font-family: var(--font-body);
   font-size: var(--text-display-sm);
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+  color: var(--text);
 }
 
-.statMainValue { color: var(--accent); }
-.statSecondaryValue { color: var(--text); }
-
-.statMainLabel, .statSecondaryLabel {
+.statSecondaryLabel {
   color: var(--text2);
   font-size: var(--text-xs);
 }
-
-.statDivider { display: none; }
 
 @media (max-width: 720px) {
   .statBar { grid-template-columns: 1fr; }
 }
 
+.statAccent { color: var(--accent); }
 .statRed { color: var(--red); }
 .statGold { color: var(--gold); }
 

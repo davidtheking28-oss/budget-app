@@ -130,7 +130,7 @@ export default function App() {
     return (
       <>
         <Shell title="לוח בקרה" email={session.user.email} advisorId={session.user.id} onSearch={() => setSearchOpen(true)} theme={theme} onToggleTheme={toggleTheme}>
-          <ClientList advisorId={session.user.id} onSelect={switchClient} />
+          <ClientList advisorId={session.user.id} advisorEmail={session.user.email} onSelect={switchClient} />
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />
