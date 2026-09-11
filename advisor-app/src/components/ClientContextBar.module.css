@@ -44,15 +44,27 @@
   gap: 4px;
 }
 
-.emailText {
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.contactItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-weight: 600;
-  font-size: var(--text-base);
-  color: var(--text);
+  font-size: var(--text-sm);
+  color: var(--text2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 260px;
+  max-width: 220px;
 }
+
+.contactItem svg { flex-shrink: 0; color: var(--text3); }
 
 .badges {
   display: flex;

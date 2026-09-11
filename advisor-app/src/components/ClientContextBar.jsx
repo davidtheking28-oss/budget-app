@@ -17,7 +17,18 @@ export default function ClientContextBar({ email, phone, createdAt, nextMeeting,
         <div className={styles.identity}>
           <div className={styles.avatar} aria-hidden="true">{initials(email)}</div>
           <div className={styles.identityInfo}>
-            <span className={styles.emailText} dir="ltr" title={email}>{email}</span>
+            <div className={styles.contactRow}>
+              <span className={styles.contactItem} dir="ltr" title={email}>
+                <svg {...iconProps} width={14} height={14}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+                {email}
+              </span>
+              {phone && (
+                <span className={styles.contactItem} dir="ltr">
+                  <svg {...iconProps} width={14} height={14}><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.9.7 2.7a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.4-1.4a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.8 2.2z" /></svg>
+                  {phone}
+                </span>
+              )}
+            </div>
             <div className={styles.badges}>
               <span className={styles.badgeActive}>פעיל</span>
               {joined && <span className={styles.badge}>לקוח מאז {joined}</span>}
