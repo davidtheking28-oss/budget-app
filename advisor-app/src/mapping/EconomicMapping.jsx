@@ -19,19 +19,11 @@ import DeleteButton from '../components/DeleteButton.jsx';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { toast } from '../toast.js';
-import ModuleHeader from '../components/ModuleHeader.jsx';
 import styles from './EconomicMapping.module.css';
 import { fmt } from '../format.js';
 
 const MAX_DIM = 1500;
 const CONCURRENCY = 3;
-
-const SCAN_ICON = (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M12 15V3M7 8l5-5 5 5" />
-    <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
-  </svg>
-);
 
 function monthOptions() {
   const now = new Date();
@@ -350,12 +342,6 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   return (
     <div>
-      <ModuleHeader
-        icon={SCAN_ICON}
-        title="מיפוי כלכלי"
-        subtitle="זיהוי אוטומטי של הכנסות והוצאות מדפי חשבון"
-      />
-
       <div className={styles.card}>
         <div className={styles.cardTitle}>העלאת דפי חשבון</div>
         <div className={styles.dropZone} onDragOver={e => e.preventDefault()} onDrop={onDrop}>

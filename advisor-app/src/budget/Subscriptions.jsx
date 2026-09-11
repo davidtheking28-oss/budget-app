@@ -8,7 +8,6 @@ import { stableColor } from '../categories.js';
 import { formatDate } from './monthUtils.js';
 import { toast } from '../toast.js';
 import { addItem, updateItem, removeItem } from './itemHelpers.js';
-import ModuleHeader from '../components/ModuleHeader.jsx';
 import styles from './Subscriptions.module.css';
 import { fmt } from '../format.js';
 
@@ -157,12 +156,6 @@ export default function Subscriptions({ clientUserId, advisorId }) {
 
   return (
     <div>
-      <ModuleHeader
-        icon={ICONS.subs}
-        title="מנויים וביטוחים"
-        subtitle="כל ההתחייבויות הקבועות במקום אחד"
-      />
-
       <div className={styles.kpiRow}>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>מנויים פעילים</div>

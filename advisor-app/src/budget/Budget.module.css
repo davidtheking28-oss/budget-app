@@ -42,16 +42,6 @@
   box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
 }
 
-.yearBadge {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text2);
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  padding: 6px 14px;
-  flex-shrink: 0;
-}
 
 .rows {
   display: flex;

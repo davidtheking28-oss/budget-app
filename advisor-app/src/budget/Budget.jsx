@@ -1,20 +1,12 @@
 import { useClientBudget } from './useClientBudget.js';
-import { getMonthTx, MONTH_NAMES } from './monthUtils.js';
+import { getMonthTx } from './monthUtils.js';
 import { effectiveLimit } from './budgetMath.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
-import ModuleHeader from '../components/ModuleHeader.jsx';
 import MonthTabs from '../components/MonthTabs.jsx';
 import styles from './Budget.module.css';
 import { fmt } from '../format.js';
-
-const CALENDAR_ICON = (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect x="3.5" y="5" width="17" height="15" rx="2" />
-    <path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" />
-  </svg>
-);
 
 export default function Budget({ clientUserId, advisorId, year, month, onSelectMonth }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
@@ -48,13 +40,6 @@ export default function Budget({ clientUserId, advisorId, year, month, onSelectM
   return (
     <div>
       {onSelectMonth && <MonthTabs month={month} onSelectMonth={onSelectMonth} />}
-
-      <ModuleHeader
-        icon={CALENDAR_ICON}
-        title={`תקציב ${MONTH_NAMES[month]}`}
-        subtitle="תכנון מול ביצוע בפועל"
-        right={<div className={styles.yearBadge}>שנה: {year}</div>}
-      />
 
       <div className={styles.kpiRow}>
         <div className={styles.kpi}>

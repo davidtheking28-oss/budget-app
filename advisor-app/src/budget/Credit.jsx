@@ -13,13 +13,6 @@ import MonthTabs from '../components/MonthTabs.jsx';
 import styles from './Credit.module.css';
 import { fmt } from '../format.js';
 
-const CREDIT_ICON = (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect x="2.5" y="5" width="19" height="14" rx="2" />
-    <path d="M2.5 10h19" />
-  </svg>
-);
-
 function monthKey(y, m) { return `${y}-${String(m + 1).padStart(2, '0')}`; }
 
 function monthsElapsed(fromKey, toKey) {
@@ -188,17 +181,6 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
   return (
     <div>
       {onSelectMonth && <MonthTabs month={month} onSelectMonth={onSelectMonth} />}
-
-      <div className={styles.brandHeader}>
-        <div className={styles.brandHeaderLeft}>
-          <span className={styles.brandIcon} aria-hidden="true">{CREDIT_ICON}</span>
-          <div>
-            <div className={styles.brandTitle}>תשלומי אשראי {MONTHS_HE[month]}</div>
-            <div className={styles.brandSub}>מעקב תשלומים חודשי</div>
-          </div>
-        </div>
-        <div className={styles.yearBadge}>שנה: {year}</div>
-      </div>
 
       {(loans.length > 0 || payments.length > 0) && (
         <div className={styles.statStrip}>
