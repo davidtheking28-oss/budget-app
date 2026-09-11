@@ -14,7 +14,7 @@ export function useClientProfile(advisorId, clientId) {
     setLoading(true);
     const { data, error } = await supabase
       .from('advisor_clients')
-      .select('id, phone, background')
+      .select('id, phone, background, created_at')
       .eq('advisor_id', advisorId)
       .eq('client_id', clientId)
       .maybeSingle();

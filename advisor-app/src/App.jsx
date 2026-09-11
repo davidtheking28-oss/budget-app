@@ -20,6 +20,7 @@ import Crm from './crm/Crm.jsx';
 import Report from './budget/Report.jsx';
 import Presentation from './budget/Presentation.jsx';
 import { useClientSummary } from './crm/useClientSummary.js';
+import { useClientProfile } from './crm/useClientProfile.js';
 import { BudgetModeContext, MODES } from './budget/useClientBudget.js';
 import { useTheme } from './useTheme.js';
 
@@ -78,6 +79,7 @@ export default function App() {
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const { theme, toggle: toggleTheme } = useTheme();
   const { nextMeeting, openTasks, household, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
+  const { profile: clientProfile } = useClientProfile(session?.user?.id, selectedClient?.id);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -184,6 +186,9 @@ export default function App() {
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
       >
         <ClientContextBar
+          email={selectedClient.email}
+          phone={clientProfile?.phone}
+          createdAt={clientProfile?.created_at}
           nextMeeting={nextMeeting}
           openTasks={openTasks}
           household={household}
