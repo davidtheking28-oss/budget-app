@@ -185,17 +185,19 @@ export default function App() {
         advisorId={session.user.id}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
       >
-        <ClientContextBar
-          email={selectedClient.email}
-          phone={clientProfile?.phone}
-          createdAt={clientProfile?.created_at}
-          nextMeeting={nextMeeting}
-          openTasks={openTasks}
-          household={household}
-          onOpenCrm={() => setNav('crm')}
-          budgetMode={budgetMode}
-          onBudgetModeChange={setBudgetMode}
-        />
+        {nav === 'dashboard' && (
+          <ClientContextBar
+            email={selectedClient.email}
+            phone={clientProfile?.phone}
+            createdAt={clientProfile?.created_at}
+            nextMeeting={nextMeeting}
+            openTasks={openTasks}
+            household={household}
+            onOpenCrm={() => setNav('crm')}
+            budgetMode={budgetMode}
+            onBudgetModeChange={setBudgetMode}
+          />
+        )}
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} onSelectMonth={m => setYm(prev => ({ year: prev.year, month: m }))} />}
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
