@@ -16,7 +16,7 @@ export function useClientList(advisorId) {
 
     const { data: roster, error } = await supabase
       .from('advisor_clients')
-      .select('id, client_id, client_email')
+      .select('id, client_id, client_email, created_at')
       .eq('advisor_id', advisorId)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
@@ -82,7 +82,8 @@ export function useClientList(advisorId) {
         hasDeclinedMeeting: !!declinedByUser[c.client_id],
         hasFailedUpload: !!uploadErrorByUser[c.client_id],
         healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null,
-        updatedAt: budgetRow?.updated_at || null
+        updatedAt: budgetRow?.updated_at || null,
+        createdAt: c.created_at || null
       };
     });
 
