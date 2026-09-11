@@ -319,6 +319,28 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   // carry a `type`, so hasIncomeData stays false and this card stays hidden.
   const cashflow = data?.transactions ? computeCashflowSummary(data.transactions) : null;
   const CT = chartTheme();
+  // Prints the amount directly above each bar (like the advisor's Excel reference)
+  // instead of leaving it only in the tooltip — no need for readable y-axis numbers then.
+  const barValueLabels = {
+    id: 'barValueLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx } = chart;
+      chart.data.datasets.forEach((dataset, i) => {
+        const meta = chart.getDatasetMeta(i);
+        meta.data.forEach((bar, j) => {
+          const value = dataset.data[j];
+          if (value == null) return;
+          ctx.save();
+          ctx.fillStyle = CT.text;
+          ctx.font = '700 13px ' + CT.font;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(fmt(value), bar.x, bar.y - 6);
+          ctx.restore();
+        });
+      });
+    }
+  };
   const cashflowChartData = cashflow ? {
     labels: ['ממוצע חודשי'],
     datasets: [
@@ -454,12 +476,14 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           <div className={styles.cashflowChart}>
             <Bar
               data={cashflowChartData}
+              plugins={[barValueLabels]}
               options={{
                 maintainAspectRatio: false,
+                layout: { padding: { top: 20 } },
                 animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
                 scales: {
                   x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
-                  y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+                  y: { ticks: { display: false }, grid: { color: CT.border } }
                 },
                 plugins: {
                   legend: { labels: { color: CT.text2, font: { family: CT.font } } },
@@ -512,12 +536,14 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           <div className={styles.cashflowChart}>
             <Bar
               data={comparisonChartData}
+              plugins={[barValueLabels]}
               options={{
                 maintainAspectRatio: false,
+                layout: { padding: { top: 20 } },
                 animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
                 scales: {
                   x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
-                  y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+                  y: { ticks: { display: false }, grid: { color: CT.border } }
                 },
                 plugins: {
                   legend: { labels: { color: CT.text2, font: { family: CT.font } } },
