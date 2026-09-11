@@ -163,7 +163,7 @@
        .fab hit above). Keep this technique if you touch it. */
     #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:0!important;right:0!important;width:fit-content!important;max-width:calc(100vw - 24px)!important;transform:none!important;z-index:200!important;margin:0 auto!important;transition:top 0.25s cubic-bezier(0.22,1,0.36,1);}
     #inlineMonthNav.nav-hidden{top:-70px!important;}
-    .page{display:none;}.page.active{display:block;min-height:calc(100vh - 76px - env(safe-area-inset-top,0px) - var(--nav-h) - var(--safe-bottom) - 60px);min-height:calc(100lvh - 76px - env(safe-area-inset-top,0px) - var(--nav-h) - var(--safe-bottom) - 60px);}
+    .page{display:none;}.page.active{display:block;}
     @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     .exp-row,.exp-struct-row,.exp-pay-card,.income-source-row,.tx-item,.budget-tx-card,.sub-card{animation:rowIn 0.3s cubic-bezier(0.22,1,0.36,1) both;}
     .exp-row:nth-of-type(1){animation-delay:.02s}.exp-row:nth-of-type(2){animation-delay:.05s}.exp-row:nth-of-type(3){animation-delay:.08s}.exp-row:nth-of-type(4){animation-delay:.11s}.exp-row:nth-of-type(5){animation-delay:.14s}.exp-row:nth-of-type(6){animation-delay:.17s}
