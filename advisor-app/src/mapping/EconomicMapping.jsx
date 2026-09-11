@@ -4,7 +4,7 @@ import { Bar } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
 import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
 import { resizeImageToJpeg } from './resizeImage.js';
-import { EXPENSE_CATS, INCOME_CATS, catColor, chartTheme } from '../categories.js';
+import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, catColor, chartTheme } from '../categories.js';
 
 // The mapping's own savings-transfer category doesn't live in EXPENSE_CATS
 // (that's a personal-budget list) — it needs to stay selectable here so a
@@ -321,6 +321,10 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     ? Object.keys(data.category_averages).sort((a, b) => data.category_averages[b] - data.category_averages[a])
     : [];
   const maxAvg = categories.length ? data.category_averages[categories[0]] : 0;
+  const fixedCats = categories.filter(c => FIXED_CATS.includes(c));
+  const variableCats = categories.filter(c => !FIXED_CATS.includes(c));
+  const fixedTotal = fixedCats.reduce((s, c) => s + data.category_averages[c], 0);
+  const variableTotal = variableCats.reduce((s, c) => s + data.category_averages[c], 0);
 
   // Only meaningful once the advisor has uploaded full bank-account statements
   // (income lines included), not a credit-card-only mapping — those never
@@ -443,17 +447,40 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         <div className={styles.card + ' ' + styles.cardStandalone}>
           <div className={styles.cardTitle}>מיפוי כלכלי</div>
           <div className={styles.coverageNote}>מבוסס על {data.months_covered} חודשים שהועלו</div>
-          <div className={styles.barList}>
-            {categories.map(cat => (
-              <div key={cat} className={styles.barRow}>
-                <span className={styles.barLabel}>{cat}</span>
-                <div className={styles.barTrack}>
-                  <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: catColor(cat) }} />
-                </div>
-                <span className={styles.barValue}>{fmt(data.category_averages[cat])}</span>
+
+          {fixedCats.length > 0 && (
+            <>
+              <div className={styles.groupHead}><span>הוצאות קבועות</span><span>{fmt(fixedTotal)}</span></div>
+              <div className={styles.barList}>
+                {fixedCats.map(cat => (
+                  <div key={cat} className={styles.barRow}>
+                    <span className={styles.barLabel}>{cat}</span>
+                    <div className={styles.barTrack}>
+                      <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: catColor(cat) }} />
+                    </div>
+                    <span className={styles.barValue}>{fmt(data.category_averages[cat])}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
+
+          {variableCats.length > 0 && (
+            <>
+              <div className={styles.groupHead}><span>הוצאות משתנות</span><span>{fmt(variableTotal)}</span></div>
+              <div className={styles.barList}>
+                {variableCats.map(cat => (
+                  <div key={cat} className={styles.barRow}>
+                    <span className={styles.barLabel}>{cat}</span>
+                    <div className={styles.barTrack}>
+                      <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: catColor(cat) }} />
+                    </div>
+                    <span className={styles.barValue}>{fmt(data.category_averages[cat])}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
           <button type="button" className={styles.toggle} onClick={() => setExpanded(v => !v)}>
             {expanded ? 'הסתר תנועות גולמיות' : `הצג ${data.transactions.length} תנועות גולמיות`}
