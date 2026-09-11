@@ -189,7 +189,8 @@
 
 .cashflowChart {
   height: 220px;
-  margin-bottom: var(--space-4);
+  max-width: 260px;
+  margin: 0 auto var(--space-4);
 }
 
 .cashflowRows {

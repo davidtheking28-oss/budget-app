@@ -344,8 +344,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const cashflowChartData = cashflow ? {
     labels: ['ממוצע חודשי'],
     datasets: [
-      { label: 'הכנסה חודשית', data: [cashflow.income], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאה', data: [cashflow.expense], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסה חודשית', data: [cashflow.income], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover, barPercentage: 0.6, categoryPercentage: 0.7 },
+      { label: 'הוצאה', data: [cashflow.expense], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover, barPercentage: 0.6, categoryPercentage: 0.7 }
     ]
   } : null;
 
@@ -357,8 +357,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const comparisonChartData = showComparison ? {
     labels: [monthLabel(firstSnapshot.period_end), monthLabel(data.period_end)],
     datasets: [
-      { label: 'הכנסה חודשית', data: [firstCashflow.income, cashflow.income], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאה', data: [firstCashflow.expense, cashflow.expense], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסה חודשית', data: [firstCashflow.income, cashflow.income], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover, barPercentage: 0.6, categoryPercentage: 0.7 },
+      { label: 'הוצאה', data: [firstCashflow.expense, cashflow.expense], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover, barPercentage: 0.6, categoryPercentage: 0.7 }
     ]
   } : null;
 
