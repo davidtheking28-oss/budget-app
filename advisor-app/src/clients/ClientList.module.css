@@ -629,18 +629,36 @@
   width: 1%;
   white-space: nowrap;
   text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.openCardBtn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: var(--accent-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: box-shadow 0.15s ease, transform 0.15s var(--ease-out-expo);
+}
+
+.openCardBtn:hover {
+  box-shadow: 0 4px 14px -4px rgba(var(--accent-rgb), 0.5);
+}
+
+.openCardBtn:active {
+  transform: scale(0.96);
 }
 
 .rowRemoveBtn {
   position: static;
-  opacity: 0;
-  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
-}
-
-.clientRow:hover .rowRemoveBtn,
-.clientRow:focus-within .rowRemoveBtn,
-.rowRemoveBtn:focus-visible {
-  opacity: 1;
 }
 
 .rowConfirmGroup {
@@ -653,8 +671,6 @@
    one card per client, each cell labeled via data-label. */
 @media (max-width: 560px) {
   .tableWrap { overflow-x: visible; }
-
-  .rowRemoveBtn { opacity: 1; }
 
   .table, .table thead, .table tbody, .table tr, .table td { display: block; width: 100%; }
   .table thead { position: absolute; inset-inline-start: -9999px; }

@@ -367,6 +367,7 @@ export default function ClientList({ advisorId, advisorEmail, onSelect }) {
                     </td>
                     <td data-label="פגישה הבאה">{c.nextMeetingAt ? formatDateTime(c.nextMeetingAt) : '—'}</td>
                     <td data-label="" className={styles.actionsCell}>
+                      <button type="button" className={styles.openCardBtn} onClick={e => { e.stopPropagation(); onSelect(c.client_id, c.client_email); }}>פתח כרטיס</button>
                       {confirming ? (
                         <div className={styles.rowConfirmGroup}>
                           <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>
