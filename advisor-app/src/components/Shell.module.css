@@ -234,10 +234,6 @@
   min-width: 0;
 }
 
-.infoRow {
-  margin-bottom: var(--space-5);
-}
-
 .contentTabs {
   /* Not flex:1 — stretching this to fill leftover viewport height turned any
      screen shorter than the viewport (e.g. Goals with few cards) into a

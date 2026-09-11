@@ -152,13 +152,12 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
             <div className={styles.logo}>תקציב אישי · יועץ</div>
           </div>
           <div className={styles.topbarEnd}>
-            {onSearch && <SearchBar onOpen={onSearch} />}
+            {sidebarInfo}
             <AccountMenu email={email} advisorId={advisorId} />
           </div>
         </div>
       </div>
       <div className={styles.contentTabs}>
-        {sidebarInfo && <div className={styles.infoRow}>{sidebarInfo}</div>}
         {children}
       </div>
     </div>
