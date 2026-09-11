@@ -102,17 +102,6 @@
 .income { color: var(--green); }
 .expense { color: var(--red); }
 
-.chartCard {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
-  padding: var(--space-4);
-  margin: 0 auto var(--space-5);
-  max-width: 320px;
-  height: 110px;
-}
-
 .section {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);

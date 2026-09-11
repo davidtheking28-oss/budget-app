@@ -1,5 +1,3 @@
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
 import { initials } from '../clientIdentity.js';
@@ -9,15 +7,12 @@ import { monthlyEquivalent } from './Subscriptions.jsx';
 import { getMonthTx, MONTH_NAMES } from './monthUtils.js';
 
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
-import { chartTheme } from '../categories.js';
 import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import styles from './Presentation.module.css';
 import { fmt } from '../format.js';
-
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 function inSelectedMonth(dateStr, year, month) {
   if (!dateStr) return false;
@@ -61,14 +56,6 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
   const savingsDeposit = monthTx.filter(t => t.type === 'expense' && t.cat === SAVINGS_CATEGORY).reduce((s, t) => s + t.amount, 0);
   const netWithoutSavings = summary.net + savingsDeposit;
   const cats = Object.keys(data.budgets || {}).filter(c => data.budgets[c]).sort();
-  const CT = chartTheme();
-  const chartData = {
-    labels: ['החודש'],
-    datasets: [
-      { label: 'הכנסה', data: [summary.income], backgroundColor: CT.green, borderRadius: 5 },
-      { label: 'הוצאה', data: [summary.expense], backgroundColor: CT.red, borderRadius: 5 }
-    ]
-  };
 
   const subs = (data.subscriptions || []).filter(s => s.active);
   const subsRenewingThisMonth = subs.filter(s => inSelectedMonth(s.nextDate, year, month));
@@ -219,22 +206,6 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
           ))}
         </div>
       )}
-
-      <div className={styles.chartCard}>
-        <Bar
-          data={chartData}
-          options={{
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            animation: ChartJS.defaults.animation === false ? false : { duration: 600, easing: 'easeOutQuart' },
-            scales: {
-              x: { reverse: true, ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } },
-              y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } }
-            },
-            plugins: { legend: { labels: { color: CT.text2, font: { family: CT.font } } } }
-          }}
-        />
-      </div>
     </div>
   );
 }
