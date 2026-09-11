@@ -51,7 +51,7 @@ export default function IconRail({ onBack, onSearch, onPrint, onPresent, nav, ac
           const groupStart = i === 0 || n.group !== nav[i - 1].group;
           return [
             groupStart && n.groupLabel
-              ? <div key={n.key + '-label'} className={styles.groupLabel} aria-hidden="true">{n.groupLabel}</div>
+              ? <div key={n.key + '-label'} className={styles.groupLabel}>{n.groupLabel}</div>
               : (groupStart && i > 0 ? <span key={n.key + '-div'} className={styles.divider} aria-hidden="true" /> : null),
             <button
               key={n.key}
@@ -67,7 +67,7 @@ export default function IconRail({ onBack, onSearch, onPrint, onPresent, nav, ac
           ];
         })}
 
-        {nav && nav.length > 0 && trailingActions.length > 0 && <div className={styles.groupLabel} aria-hidden="true">כלים</div>}
+        {nav && nav.length > 0 && trailingActions.length > 0 && <div className={styles.groupLabel}>כלים</div>}
 
         {trailingActions.map(a => (
           <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}>
