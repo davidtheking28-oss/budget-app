@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
 import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
-import { countNewThisWeek } from './clientStats.js';
 import { usePendingInvites } from './usePendingInvites.js';
 import { usePipeline } from './usePipeline.js';
 import PipelineModal from './PipelineModal.jsx';
@@ -89,12 +88,6 @@ const ICON_CHECKLIST = (
 const ICON_FUNNEL = (
   <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3Z" />
-  </svg>
-);
-
-const ICON_NEW = (
-  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6M22 11h-6" />
   </svg>
 );
 
@@ -200,7 +193,6 @@ export default function ClientList({ advisorId, advisorEmail, onSelect }) {
   const overageCount = clients.filter(c => c.hasOverage).length;
   const overageAmountTotal = clients.reduce((s, c) => s + (c.overageAmount || 0), 0);
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
-  const newThisWeek = countNewThisWeek(clients);
 
   return (
     <div className={styles.page}>
@@ -225,7 +217,6 @@ export default function ClientList({ advisorId, advisorEmail, onSelect }) {
             )}
             <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} icon={ICON_CHECKLIST} />
             <StatSecondary label="לקוחות חדשים בטיפול" value={leads.length} icon={ICON_FUNNEL} onClick={() => setPipelineOpen(true)} />
-            <StatSecondary label="לקוחות חדשים השבוע" value={newThisWeek} icon={ICON_NEW} />
           </div>
         </>
       )}

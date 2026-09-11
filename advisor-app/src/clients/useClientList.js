@@ -82,8 +82,7 @@ export function useClientList(advisorId) {
         hasDeclinedMeeting: !!declinedByUser[c.client_id],
         hasFailedUpload: !!uploadErrorByUser[c.client_id],
         healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null,
-        updatedAt: budgetRow?.updated_at || null,
-        createdAt: c.created_at || null
+        updatedAt: budgetRow?.updated_at || null
       };
     });
 
