@@ -659,6 +659,7 @@
 
 .rowRemoveBtn {
   position: static;
+  opacity: 1;
 }
 
 .rowConfirmGroup {
