@@ -304,16 +304,6 @@ export default function BudgetWizard({ data, save, year, month }) {
         {step === 3 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>סיכום התקציב</div>
-            <div className={styles.kpiRow}>
-              <div className={styles.kpi}>
-                <div className={styles.kpiLabel}>הכנסה חודשית</div>
-                <div className={styles.kpiValue}>{fmt(totalIncome)}</div>
-              </div>
-              <div className={styles.kpi}>
-                <div className={styles.kpiLabel}>תזרים חודשי פנוי</div>
-                <div className={styles.kpiValue + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</div>
-              </div>
-            </div>
             <div className={styles.reviewCols}>
               <div className={styles.reviewCol}>
                 <div className={styles.reviewColTitle}>הכנסות</div>

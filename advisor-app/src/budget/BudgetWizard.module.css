@@ -331,29 +331,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.kpiRow {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-3);
-}
-
-.kpi {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-}
-
-.kpiLabel { font-size: var(--text-xs); color: var(--text2); margin-bottom: var(--space-2); }
-
-.kpiValue {
-  font-family: var(--font-body);
-  font-size: var(--text-display-md);
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
 .stackBar {
   display: flex;
   height: 14px;
@@ -483,6 +460,6 @@
 
 @media (max-width: 720px) {
   .tally { grid-template-columns: 1fr; }
-  .kpiRow, .reviewCols, .totalsStrip { grid-template-columns: 1fr; }
+  .reviewCols, .totalsStrip { grid-template-columns: 1fr; }
   .amountInput { flex: 0 0 96px; }
 }
