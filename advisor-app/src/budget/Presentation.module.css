@@ -108,8 +108,9 @@
   background: var(--surface);
   box-shadow: var(--shadow-card);
   padding: var(--space-4);
-  margin-bottom: var(--space-5);
-  height: 140px;
+  margin: 0 auto var(--space-5);
+  max-width: 320px;
+  height: 110px;
 }
 
 .section {

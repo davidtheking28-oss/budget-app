@@ -126,22 +126,6 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
         )}
       </div>
 
-      <div className={styles.chartCard}>
-        <Bar
-          data={chartData}
-          options={{
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            animation: ChartJS.defaults.animation === false ? false : { duration: 600, easing: 'easeOutQuart' },
-            scales: {
-              x: { reverse: true, ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } },
-              y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } }
-            },
-            plugins: { legend: { labels: { color: CT.text2, font: { family: CT.font } } } }
-          }}
-        />
-      </div>
-
       {!hasAnyData && (
         <div className={styles.section}>
           <div className={styles.sub}>אין עדיין נתונים להצגה עבור {MONTH_NAMES[month]} {year}</div>
@@ -235,6 +219,22 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
           ))}
         </div>
       )}
+
+      <div className={styles.chartCard}>
+        <Bar
+          data={chartData}
+          options={{
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            animation: ChartJS.defaults.animation === false ? false : { duration: 600, easing: 'easeOutQuart' },
+            scales: {
+              x: { reverse: true, ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } },
+              y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } }
+            },
+            plugins: { legend: { labels: { color: CT.text2, font: { family: CT.font } } } }
+          }}
+        />
+      </div>
     </div>
   );
 }
