@@ -192,16 +192,6 @@
   background: var(--hover);
 }
 
-.summaryChart {
-  height: 140px;
-  min-width: 0;
-  margin-bottom: var(--space-4);
-  padding: var(--space-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-}
 
 .kpiFlow .kpiValue {
   font-size: var(--text-display-md);
