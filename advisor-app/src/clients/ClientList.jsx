@@ -367,21 +367,23 @@ export default function ClientList({ advisorId, advisorEmail, onSelect }) {
                     </td>
                     <td data-label="פגישה הבאה">{c.nextMeetingAt ? formatDateTime(c.nextMeetingAt) : '—'}</td>
                     <td data-label="" className={styles.actionsCell}>
-                      <button type="button" className={styles.openCardBtn} onClick={e => { e.stopPropagation(); onSelect(c.client_id, c.client_email); }}>פתח כרטיס</button>
-                      {confirming ? (
-                        <div className={styles.rowConfirmGroup}>
-                          <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>
-                            לאשר ניתוק?
+                      <div className={styles.rowActions}>
+                        <button type="button" className={styles.openCardBtn} onClick={e => { e.stopPropagation(); onSelect(c.client_id, c.client_email); }}>פתח כרטיס</button>
+                        {confirming ? (
+                          <div className={styles.rowConfirmGroup}>
+                            <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>
+                              לאשר ניתוק?
+                            </button>
+                            <button type="button" className={styles.cancelRemoveBtn} onClick={e => { e.stopPropagation(); setConfirmingId(null); }}>
+                              ביטול
+                            </button>
+                          </div>
+                        ) : (
+                          <button type="button" className={styles.removeBtn + ' ' + styles.rowRemoveBtn} title="נתק לקוח" aria-label="נתק לקוח" onClick={e => { e.stopPropagation(); setConfirmingId(c.id); }}>
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
                           </button>
-                          <button type="button" className={styles.cancelRemoveBtn} onClick={e => { e.stopPropagation(); setConfirmingId(null); }}>
-                            ביטול
-                          </button>
-                        </div>
-                      ) : (
-                        <button type="button" className={styles.removeBtn + ' ' + styles.rowRemoveBtn} title="נתק לקוח" aria-label="נתק לקוח" onClick={e => { e.stopPropagation(); setConfirmingId(c.id); }}>
-                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                        </button>
-                      )}
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

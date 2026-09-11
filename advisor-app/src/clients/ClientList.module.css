@@ -629,6 +629,9 @@
   width: 1%;
   white-space: nowrap;
   text-align: left;
+}
+
+.rowActions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
