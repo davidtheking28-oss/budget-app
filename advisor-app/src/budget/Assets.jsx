@@ -105,32 +105,6 @@ export default function Assets({ clientUserId, advisorId }) {
 
       <div className={styles.split}>
         <div className={styles.card}>
-          <div className={styles.cardTitle}>חלוקת הנכסים</div>
-          {assets.length ? (
-            <div className={styles.donutRow}>
-              <div className={styles.donutWrap}>
-                <Pie data={chartData} options={chartOptions} />
-                <div className={styles.donutCenter}>
-                  <div className={styles.donutTotal}>{fmt(totalAssets)}</div>
-                  <div className={styles.donutTotalLabel}>סה״כ נכסים</div>
-                </div>
-              </div>
-              <div className={styles.legend}>
-                {catLabels.map((l, i) => (
-                  <div key={l} className={styles.legendRow}>
-                    <span className={styles.legendDot} style={{ background: catColors[i] }} />
-                    <span className={styles.legendLabel}>{l}</span>
-                    <span className={styles.legendPct}>{Math.round((byCat[l] / totalAssets) * 100)}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className={styles.empty}>עדיין לא הוגדרו נכסים</div>
-          )}
-        </div>
-
-        <div className={styles.card}>
           <div className={styles.cardTitle}>שווי נכסים</div>
           <div className={styles.form}>
             <input className={styles.input} placeholder="שם הנכס" aria-label="שם הנכס" value={name} onChange={e => setName(e.target.value)} />
@@ -157,6 +131,32 @@ export default function Assets({ clientUserId, advisorId }) {
             </div>
           ) : (
             <div className={styles.empty}>אין עדיין נכסים רשומים</div>
+          )}
+        </div>
+
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>חלוקת הנכסים</div>
+          {assets.length ? (
+            <div className={styles.donutRow}>
+              <div className={styles.donutWrap}>
+                <Pie data={chartData} options={chartOptions} />
+                <div className={styles.donutCenter}>
+                  <div className={styles.donutTotal}>{fmt(totalAssets)}</div>
+                  <div className={styles.donutTotalLabel}>סה״כ נכסים</div>
+                </div>
+              </div>
+              <div className={styles.legend}>
+                {catLabels.map((l, i) => (
+                  <div key={l} className={styles.legendRow}>
+                    <span className={styles.legendDot} style={{ background: catColors[i] }} />
+                    <span className={styles.legendLabel}>{l}</span>
+                    <span className={styles.legendPct}>{Math.round((byCat[l] / totalAssets) * 100)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className={styles.empty}>עדיין לא הוגדרו נכסים</div>
           )}
         </div>
       </div>
