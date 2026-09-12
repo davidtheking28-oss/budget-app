@@ -10,10 +10,14 @@
   --accent-ink: #ffffff;
   --accent-dim: rgba(10, 122, 98, 0.09);
   /* Was #7c4a06 — contrast ratio 1.12 against --red (#b02631), functionally the
-     same color to a fast glance or anyone color-blind. This value keeps 3:1+
-     against white for large stat numbers while separating cleanly from red. */
-  --gold: #c2760a;
-  --gold-rgb: 194, 118, 10;
+     same color to a fast glance or anyone color-blind. #c2760a (the value after
+     that fix) separated cleanly from red but only cleared 3:1 against white —
+     it's also used as small bold badge text (soonBadge, statusPending, pipeline
+     stage tags), which needs 4.5:1. This value clears ~4.9:1 on the tinted
+     badge background those actually sit on, while staying gold rather than
+     drifting toward red or brown. */
+  --gold: #8f5a08;
+  --gold-rgb: 143, 90, 8;
   --green-rgb: 4, 107, 77;
   --red-rgb: 176, 38, 49;
   --text: #0f231e;
