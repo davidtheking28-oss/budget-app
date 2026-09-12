@@ -9,6 +9,7 @@ import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import { addItem, removeItem } from './itemHelpers.js';
+import CollapsibleSection from '../components/CollapsibleSection.jsx';
 import styles from './Assets.module.css';
 import { fmt } from '../format.js';
 
@@ -162,7 +163,7 @@ export default function Assets({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.card + ' ' + styles.cardStandalone}>
-        <div className={styles.cardTitle}>התחייבויות</div>
+        <CollapsibleSection title="התחייבויות">
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} />
           <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההתחייבות" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} />
@@ -190,6 +191,7 @@ export default function Assets({ clientUserId, advisorId }) {
           <div className={styles.empty}>אין עדיין התחייבויות רשומות</div>
         )}
         <div className={styles.note}>הלוואות שנוספו כאן מופיעות גם בטאב «מנויים והלוואות», שם אפשר להגדיר ריבית ומלווה.</div>
+        </CollapsibleSection>
       </div>
     </div>
   );
