@@ -482,11 +482,10 @@
   margin-bottom: var(--space-5);
 }
 
-/* An invite is not yet a client, so the card stays dashed and unclickable.
-   It keeps full text contrast though — the old blanket opacity dimmed the
-   email and the status wording along with the border. */
+/* An invite is not yet a client, so the card stays visually distinct and
+   unclickable. It keeps full text contrast though — the old blanket opacity
+   dimmed the email and the status wording along with the border. */
 .pendingCard {
-  border-style: dashed;
   background: var(--surface2);
   box-shadow: none;
   cursor: default;

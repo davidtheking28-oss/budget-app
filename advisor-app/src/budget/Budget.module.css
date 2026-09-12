@@ -126,7 +126,7 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 1px dashed var(--border-strong);
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
