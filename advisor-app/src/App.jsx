@@ -45,9 +45,9 @@ const NAV = [
   { key: 'analysis', label: 'ניתוח', group: 'money', icon: <svg {...svgProps}><path d="M4 20V10M12 20V4M20 20v-7" /></svg> },
   { key: 'goals', label: 'יעדים', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></svg> },
   { key: 'subs', label: 'מנויים', group: 'money', icon: <svg {...svgProps}><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg> },
-  { key: 'credit', label: 'הלוואות ואשראי', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
+  { key: 'credit', label: 'הלוואות ואשראי', group: 'money', icon: <svg {...svgProps}><circle cx="7" cy="7" r="2.3" /><circle cx="17" cy="17" r="2.3" /><path d="M18 6 6 18" /></svg> },
   { key: 'assets', label: 'נכסים והתחייבויות', group: 'money', icon: <svg {...svgProps}><path d="M3 21h18" /><path d="M5 21V9l7-5 7 5v12" /><path d="M10 21v-6h4v6" /></svg> },
-  { key: 'mortgage', label: 'אפיון נדלני', group: 'money', icon: <svg {...svgProps}><path d="M3 11l9-7 9 7" /><path d="M5 10v10h14V10" /><path d="M10 20v-6h4v6" /></svg> }
+  { key: 'mortgage', label: 'אפיון נדלני', group: 'money', icon: <svg {...svgProps}><rect x="4" y="2.5" width="16" height="19" rx="2" /><path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01" /></svg> }
 ];
 
 const today = new Date();
