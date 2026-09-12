@@ -7,12 +7,17 @@ import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
 import styles from './Mortgage.module.css';
 import { fmt } from '../format.js';
+import { useCountUp } from '../useCountUp.js';
 
 // Assets in these categories count as usable equity for a down payment; the
 // rest (pension, hishtalmut, gemel, real estate) is treated as illiquid —
 // same split the source spreadsheet ("ליווי נדל״ני") drew by hand.
 const LIQUID_ASSET_CATS = ['עו״ש', 'חיסכון', 'תיק השקעות'];
 const EMPTY_SCENARIO = { financier: '', propertyValue: '', loanAmount: '', monthlyPayment: '' };
+
+function KpiValue({ value }) {
+  return <>{fmt(useCountUp(value))}</>;
+}
 
 export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
@@ -75,23 +80,23 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
       <div className={styles.kpiRow}>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>קרן חירום נדרשת</div>
-          <div className={styles.kpiValue}>{fmt(emergencyFundTarget)}</div>
+          <div className={styles.kpiValue}><KpiValue value={emergencyFundTarget} /></div>
           <div className={styles.kpiMeta}>3× הוצאות חודשיות כולל הלוואות</div>
         </div>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>הון עצמי זמין לרכישה</div>
-          <div className={styles.kpiValue}>{fmt(availableEquity)}</div>
+          <div className={styles.kpiValue}><KpiValue value={availableEquity} /></div>
           <div className={styles.kpiMeta}>נכסים נזילים בניכוי קרן חירום</div>
         </div>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>משכנתא מקסימלית</div>
-          <div className={styles.kpiValue}>{fmt(maxMortgage)}</div>
+          <div className={styles.kpiValue}><KpiValue value={maxMortgage} /></div>
           <div className={styles.kpiMeta}>לפי החזר חודשי של {fmt(maxMonthlyPayment)}</div>
         </div>
         <div className={styles.kpi + ' ' + styles.kpiMain}>
           <div className={styles.kpiLabel}>טווח שווי נכס לאיתור</div>
           {maxPropertyValue > 0 ? (
-            <div className={styles.kpiValue} dir="ltr">{fmt(minPropertyValue)}–{fmt(maxPropertyValue)}</div>
+            <div className={styles.kpiValue} dir="ltr"><KpiValue value={minPropertyValue} />–<KpiValue value={maxPropertyValue} /></div>
           ) : (
             <div className={styles.kpiValue + ' ' + styles.kpiEmpty}>אין עדיין כשירות מספקת</div>
           )}

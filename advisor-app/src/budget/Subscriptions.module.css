@@ -5,7 +5,7 @@
   flex-wrap: wrap;
   padding: var(--space-4);
   background: transparent;
-  border: 1px dashed var(--border-strong);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
 
