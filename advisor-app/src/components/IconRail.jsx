@@ -45,6 +45,7 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
             className={styles.railBtn + (a.key === 'clients' && homeActive ? ' ' + styles.railBtnActive : '')}
             onClick={a.onClick}
             aria-label={a.label}
+            title={a.label}
             aria-current={a.key === 'clients' && homeActive ? 'page' : undefined}
           >
             {a.icon}
@@ -57,15 +58,14 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
         {nav && nav.map((n, i) => {
           const groupStart = i === 0 || n.group !== nav[i - 1].group;
           return [
-            groupStart && n.groupLabel
-              ? <div key={n.key + '-label'} className={styles.groupLabel}>{n.groupLabel}</div>
-              : (groupStart && i > 0 ? <span key={n.key + '-div'} className={styles.divider} aria-hidden="true" /> : null),
+            groupStart && i > 0 ? <span key={n.key + '-div'} className={styles.divider} aria-hidden="true" /> : null,
             <button
               key={n.key}
               type="button"
               className={styles.railBtn + (n.key === activeNav ? ' ' + styles.railBtnActive : '')}
               onClick={() => onNavChange(n.key)}
               aria-label={n.label}
+              title={n.label}
               aria-current={n.key === activeNav ? 'page' : undefined}
             >
               {n.icon}
@@ -74,10 +74,10 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
           ];
         })}
 
-        {nav && nav.length > 0 && trailingActions.length > 0 && <div className={styles.groupLabel}>כלים</div>}
+        {nav && nav.length > 0 && trailingActions.length > 0 && <span className={styles.divider} aria-hidden="true" />}
 
         {trailingActions.map(a => (
-          <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}>
+          <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label} title={a.label}>
             {a.icon}
             <span className={styles.label}>{a.label}</span>
           </button>
@@ -89,6 +89,7 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
           className={styles.railBtn + ' ' + styles.themeBtn}
           onClick={onToggleTheme}
           aria-label={theme === 'dark' ? 'עבור למצב בהיר' : 'עבור למצב כהה'}
+          title={theme === 'dark' ? 'עבור למצב בהיר' : 'עבור למצב כהה'}
           aria-pressed={theme === 'dark'}
         >
           {theme === 'dark'
