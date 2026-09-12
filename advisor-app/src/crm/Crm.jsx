@@ -13,7 +13,8 @@ const ICONS = {
   meetings: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
   tasks: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>,
   profile: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2" /><circle cx="8" cy="11" r="2" /><path d="M4 17c0-1.8 1.8-3 4-3s4 1.2 4 3" /><line x1="14" y1="9" x2="19" y2="9" /><line x1="14" y1="13" x2="19" y2="13" /></svg>,
-  edit: <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+  edit: <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>,
+  chevron: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
 };
 
 function downloadIcs(meeting) {
@@ -96,6 +97,10 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
   const [editMeetingAt, setEditMeetingAt] = useState('');
   const [editMeetingNotes, setEditMeetingNotes] = useState('');
   const [editMeetingForClient, setEditMeetingForClient] = useState(true);
+  // Collapsed by default — the three cards used to always show their full form
+  // and list, which pushed the page a lot longer than most visits need.
+  const [openSections, setOpenSections] = useState({});
+  function toggleSection(key) { setOpenSections(prev => ({ ...prev, [key]: !prev[key] })); }
 
   function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); }
   function saveEditTask(id) { editTask(id, editTaskTitle, editTaskDue, editTaskForClient); setEditingTask(null); }
@@ -129,25 +134,37 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
     <div>
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconProfile}>{ICONS.profile}</span>פרטי קשר ורקע</div>
-        <div className={styles.formPlain}>
-          <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
-          <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" style={{ flex: '0 0 160px' }} value={phoneDraft} onChange={e => { setPhoneDraft(e.target.value); setProfileDirty(true); }} />
-        </div>
-        <textarea
-          className={styles.textarea}
-          style={{ width: '100%', marginTop: 'var(--space-3)', minHeight: 72 }}
-          aria-label="רקע על הלקוח"
-          placeholder="רקע על הלקוח: מצב משפחתי, מטרות, הקשר שכדאי לזכור…"
-          value={backgroundDraft}
-          onChange={e => { setBackgroundDraft(e.target.value); setProfileDirty(true); }}
-        />
-        <div style={{ marginTop: 'var(--space-3)' }}>
-          <Button onClick={saveProfileFields} disabled={!profileDirty}>שמור</Button>
+        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('profile')} aria-expanded={!!openSections.profile}>
+          <span className={styles.iconChip + ' ' + styles.iconProfile}>{ICONS.profile}</span>פרטי קשר ורקע
+          <span className={styles.chevron + (openSections.profile ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
+        </button>
+        <div className={styles.sectionBody + (openSections.profile ? ' ' + styles.sectionBodyOpen : '')}>
+          <div className={styles.sectionBodyInner}>
+            <div className={styles.formPlain}>
+              <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
+              <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" style={{ flex: '0 0 160px' }} value={phoneDraft} onChange={e => { setPhoneDraft(e.target.value); setProfileDirty(true); }} />
+            </div>
+            <textarea
+              className={styles.textarea}
+              style={{ width: '100%', marginTop: 'var(--space-3)', minHeight: 72 }}
+              aria-label="רקע על הלקוח"
+              placeholder="רקע על הלקוח: מצב משפחתי, מטרות, הקשר שכדאי לזכור…"
+              value={backgroundDraft}
+              onChange={e => { setBackgroundDraft(e.target.value); setProfileDirty(true); }}
+            />
+            <div style={{ marginTop: 'var(--space-3)' }}>
+              <Button onClick={saveProfileFields} disabled={!profileDirty}>שמור</Button>
+            </div>
+          </div>
         </div>
       </div>
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconMeetings}>{ICONS.meetings}</span>פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}</div>
+        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('meetings')} aria-expanded={!!openSections.meetings}>
+          <span className={styles.iconChip + ' ' + styles.iconMeetings}>{ICONS.meetings}</span>פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}
+          <span className={styles.chevron + (openSections.meetings ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
+        </button>
+        <div className={styles.sectionBody + (openSections.meetings ? ' ' + styles.sectionBodyOpen : '')}>
+        <div className={styles.sectionBodyInner}>
         <div className={styles.form}>
           <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
           <input className={styles.input} type="datetime-local" step="1800" aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
@@ -245,10 +262,17 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
             })())}
           </div>
         ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.meetings}</span>אין פגישות מתוזמנות</div>}
+        </div>
+        </div>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconTasks}>{ICONS.tasks}</span>משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}</div>
+        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('tasks')} aria-expanded={!!openSections.tasks}>
+          <span className={styles.iconChip + ' ' + styles.iconTasks}>{ICONS.tasks}</span>משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}
+          <span className={styles.chevron + (openSections.tasks ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
+        </button>
+        <div className={styles.sectionBody + (openSections.tasks ? ' ' + styles.sectionBodyOpen : '')}>
+        <div className={styles.sectionBodyInner}>
         <div className={styles.form}>
           <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
           <input className={styles.input} type="date" aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
@@ -291,6 +315,8 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
             })())}
           </div>
         ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.tasks}</span>אין משימות</div>}
+        </div>
+        </div>
       </div>
 
       </div>

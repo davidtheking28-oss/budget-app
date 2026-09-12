@@ -21,15 +21,48 @@
   margin-bottom: var(--space-5);
 }
 
+/* A button, not a div — the whole header toggles the section. Collapsed by
+   default so a client's card opens compact; each card remembers its own
+   open/closed state locally for the session. */
 .sectionTitle {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
   color: var(--text);
   font-family: var(--font-display);
   font-size: var(--text-lg);
   font-weight: 700;
-  margin-bottom: var(--space-4);
+  cursor: pointer;
+  text-align: start;
+}
+
+.chevron {
+  margin-inline-start: auto;
+  display: flex;
+  color: var(--text3);
+  transition: transform .18s var(--ease-out-expo);
+}
+
+.chevronOpen { transform: rotate(180deg); }
+
+/* Height-animated collapse via grid-template-rows (0fr → 1fr) rather than
+   max-height: no arbitrary cap to guess, and it animates open AND closed. */
+.sectionBody {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .22s var(--ease-out-expo);
+}
+
+.sectionBodyOpen { grid-template-rows: 1fr; }
+
+.sectionBodyInner {
+  min-height: 0;
+  overflow: hidden;
+  padding-top: var(--space-4);
 }
 
 .iconChip {
