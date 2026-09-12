@@ -13,7 +13,7 @@ export function offsetLabel(offset, now = new Date(), long = false) {
 
 // Builds the stepped schedule of the client's monthly installment burden: how much they pay
 // each month from now on, when each card plan ends, and what the burden drops to afterwards.
-export function paymentSchedule(payments, now = new Date()) {
+export function paymentSchedule(payments, _now = new Date()) {
   const items = (payments || [])
     .map(p => {
       const total = parseFloat(p.total) || 0;
@@ -53,7 +53,7 @@ export function paymentSchedule(payments, now = new Date()) {
 }
 
 export default function PaymentsTimeline({ payments, now = new Date() }) {
-  const { periods, monthlyNow, horizon, totalLeft } = paymentSchedule(payments, now);
+  const { periods, monthlyNow, horizon } = paymentSchedule(payments, now);
   if (!periods.length) return null;
 
   const freeFrom = offsetLabel(horizon, now, true);
