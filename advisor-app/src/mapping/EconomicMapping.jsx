@@ -19,6 +19,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+import CollapsibleSection from '../components/CollapsibleSection.jsx';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { toast } from '../toast.js';
@@ -629,7 +630,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
       {data?.snapshots?.length > 0 && (
         <div className={styles.card + ' ' + styles.cardStandalone}>
-          <div className={styles.cardTitle}>היסטוריית מיפויים</div>
+          <CollapsibleSection title="היסטוריית מיפויים">
           <div className={styles.list}>
             {data.snapshots.map((s, i) => (
               <div key={i} className={styles.txRow}>
@@ -646,12 +647,13 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               </div>
             ))}
           </div>
+          </CollapsibleSection>
         </div>
       )}
 
       {showComparison && (
         <div className={styles.card + ' ' + styles.cardStandalone}>
-          <div className={styles.cardTitle}>השוואת תזרים: תחילת התהליך מול היום</div>
+          <CollapsibleSection title="השוואת תזרים: תחילת התהליך מול היום">
           <div className={styles.coverageNote}>{monthLabel(firstSnapshot.period_end)} מול {monthLabel(data.period_end)}</div>
 
           <div className={styles.cashflowChart}>
@@ -684,6 +686,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               <span className={styles.cashflowRowValue + (cashflow.netInAccount < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netInAccount)}</span>
             </div>
           </div>
+          </CollapsibleSection>
         </div>
       )}
     </div>
