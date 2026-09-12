@@ -8,6 +8,7 @@ import { stableColor } from '../categories.js';
 import { formatDate } from './monthUtils.js';
 import { toast } from '../toast.js';
 import { addItem, updateItem, removeItem } from './itemHelpers.js';
+import CollapsibleSection from '../components/CollapsibleSection.jsx';
 import styles from './Subscriptions.module.css';
 import { fmt } from '../format.js';
 
@@ -178,7 +179,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       )}
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconSubs}>{ICONS.subs}</span>מנויים<span className={styles.countBadge}>{subs.length}</span>{monthlySubsCost > 0 ? ` · ${fmt(monthlySubsCost)} לחודש` : ''}</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconSubs}>{ICONS.subs}</span>מנויים<span className={styles.countBadge}>{subs.length}</span>{monthlySubsCost > 0 ? ` · ${fmt(monthlySubsCost)} לחודש` : ''}</>}>
         {!subs.length && <div className={styles.sectionEmpty}>אין מנויים רשומים</div>}
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם המנוי" aria-label="שם המנוי" value={subForm.name} onChange={e => setSubForm({ ...subForm, name: e.target.value })} />
@@ -242,10 +243,11 @@ export default function Subscriptions({ clientUserId, advisorId }) {
             })}
           </div>
         ) : null}
+      </CollapsibleSection>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>ביטוחים<span className={styles.countBadge}>{insurances.length}</span>{insurancesMonthly > 0 ? ` · ${fmt(insurancesMonthly)} לחודש` : ''}</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>ביטוחים<span className={styles.countBadge}>{insurances.length}</span>{insurancesMonthly > 0 ? ` · ${fmt(insurancesMonthly)} לחודש` : ''}</>}>
         {!insurances.length && <div className={styles.sectionEmpty}>אין ביטוחים רשומים</div>}
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם הביטוח" aria-label="שם הביטוח" value={insForm.name} onChange={e => setInsForm({ ...insForm, name: e.target.value })} />
@@ -272,10 +274,11 @@ export default function Subscriptions({ clientUserId, advisorId }) {
             ))}
           </div>
         ) : null}
+      </CollapsibleSection>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>טיפוח וקוסמטיקה<span className={styles.countBadge}>{grooming.length}</span>{groomingMonthly > 0 ? ` · ${fmt(groomingMonthly)} לחודש` : ''}</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>טיפוח וקוסמטיקה<span className={styles.countBadge}>{grooming.length}</span>{groomingMonthly > 0 ? ` · ${fmt(groomingMonthly)} לחודש` : ''}</>}>
         {!grooming.length && <div className={styles.sectionEmpty}>אין פריטים רשומים</div>}
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם הפריט" aria-label="שם הפריט" value={groomForm.name} onChange={e => setGroomForm({ ...groomForm, name: e.target.value })} />
@@ -296,10 +299,11 @@ export default function Subscriptions({ clientUserId, advisorId }) {
             ))}
           </div>
         ) : null}
+      </CollapsibleSection>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>אירועים ומתנות<span className={styles.countBadge}>{events.length}</span>{eventsMonthly > 0 ? ` · ${fmt(eventsMonthly)} לחודש` : ''}</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>אירועים ומתנות<span className={styles.countBadge}>{events.length}</span>{eventsMonthly > 0 ? ` · ${fmt(eventsMonthly)} לחודש` : ''}</>}>
         {!events.length && <div className={styles.sectionEmpty}>אין אירועים רשומים</div>}
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם האירוע" aria-label="שם האירוע" value={eventForm.name} onChange={e => setEventForm({ ...eventForm, name: e.target.value })} />
@@ -320,10 +324,11 @@ export default function Subscriptions({ clientUserId, advisorId }) {
             ))}
           </div>
         ) : null}
+      </CollapsibleSection>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>חינוך וחוגים<span className={styles.countBadge}>{education.length}</span>{educationMonthly > 0 ? ` · ${fmt(educationMonthly)} לחודש` : ''}</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>חינוך וחוגים<span className={styles.countBadge}>{education.length}</span>{educationMonthly > 0 ? ` · ${fmt(educationMonthly)} לחודש` : ''}</>}>
         {!education.length && <div className={styles.sectionEmpty}>אין פריטים רשומים</div>}
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם הפריט" aria-label="שם הפריט" value={eduForm.name} onChange={e => setEduForm({ ...eduForm, name: e.target.value })} />
@@ -344,10 +349,11 @@ export default function Subscriptions({ clientUserId, advisorId }) {
             ))}
           </div>
         ) : null}
+      </CollapsibleSection>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>הוצאות שנתיות<span className={styles.countBadge}>{annualExpenses.length}</span>{annualExpensesMonthly > 0 ? ` · ${fmt(annualExpensesMonthly)} לחודש` : ''}</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>הוצאות שנתיות<span className={styles.countBadge}>{annualExpenses.length}</span>{annualExpensesMonthly > 0 ? ` · ${fmt(annualExpensesMonthly)} לחודש` : ''}</>}>
         {!annualExpenses.length && <div className={styles.sectionEmpty}>אין הוצאות רשומות</div>}
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם ההוצאה" aria-label="שם ההוצאה" value={annualExpForm.name} onChange={e => setAnnualExpForm({ ...annualExpForm, name: e.target.value })} />
@@ -368,6 +374,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
             ))}
           </div>
         ) : null}
+      </CollapsibleSection>
       </div>
       </div>
     </div>

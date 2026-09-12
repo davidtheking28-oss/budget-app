@@ -134,17 +134,6 @@
   margin-bottom: var(--space-5);
 }
 
-.sectionTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  color: var(--text);
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  margin-bottom: var(--space-4);
-}
-
 .sectionEmpty {
   color: var(--text3);
   font-size: var(--text-sm);

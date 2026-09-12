@@ -10,6 +10,7 @@ import PaymentsTimeline from './PaymentsTimeline.jsx';
 import { monthSummary } from './budgetMath.js';
 import { MONTH_NAMES as MONTHS_HE } from './monthUtils.js';
 import MonthTabs from '../components/MonthTabs.jsx';
+import CollapsibleSection from '../components/CollapsibleSection.jsx';
 import styles from './Credit.module.css';
 import { fmt } from '../format.js';
 
@@ -189,7 +190,7 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
         </div>
       )}
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconLoans}>{ICONS.loans}</span>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconLoans}>{ICONS.loans}</span>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
         <div className={styles.form}>
           <input className={styles.input} placeholder="שם ההלוואה" aria-label="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
@@ -236,11 +237,12 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
             </div>
           </div>
         ) : null)}
+      </CollapsibleSection>
       </div>
 
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.calc}</span>מחשבון שפיצר</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.calc}</span>מחשבון שפיצר</>}>
         <div className={styles.form}>
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום הלוואה" aria-label="סכום הלוואה" value={spForm.principal} onChange={e => setSpForm({ ...spForm, principal: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית" value={spForm.rate} onChange={e => setSpForm({ ...spForm, rate: e.target.value })} />
@@ -253,10 +255,11 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
             <Button variant="ghost" onClick={spitzerToLoan}>+ הוסף כהלוואה</Button>
           </div>
         )}
+      </CollapsibleSection>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.merge}</span>סימולציית איחוד הלוואות</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.merge}</span>סימולציית איחוד הלוואות</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות לאיחוד</div>}
         {loans.length ? (
           <div className={styles.list}>
@@ -279,10 +282,11 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
             <div>{consolResult.diff >= 0 ? 'חיסכון' : 'עלות נוספת'} לחודש: <b style={{ color: consolResult.diff >= 0 ? 'var(--green)' : 'var(--red)' }}>{fmt(Math.abs(consolResult.diff))}</b></div>
           </div>
         )}
+      </CollapsibleSection>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.home}</span>מחשבון משכנתא / יכולת החזר</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.home}</span>מחשבון משכנתא / יכולת החזר</>}>
         <div className={styles.form}>
           <input className={styles.input} type="number" inputMode="decimal" placeholder="אחוז מקסימלי מההכנסה הפנויה" aria-label="אחוז מקסימלי" value={mtgForm.ratio} onChange={e => setMtgForm({ ...mtgForm, ratio: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית מוצעת %" aria-label="ריבית שנתית מוצעת" value={mtgForm.rate} onChange={e => setMtgForm({ ...mtgForm, rate: e.target.value })} />
@@ -296,11 +300,12 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
             <div>משכנתא נתמכת: <b>{fmt(mtgResult.maxPrincipal)}</b></div>
           </div>
         )}
+      </CollapsibleSection>
       </div>
       </div>
 
       <div className={styles.section}>
-        <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</div>
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         <PaymentsTimeline payments={payments} />
         <div className={styles.form}>
@@ -345,6 +350,7 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
             })}
           </div>
         ) : null}
+      </CollapsibleSection>
       </div>
     </div>
   );
