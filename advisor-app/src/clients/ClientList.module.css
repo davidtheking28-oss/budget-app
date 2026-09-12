@@ -1,13 +1,8 @@
-/* At the shell's full 1720px page width this screen is mostly short rows and
-   small stat tiles — none of it needs that much horizontal room, and letting
-   it stretch edge to edge read as sprawling rather than organized. Capping it
-   like Presentation.jsx's own narrower `.page` keeps every section a
-   deliberate width instead of the browser's — but 1180px left a visible dead
-   gap between the sidebar and the content, so this is wider than that cap. */
-.page {
-  max-width: 1520px;
-  margin: 0 auto;
-}
+/* Was capped at 1180px, then 1520px, to avoid a "sprawling" edge-to-edge look —
+   both still centered the page with a visible dead gap on both sides of the
+   sidebar's full 1800px content width. Filling that width outright reads as
+   using the space, not sprawling, since the grid/table below already adapt
+   their own column/row counts to whatever width they get. */
 
 /* Fixed columns squeezed cards to ~245px on a 1440 screen, which truncated the
    client email — the primary identifier. Let the track size drive the count. */
@@ -293,7 +288,6 @@
   justify-content: space-between;
   gap: var(--space-4);
   flex-wrap: wrap;
-  margin-top: var(--space-2);
 }
 
 .welcomeGreeting {
