@@ -323,7 +323,8 @@
   gap: var(--space-3);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   padding: var(--space-4);
   transition: border-color .25s ease, transform .25s var(--ease-out-expo);
 }
@@ -373,8 +374,10 @@
 }
 
 .statSecondaryLabel {
-  color: var(--text2);
+  color: var(--text3);
   font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
 }
 
 @media (max-width: 720px) {

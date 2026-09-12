@@ -89,22 +89,24 @@
   --bg-2: #0f1614;
   --surface: #131c1a;
   --surface2: #1b2624;
-  --accent: #2dd4a7;
-  --accent-rgb: 45, 212, 167;
-  --accent-2: #22b78e;
+  --accent: #3bc79c;
+  --accent-rgb: 59, 199, 156;
+  --accent-2: #2fb08a;
   --accent-ink: #052018;
-  --accent-dim: rgba(45, 212, 167, 0.14);
-  /* Was #e0b768 — 1.26:1 against dark --red (#f28b91). Same fix as light mode. */
-  --gold: #f3ca3f;
-  --gold-rgb: 243, 202, 63;
-  --green: #3ddba8;
-  --green-rgb: 61, 219, 168;
-  --red: #f28b91;
-  --red-rgb: 242, 139, 145;
-  --red-hover: #f7a9ae;
-  --green-hover: #6ae7c0;
-  --yellow: #e0b768;
-  --yellow-rgb: 224, 183, 104;
+  --accent-dim: rgba(59, 199, 156, 0.13);
+  /* Status colors are deliberately desaturated relative to their light-mode
+     counterparts: the earlier neon values (#3ddba8 / #f28b91 / #f3ca3f) glowed
+     against the near-black surfaces. All keep >6:1 on --surface for text. */
+  --gold: #d9b34d;
+  --gold-rgb: 217, 179, 77;
+  --green: #4fc99a;
+  --green-rgb: 79, 201, 154;
+  --red: #e57f86;
+  --red-rgb: 229, 127, 134;
+  --red-hover: #ee9a9f;
+  --green-hover: #74d6b1;
+  --yellow: #d4a95a;
+  --yellow-rgb: 212, 169, 90;
   --text: #e8efec;
   --text2: #9fb0ab;
   --text3: #829691;

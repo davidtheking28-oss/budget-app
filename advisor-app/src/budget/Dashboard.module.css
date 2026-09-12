@@ -62,7 +62,7 @@
 
 .statTileLabel {
   color: var(--text3);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.03em;
   margin-bottom: var(--space-2);
@@ -97,9 +97,9 @@
 
 .statusDot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-.statusBadge.good { color: var(--green); background: rgba(var(--green-rgb), 0.12); }
-.statusBadge.warn { color: var(--yellow); background: rgba(var(--yellow-rgb), 0.12); }
-.statusBadge.danger { color: var(--red); background: rgba(var(--red-rgb), 0.12); }
+.statusBadge.good { color: var(--green); background: rgba(var(--green-rgb), 0.10); }
+.statusBadge.warn { color: var(--yellow); background: rgba(var(--yellow-rgb), 0.10); }
+.statusBadge.danger { color: var(--red); background: rgba(var(--red-rgb), 0.10); }
 
 .tileCategories {
   grid-column: span 2;
