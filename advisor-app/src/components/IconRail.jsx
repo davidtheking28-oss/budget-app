@@ -3,7 +3,7 @@ import styles from './IconRail.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
-export default function IconRail({ onBack, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme }) {
+export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme }) {
   const globalActions = [
     onBack && {
       key: 'clients',
@@ -39,7 +39,14 @@ export default function IconRail({ onBack, onSearch, onPrint, onPresent, nav, ac
       <div className={styles.mark} aria-hidden="true"><Logo /></div>
       <nav className={styles.actions} aria-label="ניווט">
         {globalActions.map(a => (
-          <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}>
+          <button
+            key={a.key}
+            type="button"
+            className={styles.railBtn + (a.key === 'clients' && homeActive ? ' ' + styles.railBtnActive : '')}
+            onClick={a.onClick}
+            aria-label={a.label}
+            aria-current={a.key === 'clients' && homeActive ? 'page' : undefined}
+          >
             {a.icon}
             <span className={styles.label}>{a.label}</span>
           </button>

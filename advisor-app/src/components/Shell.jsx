@@ -115,7 +115,7 @@ export default function Shell({ onBack, nav, activeNav, onNavChange, sidebarInfo
   if (!nav) {
     return (
       <div className={styles.shell} dir="rtl">
-        <IconRail onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
+        <IconRail onBack={() => {}} homeActive onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
         <div className={styles.topbarBleed}>
           <div className={styles.topbar}>
             <div className={styles.logo}>תקציב אישי · יועץ</div>
