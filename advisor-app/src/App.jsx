@@ -27,6 +27,7 @@ import { useTheme } from './useTheme.js';
 const Dashboard = lazy(() => import('./budget/Dashboard.jsx'));
 const Analysis = lazy(() => import('./budget/Analysis.jsx'));
 const Assets = lazy(() => import('./budget/Assets.jsx'));
+const Mortgage = lazy(() => import('./budget/Mortgage.jsx'));
 const EconomicMapping = lazy(() => import('./mapping/EconomicMapping.jsx'));
 import { addMonths } from './budget/monthUtils.js';
 
@@ -45,7 +46,8 @@ const NAV = [
   { key: 'goals', label: 'יעדים', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></svg> },
   { key: 'subs', label: 'מנויים', group: 'money', icon: <svg {...svgProps}><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg> },
   { key: 'credit', label: 'הלוואות ואשראי', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
-  { key: 'assets', label: 'נכסים והתחייבויות', group: 'money', icon: <svg {...svgProps}><path d="M3 21h18" /><path d="M5 21V9l7-5 7 5v12" /><path d="M10 21v-6h4v6" /></svg> }
+  { key: 'assets', label: 'נכסים והתחייבויות', group: 'money', icon: <svg {...svgProps}><path d="M3 21h18" /><path d="M5 21V9l7-5 7 5v12" /><path d="M10 21v-6h4v6" /></svg> },
+  { key: 'mortgage', label: 'משכנתא', group: 'money', icon: <svg {...svgProps}><path d="M3 11l9-7 9 7" /><path d="M5 10v10h14V10" /><path d="M10 20v-6h4v6" /></svg> }
 ];
 
 const today = new Date();
@@ -205,6 +207,7 @@ export default function App() {
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'credit' && <Credit clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} onSelectMonth={m => setYm(prev => ({ year: prev.year, month: m }))} />}
         {nav === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
+        {nav === 'mortgage' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Mortgage clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={refreshClientSummary} />}
         {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
       </Shell>
