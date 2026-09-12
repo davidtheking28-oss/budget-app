@@ -5,11 +5,14 @@ import { useEconomicMapping } from './useEconomicMapping.js';
 import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
 import { resizeImageToJpeg } from './resizeImage.js';
 import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, catColor, chartTheme } from '../categories.js';
+import { useClientBudget } from '../budget/useClientBudget.js';
+import { addItem } from '../budget/itemHelpers.js';
 
 // The mapping's own savings-transfer category doesn't live in EXPENSE_CATS
 // (that's a personal-budget list) — it needs to stay selectable here so a
 // transaction the parser tagged this way doesn't fall off the dropdown.
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
+const LOAN_CATEGORY = 'החזר הלוואות + חיוב קבוע';
 const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS, SAVINGS_CATEGORY];
 import { supabase, SUPA_URL } from '../supabaseClient.js';
 import Skeleton from '../components/Skeleton.jsx';
@@ -169,14 +172,34 @@ function addFiles(setQueue, fileList, defaultMonth, onDropped) {
 
 export default function EconomicMapping({ clientUserId, advisorId }) {
   const { data, loading, error, save, reload, markUploadFailure } = useEconomicMapping(clientUserId, advisorId);
+  const { data: budgetData, save: saveBudget } = useClientBudget(clientUserId, advisorId);
   const [queue, setQueue] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [confirmText, setConfirmText] = useState(null);
   const [confirmingRestoreIndex, setConfirmingRestoreIndex] = useState(null);
+  const [linkForm, setLinkForm] = useState(null);
   const fileInputRef = useRef(null);
   const opts = monthOptions();
+
+  // Groups the mapping's recurring loan/savings transactions by description and
+  // filters out any whose name already matches an existing loan/asset — only
+  // genuinely new recurring items get surfaced for the advisor to act on.
+  function recurringCandidates(category, existingNames) {
+    if (!data?.transactions) return [];
+    const totals = new Map();
+    for (const t of data.transactions) {
+      if (t.category !== category) continue;
+      const key = (t.desc || '').trim() || 'ללא תיאור';
+      totals.set(key, (totals.get(key) || 0) + (Number(t.amount) || 0));
+    }
+    const months = data.months_covered || 1;
+    const lowerExisting = existingNames.map(n => (n || '').trim().toLowerCase()).filter(Boolean);
+    return [...totals.entries()]
+      .map(([desc, total]) => ({ desc, monthly: total / months }))
+      .filter(x => !lowerExisting.some(n => x.desc.toLowerCase().includes(n) || n.includes(x.desc.toLowerCase())));
+  }
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) {
@@ -316,6 +339,20 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     });
     if (ok !== false) toast('הקטגוריה עודכנה', 'success');
   }
+
+  async function linkToBudget(kind) {
+    const amount = parseFloat(linkForm.amount);
+    if (!linkForm.name.trim() || !amount || amount <= 0) { toast(kind === 'loan' ? 'הזן שם ויתרה תקינה' : 'הזן שם וסכום תקין', 'error'); return; }
+    const ok = kind === 'loan'
+      ? await addItem(saveBudget, 'loans', { name: linkForm.name.trim(), remaining: amount, monthly: linkForm.monthly })
+      : await addItem(saveBudget, 'assets', { name: linkForm.name.trim(), category: 'חיסכון', amount });
+    if (ok === false) return;
+    toast('עודכן בנכסים והתחייבויות', 'success');
+    setLinkForm(null);
+  }
+
+  const loanCandidates = recurringCandidates(LOAN_CATEGORY, (budgetData?.loans || []).map(l => l.name));
+  const savingsCandidates = recurringCandidates(SAVINGS_CATEGORY, (budgetData?.assets || []).map(a => a.name));
 
   const categories = data?.category_averages
     ? Object.keys(data.category_averages).sort((a, b) => data.category_averages[b] - data.category_averages[a])
@@ -500,6 +537,51 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {(loanCandidates.length > 0 || savingsCandidates.length > 0) && (
+        <div className={styles.card + ' ' + styles.cardStandalone}>
+          <div className={styles.cardTitle}>עדכון נכסים והתחייבויות מהמיפוי</div>
+          <div className={styles.coverageNote}>תנועות קבועות שזוהו במיפוי ואינן משויכות עדיין לנכס או להתחייבות קיימים</div>
+          <div className={styles.linkList}>
+            {loanCandidates.map(c => (
+              <div key={'loan-' + c.desc} className={styles.linkRow}>
+                <div>
+                  <div className={styles.linkDesc}>{c.desc}</div>
+                  <div className={styles.linkMeta}>החזר חודשי {fmt(c.monthly)} · יתווסף כהתחייבות</div>
+                </div>
+                {linkForm?.desc === c.desc ? (
+                  <div className={styles.linkForm}>
+                    <input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={linkForm.name} onChange={e => setLinkForm({ ...linkForm, name: e.target.value })} />
+                    <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרה נוכחית" aria-label="יתרה נוכחית" value={linkForm.amount} onChange={e => setLinkForm({ ...linkForm, amount: e.target.value })} onKeyDown={e => e.key === 'Enter' && linkToBudget('loan')} />
+                    <Button onClick={() => linkToBudget('loan')}>שמור</Button>
+                    <Button variant="ghost" onClick={() => setLinkForm(null)}>ביטול</Button>
+                  </div>
+                ) : (
+                  <Button variant="ghost" onClick={() => setLinkForm({ desc: c.desc, name: c.desc, monthly: c.monthly, amount: '' })}>עדכן</Button>
+                )}
+              </div>
+            ))}
+            {savingsCandidates.map(c => (
+              <div key={'saving-' + c.desc} className={styles.linkRow}>
+                <div>
+                  <div className={styles.linkDesc}>{c.desc}</div>
+                  <div className={styles.linkMeta}>הוראת קבע {fmt(c.monthly)} לחודש · יתווסף כנכס בקטגוריית חיסכון</div>
+                </div>
+                {linkForm?.desc === c.desc ? (
+                  <div className={styles.linkForm}>
+                    <input className={styles.input} placeholder="שם הנכס" aria-label="שם הנכס" value={linkForm.name} onChange={e => setLinkForm({ ...linkForm, name: e.target.value })} />
+                    <input className={styles.input} type="number" inputMode="decimal" placeholder="שווי נוכחי" aria-label="שווי נוכחי" value={linkForm.amount} onChange={e => setLinkForm({ ...linkForm, amount: e.target.value })} onKeyDown={e => e.key === 'Enter' && linkToBudget('asset')} />
+                    <Button onClick={() => linkToBudget('asset')}>שמור</Button>
+                    <Button variant="ghost" onClick={() => setLinkForm(null)}>ביטול</Button>
+                  </div>
+                ) : (
+                  <Button variant="ghost" onClick={() => setLinkForm({ desc: c.desc, name: c.desc, monthly: c.monthly, amount: '' })}>עדכן</Button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
