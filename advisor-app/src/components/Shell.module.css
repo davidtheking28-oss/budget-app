@@ -202,12 +202,6 @@
   animation: riseIn var(--motion) var(--ease-out-expo) both;
 }
 
-.content h1 {
-  font-size: var(--text-display-md);
-  margin-bottom: var(--space-1);
-}
-
-
 .shellTabs {
   min-height: 100vh;
   padding-inline-start: var(--rail-w);

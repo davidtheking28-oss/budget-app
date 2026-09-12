@@ -107,7 +107,7 @@ function AccountMenu({ email, advisorId }) {
   );
 }
 
-export default function Shell({ title, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, children }) {
+export default function Shell({ onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, children }) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeNav]);
@@ -126,7 +126,6 @@ export default function Shell({ title, onBack, nav, activeNav, onNavChange, side
           </div>
         </div>
         <div className={styles.content}>
-          {title && <h1>{title}</h1>}
           {children}
         </div>
       </div>
