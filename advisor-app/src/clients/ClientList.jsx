@@ -171,7 +171,7 @@ export default function ClientList({ advisorId, onSelect }) {
 
   if (loading) {
     return (
-      <div className={styles.page}>
+      <div>
         <Skeleton height="64px" radius="14px" style={{ marginBottom: 36 }} />
         {[0, 1, 2].map(i => (
           <Skeleton key={i} height="64px" radius="10px" style={{ marginBottom: 12 }} />
@@ -185,7 +185,7 @@ export default function ClientList({ advisorId, onSelect }) {
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
 
   return (
-    <div className={styles.page}>
+    <div>
       {/* A brand-new advisor has nothing to count, and three zeroes are the first
           thing they would otherwise see. Let the empty state be the whole page —
           unless they already have pipeline prospects, whose only access point is
