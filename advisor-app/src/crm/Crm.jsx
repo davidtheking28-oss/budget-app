@@ -130,7 +130,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
         <div className={styles.sectionTitle}><span className={styles.iconChip + ' ' + styles.iconProfile}>{ICONS.profile}</span>פרטי קשר ורקע</div>
-        <div className={styles.form} style={{ maxWidth: 'none' }}>
+        <div className={styles.formPlain}>
           <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
           <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" style={{ flex: '0 0 160px' }} value={phoneDraft} onChange={e => { setPhoneDraft(e.target.value); setProfileDirty(true); }} />
         </div>
