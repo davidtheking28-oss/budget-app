@@ -309,6 +309,18 @@ export default function ClientList({ advisorId, onSelect }) {
               {[...clients].sort(byUrgency).map(c => {
                 const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting;
                 const confirming = confirmingId === c.id;
+                const flags = [
+                  c.hasOverage && { text: 'חריגת תקציב', cls: styles.overageChip },
+                  c.hasFailedUpload && { text: 'העלאה נכשלה', cls: styles.uploadErrorChip },
+                  c.hasDeclinedMeeting && { text: 'פגישה נדחתה', cls: styles.overageChip },
+                  c.openTasks > 0 && { text: `${c.openTasks} משימות פתוחות`, cls: styles.taskChip }
+                ].filter(Boolean);
+                const notes = [
+                  ...flags.slice(1).map(f => f.text),
+                  c.lastMeetingAt && `פגישה אחרונה ${relativeTime(c.lastMeetingAt)}`,
+                  c.totalTasks > 0 && `בוצעו ${c.doneTasks}/${c.totalTasks} משימות`,
+                  c.updatedAt && isStale(c.updatedAt) && `לא עודכן ${relativeTime(c.updatedAt)}`
+                ].filter(Boolean);
                 return (
                   <tr
                     key={c.id}
@@ -331,15 +343,8 @@ export default function ClientList({ advisorId, onSelect }) {
                     </td>
                     <td data-label="סטטוס">
                       <div className={styles.chips}>
-                        {c.hasOverage && <div className={styles.overageChip}>חריגת תקציב</div>}
-                        {c.hasFailedUpload && <div className={styles.uploadErrorChip}>העלאה נכשלה</div>}
-                        {c.hasDeclinedMeeting && <div className={styles.overageChip}>פגישה נדחתה</div>}
-                        {c.lastMeetingAt && <div className={styles.staleChip}>פגישה אחרונה {relativeTime(c.lastMeetingAt)}</div>}
-                        {c.totalTasks > 0 && <div className={styles.staleChip}>בוצעו {c.doneTasks}/{c.totalTasks} משימות</div>}
-                        {c.openTasks > 0 && <div className={styles.taskChip}>{c.openTasks} משימות פתוחות</div>}
-                        {c.updatedAt && isStale(c.updatedAt) && (
-                          <div className={styles.staleChip}>לא עודכן {relativeTime(c.updatedAt)}</div>
-                        )}
+                        {flags[0] && <div className={flags[0].cls}>{flags[0].text}</div>}
+                        {notes.length > 0 && <span className={styles.rowMeta}>{notes.join(' · ')}</span>}
                       </div>
                     </td>
                     <td data-label="יתרה החודש" className={styles.remainingCell}>

@@ -21,8 +21,7 @@
   background: var(--surface);
   box-shadow: var(--shadow-card);
   padding: var(--space-5);
-  animation: riseIn var(--motion) var(--ease-out-expo) both;
-  transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
+  transition: border-color 0.25s ease;
 }
 
 .tileTrend:hover, .tileGroup:hover, .tileCategories:hover, .tileGoals:hover {
@@ -49,12 +48,11 @@
 
 .statTile {
   min-width: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: var(--surface);
   box-shadow: var(--shadow-card);
   padding: var(--space-4);
-  animation: riseIn var(--motion) var(--ease-out-expo) both;
   transition: border-color 0.25s ease;
 }
 
@@ -255,7 +253,6 @@
   padding: 10px 4px;
   font-size: var(--text-base);
   border-bottom: 1px solid var(--border);
-  animation: riseIn var(--motion) var(--ease-out-expo) both;
   transition: transform 0.2s var(--ease-out-expo);
 }
 
