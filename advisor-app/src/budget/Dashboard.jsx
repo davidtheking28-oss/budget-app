@@ -60,8 +60,8 @@ export default function Dashboard({ clientUserId, year, month }) {
   const chartData = {
     labels: trendMonths.map(({ month: m }) => MONTH_SHORT[m]),
     datasets: [
-      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: trendData.map(s => s.income), backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 34, barPercentage: 0.55, categoryPercentage: 0.6, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: trendData.map(s => s.expense), backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 34, barPercentage: 0.55, categoryPercentage: 0.6, hoverBackgroundColor: CT.redHover }
     ]
   };
 
@@ -178,7 +178,7 @@ export default function Dashboard({ clientUserId, year, month }) {
                   y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
                 },
                 plugins: {
-                  legend: { labels: { color: CT.text2, font: { family: CT.font } } },
+                  legend: { align: 'end', labels: { color: CT.text2, font: { family: CT.font }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8 } },
                   tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
                 }
               }}

@@ -10,7 +10,10 @@ export const INCOME_CATS_BUSINESS = ['הכנסות ממכירות','שירותי
 export function expenseCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_BUSINESS : EXPENSE_CATS; }
 export function incomeCatsFor(mode) { return mode === 'business' ? INCOME_CATS_BUSINESS : INCOME_CATS; }
 export function budgetCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_BUSINESS : BUDGET_CATS; }
-export const CHART_PALETTE = ['#0f766e', '#2dd4a7', '#155e9c', '#7dd3c0', '#b45309', '#5b8def', '#c2410c', '#9a7fd1'];
+// Category slices/bars. Kept to the brand's teal-slate family plus two muted
+// warm stops so a single large category (housing at 50%+ is typical) never
+// shouts over the rest of the dashboard the way the old orange did.
+export const CHART_PALETTE = ['#0f766e', '#4fb3a1', '#2a5d8f', '#7aa7d9', '#8a7a4e', '#6b7a83', '#5e6bb3', '#9bb56a'];
 
 // Free-text keys (subscription names, custom asset labels) have no canonical
 // position, so they hash into a slot. Eight slots collided constantly — the four
