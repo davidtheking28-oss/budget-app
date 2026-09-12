@@ -1,11 +1,17 @@
+/* CSS multi-column (`columns:`) re-balances which card lands in which column
+   whenever any card's height changes — expanding one section shuffled the
+   others to different columns/positions. A grid keeps each card in its own
+   fixed cell no matter what any other card is doing. */
 .sectionsGrid {
-  columns: 2 360px;
-  column-gap: var(--space-5);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-5);
   margin-bottom: var(--space-6);
 }
 
 @media (max-width: 560px) {
-  .sectionsGrid { columns: 1; }
+  .sectionsGrid { grid-template-columns: 1fr; }
 }
 
 .section {
@@ -14,11 +20,6 @@
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   box-shadow: var(--shadow-card);
-}
-
-.sectionsGrid .section {
-  break-inside: avoid;
-  margin-bottom: var(--space-5);
 }
 
 /* A button, not a div — the whole header toggles the section. Collapsed by

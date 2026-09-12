@@ -126,14 +126,19 @@
 .iconPayments { background: rgba(var(--gold-rgb), 0.12); color: var(--gold); }
 .iconFixed { background: rgba(var(--green-rgb), 0.12); color: var(--green); }
 
+/* Was CSS multi-column — it re-balanced which card lands in which column
+   whenever a card's height changed (e.g. an accordion opening), reshuffling
+   card positions. A grid keeps each card in its own fixed cell. */
 .sectionsGrid {
-  columns: 2 480px;
-  column-gap: var(--space-5);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--space-5);
   margin-bottom: var(--space-6);
 }
 
 @media (max-width: 560px) {
-  .sectionsGrid { columns: 1; }
+  .sectionsGrid { grid-template-columns: 1fr; }
 }
 
 .section {
@@ -146,8 +151,7 @@
 }
 
 .sectionsGrid .section {
-  break-inside: avoid;
-  margin-bottom: var(--space-5);
+  margin-bottom: 0;
 }
 
 .sectionEmpty {
