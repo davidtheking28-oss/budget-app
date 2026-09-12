@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
-import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
 import { usePendingInvites } from './usePendingInvites.js';
 import { usePipeline } from './usePipeline.js';
 import PipelineModal from './PipelineModal.jsx';
@@ -40,13 +39,6 @@ function byUrgency(a, b) {
   const diff = urgencyRank(b) - urgencyRank(a);
   if (diff !== 0) return diff;
   return (a.healthScore ?? 101) - (b.healthScore ?? 101);
-}
-
-function greetingText() {
-  const h = new Date().getHours();
-  if (h >= 5 && h < 12) return 'בוקר טוב';
-  if (h >= 12 && h < 18) return 'צהריים טובים';
-  return 'ערב טוב';
 }
 
 function RemainingStat({ value }) {
@@ -118,10 +110,8 @@ const INVITE_ERROR_MESSAGES = {
   already_invited: 'כבר קיימת הזמנה פתוחה לכתובת הזו'
 };
 
-export default function ClientList({ advisorId, advisorEmail, onSelect }) {
+export default function ClientList({ advisorId, onSelect }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
-  const { profile } = useAdvisorProfile(advisorId);
-  const advisorName = profile?.display_name || advisorEmail?.split('@')[0] || '';
   const { invites: pendingInvites, reload: reloadInvites } = usePendingInvites(advisorId);
   const { leads, loading: leadsLoading, addLead, setStage: setLeadStage, deleteLead } = usePipeline(advisorId);
   const [pipelineOpen, setPipelineOpen] = useState(false);
@@ -203,7 +193,6 @@ export default function ClientList({ advisorId, advisorEmail, onSelect }) {
       {(clients.length > 0 || leads.length > 0) && (
         <>
           <div className={styles.welcomeHeader}>
-            <div className={styles.welcomeGreeting}>{greetingText()}{advisorName ? `, ${advisorName}` : ''}</div>
             <div className={styles.welcomeActions}>
               <Button onClick={() => { emailInputRef.current?.scrollIntoView({ block: 'center' }); emailInputRef.current?.focus(); }}>לקוח חדש +</Button>
               <Button variant="ghost" disabled title="בקרוב">פגישה מיידית</Button>
