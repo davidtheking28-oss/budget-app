@@ -103,6 +103,27 @@
   width: 180px;
 }
 
+/* The native calendar/clock icon paints black-on-black under a dark
+   color-scheme in Chromium unless explicitly inverted — the single most
+   "unstyled browser default" thing left once the rest of the field matches
+   the theme. Light mode's default icon is already legible; leave it alone. */
+.input[type="date"]::-webkit-calendar-picker-indicator,
+.input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  transition: filter 0.15s ease;
+}
+
+:root[data-theme="dark"] .input[type="date"]::-webkit-calendar-picker-indicator,
+:root[data-theme="dark"] .input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85);
+}
+
+:root[data-theme="dark"] .input[type="date"]:hover::-webkit-calendar-picker-indicator,
+:root[data-theme="dark"] .input[type="datetime-local"]:hover::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
 .input:focus-visible, .textarea:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.5);
   box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
