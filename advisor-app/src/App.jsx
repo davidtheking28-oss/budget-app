@@ -47,7 +47,7 @@ const NAV = [
   { key: 'subs', label: 'מנויים', group: 'money', icon: <svg {...svgProps}><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg> },
   { key: 'credit', label: 'הלוואות ואשראי', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
   { key: 'assets', label: 'נכסים והתחייבויות', group: 'money', icon: <svg {...svgProps}><path d="M3 21h18" /><path d="M5 21V9l7-5 7 5v12" /><path d="M10 21v-6h4v6" /></svg> },
-  { key: 'mortgage', label: 'משכנתא', group: 'money', icon: <svg {...svgProps}><path d="M3 11l9-7 9 7" /><path d="M5 10v10h14V10" /><path d="M10 20v-6h4v6" /></svg> }
+  { key: 'mortgage', label: 'אפיון נדלני', group: 'money', icon: <svg {...svgProps}><path d="M3 11l9-7 9 7" /><path d="M5 10v10h14V10" /><path d="M10 20v-6h4v6" /></svg> }
 ];
 
 const today = new Date();
