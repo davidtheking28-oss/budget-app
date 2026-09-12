@@ -180,6 +180,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [confirmText, setConfirmText] = useState(null);
   const [confirmingRestoreIndex, setConfirmingRestoreIndex] = useState(null);
   const [linkForm, setLinkForm] = useState(null);
+  const [linking, setLinking] = useState(false);
   const fileInputRef = useRef(null);
   const opts = monthOptions();
 
@@ -341,11 +342,14 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   }
 
   async function linkToBudget(kind) {
+    if (linking) return;
     const amount = parseFloat(linkForm.amount);
     if (!linkForm.name.trim() || !amount || amount <= 0) { toast(kind === 'loan' ? 'הזן שם ויתרה תקינה' : 'הזן שם וסכום תקין', 'error'); return; }
+    setLinking(true);
     const ok = kind === 'loan'
       ? await addItem(saveBudget, 'loans', { name: linkForm.name.trim(), remaining: amount, monthly: linkForm.monthly })
       : await addItem(saveBudget, 'assets', { name: linkForm.name.trim(), category: 'חיסכון', amount });
+    setLinking(false);
     if (ok === false) return;
     toast('עודכן בנכסים והתחייבויות', 'success');
     setLinkForm(null);
@@ -555,7 +559,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                   <div className={styles.linkForm}>
                     <input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={linkForm.name} onChange={e => setLinkForm({ ...linkForm, name: e.target.value })} />
                     <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרה נוכחית" aria-label="יתרה נוכחית" value={linkForm.amount} onChange={e => setLinkForm({ ...linkForm, amount: e.target.value })} onKeyDown={e => e.key === 'Enter' && linkToBudget('loan')} />
-                    <Button onClick={() => linkToBudget('loan')}>שמור</Button>
+                    <Button onClick={() => linkToBudget('loan')} disabled={linking}>שמור</Button>
                     <Button variant="ghost" onClick={() => setLinkForm(null)}>ביטול</Button>
                   </div>
                 ) : (
@@ -573,7 +577,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                   <div className={styles.linkForm}>
                     <input className={styles.input} placeholder="שם הנכס" aria-label="שם הנכס" value={linkForm.name} onChange={e => setLinkForm({ ...linkForm, name: e.target.value })} />
                     <input className={styles.input} type="number" inputMode="decimal" placeholder="שווי נוכחי" aria-label="שווי נוכחי" value={linkForm.amount} onChange={e => setLinkForm({ ...linkForm, amount: e.target.value })} onKeyDown={e => e.key === 'Enter' && linkToBudget('asset')} />
-                    <Button onClick={() => linkToBudget('asset')}>שמור</Button>
+                    <Button onClick={() => linkToBudget('asset')} disabled={linking}>שמור</Button>
                     <Button variant="ghost" onClick={() => setLinkForm(null)}>ביטול</Button>
                   </div>
                 ) : (
