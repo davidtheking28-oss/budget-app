@@ -46,7 +46,6 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const maxMortgage = (maxMonthlyPayment / 500) * 100000;
   const availableEquity = Math.max(0, liquidAssets - emergencyFundTarget);
   const maxPropertyValue = Math.max(0, availableEquity + maxMortgage);
-  const minPropertyValue = Math.max(0, maxPropertyValue - 300000);
 
   const propertyValue = parseFloat(scenario.propertyValue) || 0;
   const loanAmount = parseFloat(scenario.loanAmount) || 0;
@@ -94,9 +93,9 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           <div className={styles.kpiMeta}>לפי החזר חודשי של {fmt(maxMonthlyPayment)}</div>
         </div>
         <div className={styles.kpi + ' ' + styles.kpiMain}>
-          <div className={styles.kpiLabel}>טווח שווי נכס לאיתור</div>
+          <div className={styles.kpiLabel}>שווי נכס מקסימלי לאיתור</div>
           {maxPropertyValue > 0 ? (
-            <div className={styles.kpiValue} dir="ltr"><KpiValue value={minPropertyValue} />–<KpiValue value={maxPropertyValue} /></div>
+            <div className={styles.kpiValue}><KpiValue value={maxPropertyValue} /></div>
           ) : (
             <div className={styles.kpiValue + ' ' + styles.kpiEmpty}>אין עדיין כשירות מספקת</div>
           )}
