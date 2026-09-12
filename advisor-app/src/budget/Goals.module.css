@@ -12,7 +12,7 @@
 .input {
   flex: 1;
   min-width: 120px;
-  padding: 11px 14px;
+  padding: 10px var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--input-bg);
