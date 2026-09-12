@@ -22,7 +22,7 @@
 
 .form input,
 .form select {
-  flex: 1;
+  flex: 0 1 160px;
   min-width: 130px;
   height: 40px;
 }
