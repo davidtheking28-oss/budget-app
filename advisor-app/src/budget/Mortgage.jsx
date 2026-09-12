@@ -56,6 +56,25 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const gapTo50 = propertyValue > 0 ? (0.5 - (ltv || 0) / 100) * propertyValue : null;
   const gapTo70 = propertyValue > 0 ? (0.7 - (ltv || 0) / 100) * propertyValue : null;
 
+  // A loan with a monthly payment pays itself off in remaining/monthly months —
+  // once it's gone, that cash frees up for the mortgage ratio. A bullet/interest-
+  // only loan (no monthly figure) has no payoff horizon, so it stays active the
+  // whole projection.
+  const loansWithPayoff = loans.map(l => ({
+    monthly: parseFloat(l.monthly) || 0,
+    monthsLeft: (parseFloat(l.monthly) || 0) > 0 ? Math.ceil((parseFloat(l.remaining) || 0) / parseFloat(l.monthly)) : Infinity
+  }));
+  let runningBalance = availableEquity;
+  const projection = propertyValue > 0 ? Array.from({ length: 18 }, (_, i) => {
+    const monthNum = i + 1;
+    const activeLoanPayments = loansWithPayoff.reduce((s, l) => s + (l.monthsLeft >= monthNum ? l.monthly : 0), 0);
+    const monthDebt = monthlyPayment + activeLoanPayments;
+    const ratio = summary.income > 0 ? (monthDebt / summary.income) * 100 : null;
+    const surplus = summary.income - summary.expense - monthDebt;
+    runningBalance += surplus;
+    return { monthNum, activeLoanPayments, monthDebt, ratio, surplus, balance: runningBalance };
+  }) : [];
+
   function setField(field, value) {
     setForm({ ...scenario, [field]: value });
   }
@@ -138,6 +157,41 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         )}
         <div className={styles.note}>הכנסה, הוצאות והלוואות נשלפות מהתקציב ומטאב «נכסים והתחייבויות» — אין צורך להזין אותן כאן שוב.</div>
       </div>
+
+      {propertyValue > 0 && (
+        <div className={styles.card + ' ' + styles.cardStandalone}>
+          <div className={styles.cardTitle}>תזרים חיסכון ל-18 חודש</div>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>חודש</th>
+                  <th>הכנסה</th>
+                  <th>הוצאות</th>
+                  <th>החזרים (הלוואות + משכנתא)</th>
+                  <th>יחס החזר</th>
+                  <th>עודף חודשי</th>
+                  <th>יתרה מצטברת</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projection.map(row => (
+                  <tr key={row.monthNum} className={row.ratio > 40 ? styles.rowBad : styles.rowGood}>
+                    <td>{row.monthNum}</td>
+                    <td>{fmt(summary.income)}</td>
+                    <td>{fmt(summary.expense)}</td>
+                    <td>{fmt(row.monthDebt)}</td>
+                    <td>{row.ratio === null ? '—' : row.ratio.toFixed(0) + '%'}</td>
+                    <td>{fmt(row.surplus)}</td>
+                    <td>{fmt(row.balance)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className={styles.note}>שורה מסומנת באדום כאשר יחס ההחזר עולה מעל 40% מההכנסה החודשית. ירידת הלוואות קיימות בדרך משפיעה על היחס לאורך הטבלה.</div>
+        </div>
+      )}
     </div>
   );
 }
