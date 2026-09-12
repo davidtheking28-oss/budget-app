@@ -45,7 +45,6 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
             className={styles.railBtn + (a.key === 'clients' && homeActive ? ' ' + styles.railBtnActive : '')}
             onClick={a.onClick}
             aria-label={a.label}
-            title={a.label}
             aria-current={a.key === 'clients' && homeActive ? 'page' : undefined}
           >
             {a.icon}
@@ -65,7 +64,6 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
               className={styles.railBtn + (n.key === activeNav ? ' ' + styles.railBtnActive : '')}
               onClick={() => onNavChange(n.key)}
               aria-label={n.label}
-              title={n.label}
               aria-current={n.key === activeNav ? 'page' : undefined}
             >
               {n.icon}
@@ -77,7 +75,7 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
         {nav && nav.length > 0 && trailingActions.length > 0 && <span className={styles.divider} aria-hidden="true" />}
 
         {trailingActions.map(a => (
-          <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label} title={a.label}>
+          <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}>
             {a.icon}
             <span className={styles.label}>{a.label}</span>
           </button>
@@ -89,7 +87,6 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
           className={styles.railBtn + ' ' + styles.themeBtn}
           onClick={onToggleTheme}
           aria-label={theme === 'dark' ? 'עבור למצב בהיר' : 'עבור למצב כהה'}
-          title={theme === 'dark' ? 'עבור למצב בהיר' : 'עבור למצב כהה'}
           aria-pressed={theme === 'dark'}
         >
           {theme === 'dark'
