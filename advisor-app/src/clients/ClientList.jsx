@@ -195,7 +195,6 @@ export default function ClientList({ advisorId, onSelect }) {
           <div className={styles.welcomeHeader}>
             <div className={styles.welcomeActions}>
               <Button onClick={() => { emailInputRef.current?.scrollIntoView({ block: 'center' }); emailInputRef.current?.focus(); }}>לקוח חדש +</Button>
-              <Button variant="ghost" disabled title="בקרוב">פגישה מיידית</Button>
             </div>
           </div>
           <div className={styles.statBar}>
