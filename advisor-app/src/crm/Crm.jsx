@@ -119,6 +119,11 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
     setEditingMeeting(null);
   }
 
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const overdueTasks = tasks.filter(t => !t.done && t.due_date && t.due_date < todayIso).length;
+  const soonMeetings = meetings.filter(m => { const d = daysUntil(m.scheduled_at); return d !== null && d >= 0 && d <= 3; }).length;
+
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) {
     return (
@@ -132,6 +137,20 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
 
   return (
     <div>
+      {(overdueTasks > 0 || soonMeetings > 0) && (
+        <div className={styles.reminderBar}>
+          {overdueTasks > 0 && (
+            <button type="button" className={styles.reminderChip + ' ' + styles.reminderChipBad} onClick={() => setOpenSections(prev => ({ ...prev, tasks: true }))}>
+              {overdueTasks} משימות באיחור
+            </button>
+          )}
+          {soonMeetings > 0 && (
+            <button type="button" className={styles.reminderChip} onClick={() => setOpenSections(prev => ({ ...prev, meetings: true }))}>
+              {soonMeetings} פגישות בקרוב
+            </button>
+          )}
+        </div>
+      )}
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
         <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('profile')} aria-expanded={!!openSections.profile}>

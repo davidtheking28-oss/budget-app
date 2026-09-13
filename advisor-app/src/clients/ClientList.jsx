@@ -83,14 +83,15 @@ const ICON_FUNNEL = (
   </svg>
 );
 
-function StatSecondary({ label, value, tone, icon, format, onClick }) {
+function StatSecondary({ label, value, tone, icon, format, onClick, active }) {
   const display = useCountUp(value);
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag
       type={onClick ? 'button' : undefined}
-      className={styles.statSecondary + (onClick ? ' ' + styles.statSecondaryClickable : '')}
+      className={styles.statSecondary + (onClick ? ' ' + styles.statSecondaryClickable : '') + (active ? ' ' + styles.statSecondaryActive : '')}
       onClick={onClick}
+      aria-pressed={onClick ? !!active : undefined}
     >
       <span className={styles.statIcon + (tone ? ' ' + styles[tone] : '')}>{icon}</span>
       <div className={styles.statSecondaryBody}>
@@ -120,6 +121,7 @@ export default function ClientList({ advisorId, onSelect }) {
   const [submitting, setSubmitting] = useState(false);
   const [invitingEmail, setInvitingEmail] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
+  const [listFilter, setListFilter] = useState(null); // null | 'overage' | 'tasks'
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
 
@@ -194,11 +196,25 @@ export default function ClientList({ advisorId, onSelect }) {
         <>
           <div className={styles.statBar}>
             <StatSecondary label="לקוחות פעילים" value={clients.length} tone="statAccent" icon={ICON_USERS} />
-            <StatSecondary label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'statRed' : undefined} icon={ICON_ALERT} />
+            <StatSecondary
+              label="חריגות תקציב החודש"
+              value={overageCount}
+              tone={overageCount > 0 ? 'statRed' : undefined}
+              icon={ICON_ALERT}
+              active={listFilter === 'overage'}
+              onClick={overageCount > 0 ? () => setListFilter(f => f === 'overage' ? null : 'overage') : undefined}
+            />
             {overageAmountTotal > 0 && (
               <StatSecondary label="סה״כ חריגה בכסף" value={overageAmountTotal} tone="statRed" icon={ICON_ALERT} format={fmt} />
             )}
-            <StatSecondary label="משימות פתוחות" value={openTasksTotal} tone={openTasksTotal > 0 ? 'statGold' : undefined} icon={ICON_CHECKLIST} />
+            <StatSecondary
+              label="משימות פתוחות"
+              value={openTasksTotal}
+              tone={openTasksTotal > 0 ? 'statGold' : undefined}
+              icon={ICON_CHECKLIST}
+              active={listFilter === 'tasks'}
+              onClick={openTasksTotal > 0 ? () => setListFilter(f => f === 'tasks' ? null : 'tasks') : undefined}
+            />
             <StatSecondary label="לקוחות חדשים בטיפול" value={leads.length} icon={ICON_FUNNEL} onClick={() => setPipelineOpen(true)} />
           </div>
         </>
@@ -291,6 +307,13 @@ export default function ClientList({ advisorId, onSelect }) {
           <Button className={styles.emptyCta} onClick={() => emailInputRef.current?.focus()}>הזמן לקוח ראשון</Button>
         </div>
       ) : (
+        <>
+          {listFilter && (
+            <div className={styles.filterBanner}>
+              מסונן לפי {listFilter === 'overage' ? 'חריגות תקציב' : 'משימות פתוחות'}
+              <button type="button" className={styles.filterClear} onClick={() => setListFilter(null)}>נקה סינון</button>
+            </div>
+          )}
         <div className={styles.tableWrap} role="region" aria-label="טבלת לקוחות, גלול לצפייה בכל העמודות" tabIndex={0}>
           <table className={styles.table}>
             <thead>
@@ -303,7 +326,9 @@ export default function ClientList({ advisorId, onSelect }) {
               </tr>
             </thead>
             <tbody>
-              {[...clients].sort(byUrgency).map(c => {
+              {[...clients]
+                .filter(c => listFilter === 'overage' ? c.hasOverage : listFilter === 'tasks' ? c.openTasks > 0 : true)
+                .sort(byUrgency).map(c => {
                 const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting;
                 const confirming = confirmingId === c.id;
                 const flags = [
@@ -373,6 +398,7 @@ export default function ClientList({ advisorId, onSelect }) {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );
