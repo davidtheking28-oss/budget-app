@@ -21,6 +21,12 @@ export function useTheme() {
   const [theme, setTheme] = useState(resolve);
 
   const toggle = useCallback(() => {
+    // A short-lived class, not a permanent global transition — scoping it to
+    // just the toggle moment eases the light/dark flip without slowing down
+    // every other hover/press transition in the app the rest of the time.
+    const root = document.documentElement;
+    root.classList.add('theme-transitioning');
+    setTimeout(() => root.classList.remove('theme-transitioning'), 220);
     setTheme(prev => {
       const next = prev === 'dark' ? 'light' : 'dark';
       // Applied synchronously so the re-render this triggers already reads the

@@ -17,6 +17,15 @@
   to { opacity: 1; }
 }
 
+.overlay.closing {
+  animation: fadeOut 0.16s ease both;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .panel {
   width: 480px;
   max-width: 92vw;
@@ -27,6 +36,15 @@
   box-shadow: var(--shadow-lift);
   overflow: hidden;
   animation: riseIn var(--motion) var(--ease-out-expo) both;
+}
+
+.panel.closing {
+  animation: riseOut 0.16s ease both;
+}
+
+@keyframes riseOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(8px) scale(0.98); }
 }
 
 .input {

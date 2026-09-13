@@ -3,6 +3,11 @@ import { supabase } from '../supabaseClient.js';
 import { initials } from '../clientIdentity.js';
 import styles from './QuickSwitcher.module.css';
 
+// The panel is always mounted; `open` just toggles visibility. `closing`
+// keeps it rendered a moment longer so the exit can play the reverse of the
+// entrance instead of the panel just vanishing.
+const EXIT_MS = 160;
+
 export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onOpenChange }) {
   const [openState, setOpenState] = useState(false);
   const open = openProp === undefined ? openState : openProp;
@@ -14,9 +19,21 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
   const [clients, setClients] = useState([]);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
+  const [closing, setClosing] = useState(false);
   const inputRef = useRef(null);
   const panelRef = useRef(null);
   const restoreFocusRef = useRef(null);
+  const wasOpenRef = useRef(open);
+
+  useEffect(() => {
+    if (wasOpenRef.current && !open) {
+      setClosing(true);
+      const t = setTimeout(() => setClosing(false), EXIT_MS);
+      wasOpenRef.current = open;
+      return () => clearTimeout(t);
+    }
+    wasOpenRef.current = open;
+  }, [open]);
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -52,7 +69,7 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
     };
   }, [open, advisorId]);
 
-  if (!open) return null;
+  if (!open && !closing) return null;
 
   const filtered = clients.filter(c => c.client_email.toLowerCase().includes(query.toLowerCase()));
 
@@ -76,8 +93,8 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
   }
 
   return (
-    <div className={styles.overlay} onClick={() => setOpen(false)}>
-      <div ref={panelRef} className={styles.panel} role="dialog" aria-modal="true" aria-label="חיפוש לקוח מהיר" onClick={e => e.stopPropagation()}>
+    <div className={styles.overlay + (closing ? ' ' + styles.closing : '')} onClick={() => setOpen(false)}>
+      <div ref={panelRef} className={styles.panel + (closing ? ' ' + styles.closing : '')} role="dialog" aria-modal="true" aria-label="חיפוש לקוח מהיר" onClick={e => e.stopPropagation()}>
         <input
           ref={inputRef}
           className={styles.input}

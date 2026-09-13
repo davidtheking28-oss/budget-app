@@ -18,11 +18,30 @@
   to { opacity: 1; }
 }
 
+.overlay.closing {
+  animation: fadeOut 0.18s ease both;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .panel {
   position: relative;
   width: 100%;
   max-width: 960px;
   animation: riseIn var(--motion) var(--ease-out-expo) both;
+}
+
+/* Same path, reversed — settles in with riseIn, leaves with its mirror. */
+.panel.closing {
+  animation: riseOut 0.18s ease both;
+}
+
+@keyframes riseOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(8px) scale(0.98); }
 }
 
 .closeBtn {

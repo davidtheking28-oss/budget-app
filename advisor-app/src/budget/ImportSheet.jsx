@@ -5,6 +5,7 @@ import { localISODate } from './monthUtils.js';
 import styles from './ImportSheet.module.css';
 
 const BOM = '﻿';
+const EXIT_MS = 160;
 
 function parseCsv(text) {
   const stripped = text.indexOf(BOM) === 0 ? text.slice(1) : text;
@@ -54,7 +55,16 @@ export default function ImportSheet({ onClose, onImport }) {
   const [fileName, setFileName] = useState('');
   const [rows, setRows] = useState([]);
   const [importing, setImporting] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const closingRef = useRef(false);
   const fileInputRef = useRef(null);
+
+  function requestClose() {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    setClosing(true);
+    setTimeout(onClose, EXIT_MS);
+  }
 
   function handleFile(e) {
     const file = e.target.files?.[0];
@@ -79,11 +89,11 @@ export default function ImportSheet({ onClose, onImport }) {
   const expense = rows.filter(r => r.amount < 0).reduce((s, r) => s + Math.abs(r.amount), 0);
 
   return (
-    <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={styles.sheet} role="dialog" aria-modal="true">
+    <div className={styles.overlay + (closing ? ' ' + styles.closing : '')} onClick={e => e.target === e.currentTarget && requestClose()}>
+      <div className={styles.sheet + (closing ? ' ' + styles.closing : '')} role="dialog" aria-modal="true">
         <div className={styles.head}>
           <div className={styles.title}>ייבוא מקובץ</div>
-          <Button variant="ghost" onClick={onClose}>סגור</Button>
+          <Button variant="ghost" onClick={requestClose}>סגור</Button>
         </div>
 
         {!rows.length ? (

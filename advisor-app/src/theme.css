@@ -196,6 +196,13 @@ h1, h2, h3 {
   border-radius: 4px;
 }
 
+/* Applied only for the ~220ms of a light/dark toggle (see useTheme.js) — an
+   abrupt color-variable swap otherwise reads as a brightness flash. Scoped to
+   this moment only, so it never slows down ordinary hover/press transitions. */
+.theme-transitioning, .theme-transitioning * {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
