@@ -8,9 +8,15 @@ function resolve() {
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+const THEME_COLOR = { light: '#eef3f1', dark: '#0b1110' };
+
 function apply(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(KEY, theme);
+  // The <meta name="theme-color"> tags in index.html only track the OS's
+  // prefers-color-scheme; a manual toggle here overrides the OS setting, so
+  // the browser chrome color must follow that override too.
+  document.querySelectorAll('meta[name="theme-color"]').forEach(el => el.setAttribute('content', THEME_COLOR[theme]));
 }
 
 // Applied at module load, before React first renders, so charts that read the

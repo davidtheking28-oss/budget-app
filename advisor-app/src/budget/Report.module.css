@@ -157,10 +157,14 @@ td + td {
 }
 
 .shareLink {
+  font: inherit;
   font-size: var(--text-sm);
   color: var(--accent);
   cursor: pointer;
   text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 /* Browsers don't print background colors by default, and this report is meant

@@ -63,6 +63,12 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
     setPhoneDraft(profile.phone || '');
     setBackgroundDraft(profile.background || '');
   }, [profile, profileDirty]);
+  useEffect(() => {
+    if (!profileDirty) return;
+    const onBeforeUnload = e => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [profileDirty]);
   async function saveProfileFields() {
     const ok = await saveProfile({ phone: phoneDraft, background: backgroundDraft });
     if (ok) setProfileDirty(false);

@@ -77,9 +77,9 @@ export default function Report({ clientUserId, advisorId, year, month, email, on
         <Button variant="ghost" className={styles.closeButton} onClick={onClose}>סגור</Button>
         {shareId === undefined ? null : shareId ? (
           <div className={styles.shareRow}>
-            <span className={styles.shareLink} onClick={() => { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?share=${shareId}`); toast('הקישור הועתק', 'success'); }}>
+            <button type="button" className={styles.shareLink} onClick={() => { navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?share=${shareId}`); toast('הקישור הועתק', 'success'); }}>
               העתק קישור ללקוח
-            </span>
+            </button>
             <Button variant="ghost" disabled={sharing} onClick={revokeShare}>בטל קישור</Button>
           </div>
         ) : (

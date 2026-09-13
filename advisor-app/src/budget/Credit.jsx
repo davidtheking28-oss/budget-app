@@ -219,7 +219,7 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
                       </div>
                       <div className={styles.rowActions}>
                         <div className={styles.amount}>{fmt(l.monthly || 0)}</div>
-                        <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id); }} />
+                        <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id, `${l.name || 'ההלוואה'} נמחקה`); }} />
                       </div>
                     </div>
                     {pct !== null && (
@@ -334,7 +334,7 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
                     </div>
                     <div className={styles.rowActions}>
                       <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
-                      <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id); }} />
+                      <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'התשלום'} נמחק`); }} />
                     </div>
                   </div>
                   {showBar && (

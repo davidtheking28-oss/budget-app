@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { formatDate } from '../budget/monthUtils.js';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+import { useUrlParam } from '../useUrlParam.js';
 import styles from './PipelineTable.module.css';
 
 const STAGES = [
@@ -16,7 +17,7 @@ function stageInfo(key) {
 }
 
 export default function PipelineTable({ leads, loading, addLead, setStage, deleteLead }) {
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useUrlParam('stage', 'all');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [caseOwner, setCaseOwner] = useState('');

@@ -7,6 +7,7 @@ import PipelineModal from './PipelineModal.jsx';
 import { isStale, relativeTime } from './useClientFreshness.js';
 import { formatDateTime } from '../budget/monthUtils.js';
 import { useCountUp } from '../useCountUp.js';
+import { useUrlParam } from '../useUrlParam.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -121,7 +122,8 @@ export default function ClientList({ advisorId, onSelect }) {
   const [submitting, setSubmitting] = useState(false);
   const [invitingEmail, setInvitingEmail] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
-  const [listFilter, setListFilter] = useState(null); // null | 'overage' | 'tasks'
+  const [confirmingInviteId, setConfirmingInviteId] = useState(null);
+  const [listFilter, setListFilter] = useUrlParam('lf', null); // null | 'overage' | 'tasks'
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
 
@@ -155,6 +157,7 @@ export default function ClientList({ advisorId, onSelect }) {
   }
 
   async function removeInvite(id) {
+    setConfirmingInviteId(null);
     const { error } = await supabase.from('advisor_clients').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה בביטול ההזמנה', 'error'); return; }
     toast('ההזמנה בוטלה', 'success');
@@ -288,9 +291,20 @@ export default function ClientList({ advisorId, onSelect }) {
                     </div>
                   </div>
                 </div>
-                <button type="button" className={styles.removeBtn + ' ' + styles.pendingRemoveBtn} title="בטל הזמנה" aria-label={`בטל את ההזמנה ל-${inv.client_email}`} onClick={() => removeInvite(inv.id)}>
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                </button>
+                {confirmingInviteId === inv.id ? (
+                  <div className={styles.rowConfirmGroup}>
+                    <button type="button" className={styles.confirmRemoveBtn} onClick={() => removeInvite(inv.id)}>
+                      לאשר ביטול?
+                    </button>
+                    <button type="button" className={styles.cancelRemoveBtn} onClick={() => setConfirmingInviteId(null)}>
+                      ביטול
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" className={styles.removeBtn + ' ' + styles.pendingRemoveBtn} title="בטל הזמנה" aria-label={`בטל את ההזמנה ל-${inv.client_email}`} onClick={() => setConfirmingInviteId(inv.id)}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                  </button>
+                )}
               </div>
             ))}
           </div>

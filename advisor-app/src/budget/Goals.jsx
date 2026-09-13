@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -18,6 +18,11 @@ export default function Goals({ clientUserId, advisorId }) {
   const [amount, setAmount] = useState('');
   const [adding, setAdding] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const amountInputRef = useRef(null);
+
+  useEffect(() => {
+    if (txCard && window.matchMedia('(pointer: fine)').matches) amountInputRef.current?.focus();
+  }, [txCard]);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -156,11 +161,11 @@ export default function Goals({ clientUserId, advisorId }) {
                   {expanded ? (
                     <div className={styles.txRow}>
                       <input
+                        ref={amountInputRef}
                         className={styles.txInput}
                         type="number"
                         inputMode="decimal"
                         placeholder="סכום" aria-label="סכום להפקדה ליעד"
-                        autoFocus
                         value={amount}
                         onChange={e => setAmount(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && confirmTx()}

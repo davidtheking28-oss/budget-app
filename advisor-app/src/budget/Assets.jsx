@@ -125,7 +125,7 @@ export default function Assets({ clientUserId, advisorId }) {
                   </div>
                   <div className={styles.rowActions}>
                     <span className={styles.assetAmt}>{fmt(a.amount)}</span>
-                    <DeleteButton onClick={() => removeItem(save, 'assets', a.id)} />
+                    <DeleteButton onClick={() => removeItem(save, 'assets', a.id, `${a.name} נמחק`)} />
                   </div>
                 </div>
               ))}
@@ -182,7 +182,7 @@ export default function Assets({ clientUserId, advisorId }) {
                 </div>
                 <div className={styles.rowActions}>
                   <span className={styles.assetAmt + ' ' + styles.kpiNeg}>{fmt(l.remaining)}</span>
-                  <DeleteButton onClick={() => removeItem(save, 'loans', l.id)} />
+                  <DeleteButton onClick={() => removeItem(save, 'loans', l.id, `${l.name} נמחקה`)} />
                 </div>
               </div>
             ))}
