@@ -16,7 +16,10 @@ export default function CollapsibleSection({ title, defaultOpen = false, childre
         {title}
         <span className={styles.chevron + (open ? ' ' + styles.chevronOpen : '')}>{CHEVRON}</span>
       </button>
-      <div className={styles.sectionBody + (open ? ' ' + styles.sectionBodyOpen : '')}>
+      {/* inert: the grid-rows collapse only clips the content visually —
+          without it, Tab and screen readers could still reach controls that
+          aren't on screen. */}
+      <div className={styles.sectionBody + (open ? ' ' + styles.sectionBodyOpen : '')} inert={!open ? '' : undefined}>
         <div className={styles.sectionBodyInner}>{children}</div>
       </div>
     </>

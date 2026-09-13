@@ -157,7 +157,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
           <span className={styles.iconChip + ' ' + styles.iconProfile}>{ICONS.profile}</span>פרטי קשר ורקע
           <span className={styles.chevron + (openSections.profile ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
         </button>
-        <div className={styles.sectionBody + (openSections.profile ? ' ' + styles.sectionBodyOpen : '')}>
+        <div className={styles.sectionBody + (openSections.profile ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.profile ? '' : undefined}>
           <div className={styles.sectionBodyInner}>
             <div className={styles.formPlain}>
               <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
@@ -182,7 +182,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
           <span className={styles.iconChip + ' ' + styles.iconMeetings}>{ICONS.meetings}</span>פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}
           <span className={styles.chevron + (openSections.meetings ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
         </button>
-        <div className={styles.sectionBody + (openSections.meetings ? ' ' + styles.sectionBodyOpen : '')}>
+        <div className={styles.sectionBody + (openSections.meetings ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.meetings ? '' : undefined}>
         <div className={styles.sectionBodyInner}>
         <div className={styles.form}>
           <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
@@ -290,7 +290,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
           <span className={styles.iconChip + ' ' + styles.iconTasks}>{ICONS.tasks}</span>משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}
           <span className={styles.chevron + (openSections.tasks ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
         </button>
-        <div className={styles.sectionBody + (openSections.tasks ? ' ' + styles.sectionBodyOpen : '')}>
+        <div className={styles.sectionBody + (openSections.tasks ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.tasks ? '' : undefined}>
         <div className={styles.sectionBodyInner}>
         <div className={styles.form}>
           <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
