@@ -144,8 +144,23 @@ td + td {
 
 .printButton {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
+}
+
+.shareRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-inline-start: auto;
+}
+
+.shareLink {
+  font-size: var(--text-sm);
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 /* Browsers don't print background colors by default, and this report is meant
