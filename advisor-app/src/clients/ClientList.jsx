@@ -192,11 +192,6 @@ export default function ClientList({ advisorId, onSelect }) {
           this bar's KPI tile. */}
       {(clients.length > 0 || leads.length > 0) && (
         <>
-          <div className={styles.welcomeHeader}>
-            <div className={styles.welcomeActions}>
-              <Button onClick={() => { emailInputRef.current?.scrollIntoView({ block: 'center' }); emailInputRef.current?.focus(); }}>לקוח חדש +</Button>
-            </div>
-          </div>
           <div className={styles.statBar}>
             <StatSecondary label="לקוחות פעילים" value={clients.length} tone="statAccent" icon={ICON_USERS} />
             <StatSecondary label="חריגות תקציב החודש" value={overageCount} tone={overageCount > 0 ? 'statRed' : undefined} icon={ICON_ALERT} />
@@ -221,7 +216,10 @@ export default function ClientList({ advisorId, onSelect }) {
       )}
 
       <div className={styles.sectionHead}>
-        <h2 className={styles.sectionTitle}>הלקוחות שלי {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
+        <div className={styles.sectionTitleGroup}>
+          <h2 className={styles.sectionTitle}>הלקוחות שלי {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
+          <Button onClick={() => { emailInputRef.current?.scrollIntoView({ block: 'center' }); emailInputRef.current?.focus(); }}>לקוח חדש +</Button>
+        </div>
         <div className={styles.addForm}>
           <input
             ref={codeInputRef}
