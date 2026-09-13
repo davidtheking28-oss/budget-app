@@ -175,6 +175,11 @@
 }
 
 .input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35); }
+
+/* iOS Safari zooms the page on focus when an input's text is under 16px */
+@media (max-width: 860px) {
+  .input { font-size: 16px; }
+}
 .input::placeholder { color: var(--text3); }
 
 .amountInput { flex: 0 0 120px; font-variant-numeric: tabular-nums; }

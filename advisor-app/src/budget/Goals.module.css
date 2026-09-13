@@ -23,6 +23,11 @@
   transition: border-color var(--motion) var(--ease-out-expo);
 }
 
+/* iOS Safari zooms the page on focus when an input's text is under 16px */
+@media (max-width: 860px) {
+  .input { font-size: 16px; }
+}
+
 .input:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.5);
   box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
@@ -97,7 +102,7 @@
 
 .fill {
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   top: 0;
   height: 100%;
   width: 100%;
@@ -190,6 +195,11 @@
   font-family: var(--font-body);
   font-size: var(--text-base);
   outline: none;
+}
+
+/* iOS Safari zooms the page on focus when an input's text is under 16px */
+@media (max-width: 860px) {
+  .txInput { font-size: 16px; }
 }
 
 .txInput:focus-visible {

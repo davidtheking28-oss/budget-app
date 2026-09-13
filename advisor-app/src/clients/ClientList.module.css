@@ -453,6 +453,11 @@
   text-transform: uppercase;
 }
 
+/* iOS Safari zooms the page on focus when an input's text is under 16px */
+@media (max-width: 860px) {
+  .addInput { font-size: 16px; }
+}
+
 .addInput:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.5);
   box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);

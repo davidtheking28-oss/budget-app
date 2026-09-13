@@ -84,6 +84,11 @@
   text-align: center;
 }
 
+/* iOS Safari zooms the page on focus when an input's text is under 16px */
+@media (max-width: 860px) {
+  .input { font-size: 16px; }
+}
+
 .input:focus-visible {
   border-color: rgba(var(--accent-rgb), 0.6);
   box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);

@@ -365,6 +365,11 @@
   transition: border-color .18s var(--ease-out-expo);
 }
 
+/* iOS Safari zooms the page on focus when an input's text is under 16px */
+@media (max-width: 860px) {
+  .input { font-size: 16px; }
+}
+
 .input:focus-visible {
   border-color: var(--accent);
   outline: 2px solid var(--accent);
