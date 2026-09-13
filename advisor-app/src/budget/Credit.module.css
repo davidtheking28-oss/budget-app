@@ -1,8 +1,11 @@
+/* Grid, not flex-wrap: a wrapped flex row leaves its trailing items stranded
+   with empty space beside them (the last 1-2 controls, alone on their own
+   line). Grid fills each row evenly instead. */
 .form {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: var(--space-2);
   margin: 0 0 var(--space-4);
-  flex-wrap: wrap;
   padding: var(--space-4);
   background: transparent;
   border: 1px solid var(--border);
@@ -22,15 +25,8 @@
 
 .form input,
 .form select {
-  flex: 0 1 160px;
-  min-width: 130px;
   height: 40px;
-}
-
-.form input[type="date"],
-.form input[type="number"] {
-  flex: 0 0 auto;
-  width: 130px;
+  min-width: 0;
 }
 
 .input:focus-visible {
