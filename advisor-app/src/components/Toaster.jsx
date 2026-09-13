@@ -32,7 +32,10 @@ export default function Toaster() {
     const timers = timersRef.current;
     const unsubscribe = subscribeToast(item => {
       setItems(prev => [...prev, item]);
-      setTrackedTimeout(() => dismiss(item.id), item.action ? 5000 : 3200);
+      // A toast carrying an action (e.g. "undo") must stay until the user
+      // dismisses it, not disappear on a timer — otherwise the undo window
+      // closes silently while they're still deciding.
+      if (!item.action) setTrackedTimeout(() => dismiss(item.id), 3200);
     });
     return () => {
       unsubscribe();
@@ -56,6 +59,11 @@ export default function Toaster() {
               onClick={() => { i.action.onClick(); dismiss(i.id); }}
             >
               {i.action.label}
+            </button>
+          )}
+          {i.action && (
+            <button type="button" className={styles.close} aria-label="סגור" onClick={() => dismiss(i.id)}>
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
           )}
         </div>

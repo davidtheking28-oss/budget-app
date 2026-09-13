@@ -51,6 +51,20 @@
 
 .undo:hover { opacity: 0.75; }
 
+.close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.close:hover { opacity: 1; }
+
 .success { border-color: rgba(var(--green-rgb), 0.4); }
 .error { border-color: rgba(var(--red-rgb), 0.5); }
 .info { border-color: var(--border-strong); }
