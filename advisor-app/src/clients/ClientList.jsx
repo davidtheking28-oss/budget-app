@@ -188,6 +188,7 @@ export default function ClientList({ advisorId, onSelect }) {
 
   return (
     <div>
+      <div inert={pipelineOpen ? '' : undefined}>
       {/* A brand-new advisor has nothing to count, and three zeroes are the first
           thing they would otherwise see. Let the empty state be the whole page —
           unless they already have pipeline prospects, whose only access point is
@@ -219,6 +220,7 @@ export default function ClientList({ advisorId, onSelect }) {
           </div>
         </>
       )}
+      </div>
 
       {pipelineOpen && (
         <PipelineModal
@@ -231,6 +233,7 @@ export default function ClientList({ advisorId, onSelect }) {
         />
       )}
 
+      <div inert={pipelineOpen ? '' : undefined}>
       <div className={styles.sectionHead}>
         <div className={styles.sectionTitleGroup}>
           <h2 className={styles.sectionTitle}>הלקוחות שלי {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
@@ -400,6 +403,7 @@ export default function ClientList({ advisorId, onSelect }) {
         </div>
         </>
       )}
+      </div>
     </div>
   );
 }

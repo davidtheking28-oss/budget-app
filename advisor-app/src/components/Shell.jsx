@@ -15,8 +15,28 @@ function AccountMenu({ email, advisorId }) {
   const [savingName, setSavingName] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef(null);
+  const triggerRef = useRef(null);
+  const panelRef = useRef(null);
 
   useEffect(() => { setName(profile?.display_name || ''); }, [profile?.display_name]);
+
+  useEffect(() => {
+    if (!open) return;
+    panelRef.current?.querySelector('input')?.focus();
+    function onKeyDown(e) {
+      if (e.key === 'Escape') { setOpen(false); triggerRef.current?.focus(); }
+    }
+    function onPointerDown(e) {
+      if (panelRef.current?.contains(e.target) || triggerRef.current?.contains(e.target)) return;
+      setOpen(false);
+    }
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [open]);
 
   async function changePassword() {
     if (!password || password.length < 6) { toast('הסיסמה חייבת להיות באורך 6 תווים לפחות', 'error'); return; }
@@ -53,14 +73,14 @@ function AccountMenu({ email, advisorId }) {
 
   return (
     <div className={styles.accountMenu}>
-      <button type="button" className={styles.accountTrigger} onClick={() => setOpen(o => !o)}>
+      <button ref={triggerRef} type="button" className={styles.accountTrigger} onClick={() => setOpen(o => !o)} aria-expanded={open} aria-haspopup="true">
         <span className={styles.accountEmail}>{email}</span>
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={open ? styles.chevronOpen : ''}>
           <path d="M6 9l6 6 6-6" />
         </svg>
       </button>
       {open && (
-        <div className={styles.accountPanel}>
+        <div className={styles.accountPanel} ref={panelRef}>
           <div className={styles.accountPanelLabel}>שנה סיסמה</div>
           <div className={styles.accountPanelHint}>הסיסמה תתעדכן לחשבון <b className={styles.accountPanelEmail}>{email}</b></div>
           <input
@@ -107,14 +127,14 @@ function AccountMenu({ email, advisorId }) {
   );
 }
 
-export default function Shell({ onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, children }) {
+export default function Shell({ onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeNav]);
 
   if (!nav) {
     return (
-      <div className={styles.shell} dir="rtl">
+      <div className={styles.shell} dir="rtl" inert={shellInert ? '' : undefined}>
         <IconRail onBack={() => {}} homeActive onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
         <div className={styles.topbarBleed}>
           <div className={styles.topbar}>
@@ -125,15 +145,15 @@ export default function Shell({ onBack, nav, activeNav, onNavChange, sidebarInfo
             </div>
           </div>
         </div>
-        <div className={styles.content}>
+        <main className={styles.content}>
           {children}
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className={styles.shellTabs} dir="rtl">
+    <div className={styles.shellTabs} dir="rtl" inert={shellInert ? '' : undefined}>
       <IconRail
         onBack={onBack}
         onSearch={onSearch}
@@ -156,9 +176,9 @@ export default function Shell({ onBack, nav, activeNav, onNavChange, sidebarInfo
           </div>
         </div>
       </div>
-      <div className={styles.contentTabs}>
+      <main className={styles.contentTabs}>
         {children}
-      </div>
+      </main>
     </div>
   );
 }

@@ -133,7 +133,7 @@ export default function App() {
   if (!selectedClient) {
     return (
       <>
-        <Shell email={session.user.email} advisorId={session.user.id} onSearch={() => setSearchOpen(true)} theme={theme} onToggleTheme={toggleTheme}>
+        <Shell email={session.user.email} advisorId={session.user.id} onSearch={() => setSearchOpen(true)} theme={theme} onToggleTheme={toggleTheme} inert={searchOpen}>
           <ClientList advisorId={session.user.id} onSelect={switchClient} />
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
@@ -186,6 +186,7 @@ export default function App() {
         email={session.user.email}
         advisorId={session.user.id}
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
+        inert={searchOpen}
       >
         {nav === 'dashboard' && (
           <ClientContextBar
