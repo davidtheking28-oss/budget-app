@@ -16,12 +16,12 @@
 }
 
 .primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: var(--accent);
   color: var(--accent-ink);
 }
 
 .primary:hover:not(:disabled) {
-  box-shadow: 0 6px 18px -6px rgba(var(--accent-rgb), 0.5);
+  background: var(--accent-2);
 }
 
 .primary:active:not(:disabled) {
