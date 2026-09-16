@@ -16,6 +16,17 @@ const STEPS = ['הכנסות', 'הוצאות קבועות', 'הוצאות משת
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
+// Picks black or white for the in-bar value label based on the bar's own fill
+// color, so it stays readable whether that color is the light theme's deep
+// green/red or the dark theme's much lighter pastel equivalents.
+function readableOn(hex) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+  if (!m) return '#000';
+  const [r, g, b] = m.slice(1).map(h => parseInt(h, 16));
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? '#000' : '#fff';
+}
+
 const barValueLabels = {
   id: 'barValueLabels',
   afterDatasetsDraw(chart) {
@@ -23,12 +34,13 @@ const barValueLabels = {
     chart.data.datasets.forEach((ds, di) => {
       const meta = chart.getDatasetMeta(di);
       if (meta.hidden) return;
+      const textColor = readableOn(ds.backgroundColor);
       meta.data.forEach((bar, i) => {
         const value = ds.data[i];
         if (!value) return;
         ctx.save();
         ctx.font = "700 13px " + (chart.options.font?.family || 'inherit');
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = textColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(fmt(value), bar.x, (bar.y + bar.base) / 2);
@@ -130,29 +142,22 @@ export default function BudgetWizard({ data, save, year, month }) {
   const actualSavings = fixedActual[SAVINGS_CATEGORY] || 0;
 
   const CT = chartTheme();
-  const plannedChartData = {
-    labels: ['החודש'],
+  const summaryChartData = {
+    labels: ['תכנון', 'בפועל'],
     datasets: [
-      { label: 'הכנסות', data: [totalIncome], backgroundColor: CT.green, borderRadius: 6, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixed + totalVar], backgroundColor: CT.red, borderRadius: 6, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.redHover }
-    ]
-  };
-  const actualChartData = {
-    labels: ['החודש'],
-    datasets: [
-      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: [totalIncome, totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.7, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixed + totalVar, totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.7, hoverBackgroundColor: CT.redHover }
     ]
   };
   const summaryChartOptions = {
     maintainAspectRatio: false,
     animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
     scales: {
-      x: { display: false, grid: { display: false } },
+      x: { ticks: { color: CT.text2, font: { family: CT.font, weight: '600' } }, grid: { display: false } },
       y: { display: false, grid: { display: false } }
     },
     plugins: {
-      legend: { labels: { color: CT.text2, font: { family: CT.font } } },
+      legend: { position: 'bottom', labels: { color: CT.text2, font: { family: CT.font }, boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'circle' } },
       tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
     }
   };
@@ -345,6 +350,48 @@ export default function BudgetWizard({ data, save, year, month }) {
         {step === 3 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>סיכום התקציב</div>
+
+            <div className={styles.summaryChart}>
+              <Bar data={summaryChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
+            </div>
+
+            <div className={styles.flowCard}>
+              <div className={styles.reviewItemHead}><span>תזרים</span><span>תכנון</span><span>בפועל</span></div>
+              <div className={styles.flowRow}>
+                <span className={styles.reviewName}>תזרים חודשי</span>
+                <span className={styles.reviewAmt + ' ' + ((left + plannedSavings) < 0 ? styles.negative : styles.positive)}>{fmt(left + plannedSavings)}</span>
+                <span className={styles.reviewAmt + ' ' + ((actualFlow + actualSavings) < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow + actualSavings)}</span>
+              </div>
+              {(plannedSavings > 0 || actualSavings > 0) && (
+                <div className={styles.flowRow}>
+                  <span className={styles.reviewName}>תזרים עם הפקדה לחיסכון</span>
+                  <span className={styles.reviewAmt + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</span>
+                  <span className={styles.reviewAmt + ' ' + (actualFlow < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow)}</span>
+                </div>
+              )}
+            </div>
+
+            {breakdown.length > 0 && (
+              <div className={styles.breakdownBlock}>
+                <div className={styles.groupTitle}>לאן הולך הכסף</div>
+                <div className={styles.stackBar}>
+                  {breakdown.map(b => (
+                    <div key={b.label} className={styles.stackSeg} style={{ width: (b.value / breakdownTotal * 100) + '%', background: b.color }} title={b.label} />
+                  ))}
+                </div>
+                <div className={styles.legend}>
+                  {breakdown.map(b => (
+                    <div className={styles.legendRow} key={b.label}>
+                      <span className={styles.legendDot} style={{ background: b.color }} />
+                      <span className={styles.legendLabel}>{b.label}</span>
+                      <span className={styles.legendValue}>{fmt(b.value)}</span>
+                      <span className={styles.pctChip}>{Math.round(b.value / breakdownTotal * 100)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className={styles.reviewCols}>
               <div className={styles.reviewCol}>
                 <div className={styles.reviewColTitle}>הכנסות</div>
@@ -368,19 +415,6 @@ export default function BudgetWizard({ data, save, year, month }) {
                     </>
                   );
                 })()}
-                <div className={styles.groupTitle}>תזרים</div>
-                <div className={styles.reviewItem}>
-                  <span className={styles.reviewName}>תזרים חודשי</span>
-                  <span className={styles.reviewAmt + ' ' + ((left + plannedSavings) < 0 ? styles.negative : styles.positive)}>{fmt(left + plannedSavings)}</span>
-                  <span className={styles.reviewAmt + ' ' + ((actualFlow + actualSavings) < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow + actualSavings)}</span>
-                </div>
-                {(plannedSavings > 0 || actualSavings > 0) && (
-                  <div className={styles.reviewItem}>
-                    <span className={styles.reviewName}>תזרים עם הפקדה לחיסכון</span>
-                    <span className={styles.reviewAmt + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</span>
-                    <span className={styles.reviewAmt + ' ' + (actualFlow < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow)}</span>
-                  </div>
-                )}
               </div>
               <div className={styles.reviewCol}>
                 <div className={styles.reviewColTitle}>הוצאות</div>
@@ -409,70 +443,6 @@ export default function BudgetWizard({ data, save, year, month }) {
                     </>
                   );
                 })()}
-                <div className={styles.groupTitle}>תזרים</div>
-                <div className={styles.reviewItem}>
-                  <span className={styles.reviewName}>תזרים חודשי</span>
-                  <span className={styles.reviewAmt + ' ' + ((left + plannedSavings) < 0 ? styles.negative : styles.positive)}>{fmt(left + plannedSavings)}</span>
-                  <span className={styles.reviewAmt + ' ' + ((actualFlow + actualSavings) < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow + actualSavings)}</span>
-                </div>
-                {(plannedSavings > 0 || actualSavings > 0) && (
-                  <div className={styles.reviewItem}>
-                    <span className={styles.reviewName}>תזרים עם הפקדה לחיסכון</span>
-                    <span className={styles.reviewAmt + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</span>
-                    <span className={styles.reviewAmt + ' ' + (actualFlow < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow)}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {breakdown.length > 0 && (
-              <>
-                <div className={styles.stackBar}>
-                  {breakdown.map(b => (
-                    <div key={b.label} className={styles.stackSeg} style={{ width: (b.value / breakdownTotal * 100) + '%', background: b.color }} title={b.label} />
-                  ))}
-                </div>
-                <div className={styles.legend}>
-                  {breakdown.map(b => (
-                    <div className={styles.legendRow} key={b.label}>
-                      <span className={styles.legendDot} style={{ background: b.color }} />
-                      <span className={styles.legendLabel}>{b.label}</span>
-                      <span className={styles.legendValue}>{fmt(b.value)}</span>
-                      <span className={styles.pctChip}>{Math.round(b.value / breakdownTotal * 100)}%</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            <div className={styles.summaryChartRow}>
-              <div className={styles.summaryChartCol}>
-                <div className={styles.totalsStripLabel}>תכנון</div>
-                <div className={styles.summaryChart}>
-                  <Bar data={plannedChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
-                </div>
-                <div className={styles.summaryFlowLine}>
-                  <span>תזרים חודשי</span><span className={(left + plannedSavings) < 0 ? styles.negative : styles.positive}>{fmt(left + plannedSavings)}</span>
-                </div>
-                {plannedSavings > 0 && (
-                  <div className={styles.summaryFlowLine}>
-                    <span>תזרים עם הפקדה לחיסכון</span><span className={left < 0 ? styles.negative : styles.positive}>{fmt(left)}</span>
-                  </div>
-                )}
-              </div>
-              <div className={styles.summaryChartCol}>
-                <div className={styles.totalsStripLabel}>בפועל</div>
-                <div className={styles.summaryChart}>
-                  <Bar data={actualChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
-                </div>
-                <div className={styles.summaryFlowLine}>
-                  <span>תזרים חודשי</span><span className={(actualFlow + actualSavings) < 0 ? styles.negative : styles.positive}>{fmt(actualFlow + actualSavings)}</span>
-                </div>
-                {actualSavings > 0 && (
-                  <div className={styles.summaryFlowLine}>
-                    <span>תזרים עם הפקדה לחיסכון</span><span className={actualFlow < 0 ? styles.negative : styles.positive}>{fmt(actualFlow)}</span>
-                  </div>
-                )}
               </div>
             </div>
 

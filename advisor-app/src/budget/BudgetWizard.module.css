@@ -411,62 +411,49 @@
 .reviewAmt { font-variant-numeric: tabular-nums; font-weight: 600; text-align: center; direction: ltr; unicode-bidi: isolate; }
 .reviewEmpty { font-size: var(--text-xs); color: var(--text3); padding: var(--space-3) 0; }
 
-.totalsStripLabel {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--text3);
-  margin-top: var(--space-1);
-}
-.totalsStripLabel:first-child { margin-top: 0; }
-
-.totalsStrip {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-2);
-}
-
-.summaryChartRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-
-.summaryChartCol { min-width: 0; }
-.summaryChartCol .totalsStripLabel { text-align: center; margin-top: 0; margin-bottom: var(--space-2); }
-
-.summaryFlowLine {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  padding: var(--space-1) var(--space-1) 0;
-}
-
 .summaryChart {
-  height: 200px;
-  max-width: 180px;
+  height: 180px;
+  max-width: 360px;
   min-width: 0;
   margin: 0 auto;
 }
 
-.totalCell {
+/* The headline number on this screen (see DESIGN.md "one display-sized
+   element at a time") — a tinted card, not another plain table row, so the
+   eye lands here first. */
+.flowCard {
+  background: var(--accent-dim);
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3);
-  font-size: var(--text-sm);
-  font-weight: 700;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
-.totalIncome { background: rgba(var(--green-rgb), 0.1); color: var(--green); }
-.totalExpense { background: rgba(var(--red-rgb), 0.1); color: var(--red); }
-.totalGoal { background: rgba(var(--accent-rgb), 0.1); color: var(--accent); }
-.totalFlowOk { background: rgba(var(--green-rgb), 0.1); color: var(--green); }
-.totalFlowBad { background: rgba(var(--red-rgb), 0.1); color: var(--red); }
-.totalCell span:last-child { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.flowCard .reviewItemHead span:first-child {
+  color: var(--text2);
+  font-weight: 700;
+  text-transform: none;
+}
+
+.flowRow {
+  display: grid;
+  grid-template-columns: 1fr 62px 62px;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  padding: var(--space-1) 0;
+}
+
+.flowRow .reviewName { color: var(--text); font-weight: 700; }
+.flowRow .reviewAmt { font-size: var(--text-md); font-weight: 800; }
+
+.breakdownBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
 
 .summaryNote {
   font-size: var(--text-xs);
@@ -484,6 +471,6 @@
 
 @media (max-width: 720px) {
   .tally { grid-template-columns: 1fr; }
-  .reviewCols, .totalsStrip { grid-template-columns: 1fr; }
+  .reviewCols { grid-template-columns: 1fr; }
   .amountInput { flex: 0 0 96px; }
 }
