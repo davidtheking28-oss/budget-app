@@ -442,15 +442,15 @@ export default function BudgetWizard({ data, save, year, month }) {
             <div className={styles.flowCard}>
               <div className={styles.reviewItemHead}><span>תזרים</span><span>תכנון</span><span>בפועל</span></div>
               <div className={styles.flowRow}>
-                <span className={styles.reviewName}>תזרים חודשי</span>
-                <span className={styles.reviewAmt + ' ' + ((left + plannedSavings) < 0 ? styles.negative : styles.positive)}>{fmt(left + plannedSavings)}</span>
-                <span className={styles.reviewAmt + ' ' + ((actualFlow + actualSavings) < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow + actualSavings)}</span>
+                <span className={styles.reviewName}>תזרים חודשי בחשבון</span>
+                <span className={styles.reviewAmt + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</span>
+                <span className={styles.reviewAmt + ' ' + (actualFlow < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow)}</span>
               </div>
               {(plannedSavings > 0 || actualSavings > 0) && (
                 <div className={styles.flowRow}>
-                  <span className={styles.reviewName}>תזרים עם הפקדה לחיסכון</span>
-                  <span className={styles.reviewAmt + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</span>
-                  <span className={styles.reviewAmt + ' ' + (actualFlow < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow)}</span>
+                  <span className={styles.reviewName}>תזרים חודשי ללא הפרשות לחיסכון</span>
+                  <span className={styles.reviewAmt + ' ' + ((left + plannedSavings) < 0 ? styles.negative : styles.positive)}>{fmt(left + plannedSavings)}</span>
+                  <span className={styles.reviewAmt + ' ' + ((actualFlow + actualSavings) < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow + actualSavings)}</span>
                 </div>
               )}
             </div>
