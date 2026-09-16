@@ -144,6 +144,18 @@ export default function BudgetWizard({ data, save, year, month }) {
       { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 90, barPercentage: 0.95, categoryPercentage: 0.95, hoverBackgroundColor: CT.redHover }
     ]
   };
+  const summaryChartOptions = {
+    maintainAspectRatio: false,
+    animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
+    scales: {
+      x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
+      y: { display: false, grid: { display: false } }
+    },
+    plugins: {
+      legend: { labels: { color: CT.text2, font: { family: CT.font } } },
+      tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+    }
+  };
 
   function addRow(setter, name = '') { setter(prev => [...prev, { name, amount: '' }]); }
   function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...patch } : r)); }
