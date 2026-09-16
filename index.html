@@ -71,7 +71,7 @@
     body.dark .skip-link{color:#06251d;}
     @media(prefers-reduced-motion:reduce){*,::before,::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important;}}
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-    html{min-height:100%;overflow-x:hidden;scrollbar-width:none;}
+    html{min-height:100%;overflow-x:hidden;scrollbar-width:none;overscroll-behavior-y:none;background:#100f0d;}
     html::-webkit-scrollbar{display:none;}
     body{scrollbar-width:none;}
     body::-webkit-scrollbar{display:none;}
@@ -1494,7 +1494,7 @@
   </style>
 </head>
 <body class="dark">
-<script>(function(){try{var m=localStorage.getItem('budget_theme');if(!m){var o=localStorage.getItem('budget_dark');m=o==='1'?'dark':(o==='0'?'light':'system');}var s=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;var dark=m==='system'?!!s:(m==='dark');document.body.classList.toggle('dark', dark);var tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.setAttribute('content',dark?'#100f0d':'#eef3f1');}catch(e){}})();</script>
+<script>(function(){try{var m=localStorage.getItem('budget_theme');if(!m){var o=localStorage.getItem('budget_dark');m=o==='1'?'dark':(o==='0'?'light':'system');}var s=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;var dark=m==='system'?!!s:(m==='dark');document.body.classList.toggle('dark', dark);document.documentElement.style.background=dark?'#100f0d':'#eef3f1';var tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.setAttribute('content',dark?'#100f0d':'#eef3f1');}catch(e){}})();</script>
 <script>
 // Crash reporting. Installed before anything else so a failure during boot —
 // the one you can least afford to miss — is still captured. Errors queue here
@@ -8431,6 +8431,7 @@ setTimeout(autoCarryRecurring,500);
   function applyMode(mode){
     var dark = mode==='system' ? isSysDark() : (mode==='dark');
     document.body.classList.toggle('dark', !!dark);
+    document.documentElement.style.background=dark?'#100f0d':'#eef3f1';
     try{ localStorage.setItem('budget_dark', dark?'1':'0'); }catch(e){}
     var tc=document.querySelector('meta[name="theme-color"]'); if(tc) tc.setAttribute('content', dark?'#100f0d':'#eef3f1');
     var db=document.getElementById('darkBtn'); if(db&&typeof SUN!=='undefined') db.innerHTML=dark?SUN:MOON;

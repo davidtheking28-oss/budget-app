@@ -110,7 +110,11 @@ export default function BudgetWizard({ data, save, year, month }) {
   });
   const [fixed, setFixed] = useState(() => {
     const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
-    return FIXED_CATS.map(name => ({ name, amount: existing[name] ?? '' }));
+    // A fixed category with no saved plan yet but with an actual recurring charge
+    // this month (e.g. the client already has a standing order to savings) starts
+    // pre-filled from that actual, instead of forcing the advisor to retype it —
+    // otherwise the category is missing from the plan and the cash-flow total is wrong.
+    return FIXED_CATS.map(name => ({ name, amount: existing[name] ?? (fixedActual[name] || '') }));
   });
   const [variable, setVariable] = useState(() => {
     const existing = data?.budgets || {};
