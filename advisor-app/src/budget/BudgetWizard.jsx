@@ -437,7 +437,7 @@ export default function BudgetWizard({ data, save, year, month }) {
                   animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
                   scales: {
                     x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
-                    y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+                    y: { display: false, grid: { display: false } }
                   },
                   plugins: {
                     legend: { labels: { color: CT.text2, font: { family: CT.font } } },
