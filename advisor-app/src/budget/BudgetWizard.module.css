@@ -396,6 +396,20 @@
   padding: var(--space-2) 0;
 }
 
+.subtotalRow {
+  display: grid;
+  grid-template-columns: 1fr 62px 62px;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-1);
+}
+
+.subtotalRow .reviewName { color: var(--text); font-weight: 700; }
+.subtotalRow .reviewAmt { font-weight: 800; }
+
 .reviewItemHead {
   display: grid;
   grid-template-columns: 1fr 62px 62px;

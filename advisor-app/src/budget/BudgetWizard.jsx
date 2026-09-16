@@ -351,27 +351,6 @@ export default function BudgetWizard({ data, save, year, month }) {
           <div className={styles.card}>
             <div className={styles.cardTitle}>סיכום התקציב</div>
 
-            {breakdown.length > 0 && (
-              <div className={styles.breakdownBlock}>
-                <div className={styles.groupTitle}>לאן הולך הכסף</div>
-                <div className={styles.stackBar}>
-                  {breakdown.map(b => (
-                    <div key={b.label} className={styles.stackSeg} style={{ width: (b.value / breakdownTotal * 100) + '%', background: b.color }} title={b.label} />
-                  ))}
-                </div>
-                <div className={styles.legend}>
-                  {breakdown.map(b => (
-                    <div className={styles.legendRow} key={b.label}>
-                      <span className={styles.legendDot} style={{ background: b.color }} />
-                      <span className={styles.legendLabel}>{b.label}</span>
-                      <span className={styles.legendValue}>{fmt(b.value)}</span>
-                      <span className={styles.pctChip}>{Math.round(b.value / breakdownTotal * 100)}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             <div className={styles.reviewCols}>
               <div className={styles.reviewCol}>
                 <div className={styles.reviewColTitle}>הכנסות</div>
@@ -413,18 +392,48 @@ export default function BudgetWizard({ data, save, year, month }) {
                       </div>
                     );
                   };
+                  const subtotalRow = (label, plan, actual) => (
+                    <div className={styles.subtotalRow} key={label}>
+                      <span className={styles.reviewName}>{label}</span>
+                      <span className={styles.reviewAmt}>{fmt(plan)}</span>
+                      <span className={styles.reviewAmt + ' ' + (actual > plan ? styles.negative : styles.positive)}>{fmt(actual)}</span>
+                    </div>
+                  );
                   return (
                     <>
                       <div className={styles.reviewItemHead}><span /><span>תכנון</span><span>בפועל</span></div>
                       {cleanFixed.length > 0 && <div className={styles.groupTitle}>הוצאות קבועות</div>}
                       {cleanFixed.map((r, i) => expenseRow(r, 'f' + i, name => fixedActual[name]))}
+                      {cleanFixed.length > 0 && subtotalRow('סה"כ הוצאות קבועות', totalFixed, totalFixedActual)}
                       {cleanVar.length > 0 && <div className={styles.groupTitle}>הוצאות משתנות</div>}
                       {cleanVar.map((r, i) => expenseRow(r, 'v' + i, name => variableActual[name]))}
+                      {cleanVar.length > 0 && subtotalRow('סה"כ הוצאות משתנות', totalVar, totalVarActual)}
                     </>
                   );
                 })()}
               </div>
             </div>
+
+            {breakdown.length > 0 && (
+              <div className={styles.breakdownBlock}>
+                <div className={styles.groupTitle}>לאן הולך הכסף</div>
+                <div className={styles.stackBar}>
+                  {breakdown.map(b => (
+                    <div key={b.label} className={styles.stackSeg} style={{ width: (b.value / breakdownTotal * 100) + '%', background: b.color }} title={b.label} />
+                  ))}
+                </div>
+                <div className={styles.legend}>
+                  {breakdown.map(b => (
+                    <div className={styles.legendRow} key={b.label}>
+                      <span className={styles.legendDot} style={{ background: b.color }} />
+                      <span className={styles.legendLabel}>{b.label}</span>
+                      <span className={styles.legendValue}>{fmt(b.value)}</span>
+                      <span className={styles.pctChip}>{Math.round(b.value / breakdownTotal * 100)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className={styles.summaryChart}>
               <Bar data={summaryChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
