@@ -130,7 +130,14 @@ export default function BudgetWizard({ data, save, year, month }) {
   const actualSavings = fixedActual[SAVINGS_CATEGORY] || 0;
 
   const CT = chartTheme();
-  const summaryChartData = {
+  const plannedChartData = {
+    labels: ['החודש'],
+    datasets: [
+      { label: 'הכנסות', data: [totalIncome], backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 90, barPercentage: 0.95, categoryPercentage: 0.95, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixed + totalVar], backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 90, barPercentage: 0.95, categoryPercentage: 0.95, hoverBackgroundColor: CT.redHover }
+    ]
+  };
+  const actualChartData = {
     labels: ['החודש'],
     datasets: [
       { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 90, barPercentage: 0.95, categoryPercentage: 0.95, hoverBackgroundColor: CT.greenHover },
@@ -424,23 +431,19 @@ export default function BudgetWizard({ data, save, year, month }) {
               </>
             )}
 
-            <div className={styles.summaryChart}>
-              <Bar
-                data={summaryChartData}
-                plugins={[barValueLabels]}
-                options={{
-                  maintainAspectRatio: false,
-                  animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
-                  scales: {
-                    x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
-                    y: { display: false, grid: { display: false } }
-                  },
-                  plugins: {
-                    legend: { labels: { color: CT.text2, font: { family: CT.font } } },
-                    tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
-                  }
-                }}
-              />
+            <div className={styles.summaryChartRow}>
+              <div className={styles.summaryChartCol}>
+                <div className={styles.totalsStripLabel}>תכנון</div>
+                <div className={styles.summaryChart}>
+                  <Bar data={plannedChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
+                </div>
+              </div>
+              <div className={styles.summaryChartCol}>
+                <div className={styles.totalsStripLabel}>בפועל</div>
+                <div className={styles.summaryChart}>
+                  <Bar data={actualChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
+                </div>
+              </div>
             </div>
 
             <div className={styles.summaryNote}>השמירה תעדכן את התקציב, ההוצאות הקבועות, מקורות ההכנסה והיעדים באפליקציה של הלקוח.</div>
