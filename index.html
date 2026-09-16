@@ -7798,28 +7798,40 @@ function initSheetSwipe(){
     return limit;
   }
   document.querySelectorAll('.sheet').forEach(sheet=>{
-    let startY=0, startScrollTop=0;
+    let startY=0, startScrollTop=0, lastY=0, lastT=0, velocity=0;
     sheet.addEventListener('touchstart', e=>{
       startY=e.touches[0].clientY;
+      lastY=startY; lastT=e.timeStamp; velocity=0;
       const scrollEl = getScrollParent(e.target, sheet);
       startScrollTop = scrollEl ? scrollEl.scrollTop : 0;
     },{passive:true});
     sheet.addEventListener('touchmove', e=>{
-      const dy = e.touches[0].clientY - startY;
+      const y=e.touches[0].clientY, dy = y - startY;
       if(dy > 0 && startScrollTop <= 0){
         sheet.style.transform='translateY('+dy+'px)';
         sheet.style.transition='none';
+        // px/ms over the last segment, so a quick short flick still reads
+        // as fast even though total travel distance stayed small.
+        const dt=e.timeStamp-lastT;
+        if(dt>0) velocity=(y-lastY)/dt;
+        lastY=y; lastT=e.timeStamp;
       }
     },{passive:true});
     sheet.addEventListener('touchend', e=>{
       const dy = e.changedTouches[0].clientY - startY;
-      if(dy > 80 && startScrollTop <= 0){
+      // A slow deliberate drag past the distance threshold dismisses, and so
+      // does a fast flick that never got that far — matching how a real
+      // object thrown downward would leave the hand.
+      if(startScrollTop <= 0 && (dy > 80 || (dy > 20 && velocity > 0.5))){
         const overlay = sheet.closest('.sheet-overlay');
         if(overlay) closeSheet(overlay.id);
       } else {
-        sheet.style.transition='transform 0.28s cubic-bezier(0.22,1,0.36,1)';
+        // Snap back faster after a fast flick that fell short, so the
+        // rebound doesn't feel disconnected from how hard it was thrown.
+        const dur=Math.max(0.15,Math.min(0.28,0.28-velocity*0.2));
+        sheet.style.transition='transform '+dur+'s cubic-bezier(0.22,1,0.36,1)';
         sheet.style.transform='';
-        setTimeout(()=>{sheet.style.transition='';},280);
+        setTimeout(()=>{sheet.style.transition='';},dur*1000);
       }
     },{passive:true});
   });

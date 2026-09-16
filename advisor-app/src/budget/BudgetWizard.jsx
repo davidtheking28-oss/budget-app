@@ -133,15 +133,15 @@ export default function BudgetWizard({ data, save, year, month }) {
   const plannedChartData = {
     labels: ['החודש'],
     datasets: [
-      { label: 'הכנסות', data: [totalIncome], backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 90, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixed + totalVar], backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 90, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: [totalIncome], backgroundColor: CT.green, borderRadius: 6, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixed + totalVar], backgroundColor: CT.red, borderRadius: 6, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.redHover }
     ]
   };
   const actualChartData = {
     labels: ['החודש'],
     datasets: [
-      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 90, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 90, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.redHover }
     ]
   };
   const summaryChartOptions = {
