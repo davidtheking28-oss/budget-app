@@ -27,8 +27,8 @@ const barValueLabels = {
         const value = ds.data[i];
         if (!value) return;
         ctx.save();
-        ctx.font = "700 12px " + (chart.options.font?.family || 'inherit');
-        ctx.fillStyle = '#fff';
+        ctx.font = "700 13px " + (chart.options.font?.family || 'inherit');
+        ctx.fillStyle = '#000';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(fmt(value), bar.x, (bar.y + bar.base) / 2);
@@ -133,8 +133,8 @@ export default function BudgetWizard({ data, save, year, month }) {
   const summaryChartData = {
     labels: ['החודש'],
     datasets: [
-      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 5, maxBarThickness: 34, barPercentage: 0.55, categoryPercentage: 0.6, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 5, maxBarThickness: 34, barPercentage: 0.55, categoryPercentage: 0.6, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 5, maxBarThickness: 60, barPercentage: 0.85, categoryPercentage: 0.9, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 5, maxBarThickness: 60, barPercentage: 0.85, categoryPercentage: 0.9, hoverBackgroundColor: CT.redHover }
     ]
   };
 

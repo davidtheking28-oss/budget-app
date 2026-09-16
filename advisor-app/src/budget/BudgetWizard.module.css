@@ -426,8 +426,8 @@
 }
 
 .summaryChart {
-  height: 140px;
-  max-width: 280px;
+  height: 160px;
+  max-width: 320px;
   min-width: 0;
   margin: 0 auto;
 }
