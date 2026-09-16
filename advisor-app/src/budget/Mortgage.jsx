@@ -199,7 +199,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                 <tr>
                   <th>אחוז</th><th>מסלול</th><th>סכום</th><th>תקופה</th><th>עוגן</th>
                   <th>תוספת</th><th>ריבית</th><th>תדירות עדכון</th><th>תאריך עדכון</th>
-                  <th>החזר חודשי</th><th></th>
+                  <th>החזר חודשי</th><th>פעולות</th>
                 </tr>
               </thead>
               <tbody>
@@ -219,7 +219,17 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                       <td>{t.rateFrequency ? t.rateFrequency + ' ח׳' : '—'}</td>
                       <td>{t.rateUpdateDate || '—'}</td>
                       <td>{fmt(trackMonthlyPayment(t))}</td>
-                      <td><DeleteButton onClick={e => { e.stopPropagation(); removeTrack(t.id); }} title="מחק מסלול" /></td>
+                      <td>
+                        <div className={styles.trackActions}>
+                          <button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEditTrack(t); }} aria-label={`ערוך מסלול ${t.label}`} title="ערוך מסלול">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M12 20h9" />
+                              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                            </svg>
+                          </button>
+                          <DeleteButton onClick={e => { e.stopPropagation(); removeTrack(t.id); }} title={`מחק מסלול ${t.label}`} />
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
