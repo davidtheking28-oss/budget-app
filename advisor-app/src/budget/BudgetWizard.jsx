@@ -451,12 +451,28 @@ export default function BudgetWizard({ data, save, year, month }) {
                 <div className={styles.summaryChart}>
                   <Bar data={plannedChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
                 </div>
+                <div className={styles.summaryFlowLine}>
+                  <span>תזרים חודשי</span><span className={(left + plannedSavings) < 0 ? styles.negative : styles.positive}>{fmt(left + plannedSavings)}</span>
+                </div>
+                {plannedSavings > 0 && (
+                  <div className={styles.summaryFlowLine}>
+                    <span>תזרים עם הפקדה לחיסכון</span><span className={left < 0 ? styles.negative : styles.positive}>{fmt(left)}</span>
+                  </div>
+                )}
               </div>
               <div className={styles.summaryChartCol}>
                 <div className={styles.totalsStripLabel}>בפועל</div>
                 <div className={styles.summaryChart}>
                   <Bar data={actualChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
                 </div>
+                <div className={styles.summaryFlowLine}>
+                  <span>תזרים חודשי</span><span className={(actualFlow + actualSavings) < 0 ? styles.negative : styles.positive}>{fmt(actualFlow + actualSavings)}</span>
+                </div>
+                {actualSavings > 0 && (
+                  <div className={styles.summaryFlowLine}>
+                    <span>תזרים עם הפקדה לחיסכון</span><span className={actualFlow < 0 ? styles.negative : styles.positive}>{fmt(actualFlow)}</span>
+                  </div>
+                )}
               </div>
             </div>
 

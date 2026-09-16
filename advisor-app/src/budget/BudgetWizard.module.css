@@ -434,6 +434,15 @@
 .summaryChartCol { min-width: 0; }
 .summaryChartCol .totalsStripLabel { text-align: center; margin-top: 0; margin-bottom: var(--space-2); }
 
+.summaryFlowLine {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-1) var(--space-1) 0;
+}
+
 .summaryChart {
   height: 200px;
   max-width: 380px;
