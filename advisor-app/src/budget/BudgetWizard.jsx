@@ -39,7 +39,7 @@ const barValueLabels = {
         const value = ds.data[i];
         if (!value) return;
         ctx.save();
-        ctx.font = "700 13px " + (chart.options.font?.family || 'inherit');
+        ctx.font = "700 14px " + (chart.options.font?.family || 'inherit');
         ctx.fillStyle = textColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -145,8 +145,8 @@ export default function BudgetWizard({ data, save, year, month }) {
   const summaryChartData = {
     labels: ['תכנון', 'בפועל'],
     datasets: [
-      { label: 'הכנסות', data: [totalIncome, totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.7, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixed + totalVar, totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.7, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: [totalIncome, totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, barPercentage: 0.95, categoryPercentage: 0.92, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixed + totalVar, totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, barPercentage: 0.95, categoryPercentage: 0.92, hoverBackgroundColor: CT.redHover }
     ]
   };
   const summaryChartOptions = {

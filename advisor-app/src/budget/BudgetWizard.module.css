@@ -412,8 +412,8 @@
 .reviewEmpty { font-size: var(--text-xs); color: var(--text3); padding: var(--space-3) 0; }
 
 .summaryChart {
-  height: 180px;
-  max-width: 360px;
+  height: 220px;
+  max-width: 460px;
   min-width: 0;
   margin: 0 auto;
 }
