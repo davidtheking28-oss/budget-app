@@ -16,6 +16,28 @@ const STEPS = ['הכנסות', 'הוצאות קבועות', 'הוצאות משת
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
+const barValueLabels = {
+  id: 'barValueLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    chart.data.datasets.forEach((ds, di) => {
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
+      meta.data.forEach((bar, i) => {
+        const value = ds.data[i];
+        if (!value) return;
+        ctx.save();
+        ctx.font = "700 12px " + (chart.options.font?.family || 'inherit');
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(fmt(value), bar.x, (bar.y + bar.base) / 2);
+        ctx.restore();
+      });
+    });
+  }
+};
+
 function sumAmounts(list) {
   return list.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
 }
@@ -409,6 +431,7 @@ export default function BudgetWizard({ data, save, year, month }) {
             <div className={styles.summaryChart}>
               <Bar
                 data={summaryChartData}
+                plugins={[barValueLabels]}
                 options={{
                   maintainAspectRatio: false,
                   animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
