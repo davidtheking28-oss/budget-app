@@ -435,7 +435,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             </div>
             <div className={styles.resultRow}>
               <span className={styles.resultLabel}>השלמה לתקרת המימון ({ltvCap}%)</span>
-              <span className={styles.resultValue}>{gapToCap > 0 ? fmt(gapToCap) : `כבר מעל ${ltvCap}%`}</span>
+              <span className={styles.resultValue + ' ' + (gapToCap > 0 ? styles.resultGood : styles.resultBad)}>{gapToCap > 0 ? fmt(gapToCap) : `כבר מעל ${ltvCap}%`}</span>
             </div>
             <div className={styles.resultRow} title="הוראה 329, סעיף 7: החלק בריבית משתנה (פריים + מסלולים משתנים) לא יעלה על 66.66% מסך ההלוואה">
               <span className={styles.resultLabel}>חלק בריבית משתנה (תקרה: {VARIABLE_SHARE_CAP}%)</span>
