@@ -195,7 +195,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
 
   return (
     <div>
-      <div className={styles.cardTitle}>כשירות רכישה כללית</div>
+      <h2 className={styles.cardTitle}>כשירות רכישה כללית</h2>
       <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
         הערכה כללית לפי הכנסה, הוצאות ונכסים נזילים בתקציב — ללא תלות בתרחיש משכנתא ספציפי. לבניית משכנתא בפועל עם מסלולים וריביות, המשיכו לסימולטור למטה.
       </div>
@@ -225,12 +225,12 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         </div>
       </div>
 
-      <div className={styles.cardTitle} style={{ marginTop: 'var(--space-6)' }}>סימולטור משכנתא — מסלולים וריביות</div>
+      <h2 className={styles.cardTitle} style={{ marginTop: 'var(--space-6)' }}>סימולטור משכנתא — מסלולים וריביות</h2>
       <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
         חישוב מדויק לפי המסלולים שתזינו כאן (סכום, ריבית, עוגן) — עצמאי מהכרטיסים הכלליים למעלה, כולל בדיקות מול הוראה 329 של בנק ישראל.
       </div>
       <div className={styles.card}>
-        <div className={styles.cardTitle}>תרחיש נכס</div>
+        <h3 className={styles.cardTitle}>תרחיש נכס</h3>
         <div className={styles.form}>
           <input className={styles.input} placeholder="גוף מממן" aria-label="גוף מממן" value={scenario.financier} onChange={e => setField('financier', e.target.value)} />
           <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="שווי נכס" aria-label="שווי נכס" value={scenario.propertyValue} onChange={e => setField('propertyValue', e.target.value)} />
@@ -239,10 +239,11 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           </select>
         </div>
 
-        <div className={styles.cardTitle} style={{ fontSize: 'var(--text-md)' }}>מסלולי משכנתא</div>
+        <h3 className={styles.cardTitle} style={{ fontSize: 'var(--text-md)' }}>מסלולי משכנתא</h3>
         {!scenario.tracks?.length && <div className={styles.empty} style={{ padding: 'var(--space-3) 0' }}>אין עדיין מסלולים — הוסף מסלול ראשון</div>}
         {scenario.tracks?.length > 0 && (
           <div className={styles.tableWrap + ' ' + styles.trackTableWrap} style={{ marginBottom: 'var(--space-3)' }}>
+            <span id="trackActionsSoon" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}>פיצ׳ר זה יתווסף בהמשך — בקרוב</span>
             <table className={styles.table}>
               <thead>
                 <tr>
@@ -312,8 +313,8 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                       <td>{fmt(monthly)}</td>
                       <td>
                         <div className={styles.trackActions}>
-                          <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר קיצור תקופה יתווסף בהמשך', 'info')} aria-disabled="true" title="קיצור (בקרוב)">קיצור</button>
-                          <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר פירעון מוקדם יתווסף בהמשך', 'info')} aria-disabled="true" title="פרעון (בקרוב)">פרעון</button>
+                          <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר קיצור תקופה יתווסף בהמשך', 'info')} aria-disabled="true" aria-describedby="trackActionsSoon">קיצור</button>
+                          <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר פירעון מוקדם יתווסף בהמשך', 'info')} aria-disabled="true" aria-describedby="trackActionsSoon">פרעון</button>
                         </div>
                       </td>
                       <td>{fmt(perHundredK)}</td>
@@ -343,12 +344,12 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           <div className={styles.resultGrid}>
             <div className={styles.resultRow}>
               <span className={styles.resultLabel}>אחוז מימון (תקרה: {ltvCap}%, {PURCHASE_TYPES.find(p => p.value === purchaseType)?.label})</span>
-              <span className={styles.resultValue + ' ' + (ltv > ltvCap ? styles.resultBad : styles.resultGood)}>{ltv.toFixed(1)}%</span>
+              <span className={styles.resultValue + ' ' + (ltv > ltvCap ? styles.resultBad : styles.resultGood)}>{ltv.toFixed(1)}%{ltv > ltvCap ? ' — חורג מהתקרה' : ''}</span>
             </div>
             <div className={styles.resultRow} title="הכנסה: ממוצע 3 חודשים אחרונים (או פחות אם אין נתונים). החזר: משכנתא + הלוואות עם יתרת תקופה מעל 18 חודשים בלבד — הוראה 329, נספח א'">
               <span className={styles.resultLabel}>כושר החזר (החזר/הכנסה ממוצעת, תקרה: 40%)</span>
               <span className={styles.resultValue + ' ' + (debtToIncome > 40 ? styles.resultBad : styles.resultGood)}>
-                {debtToIncome === null ? '—' : debtToIncome.toFixed(1) + '%'}
+                {debtToIncome === null ? '—' : debtToIncome.toFixed(1) + '%' + (debtToIncome > 40 ? ' — חורג מהתקרה' : '')}
               </span>
             </div>
             <div className={styles.resultRow}>
@@ -357,7 +358,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             </div>
             <div className={styles.resultRow} title="הוראה 329, סעיף 7: החלק בריבית משתנה (פריים + מסלולים משתנים) לא יעלה על 66.66% מסך ההלוואה">
               <span className={styles.resultLabel}>חלק בריבית משתנה (תקרה: {VARIABLE_SHARE_CAP}%)</span>
-              <span className={styles.resultValue + ' ' + (variableShareOverCap ? styles.resultBad : styles.resultGood)}>{variableShare.toFixed(1)}%</span>
+              <span className={styles.resultValue + ' ' + (variableShareOverCap ? styles.resultBad : styles.resultGood)}>{variableShare.toFixed(1)}%{variableShareOverCap ? ' — חורג מהתקרה' : ''}</span>
             </div>
             {anyPurposePrincipal > 0 && (
               <div className={styles.resultRow} title="הוראה 329, סעיף 10א: הלוואה לדיור שלא לצורך רכישה מוגבלת עד 70% מימון, ובלבד שהחריגה מעל 50% לא תעלה על 200,000 ₪">
@@ -398,7 +399,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         };
         return (
           <div className={styles.card + ' ' + styles.cardStandalone}>
-            <div className={styles.cardTitle}>לוח סילוקין משולב — כלל המסלולים</div>
+            <h2 className={styles.cardTitle}>לוח סילוקין משולב — כלל המסלולים</h2>
             <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-4)' }}>לוח זה הוא סילוקין נקי של המשכנתא לפי המסלולים שהוזנו — בשונה מטבלת תזרים 18 החודשים למטה, שמשלבת גם הכנסה, הוצאות והלוואות אחרות.</div>
             <div className={styles.amortChart}>
               <Line data={chartData} options={{
@@ -433,7 +434,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
 
       {propertyValue > 0 && (
         <div className={styles.card + ' ' + styles.cardStandalone}>
-          <div className={styles.cardTitle}>תזרים חיסכון ל-18 חודש</div>
+          <h2 className={styles.cardTitle}>תזרים חיסכון ל-18 חודש</h2>
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
