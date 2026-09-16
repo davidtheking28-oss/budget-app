@@ -195,6 +195,10 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
 
   return (
     <div>
+      <div className={styles.cardTitle}>כשירות רכישה כללית</div>
+      <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
+        הערכה כללית לפי הכנסה, הוצאות ונכסים נזילים בתקציב — ללא תלות בתרחיש משכנתא ספציפי. לבניית משכנתא בפועל עם מסלולים וריביות, המשיכו לסימולטור למטה.
+      </div>
       <div className={styles.kpiRow}>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>קרן חירום נדרשת</div>
@@ -221,6 +225,10 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         </div>
       </div>
 
+      <div className={styles.cardTitle} style={{ marginTop: 'var(--space-6)' }}>סימולטור משכנתא — מסלולים וריביות</div>
+      <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
+        חישוב מדויק לפי המסלולים שתזינו כאן (סכום, ריבית, עוגן) — עצמאי מהכרטיסים הכלליים למעלה, כולל בדיקות מול הוראה 329 של בנק ישראל.
+      </div>
       <div className={styles.card}>
         <div className={styles.cardTitle}>תרחיש נכס</div>
         <div className={styles.form}>
