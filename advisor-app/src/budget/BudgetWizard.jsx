@@ -133,22 +133,22 @@ export default function BudgetWizard({ data, save, year, month }) {
   const plannedChartData = {
     labels: ['החודש'],
     datasets: [
-      { label: 'הכנסות', data: [totalIncome], backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 90, barPercentage: 0.95, categoryPercentage: 0.95, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixed + totalVar], backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 90, barPercentage: 0.95, categoryPercentage: 0.95, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: [totalIncome], backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 90, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixed + totalVar], backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 90, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.redHover }
     ]
   };
   const actualChartData = {
     labels: ['החודש'],
     datasets: [
-      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 90, barPercentage: 0.95, categoryPercentage: 0.95, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 90, barPercentage: 0.95, categoryPercentage: 0.95, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 90, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 90, barPercentage: 1, categoryPercentage: 1, hoverBackgroundColor: CT.redHover }
     ]
   };
   const summaryChartOptions = {
     maintainAspectRatio: false,
     animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
     scales: {
-      x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
+      x: { display: false, grid: { display: false } },
       y: { display: false, grid: { display: false } }
     },
     plugins: {
