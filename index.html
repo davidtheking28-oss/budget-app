@@ -154,7 +154,7 @@
     [data-month-arrow]{width:44px!important;height:44px!important;}
     @keyframes fadeInUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
     @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 0 rgba(var(--accent-rgb),0.4);}50%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 14px rgba(var(--accent-rgb),0);}}
-    main{padding:calc(76px + env(safe-area-inset-top,0px)) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 100px);max-width:600px;margin:0 auto;height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:none;-webkit-overflow-scrolling:touch;}
+    main{padding:calc(76px + env(safe-area-inset-top,0px)) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 80px);max-width:600px;margin:0 auto;height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:none;-webkit-overflow-scrolling:touch;}
     @media (min-width:860px){
       main{max-width:760px;}
     }
@@ -389,7 +389,7 @@
     .exp-name{font-weight:700;color:var(--text);}
     .exp-cat-icon{display:flex;flex-shrink:0;line-height:1;color:var(--text2);}
     .exp-cat-icon svg{width:18px;height:18px;}
-    .cashflow-page{margin:calc(var(--main-px) * -1) calc(var(--main-px) * -1) calc((var(--nav-h) + var(--safe-bottom) + 100px) * -1);padding:var(--main-px) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 100px);min-height:calc(100% + var(--main-px));}
+    .cashflow-page{margin:calc(var(--main-px) * -1) calc(var(--main-px) * -1) calc((var(--nav-h) + var(--safe-bottom) + 80px) * -1);padding:var(--main-px) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 80px);min-height:calc(100% + var(--main-px));}
     .cashflow-page .section-header{padding:22px 4px 6px}
     /* 10px/700 counter pills: --text2 on the tinted pill was 3.6:1 light / 3.1:1 dark. */
     .cashflow-page .badge{background:rgba(0,0,0,0.07);color:var(--text)}
