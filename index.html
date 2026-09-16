@@ -1478,6 +1478,19 @@
        the green-on-green look. Dark mode already passes (10:1). */
     body:not(.dark) .dash-avatar{color:var(--green);}
 
+    /* A5 · No prefers-reduced-motion guard existed anywhere, despite
+       infinite loops (.empty-icon, .splash-logo) and slide/scale motion
+       throughout. Collapse all animation/transition durations globally
+       rather than hand-picking selectors, matching the WCAG 2.3.3 baseline. */
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{
+        animation-duration:0.001ms!important;
+        animation-iteration-count:1!important;
+        transition-duration:0.001ms!important;
+        scroll-behavior:auto!important;
+      }
+    }
+
   </style>
 </head>
 <body class="dark">
@@ -4472,7 +4485,7 @@ async function removeAdvisorLink(){
   if(!_advisorLink||!_sb)return;
   const btn=(typeof event!=='undefined'&&event)?event.target:null;
   if(btn)btn.disabled=true;
-  await _sb.from('advisor_clients').delete().eq('id',_advisorLink.id);
+  await _sb.from('advisor_clients').delete().eq('id',_advisorLink.id).eq('client_id',_cloudUser.id);
   _advisorLink=null;
   renderAdvisorLinkSection();
 }
