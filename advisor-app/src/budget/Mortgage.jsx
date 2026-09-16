@@ -21,12 +21,21 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 // same split the source spreadsheet ("ליווי נדל״ני") drew by hand.
 const LIQUID_ASSET_CATS = ['עו״ש', 'חיסכון', 'תיק השקעות'];
 const EMPTY_SCENARIO = { financier: '', propertyValue: '', tracks: [] };
-const EMPTY_TRACK = { label: '', type: 'fixed', principal: '', annualRate: '', years: '' };
+const EMPTY_TRACK = { label: '', type: 'fixed_unlinked', principal: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '' };
 const TRACK_TYPES = [
-  { value: 'fixed', label: 'קבועה לא צמודה' },
+  { value: 'fixed_unlinked', label: 'קבועה לא צמודה', abbr: 'קל״צ' },
+  { value: 'fixed_linked', label: 'קבועה צמודה', abbr: 'ק״צ' },
+  { value: 'variable_unlinked', label: 'משתנה לא צמודה', abbr: 'מל״צ' },
+  { value: 'variable_linked', label: 'משתנה צמודה', abbr: 'מ״צ' },
+  { value: 'prime', label: 'פריים', abbr: 'פריים' }
+];
+const VARIABLE_TYPES = ['variable_unlinked', 'variable_linked', 'prime'];
+const ANCHORS = [
+  { value: '', label: 'ללא' },
   { value: 'prime', label: 'פריים' },
-  { value: 'cpi', label: 'צמודת מדד' },
-  { value: 'other', label: 'אחר' }
+  { value: 'avg_rate', label: 'ריבית ממוצעת' },
+  { value: 'makam', label: 'מק״מ' },
+  { value: 'bonds', label: 'אג״ח' }
 ];
 // From boi-economic-data skill, fetched 2026-09-16 (BR dataflow / CBS CPI).
 const BOI_RATE_ASOF = { date: '2026-09-16', rate: 3.25 };
@@ -107,7 +116,10 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
     const principal = parseFloat(trackForm.principal) || 0;
     const years = parseInt(trackForm.years, 10) || 0;
     if (!trackForm.label.trim() || !principal || !years) { toast('נדרשים תיאור, סכום ותקופה בשנים', 'error'); return; }
-    const patch = { label: trackForm.label.trim(), type: trackForm.type, principal, annualRate: parseFloat(trackForm.annualRate) || 0, years };
+    const patch = {
+      label: trackForm.label.trim(), type: trackForm.type, principal, annualRate: parseFloat(trackForm.annualRate) || 0, years,
+      anchor: trackForm.anchor, margin: parseFloat(trackForm.margin) || 0, rateFrequency: trackForm.rateFrequency, rateUpdateDate: trackForm.rateUpdateDate
+    };
     const base = ensureFormTracks();
     const tracks = editingTrackId != null
       ? (base.tracks || []).map(t => t.id === editingTrackId ? { ...t, ...patch } : t)
@@ -117,7 +129,10 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   }
   function startEditTrack(t) {
     setEditingTrackId(t.id);
-    setTrackForm({ label: t.label || '', type: t.type || 'fixed', principal: String(t.principal ?? ''), annualRate: String(t.annualRate ?? ''), years: String(t.years ?? '') });
+    setTrackForm({
+      label: t.label || '', type: t.type || 'fixed_unlinked', principal: String(t.principal ?? ''), annualRate: String(t.annualRate ?? ''), years: String(t.years ?? ''),
+      anchor: t.anchor || '', margin: String(t.margin ?? ''), rateFrequency: String(t.rateFrequency ?? ''), rateUpdateDate: t.rateUpdateDate || ''
+    });
   }
   function removeTrack(id) {
     const base = ensureFormTracks();
@@ -126,7 +141,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   }
 
   async function submitScenario() {
-    const tracks = (scenario.tracks || []).map(({ id, label, type, principal, annualRate, years }) => ({ id, label, type, principal, annualRate, years }));
+    const tracks = (scenario.tracks || []).map(({ id, label, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate }) => ({ id, label, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate }));
     const ok = await save({
       mortgage_scenario: {
         financier: scenario.financier.trim(),
@@ -178,19 +193,38 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         <div className={styles.cardTitle} style={{ fontSize: 'var(--text-md)' }}>מסלולי משכנתא</div>
         {!scenario.tracks?.length && <div className={styles.empty} style={{ padding: 'var(--space-3) 0' }}>אין עדיין מסלולים — הוסף מסלול ראשון</div>}
         {scenario.tracks?.length > 0 && (
-          <div className={styles.trackList}>
-            {scenario.tracks.map(t => (
-              <div key={t.id} className={styles.trackRow} role="button" tabIndex={0} onClick={() => startEditTrack(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTrack(t))}>
-                <div className={styles.trackMain}>
-                  <div className={styles.trackLabel}>{t.label}<span className={styles.trackType}>{TRACK_TYPES.find(x => x.value === t.type)?.label || t.type}</span></div>
-                  <div className={styles.trackMeta}>{fmt(t.principal)} · {t.annualRate}% · {t.years} שנים</div>
-                </div>
-                <div className={styles.trackActions}>
-                  <div className={styles.trackAmount}>{fmt(trackMonthlyPayment(t))}</div>
-                  <DeleteButton onClick={e => { e.stopPropagation(); removeTrack(t.id); }} title="מחק מסלול" />
-                </div>
-              </div>
-            ))}
+          <div className={styles.tableWrap} style={{ marginBottom: 'var(--space-4)' }}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>אחוז</th><th>מסלול</th><th>סכום</th><th>תקופה</th><th>עוגן</th>
+                  <th>תוספת</th><th>ריבית</th><th>תדירות עדכון</th><th>תאריך עדכון</th>
+                  <th>החזר חודשי</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {scenario.tracks.map(t => {
+                  const abbr = TRACK_TYPES.find(x => x.value === t.type)?.abbr || TRACK_TYPES.find(x => x.value === t.type)?.label || t.type;
+                  const anchorLabel = ANCHORS.find(a => a.value === t.anchor)?.label || '—';
+                  const pct = loanAmount > 0 ? (t.principal / loanAmount) * 100 : 0;
+                  return (
+                    <tr key={t.id} className={styles.trackRow} onClick={() => startEditTrack(t)}>
+                      <td>{pct.toFixed(0)}%</td>
+                      <td>{abbr}<div className={styles.trackMeta}>{t.label}</div></td>
+                      <td>{fmt(t.principal)}</td>
+                      <td>{t.years} שנים</td>
+                      <td>{anchorLabel}</td>
+                      <td>{t.margin ? t.margin + '%' : '—'}</td>
+                      <td>{t.annualRate}%</td>
+                      <td>{t.rateFrequency ? t.rateFrequency + ' ח׳' : '—'}</td>
+                      <td>{t.rateUpdateDate || '—'}</td>
+                      <td>{fmt(trackMonthlyPayment(t))}</td>
+                      <td><DeleteButton onClick={e => { e.stopPropagation(); removeTrack(t.id); }} title="מחק מסלול" /></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
         <div className={styles.form}>
@@ -205,16 +239,35 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
               setTrackForm({ ...trackForm, type, annualRate });
             }}
           >
-            {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.label}</option>)}
+            {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.label} ({x.abbr})</option>)}
           </select>
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום המסלול" value={trackForm.principal} onChange={e => setTrackForm({ ...trackForm, principal: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית" value={trackForm.annualRate} onChange={e => setTrackForm({ ...trackForm, annualRate: e.target.value })} />
           <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה (שנים)" aria-label="תקופה בשנים" value={trackForm.years} onChange={e => setTrackForm({ ...trackForm, years: e.target.value })} />
+          <select
+            className={styles.input}
+            aria-label="עוגן"
+            value={trackForm.anchor}
+            onChange={e => {
+              const anchor = e.target.value;
+              const annualRate = anchor === 'prime' && !trackForm.annualRate ? String(PRIME_RATE) : trackForm.annualRate;
+              setTrackForm({ ...trackForm, anchor, annualRate });
+            }}
+          >
+            {ANCHORS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+          </select>
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="תוספת (מרווח) %" aria-label="תוספת מעל העוגן" value={trackForm.margin} onChange={e => setTrackForm({ ...trackForm, margin: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית" value={trackForm.annualRate} onChange={e => setTrackForm({ ...trackForm, annualRate: e.target.value })} />
+          {VARIABLE_TYPES.includes(trackForm.type) && (
+            <>
+              <input className={styles.input} type="number" inputMode="numeric" placeholder="תדירות עדכון (חודשים)" aria-label="תדירות עדכון בחודשים" value={trackForm.rateFrequency} onChange={e => setTrackForm({ ...trackForm, rateFrequency: e.target.value })} />
+              <input className={styles.input} type="date" aria-label="תאריך עדכון קרוב" value={trackForm.rateUpdateDate} onChange={e => setTrackForm({ ...trackForm, rateUpdateDate: e.target.value })} />
+            </>
+          )}
           <Button onClick={submitTrack}>{editingTrackId != null ? 'שמור מסלול' : 'הוסף מסלול'}</Button>
           {editingTrackId != null && <Button variant="ghost" onClick={resetTrackForm}>ביטול</Button>}
         </div>
         <div className={styles.note} style={{ marginTop: 0 }}>
-          ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול "פריים".
+          ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול/עוגן "פריים".
         </div>
 
         {loanAmount > 0 && (
