@@ -351,26 +351,6 @@ export default function BudgetWizard({ data, save, year, month }) {
           <div className={styles.card}>
             <div className={styles.cardTitle}>סיכום התקציב</div>
 
-            <div className={styles.summaryChart}>
-              <Bar data={summaryChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
-            </div>
-
-            <div className={styles.flowCard}>
-              <div className={styles.reviewItemHead}><span>תזרים</span><span>תכנון</span><span>בפועל</span></div>
-              <div className={styles.flowRow}>
-                <span className={styles.reviewName}>תזרים חודשי</span>
-                <span className={styles.reviewAmt + ' ' + ((left + plannedSavings) < 0 ? styles.negative : styles.positive)}>{fmt(left + plannedSavings)}</span>
-                <span className={styles.reviewAmt + ' ' + ((actualFlow + actualSavings) < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow + actualSavings)}</span>
-              </div>
-              {(plannedSavings > 0 || actualSavings > 0) && (
-                <div className={styles.flowRow}>
-                  <span className={styles.reviewName}>תזרים עם הפקדה לחיסכון</span>
-                  <span className={styles.reviewAmt + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</span>
-                  <span className={styles.reviewAmt + ' ' + (actualFlow < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow)}</span>
-                </div>
-              )}
-            </div>
-
             {breakdown.length > 0 && (
               <div className={styles.breakdownBlock}>
                 <div className={styles.groupTitle}>לאן הולך הכסף</div>
@@ -444,6 +424,26 @@ export default function BudgetWizard({ data, save, year, month }) {
                   );
                 })()}
               </div>
+            </div>
+
+            <div className={styles.summaryChart}>
+              <Bar data={summaryChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
+            </div>
+
+            <div className={styles.flowCard}>
+              <div className={styles.reviewItemHead}><span>תזרים</span><span>תכנון</span><span>בפועל</span></div>
+              <div className={styles.flowRow}>
+                <span className={styles.reviewName}>תזרים חודשי</span>
+                <span className={styles.reviewAmt + ' ' + ((left + plannedSavings) < 0 ? styles.negative : styles.positive)}>{fmt(left + plannedSavings)}</span>
+                <span className={styles.reviewAmt + ' ' + ((actualFlow + actualSavings) < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow + actualSavings)}</span>
+              </div>
+              {(plannedSavings > 0 || actualSavings > 0) && (
+                <div className={styles.flowRow}>
+                  <span className={styles.reviewName}>תזרים עם הפקדה לחיסכון</span>
+                  <span className={styles.reviewAmt + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</span>
+                  <span className={styles.reviewAmt + ' ' + (actualFlow < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow)}</span>
+                </div>
+              )}
             </div>
 
             <div className={styles.summaryNote}>השמירה תעדכן את התקציב, ההוצאות הקבועות, מקורות ההכנסה והיעדים באפליקציה של הלקוח.</div>
