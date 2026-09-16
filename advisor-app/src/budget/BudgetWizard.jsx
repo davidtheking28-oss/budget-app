@@ -399,27 +399,20 @@ export default function BudgetWizard({ data, save, year, month }) {
               </div>
             </div>
 
-            <div className={styles.totalsStripLabel}>תכנון</div>
-            <div className={styles.totalsStrip}>
-              {plannedSavings > 0 ? (
-                <>
-                  <div className={styles.totalCell + ' ' + (left < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים חודשי בחשבון</span><span>{fmt(left)}</span></div>
-                  <div className={styles.totalCell + ' ' + ((left + plannedSavings) < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים חודשי ללא הפרשות לחיסכון</span><span>{fmt(left + plannedSavings)}</span></div>
-                </>
-              ) : (
-                <div className={styles.totalCell + ' ' + (left < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים חודשי בחשבון</span><span>{fmt(left)}</span></div>
-              )}
-            </div>
-
-            <div className={styles.totalsStripLabel}>בפועל</div>
-            <div className={styles.totalsStrip}>
-              {actualSavings > 0 ? (
-                <>
-                  <div className={styles.totalCell + ' ' + (actualFlow < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים חודשי בחשבון</span><span>{fmt(actualFlow)}</span></div>
-                  <div className={styles.totalCell + ' ' + ((actualFlow + actualSavings) < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים חודשי ללא הפרשות לחיסכון</span><span>{fmt(actualFlow + actualSavings)}</span></div>
-                </>
-              ) : (
-                <div className={styles.totalCell + ' ' + (actualFlow < 0 ? styles.totalFlowBad : styles.totalFlowOk)}><span>תזרים חודשי בחשבון</span><span>{fmt(actualFlow)}</span></div>
+            <div className={styles.reviewCol}>
+              <div className={styles.reviewColTitle}>תזרים</div>
+              <div className={styles.reviewItemHead}><span /><span>תכנון</span><span>בפועל</span></div>
+              <div className={styles.reviewItem}>
+                <span className={styles.reviewName}>תזרים חודשי בחשבון</span>
+                <span className={styles.reviewAmt + ' ' + (left < 0 ? styles.negative : styles.positive)}>{fmt(left)}</span>
+                <span className={styles.reviewAmt + ' ' + (actualFlow < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow)}</span>
+              </div>
+              {(plannedSavings > 0 || actualSavings > 0) && (
+                <div className={styles.reviewItem}>
+                  <span className={styles.reviewName}>תזרים חודשי ללא הפרשות לחיסכון</span>
+                  <span className={styles.reviewAmt + ' ' + ((left + plannedSavings) < 0 ? styles.negative : styles.positive)}>{fmt(left + plannedSavings)}</span>
+                  <span className={styles.reviewAmt + ' ' + ((actualFlow + actualSavings) < 0 ? styles.negative : styles.positive)}>{fmt(actualFlow + actualSavings)}</span>
+                </div>
               )}
             </div>
 
