@@ -3894,7 +3894,7 @@ function renderTxCategorized(byCat){
     allFixed.filter(cat=>SAVING_FIXED_CATS.includes(cat)&&_fxMonthly(cat)>0).forEach(cat=>{
       const amount=_fxMonthly(cat);
       const key='sv:'+cat;
-      const rowHtml=_expRowHtml({key,cat,amount,planned:true,editable:true,
+      const rowHtml=_expRowHtml({key,cat,amount,editable:true,
         onEdit:'_expEditManual(\''+attrArg(cat)+'\')',
         onDelete:'_expDeleteManual(\''+attrArg(cat)+'\')',
         body:_expTxListHtml(cat,byCat)});
