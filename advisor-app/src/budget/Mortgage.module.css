@@ -185,9 +185,34 @@
   .kpi + .kpi::before { inset-inline-start: var(--space-4); inset-inline-end: var(--space-4); top: 0; bottom: auto; width: auto; height: 1px; }
 }
 
-.trackRow { cursor: pointer; }
-.trackRow:hover td { background: var(--hover); }
-.trackMeta { font-size: var(--text-xs); color: var(--text3); }
+.trackTableWrap .table th {
+  background: var(--accent);
+  color: var(--accent-ink);
+  white-space: nowrap;
+}
+.trackTableWrap .table td { padding: var(--space-2); }
+
+.cellInput {
+  width: 100%;
+  min-width: 60px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  outline: none;
+  transition: border-color .18s var(--ease-out-expo);
+}
+.cellInput:focus-visible { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 1px; }
+.cellInput[readonly] { background: var(--hover); color: var(--text2); cursor: not-allowed; }
+select.cellInput { cursor: pointer; }
+
+@media (max-width: 860px) {
+  .cellInput { font-size: 16px; }
+}
+
 .warnBadge {
   display: inline-block;
   margin-top: 2px;
@@ -217,14 +242,12 @@
 }
 .editBtn:hover { color: var(--accent); background: rgba(var(--accent-rgb), 0.1); }
 .editBtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.placeholderBtn { opacity: 0.5; }
+.placeholderBtn:hover { opacity: 0.8; }
 
 @media (max-width: 860px) {
   .editBtn { padding: 15px; min-width: 44px; min-height: 44px; }
 }
-
-.trackForm { max-width: none; }
-.trackForm .input { flex: 1 1 0; min-width: 110px; }
-.trackForm .input[readonly] { background: var(--hover); color: var(--text2); cursor: not-allowed; }
 
 .totalsBar {
   display: flex;

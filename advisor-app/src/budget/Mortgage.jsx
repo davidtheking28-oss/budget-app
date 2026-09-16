@@ -22,8 +22,7 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 const LIQUID_ASSET_CATS = ['עו״ש', 'חיסכון', 'תיק השקעות'];
 const EMPTY_SCENARIO = { financier: '', propertyValue: '', purchaseType: 'single', tracks: [] };
 const EMPTY_TRACK = {
-  type: 'fixed_unlinked', principal: '', pctOfProperty: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase',
-  amortMethod: 'spitzer', releaseDate: '', graceFull: '', gracePartial: ''
+  type: 'fixed_unlinked', principal: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase', amortMethod: 'spitzer'
 };
 const AMORT_METHODS = [
   { value: 'spitzer', label: 'שפיצר' },
@@ -78,8 +77,6 @@ function KpiValue({ value }) {
 export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const [form, setForm] = useState(null);
-  const [trackForm, setTrackForm] = useState(EMPTY_TRACK);
-  const [editingTrackId, setEditingTrackId] = useState(null);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -152,44 +149,24 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   function ensureFormTracks() {
     return form ? form : { ...scenario, tracks: [...(scenario.tracks || [])] };
   }
-  function resetTrackForm() { setTrackForm(EMPTY_TRACK); setEditingTrackId(null); }
-  function submitTrack() {
-    const principal = parseFloat(trackForm.principal) || 0;
-    const years = parseInt(trackForm.years, 10) || 0;
-    if (!principal || !years) { toast('נדרשים סכום ותקופה בשנים', 'error'); return; }
-    const patch = {
-      type: trackForm.type, principal, annualRate: parseFloat(trackForm.annualRate) || 0, years,
-      anchor: trackForm.anchor, margin: parseFloat(trackForm.margin) || 0, rateFrequency: trackForm.rateFrequency, rateUpdateDate: trackForm.rateUpdateDate,
-      purpose: trackForm.purpose, amortMethod: trackForm.amortMethod, releaseDate: trackForm.releaseDate,
-      graceFull: parseInt(trackForm.graceFull, 10) || 0, gracePartial: parseInt(trackForm.gracePartial, 10) || 0
-    };
+  function updateTrack(id, patch) {
     const base = ensureFormTracks();
-    const tracks = editingTrackId != null
-      ? (base.tracks || []).map(t => t.id === editingTrackId ? { ...t, ...patch } : t)
-      : [...(base.tracks || []), { id: Date.now() + Math.random(), ...patch }];
-    setForm({ ...base, tracks });
-    resetTrackForm();
+    setForm({ ...base, tracks: base.tracks.map(t => t.id === id ? { ...t, ...patch } : t) });
   }
-  function startEditTrack(t) {
-    setEditingTrackId(t.id);
-    setTrackForm({
-      type: t.type || 'fixed_unlinked', principal: String(t.principal ?? ''),
-      pctOfProperty: propertyValue > 0 && t.principal ? ((t.principal / propertyValue) * 100).toFixed(1) : '',
-      annualRate: String(t.annualRate ?? ''), years: String(t.years ?? ''),
-      anchor: t.anchor || '', margin: String(t.margin ?? ''), rateFrequency: String(t.rateFrequency ?? ''), rateUpdateDate: t.rateUpdateDate || '',
-      purpose: t.purpose || 'purchase', amortMethod: t.amortMethod || 'spitzer', releaseDate: t.releaseDate || '',
-      graceFull: String(t.graceFull ?? ''), gracePartial: String(t.gracePartial ?? '')
-    });
+  function addTrack() {
+    const base = ensureFormTracks();
+    setForm({ ...base, tracks: [...base.tracks, { id: Date.now() + Math.random(), ...EMPTY_TRACK }] });
   }
   function removeTrack(id) {
     const base = ensureFormTracks();
     setForm({ ...base, tracks: (base.tracks || []).filter(t => t.id !== id) });
-    if (editingTrackId === id) resetTrackForm();
   }
 
   async function submitScenario() {
-    const tracks = (scenario.tracks || []).map(({ id, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose, amortMethod, releaseDate, graceFull, gracePartial }) =>
-      ({ id, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose, amortMethod, releaseDate, graceFull, gracePartial }));
+    const tracks = (scenario.tracks || [])
+      .filter(t => (parseFloat(t.principal) || 0) > 0 && (parseInt(t.years, 10) || 0) > 0)
+      .map(({ id, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose, amortMethod }) =>
+        ({ id, type, principal: parseFloat(principal) || 0, annualRate: parseFloat(annualRate) || 0, years: parseInt(years, 10) || 0, anchor, margin: parseFloat(margin) || 0, rateFrequency, rateUpdateDate, purpose, amortMethod }));
     const ok = await save({
       mortgage_scenario: {
         financier: scenario.financier.trim(),
@@ -201,7 +178,6 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
     if (ok === false) return;
     toast('התרחיש נשמר', 'success');
     setForm(null);
-    resetTrackForm();
   }
 
   return (
@@ -245,61 +221,82 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         <div className={styles.cardTitle} style={{ fontSize: 'var(--text-md)' }}>מסלולי משכנתא</div>
         {!scenario.tracks?.length && <div className={styles.empty} style={{ padding: 'var(--space-3) 0' }}>אין עדיין מסלולים — הוסף מסלול ראשון</div>}
         {scenario.tracks?.length > 0 && (
-          <div className={styles.tableWrap} style={{ marginBottom: 'var(--space-4)' }}>
+          <div className={styles.tableWrap + ' ' + styles.trackTableWrap} style={{ marginBottom: 'var(--space-3)' }}>
             <table className={styles.table}>
               <thead>
                 <tr>
                   <th>אחוז</th><th>לוח סילוקין</th><th>מסלול</th><th>מטרה</th><th>תדירות עדכון</th><th>תאריך עדכון</th>
                   <th>סכום</th><th>תקופה</th><th>עוגן</th><th>תוספת</th><th>ריבית</th>
-                  <th>מועד לשחרור</th><th>גריים מלא</th><th>גריים חלקי</th>
-                  <th>החזר ראשון</th><th>קיצור / פרעון</th><th>החזר ל-100,000 ₪</th><th>פעולות</th>
+                  <th>החזר חודשי</th><th>קיצור / פרעון</th><th>החזר ל-100,000 ₪</th><th></th>
                 </tr>
               </thead>
               <tbody>
                 {scenario.tracks.map(t => {
-                  const abbr = TRACK_TYPES.find(x => x.value === t.type)?.abbr || TRACK_TYPES.find(x => x.value === t.type)?.label || t.type;
-                  const anchorLabel = ANCHORS.find(a => a.value === t.anchor)?.label || '—';
-                  const pct = loanAmount > 0 ? (t.principal / loanAmount) * 100 : 0;
-                  const purposeLabel = PURPOSES.find(p => p.value === t.purpose)?.label || PURPOSES[0].label;
-                  const amortLabel = AMORT_METHODS.find(m => m.value === t.amortMethod)?.label || AMORT_METHODS[0].label;
+                  const pct = loanAmount > 0 ? ((parseFloat(t.principal) || 0) / loanAmount) * 100 : 0;
                   const monthly = trackMonthlyPayment(t);
-                  const firstPayment = t.graceFull > 0 ? 0 : t.gracePartial > 0 ? t.principal * ((t.annualRate || 0) / 1200) : monthly;
-                  const perHundredK = t.principal > 0 ? (monthly / t.principal) * 100000 : 0;
+                  const perHundredK = (parseFloat(t.principal) || 0) > 0 ? (monthly / parseFloat(t.principal)) * 100000 : 0;
+                  const onType = type => {
+                    const annualRate = t.anchor === 'prime' ? String(PRIME_RATE + (parseFloat(t.margin) || 0)) : t.annualRate;
+                    updateTrack(t.id, { type, annualRate });
+                  };
+                  const onAnchor = anchor => {
+                    const annualRate = anchor === 'prime' ? String(PRIME_RATE + (parseFloat(t.margin) || 0)) : t.annualRate;
+                    updateTrack(t.id, { anchor, annualRate });
+                  };
+                  const onMargin = margin => {
+                    const annualRate = t.anchor === 'prime' ? String(PRIME_RATE + (parseFloat(margin) || 0)) : t.annualRate;
+                    updateTrack(t.id, { margin, annualRate });
+                  };
                   return (
-                    <tr key={t.id} className={styles.trackRow} onClick={() => startEditTrack(t)}>
+                    <tr key={t.id}>
                       <td>{pct.toFixed(0)}%</td>
-                      <td>{amortLabel}</td>
-                      <td>{abbr}</td>
-                      <td>{purposeLabel}</td>
-                      <td>{t.rateFrequency ? t.rateFrequency + ' ח׳' : '—'}</td>
-                      <td>{t.rateUpdateDate || '—'}</td>
-                      <td>{fmt(t.principal)}</td>
-                      <td>{t.years} שנים</td>
-                      <td>{anchorLabel}</td>
-                      <td>{t.margin ? t.margin + '%' : '—'}</td>
-                      <td>{t.annualRate}%</td>
-                      <td>{t.releaseDate || '—'}</td>
-                      <td>{t.graceFull ? t.graceFull + ' ח׳' : '—'}</td>
-                      <td>{t.gracePartial ? t.gracePartial + ' ח׳' : '—'}</td>
-                      <td>{fmt(firstPayment)}</td>
+                      <td>
+                        <select className={styles.cellInput} aria-label="לוח סילוקין" value={t.amortMethod} onChange={e => updateTrack(t.id, { amortMethod: e.target.value })}>
+                          {AMORT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                        </select>
+                      </td>
+                      <td>
+                        <select className={styles.cellInput} aria-label="סוג מסלול" value={t.type} onChange={e => onType(e.target.value)}>
+                          {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.abbr}</option>)}
+                        </select>
+                      </td>
+                      <td>
+                        <select className={styles.cellInput} aria-label="מטרת המסלול" value={t.purpose} onChange={e => updateTrack(t.id, { purpose: e.target.value })}>
+                          {PURPOSES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                        </select>
+                      </td>
+                      <td><input className={styles.cellInput} type="number" inputMode="numeric" placeholder="חודשים" aria-label="תדירות עדכון בחודשים" value={t.rateFrequency} onChange={e => updateTrack(t.id, { rateFrequency: e.target.value })} /></td>
+                      <td><input className={styles.cellInput} type="date" aria-label="תאריך עדכון קרוב" value={t.rateUpdateDate} onChange={e => updateTrack(t.id, { rateUpdateDate: e.target.value })} /></td>
+                      <td><input className={styles.cellInput} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום המסלול" value={t.principal} onChange={e => updateTrack(t.id, { principal: e.target.value })} /></td>
+                      <td><input className={styles.cellInput} type="number" inputMode="numeric" placeholder="שנים" aria-label="תקופה בשנים" value={t.years} onChange={e => updateTrack(t.id, { years: e.target.value })} /></td>
+                      <td>
+                        <select className={styles.cellInput} aria-label="עוגן" value={t.anchor} onChange={e => onAnchor(e.target.value)}>
+                          {ANCHORS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+                        </select>
+                      </td>
+                      <td><input className={styles.cellInput} type="number" inputMode="decimal" placeholder="%" aria-label="תוספת מעל העוגן" value={t.margin} onChange={e => onMargin(e.target.value)} /></td>
+                      <td>
+                        <input
+                          className={styles.cellInput}
+                          type="number"
+                          inputMode="decimal"
+                          placeholder="%"
+                          aria-label="ריבית שנתית"
+                          value={t.annualRate}
+                          readOnly={t.anchor === 'prime'}
+                          title={t.anchor === 'prime' ? 'נגזר אוטומטית מריבית הפריים + תוספת' : undefined}
+                          onChange={e => updateTrack(t.id, { annualRate: e.target.value })}
+                        />
+                      </td>
+                      <td>{fmt(monthly)}</td>
                       <td>
                         <div className={styles.trackActions}>
-                          <button className={styles.editBtn} onClick={e => { e.stopPropagation(); toast('פיצ׳ר קיצור תקופה יתווסף בהמשך', 'info'); }} title="קיצור (בקרוב)">קיצור</button>
-                          <button className={styles.editBtn} onClick={e => { e.stopPropagation(); toast('פיצ׳ר פירעון מוקדם יתווסף בהמשך', 'info'); }} title="פרעון (בקרוב)">פרעון</button>
+                          <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר קיצור תקופה יתווסף בהמשך', 'info')} aria-disabled="true" title="קיצור (בקרוב)">קיצור</button>
+                          <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר פירעון מוקדם יתווסף בהמשך', 'info')} aria-disabled="true" title="פרעון (בקרוב)">פרעון</button>
                         </div>
                       </td>
                       <td>{fmt(perHundredK)}</td>
-                      <td>
-                        <div className={styles.trackActions}>
-                          <button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEditTrack(t); }} aria-label={`ערוך מסלול ${abbr} ${fmt(t.principal)}`} title="ערוך מסלול">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <path d="M12 20h9" />
-                              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                            </svg>
-                          </button>
-                          <DeleteButton onClick={e => { e.stopPropagation(); removeTrack(t.id); }} title={`מחק מסלול ${abbr} ${fmt(t.principal)}`} />
-                        </div>
-                      </td>
+                      <td><DeleteButton onClick={() => removeTrack(t.id)} title="מחק מסלול" /></td>
                     </tr>
                   );
                 })}
@@ -307,108 +304,8 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             </table>
           </div>
         )}
-        <div className={styles.form + ' ' + styles.trackForm}>
-          <select
-            className={styles.input}
-            aria-label="סוג מסלול"
-            value={trackForm.type}
-            onChange={e => {
-              const type = e.target.value;
-              const annualRate = trackForm.anchor === 'prime' ? String(PRIME_RATE + (parseFloat(trackForm.margin) || 0)) : trackForm.annualRate;
-              setTrackForm({ ...trackForm, type, annualRate });
-            }}
-          >
-            {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.label} ({x.abbr})</option>)}
-          </select>
-          <select
-            className={styles.input}
-            aria-label="לוח סילוקין"
-            value={trackForm.amortMethod}
-            title={trackForm.amortMethod !== 'spitzer' ? 'התצוגה מזהה את השיטה, אך החישובים כרגע תומכים בשפיצר בלבד' : undefined}
-            onChange={e => setTrackForm({ ...trackForm, amortMethod: e.target.value })}
-          >
-            {AMORT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-          </select>
-          <select className={styles.input} aria-label="מטרת המסלול" value={trackForm.purpose} onChange={e => setTrackForm({ ...trackForm, purpose: e.target.value })}>
-            {PURPOSES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-          </select>
-          <input
-            className={styles.input}
-            type="number"
-            inputMode="decimal"
-            placeholder="סכום"
-            aria-label="סכום המסלול"
-            value={trackForm.principal}
-            onChange={e => {
-              const principal = e.target.value;
-              const pctOfProperty = propertyValue > 0 && principal ? ((parseFloat(principal) / propertyValue) * 100).toFixed(1) : trackForm.pctOfProperty;
-              setTrackForm({ ...trackForm, principal, pctOfProperty });
-            }}
-          />
-          <input
-            className={styles.input}
-            type="number"
-            inputMode="decimal"
-            placeholder="% משווי הנכס"
-            aria-label="אחוז משווי הנכס"
-            title={propertyValue > 0 ? undefined : 'יש להזין שווי נכס כדי לחשב סכום לפי אחוז'}
-            value={trackForm.pctOfProperty}
-            onChange={e => {
-              const pctOfProperty = e.target.value;
-              const principal = propertyValue > 0 ? String(Math.round(propertyValue * ((parseFloat(pctOfProperty) || 0) / 100))) : trackForm.principal;
-              setTrackForm({ ...trackForm, pctOfProperty, principal });
-            }}
-          />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה (שנים)" aria-label="תקופה בשנים" value={trackForm.years} onChange={e => setTrackForm({ ...trackForm, years: e.target.value })} />
-          <select
-            className={styles.input}
-            aria-label="עוגן"
-            value={trackForm.anchor}
-            onChange={e => {
-              const anchor = e.target.value;
-              const annualRate = anchor === 'prime' ? String(PRIME_RATE + (parseFloat(trackForm.margin) || 0)) : trackForm.annualRate;
-              setTrackForm({ ...trackForm, anchor, annualRate });
-            }}
-          >
-            {ANCHORS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
-          </select>
-          <input
-            className={styles.input}
-            type="number"
-            inputMode="decimal"
-            placeholder="תוספת (מרווח) %"
-            aria-label="תוספת מעל העוגן"
-            value={trackForm.margin}
-            onChange={e => {
-              const margin = e.target.value;
-              const annualRate = trackForm.anchor === 'prime' ? String(PRIME_RATE + (parseFloat(margin) || 0)) : trackForm.annualRate;
-              setTrackForm({ ...trackForm, margin, annualRate });
-            }}
-          />
-          <input
-            className={styles.input}
-            type="number"
-            inputMode="decimal"
-            placeholder="ריבית שנתית %"
-            aria-label="ריבית שנתית"
-            value={trackForm.annualRate}
-            readOnly={trackForm.anchor === 'prime'}
-            title={trackForm.anchor === 'prime' ? 'נגזר אוטומטית מריבית הפריים + תוספת' : undefined}
-            onChange={e => setTrackForm({ ...trackForm, annualRate: e.target.value })}
-          />
-          {VARIABLE_TYPES.includes(trackForm.type) && (
-            <>
-              <input className={styles.input} type="number" inputMode="numeric" placeholder="תדירות עדכון (חודשים)" aria-label="תדירות עדכון בחודשים" value={trackForm.rateFrequency} onChange={e => setTrackForm({ ...trackForm, rateFrequency: e.target.value })} />
-              <input className={styles.input} type="date" aria-label="תאריך עדכון קרוב" value={trackForm.rateUpdateDate} onChange={e => setTrackForm({ ...trackForm, rateUpdateDate: e.target.value })} />
-            </>
-          )}
-          <input className={styles.input} type="date" aria-label="מועד לשחרור" title="מועד לשחרור (סיום תקופת גרייס)" value={trackForm.releaseDate} onChange={e => setTrackForm({ ...trackForm, releaseDate: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="גריים מלא (חודשים)" aria-label="גריים מלא בחודשים" value={trackForm.graceFull} onChange={e => setTrackForm({ ...trackForm, graceFull: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="גריים חלקי (חודשים)" aria-label="גריים חלקי בחודשים" value={trackForm.gracePartial} onChange={e => setTrackForm({ ...trackForm, gracePartial: e.target.value })} />
-          <Button onClick={submitTrack}>{editingTrackId != null ? 'שמור מסלול' : 'הוסף מסלול'}</Button>
-          {editingTrackId != null && <Button variant="ghost" onClick={resetTrackForm}>ביטול</Button>}
-        </div>
-        <div className={styles.note} style={{ marginTop: 0 }}>
+        <Button variant="ghost" onClick={addTrack}>+ הוסף מסלול</Button>
+        <div className={styles.note}>
           ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול/עוגן "פריים". מסלול "לכל מטרה" נושא בדרך כלל ריבית גבוהה יותר ממסלול לרכישת דירה, ומוגבל (בצירוף שאר מסלולי "לכל מטרה") עד {ANY_PURPOSE_LTV_HARD_CAP}% מימון ובלבד שהחריגה מעל 50% לא תעלה על {fmt(ANY_PURPOSE_EXCESS_CAP)} — יש להזין את הריבית בהתאם לתנאי הבנק.
         </div>
 
