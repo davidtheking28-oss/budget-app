@@ -105,6 +105,7 @@
     /* Signed figures must read LTR inside RTL text — direction alone is inert without isolation */
     .budget-tx-amt{direction:ltr;unicode-bidi:isolate;}
     #txPageFlow{direction:ltr;unicode-bidi:isolate;text-align:center;}
+    #txFlowViewToggle button{opacity:0.65;transition:opacity 0.15s;}
     #txFlowViewToggle button.active{background:rgba(255,255,255,0.25);opacity:1;}
     .icon-btn{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
     .icon-btn:active{background:rgba(255,255,255,0.3);}
@@ -2076,7 +2077,7 @@
       <div class="balance-hero-bloom" style="bottom:-38%;left:-10%;width:45%;padding-bottom:45%;opacity:0.55;"></div>
       <div class="relative" style="z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center">
         <div id="txFlowViewToggle" style="display:flex;gap:2px;background:rgba(0,0,0,0.18);border-radius:999px;padding:3px;flex-shrink:0">
-          <button type="button" data-view="plan" onclick="setTxFlowView('plan')" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0;opacity:0.65">תכנון</button>
+          <button type="button" data-view="plan" onclick="setTxFlowView('plan')" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0">תכנון</button>
           <button type="button" class="active" data-view="actual" onclick="setTxFlowView('actual')" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0">בפועל</button>
         </div>
         <div class="text-sm font-semibold mt-2" style="color:#fff">התזרים שלך החודש</div>
