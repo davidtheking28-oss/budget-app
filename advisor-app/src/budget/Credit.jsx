@@ -7,7 +7,6 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import { addItem, updateItem, removeItem } from './itemHelpers.js';
 import PaymentsTimeline from './PaymentsTimeline.jsx';
-import { monthSummary } from './budgetMath.js';
 import { MONTH_NAMES as MONTHS_HE } from './monthUtils.js';
 import MonthTabs from '../components/MonthTabs.jsx';
 import CollapsibleSection from '../components/CollapsibleSection.jsx';
@@ -69,7 +68,7 @@ const ICONS = {
   home: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></svg>
 };
 
-export default function Credit({ clientUserId, advisorId, year, month, onSelectMonth }) {
+export default function Credit({ clientUserId, advisorId, month, onSelectMonth }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
   const [loanForm, setLoanForm] = useState({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' });
@@ -81,8 +80,6 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
   const [consolChecked, setConsolChecked] = useState({});
   const [consolForm, setConsolForm] = useState({ rate: '', months: '' });
   const [consolResult, setConsolResult] = useState(null);
-  const [mtgForm, setMtgForm] = useState({ ratio: '40', rate: '', years: '' });
-  const [mtgResult, setMtgResult] = useState(null);
 
   function resetLoanForm() { setLoanForm({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' }); setEditingLoanId(null); }
   async function submitLoan() {
@@ -128,16 +125,6 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
     const newMonthly = pmtSpitzer(currentRemaining, rate, months);
     setConsolResult({ currentMonthly, newMonthly, diff: currentMonthly - newMonthly });
   }
-  function calcMortgage(disposable) {
-    const ratio = parseFloat(mtgForm.ratio) || 40;
-    const rate = parseFloat(mtgForm.rate) || 0;
-    const years = parseInt(mtgForm.years) || 0;
-    if (!years) { toast('נדרשת תקופה בשנים', 'error'); return; }
-    const maxPmt = disposable * ratio / 100;
-    const maxPrincipal = spitzerPrincipalFromPmt(maxPmt, rate, years * 12);
-    setMtgResult({ disposable, maxPmt, maxPrincipal });
-  }
-
   function resetPaymentForm() { setPaymentForm({ name: '', total: '', current: '', amount: '' }); setEditingPaymentId(null); }
   async function submitPayment() {
     const total = parseFloat(paymentForm.total) || 0;
@@ -162,7 +149,6 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
     );
   }
 
-  const disposable = Math.max(0, monthSummary(data, year, month).net);
   const loans = [...(data.loans || [])].sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
   const loanMonthsLeft = l => loanPayoffMonths(l.remaining, l.monthly, l.rate);
   const longTermLoans = loans.filter(l => { const n = loanMonthsLeft(l); return n === Infinity || n >= 18; });
@@ -285,23 +271,6 @@ export default function Credit({ clientUserId, advisorId, year, month, onSelectM
       </CollapsibleSection>
       </div>
 
-      <div className={styles.section}>
-        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.home}</span>מחשבון משכנתא / יכולת החזר</>}>
-        <div className={styles.form}>
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="אחוז מקסימלי מההכנסה הפנויה" aria-label="אחוז מקסימלי" value={mtgForm.ratio} onChange={e => setMtgForm({ ...mtgForm, ratio: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית מוצעת %" aria-label="ריבית שנתית מוצעת" value={mtgForm.rate} onChange={e => setMtgForm({ ...mtgForm, rate: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה (שנים)" aria-label="תקופה בשנים" value={mtgForm.years} onChange={e => setMtgForm({ ...mtgForm, years: e.target.value })} />
-          <Button onClick={() => calcMortgage(disposable)}>חשב</Button>
-        </div>
-        {mtgResult && (
-          <div className={styles.row} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text3)' }}>הכנסה פנויה חודשית מוערכת: {fmt(mtgResult.disposable)}</div>
-            <div>החזר מקסימלי מומלץ: <b>{fmt(mtgResult.maxPmt)}</b></div>
-            <div>משכנתא נתמכת: <b>{fmt(mtgResult.maxPrincipal)}</b></div>
-          </div>
-        )}
-      </CollapsibleSection>
-      </div>
       </div>
 
       <div className={styles.section}>
