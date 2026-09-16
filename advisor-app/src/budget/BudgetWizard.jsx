@@ -283,7 +283,7 @@ export default function BudgetWizard({ data, save, year, month }) {
         {step === 0 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>מאיפה מגיע הכסף?</div>
-            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, true, true)}
+            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, true)}
           </div>
         )}
 
