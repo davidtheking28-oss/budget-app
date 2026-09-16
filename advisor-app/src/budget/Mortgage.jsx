@@ -21,7 +21,7 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 // same split the source spreadsheet ("ליווי נדל״ני") drew by hand.
 const LIQUID_ASSET_CATS = ['עו״ש', 'חיסכון', 'תיק השקעות'];
 const EMPTY_SCENARIO = { financier: '', propertyValue: '', purchaseType: 'single', tracks: [] };
-const EMPTY_TRACK = { label: '', type: 'fixed_unlinked', principal: '', pctOfProperty: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase' };
+const EMPTY_TRACK = { type: 'fixed_unlinked', principal: '', pctOfProperty: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase' };
 const PURPOSES = [
   { value: 'purchase', label: 'רכישת דירה' },
   { value: 'any', label: 'לכל מטרה' }
@@ -148,9 +148,9 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   function submitTrack() {
     const principal = parseFloat(trackForm.principal) || 0;
     const years = parseInt(trackForm.years, 10) || 0;
-    if (!trackForm.label.trim() || !principal || !years) { toast('נדרשים תיאור, סכום ותקופה בשנים', 'error'); return; }
+    if (!principal || !years) { toast('נדרשים סכום ותקופה בשנים', 'error'); return; }
     const patch = {
-      label: trackForm.label.trim(), type: trackForm.type, principal, annualRate: parseFloat(trackForm.annualRate) || 0, years,
+      type: trackForm.type, principal, annualRate: parseFloat(trackForm.annualRate) || 0, years,
       anchor: trackForm.anchor, margin: parseFloat(trackForm.margin) || 0, rateFrequency: trackForm.rateFrequency, rateUpdateDate: trackForm.rateUpdateDate,
       purpose: trackForm.purpose
     };
@@ -164,7 +164,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   function startEditTrack(t) {
     setEditingTrackId(t.id);
     setTrackForm({
-      label: t.label || '', type: t.type || 'fixed_unlinked', principal: String(t.principal ?? ''),
+      type: t.type || 'fixed_unlinked', principal: String(t.principal ?? ''),
       pctOfProperty: propertyValue > 0 && t.principal ? ((t.principal / propertyValue) * 100).toFixed(1) : '',
       annualRate: String(t.annualRate ?? ''), years: String(t.years ?? ''),
       anchor: t.anchor || '', margin: String(t.margin ?? ''), rateFrequency: String(t.rateFrequency ?? ''), rateUpdateDate: t.rateUpdateDate || '',
@@ -178,7 +178,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   }
 
   async function submitScenario() {
-    const tracks = (scenario.tracks || []).map(({ id, label, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose }) => ({ id, label, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose }));
+    const tracks = (scenario.tracks || []).map(({ id, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose }) => ({ id, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose }));
     const ok = await save({
       mortgage_scenario: {
         financier: scenario.financier.trim(),
@@ -252,7 +252,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                   return (
                     <tr key={t.id} className={styles.trackRow} onClick={() => startEditTrack(t)}>
                       <td>{pct.toFixed(0)}%</td>
-                      <td>{abbr}<div className={styles.trackMeta}>{t.label}</div></td>
+                      <td>{abbr}</td>
                       <td>{purposeLabel}</td>
                       <td>{fmt(t.principal)}</td>
                       <td>{t.years} שנים</td>
@@ -264,13 +264,13 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                       <td>{fmt(trackMonthlyPayment(t))}</td>
                       <td>
                         <div className={styles.trackActions}>
-                          <button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEditTrack(t); }} aria-label={`ערוך מסלול ${t.label}`} title="ערוך מסלול">
+                          <button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEditTrack(t); }} aria-label={`ערוך מסלול ${abbr} ${fmt(t.principal)}`} title="ערוך מסלול">
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                               <path d="M12 20h9" />
                               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
                             </svg>
                           </button>
-                          <DeleteButton onClick={e => { e.stopPropagation(); removeTrack(t.id); }} title={`מחק מסלול ${t.label}`} />
+                          <DeleteButton onClick={e => { e.stopPropagation(); removeTrack(t.id); }} title={`מחק מסלול ${abbr} ${fmt(t.principal)}`} />
                         </div>
                       </td>
                     </tr>
@@ -281,7 +281,6 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           </div>
         )}
         <div className={styles.form + ' ' + styles.trackForm}>
-          <input className={styles.input} placeholder="תיאור המסלול" aria-label="תיאור המסלול" value={trackForm.label} onChange={e => setTrackForm({ ...trackForm, label: e.target.value })} />
           <select
             className={styles.input}
             aria-label="סוג מסלול"
