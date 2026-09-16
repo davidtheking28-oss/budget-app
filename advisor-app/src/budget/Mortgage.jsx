@@ -20,13 +20,28 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 // rest (pension, hishtalmut, gemel, real estate) is treated as illiquid —
 // same split the source spreadsheet ("ליווי נדל״ני") drew by hand.
 const LIQUID_ASSET_CATS = ['עו״ש', 'חיסכון', 'תיק השקעות'];
-const EMPTY_SCENARIO = { financier: '', propertyValue: '', tracks: [] };
+const EMPTY_SCENARIO = { financier: '', propertyValue: '', purchaseType: 'single', tracks: [] };
 const EMPTY_TRACK = { label: '', type: 'fixed_unlinked', principal: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase' };
 const PURPOSES = [
   { value: 'purchase', label: 'רכישת דירה' },
   { value: 'any', label: 'לכל מטרה' }
 ];
-const ANY_PURPOSE_LTV_CAP = 50; // BOI regulation: a general-purpose (non-purchase) loan is capped at 50% of the property value
+// Directive 329, section 2: max LTV by property classification.
+const PURCHASE_TYPES = [
+  { value: 'single', label: 'דירה יחידה', ltvCap: 75 },
+  { value: 'replacement', label: 'דירה חליפית', ltvCap: 70 },
+  { value: 'investment', label: 'דירה להשקעה', ltvCap: 50 }
+];
+// Directive 329, section 10א: a housing loan not for purchase ("לכל מטרה") may
+// exceed the section-4 cumulative cap up to 70% LTV, as long as the amount
+// above 50% doesn't exceed ₪200,000 — not a flat 50% cap.
+const ANY_PURPOSE_LTV_HARD_CAP = 70;
+const ANY_PURPOSE_EXCESS_CAP = 200000;
+// Directive 329, section 7: the variable-rate share (prime + all "משתנה" tracks
+// combined) may not exceed 66.66% of the total loan.
+const VARIABLE_SHARE_CAP = 66.66;
+// Directive 329, section 8: max final repayment term.
+const MAX_TERM_YEARS = 30;
 const TRACK_TYPES = [
   { value: 'fixed_unlinked', label: 'קבועה לא צמודה', abbr: 'קל״צ' },
   { value: 'fixed_linked', label: 'קבועה צמודה', abbr: 'ק״צ' },
@@ -83,12 +98,25 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const maxPropertyValue = Math.max(0, availableEquity + maxMortgage);
 
   const propertyValue = parseFloat(scenario.propertyValue) || 0;
+  const purchaseType = scenario.purchaseType || 'single';
+  const ltvCap = PURCHASE_TYPES.find(p => p.value === purchaseType)?.ltvCap ?? 75;
   const { totalPrincipal: loanAmount, totalMonthly: monthlyPayment, termMonths } = tracksSummary(scenario.tracks);
   const ltv = propertyValue > 0 ? (loanAmount / propertyValue) * 100 : null;
   const totalMonthlyDebt = monthlyPayment + loanMonthlyTotal;
   const debtToIncome = summary.income > 0 ? (totalMonthlyDebt / summary.income) * 100 : null;
-  const gapTo50 = propertyValue > 0 ? (0.5 - (ltv || 0) / 100) * propertyValue : null;
-  const gapTo70 = propertyValue > 0 ? (0.7 - (ltv || 0) / 100) * propertyValue : null;
+  const gapToCap = propertyValue > 0 ? (ltvCap / 100 - (ltv || 0) / 100) * propertyValue : null;
+
+  const tracks = scenario.tracks || [];
+  const variablePrincipal = tracks.filter(t => VARIABLE_TYPES.includes(t.type)).reduce((s, t) => s + (parseFloat(t.principal) || 0), 0);
+  const variableShare = loanAmount > 0 ? (variablePrincipal / loanAmount) * 100 : 0;
+  const variableShareOverCap = variableShare > VARIABLE_SHARE_CAP;
+
+  const anyPurposePrincipal = tracks.filter(t => t.purpose === 'any').reduce((s, t) => s + (parseFloat(t.principal) || 0), 0);
+  const anyPurposeLtv = propertyValue > 0 ? (anyPurposePrincipal / propertyValue) * 100 : 0;
+  const anyPurposeExcess = Math.max(0, anyPurposePrincipal - propertyValue * 0.5);
+  const anyPurposeOverCap = anyPurposePrincipal > 0 && (anyPurposeLtv > ANY_PURPOSE_LTV_HARD_CAP || anyPurposeExcess > ANY_PURPOSE_EXCESS_CAP);
+
+  const termOverMax = termMonths > MAX_TERM_YEARS * 12;
 
   // A loan with a monthly payment pays itself off in remaining/monthly months —
   // once it's gone, that cash frees up for the mortgage ratio. A bullet/interest-
@@ -153,6 +181,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
       mortgage_scenario: {
         financier: scenario.financier.trim(),
         propertyValue: propertyValue || null,
+        purchaseType,
         tracks
       }
     });
@@ -195,6 +224,9 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         <div className={styles.form}>
           <input className={styles.input} placeholder="גוף מממן" aria-label="גוף מממן" value={scenario.financier} onChange={e => setField('financier', e.target.value)} />
           <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="שווי נכס" aria-label="שווי נכס" value={scenario.propertyValue} onChange={e => setField('propertyValue', e.target.value)} />
+          <select className={styles.input} aria-label="סוג רכישה" value={purchaseType} onChange={e => setField('purchaseType', e.target.value)}>
+            {PURCHASE_TYPES.map(p => <option key={p.value} value={p.value}>{p.label} (עד {p.ltvCap}% מימון)</option>)}
+          </select>
         </div>
 
         <div className={styles.cardTitle} style={{ fontSize: 'var(--text-md)' }}>מסלולי משכנתא</div>
@@ -215,16 +247,11 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                   const anchorLabel = ANCHORS.find(a => a.value === t.anchor)?.label || '—';
                   const pct = loanAmount > 0 ? (t.principal / loanAmount) * 100 : 0;
                   const purposeLabel = PURPOSES.find(p => p.value === t.purpose)?.label || PURPOSES[0].label;
-                  const trackLtv = propertyValue > 0 ? (t.principal / propertyValue) * 100 : 0;
-                  const overCap = t.purpose === 'any' && trackLtv > ANY_PURPOSE_LTV_CAP;
                   return (
                     <tr key={t.id} className={styles.trackRow} onClick={() => startEditTrack(t)}>
                       <td>{pct.toFixed(0)}%</td>
                       <td>{abbr}<div className={styles.trackMeta}>{t.label}</div></td>
-                      <td>
-                        {purposeLabel}
-                        {overCap && <div className={styles.warnBadge} title={`מסלול לכל מטרה מוגבל ל-${ANY_PURPOSE_LTV_CAP}% משווי הנכס — כרגע ${trackLtv.toFixed(0)}%`}>מעל התקרה</div>}
-                      </td>
+                      <td>{purposeLabel}</td>
                       <td>{fmt(t.principal)}</td>
                       <td>{t.years} שנים</td>
                       <td>{anchorLabel}</td>
@@ -316,7 +343,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           {editingTrackId != null && <Button variant="ghost" onClick={resetTrackForm}>ביטול</Button>}
         </div>
         <div className={styles.note} style={{ marginTop: 0 }}>
-          ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול/עוגן "פריים". מסלול "לכל מטרה" נושא בדרך כלל ריבית גבוהה יותר ממסלול לרכישת דירה, ומוגבל לפי רגולציה ל-{ANY_PURPOSE_LTV_CAP}% משווי הנכס — יש להזין את הריבית בהתאם לתנאי הבנק.
+          ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול/עוגן "פריים". מסלול "לכל מטרה" נושא בדרך כלל ריבית גבוהה יותר ממסלול לרכישת דירה, ומוגבל (בצירוף שאר מסלולי "לכל מטרה") עד {ANY_PURPOSE_LTV_HARD_CAP}% מימון ובלבד שהחריגה מעל 50% לא תעלה על {fmt(ANY_PURPOSE_EXCESS_CAP)} — יש להזין את הריבית בהתאם לתנאי הבנק.
         </div>
 
         {loanAmount > 0 && (
@@ -331,8 +358,8 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         {propertyValue > 0 ? (
           <div className={styles.resultGrid}>
             <div className={styles.resultRow}>
-              <span className={styles.resultLabel}>אחוז מימון</span>
-              <span className={styles.resultValue}>{ltv.toFixed(1)}%</span>
+              <span className={styles.resultLabel}>אחוז מימון (תקרה: {ltvCap}%, {PURCHASE_TYPES.find(p => p.value === purchaseType)?.label})</span>
+              <span className={styles.resultValue + ' ' + (ltv > ltvCap ? styles.resultBad : styles.resultGood)}>{ltv.toFixed(1)}%</span>
             </div>
             <div className={styles.resultRow}>
               <span className={styles.resultLabel}>כושר החזר (החזר/הכנסה)</span>
@@ -341,18 +368,32 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
               </span>
             </div>
             <div className={styles.resultRow}>
-              <span className={styles.resultLabel}>השלמה ל-50% מימון</span>
-              <span className={styles.resultValue}>{gapTo50 > 0 ? fmt(gapTo50) : 'כבר מעל 50%'}</span>
+              <span className={styles.resultLabel}>השלמה לתקרת המימון ({ltvCap}%)</span>
+              <span className={styles.resultValue}>{gapToCap > 0 ? fmt(gapToCap) : `כבר מעל ${ltvCap}%`}</span>
             </div>
-            <div className={styles.resultRow}>
-              <span className={styles.resultLabel}>השלמה ל-70% מימון</span>
-              <span className={styles.resultValue}>{gapTo70 > 0 ? fmt(gapTo70) : 'כבר מעל 70%'}</span>
+            <div className={styles.resultRow} title="הוראה 329, סעיף 7: החלק בריבית משתנה (פריים + מסלולים משתנים) לא יעלה על 66.66% מסך ההלוואה">
+              <span className={styles.resultLabel}>חלק בריבית משתנה (תקרה: {VARIABLE_SHARE_CAP}%)</span>
+              <span className={styles.resultValue + ' ' + (variableShareOverCap ? styles.resultBad : styles.resultGood)}>{variableShare.toFixed(1)}%</span>
             </div>
+            {anyPurposePrincipal > 0 && (
+              <div className={styles.resultRow} title="הוראה 329, סעיף 10א: הלוואה לדיור שלא לצורך רכישה מוגבלת עד 70% מימון, ובלבד שהחריגה מעל 50% לא תעלה על 200,000 ₪">
+                <span className={styles.resultLabel}>מסלולי "לכל מטרה" ({anyPurposeLtv.toFixed(0)}% מימון)</span>
+                <span className={styles.resultValue + ' ' + (anyPurposeOverCap ? styles.resultBad : styles.resultGood)}>
+                  {fmt(anyPurposePrincipal)}{anyPurposeOverCap ? ' — חורג מהתקרה' : ''}
+                </span>
+              </div>
+            )}
+            {termOverMax && (
+              <div className={styles.resultRow} title="הוראה 329, סעיף 8: תקופת הפירעון הסופית המרבית היא 30 שנה">
+                <span className={styles.resultLabel}>תקופת הלוואה</span>
+                <span className={styles.resultValue + ' ' + styles.resultBad}>{Math.round(termMonths / 12)} שנים — חורג מ-{MAX_TERM_YEARS} שנה</span>
+              </div>
+            )}
           </div>
         ) : (
           <div className={styles.empty}>הזן שווי נכס כדי לראות אחוז מימון וכושר החזר</div>
         )}
-        <div className={styles.note}>הכנסה, הוצאות והלוואות נשלפות מהתקציב ומטאב «נכסים והתחייבויות» — אין צורך להזין אותן כאן שוב.</div>
+        <div className={styles.note}>הכנסה, הוצאות והלוואות נשלפות מהתקציב ומטאב «נכסים והתחייבויות» — אין צורך להזין אותן כאן שוב. תקרות המימון והריבית המשתנה מבוססות על הוראת ניהול בנקאי תקין 329 של בנק ישראל — מגבלות על הבנק, לא ערובה לאישור ההלוואה.</div>
       </div>
 
       {termMonths > 0 && (() => {
