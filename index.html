@@ -4560,7 +4560,12 @@ function renderTasksPage(){
   }
   noAdvisor.style.display='none';content.style.display='';
   const meetingsList=document.getElementById('meetingsList');
-  meetingsList.innerHTML=_advisorMeetings.length?_advisorMeetings.map(m=>
+  // A meeting with no summary was never followed up on — once its date has passed
+  // it's just clutter, not a record of anything. Keep past meetings only when the
+  // advisor left a summary, so real notes aren't silently dropped.
+  const _now=Date.now();
+  const _visibleMeetings=_advisorMeetings.filter(m=>new Date(m.scheduled_at).getTime()>=_now||m.summary);
+  meetingsList.innerHTML=_visibleMeetings.length?_visibleMeetings.map(m=>
     '<div class="budget-tx-card"><div class="budget-tx-top"><div class="budget-tx-desc-wrap">'
       +'<div class="budget-tx-desc">'+esc(m.notes||'פגישת ייעוץ')+'</div>'
       +'<div class="budget-tx-date">'+_heDateTime(m.scheduled_at)+'</div>'
@@ -4641,17 +4646,24 @@ document.addEventListener('DOMContentLoaded',function(){
     });
     _sb.auth.getSession().then(async ({data:{session}})=>{
       _cloudUser=session?.user||null;
-      await _loadAdvisorStatus();
-      _applyAdvisorGate();
       if(_cloudUser)_loadMeetingAlerts();
       if(_cloudUser){
-        await _loadHousehold();
-        await _loadFromCloud(true);
-        _subscribeHousehold();
-        await _loadAdvisorLink();
-        renderAdvisorLinkSection();
+        // _loadAdvisorStatus, the household→budget-data chain, and _loadAdvisorLink
+        // hit independent tables — run them concurrently instead of one round-trip
+        // at a time. Only _loadFromCloud genuinely depends on _loadHousehold first
+        // (it reads _householdOwner via _getDataUserId()).
+        await Promise.all([
+          _loadAdvisorStatus().then(_applyAdvisorGate),
+          _loadHousehold().then(()=>_loadFromCloud(true)).then(_subscribeHousehold),
+          _loadAdvisorLink().then(renderAdvisorLinkSection)
+        ]);
         if(!_gateShown) refreshAll();
-      } else { renderCloudSection(); renderAdvisorLinkSection(); }
+      } else {
+        await _loadAdvisorStatus();
+        _applyAdvisorGate();
+        renderCloudSection();
+        renderAdvisorLinkSection();
+      }
       _authGateResolve(session);
     });
   }

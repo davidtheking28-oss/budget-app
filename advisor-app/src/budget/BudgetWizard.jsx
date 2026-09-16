@@ -111,8 +111,8 @@ export default function BudgetWizard({ data, save, year, month }) {
   const summaryChartData = {
     labels: ['החודש'],
     datasets: [
-      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: [totalIncomeActual], backgroundColor: CT.green, borderRadius: 5, maxBarThickness: 34, barPercentage: 0.55, categoryPercentage: 0.6, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 5, maxBarThickness: 34, barPercentage: 0.55, categoryPercentage: 0.6, hoverBackgroundColor: CT.redHover }
     ]
   };
 
