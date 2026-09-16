@@ -21,7 +21,7 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 // same split the source spreadsheet ("ליווי נדל״ני") drew by hand.
 const LIQUID_ASSET_CATS = ['עו״ש', 'חיסכון', 'תיק השקעות'];
 const EMPTY_SCENARIO = { financier: '', propertyValue: '', purchaseType: 'single', tracks: [] };
-const EMPTY_TRACK = { label: '', type: 'fixed_unlinked', principal: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase' };
+const EMPTY_TRACK = { label: '', type: 'fixed_unlinked', principal: '', pctOfProperty: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase' };
 const PURPOSES = [
   { value: 'purchase', label: 'רכישת דירה' },
   { value: 'any', label: 'לכל מטרה' }
@@ -164,7 +164,9 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   function startEditTrack(t) {
     setEditingTrackId(t.id);
     setTrackForm({
-      label: t.label || '', type: t.type || 'fixed_unlinked', principal: String(t.principal ?? ''), annualRate: String(t.annualRate ?? ''), years: String(t.years ?? ''),
+      label: t.label || '', type: t.type || 'fixed_unlinked', principal: String(t.principal ?? ''),
+      pctOfProperty: propertyValue > 0 && t.principal ? ((t.principal / propertyValue) * 100).toFixed(1) : '',
+      annualRate: String(t.annualRate ?? ''), years: String(t.years ?? ''),
       anchor: t.anchor || '', margin: String(t.margin ?? ''), rateFrequency: String(t.rateFrequency ?? ''), rateUpdateDate: t.rateUpdateDate || '',
       purpose: t.purpose || 'purchase'
     });
@@ -295,7 +297,33 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           <select className={styles.input} aria-label="מטרת המסלול" value={trackForm.purpose} onChange={e => setTrackForm({ ...trackForm, purpose: e.target.value })}>
             {PURPOSES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
           </select>
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום המסלול" value={trackForm.principal} onChange={e => setTrackForm({ ...trackForm, principal: e.target.value })} />
+          <input
+            className={styles.input}
+            type="number"
+            inputMode="decimal"
+            placeholder="סכום"
+            aria-label="סכום המסלול"
+            value={trackForm.principal}
+            onChange={e => {
+              const principal = e.target.value;
+              const pctOfProperty = propertyValue > 0 && principal ? ((parseFloat(principal) / propertyValue) * 100).toFixed(1) : trackForm.pctOfProperty;
+              setTrackForm({ ...trackForm, principal, pctOfProperty });
+            }}
+          />
+          <input
+            className={styles.input}
+            type="number"
+            inputMode="decimal"
+            placeholder="% משווי הנכס"
+            aria-label="אחוז משווי הנכס"
+            title={propertyValue > 0 ? undefined : 'יש להזין שווי נכס כדי לחשב סכום לפי אחוז'}
+            value={trackForm.pctOfProperty}
+            onChange={e => {
+              const pctOfProperty = e.target.value;
+              const principal = propertyValue > 0 ? String(Math.round(propertyValue * ((parseFloat(pctOfProperty) || 0) / 100))) : trackForm.principal;
+              setTrackForm({ ...trackForm, pctOfProperty, principal });
+            }}
+          />
           <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה (שנים)" aria-label="תקופה בשנים" value={trackForm.years} onChange={e => setTrackForm({ ...trackForm, years: e.target.value })} />
           <select
             className={styles.input}
