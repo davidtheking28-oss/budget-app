@@ -28,6 +28,11 @@ const TRACK_TYPES = [
   { value: 'cpi', label: 'צמודת מדד' },
   { value: 'other', label: 'אחר' }
 ];
+// From boi-economic-data skill, fetched 2026-09-16 (BR dataflow / CBS CPI).
+const BOI_RATE_ASOF = { date: '2026-09-16', rate: 3.25 };
+const CPI_YEARLY_ASOF = { date: '2026-08', pct: 1.5 };
+const PRIME_MARGIN = 1.5; // standard Israeli prime = BOI rate + 1.5%
+const PRIME_RATE = BOI_RATE_ASOF.rate + PRIME_MARGIN;
 
 function KpiValue({ value }) {
   return <>{fmt(useCountUp(value))}</>;
@@ -190,7 +195,16 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         )}
         <div className={styles.form}>
           <input className={styles.input} placeholder="תיאור המסלול" aria-label="תיאור המסלול" value={trackForm.label} onChange={e => setTrackForm({ ...trackForm, label: e.target.value })} />
-          <select className={styles.input} aria-label="סוג מסלול" value={trackForm.type} onChange={e => setTrackForm({ ...trackForm, type: e.target.value })}>
+          <select
+            className={styles.input}
+            aria-label="סוג מסלול"
+            value={trackForm.type}
+            onChange={e => {
+              const type = e.target.value;
+              const annualRate = type === 'prime' && !trackForm.annualRate ? String(PRIME_RATE) : trackForm.annualRate;
+              setTrackForm({ ...trackForm, type, annualRate });
+            }}
+          >
             {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.label}</option>)}
           </select>
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום המסלול" value={trackForm.principal} onChange={e => setTrackForm({ ...trackForm, principal: e.target.value })} />
@@ -198,6 +212,9 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה (שנים)" aria-label="תקופה בשנים" value={trackForm.years} onChange={e => setTrackForm({ ...trackForm, years: e.target.value })} />
           <Button onClick={submitTrack}>{editingTrackId != null ? 'שמור מסלול' : 'הוסף מסלול'}</Button>
           {editingTrackId != null && <Button variant="ghost" onClick={resetTrackForm}>ביטול</Button>}
+        </div>
+        <div className={styles.note} style={{ marginTop: 0 }}>
+          ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול "פריים".
         </div>
 
         {loanAmount > 0 && (
