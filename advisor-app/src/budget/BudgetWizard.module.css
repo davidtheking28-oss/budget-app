@@ -432,6 +432,7 @@
 }
 
 .summaryChartCol { min-width: 0; }
+.summaryChartCol .totalsStripLabel { text-align: center; margin-top: 0; margin-bottom: var(--space-2); }
 
 .summaryChart {
   height: 200px;
