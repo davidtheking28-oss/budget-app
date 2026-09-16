@@ -95,6 +95,18 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const loanMonthlyTotal = loans.reduce((s, l) => s + (parseFloat(l.monthly) || 0), 0);
   const liquidAssets = assets.filter(a => LIQUID_ASSET_CATS.includes(a.category)).reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
 
+  // A loan with a monthly payment pays itself off in remaining/monthly months —
+  // once it's gone, that cash frees up for the mortgage ratio. A bullet/interest-
+  // only loan (no monthly figure) has no payoff horizon, so it stays active the
+  // whole projection.
+  const loansWithPayoff = loans.map(l => ({
+    monthly: parseFloat(l.monthly) || 0,
+    monthsLeft: (parseFloat(l.monthly) || 0) > 0 ? Math.ceil((parseFloat(l.remaining) || 0) / parseFloat(l.monthly)) : Infinity
+  }));
+  // Directive 329, Appendix A: a "fixed expense" for the payment-to-income ratio
+  // is a commitment with more than 18 months remaining — short-tail loans don't count.
+  const longTermLoanMonthly = loansWithPayoff.filter(l => l.monthsLeft > 18).reduce((s, l) => s + l.monthly, 0);
+
   const monthlyOutflow = summary.expense + loanMonthlyTotal;
   const emergencyFundTarget = monthlyOutflow * 3;
   const maxMonthlyPayment = Math.max(0, (summary.income - loanMonthlyTotal) * 0.4);
@@ -107,8 +119,17 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const ltvCap = PURCHASE_TYPES.find(p => p.value === purchaseType)?.ltvCap ?? 75;
   const { totalPrincipal: loanAmount, totalMonthly: monthlyPayment, termMonths } = tracksSummary(scenario.tracks);
   const ltv = propertyValue > 0 ? (loanAmount / propertyValue) * 100 : null;
-  const totalMonthlyDebt = monthlyPayment + loanMonthlyTotal;
-  const debtToIncome = summary.income > 0 ? (totalMonthlyDebt / summary.income) * 100 : null;
+
+  // Payment-to-income capacity: average the last 3 months of actual income
+  // (falling back to however many months have data) rather than a single
+  // month, subtract only long-term (18+ month) loan commitments, then check
+  // the 40% Directive 329 §6 capital-weight threshold as the last step.
+  const recentIncomes = [0, 1, 2]
+    .map(i => { let m = month - i, y = year; while (m < 0) { m += 12; y -= 1; } return monthSummary(data, y, m).income; })
+    .filter(inc => inc > 0);
+  const avgIncome3mo = recentIncomes.length ? recentIncomes.reduce((s, v) => s + v, 0) / recentIncomes.length : summary.income;
+  const totalMonthlyDebt = monthlyPayment + longTermLoanMonthly;
+  const debtToIncome = avgIncome3mo > 0 ? (totalMonthlyDebt / avgIncome3mo) * 100 : null;
   const gapToCap = propertyValue > 0 ? (ltvCap / 100 - (ltv || 0) / 100) * propertyValue : null;
 
   const tracks = scenario.tracks || [];
@@ -123,14 +144,6 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
 
   const termOverMax = termMonths > MAX_TERM_YEARS * 12;
 
-  // A loan with a monthly payment pays itself off in remaining/monthly months —
-  // once it's gone, that cash frees up for the mortgage ratio. A bullet/interest-
-  // only loan (no monthly figure) has no payoff horizon, so it stays active the
-  // whole projection.
-  const loansWithPayoff = loans.map(l => ({
-    monthly: parseFloat(l.monthly) || 0,
-    monthsLeft: (parseFloat(l.monthly) || 0) > 0 ? Math.ceil((parseFloat(l.remaining) || 0) / parseFloat(l.monthly)) : Infinity
-  }));
   let runningBalance = availableEquity;
   const projection = propertyValue > 0 ? Array.from({ length: 18 }, (_, i) => {
     const monthNum = i + 1;
@@ -324,8 +337,8 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
               <span className={styles.resultLabel}>אחוז מימון (תקרה: {ltvCap}%, {PURCHASE_TYPES.find(p => p.value === purchaseType)?.label})</span>
               <span className={styles.resultValue + ' ' + (ltv > ltvCap ? styles.resultBad : styles.resultGood)}>{ltv.toFixed(1)}%</span>
             </div>
-            <div className={styles.resultRow}>
-              <span className={styles.resultLabel}>כושר החזר (החזר/הכנסה)</span>
+            <div className={styles.resultRow} title="הכנסה: ממוצע 3 חודשים אחרונים (או פחות אם אין נתונים). החזר: משכנתא + הלוואות עם יתרת תקופה מעל 18 חודשים בלבד — הוראה 329, נספח א'">
+              <span className={styles.resultLabel}>כושר החזר (החזר/הכנסה ממוצעת, תקרה: 40%)</span>
               <span className={styles.resultValue + ' ' + (debtToIncome > 40 ? styles.resultBad : styles.resultGood)}>
                 {debtToIncome === null ? '—' : debtToIncome.toFixed(1) + '%'}
               </span>
