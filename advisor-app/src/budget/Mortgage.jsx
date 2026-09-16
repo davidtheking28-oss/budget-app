@@ -21,7 +21,15 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 // same split the source spreadsheet ("ליווי נדל״ני") drew by hand.
 const LIQUID_ASSET_CATS = ['עו״ש', 'חיסכון', 'תיק השקעות'];
 const EMPTY_SCENARIO = { financier: '', propertyValue: '', purchaseType: 'single', tracks: [] };
-const EMPTY_TRACK = { type: 'fixed_unlinked', principal: '', pctOfProperty: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase' };
+const EMPTY_TRACK = {
+  type: 'fixed_unlinked', principal: '', pctOfProperty: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase',
+  amortMethod: 'spitzer', releaseDate: '', graceFull: '', gracePartial: ''
+};
+const AMORT_METHODS = [
+  { value: 'spitzer', label: 'שפיצר' },
+  { value: 'equal_principal', label: 'קרן שווה' },
+  { value: 'bullet', label: 'בולט' }
+];
 const PURPOSES = [
   { value: 'purchase', label: 'רכישת דירה' },
   { value: 'any', label: 'לכל מטרה' }
@@ -152,7 +160,8 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
     const patch = {
       type: trackForm.type, principal, annualRate: parseFloat(trackForm.annualRate) || 0, years,
       anchor: trackForm.anchor, margin: parseFloat(trackForm.margin) || 0, rateFrequency: trackForm.rateFrequency, rateUpdateDate: trackForm.rateUpdateDate,
-      purpose: trackForm.purpose
+      purpose: trackForm.purpose, amortMethod: trackForm.amortMethod, releaseDate: trackForm.releaseDate,
+      graceFull: parseInt(trackForm.graceFull, 10) || 0, gracePartial: parseInt(trackForm.gracePartial, 10) || 0
     };
     const base = ensureFormTracks();
     const tracks = editingTrackId != null
@@ -168,7 +177,8 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
       pctOfProperty: propertyValue > 0 && t.principal ? ((t.principal / propertyValue) * 100).toFixed(1) : '',
       annualRate: String(t.annualRate ?? ''), years: String(t.years ?? ''),
       anchor: t.anchor || '', margin: String(t.margin ?? ''), rateFrequency: String(t.rateFrequency ?? ''), rateUpdateDate: t.rateUpdateDate || '',
-      purpose: t.purpose || 'purchase'
+      purpose: t.purpose || 'purchase', amortMethod: t.amortMethod || 'spitzer', releaseDate: t.releaseDate || '',
+      graceFull: String(t.graceFull ?? ''), gracePartial: String(t.gracePartial ?? '')
     });
   }
   function removeTrack(id) {
@@ -178,7 +188,8 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   }
 
   async function submitScenario() {
-    const tracks = (scenario.tracks || []).map(({ id, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose }) => ({ id, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose }));
+    const tracks = (scenario.tracks || []).map(({ id, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose, amortMethod, releaseDate, graceFull, gracePartial }) =>
+      ({ id, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose, amortMethod, releaseDate, graceFull, gracePartial }));
     const ok = await save({
       mortgage_scenario: {
         financier: scenario.financier.trim(),
@@ -238,9 +249,10 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>אחוז</th><th>מסלול</th><th>מטרה</th><th>סכום</th><th>תקופה</th><th>עוגן</th>
-                  <th>תוספת</th><th>ריבית</th><th>תדירות עדכון</th><th>תאריך עדכון</th>
-                  <th>החזר חודשי</th><th>פעולות</th>
+                  <th>אחוז</th><th>לוח סילוקין</th><th>מסלול</th><th>מטרה</th><th>תדירות עדכון</th><th>תאריך עדכון</th>
+                  <th>סכום</th><th>תקופה</th><th>עוגן</th><th>תוספת</th><th>ריבית</th>
+                  <th>מועד לשחרור</th><th>גריים מלא</th><th>גריים חלקי</th>
+                  <th>החזר ראשון</th><th>קיצור / פרעון</th><th>החזר ל-100,000 ₪</th><th>פעולות</th>
                 </tr>
               </thead>
               <tbody>
@@ -249,19 +261,34 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                   const anchorLabel = ANCHORS.find(a => a.value === t.anchor)?.label || '—';
                   const pct = loanAmount > 0 ? (t.principal / loanAmount) * 100 : 0;
                   const purposeLabel = PURPOSES.find(p => p.value === t.purpose)?.label || PURPOSES[0].label;
+                  const amortLabel = AMORT_METHODS.find(m => m.value === t.amortMethod)?.label || AMORT_METHODS[0].label;
+                  const monthly = trackMonthlyPayment(t);
+                  const firstPayment = t.graceFull > 0 ? 0 : t.gracePartial > 0 ? t.principal * ((t.annualRate || 0) / 1200) : monthly;
+                  const perHundredK = t.principal > 0 ? (monthly / t.principal) * 100000 : 0;
                   return (
                     <tr key={t.id} className={styles.trackRow} onClick={() => startEditTrack(t)}>
                       <td>{pct.toFixed(0)}%</td>
+                      <td>{amortLabel}</td>
                       <td>{abbr}</td>
                       <td>{purposeLabel}</td>
+                      <td>{t.rateFrequency ? t.rateFrequency + ' ח׳' : '—'}</td>
+                      <td>{t.rateUpdateDate || '—'}</td>
                       <td>{fmt(t.principal)}</td>
                       <td>{t.years} שנים</td>
                       <td>{anchorLabel}</td>
                       <td>{t.margin ? t.margin + '%' : '—'}</td>
                       <td>{t.annualRate}%</td>
-                      <td>{t.rateFrequency ? t.rateFrequency + ' ח׳' : '—'}</td>
-                      <td>{t.rateUpdateDate || '—'}</td>
-                      <td>{fmt(trackMonthlyPayment(t))}</td>
+                      <td>{t.releaseDate || '—'}</td>
+                      <td>{t.graceFull ? t.graceFull + ' ח׳' : '—'}</td>
+                      <td>{t.gracePartial ? t.gracePartial + ' ח׳' : '—'}</td>
+                      <td>{fmt(firstPayment)}</td>
+                      <td>
+                        <div className={styles.trackActions}>
+                          <button className={styles.editBtn} onClick={e => { e.stopPropagation(); toast('פיצ׳ר קיצור תקופה יתווסף בהמשך', 'info'); }} title="קיצור (בקרוב)">קיצור</button>
+                          <button className={styles.editBtn} onClick={e => { e.stopPropagation(); toast('פיצ׳ר פירעון מוקדם יתווסף בהמשך', 'info'); }} title="פרעון (בקרוב)">פרעון</button>
+                        </div>
+                      </td>
+                      <td>{fmt(perHundredK)}</td>
                       <td>
                         <div className={styles.trackActions}>
                           <button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEditTrack(t); }} aria-label={`ערוך מסלול ${abbr} ${fmt(t.principal)}`} title="ערוך מסלול">
@@ -292,6 +319,15 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             }}
           >
             {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.label} ({x.abbr})</option>)}
+          </select>
+          <select
+            className={styles.input}
+            aria-label="לוח סילוקין"
+            value={trackForm.amortMethod}
+            title={trackForm.amortMethod !== 'spitzer' ? 'התצוגה מזהה את השיטה, אך החישובים כרגע תומכים בשפיצר בלבד' : undefined}
+            onChange={e => setTrackForm({ ...trackForm, amortMethod: e.target.value })}
+          >
+            {AMORT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
           </select>
           <select className={styles.input} aria-label="מטרת המסלול" value={trackForm.purpose} onChange={e => setTrackForm({ ...trackForm, purpose: e.target.value })}>
             {PURPOSES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
@@ -366,6 +402,9 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
               <input className={styles.input} type="date" aria-label="תאריך עדכון קרוב" value={trackForm.rateUpdateDate} onChange={e => setTrackForm({ ...trackForm, rateUpdateDate: e.target.value })} />
             </>
           )}
+          <input className={styles.input} type="date" aria-label="מועד לשחרור" title="מועד לשחרור (סיום תקופת גרייס)" value={trackForm.releaseDate} onChange={e => setTrackForm({ ...trackForm, releaseDate: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="numeric" placeholder="גריים מלא (חודשים)" aria-label="גריים מלא בחודשים" value={trackForm.graceFull} onChange={e => setTrackForm({ ...trackForm, graceFull: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="numeric" placeholder="גריים חלקי (חודשים)" aria-label="גריים חלקי בחודשים" value={trackForm.gracePartial} onChange={e => setTrackForm({ ...trackForm, gracePartial: e.target.value })} />
           <Button onClick={submitTrack}>{editingTrackId != null ? 'שמור מסלול' : 'הוסף מסלול'}</Button>
           {editingTrackId != null && <Button variant="ghost" onClick={resetTrackForm}>ביטול</Button>}
         </div>
