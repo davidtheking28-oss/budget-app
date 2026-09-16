@@ -189,6 +189,10 @@
 .trackRow:hover td { background: var(--hover); }
 .trackMeta { font-size: var(--text-xs); color: var(--text3); }
 
+.trackForm { max-width: none; }
+.trackForm .input { flex: 1 1 0; min-width: 110px; }
+.trackForm .input[readonly] { background: var(--hover); color: var(--text2); cursor: not-allowed; }
+
 .totalsBar {
   display: flex;
   flex-wrap: wrap;

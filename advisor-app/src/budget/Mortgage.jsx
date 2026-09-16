@@ -227,7 +227,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             </table>
           </div>
         )}
-        <div className={styles.form}>
+        <div className={styles.form + ' ' + styles.trackForm}>
           <input className={styles.input} placeholder="תיאור המסלול" aria-label="תיאור המסלול" value={trackForm.label} onChange={e => setTrackForm({ ...trackForm, label: e.target.value })} />
           <select
             className={styles.input}
@@ -235,7 +235,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             value={trackForm.type}
             onChange={e => {
               const type = e.target.value;
-              const annualRate = type === 'prime' && !trackForm.annualRate ? String(PRIME_RATE) : trackForm.annualRate;
+              const annualRate = trackForm.anchor === 'prime' ? String(PRIME_RATE + (parseFloat(trackForm.margin) || 0)) : trackForm.annualRate;
               setTrackForm({ ...trackForm, type, annualRate });
             }}
           >
@@ -249,14 +249,36 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             value={trackForm.anchor}
             onChange={e => {
               const anchor = e.target.value;
-              const annualRate = anchor === 'prime' && !trackForm.annualRate ? String(PRIME_RATE) : trackForm.annualRate;
+              const annualRate = anchor === 'prime' ? String(PRIME_RATE + (parseFloat(trackForm.margin) || 0)) : trackForm.annualRate;
               setTrackForm({ ...trackForm, anchor, annualRate });
             }}
           >
             {ANCHORS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
           </select>
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="תוספת (מרווח) %" aria-label="תוספת מעל העוגן" value={trackForm.margin} onChange={e => setTrackForm({ ...trackForm, margin: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית" value={trackForm.annualRate} onChange={e => setTrackForm({ ...trackForm, annualRate: e.target.value })} />
+          <input
+            className={styles.input}
+            type="number"
+            inputMode="decimal"
+            placeholder="תוספת (מרווח) %"
+            aria-label="תוספת מעל העוגן"
+            value={trackForm.margin}
+            onChange={e => {
+              const margin = e.target.value;
+              const annualRate = trackForm.anchor === 'prime' ? String(PRIME_RATE + (parseFloat(margin) || 0)) : trackForm.annualRate;
+              setTrackForm({ ...trackForm, margin, annualRate });
+            }}
+          />
+          <input
+            className={styles.input}
+            type="number"
+            inputMode="decimal"
+            placeholder="ריבית שנתית %"
+            aria-label="ריבית שנתית"
+            value={trackForm.annualRate}
+            readOnly={trackForm.anchor === 'prime'}
+            title={trackForm.anchor === 'prime' ? 'נגזר אוטומטית מריבית הפריים + תוספת' : undefined}
+            onChange={e => setTrackForm({ ...trackForm, annualRate: e.target.value })}
+          />
           {VARIABLE_TYPES.includes(trackForm.type) && (
             <>
               <input className={styles.input} type="number" inputMode="numeric" placeholder="תדירות עדכון (חודשים)" aria-label="תדירות עדכון בחודשים" value={trackForm.rateFrequency} onChange={e => setTrackForm({ ...trackForm, rateFrequency: e.target.value })} />
