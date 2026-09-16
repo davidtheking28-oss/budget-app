@@ -65,6 +65,7 @@ function sameCategory(a, b) {
 export default function BudgetWizard({ data, save, year, month }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [flowView, setFlowView] = useState('actual');
 
   // Income sources and fixed expenses aren't month-scoped in storage — they're the
   // recurring plan and already apply to every month by default. What's missing is
@@ -143,10 +144,10 @@ export default function BudgetWizard({ data, save, year, month }) {
 
   const CT = chartTheme();
   const summaryChartData = {
-    labels: ['תכנון', 'בפועל'],
+    labels: [flowView === 'plan' ? 'תכנון' : 'בפועל'],
     datasets: [
-      { label: 'הכנסות', data: [totalIncome, totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, barPercentage: 0.95, categoryPercentage: 0.65, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [totalFixed + totalVar, totalFixedActual + totalVarActual], backgroundColor: CT.red, borderRadius: 6, barPercentage: 0.95, categoryPercentage: 0.65, hoverBackgroundColor: CT.redHover }
+      { label: 'הכנסות', data: [flowView === 'plan' ? totalIncome : totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, barPercentage: 0.7, categoryPercentage: 0.6, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: [flowView === 'plan' ? (totalFixed + totalVar) : (totalFixedActual + totalVarActual)], backgroundColor: CT.red, borderRadius: 6, barPercentage: 0.7, categoryPercentage: 0.6, hoverBackgroundColor: CT.redHover }
     ]
   };
   const summaryChartOptions = {
@@ -435,6 +436,11 @@ export default function BudgetWizard({ data, save, year, month }) {
               </div>
             )}
 
+            <div className={styles.flowToggle}>
+              <button type="button" className={flowView === 'plan' ? styles.flowToggleActive : ''} onClick={() => setFlowView('plan')}>תכנון</button>
+              <button type="button" className={flowView === 'actual' ? styles.flowToggleActive : ''} onClick={() => setFlowView('actual')}>בפועל</button>
+            </div>
+
             <div className={styles.summaryChart}>
               <Bar data={summaryChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
             </div>
@@ -443,24 +449,12 @@ export default function BudgetWizard({ data, save, year, month }) {
               <div className={styles.flowCaptionCol}>
                 <div className={styles.flowCaptionLine}>
                   <span>תזרים חודשי</span>
-                  <span className={left < 0 ? styles.negative : styles.positive}>{fmt(left)}</span>
+                  <span className={(flowView === 'plan' ? left : actualFlow) < 0 ? styles.negative : styles.positive}>{fmt(flowView === 'plan' ? left : actualFlow)}</span>
                 </div>
                 {(plannedSavings > 0 || actualSavings > 0) && (
                   <div className={styles.flowCaptionLine}>
                     <span>ללא הפקדה לחיסכון</span>
-                    <span className={(left + plannedSavings) < 0 ? styles.negative : styles.positive}>{fmt(left + plannedSavings)}</span>
-                  </div>
-                )}
-              </div>
-              <div className={styles.flowCaptionCol}>
-                <div className={styles.flowCaptionLine}>
-                  <span>תזרים חודשי</span>
-                  <span className={actualFlow < 0 ? styles.negative : styles.positive}>{fmt(actualFlow)}</span>
-                </div>
-                {(plannedSavings > 0 || actualSavings > 0) && (
-                  <div className={styles.flowCaptionLine}>
-                    <span>ללא הפקדה לחיסכון</span>
-                    <span className={(actualFlow + actualSavings) < 0 ? styles.negative : styles.positive}>{fmt(actualFlow + actualSavings)}</span>
+                    <span className={(flowView === 'plan' ? (left + plannedSavings) : (actualFlow + actualSavings)) < 0 ? styles.negative : styles.positive}>{fmt(flowView === 'plan' ? (left + plannedSavings) : (actualFlow + actualSavings))}</span>
                   </div>
                 )}
               </div>

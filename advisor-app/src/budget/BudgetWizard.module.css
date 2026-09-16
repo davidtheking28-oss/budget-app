@@ -432,18 +432,47 @@
   margin: 0 auto;
 }
 
-/* Sits right under the chart, one column per bar-group (תכנון / בפועל), so
-   each flow figure reads as the caption of the group above it rather than a
-   disconnected table. */
+/* A small pill switch above the chart — תכנון / בפועל — so the chart and its
+   flow caption below show one view at a time instead of both side by side. */
+.flowToggle {
+  display: flex;
+  gap: 2px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.flowToggle button {
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background .18s var(--ease-out-expo), color .18s var(--ease-out-expo);
+}
+
+.flowToggle button:hover { color: var(--text); }
+
+.flowToggleActive {
+  background: var(--accent) !important;
+  color: var(--accent-ink) !important;
+}
+
 .flowCaptionRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
+  display: flex;
   max-width: 460px;
   margin: 0 auto;
 }
 
 .flowCaptionCol {
+  flex: 1;
   background: var(--accent-dim);
   border: 1px solid rgba(var(--accent-rgb), 0.22);
   border-radius: var(--radius-md);
