@@ -21,7 +21,12 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip,
 // same split the source spreadsheet ("ליווי נדל״ני") drew by hand.
 const LIQUID_ASSET_CATS = ['עו״ש', 'חיסכון', 'תיק השקעות'];
 const EMPTY_SCENARIO = { financier: '', propertyValue: '', tracks: [] };
-const EMPTY_TRACK = { label: '', type: 'fixed_unlinked', principal: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '' };
+const EMPTY_TRACK = { label: '', type: 'fixed_unlinked', principal: '', annualRate: '', years: '', anchor: '', margin: '', rateFrequency: '', rateUpdateDate: '', purpose: 'purchase' };
+const PURPOSES = [
+  { value: 'purchase', label: 'רכישת דירה' },
+  { value: 'any', label: 'לכל מטרה' }
+];
+const ANY_PURPOSE_LTV_CAP = 50; // BOI regulation: a general-purpose (non-purchase) loan is capped at 50% of the property value
 const TRACK_TYPES = [
   { value: 'fixed_unlinked', label: 'קבועה לא צמודה', abbr: 'קל״צ' },
   { value: 'fixed_linked', label: 'קבועה צמודה', abbr: 'ק״צ' },
@@ -118,7 +123,8 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
     if (!trackForm.label.trim() || !principal || !years) { toast('נדרשים תיאור, סכום ותקופה בשנים', 'error'); return; }
     const patch = {
       label: trackForm.label.trim(), type: trackForm.type, principal, annualRate: parseFloat(trackForm.annualRate) || 0, years,
-      anchor: trackForm.anchor, margin: parseFloat(trackForm.margin) || 0, rateFrequency: trackForm.rateFrequency, rateUpdateDate: trackForm.rateUpdateDate
+      anchor: trackForm.anchor, margin: parseFloat(trackForm.margin) || 0, rateFrequency: trackForm.rateFrequency, rateUpdateDate: trackForm.rateUpdateDate,
+      purpose: trackForm.purpose
     };
     const base = ensureFormTracks();
     const tracks = editingTrackId != null
@@ -131,7 +137,8 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
     setEditingTrackId(t.id);
     setTrackForm({
       label: t.label || '', type: t.type || 'fixed_unlinked', principal: String(t.principal ?? ''), annualRate: String(t.annualRate ?? ''), years: String(t.years ?? ''),
-      anchor: t.anchor || '', margin: String(t.margin ?? ''), rateFrequency: String(t.rateFrequency ?? ''), rateUpdateDate: t.rateUpdateDate || ''
+      anchor: t.anchor || '', margin: String(t.margin ?? ''), rateFrequency: String(t.rateFrequency ?? ''), rateUpdateDate: t.rateUpdateDate || '',
+      purpose: t.purpose || 'purchase'
     });
   }
   function removeTrack(id) {
@@ -141,7 +148,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   }
 
   async function submitScenario() {
-    const tracks = (scenario.tracks || []).map(({ id, label, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate }) => ({ id, label, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate }));
+    const tracks = (scenario.tracks || []).map(({ id, label, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose }) => ({ id, label, type, principal, annualRate, years, anchor, margin, rateFrequency, rateUpdateDate, purpose }));
     const ok = await save({
       mortgage_scenario: {
         financier: scenario.financier.trim(),
@@ -197,7 +204,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>אחוז</th><th>מסלול</th><th>סכום</th><th>תקופה</th><th>עוגן</th>
+                  <th>אחוז</th><th>מסלול</th><th>מטרה</th><th>סכום</th><th>תקופה</th><th>עוגן</th>
                   <th>תוספת</th><th>ריבית</th><th>תדירות עדכון</th><th>תאריך עדכון</th>
                   <th>החזר חודשי</th><th>פעולות</th>
                 </tr>
@@ -207,10 +214,17 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                   const abbr = TRACK_TYPES.find(x => x.value === t.type)?.abbr || TRACK_TYPES.find(x => x.value === t.type)?.label || t.type;
                   const anchorLabel = ANCHORS.find(a => a.value === t.anchor)?.label || '—';
                   const pct = loanAmount > 0 ? (t.principal / loanAmount) * 100 : 0;
+                  const purposeLabel = PURPOSES.find(p => p.value === t.purpose)?.label || PURPOSES[0].label;
+                  const trackLtv = propertyValue > 0 ? (t.principal / propertyValue) * 100 : 0;
+                  const overCap = t.purpose === 'any' && trackLtv > ANY_PURPOSE_LTV_CAP;
                   return (
                     <tr key={t.id} className={styles.trackRow} onClick={() => startEditTrack(t)}>
                       <td>{pct.toFixed(0)}%</td>
                       <td>{abbr}<div className={styles.trackMeta}>{t.label}</div></td>
+                      <td>
+                        {purposeLabel}
+                        {overCap && <div className={styles.warnBadge} title={`מסלול לכל מטרה מוגבל ל-${ANY_PURPOSE_LTV_CAP}% משווי הנכס — כרגע ${trackLtv.toFixed(0)}%`}>מעל התקרה</div>}
+                      </td>
                       <td>{fmt(t.principal)}</td>
                       <td>{t.years} שנים</td>
                       <td>{anchorLabel}</td>
@@ -250,6 +264,9 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             }}
           >
             {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.label} ({x.abbr})</option>)}
+          </select>
+          <select className={styles.input} aria-label="מטרת המסלול" value={trackForm.purpose} onChange={e => setTrackForm({ ...trackForm, purpose: e.target.value })}>
+            {PURPOSES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
           </select>
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום המסלול" value={trackForm.principal} onChange={e => setTrackForm({ ...trackForm, principal: e.target.value })} />
           <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה (שנים)" aria-label="תקופה בשנים" value={trackForm.years} onChange={e => setTrackForm({ ...trackForm, years: e.target.value })} />
@@ -299,7 +316,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           {editingTrackId != null && <Button variant="ghost" onClick={resetTrackForm}>ביטול</Button>}
         </div>
         <div className={styles.note} style={{ marginTop: 0 }}>
-          ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול/עוגן "פריים".
+          ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול/עוגן "פריים". מסלול "לכל מטרה" נושא בדרך כלל ריבית גבוהה יותר ממסלול לרכישת דירה, ומוגבל לפי רגולציה ל-{ANY_PURPOSE_LTV_CAP}% משווי הנכס — יש להזין את הריבית בהתאם לתנאי הבנק.
         </div>
 
         {loanAmount > 0 && (
