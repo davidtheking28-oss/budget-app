@@ -4,7 +4,7 @@ import styles from './ClientContextBar.module.css';
 
 const iconProps = { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' };
 
-export default function ClientContextBar({ email, phone, createdAt, nextMeeting, openTasks, household, onOpenCrm, budgetMode, onBudgetModeChange }) {
+export default function ClientContextBar({ name, email, phone, createdAt, nextMeeting, openTasks, household, onOpenCrm, budgetMode, onBudgetModeChange }) {
   const meeting = nextMeeting ? formatDateTime(nextMeeting) : null;
   const joined = createdAt ? formatDate(createdAt) : null;
   const digits = phone ? phone.replace(/\D/g, '') : null;
@@ -15,8 +15,9 @@ export default function ClientContextBar({ email, phone, createdAt, nextMeeting,
     <div className={styles.bar}>
       <div className={styles.top}>
         <div className={styles.identity}>
-          <div className={styles.avatar} aria-hidden="true">{initials(email)}</div>
+          <div className={styles.avatar} aria-hidden="true">{initials(name || email)}</div>
           <div className={styles.identityInfo}>
+            {name && <div className={styles.name}>{name}</div>}
             <div className={styles.contactRow}>
               <span className={styles.contactItem} dir="ltr" title={email}>
                 <svg {...iconProps} width={14} height={14}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>

@@ -14,7 +14,7 @@ export function useClientProfile(advisorId, clientId) {
     setLoading(true);
     const { data, error } = await supabase
       .from('advisor_clients')
-      .select('id, phone, background, created_at')
+      .select('id, name, phone, background, created_at')
       .eq('advisor_id', advisorId)
       .eq('client_id', clientId)
       .maybeSingle();
@@ -27,12 +27,12 @@ export function useClientProfile(advisorId, clientId) {
 
   useEffect(() => { reload(); }, [reload]);
 
-  async function save({ phone, background }) {
+  async function save({ name, phone, background }) {
     if (!profile) return false;
-    setProfile(prev => ({ ...prev, phone, background }));
+    setProfile(prev => ({ ...prev, name, phone, background }));
     const { error } = await supabase
       .from('advisor_clients')
-      .update({ phone: phone || null, background: background || null })
+      .update({ name: name || null, phone: phone || null, background: background || null })
       .eq('id', profile.id)
       .eq('advisor_id', advisorId);
     if (error) { toast('שגיאה בשמירת הפרטים', 'error'); reload(); return false; }

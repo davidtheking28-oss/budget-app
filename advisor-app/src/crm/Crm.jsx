@@ -52,6 +52,7 @@ function daysUntil(dateStr) {
 export default function Crm({ advisorId, clientId, email, onChange }) {
   const { tasks, meetings, loading, error, reload, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId);
   const { profile, save: saveProfile } = useClientProfile(advisorId, clientId);
+  const [nameDraft, setNameDraft] = useState('');
   const [phoneDraft, setPhoneDraft] = useState('');
   const [backgroundDraft, setBackgroundDraft] = useState('');
   const [profileDirty, setProfileDirty] = useState(false);
@@ -60,6 +61,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
   }, [clientId]);
   useEffect(() => {
     if (!profile || profileDirty) return;
+    setNameDraft(profile.name || '');
     setPhoneDraft(profile.phone || '');
     setBackgroundDraft(profile.background || '');
   }, [profile, profileDirty]);
@@ -70,7 +72,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
     return () => window.removeEventListener('beforeunload', onBeforeUnload);
   }, [profileDirty]);
   async function saveProfileFields() {
-    const ok = await saveProfile({ phone: phoneDraft, background: backgroundDraft });
+    const ok = await saveProfile({ name: nameDraft, phone: phoneDraft, background: backgroundDraft });
     if (ok) setProfileDirty(false);
   }
   const [summaryDrafts, setSummaryDrafts] = useState({});
@@ -166,6 +168,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
         <div className={styles.sectionBody + (openSections.profile ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.profile ? '' : undefined}>
           <div className={styles.sectionBodyInner}>
             <div className={styles.formPlain}>
+              <input className={styles.input} aria-label="שם הלקוח" placeholder="שם הלקוח" style={{ flex: '0 0 200px' }} value={nameDraft} onChange={e => { setNameDraft(e.target.value); setProfileDirty(true); }} />
               <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
               <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" style={{ flex: '0 0 160px' }} value={phoneDraft} onChange={e => { setPhoneDraft(e.target.value); setProfileDirty(true); }} />
             </div>

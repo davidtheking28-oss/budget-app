@@ -190,6 +190,7 @@ export default function App() {
       >
         {nav === 'dashboard' && (
           <ClientContextBar
+            name={clientProfile?.name}
             email={selectedClient.email}
             phone={clientProfile?.phone}
             createdAt={clientProfile?.created_at}
