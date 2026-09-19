@@ -82,6 +82,30 @@ export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
   const { nextMeeting, openTasks, household, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
   const { profile: clientProfile } = useClientProfile(session?.user?.id, selectedClient?.id);
+  const [hasMortgage, setHasMortgage] = useState(false);
+
+  useEffect(() => {
+    setHasMortgage(false);
+    if (!selectedClient) return;
+    let cancelled = false;
+    supabase
+      .from('budget_data')
+      .select('mortgage_scenario')
+      .eq('user_id', selectedClient.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setHasMortgage(!!data?.mortgage_scenario?.tracks?.length);
+      });
+    return () => { cancelled = true; };
+  }, [selectedClient]);
+
+  const clientTags = [];
+  if (hasMortgage) clientTags.push('משכנתא פעילה');
+  if (nextMeeting) {
+    const daysToMeeting = Math.ceil((new Date(nextMeeting) - today) / 86400000);
+    if (daysToMeeting >= 0 && daysToMeeting <= 7) clientTags.push('פגישה השבוע');
+  }
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -197,6 +221,7 @@ export default function App() {
             nextMeeting={nextMeeting}
             openTasks={openTasks}
             household={household}
+            tags={clientTags}
             onOpenCrm={() => setNav('crm')}
             budgetMode={budgetMode}
             onBudgetModeChange={setBudgetMode}
