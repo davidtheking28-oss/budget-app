@@ -106,6 +106,7 @@ export default function App() {
     const daysToMeeting = Math.ceil((new Date(nextMeeting) - today) / 86400000);
     if (daysToMeeting >= 0 && daysToMeeting <= 7) clientTags.push('פגישה השבוע');
   }
+  clientTags.push(...(clientProfile?.tags || []));
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -215,6 +216,7 @@ export default function App() {
         {nav === 'dashboard' && (
           <ClientContextBar
             name={clientProfile?.name}
+            isVip={!!clientProfile?.is_vip}
             email={selectedClient.email}
             phone={clientProfile?.phone}
             createdAt={clientProfile?.created_at}

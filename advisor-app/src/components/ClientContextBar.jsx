@@ -4,7 +4,7 @@ import styles from './ClientContextBar.module.css';
 
 const iconProps = { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' };
 
-export default function ClientContextBar({ name, email, phone, createdAt, nextMeeting, openTasks, household, tags, onOpenCrm, budgetMode, onBudgetModeChange }) {
+export default function ClientContextBar({ name, isVip, email, phone, createdAt, nextMeeting, openTasks, household, tags, onOpenCrm, budgetMode, onBudgetModeChange }) {
   const meeting = nextMeeting ? formatDateTime(nextMeeting) : null;
   const joined = createdAt ? formatDate(createdAt) : null;
   const digits = phone ? phone.replace(/\D/g, '') : null;
@@ -17,7 +17,7 @@ export default function ClientContextBar({ name, email, phone, createdAt, nextMe
         <div className={styles.identity}>
           <div className={styles.avatar} aria-hidden="true">{initials(name || email)}</div>
           <div className={styles.identityInfo}>
-            {name && <div className={styles.name}>{name}</div>}
+            {name && <div className={styles.name}>{name}{isVip && <span className={styles.vipBadge}>★ VIP</span>}</div>}
             <div className={styles.contactRow}>
               <span className={styles.contactItem} dir="ltr" title={email}>
                 <svg {...iconProps} width={14} height={14}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
@@ -35,7 +35,7 @@ export default function ClientContextBar({ name, email, phone, createdAt, nextMe
             <div className={styles.badges}>
               <span className={styles.badgeActive}>פעיל</span>
               {joined && <span className={styles.badge}>לקוח מאז {joined}</span>}
-              {(tags || []).map(tag => <span key={tag} className={styles.badge}>{tag}</span>)}
+              {(tags || []).map(tag => <span key={tag} className={styles.tagBadge}>{tag}</span>)}
             </div>
           </div>
         </div>
