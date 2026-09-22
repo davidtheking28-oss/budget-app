@@ -66,13 +66,58 @@
 }
 
 .tagBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: var(--text-xs);
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 6px 2px 8px;
   border-radius: var(--radius-sm);
   color: var(--accent);
   background: rgba(var(--accent-rgb), 0.1);
   border: 1px solid rgba(var(--accent-rgb), 0.3);
+}
+
+.tagBadge button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  line-height: 1;
+  padding: 0;
+}
+
+.addTagBtn {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text3);
+  background: none;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: color .18s ease, border-color .18s ease;
+}
+
+.addTagBtn:hover { color: var(--accent); border-color: rgba(var(--accent-rgb), 0.5); }
+
+.tagAddForm { display: inline-flex; }
+
+.tagAddInput {
+  width: 110px;
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  background: var(--surface2);
+  color: var(--text);
+  outline: none;
 }
 
 .contactRow {

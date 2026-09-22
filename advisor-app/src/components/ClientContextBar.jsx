@@ -1,15 +1,25 @@
+import { useState } from 'react';
 import { formatDate, formatDateTime } from '../budget/monthUtils.js';
 import { initials } from '../clientIdentity.js';
 import styles from './ClientContextBar.module.css';
 
 const iconProps = { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' };
 
-export default function ClientContextBar({ name, isVip, email, phone, createdAt, nextMeeting, openTasks, household, tags, onOpenCrm, budgetMode, onBudgetModeChange }) {
+export default function ClientContextBar({ name, isVip, email, phone, createdAt, nextMeeting, openTasks, household, tags, manualTags, onAddTag, onRemoveTag, onOpenCrm, budgetMode, onBudgetModeChange }) {
+  const [addingTag, setAddingTag] = useState(false);
+  const [tagDraft, setTagDraft] = useState('');
   const meeting = nextMeeting ? formatDateTime(nextMeeting) : null;
   const joined = createdAt ? formatDate(createdAt) : null;
   const digits = phone ? phone.replace(/\D/g, '') : null;
   const waHref = digits ? `https://wa.me/${digits}` : null;
   const telHref = digits ? `tel:${digits}` : null;
+
+  function submitTag() {
+    if (!tagDraft.trim() || !onAddTag) return;
+    onAddTag(tagDraft);
+    setTagDraft('');
+    setAddingTag(false);
+  }
 
   return (
     <div className={styles.bar}>
@@ -36,6 +46,27 @@ export default function ClientContextBar({ name, isVip, email, phone, createdAt,
               <span className={styles.badgeActive}>פעיל</span>
               {joined && <span className={styles.badge}>לקוח מאז {joined}</span>}
               {(tags || []).map(tag => <span key={tag} className={styles.tagBadge}>{tag}</span>)}
+              {(manualTags || []).map(tag => (
+                <span key={tag} className={styles.tagBadge}>
+                  {tag}
+                  {onRemoveTag && <button type="button" aria-label={`הסר תגית ${tag}`} onClick={() => onRemoveTag(tag)}>×</button>}
+                </span>
+              ))}
+              {onAddTag && (addingTag ? (
+                <span className={styles.tagAddForm}>
+                  <input
+                    autoFocus
+                    className={styles.tagAddInput}
+                    aria-label="שם התגית"
+                    value={tagDraft}
+                    onChange={e => setTagDraft(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') submitTag(); if (e.key === 'Escape') { setAddingTag(false); setTagDraft(''); } }}
+                    onBlur={submitTag}
+                  />
+                </span>
+              ) : (
+                <button type="button" className={styles.addTagBtn} onClick={() => setAddingTag(true)}>+ הוסף תגית</button>
+              ))}
             </div>
           </div>
         </div>

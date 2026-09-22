@@ -81,7 +81,7 @@ export default function App() {
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const { theme, toggle: toggleTheme } = useTheme();
   const { nextMeeting, openTasks, household, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
-  const { profile: clientProfile } = useClientProfile(session?.user?.id, selectedClient?.id);
+  const { profile: clientProfile, addTag: addClientTag, removeTag: removeClientTag } = useClientProfile(session?.user?.id, selectedClient?.id);
   const [hasMortgage, setHasMortgage] = useState(false);
 
   useEffect(() => {
@@ -106,7 +106,6 @@ export default function App() {
     const daysToMeeting = Math.ceil((new Date(nextMeeting) - today) / 86400000);
     if (daysToMeeting >= 0 && daysToMeeting <= 7) clientTags.push('פגישה השבוע');
   }
-  clientTags.push(...(clientProfile?.tags || []));
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -224,6 +223,9 @@ export default function App() {
             openTasks={openTasks}
             household={household}
             tags={clientTags}
+            manualTags={clientProfile?.tags || []}
+            onAddTag={addClientTag}
+            onRemoveTag={removeClientTag}
             onOpenCrm={() => setNav('crm')}
             budgetMode={budgetMode}
             onBudgetModeChange={setBudgetMode}
