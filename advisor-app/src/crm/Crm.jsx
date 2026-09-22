@@ -51,8 +51,7 @@ function daysUntil(dateStr) {
 
 export default function Crm({ advisorId, clientId, email, onChange }) {
   const { tasks, meetings, loading, error, reload, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId);
-  const { profile, save: saveProfile, toggleVip, addTag, removeTag } = useClientProfile(advisorId, clientId);
-  const [tagDraft, setTagDraft] = useState('');
+  const { profile, save: saveProfile } = useClientProfile(advisorId, clientId);
   const [nameDraft, setNameDraft] = useState('');
   const [phoneDraft, setPhoneDraft] = useState('');
   const [backgroundDraft, setBackgroundDraft] = useState('');
@@ -181,24 +180,6 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
               value={backgroundDraft}
               onChange={e => { setBackgroundDraft(e.target.value); setProfileDirty(true); }}
             />
-            <div className={styles.tagsRow} style={{ marginTop: 'var(--space-3)' }}>
-              <button type="button" className={styles.vipToggle + (profile?.is_vip ? ' ' + styles.vipOn : '')} aria-pressed={!!profile?.is_vip} onClick={toggleVip}>★ VIP</button>
-              {(profile?.tags || []).map(tag => (
-                <span key={tag} className={styles.tagChip}>
-                  {tag}
-                  <button type="button" aria-label={`הסר תגית ${tag}`} onClick={() => removeTag(tag)}>×</button>
-                </span>
-              ))}
-              <input
-                className={styles.input}
-                style={{ flex: '0 0 140px', height: 32 }}
-                placeholder="+ הוסף תגית"
-                aria-label="הוסף תגית"
-                value={tagDraft}
-                onChange={e => setTagDraft(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && tagDraft.trim()) { addTag(tagDraft); setTagDraft(''); } }}
-              />
-            </div>
             <div style={{ marginTop: 'var(--space-3)' }}>
               <Button onClick={saveProfileFields} disabled={!profileDirty}>שמור</Button>
             </div>

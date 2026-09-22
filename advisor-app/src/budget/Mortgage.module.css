@@ -213,17 +213,6 @@ select.cellInput { cursor: pointer; }
   .cellInput { font-size: 16px; }
 }
 
-.warnBadge {
-  display: inline-block;
-  margin-top: 2px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--red);
-  background: rgba(var(--red-rgb), 0.1);
-  border-radius: var(--radius-sm);
-  padding: 1px 6px;
-}
-
 .trackActions { display: flex; align-items: center; gap: 2px; }
 .editBtn {
   display: flex;
