@@ -11,7 +11,7 @@ import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import styles from './Mortgage.module.css';
-import { fmt } from '../format.js';
+import { fmt, formatAmountInput, unformatAmountInput } from '../format.js';
 import { useCountUp } from '../useCountUp.js';
 
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
@@ -233,7 +233,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         <h3 className={styles.cardTitle}>תרחיש נכס</h3>
         <div className={styles.form}>
           <input className={styles.input} placeholder="גוף מממן" aria-label="גוף מממן" value={scenario.financier} onChange={e => setField('financier', e.target.value)} />
-          <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="שווי נכס" aria-label="שווי נכס" value={scenario.propertyValue} onChange={e => setField('propertyValue', e.target.value)} />
+          <input className={styles.input + ' ' + styles.amountInput} type="text" inputMode="decimal" placeholder="שווי נכס" aria-label="שווי נכס" value={formatAmountInput(scenario.propertyValue)} onChange={e => setField('propertyValue', unformatAmountInput(e.target.value))} />
           <select className={styles.input} aria-label="סוג רכישה" value={purchaseType} onChange={e => setField('purchaseType', e.target.value)}>
             {PURCHASE_TYPES.map(p => <option key={p.value} value={p.value}>{p.label} (עד {p.ltvCap}% מימון)</option>)}
           </select>
@@ -289,7 +289,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                       </td>
                       <td><input className={styles.cellInput} type="number" inputMode="numeric" placeholder="חודשים" aria-label="תדירות עדכון בחודשים" value={t.rateFrequency} onChange={e => updateTrack(t.id, { rateFrequency: e.target.value })} /></td>
                       <td><input className={styles.cellInput} type="date" aria-label="תאריך עדכון קרוב" value={t.rateUpdateDate} onChange={e => updateTrack(t.id, { rateUpdateDate: e.target.value })} /></td>
-                      <td><input className={styles.cellInput} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום המסלול" value={t.principal} onChange={e => updateTrack(t.id, { principal: e.target.value })} /></td>
+                      <td><input className={styles.cellInput} type="text" inputMode="decimal" placeholder="סכום" aria-label="סכום המסלול" value={formatAmountInput(t.principal)} onChange={e => updateTrack(t.id, { principal: unformatAmountInput(e.target.value) })} /></td>
                       <td><input className={styles.cellInput} type="number" inputMode="numeric" placeholder="שנים" aria-label="תקופה בשנים" value={t.years} onChange={e => updateTrack(t.id, { years: e.target.value })} /></td>
                       <td>
                         <select className={styles.cellInput} aria-label="עוגן" value={t.anchor} onChange={e => onAnchor(e.target.value)}>
