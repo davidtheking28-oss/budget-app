@@ -123,7 +123,7 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     const months = parseInt(consolForm.months) || 0;
     if (!months) { toast('נדרשת תקופה מוצעת', 'error'); return; }
     const newMonthly = pmtSpitzer(currentRemaining, rate, months);
-    setConsolResult({ currentMonthly, newMonthly, diff: currentMonthly - newMonthly });
+    setConsolResult({ currentMonthly, currentRemaining, newMonthly, diff: currentMonthly - newMonthly });
   }
   function resetPaymentForm() { setPaymentForm({ name: '', total: '', current: '', amount: '' }); setEditingPaymentId(null); }
   async function submitPayment() {
@@ -247,26 +247,55 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
       <div className={styles.section}>
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.merge}</span>סימולציית איחוד הלוואות</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות לאיחוד</div>}
-        {loans.length ? (
-          <div className={styles.list}>
-            {loans.map(l => (
-              <label key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', padding: '6px 0' }}>
-                <input type="checkbox" checked={!!consolChecked[l.id]} onChange={() => toggleConsol(l.id)} />
-                {l.name} · {fmt(l.monthly || 0)}/חודש
-              </label>
-            ))}
-          </div>
-        ) : null}
-        <div className={styles.form}>
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית מוצעת %" aria-label="ריבית מוצעת" value={consolForm.rate} onChange={e => setConsolForm({ ...consolForm, rate: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה מוצעת (חודשים)" aria-label="תקופה מוצעת" value={consolForm.months} onChange={e => setConsolForm({ ...consolForm, months: e.target.value })} />
-          <Button onClick={() => calcConsolidation(loans)}>חשב חיסכון</Button>
-        </div>
-        {consolResult && (
-          <div className={styles.row} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
-            <div>החזר חודשי מאוחד: <b>{fmt(consolResult.newMonthly)}</b></div>
-            <div>{consolResult.diff >= 0 ? 'חיסכון' : 'עלות נוספת'} לחודש: <b style={{ color: consolResult.diff >= 0 ? 'var(--green)' : 'var(--red)' }}>{fmt(Math.abs(consolResult.diff))}</b></div>
-          </div>
+        {loans.length > 0 && (
+          <>
+            <div className={styles.form}>
+              <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית מוצעת %" aria-label="ריבית מוצעת" value={consolForm.rate} onChange={e => setConsolForm({ ...consolForm, rate: e.target.value })} />
+              <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה מוצעת (חודשים)" aria-label="תקופה מוצעת" value={consolForm.months} onChange={e => setConsolForm({ ...consolForm, months: e.target.value })} />
+              <Button onClick={() => calcConsolidation(loans)}>חשב חיסכון</Button>
+            </div>
+            <div className={styles.consolTableWrap}>
+              <table className={styles.consolTable}>
+                <thead>
+                  <tr><th>שם ההלוואה</th><th>סכום ההלוואה</th><th>החזר חודשי</th></tr>
+                </thead>
+                <tbody>
+                  <tr className={styles.consolGroupRow}><td colSpan={3}>הלוואה חדשה</td></tr>
+                  <tr>
+                    <td>הלוואה מאוחדת</td>
+                    <td>{consolResult ? fmt(consolResult.currentRemaining) : '—'}</td>
+                    <td>{consolResult ? fmt(consolResult.newMonthly) : '—'}</td>
+                  </tr>
+                  <tr className={styles.consolGroupRow}><td colSpan={3}>הלוואות קיימות</td></tr>
+                  {loans.map(l => (
+                    <tr key={l.id}>
+                      <td>
+                        <label className={styles.consolCheckLabel}>
+                          <input type="checkbox" checked={!!consolChecked[l.id]} onChange={() => toggleConsol(l.id)} />
+                          {l.name}
+                        </label>
+                      </td>
+                      <td>{fmt(l.remaining || 0)}</td>
+                      <td>{fmt(l.monthly || 0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                {consolResult && (
+                  <tfoot>
+                    <tr>
+                      <td>יתרה מההלוואה</td>
+                      {/* the consolidated loan is sized to exactly cover the selected remaining balances, so this is always 0 */}
+                      <td colSpan={2}>{fmt(0)}</td>
+                    </tr>
+                    <tr>
+                      <td>{consolResult.diff >= 0 ? 'חיסכון בהחזר חודשי' : 'עלות נוספת בהחזר חודשי'}</td>
+                      <td colSpan={2} style={{ color: consolResult.diff >= 0 ? 'var(--green)' : 'var(--red)' }}>{fmt(Math.abs(consolResult.diff))}</td>
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
+          </>
         )}
       </CollapsibleSection>
       </div>

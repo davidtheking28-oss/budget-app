@@ -298,3 +298,39 @@
   font-weight: 600;
   color: var(--red);
 }
+
+.consolTableWrap { overflow-x: auto; }
+
+.consolTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.consolTable th {
+  text-align: start;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.consolTable td {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+
+.consolGroupRow td {
+  background: var(--surface2);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.consolCheckLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
