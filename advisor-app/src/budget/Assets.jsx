@@ -39,7 +39,7 @@ export default function Assets({ clientUserId, advisorId }) {
   }
 
   const assets = data.assets || [];
-  const loans = data.loans || [];
+  const loans = (data.loans || []).filter(l => !l.closed);
   const totalAssets = assets.reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
   const totalLiabilities = loans.reduce((s, l) => s + (parseFloat(l.remaining) || 0), 0);
   const netWorth = totalAssets - totalLiabilities;

@@ -356,7 +356,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     setLinkForm(null);
   }
 
-  const loanCandidates = recurringCandidates(LOAN_CATEGORY, (budgetData?.loans || []).map(l => l.name));
+  const loanCandidates = recurringCandidates(LOAN_CATEGORY, (budgetData?.loans || []).filter(l => !l.closed).map(l => l.name));
   const savingsCandidates = recurringCandidates(SAVINGS_CATEGORY, (budgetData?.assets || []).map(a => a.name));
 
   const categories = data?.category_averages

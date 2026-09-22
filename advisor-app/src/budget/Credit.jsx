@@ -78,8 +78,12 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
   const [spForm, setSpForm] = useState({ principal: '', rate: '', months: '' });
   const [spResult, setSpResult] = useState(null);
   const [consolChecked, setConsolChecked] = useState({});
-  const [consolForm, setConsolForm] = useState({ rate: '', months: '' });
+  const [consolPaymentsChecked, setConsolPaymentsChecked] = useState({});
+  const [consolOverdraftChecked, setConsolOverdraftChecked] = useState(false);
+  const [consolForm, setConsolForm] = useState({ name: '', rate: '', months: '' });
   const [consolResult, setConsolResult] = useState(null);
+  const [overdraftDraft, setOverdraftDraft] = useState('');
+  const [editingOverdraft, setEditingOverdraft] = useState(false);
 
   function resetLoanForm() { setLoanForm({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' }); setEditingLoanId(null); }
   async function submitLoan() {
@@ -113,17 +117,81 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     setLoanForm({ name: 'הלוואה (משפיצר)', lender: '', monthly: String(Math.round(spResult.pmt * 100) / 100), remaining: String(spResult.P), original: String(spResult.P), rate: String(spResult.rate) });
   }
   function toggleConsol(id) { setConsolChecked(c => ({ ...c, [id]: !c[id] })); }
-  function calcConsolidation(loans) {
-    const ids = Object.keys(consolChecked).filter(id => consolChecked[id]);
-    if (ids.length < 2) { toast('בחר לפחות 2 הלוואות לאיחוד', 'error'); return; }
-    const picked = loans.filter(l => ids.includes(String(l.id)));
-    const currentMonthly = picked.reduce((s, l) => s + (l.monthly || 0), 0);
-    const currentRemaining = picked.reduce((s, l) => s + (l.remaining || 0), 0);
+  function toggleConsolPayment(id) { setConsolPaymentsChecked(c => ({ ...c, [id]: !c[id] })); }
+  function paymentRemainingValue(p) {
+    const total = parseFloat(p.total) || 0;
+    const left = Math.max(0, total - currentInstallments(p, total));
+    return { left, value: left * (parseFloat(p.amount) || 0) };
+  }
+  function consolSelection(loans, payments) {
+    const loanIds = Object.keys(consolChecked).filter(id => consolChecked[id]);
+    const paymentIds = Object.keys(consolPaymentsChecked).filter(id => consolPaymentsChecked[id]);
+    const includeOverdraft = consolOverdraftChecked && (overdraft.balance || 0) > 0;
+    const pickedLoans = loans.filter(l => loanIds.includes(String(l.id)));
+    const pickedPayments = payments.filter(p => paymentIds.includes(String(p.id)));
+    const loanMonthly = pickedLoans.reduce((s, l) => s + (l.monthly || 0), 0);
+    const loanRemaining = pickedLoans.reduce((s, l) => s + (l.remaining || 0), 0);
+    const paymentMonthly = pickedPayments.reduce((s, p) => s + (paymentRemainingValue(p).left > 0 ? (parseFloat(p.amount) || 0) : 0), 0);
+    const paymentRemaining = pickedPayments.reduce((s, p) => s + paymentRemainingValue(p).value, 0);
+    const overdraftAmount = includeOverdraft ? (overdraft.balance || 0) : 0;
+    return {
+      loanIds, paymentIds, includeOverdraft,
+      currentMonthly: loanMonthly + paymentMonthly,
+      currentRemaining: loanRemaining + paymentRemaining + overdraftAmount,
+      itemCount: loanIds.length + paymentIds.length + (includeOverdraft ? 1 : 0)
+    };
+  }
+  function calcConsolidation(loans, payments) {
+    const sel = consolSelection(loans, payments);
+    if (sel.itemCount < 1) { toast('בחר לפחות פריט אחד למחזור', 'error'); return; }
     const rate = parseFloat(consolForm.rate) || 0;
     const months = parseInt(consolForm.months) || 0;
     if (!months) { toast('נדרשת תקופה מוצעת', 'error'); return; }
-    const newMonthly = pmtSpitzer(currentRemaining, rate, months);
-    setConsolResult({ currentMonthly, currentRemaining, newMonthly, diff: currentMonthly - newMonthly });
+    const newMonthly = pmtSpitzer(sel.currentRemaining, rate, months);
+    setConsolResult({ currentMonthly: sel.currentMonthly, currentRemaining: sel.currentRemaining, newMonthly, diff: sel.currentMonthly - newMonthly });
+  }
+  async function commitConsolidation(loans, payments) {
+    const sel = consolSelection(loans, payments);
+    if (sel.itemCount < 1) { toast('בחר לפחות פריט אחד למחזור', 'error'); return; }
+    const rate = parseFloat(consolForm.rate) || 0;
+    const months = parseInt(consolForm.months) || 0;
+    if (!months) { toast('נדרשת תקופה מוצעת', 'error'); return; }
+    const { loanIds, paymentIds, includeOverdraft } = sel;
+    const ok = await save(cur => {
+      const curLoans = cur.loans || [];
+      const curPayments = cur.payments || [];
+      const s = consolSelection(curLoans.filter(l => !l.closed), curPayments.filter(p => !p.closed));
+      const newMonthly = pmtSpitzer(s.currentRemaining, rate, months);
+      const newLoan = {
+        id: Date.now() + Math.random(),
+        name: consolForm.name.trim() || 'הלוואה מאוחדת',
+        lender: '',
+        monthly: Math.round(newMonthly * 100) / 100,
+        remaining: s.currentRemaining,
+        original: s.currentRemaining,
+        rate,
+        previousMonthly: s.currentMonthly,
+        previousRemaining: s.currentRemaining,
+        consolidatedAt: new Date().toISOString()
+      };
+      return {
+        loans: [...curLoans.map(l => loanIds.includes(String(l.id)) ? { ...l, closed: true } : l), newLoan],
+        payments: curPayments.map(p => paymentIds.includes(String(p.id)) ? { ...p, closed: true } : p),
+        overdraft: includeOverdraft ? { ...(cur.overdraft || {}), balance: 0 } : cur.overdraft
+      };
+    });
+    if (!ok) return;
+    toast('המחזור בוצע — נוצרה הלוואה מאוחדת', 'success');
+    setConsolChecked({});
+    setConsolPaymentsChecked({});
+    setConsolOverdraftChecked(false);
+    setConsolResult(null);
+    setConsolForm({ name: '', rate: '', months: '' });
+  }
+  async function saveOverdraft() {
+    const balance = parseFloat(overdraftDraft) || 0;
+    const ok = await save({ overdraft: { balance } });
+    if (ok) { setEditingOverdraft(false); toast('יתרת המינוס נשמרה', 'success'); }
   }
   function resetPaymentForm() { setPaymentForm({ name: '', total: '', current: '', amount: '' }); setEditingPaymentId(null); }
   async function submitPayment() {
@@ -149,12 +217,13 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     );
   }
 
-  const loans = [...(data.loans || [])].sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
+  const loans = [...(data.loans || [])].filter(l => !l.closed).sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
+  const overdraft = data.overdraft || { balance: 0 };
   const loanMonthsLeft = l => loanPayoffMonths(l.remaining, l.monthly, l.rate);
   const longTermLoans = loans.filter(l => { const n = loanMonthsLeft(l); return n === Infinity || n >= 18; });
   const shortTermLoans = loans.filter(l => { const n = loanMonthsLeft(l); return n !== null && n !== Infinity && n < 18; });
   const unclassifiedLoans = loans.filter(l => loanMonthsLeft(l) === null);
-  const payments = [...(data.payments || [])].sort((a, b) => {
+  const payments = [...(data.payments || [])].filter(p => !p.closed).sort((a, b) => {
     const totalA = parseFloat(a.total) || 0;
     const totalB = parseFloat(b.total) || 0;
     const leftA = Math.max(0, totalA - currentInstallments(a, totalA)) * (parseFloat(a.amount) || 0);
@@ -217,6 +286,12 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
                       </div>
                     )}
                     {payoff && <div className={payoff.danger ? styles.payoffDanger : styles.payoffLabel}>{payoff.text}</div>}
+                    {l.previousMonthly != null && (
+                      <div className={styles.payoffLabel} style={{ color: 'var(--green)' }}>
+                        מחזור: היה {fmt(l.previousMonthly)}/חודש ← עכשיו {fmt(l.monthly || 0)}/חודש
+                        {l.previousMonthly > (l.monthly || 0) ? ` (חיסכון ${fmt(l.previousMonthly - (l.monthly || 0))})` : ''}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -245,28 +320,29 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
       </div>
 
       <div className={styles.section}>
-        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.merge}</span>סימולציית איחוד הלוואות</>}>
-        {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות לאיחוד</div>}
-        {loans.length > 0 && (
+        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.merge}</span>סימולציית מחזור / איחוד</>}>
+        {!loans.length && !payments.length && !(overdraft.balance > 0) && <div className={styles.sectionEmpty}>אין הלוואות, תשלומים או מינוס למחזור</div>}
+        {(loans.length > 0 || payments.length > 0 || overdraft.balance > 0) && (
           <>
             <div className={styles.form}>
+              <input className={styles.input} placeholder="שם ההלוואה החדשה" aria-label="שם ההלוואה החדשה" value={consolForm.name} onChange={e => setConsolForm({ ...consolForm, name: e.target.value })} />
               <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית מוצעת %" aria-label="ריבית מוצעת" value={consolForm.rate} onChange={e => setConsolForm({ ...consolForm, rate: e.target.value })} />
               <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה מוצעת (חודשים)" aria-label="תקופה מוצעת" value={consolForm.months} onChange={e => setConsolForm({ ...consolForm, months: e.target.value })} />
-              <Button onClick={() => calcConsolidation(loans)}>חשב חיסכון</Button>
+              <Button onClick={() => calcConsolidation(loans, payments)}>חשב חיסכון</Button>
             </div>
             <div className={styles.consolTableWrap}>
               <table className={styles.consolTable}>
                 <thead>
-                  <tr><th>שם ההלוואה</th><th>סכום ההלוואה</th><th>החזר חודשי</th></tr>
+                  <tr><th>שם</th><th>סכום</th><th>החזר חודשי</th></tr>
                 </thead>
                 <tbody>
                   <tr className={styles.consolGroupRow}><td colSpan={3}>הלוואה חדשה</td></tr>
                   <tr>
-                    <td>הלוואה מאוחדת</td>
+                    <td>{consolForm.name.trim() || 'הלוואה מאוחדת'}</td>
                     <td>{consolResult ? fmt(consolResult.currentRemaining) : '—'}</td>
                     <td>{consolResult ? fmt(consolResult.newMonthly) : '—'}</td>
                   </tr>
-                  <tr className={styles.consolGroupRow}><td colSpan={3}>הלוואות קיימות</td></tr>
+                  {loans.length > 0 && <tr className={styles.consolGroupRow}><td colSpan={3}>הלוואות קיימות</td></tr>}
                   {loans.map(l => (
                     <tr key={l.id}>
                       <td>
@@ -279,6 +355,38 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
                       <td>{fmt(l.monthly || 0)}</td>
                     </tr>
                   ))}
+                  {payments.length > 0 && <tr className={styles.consolGroupRow}><td colSpan={3}>תשלומים בכרטיס אשראי</td></tr>}
+                  {payments.map(p => {
+                    const { left, value } = paymentRemainingValue(p);
+                    if (left <= 0) return null;
+                    return (
+                      <tr key={p.id}>
+                        <td>
+                          <label className={styles.consolCheckLabel}>
+                            <input type="checkbox" checked={!!consolPaymentsChecked[p.id]} onChange={() => toggleConsolPayment(p.id)} />
+                            {p.name || 'תשלום'}
+                          </label>
+                        </td>
+                        <td>{fmt(value)}</td>
+                        <td>{fmt(p.amount || 0)}</td>
+                      </tr>
+                    );
+                  })}
+                  {overdraft.balance > 0 && (
+                    <>
+                      <tr className={styles.consolGroupRow}><td colSpan={3}>מינוס בבנק</td></tr>
+                      <tr>
+                        <td>
+                          <label className={styles.consolCheckLabel}>
+                            <input type="checkbox" checked={consolOverdraftChecked} onChange={() => setConsolOverdraftChecked(v => !v)} />
+                            יתרת מינוס
+                          </label>
+                        </td>
+                        <td>{fmt(overdraft.balance)}</td>
+                        <td>—</td>
+                      </tr>
+                    </>
+                  )}
                 </tbody>
                 {consolResult && (
                   <tfoot>
@@ -295,8 +403,25 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
                 )}
               </table>
             </div>
+            {consolResult && (
+              <div style={{ marginTop: 'var(--space-3)' }}>
+                <Button onClick={() => commitConsolidation(loans, payments)}>בצע מחזור</Button>
+              </div>
+            )}
           </>
         )}
+        <div className={styles.form} style={{ marginTop: 'var(--space-4)' }}>
+          {editingOverdraft ? (
+            <>
+              <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרת מינוס בבנק" aria-label="יתרת מינוס בבנק" value={overdraftDraft} onChange={e => setOverdraftDraft(e.target.value)} />
+              <Button onClick={saveOverdraft}>שמור</Button>
+            </>
+          ) : (
+            <Button variant="ghost" onClick={() => { setOverdraftDraft(String(overdraft.balance || '')); setEditingOverdraft(true); }}>
+              {overdraft.balance > 0 ? `עדכן יתרת מינוס (${fmt(overdraft.balance)})` : '+ הוסף יתרת מינוס בבנק'}
+            </Button>
+          )}
+        </div>
       </CollapsibleSection>
       </div>
 

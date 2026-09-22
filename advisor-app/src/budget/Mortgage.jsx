@@ -91,7 +91,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const scenario = form || data.mortgage_scenario || EMPTY_SCENARIO;
   const summary = monthSummary(data, year, month);
   const assets = data.assets || [];
-  const loans = data.loans || [];
+  const loans = (data.loans || []).filter(l => !l.closed);
   const loanMonthlyTotal = loans.reduce((s, l) => s + (parseFloat(l.monthly) || 0), 0);
   const liquidAssets = assets.filter(a => LIQUID_ASSET_CATS.includes(a.category)).reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
 

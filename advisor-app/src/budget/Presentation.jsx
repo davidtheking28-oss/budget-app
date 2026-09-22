@@ -62,13 +62,13 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
 
   const fixed = data.fixed_expenses || [];
 
-  const loans = data.loans || [];
+  const loans = (data.loans || []).filter(l => !l.closed);
   const loansFinishingSoon = isCurrentMonth ? loans.filter(l => {
     const n = loanPayoffMonths(l.remaining, l.monthly, l.rate);
     return n !== null && n !== Infinity && n <= 1;
   }) : [];
 
-  const payments = data.payments || [];
+  const payments = (data.payments || []).filter(p => !p.closed);
   const paymentsFinishingSoon = isCurrentMonth ? payments.filter(p => {
     const total = parseFloat(p.total) || 0;
     const left = Math.max(0, total - currentInstallments(p, total));
