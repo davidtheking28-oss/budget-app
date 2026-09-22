@@ -212,7 +212,7 @@ export default function App() {
         sidebarInfo={<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
         inert={searchOpen}
       >
-        {(nav === 'dashboard' || nav === 'crm') && (
+        {nav === 'crm' && (
           <ClientContextBar
             name={clientProfile?.name}
             isVip={!!clientProfile?.is_vip}
