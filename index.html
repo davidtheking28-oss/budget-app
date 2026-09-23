@@ -2935,8 +2935,8 @@ const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וב�
 // every expense total (see _fxUpsert's transaction type and _fxRefreshTotal).
 const SAVING_FIXED_CATS=['הוראת קבע לחסכון'];
 const FIXED_AUTO={
-  'החזר הלוואות + חיוב קבוע':()=>loans.reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
-  'עסקאות בתשלומים':()=>payments.reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&_payCalc(p).left>0?amt:0);},0),
+  'החזר הלוואות + חיוב קבוע':()=>activeLoans().reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
+  'עסקאות בתשלומים':()=>activePayments().reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&_payCalc(p).left>0?amt:0);},0),
   'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0),
   'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
 };
@@ -2978,6 +2978,12 @@ let subscriptions = JSON.parse(localStorage.getItem(_modeKey('budget_subs'))  ||
 let budgets       = JSON.parse(localStorage.getItem(_modeKey('budget_limits'))||'{}');
 let loans         = JSON.parse(localStorage.getItem(_modeKey('budget_loans')) ||'[]');
 let payments      = JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
+// A loan/payment "closed" by a mahzor (consolidation) stays in the array so its
+// history and the advisor's before/after comparison survive — every display and
+// total must read through these instead of the raw arrays, or a closed item
+// keeps counting toward balances after it was folded into a new consolidated loan.
+function activeLoans(){ return loans.filter(l=>!l.closed); }
+function activePayments(){ return payments.filter(p=>!p.closed); }
 let fixedExpenses = JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))   ||'[]');
 let insurances    = JSON.parse(localStorage.getItem(_modeKey('budget_insurances'))||'[]');
 
@@ -3824,7 +3830,7 @@ function _expTxListHtml(cat,byCat){
 }
 function _expStructListHtml(kind){
   if(kind==='loans'){
-    const rows=loans.map(l=>'<div class="exp-struct-row" onclick="event.stopPropagation();editLoan('+l.id+')"><span>'+esc(l.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(l.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteLoan('+l.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    const rows=activeLoans().map(l=>'<div class="exp-struct-row" onclick="event.stopPropagation();editLoan('+l.id+')"><span>'+esc(l.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(l.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteLoan('+l.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
     return (rows||'<div class="budget-tx-empty">אין הלוואות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openAddLoanSheet()">+ הוסף הלוואה</button>';
   }
   if(kind==='insurance'){
@@ -3837,7 +3843,7 @@ function _expStructListHtml(kind){
     return (rows||'<div class="budget-tx-empty">אין מנויים פעילים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openSheet(\'addSubSheet\')">+ הוסף מנוי</button>';
   }
   if(kind==='payments'){
-    const rows=payments.map(p=>{
+    const rows=activePayments().map(p=>{
       const c=_payCalc(p);
       const total=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;
       return '<div class="exp-pay-card">'
@@ -4943,10 +4949,11 @@ function renderAnnualSummary(){
 function renderNetWorth(){
   const section=document.getElementById('netWorthSection');
   if(!section)return;
-  if(!_advisorAssets.length&&!loans.length){section.style.display='none';return;}
+  const liabilities=activeLoans();
+  if(!_advisorAssets.length&&!liabilities.length){section.style.display='none';return;}
   section.style.display='';
   const totalAssets=_advisorAssets.reduce((s,a)=>s+(parseFloat(a.amount)||0),0);
-  const totalLiabilities=loans.reduce((s,l)=>s+(parseFloat(l.remaining)||0),0);
+  const totalLiabilities=liabilities.reduce((s,l)=>s+(parseFloat(l.remaining)||0),0);
   document.getElementById('netWorthAssets').textContent=fmt(totalAssets);
   document.getElementById('netWorthLiabilities').textContent=fmt(totalLiabilities);
   const netEl=document.getElementById('netWorthNet');
@@ -6048,7 +6055,7 @@ function _migratePayments(){
   return changed;
 }
 function _payRefreshTotal(){
-  let t=0;payments.forEach(p=>t+=_payCalc(p).sum);
+  let t=0;activePayments().forEach(p=>t+=_payCalc(p).sum);
   const el=document.getElementById('paymentsTotal');if(el)el.textContent=_payFmt(t);
 }
 function addPaymentRow(){
@@ -6143,9 +6150,10 @@ function renderPayments(){
   const body=document.getElementById('paymentsBody');
   if(!body)return;
   const card=document.getElementById('paymentsCard'), empty=document.getElementById('paymentsEmpty');
-  card.style.display=payments.length?'':'none';
-  empty.style.display=payments.length?'none':'';
-  body.innerHTML=payments.map(p=>{
+  const list=activePayments();
+  card.style.display=list.length?'':'none';
+  empty.style.display=list.length?'none':'';
+  body.innerHTML=list.map(p=>{
     const c=_payCalc(p);
     const total=parseFloat(p.total)||0;
     const done=total>0&&c.left<=0;
@@ -6782,21 +6790,22 @@ function deleteLoan(id){
   showUndoToast('🗑️ ההלוואה הוסרה',()=>{loans.splice(idx,0,backup);saveData();renderLoans();renderTxPage();},()=>{});
 }
 function renderLoans(){
-  const totalMonthly=loans.reduce((s,l)=>s+(l.monthly||0),0);
-  const totalRemaining=loans.reduce((s,l)=>s+(l.remaining||0),0);
+  const activeList=activeLoans();
+  const totalMonthly=activeList.reduce((s,l)=>s+(l.monthly||0),0);
+  const totalRemaining=activeList.reduce((s,l)=>s+(l.remaining||0),0);
   const totalDisplay=document.getElementById('loansTotalDisplay');
   const monthlyDisplay=document.getElementById('loansMonthlyDisplay');
   if(totalDisplay)totalDisplay.textContent=fmt(totalRemaining);
-  if(monthlyDisplay)monthlyDisplay.textContent='החזר חודשי: '+fmt(totalMonthly)+' · '+loans.length+' הלוואות';
+  if(monthlyDisplay)monthlyDisplay.textContent='החזר חודשי: '+fmt(totalMonthly)+' · '+activeList.length+' הלוואות';
   const summary=document.querySelector('.loans-summary');
-  if(summary)summary.classList.toggle('has-loans',loans.length>0);
+  if(summary)summary.classList.toggle('has-loans',activeList.length>0);
   const list=document.getElementById('loansList');
   if(!list)return;
-  if(!loans.length){
+  if(!activeList.length){
     list.innerHTML='<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></div><p>אין הלוואות רשומות</p><button class="btn-empty" onclick="openAddLoanSheet()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הלוואה ראשונה</button></div>';
     return;
   }
-  list.innerHTML=loans.map(l=>{
+  list.innerHTML=activeList.map(l=>{
     const pct=l.original>0?Math.min(Math.round((l.original-l.remaining)/l.original*100),100):0;
     const emoji=loanEmoji(l.name);
     const loanBarCls=progState(pct,[[90,'near-done'],[0,'']]);

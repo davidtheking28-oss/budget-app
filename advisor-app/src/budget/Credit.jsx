@@ -83,6 +83,7 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
   const [consolForm, setConsolForm] = useState({ name: '', rate: '', months: '' });
   const [consolResult, setConsolResult] = useState(null);
   const [overdraftDraft, setOverdraftDraft] = useState('');
+  const [overdraftRateDraft, setOverdraftRateDraft] = useState('');
   const [editingOverdraft, setEditingOverdraft] = useState(false);
 
   function resetLoanForm() { setLoanForm({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' }); setEditingLoanId(null); }
@@ -123,6 +124,14 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     const left = Math.max(0, total - currentInstallments(p, total));
     return { left, value: left * (parseFloat(p.amount) || 0) };
   }
+  // Total remaining cost under the CURRENT terms — each loan keeps its own payoff
+  // horizon (loanPayoffMonths), so a lower monthly payment that stretches the term
+  // can still cost more overall; this is what "עלות כוללת" compares against.
+  function loanRemainingCost(l) {
+    const term = loanPayoffMonths(l.remaining, l.monthly, l.rate);
+    if (term && term !== Infinity) return (l.monthly || 0) * term;
+    return l.remaining || 0;
+  }
   function consolSelection(loans, payments) {
     const loanIds = Object.keys(consolChecked).filter(id => consolChecked[id]);
     const paymentIds = Object.keys(consolPaymentsChecked).filter(id => consolPaymentsChecked[id]);
@@ -131,13 +140,20 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     const pickedPayments = payments.filter(p => paymentIds.includes(String(p.id)));
     const loanMonthly = pickedLoans.reduce((s, l) => s + (l.monthly || 0), 0);
     const loanRemaining = pickedLoans.reduce((s, l) => s + (l.remaining || 0), 0);
+    const loanTotalCost = pickedLoans.reduce((s, l) => s + loanRemainingCost(l), 0);
     const paymentMonthly = pickedPayments.reduce((s, p) => s + (paymentRemainingValue(p).left > 0 ? (parseFloat(p.amount) || 0) : 0), 0);
     const paymentRemaining = pickedPayments.reduce((s, p) => s + paymentRemainingValue(p).value, 0);
     const overdraftAmount = includeOverdraft ? (overdraft.balance || 0) : 0;
+    // The overdraft has no fixed payoff term — it just accrues interest — so its
+    // "cost" is a monthly interest charge, not an amortizing payment.
+    const overdraftMonthlyCost = includeOverdraft ? overdraftAmount * ((overdraft.rate || 0) / 1200) : 0;
     return {
-      loanIds, paymentIds, includeOverdraft,
-      currentMonthly: loanMonthly + paymentMonthly,
+      loanIds, paymentIds, includeOverdraft, overdraftMonthlyCost,
+      currentMonthly: loanMonthly + paymentMonthly + overdraftMonthlyCost,
       currentRemaining: loanRemaining + paymentRemaining + overdraftAmount,
+      // payments carry no separate interest already tracked, so their remaining
+      // value IS their remaining cost — only loans need the payoff-term math
+      currentTotalCost: loanTotalCost + paymentRemaining + overdraftAmount,
       itemCount: loanIds.length + paymentIds.length + (includeOverdraft ? 1 : 0)
     };
   }
@@ -148,7 +164,14 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     const months = parseInt(consolForm.months) || 0;
     if (!months) { toast('נדרשת תקופה מוצעת', 'error'); return; }
     const newMonthly = pmtSpitzer(sel.currentRemaining, rate, months);
-    setConsolResult({ currentMonthly: sel.currentMonthly, currentRemaining: sel.currentRemaining, newMonthly, diff: sel.currentMonthly - newMonthly });
+    const newTotalCost = newMonthly * months;
+    // project the overdraft's ongoing interest over the same horizon for a fair total-cost comparison
+    const currentTotalCost = sel.currentTotalCost + sel.overdraftMonthlyCost * months;
+    setConsolResult({
+      currentMonthly: sel.currentMonthly, currentRemaining: sel.currentRemaining, newMonthly,
+      diff: sel.currentMonthly - newMonthly,
+      currentTotalCost, newTotalCost, totalDiff: currentTotalCost - newTotalCost
+    });
   }
   async function commitConsolidation(loans, payments) {
     const sel = consolSelection(loans, payments);
@@ -157,13 +180,15 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     const months = parseInt(consolForm.months) || 0;
     if (!months) { toast('נדרשת תקופה מוצעת', 'error'); return; }
     const { loanIds, paymentIds, includeOverdraft } = sel;
+    const newLoanId = Date.now() + Math.random();
+    const previousOverdraftBalance = overdraft.balance || 0;
     const ok = await save(cur => {
       const curLoans = cur.loans || [];
       const curPayments = cur.payments || [];
       const s = consolSelection(curLoans.filter(l => !l.closed), curPayments.filter(p => !p.closed));
       const newMonthly = pmtSpitzer(s.currentRemaining, rate, months);
       const newLoan = {
-        id: Date.now() + Math.random(),
+        id: newLoanId,
         name: consolForm.name.trim() || 'הלוואה מאוחדת',
         lender: '',
         monthly: Math.round(newMonthly * 100) / 100,
@@ -181,16 +206,28 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
       };
     });
     if (!ok) return;
-    toast('המחזור בוצע — נוצרה הלוואה מאוחדת', 'success');
     setConsolChecked({});
     setConsolPaymentsChecked({});
     setConsolOverdraftChecked(false);
     setConsolResult(null);
     setConsolForm({ name: '', rate: '', months: '' });
+    toast('המחזור בוצע — נוצרה הלוואה מאוחדת', 'success', {
+      label: 'בטל',
+      onClick: () => undoConsolidation(newLoanId, loanIds, paymentIds, includeOverdraft, previousOverdraftBalance)
+    });
+  }
+  async function undoConsolidation(newLoanId, loanIds, paymentIds, includeOverdraft, previousOverdraftBalance) {
+    const ok = await save(cur => ({
+      loans: (cur.loans || []).filter(l => l.id !== newLoanId).map(l => loanIds.includes(String(l.id)) ? { ...l, closed: false } : l),
+      payments: (cur.payments || []).map(p => paymentIds.includes(String(p.id)) ? { ...p, closed: false } : p),
+      overdraft: includeOverdraft ? { ...(cur.overdraft || {}), balance: previousOverdraftBalance } : cur.overdraft
+    }));
+    if (ok) toast('המחזור בוטל', 'success');
   }
   async function saveOverdraft() {
     const balance = parseFloat(overdraftDraft) || 0;
-    const ok = await save({ overdraft: { balance } });
+    const rate = parseFloat(overdraftRateDraft) || 0;
+    const ok = await save({ overdraft: { balance, rate } });
     if (ok) { setEditingOverdraft(false); toast('יתרת המינוס נשמרה', 'success'); }
   }
   function resetPaymentForm() { setPaymentForm({ name: '', total: '', current: '', amount: '' }); setEditingPaymentId(null); }
@@ -383,7 +420,7 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
                           </label>
                         </td>
                         <td>{fmt(overdraft.balance)}</td>
-                        <td>—</td>
+                        <td>{overdraft.rate ? fmt(overdraft.balance * (overdraft.rate / 1200)) + ' ריבית' : '—'}</td>
                       </tr>
                     </>
                   )}
@@ -398,6 +435,10 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
                     <tr>
                       <td>{consolResult.diff >= 0 ? 'חיסכון בהחזר חודשי' : 'עלות נוספת בהחזר חודשי'}</td>
                       <td colSpan={2} style={{ color: consolResult.diff >= 0 ? 'var(--green)' : 'var(--red)' }}>{fmt(Math.abs(consolResult.diff))}</td>
+                    </tr>
+                    <tr title="עלות כוללת עד סוף התקופה: לפי טווח הסילוק הנוכחי של כל פריט, מול ההלוואה המאוחדת החדשה">
+                      <td>{consolResult.totalDiff >= 0 ? 'חיסכון כולל עד סוף התקופה' : 'עלות נוספת כוללת עד סוף התקופה'}</td>
+                      <td colSpan={2} style={{ color: consolResult.totalDiff >= 0 ? 'var(--green)' : 'var(--red)' }}>{fmt(Math.abs(consolResult.totalDiff))}</td>
                     </tr>
                   </tfoot>
                 )}
@@ -414,11 +455,12 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
           {editingOverdraft ? (
             <>
               <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרת מינוס בבנק" aria-label="יתרת מינוס בבנק" value={overdraftDraft} onChange={e => setOverdraftDraft(e.target.value)} />
+              <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית על המינוס" value={overdraftRateDraft} onChange={e => setOverdraftRateDraft(e.target.value)} />
               <Button onClick={saveOverdraft}>שמור</Button>
             </>
           ) : (
-            <Button variant="ghost" onClick={() => { setOverdraftDraft(String(overdraft.balance || '')); setEditingOverdraft(true); }}>
-              {overdraft.balance > 0 ? `עדכן יתרת מינוס (${fmt(overdraft.balance)})` : '+ הוסף יתרת מינוס בבנק'}
+            <Button variant="ghost" onClick={() => { setOverdraftDraft(String(overdraft.balance || '')); setOverdraftRateDraft(String(overdraft.rate || '')); setEditingOverdraft(true); }}>
+              {overdraft.balance > 0 ? `עדכן יתרת מינוס (${fmt(overdraft.balance)}${overdraft.rate ? ' · ' + overdraft.rate + '%' : ''})` : '+ הוסף יתרת מינוס בבנק'}
             </Button>
           )}
         </div>
