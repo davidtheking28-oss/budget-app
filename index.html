@@ -2272,10 +2272,12 @@
       <div class="loans-summary-val" id="loansTotalDisplay">₪0</div>
       <div class="loans-summary-sub" id="loansMonthlyDisplay">החזר חודשי: ₪0 · 0 הלוואות</div>
     </div>
+    <div id="overdraftCard"></div>
     <div style="margin-bottom:14px;display:flex;justify-content:flex-start">
       <button class="btn btn-primary btn-sm" onclick="openAddLoanSheet()">+ הלוואה / חוב</button>
     </div>
     <div id="loansList"></div>
+    <div id="loansHistorySection"></div>
   </div>
 
   <!-- עמוד עוד -->
@@ -4242,6 +4244,7 @@ async function _loadFromCloud(silent){
       // read-only mirror of the advisor's asset list — never part of _collections()/_buildMerged,
       // so a client save can never touch or wipe what the advisor entered (see commit 4d0c8a8)
       _advisorAssets=bundle.assets||[];
+      _advisorOverdraft=bundle.overdraft||{balance:0};
       const cloudSettings=bundle.settings;
       if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...cloudSettings};localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
       if(!silent||changed){refreshAll();}
@@ -4554,6 +4557,7 @@ function renderAdvisorLinkSection(){
     +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">נתק יועץ</button>';
 }
 let _advisorAssets=[];
+let _advisorOverdraft={balance:0};
 // ── Advisor tasks & meetings (read-only from the advisor's own tables — see
 //    supabase/migrations/023_client_visible_advisor_tasks.sql; not part of the
 //    budget_data sync protocol, so nothing here touches _collections()/_buildMerged) ──
@@ -6789,7 +6793,33 @@ function deleteLoan(id){
   renderLoans();renderTxPage();
   showUndoToast('🗑️ ההלוואה הוסרה',()=>{loans.splice(idx,0,backup);saveData();renderLoans();renderTxPage();},()=>{});
 }
+function renderOverdraftCard(){
+  const el=document.getElementById('overdraftCard');
+  if(!el)return;
+  const balance=parseFloat(_advisorOverdraft.balance)||0;
+  if(balance<=0){el.innerHTML='';return;}
+  const rate=parseFloat(_advisorOverdraft.rate)||0;
+  el.innerHTML='<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">'
+    +'<div><div style="font-size:0.78rem;font-weight:700;color:var(--text3)">מינוס בבנק'+(rate?' · '+rate+'% ריבית':'')+'</div><div style="font-size:0.72rem;color:var(--text3);margin-top:2px">מוזן ע״י היועץ</div></div>'
+    +'<div style="font-size:1.1rem;font-weight:800;color:var(--red)">'+fmt(balance)+'</div></div>';
+}
+// Loans/payments closed by a mahzor stay in the arrays (see activeLoans/activePayments)
+// so this history stays visible even though the balances above exclude them.
+function renderLoansHistory(){
+  const el=document.getElementById('loansHistorySection');
+  if(!el)return;
+  const closedLoans=loans.filter(l=>l.closed);
+  const closedPayments=payments.filter(p=>p.closed);
+  if(!closedLoans.length&&!closedPayments.length){el.innerHTML='';return;}
+  const rows=[
+    ...closedLoans.map(l=>'<div class="exp-struct-row"><span>'+esc(l.name||'הלוואה')+' <span style="color:var(--text3);font-size:0.78rem">· נסגרה במחזור'+(l.previousMonthly!=null?' · היה '+fmt(l.previousMonthly)+'/חודש':'')+'</span></span></div>').join(''),
+    ...closedPayments.map(p=>'<div class="exp-struct-row"><span>'+esc(p.name||'תשלום')+' <span style="color:var(--text3);font-size:0.78rem">· נסגר במחזור</span></span></div>').join('')
+  ].join('');
+  el.innerHTML='<details style="margin-top:14px"><summary style="cursor:pointer;font-size:0.82rem;font-weight:700;color:var(--text3);padding:6px 2px">היסטוריית מחזורים ('+(closedLoans.length+closedPayments.length)+')</summary><div style="margin-top:8px">'+rows+'</div></details>';
+}
 function renderLoans(){
+  renderOverdraftCard();
+  renderLoansHistory();
   const activeList=activeLoans();
   const totalMonthly=activeList.reduce((s,l)=>s+(l.monthly||0),0);
   const totalRemaining=activeList.reduce((s,l)=>s+(l.remaining||0),0);

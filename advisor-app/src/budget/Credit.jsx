@@ -255,6 +255,8 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
   }
 
   const loans = [...(data.loans || [])].filter(l => !l.closed).sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
+  const closedLoans = [...(data.loans || [])].filter(l => l.closed).sort((a, b) => new Date(b.consolidatedAt || 0) - new Date(a.consolidatedAt || 0));
+  const closedPayments = [...(data.payments || [])].filter(p => p.closed);
   const overdraft = data.overdraft || { balance: 0 };
   const loanMonthsLeft = l => loanPayoffMonths(l.remaining, l.monthly, l.rate);
   const longTermLoans = loans.filter(l => { const n = loanMonthsLeft(l); return n === Infinity || n >= 18; });
@@ -337,6 +339,38 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
         ) : null)}
       </CollapsibleSection>
       </div>
+
+      {(closedLoans.length > 0 || closedPayments.length > 0) && (
+        <div className={styles.section}>
+          <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.merge}</span>היסטוריית מחזורים<span className={styles.countBadge}>{closedLoans.length + closedPayments.length}</span></>} defaultOpen={false}>
+            <div className={styles.grid}>
+              {closedLoans.map(l => (
+                <div key={l.id} className={`${styles.row} ${styles.rowCard}`} style={{ opacity: 0.7 }}>
+                  <div className={styles.rowMain}>
+                    <div>
+                      <div className={styles.name}>{l.name || 'הלוואה'}</div>
+                      <div className={styles.meta}>
+                        {l.consolidatedAt ? `נסגרה במחזור · ${new Date(l.consolidatedAt).toLocaleDateString('he-IL')}` : 'נסגרה במחזור'}
+                        {l.previousMonthly != null ? ` · היה ${fmt(l.previousMonthly)}/חודש` : ''}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {closedPayments.map(p => (
+                <div key={p.id} className={`${styles.row} ${styles.rowCard}`} style={{ opacity: 0.7 }}>
+                  <div className={styles.rowMain}>
+                    <div>
+                      <div className={styles.name}>{p.name || 'תשלום'}</div>
+                      <div className={styles.meta}>נסגר במחזור</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CollapsibleSection>
+        </div>
+      )}
 
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
