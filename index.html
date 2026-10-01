@@ -595,7 +595,7 @@
     body.dark .wiz-fix-btn.active{box-shadow:0 2px 8px rgba(var(--accent-rgb),0.25);}
     body.dark .toggle-opt.active{box-shadow:0 2px 8px rgba(var(--accent-rgb),0.2);}
     body.dark .btn-primary{box-shadow:0 4px 16px rgba(var(--accent-rgb),0.2);}
-    #toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 96px);left:0;right:0;width:fit-content;max-width:calc(100vw - 32px);margin:0 auto;transform:translateY(16px);background:#1a1a2e;color:white;padding:10px 22px;border-radius:24px;font-size:0.88rem;font-weight:600;line-height:1.45;text-align:center;z-index:9999;opacity:0;transition:opacity 0.22s cubic-bezier(0.22,1,0.36,1),transform 0.22s cubic-bezier(0.22,1,0.36,1);box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+    #toast{position:fixed;bottom:calc(var(--nav-bottom) + 158px);left:0;right:0;width:fit-content;max-width:calc(100vw - 32px);margin:0 auto;transform:translateY(16px);background:#1a1a2e;color:white;padding:10px 22px;border-radius:24px;font-size:0.88rem;font-weight:600;line-height:1.45;text-align:center;z-index:9999;opacity:0;transition:opacity 0.22s cubic-bezier(0.22,1,0.36,1),transform 0.22s cubic-bezier(0.22,1,0.36,1);box-shadow:0 4px 20px rgba(0,0,0,0.3);}
     body.dark #toast{background:#30363d;}
     #toast.show{opacity:1;transform:translateY(0);}
     #toast[data-type=success]{background:rgba(5,150,105,0.97);}
@@ -1012,7 +1012,7 @@
     @keyframes cfPop{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 
     /* ── Install (Add to Home Screen) banner ── */
-    .install-banner{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-h) + var(--safe-bottom) + 92px);z-index:7500;display:none;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:11px 14px;box-shadow:0 16px 44px rgba(0,0,0,.32);}
+    .install-banner{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-bottom) + 214px);z-index:7500;display:none;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:11px 14px;box-shadow:0 16px 44px rgba(0,0,0,.32);}
     .install-banner.show{display:flex;animation:cfPop .3s cubic-bezier(.22,1,.36,1);}
 
     /* ── Advisor-meeting alerts (pending confirmation / same-day reminder) ── */
@@ -3953,8 +3953,10 @@ async function _expEditIncome(i){
   saveSettingsData();refreshAll();
 }
 function _expDeleteIncome(i){
+  const backup=userSettings.incomeSources[i];if(!backup)return;
   userSettings.incomeSources.splice(i,1);
-  saveSettingsData();refreshAll();showToast('✓ הוסר');
+  saveSettingsData();refreshAll();
+  showUndoToast('🗑️ מקור ההכנסה הוסר',()=>{userSettings.incomeSources.splice(i,0,backup);saveSettingsData();refreshAll();},()=>{});
 }
 async function addIncomeSource(){
   const v=await promptSheet({title:'מקור הכנסה חדש',fields:_incomeFields({})});
@@ -4248,7 +4250,7 @@ async function _loadFromCloud(silent){
       _advisorAssets=bundle.assets||[];
       _advisorOverdraft=bundle.overdraft||{balance:0};
       const cloudSettings=bundle.settings;
-      if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...cloudSettings};localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
+      if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...cloudSettings};if(!cloudSettings.incomeHistory){delete userSettings.incomeHistory;_seedIncomeHistory();}localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
       if(!silent||changed){refreshAll();}
       _decideOnboarding();
     } else {
@@ -4711,8 +4713,8 @@ if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
 if(!userSettings.customFixedCats) userSettings.customFixedCats = [];
 _seedIncomeHistory();
-function _seedIncomeHistory(){if(!userSettings.incomeHistory)userSettings.incomeHistory={'0000-00':(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}))};}
-function _incomeSnap(){_seedIncomeHistory();userSettings.incomeHistory[_curMonthKey()]=(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
+function _seedIncomeHistory(){if(!userSettings.incomeHistory&&(userSettings.incomeSources||[]).length)userSettings.incomeHistory={'0000-00':(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}))};}
+function _incomeSnap(){_seedIncomeHistory();if(!userSettings.incomeHistory){if(!(userSettings.incomeSources||[]).length)return;userSettings.incomeHistory={};}userSettings.incomeHistory[_curMonthKey()]=(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
 function _incomeSourcesFor(y,m){const h=userSettings.incomeHistory;if(!h)return userSettings.incomeSources||[];const key=mk(y,m);const keys=Object.keys(h).filter(k=>k<=key).sort();return keys.length?h[keys[keys.length-1]]:(userSettings.incomeSources||[]);}
 function saveSettingsData(){_incomeSnap();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
 
@@ -6818,7 +6820,7 @@ function renderLoansHistory(){
   const closedPayments=payments.filter(p=>p.closed);
   if(!closedLoans.length&&!closedPayments.length){el.innerHTML='';return;}
   const rows=[
-    ...closedLoans.map(l=>'<div class="exp-struct-row"><span>'+esc(l.name||'הלוואה')+' <span style="color:var(--text3);font-size:0.78rem">· נסגרה במחזור'+(l.previousMonthly!=null?' · היה '+fmt(l.previousMonthly)+'/חודש':'')+'</span></span></div>').join(''),
+    ...closedLoans.map(l=>'<div class="exp-struct-row"><span>'+esc(l.name||'הלוואה')+' <span style="color:var(--text3);font-size:0.78rem">· נסגרה במחזור'+(l.monthly?' · היה '+fmt(l.monthly)+'/חודש':'')+'</span></span></div>').join(''),
     ...closedPayments.map(p=>'<div class="exp-struct-row"><span>'+esc(p.name||'תשלום')+' <span style="color:var(--text3);font-size:0.78rem">· נסגר במחזור</span></span></div>').join('')
   ].join('');
   el.innerHTML='<details style="margin-top:14px"><summary style="cursor:pointer;font-size:0.82rem;font-weight:700;color:var(--text3);padding:6px 2px">היסטוריית מחזורים ('+(closedLoans.length+closedPayments.length)+')</summary><div style="margin-top:8px">'+rows+'</div></details>';
