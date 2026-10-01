@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit } from './budgetMath.js';
+import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor } from './budgetMath.js';
 
 const data = {
   budgets: { 'מזון': 1000, 'בילויים': 500 },
@@ -149,5 +149,32 @@ describe('totalBudget reflects the effective ceiling', () => {
     const s = monthSummary(data, 2026, 1);
     expect(s.totalBudget).toBe(2000);
     expect(s.remaining).toBe(2000);
+  });
+});
+
+describe('per-month income sources', () => {
+  const settings = {
+    incomeSources: [{ name: 'שכר', amount: '12000' }],
+    incomeHistory: {
+      '0000-00': [{ name: 'שכר', amount: '10000' }],
+      '2026-10': [{ name: 'שכר', amount: '12000' }]
+    }
+  };
+  const tx = d => ({ id: d, type: 'expense', cat: 'מזון', amount: 50, date: d });
+
+  it('uses the latest snapshot at or before the month', () => {
+    expect(incomeSourcesFor(settings, 2026, 8)[0].amount).toBe('10000');
+    expect(incomeSourcesFor(settings, 2026, 9)[0].amount).toBe('12000');
+    expect(incomeSourcesFor(settings, 2027, 0)[0].amount).toBe('12000');
+  });
+
+  it('falls back to the current sources when there is no history', () => {
+    expect(incomeSourcesFor({ incomeSources: [{ name: 'x', amount: '5' }] }, 2020, 0)[0].amount).toBe('5');
+  });
+
+  it('a salary change does not rewrite past months in monthSummary', () => {
+    const data = { settings, transactions: [tx('2026-09-05'), tx('2026-10-05')] };
+    expect(monthSummary(data, 2026, 8).income).toBe(10000);
+    expect(monthSummary(data, 2026, 9).income).toBe(12000);
   });
 });

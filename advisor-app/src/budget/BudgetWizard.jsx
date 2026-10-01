@@ -3,6 +3,7 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } fro
 import { Bar } from 'react-chartjs-2';
 import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
+import { monthKeyOf } from './budgetMath.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -193,7 +194,14 @@ export default function BudgetWizard({ data, save, year, month }) {
       cleanFixed.forEach(r => { nextBudgets[r.id] = r.amount; });
       cleanVar.forEach(r => { nextBudgets[r.name.trim()] = parseFloat(r.amount); });
       return {
-        settings: { ...(cur.settings || {}), incomeSources: cleanIncomes },
+        settings: {
+          ...(cur.settings || {}),
+          incomeSources: cleanIncomes,
+          incomeHistory: {
+            ...(cur.settings?.incomeHistory || { '0000-00': cur.settings?.incomeSources || [] }),
+            [monthKeyOf(new Date().getFullYear(), new Date().getMonth())]: cleanIncomes
+          }
+        },
         fixed_expenses: cleanFixed,
         budgets: nextBudgets,
         goals: cleanGoals

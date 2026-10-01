@@ -1,6 +1,6 @@
 import { useClientBudget } from './useClientBudget.js';
 import { getMonthTx } from './monthUtils.js';
-import { effectiveLimit } from './budgetMath.js';
+import { effectiveLimit, incomeSourcesFor } from './budgetMath.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
@@ -22,7 +22,7 @@ export default function Budget({ clientUserId, advisorId, year, month, onSelectM
   }
 
   const budgets = data.budgets || {};
-  const incomeSources = data.settings?.incomeSources || [];
+  const incomeSources = incomeSourcesFor(data.settings, year, month);
   const monthTx = getMonthTx(data.transactions, year, month);
   const spentByCat = {};
   monthTx.filter(t => t.type === 'expense').forEach(t => {

@@ -29,6 +29,18 @@ export function effectiveLimit(data, cat, year, month) {
   return Math.max(0, base + budgetCarry(data, cat, year, month));
 }
 
+export function monthKeyOf(year, month) {
+  return `${year}-${String(month + 1).padStart(2, '0')}`;
+}
+
+export function incomeSourcesFor(settings, year, month) {
+  const history = settings?.incomeHistory;
+  if (!history) return settings?.incomeSources || [];
+  const key = monthKeyOf(year, month);
+  const keys = Object.keys(history).filter(k => k <= key).sort();
+  return keys.length ? history[keys[keys.length - 1]] : (settings?.incomeSources || []);
+}
+
 export function effectiveIncome(transactions, incomeSources) {
   const incomeTx = (transactions || []).filter(t => t.type === 'income');
   const manualIncome = incomeTx.reduce((s, t) => s + t.amount, 0);
@@ -41,7 +53,7 @@ export function effectiveIncome(transactions, incomeSources) {
 
 export function monthSummary(data, year, month) {
   const monthTx = getMonthTx(data?.transactions, year, month);
-  const { income } = effectiveIncome(monthTx, data?.settings?.incomeSources);
+  const { income } = effectiveIncome(monthTx, incomeSourcesFor(data?.settings, year, month));
   const expense = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const budgets = data?.budgets || {};
   const spentByCat = {};

@@ -174,7 +174,7 @@
     #inlineMonthNav.nav-hidden{top:-70px!important;}
     .page{display:none;}.page.active{display:block;}
     @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .exp-row,.exp-struct-row,.exp-pay-card,.income-source-row,.tx-item,.budget-tx-card,.sub-card{animation:rowIn 0.3s cubic-bezier(0.22,1,0.36,1) both;}
+    .exp-row,.exp-struct-row,.exp-pay-card,.tx-item,.budget-tx-card,.sub-card{animation:rowIn 0.3s cubic-bezier(0.22,1,0.36,1) both;}
     .exp-row:nth-of-type(1){animation-delay:.02s}.exp-row:nth-of-type(2){animation-delay:.05s}.exp-row:nth-of-type(3){animation-delay:.08s}.exp-row:nth-of-type(4){animation-delay:.11s}.exp-row:nth-of-type(5){animation-delay:.14s}.exp-row:nth-of-type(6){animation-delay:.17s}
     .card{border-radius:var(--radius);padding:18px 16px;box-shadow:0 2px 14px rgba(0,0,0,0.07);position:relative;overflow:hidden;}
     .card-label{font-size:0.72rem;color:var(--text2);font-weight:var(--fw-medium);letter-spacing:0;line-height:1.3;margin-bottom:8px;}
@@ -907,15 +907,6 @@
     /* ===== 4-item nav ===== */
     .bottom-nav .nav-item .nav-label{display:none;}
     /* ── Income source row in settings ─────── */
-    .income-source-row{background:var(--surface);border-radius:12px;padding:12px 14px;border:1px solid var(--border);margin-bottom:8px;}
-    .income-source-row-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-    .income-source-row-top .del-btn{background:rgba(220,38,38,0.1);border:none;color:var(--red);font-size:0.75rem;cursor:pointer;padding:4px 8px;border-radius:8px;font-weight:700;margin-right:auto;}
-    .income-source-row-fields{display:flex;gap:8px;}
-    .income-source-field{flex:1;display:flex;flex-direction:column;gap:4px;}
-    .income-source-field label{font-size:0.68rem;font-weight:700;color:var(--text3);letter-spacing:0.3px;}
-    .income-source-field input{border:1.5px solid var(--border);background:var(--surface);border-radius:8px;padding:8px 10px;font-size:16px;font-family:inherit;color:var(--text);outline:none;width:100%;box-sizing:border-box;}
-    .income-source-field input:focus{border-color:var(--accent);}
-    .income-source-field input[type=number]{font-weight:700;text-align:center;}
     /* ── Settings sheet ─────────────────── */
     .settings-section{padding:18px 16px;border:none;background:var(--surface);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,0.05),0 10px 24px -8px rgba(0,0,0,0.09);margin-bottom:16px;}
     body.dark .settings-section{box-shadow:0 1px 0 rgba(255,255,255,0.02);}
@@ -1417,7 +1408,6 @@
     .pay-name-in:focus-visible,
     .pay-table td input:focus-visible,
     .pay-field input:focus-visible,
-    .income-source-field input:focus-visible,
     #settingName:focus-visible,
     #smsTextInput:focus-visible,
     #householdCodeInput:focus-visible,
@@ -3867,7 +3857,7 @@ const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','ע�
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
   return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+attrArg(key)+'\')" aria-expanded="'+open+'">'
-    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.cat)+'</span><span class="exp-name">'+esc(opts.cat)+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
+    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.iconCat||opts.cat)+'</span><span class="exp-name">'+esc(opts.cat)+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
       +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
@@ -3878,9 +3868,26 @@ function _expRowHtml(opts){
 }
 function renderTxCategorized(byCat){
   let html='';
+  const allFixed=getEffectiveFixedCats();
+  if(txListFilter!=='variable'){
+    const savingEntries=[];
+    allFixed.filter(cat=>SAVING_FIXED_CATS.includes(cat)&&_fxMonthly(cat)>0).forEach(cat=>{
+      const amount=_fxMonthly(cat);
+      const key='sv:'+cat;
+      const rowHtml=_expRowHtml({key,cat,amount,editable:true,
+        onEdit:'_expEditManual(\''+attrArg(cat)+'\')',
+        onDelete:'_expDeleteManual(\''+attrArg(cat)+'\')',
+        body:_expTxListHtml(cat,byCat)});
+      savingEntries.push({amount,html:rowHtml});
+    });
+    if(savingEntries.length){
+      html+='<div class="section-header"><div class="section-title">חסכונות <span class="badge">'+savingEntries.length+'</span></div></div>'
+        +savingEntries.map(e=>e.html).join('');
+    }
+  }
+  html+=_expIncomeSectionHtml();
   if(txListFilter!=='variable'){
     const fxEntries=[];
-    const allFixed=getEffectiveFixedCats();
     const nonSavingFixed=allFixed.filter(cat=>!SAVING_FIXED_CATS.includes(cat));
     nonSavingFixed.filter(cat=>FIXED_AUTO[cat]||_fxMonthly(cat)>0).forEach(cat=>{
       const auto=!!FIXED_AUTO[cat];
@@ -3899,20 +3906,6 @@ function renderTxCategorized(byCat){
       +(fxEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות מוגדרות עדיין</div>')
       +'<button type="button" class="exp-add-row" onclick="openFixedCatPicker()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
 
-    const savingEntries=[];
-    allFixed.filter(cat=>SAVING_FIXED_CATS.includes(cat)&&_fxMonthly(cat)>0).forEach(cat=>{
-      const amount=_fxMonthly(cat);
-      const key='sv:'+cat;
-      const rowHtml=_expRowHtml({key,cat,amount,editable:true,
-        onEdit:'_expEditManual(\''+attrArg(cat)+'\')',
-        onDelete:'_expDeleteManual(\''+attrArg(cat)+'\')',
-        body:_expTxListHtml(cat,byCat)});
-      savingEntries.push({amount,html:rowHtml});
-    });
-    if(savingEntries.length){
-      html+='<div class="section-header"><div class="section-title">חסכונות <span class="badge">'+savingEntries.length+'</span></div></div>'
-        +savingEntries.map(e=>e.html).join('');
-    }
   }
   if(txListFilter!=='fixed'){
     const varEntries=[];
@@ -3934,31 +3927,40 @@ function renderTxCategorized(byCat){
       +(varEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות משתנות מוגדרות עדיין</div>')
       +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
   }
-  html+='<div class="section-header"><div class="section-title">הכנסות <span class="badge">'+userSettings.incomeSources.length+'</span></div></div>'
-    +'<div id="txIncomeRows">'+_expIncomeListHtml()+'</div>'
-    +'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>';
-  return html||'<div class="budget-tx-empty">אין הוצאות קבועות או משתנות מוגדרות עדיין</div>';
+  return html;
 }
-function _expIncomeListHtml(){
-  if(!userSettings.incomeSources.length)return '<div class="budget-tx-empty">אין מקורות הכנסה מוגדרים</div>';
-  const examples=['משכורת','שכר בן/בת זוג','שכירות','קצבה','פרילנס','הכנסה אחרת'];
-  return userSettings.incomeSources.map((src,i)=>{
-    const ph=examples[i%examples.length];
-    return '<div class="income-source-row">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
-        +'<span style="font-size:0.7rem;font-weight:700;color:var(--text3);letter-spacing:0.4px;">מקור '+(i+1)+'</span>'
-        +'<button onclick="userSettings.incomeSources.splice('+i+',1);saveSettingsData();renderTxPage()" style="background:var(--red-light);border:none;color:var(--red);cursor:pointer;padding:10px 14px;border-radius:8px;font-size:0.75rem;font-weight:700;min-height:44px;min-width:44px;" aria-label="מחק מקור הכנסה">✕ הסר</button>'
-      +'</div>'
-      +'<div class="income-source-field" style="margin-bottom:8px;"><label>שם המקור</label><input type="text" placeholder="'+esc(ph)+'..." value="'+esc(src.name||'')+'" autocomplete="off" autocorrect="off" spellcheck="false" oninput="userSettings.incomeSources['+i+'].name=this.value;saveSettingsData()" onfocus="this.select()"/></div>'
-      +'<div class="income-source-field" style="margin-bottom:8px;"><label>סכום חודשי (₪)</label><input type="number" inputmode="decimal" placeholder="0" value="'+esc(src.amount||'')+'" oninput="userSettings.incomeSources['+i+'].amount=this.value;saveSettingsData()" min="0" onfocus="this.select()"/></div>'
-      +'<div class="income-source-field"><label>יום קבלה בחודש (לתזכורת אוטומטית)</label><input type="number" inputmode="numeric" placeholder="—" value="'+esc(src.day||'')+'" oninput="userSettings.incomeSources['+i+'].day=this.value;saveSettingsData()" min="1" max="28" onfocus="this.select()"/></div>'
-    +'</div>';
+function _expIncomeSectionHtml(){
+  const now=new Date();
+  const past=currentYear<now.getFullYear()||(currentYear===now.getFullYear()&&currentMonth<now.getMonth());
+  const sources=past?_incomeSourcesFor(currentYear,currentMonth):userSettings.incomeSources;
+  const rows=sources.map((src,i)=>{
+    const amount=parseFloat(src.amount)||0;
+    const body='<div class="budget-tx-empty">'+(src.day?'מתקבל ב-'+esc(String(src.day))+' לחודש':'לא הוגדר יום קבלה')+'</div>';
+    return past
+      ?_expRowHtml({key:'inc:'+i,cat:src.name||'הכנסה',iconCat:'שכר',amount,body})
+      :_expRowHtml({key:'inc:'+i,cat:src.name||'הכנסה',iconCat:'שכר',amount,editable:true,onEdit:'_expEditIncome('+i+')',onDelete:'_expDeleteIncome('+i+')',body});
   }).join('');
+  return '<div class="section-header"><div class="section-title">הכנסות <span class="badge">'+sources.length+'</span></div></div>'
+    +(rows||'<div class="budget-tx-empty">אין מקורות הכנסה מוגדרים</div>')
+    +(past?'':'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>');
 }
-function addIncomeSource(){
-  userSettings.incomeSources.push({name:'',amount:'',day:''});
-  saveSettingsData();
-  renderTxPage();
+function _incomeFields(src){return [{label:'שם המקור',value:src.name||'',placeholder:'משכורת'},{label:'סכום חודשי (₪)',type:'number',value:src.amount||''},{label:'יום קבלה בחודש (לתזכורת)',type:'number',value:src.day||''}];}
+async function _expEditIncome(i){
+  const src=userSettings.incomeSources[i];if(!src)return;
+  const v=await promptSheet({title:'עריכת מקור הכנסה',fields:_incomeFields(src)});
+  if(v===null)return;
+  src.name=v[0].trim();src.amount=v[1];src.day=v[2];
+  saveSettingsData();refreshAll();
+}
+function _expDeleteIncome(i){
+  userSettings.incomeSources.splice(i,1);
+  saveSettingsData();refreshAll();showToast('✓ הוסר');
+}
+async function addIncomeSource(){
+  const v=await promptSheet({title:'מקור הכנסה חדש',fields:_incomeFields({})});
+  if(v===null||(!v[0].trim()&&!v[1]))return;
+  userSettings.incomeSources.push({name:v[0].trim(),amount:v[1],day:v[2]});
+  saveSettingsData();refreshAll();
 }
 function toggleAdvancedFilters(){
   const el=document.getElementById('txAdvancedFilters');
@@ -4709,8 +4711,8 @@ if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
 if(!userSettings.customFixedCats) userSettings.customFixedCats = [];
 _seedIncomeHistory();
-function _seedIncomeHistory(){if(!userSettings.incomeHistory)userSettings.incomeHistory={'0000-00':(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||''}))};}
-function _incomeSnap(){_seedIncomeHistory();userSettings.incomeHistory[_curMonthKey()]=(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||''}));}
+function _seedIncomeHistory(){if(!userSettings.incomeHistory)userSettings.incomeHistory={'0000-00':(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}))};}
+function _incomeSnap(){_seedIncomeHistory();userSettings.incomeHistory[_curMonthKey()]=(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
 function _incomeSourcesFor(y,m){const h=userSettings.incomeHistory;if(!h)return userSettings.incomeSources||[];const key=mk(y,m);const keys=Object.keys(h).filter(k=>k<=key).sort();return keys.length?h[keys[keys.length-1]]:(userSettings.incomeSources||[]);}
 function saveSettingsData(){_incomeSnap();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
 
@@ -8786,19 +8788,6 @@ setTimeout(autoCarryRecurring,500);
   }
   harden('saveData','budget_tx');
   harden('saveSettingsData','budget_settings');
-})();
-</script>
-<script>
-/* ════ Income → keep the budget in sync while editing (debounced) ════ */
-(function(){
-  var t=null;
-  document.addEventListener('input', function(e){
-    var box=document.getElementById('txIncomeRows');
-    if(box && e.target && box.contains(e.target)){
-      clearTimeout(t);
-      t=setTimeout(function(){ try{ if(window.refreshAll)refreshAll(); }catch(_){} }, 500);
-    }
-  });
 })();
 </script>
 <script>
