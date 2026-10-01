@@ -127,7 +127,7 @@ function AccountMenu({ email, advisorId }) {
   );
 }
 
-export default function Shell({ onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+export default function Shell({ title, clientName, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeNav]);
@@ -168,7 +168,7 @@ export default function Shell({ onBack, nav, activeNav, onNavChange, sidebarInfo
       <div className={styles.topbarBleed}>
         <div className={styles.topbar}>
           <div className={styles.topbarStart}>
-            <div className={styles.logo}>תקציב אישי · יועץ</div>
+            <div className={styles.clientName} title={clientName}>{clientName}</div>
           </div>
           <div className={styles.topbarEnd}>
             {sidebarInfo}
@@ -177,6 +177,7 @@ export default function Shell({ onBack, nav, activeNav, onNavChange, sidebarInfo
         </div>
       </div>
       <main className={styles.contentTabs}>
+        {title && <h1 className={styles.pageTitle}>{title}</h1>}
         {children}
       </main>
     </div>

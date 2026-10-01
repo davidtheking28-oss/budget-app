@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { computeInsights, computeHealthScore } from './insights.js';
 
 describe('computeInsights', () => {
@@ -68,5 +68,34 @@ describe('computeHealthScore', () => {
       transactions: 'abcdefghi'.split('').map(cat => ({ type: 'expense', cat, amount: 200, date: '2026-06-10' }))
     };
     expect(computeHealthScore(data, 2026, 5)).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('month-end overrun projection', () => {
+  afterEach(() => vi.useRealTimers());
+  const data = {
+    budgets: { 'דיור': 6200, 'מזון לבית': 2000 },
+    transactions: [
+      { type: 'expense', cat: 'דיור', amount: 6200, date: '2026-10-01' },
+      { type: 'expense', cat: 'מזון לבית', amount: 500, date: '2026-10-08' }
+    ]
+  };
+  const overrun = list => list.find(i => i.text.includes('צפויה חריגה'));
+
+  it('does not multiply a once-a-month fixed expense by the days left', () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 9, 10));
+    expect(overrun(computeInsights(data, 2026, 9))).toBeUndefined();
+  });
+
+  it('still warns when variable spending is on pace to exceed the budget', () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 9, 10));
+    const heavy = { ...data, transactions: [...data.transactions, { type: 'expense', cat: 'מזון לבית', amount: 1000, date: '2026-10-09' }] };
+    expect(overrun(computeInsights(heavy, 2026, 9))).toBeDefined();
+  });
+
+  it('stays quiet in the first days of the month', () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 9, 2));
+    const early = { ...data, transactions: [...data.transactions, { type: 'expense', cat: 'מזון לבית', amount: 400, date: '2026-10-02' }] };
+    expect(overrun(computeInsights(early, 2026, 9))).toBeUndefined();
   });
 });

@@ -36,9 +36,9 @@ export default function Dashboard({ clientUserId, year, month }) {
 
   const SAVINGS_TARGET = 15;
   const savingsRate = summary.income > 0 ? (summary.net / summary.income) * 100 : 0;
-  const financialStatus = insights.some(i => i.kind === 'danger')
+  const financialStatus = summary.net < 0
     ? { label: 'קריטי', tone: 'danger' }
-    : insights.some(i => i.kind === 'warn')
+    : insights.some(i => i.kind === 'danger' || i.kind === 'warn')
       ? { label: 'לתשומת לב', tone: 'warn' }
       : { label: 'בתקן', tone: 'good' };
 
@@ -71,7 +71,7 @@ export default function Dashboard({ clientUserId, year, month }) {
         <div className={styles.statTile}>
           <div className={styles.statTileLabel}>סך הכנסות</div>
           <div className={styles.statTileValue + ' ' + styles.income}>{fmt(summary.income)}</div>
-          <div className={styles.statTileMeta}>ממוצע חודשי, בית + עסק</div>
+          <div className={styles.statTileMeta}>בפועל החודש</div>
         </div>
         <div className={styles.statTile}>
           <div className={styles.statTileLabel}>סך הוצאות</div>

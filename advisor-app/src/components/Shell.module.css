@@ -219,6 +219,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-5);
+  min-width: 0;
 }
 
 .topbarEnd {
@@ -288,4 +289,23 @@
   .accountTrigger {
     padding: 9px 10px;
   }
+}
+
+.clientName {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-xl);
+  color: var(--text);
+  margin: 0 0 var(--space-5);
 }

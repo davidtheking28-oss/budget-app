@@ -1,6 +1,7 @@
 import { getMonthTx } from './monthUtils.js';
 import { monthSummary } from './budgetMath.js';
 import { fmt } from '../format.js';
+import { FIXED_CATS } from '../categories.js';
 
 export function computeInsights(data, year, month) {
   const insights = [];
@@ -35,8 +36,11 @@ export function computeInsights(data, year, month) {
   if (isCurrentMonth && summary.totalBudget > 0) {
     const dayOfMonth = now.getDate();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    if (dayOfMonth < daysInMonth) {
-      const projected = (summary.expense / dayOfMonth) * daysInMonth;
+    if (dayOfMonth >= 5 && dayOfMonth < daysInMonth) {
+      const fixedSpent = getMonthTx(data?.transactions, year, month)
+        .filter(t => t.type === 'expense' && (t.fixed || FIXED_CATS.includes(t.cat)))
+        .reduce((s, t) => s + t.amount, 0);
+      const projected = fixedSpent + ((summary.expense - fixedSpent) / dayOfMonth) * daysInMonth;
       if (projected > summary.totalBudget) {
         insights.push({ kind: 'warn', text: `בקצב הנוכחי צפויה חריגה של ${fmt(projected - summary.totalBudget)} עד סוף החודש` });
       }

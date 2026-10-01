@@ -1,14 +1,12 @@
 import { useClientBudget } from './useClientBudget.js';
-import { getMonthTx } from './monthUtils.js';
-import { effectiveLimit, incomeSourcesFor } from './budgetMath.js';
+import { effectiveLimit, incomeSourcesFor, monthSummary } from './budgetMath.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
-import MonthTabs from '../components/MonthTabs.jsx';
 import styles from './Budget.module.css';
 import { fmt } from '../format.js';
 
-export default function Budget({ clientUserId, advisorId, year, month, onSelectMonth }) {
+export default function Budget({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -22,34 +20,23 @@ export default function Budget({ clientUserId, advisorId, year, month, onSelectM
   }
 
   const budgets = data.budgets || {};
-  const incomeSources = incomeSourcesFor(data.settings, year, month);
-  const monthTx = getMonthTx(data.transactions, year, month);
-  const spentByCat = {};
-  monthTx.filter(t => t.type === 'expense').forEach(t => {
-    spentByCat[t.cat] = (spentByCat[t.cat] || 0) + t.amount;
-  });
-
-  const activeCats = Object.keys(budgets).filter(c => budgets[c]);
-  const limitOf = c => effectiveLimit(data, c, year, month);
-
-  const monthlyIncome = incomeSources.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
-  const totalBudgeted = activeCats.reduce((s, c) => s + limitOf(c), 0);
-  const totalSpent = activeCats.reduce((s, c) => s + (spentByCat[c] || 0), 0);
-  const flow = monthlyIncome - totalSpent;
+  const summary = monthSummary(data, year, month);
+  const plannedIncome = incomeSourcesFor(data.settings, year, month).reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
+  const totalBudgeted = Object.keys(budgets).filter(c => budgets[c]).reduce((s, c) => s + effectiveLimit(data, c, year, month), 0);
+  const flow = summary.net;
 
   return (
     <div>
-      {onSelectMonth && <MonthTabs month={month} onSelectMonth={onSelectMonth} />}
 
       <div className={styles.kpiRow}>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>סך הכל הכנסות</div>
-          <div className={styles.kpiValue}>{fmt(monthlyIncome)}</div>
-          <div className={styles.kpiSub}>{incomeSources.length ? `${incomeSources.length} מקורות` : 'מקורות ההכנסה מנוהלים בתזרים'}</div>
+          <div className={styles.kpiValue}>{fmt(summary.income)}</div>
+          <div className={styles.kpiSub}>{plannedIncome > 0 ? `מתוך ${fmt(plannedIncome)} מתוכנן` : 'אין הכנסה מתוכננת'}</div>
         </div>
         <div className={styles.kpi}>
           <div className={styles.kpiLabel}>סך הכל הוצאות</div>
-          <div className={styles.kpiValue}>{fmt(totalSpent)}</div>
+          <div className={styles.kpiValue}>{fmt(summary.expense)}</div>
           <div className={styles.kpiSub}>{totalBudgeted > 0 ? `מתוך ${fmt(totalBudgeted)} מתוקצב` : 'אין תקציב מוגדר'}</div>
         </div>
         <div className={styles.kpi + ' ' + styles.kpiFlow}>
