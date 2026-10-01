@@ -136,6 +136,7 @@
        stroke read as noise, not "selected". A solid circle + white icon
        reads unambiguously as pressed, same visual language as .fab. */
     .nav-item.active .nav-icon svg{stroke:#fff;}
+    body.dark .nav-item.active .nav-icon svg{stroke:var(--bg);}
     .nav-item.active .nav-label{color:var(--accent);}
     /* left:0 anchors the untransformed position to the bar's own left edge —
        without it, an absolutely-positioned element with no inset in an RTL
@@ -3866,15 +3867,17 @@ function _expRowHtml(opts){
   +'</button>'
   +(open?'<div class="exp-body">'+opts.body+'</div>':'');
 }
+function _viewingPastMonth(){const n=new Date();return currentYear<n.getFullYear()||(currentYear===n.getFullYear()&&currentMonth<n.getMonth());}
 function renderTxCategorized(byCat){
   let html='';
   const allFixed=getEffectiveFixedCats();
+  const past=_viewingPastMonth();
   if(txListFilter!=='variable'){
     const savingEntries=[];
     allFixed.filter(cat=>SAVING_FIXED_CATS.includes(cat)&&_fxMonthly(cat)>0).forEach(cat=>{
       const amount=_fxMonthly(cat);
       const key='sv:'+cat;
-      const rowHtml=_expRowHtml({key,cat,amount,editable:true,
+      const rowHtml=_expRowHtml({key,cat,amount,editable:!past,
         onEdit:'_expEditManual(\''+attrArg(cat)+'\')',
         onDelete:'_expDeleteManual(\''+attrArg(cat)+'\')',
         body:_expTxListHtml(cat,byCat)});
@@ -3895,7 +3898,7 @@ function renderTxCategorized(byCat){
       const key='fx:'+cat;
       const rowHtml=auto
         ?_expRowHtml({key,cat,amount,auto:true,body:_expStructListHtml(_EXP_AUTO_KIND[cat])})
-        :_expRowHtml({key,cat,amount,planned:true,editable:true,
+        :_expRowHtml({key,cat,amount,planned:true,editable:!past,
             onEdit:'_expEditManual(\''+attrArg(cat)+'\')',
             onDelete:'_expDeleteManual(\''+attrArg(cat)+'\')',
             body:_expTxListHtml(cat,byCat)});
@@ -3904,7 +3907,7 @@ function renderTxCategorized(byCat){
     fxEntries.sort((a,b)=>b.amount-a.amount);
     html+='<div class="section-header"><div class="section-title">הוצאות קבועות <span class="badge">'+fxEntries.length+'/'+nonSavingFixed.length+'</span></div></div>'
       +(fxEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות מוגדרות עדיין</div>')
-      +'<button type="button" class="exp-add-row" onclick="openFixedCatPicker()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>';
+      +(past?'':'<button type="button" class="exp-add-row" onclick="openFixedCatPicker()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>');
 
   }
   if(txListFilter!=='fixed'){
@@ -3930,8 +3933,7 @@ function renderTxCategorized(byCat){
   return html;
 }
 function _expIncomeSectionHtml(){
-  const now=new Date();
-  const past=currentYear<now.getFullYear()||(currentYear===now.getFullYear()&&currentMonth<now.getMonth());
+  const past=_viewingPastMonth();
   const sources=past?_incomeSourcesFor(currentYear,currentMonth):userSettings.incomeSources;
   const rows=sources.map((src,i)=>{
     const amount=parseFloat(src.amount)||0;
@@ -4183,6 +4185,7 @@ function scheduleCloudSave(){
   clearTimeout(_cloudSaveTimer);
   _cloudSaveTimer = setTimeout(_doCloudSave, 2000);
 }
+function _stableStr(v){if(Array.isArray(v))return '['+v.map(_stableStr).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).filter(k=>v[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+_stableStr(v[k])).join(',')+'}';return JSON.stringify(v);}
 async function _doCloudSave(){
   if(!_cloudUser||!_sb) return;
   if(_cloudSaveInFlight){_syncPending=true;_cloudSaveQueued=true;return;}
@@ -4198,7 +4201,18 @@ async function _doCloudSave(){
     const localBu={...(_syncMeta.bu||{})};
     if(cloudMeta)_syncMeta=_mergeMeta(_syncMeta,cloudMeta);
     const merged=_buildMerged(bundle,localBu,cloudMeta&&cloudMeta.bu);
-    const changed=_applyMerged(merged);
+    let changed=_applyMerged(merged);
+    const cloudSettings=bundle.settings;
+    if(cloudSettings&&cloudSettings.name!==undefined){
+      const cloudTs=row&&row.updated_at?new Date(row.updated_at).getTime():0;
+      const localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');
+      const cloudNewer=cloudTs>localTs;
+      const hist=cloudNewer?{...(userSettings.incomeHistory||{}),...(cloudSettings.incomeHistory||{})}:{...(cloudSettings.incomeHistory||{}),...(userSettings.incomeHistory||{})};
+      if(cloudNewer&&_stableStr(cloudSettings)!==_stableStr({...userSettings,incomeHistory:cloudSettings.incomeHistory})){userSettings={...userSettings,...cloudSettings};changed=true;}
+      if(Object.keys(hist).length)userSettings.incomeHistory=hist;
+      localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));
+      if(cloudNewer)localStorage.setItem(_modeKey('budget_settings_ts'),String(cloudTs));
+    }
     const payload={user_id:uid,updated_at:new Date().toISOString(),updated_by:_cloudUser.id};
     if(isBiz){
       payload.business={...bundle,...merged,sync_meta:_syncMeta,settings:userSettings};
