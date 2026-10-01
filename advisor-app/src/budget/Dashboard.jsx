@@ -27,12 +27,8 @@ export default function Dashboard({ clientUserId, year, month }) {
   const summary = monthSummary(data, year, month);
   const insights = computeInsights(data, year, month);
 
-  const insightGroups = [
-    { key: 'danger', title: 'התראות סיכון' },
-    { key: 'warn', title: 'כדאי לעקוב' },
-    { key: 'tip', title: 'פעולות מומלצות' },
-    { key: 'good', title: 'מגמות חיוביות' }
-  ].map(g => ({ ...g, items: insights.filter(ins => ins.kind === g.key) })).filter(g => g.items.length > 0);
+  const KIND_ORDER = ['danger', 'warn', 'tip', 'good'];
+  const attention = [...insights].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind));
 
   const SAVINGS_TARGET = 15;
   const savingsRate = summary.income > 0 ? (summary.net / summary.income) * 100 : 0;
@@ -69,106 +65,88 @@ export default function Dashboard({ clientUserId, year, month }) {
   };
 
   return (
-    <div className={styles.bentoGrid}>
-      <div className={styles.statRow}>
-        <div className={styles.statTile}>
-          <div className={styles.statTileLabel}>סך הכנסות</div>
-          <div className={styles.statTileValue + ' ' + styles.income}>{fmt(summary.income)}</div>
-          <div className={styles.statTileMeta}>בפועל החודש</div>
-        </div>
-        <div className={styles.statTile}>
-          <div className={styles.statTileLabel}>סך הוצאות</div>
-          <div className={styles.statTileValue + ' ' + styles.expense}>{fmt(summary.expense)}</div>
-          <div className={styles.statTileMeta}>קבועות + משתנות</div>
-        </div>
-        <div className={styles.statTile}>
-          <div className={styles.statTileLabel}>עודף תזרימי</div>
-          <div className={styles.statTileValue + ' ' + (summary.net < 0 ? styles.expense : styles.net)}>{fmt(summary.net)}</div>
-          <div className={styles.statTileMeta}>לפני הפרשה לחיסכון</div>
-        </div>
-        <div className={styles.statTile}>
-          <div className={styles.statTileLabel}>אחוז חיסכון מהכנסה</div>
-          <div className={styles.statTileValue}>{savingsRate.toFixed(1)}%</div>
-          <div className={styles.statTileMeta}>יעד: {SAVINGS_TARGET}%+</div>
-        </div>
-        <div className={styles.statTile}>
-          <div className={styles.statTileLabel}>סטטוס פיננסי</div>
-          <span className={styles.statusBadge + ' ' + styles[financialStatus.tone]}>
-            <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
-          </span>
-        </div>
-      </div>
-
-      <div className={styles.tileCategories}>
-        <div className={styles.colTitle}>קטגוריות הוצאה</div>
-        {catLabels.length ? (
-          <div className={styles.catBox}>
-            <div className={styles.catDonut}>
-              <Pie
-                data={{ labels: catLabels, datasets: [{ data: catLabels.map(l => byCat[l]), backgroundColor: catColors, borderColor: CT.surface, borderWidth: 2 }] }}
-                options={{
-                  maintainAspectRatio: false,
-                  cutout: '70%',
-                  plugins: { legend: { display: false }, tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } } }
-                }}
-              />
-            </div>
-            <div className={styles.catList}>
-              {catLabels.slice(0, 4).map((l, i) => {
-                const pct = Math.round((byCat[l] / catTotal) * 100);
-                return (
-                  <div key={l} className={styles.catRow}>
-                    <span className={styles.catDot} style={{ background: catColors[i] }} />
-                    <span className={styles.catIconWrap}>{getCategoryIcon(l)}</span>
-                    <span className={styles.catName}>{l}</span>
-                    <span className={styles.catBar}><span className={styles.catBarFill} style={{ width: pct + '%', background: catColors[i] }} /></span>
-                    <span className={styles.catPct}>{pct}%</span>
-                  </div>
-                );
-              })}
-              {catLabels.length > 4 && (
-                <div className={styles.catMore}>
-                  ועוד {catLabels.length - 4} קטגוריות ({Math.round(catLabels.slice(4).reduce((s, l) => s + byCat[l], 0) / catTotal * 100)}%)
-                </div>
-              )}
-            </div>
+    <div className={styles.page}>
+      <div className={styles.hero}>
+        <div className={styles.heroMain}>
+          <div className={styles.heroLabel}>{summary.net < 0 ? 'חריגה החודש' : 'נשאר החודש'}</div>
+          <div className={styles.heroValue + ' ' + (summary.net < 0 ? styles.expense : styles.net)}>{fmt(summary.net)}</div>
+          <div className={styles.heroNote}>
+            <span className={styles.statusBadge + ' ' + styles[financialStatus.tone]}>
+              <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
+            </span>
+            {summary.income > 0 && <span>{savingsRate.toFixed(1)}% מההכנסה · יעד חיסכון {SAVINGS_TARGET}%</span>}
           </div>
-        ) : (
-          <div className={styles.trendEmpty}>אין עדיין הוצאות החודש</div>
-        )}
+        </div>
+        <div className={styles.heroSide}>
+          <div>
+            <div className={styles.heroLabel}>הכנסות</div>
+            <div className={styles.heroSideValue + ' ' + styles.income}>{fmt(summary.income)}</div>
+          </div>
+          <div>
+            <div className={styles.heroLabel}>הוצאות</div>
+            <div className={styles.heroSideValue + ' ' + styles.expense}>{fmt(summary.expense)}</div>
+          </div>
+        </div>
       </div>
 
-      {(data.goals || []).length > 0 && (
-        <div className={styles.tileGoals}>
-          <div className={styles.colTitle}>יעדים</div>
-          <div className={styles.goalList}>
-            {(data.goals || []).slice(0, 4).map(g => {
-              const target = parseFloat(g.target) || 0;
-              const saved = parseFloat(g.saved) || 0;
-              const pct = target > 0 ? Math.min(100, Math.round((saved / target) * 100)) : 0;
-              const monthly = g.months > 0 ? Math.max(0, target - saved) / g.months : 0;
-              return (
-                <div key={g.id} className={styles.goalItem}>
-                  <div className={styles.goalHead}>
-                    <span className={styles.goalName}>{g.name}</span>
-                    <span className={styles.goalAmt}>{fmt(saved)} / {fmt(target)}</span>
-                  </div>
-                  <div className={styles.goalBarRow}>
-                    <div className={styles.goalBar}>
-                      <div className={styles.goalFill + (pct >= 100 ? ' ' + styles.goalFillDone : '')} style={{ transform: `scaleX(${pct / 100})` }} />
+      <div className={styles.cardRow}>
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>לאן הולך הכסף</h2>
+          {catLabels.length ? (
+            <div className={styles.catBox}>
+              <div className={styles.catDonut}>
+                <Pie
+                  data={{ labels: catLabels, datasets: [{ data: catLabels.map(l => byCat[l]), backgroundColor: catColors, borderColor: CT.surface, borderWidth: 2 }] }}
+                  options={{
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { display: false }, tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } } }
+                  }}
+                />
+              </div>
+              <div className={styles.catList}>
+                {catLabels.slice(0, 5).map((l, i) => {
+                  const pct = Math.round((byCat[l] / catTotal) * 100);
+                  return (
+                    <div key={l} className={styles.catRow}>
+                      <span className={styles.catIconWrap}>{getCategoryIcon(l)}</span>
+                      <span className={styles.catName}>{l}</span>
+                      <span className={styles.catBar}><span className={styles.catBarFill} style={{ width: pct + '%', background: catColors[i] }} /></span>
+                      <span className={styles.catAmt}>{fmt(byCat[l])}</span>
                     </div>
-                    <span className={styles.goalPct}>{pct}%</span>
+                  );
+                })}
+                {catLabels.length > 5 && (
+                  <div className={styles.catMore}>
+                    ועוד {catLabels.length - 5} קטגוריות · {fmt(catLabels.slice(5).reduce((s, l) => s + byCat[l], 0))}
                   </div>
-                  {monthly > 0 && <div className={styles.goalNote}>הפקדה חודשית נדרשת: {fmt(monthly)}</div>}
-                </div>
-              );
-            })}
-          </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className={styles.empty}>אין עדיין הוצאות החודש</div>
+          )}
         </div>
-      )}
 
-      <div className={styles.tileTrend}>
-        <div className={styles.colTitle}>{trendMonths.length > 1 ? `מגמת ${trendMonths.length} חודשים` : 'הכנסות מול הוצאות'}</div>
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>דורש תשומת לב</h2>
+          {attention.length ? (
+            <ul className={styles.insights}>
+              {attention.map((ins, i) => (
+                <li key={i} className={styles.insight}>
+                  <span className={styles.insightDot + ' ' + styles[ins.kind]} aria-hidden="true" />
+                  {ins.text}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className={styles.empty}>אין התראות החודש</div>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.card}>
+        <h2 className={styles.cardTitle}>{trendMonths.length > 1 ? `מגמת ${trendMonths.length} חודשים` : 'הכנסות מול הוצאות'}</h2>
         {hasTrendData ? (
           <div className={styles.trendChart}>
             <Bar
@@ -188,27 +166,9 @@ export default function Dashboard({ clientUserId, year, month }) {
             />
           </div>
         ) : (
-          <div className={styles.trendEmpty}>אין עדיין נתונים להצגת מגמה</div>
+          <div className={styles.empty}>אין עדיין נתונים להצגת מגמה</div>
         )}
       </div>
-
-      {insightGroups.length > 0 && (
-        <div className={styles.insightsRow}>
-          {insightGroups.map(group => (
-            <div key={group.key} className={styles.tileGroup}>
-              <div className={styles.groupTitle + ' ' + styles[group.key]}>{group.title}</div>
-              <div className={styles.insights}>
-                {group.items.map((ins, i) => (
-                  <div key={i} className={styles.insight + ' ' + styles[ins.kind]} style={{ animationDelay: (i * 0.06) + 's' }}>
-                    <span className={styles.insightDot} />
-                    {ins.text}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

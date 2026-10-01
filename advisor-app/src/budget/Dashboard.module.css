@@ -1,94 +1,81 @@
-.bentoGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-flow: dense;
-  grid-auto-rows: minmax(90px, auto);
+.page {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
 }
 
-@media (max-width: 860px) {
-  .bentoGrid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 560px) {
-  .bentoGrid { grid-template-columns: 1fr; }
-}
-
-.tileTrend, .tileGroup, .tileCategories, .tileGoals {
+.hero, .card {
   min-width: 0;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background: var(--surface);
   box-shadow: var(--shadow-card);
-  padding: var(--space-5);
-  transition: border-color 0.25s ease;
 }
 
-.tileTrend:hover, .tileGroup:hover, .tileCategories:hover, .tileGoals:hover {
-  border-color: var(--border-strong);
+.hero {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-5) 40px;
+  padding: 24px 28px;
 }
 
-/* Top-of-dashboard KPI strip — flat, scannable tiles instead of a hero
-   balance card, so income/expenses/surplus/savings-rate/status read at a
-   glance without needing to parse a big number's sign or subtract mentally. */
-.statRow {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
-}
+.heroMain { min-width: 0; }
 
-@media (max-width: 860px) {
-  .statRow { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 560px) {
-  .statRow { gap: var(--space-3); }
-  .statRow > :last-child:nth-child(odd) { grid-column: 1 / -1; }
-}
-
-.statTile {
-  min-width: 0;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
-  padding: var(--space-4);
-  transition: border-color 0.25s ease;
-}
-
-.statTile:hover { border-color: var(--border-strong); }
-
-.statTileLabel {
-  color: var(--text3);
-  font-size: var(--text-xs);
+.heroLabel {
+  color: var(--text2);
+  font-size: var(--text-sm);
   font-weight: 600;
-  letter-spacing: 0.03em;
-  margin-bottom: var(--space-2);
 }
 
-.statTileValue {
+.heroValue {
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-body);
-  font-size: var(--text-xl);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
   direction: ltr;
   unicode-bidi: isolate;
   text-align: right;
 }
 
-.statTileMeta {
+.heroNote {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
   color: var(--text3);
-  font-size: var(--text-xs);
-  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.heroSide {
+  margin-inline-start: auto;
+  display: flex;
+  gap: 36px;
+}
+
+.heroSideValue {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  margin-top: 2px;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: right;
+}
+
+@media (max-width: 560px) {
+  .hero { padding: 20px; }
+  .heroSide { margin-inline-start: 0; gap: 28px; }
 }
 
 .statusBadge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 3px 10px;
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
   font-weight: 700;
@@ -100,34 +87,47 @@
 .statusBadge.warn { color: var(--yellow); background: rgba(var(--yellow-rgb), 0.10); }
 .statusBadge.danger { color: var(--red); background: rgba(var(--red-rgb), 0.10); }
 
-.tileCategories {
-  grid-column: span 2;
-  grid-row: span 2;
+.cardRow {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 860px) {
+  .cardRow { grid-template-columns: 1fr; }
+}
+
+.card { padding: 20px 24px; }
+
+.cardTitle {
+  margin: 0 0 var(--space-4);
+  color: var(--text);
+  font-size: var(--text-lg);
+  font-weight: 700;
 }
 
 .catBox {
   display: flex;
   align-items: center;
-  gap: 20px;
-  height: 100%;
-  min-height: 200px;
+  gap: 28px;
 }
 
 @media (max-width: 480px) {
-  .catBox { flex-direction: column; }
+  .catBox { flex-direction: column; align-items: stretch; }
+  .catDonut { align-self: center; }
 }
 
 .catDonut {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 150px;
+  height: 150px;
   flex-shrink: 0;
 }
 
 .catList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
@@ -135,14 +135,7 @@
 .catRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.catDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
+  gap: 10px;
 }
 
 .catIconWrap {
@@ -153,18 +146,18 @@
 
 .catName {
   flex: 0 1 auto;
-  max-width: 9em;
+  width: 8em;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
 }
 
 .catBar {
   flex: 1;
   min-width: 24px;
-  height: 4px;
+  height: 6px;
   border-radius: var(--radius-full);
   background: var(--track);
   overflow: hidden;
@@ -176,112 +169,54 @@
   border-radius: var(--radius-full);
 }
 
-.catPct {
-  color: var(--text3);
+.catAmt {
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   direction: ltr;
   unicode-bidi: isolate;
+  min-width: 5.5em;
+  text-align: left;
 }
 
 .catMore {
   color: var(--text3);
-  font-size: var(--text-xs);
-  margin-top: 2px;
-}
-
-.tileTrend {
-  grid-column: span 4;
-  grid-row: span 2;
-}
-
-.tileGroup {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Insight tiles (danger/warn/tip/good) used to live directly in the 4-column
-   bento grid at span 2 each — an odd count (commonly 3) always orphaned the
-   last tile alone on its own row with two empty columns beside it. A
-   dedicated auto-fit row sized to however many groups actually exist avoids
-   that dead space at any count. */
-.insightsRow {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-}
-
-.net { color: var(--text); }
-.income { color: var(--green); }
-.expense { color: var(--red); }
-
-.colTitle {
-  color: var(--text3);
   font-size: var(--text-sm);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  margin-bottom: 14px;
 }
 
-.groupTitle {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  margin-bottom: 8px;
-}
-
-.groupTitle.danger { color: var(--red); }
-.groupTitle.warn { color: var(--yellow); }
-.groupTitle.tip { color: var(--accent); }
-.groupTitle.good { color: var(--green); }
-
-/* tileGroup insight tiles sit three to a row with wildly uneven item counts;
-   centering the list in the leftover space avoids the dead gap under sparse tiles. */
 .insights {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-2);
-  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .insight {
   display: flex;
   align-items: baseline;
-  gap: var(--space-2);
-  padding: 10px 4px;
+  gap: var(--space-3);
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
   font-size: var(--text-base);
-  border-bottom: 1px solid var(--border);
-  transition: transform 0.2s var(--ease-out-expo);
+  color: var(--text);
+}
+
+.insight:first-child {
+  border-top: none;
+  padding-top: 0;
 }
 
 .insightDot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
-.insight.danger .insightDot { background: var(--red); }
-.insight.warn .insightDot { background: var(--yellow); }
-.insight.tip .insightDot { background: var(--accent); }
-.insight.good .insightDot { background: var(--green); }
-
-.insight:last-child {
-  border-bottom: none;
-}
-
-.insight:hover {
-  transform: translateX(-3px);
-}
-
-.insight.danger { border-color: rgba(var(--red-rgb), 0.35); color: var(--red); }
-.insight.warn { border-color: rgba(var(--yellow-rgb), 0.35); color: var(--yellow); }
-.insight.tip { border-color: rgba(var(--accent-rgb), 0.35); color: var(--text); }
-.insight.good { border-color: rgba(var(--green-rgb), 0.35); color: var(--green); }
+.insightDot.danger { background: var(--red); }
+.insightDot.warn { background: var(--yellow); }
+.insightDot.tip { background: var(--accent); }
+.insightDot.good { background: var(--green); }
 
 .trendChart {
   height: 280px;
@@ -289,9 +224,8 @@
   position: relative;
 }
 
-.trendEmpty {
-  height: 100%;
-  min-height: 240px;
+.empty {
+  min-height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -299,107 +233,6 @@
   font-size: var(--text-base);
 }
 
-.tileGoals {
-  grid-column: span 2;
-  grid-row: span 2;
-  display: flex;
-  flex-direction: column;
-}
-
-/* tileGoals shares a row-track with tileCategories (whose donut+legend set the
-   track's height); a short goal list otherwise sits pinned to the top with a
-   dead gap below it. Centering it in the leftover space reads as intentional. */
-.goalList {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-4);
-  flex: 1;
-  margin-top: var(--space-3);
-}
-
-.goalItem {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.goalHead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.goalName {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.goalAmt {
-  font-size: var(--text-xs);
-  color: var(--text2);
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-
-.goalBarRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.goalBar {
-  position: relative;
-  flex: 1;
-  height: 8px;
-  background: var(--surface2);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.goalFill {
-  position: absolute;
-  inset-inline-start: 0;
-  top: 0;
-  height: 100%;
-  width: 100%;
-  background: var(--accent);
-  transform-origin: right center;
-  transition: transform 0.6s var(--ease-out-expo);
-}
-
-.goalFillDone { background: var(--green); }
-
-.goalPct {
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  min-width: 34px;
-  text-align: left;
-}
-
-.goalNote {
-  font-size: var(--text-xs);
-  color: var(--text3);
-}
-
-/* Tablet tier: two columns, so the wide tiles have to give up half their span
-   or the grid reads as a single very tall column. */
-@media (max-width: 860px) {
-  .tileTrend { grid-column: span 2; }
-  .tileCategories, .tileGoals { grid-column: span 1; }
-  .catBox { flex-direction: column; align-items: stretch; }
-}
-
-@media (max-width: 560px) {
-  .tileTrend, .tileCategories, .tileGoals {
-    grid-column: span 1;
-    grid-row: span 1;
-  }
-}
+.net { color: var(--accent); }
+.income { color: var(--green); }
+.expense { color: var(--red); }
