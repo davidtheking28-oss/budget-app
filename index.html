@@ -4708,7 +4708,11 @@ let userSettings = JSON.parse(localStorage.getItem(_modeKey('budget_settings')) 
 if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
 if(!userSettings.customFixedCats) userSettings.customFixedCats = [];
-function saveSettingsData(){localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
+_seedIncomeHistory();
+function _seedIncomeHistory(){if(!userSettings.incomeHistory)userSettings.incomeHistory={'0000-00':(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||''}))};}
+function _incomeSnap(){_seedIncomeHistory();userSettings.incomeHistory[_curMonthKey()]=(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||''}));}
+function _incomeSourcesFor(y,m){const h=userSettings.incomeHistory;if(!h)return userSettings.incomeSources||[];const key=mk(y,m);const keys=Object.keys(h).filter(k=>k<=key).sort();return keys.length?h[keys[keys.length-1]]:(userSettings.incomeSources||[]);}
+function saveSettingsData(){_incomeSnap();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
 
 // One definition of "income for a month", used by every screen. Posted income
 // transactions plus any standing source from settings that wasn't posted, so a
@@ -4723,7 +4727,7 @@ function monthlyIncomeFor(y,m){
   const isCurrent=(y===now.getFullYear()&&m===now.getMonth());
   if(!isCurrent&&!monthTx.length)return txIncome;
   const postedNames=new Set(incomeTx.map(t=>(t.desc||'').toLowerCase()));
-  const unpostedSourcesIncome=(userSettings.incomeSources||[]).filter(src=>!postedNames.has((src.name||'').toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
+  const unpostedSourcesIncome=_incomeSourcesFor(y,m).filter(src=>!postedNames.has((src.name||'').toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
   return txIncome+unpostedSourcesIncome;
 }
 function getMonthlyIncome(){return monthlyIncomeFor(currentYear,currentMonth);}
@@ -7797,6 +7801,7 @@ function switchMode(mode){
   const prevBM=userSettings.businessMode;
   userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
   if(!userSettings.incomeSources)userSettings.incomeSources=[];
+  _seedIncomeHistory();
   if(!userSettings.customCats)userSettings.customCats=[];
   if(!userSettings.customFixedCats)userSettings.customFixedCats=[];
   userSettings.businessMode=prevBM;   // feature flag, not "am I in business mode"
