@@ -4,7 +4,7 @@ import { Bar } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
 import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
 import { resizeImageToJpeg } from './resizeImage.js';
-import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, catColor, chartTheme } from '../categories.js';
+import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
 import { addItem } from '../budget/itemHelpers.js';
 
@@ -498,7 +498,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                   <div key={cat} className={styles.barRow}>
                     <span className={styles.barLabel}>{cat}</span>
                     <div className={styles.barTrack}>
-                      <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: catColor(cat) }} />
+                      <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: 'var(--accent)' }} />
                     </div>
                     <span className={styles.barValue}>{fmt(data.category_averages[cat])}</span>
                   </div>
@@ -515,7 +515,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                   <div key={cat} className={styles.barRow}>
                     <span className={styles.barLabel}>{cat}</span>
                     <div className={styles.barTrack}>
-                      <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: catColor(cat) }} />
+                      <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: 'var(--accent)' }} />
                     </div>
                     <span className={styles.barValue}>{fmt(data.category_averages[cat])}</span>
                   </div>

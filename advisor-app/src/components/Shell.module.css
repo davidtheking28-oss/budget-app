@@ -61,6 +61,10 @@
   color: var(--text);
 }
 
+.accountIcon {
+  display: none;
+}
+
 .accountTrigger svg {
   flex-shrink: 0;
   transition: transform 0.2s var(--ease-out-expo);
@@ -283,7 +287,11 @@
 
 @media (max-width: 560px) {
   .accountEmail {
-    max-width: 84px;
+    display: none;
+  }
+
+  .accountIcon {
+    display: block;
   }
 
   .accountTrigger {

@@ -73,7 +73,8 @@ function AccountMenu({ email, advisorId }) {
 
   return (
     <div className={styles.accountMenu}>
-      <button ref={triggerRef} type="button" className={styles.accountTrigger} onClick={() => setOpen(o => !o)} aria-expanded={open} aria-haspopup="true">
+      <button ref={triggerRef} type="button" className={styles.accountTrigger} onClick={() => setOpen(o => !o)} aria-expanded={open} aria-haspopup="true" aria-label={`חשבון: ${email}`}>
+        <svg className={styles.accountIcon} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" /></svg>
         <span className={styles.accountEmail}>{email}</span>
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={open ? styles.chevronOpen : ''}>
           <path d="M6 9l6 6 6-6" />

@@ -197,7 +197,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
     <div>
       <h2 className={styles.cardTitle}>כשירות רכישה כללית</h2>
       <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
-        הערכה כללית לפי הכנסה, הוצאות ונכסים נזילים בתקציב — ללא תלות בתרחיש משכנתא ספציפי. לבניית משכנתא בפועל עם מסלולים וריביות, המשיכו לסימולטור למטה.
+        הערכה לפי ההכנסה, ההוצאות והנכסים הנזילים בתקציב.
       </div>
       <div className={styles.kpiRow}>
         <div className={styles.kpi}>
@@ -227,7 +227,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
 
       <h2 className={styles.cardTitle} style={{ marginTop: 'var(--space-6)' }}>סימולטור משכנתא — מסלולים וריביות</h2>
       <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
-        חישוב מדויק לפי המסלולים שתזינו כאן (סכום, ריבית, עוגן) — עצמאי מהכרטיסים הכלליים למעלה, כולל בדיקות מול הוראה 329 של בנק ישראל.
+        חישוב לפי המסלולים שתזינו כאן, כולל בדיקה מול הוראה 329 של בנק ישראל.
       </div>
       <div className={styles.card}>
         <h3 className={styles.cardTitle}>תרחיש נכס</h3>
@@ -327,9 +327,6 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           </div>
         )}
         <Button variant="ghost" onClick={addTrack}>+ הוסף מסלול</Button>
-        <div className={styles.note}>
-          ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול/עוגן "פריים". מסלול "לכל מטרה" נושא בדרך כלל ריבית גבוהה יותר ממסלול לרכישת דירה, ומוגבל (בצירוף שאר מסלולי "לכל מטרה") עד {ANY_PURPOSE_LTV_HARD_CAP}% מימון ובלבד שהחריגה מעל 50% לא תעלה על {fmt(ANY_PURPOSE_EXCESS_CAP)} — יש להזין את הריבית בהתאם לתנאי הבנק.
-        </div>
 
         {loanAmount > 0 && (
           <div className={styles.totalsBar}>
@@ -378,7 +375,11 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         ) : (
           <div className={styles.empty}>הזן שווי נכס כדי לראות אחוז מימון וכושר החזר</div>
         )}
-        <div className={styles.note}>הכנסה, הוצאות והלוואות נשלפות מהתקציב ומטאב «נכסים והתחייבויות» — אין צורך להזין אותן כאן שוב. תקרות המימון והריבית המשתנה מבוססות על הוראת ניהול בנקאי תקין 329 של בנק ישראל — מגבלות על הבנק, לא ערובה לאישור ההלוואה.</div>
+        <details className={styles.note}>
+          <summary style={{ cursor: 'pointer' }}>מקורות והערות</summary>
+          <p>ריבית בנק ישראל: {BOI_RATE_ASOF.rate}% ({BOI_RATE_ASOF.date}) · מדד עדכני (שנתי): +{CPI_YEARLY_ASOF.pct}% ({CPI_YEARLY_ASOF.date}) — מקור: בנק ישראל / הלמ״ס. ריבית פריים ({PRIME_RATE}%) מתמלאת אוטומטית עבור מסלול/עוגן "פריים". מסלול "לכל מטרה" נושא בדרך כלל ריבית גבוהה יותר ממסלול לרכישת דירה, ומוגבל (בצירוף שאר מסלולי "לכל מטרה") עד {ANY_PURPOSE_LTV_HARD_CAP}% מימון ובלבד שהחריגה מעל 50% לא תעלה על {fmt(ANY_PURPOSE_EXCESS_CAP)} — יש להזין את הריבית בהתאם לתנאי הבנק.</p>
+          <p>הכנסה, הוצאות והלוואות נשלפות מהתקציב ומטאב «נכסים והתחייבויות» — אין צורך להזין אותן כאן שוב. תקרות המימון והריבית המשתנה מבוססות על הוראת ניהול בנקאי תקין 329 של בנק ישראל — מגבלות על הבנק, לא ערובה לאישור ההלוואה.</p>
+        </details>
       </div>
 
       {termMonths > 0 && (() => {

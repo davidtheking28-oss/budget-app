@@ -50,12 +50,15 @@ export default function Dashboard({ clientUserId, year, month }) {
   const catTotal = catLabels.reduce((s, l) => s + byCat[l], 0);
   const catColors = catLabels.map(catColor);
 
-  const trendMonths = [];
+  const allTrendMonths = [];
   for (let i = 5; i >= 0; i--) {
-    trendMonths.push(addMonths(year, month, -i));
+    allTrendMonths.push(addMonths(year, month, -i));
   }
-  const trendData = trendMonths.map(({ year: y, month: m }) => monthSummary(data, y, m));
-  const hasTrendData = trendData.some(s => s.income > 0 || s.expense > 0);
+  const allTrendData = allTrendMonths.map(({ year: y, month: m }) => monthSummary(data, y, m));
+  const firstWithData = allTrendData.findIndex(s => s.income > 0 || s.expense > 0);
+  const hasTrendData = firstWithData >= 0;
+  const trendMonths = hasTrendData ? allTrendMonths.slice(firstWithData) : allTrendMonths;
+  const trendData = hasTrendData ? allTrendData.slice(firstWithData) : allTrendData;
 
   const chartData = {
     labels: trendMonths.map(({ month: m }) => MONTH_SHORT[m]),
@@ -165,7 +168,7 @@ export default function Dashboard({ clientUserId, year, month }) {
       )}
 
       <div className={styles.tileTrend}>
-        <div className={styles.colTitle}>מגמת 6 חודשים</div>
+        <div className={styles.colTitle}>{trendMonths.length > 1 ? `מגמת ${trendMonths.length} חודשים` : 'הכנסות מול הוצאות'}</div>
         {hasTrendData ? (
           <div className={styles.trendChart}>
             <Bar
