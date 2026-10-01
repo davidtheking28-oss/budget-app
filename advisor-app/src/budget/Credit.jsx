@@ -277,10 +277,11 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     <div>
       {onSelectMonth && <MonthTabs month={month} onSelectMonth={onSelectMonth} />}
 
-      {(loans.length > 0 || payments.length > 0) && (
+      {(loans.length > 0 || payments.length > 0 || overdraft.balance > 0) && (
         <div className={styles.statStrip}>
           {loans.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(loansBalance)}</div><div className={styles.statLabel}>יתרת הלוואות</div></div>}
           {payments.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(paymentsLeft)}</div><div className={styles.statLabel}>יתרת תשלומים</div></div>}
+          {overdraft.balance > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(overdraft.balance)}</div><div className={styles.statLabel}>מינוס בבנק{overdraft.rate ? ` · ${overdraft.rate}%` : ''}</div></div>}
         </div>
       )}
       <div className={styles.section}>
