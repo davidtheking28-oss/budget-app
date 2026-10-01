@@ -43,7 +43,8 @@
 }
 
 @media (max-width: 560px) {
-  .statRow { grid-template-columns: 1fr; }
+  .statRow { gap: var(--space-3); }
+  .statRow > :last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 
 .statTile {

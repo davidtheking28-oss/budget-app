@@ -652,19 +652,19 @@
 .openCardBtn {
   padding: 6px 14px;
   border-radius: var(--radius-sm);
-  border: none;
-  background: var(--accent);
-  color: var(--accent-ink);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--accent);
   font-family: var(--font-body);
   font-size: var(--text-xs);
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  transition: box-shadow 0.15s ease, transform 0.15s var(--ease-out-expo);
+  transition: border-color 0.15s ease, transform 0.15s var(--ease-out-expo);
 }
 
 .openCardBtn:hover {
-  box-shadow: 0 4px 14px -4px rgba(var(--accent-rgb), 0.5);
+  border-color: var(--accent);
 }
 
 .openCardBtn:active {

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
 import { usePendingInvites } from './usePendingInvites.js';
@@ -126,6 +126,8 @@ export default function ClientList({ advisorId, onSelect }) {
   const [listFilter, setListFilter] = useUrlParam('lf', null); // null | 'overage' | 'tasks'
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
+  const [addOpen, setAddOpen] = useState(false);
+  useEffect(() => { if (addOpen) emailInputRef.current?.focus(); }, [addOpen]);
 
   async function claimCode() {
     const trimmed = code.trim().toUpperCase();
@@ -240,9 +242,9 @@ export default function ClientList({ advisorId, onSelect }) {
       <div className={styles.sectionHead}>
         <div className={styles.sectionTitleGroup}>
           <h2 className={styles.sectionTitle}>הלקוחות שלי {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
-          <Button onClick={() => { emailInputRef.current?.scrollIntoView({ block: 'center' }); emailInputRef.current?.focus(); }}>לקוח חדש +</Button>
+          <Button onClick={() => setAddOpen(o => !o)} aria-expanded={addOpen}>לקוח חדש +</Button>
         </div>
-        <div className={styles.addForm}>
+        {addOpen && <div className={styles.addForm}>
           <input
             ref={codeInputRef}
             className={styles.addInput + ' ' + styles.addInputCode}
@@ -269,7 +271,7 @@ export default function ClientList({ advisorId, onSelect }) {
             onKeyDown={e => e.key === 'Enter' && inviteByEmail()}
           />
           <Button onClick={inviteByEmail} disabled={invitingEmail}>הזמן</Button>
-        </div>
+        </div>}
       </div>
 
       {pendingInvites.length > 0 && (
@@ -321,7 +323,7 @@ export default function ClientList({ advisorId, onSelect }) {
           </div>
           <div className={styles.emptyTitle}>אין עדיין לקוחות מחוברים</div>
           <div className={styles.emptyText}>שלח הזמנה לכתובת האימייל של הלקוח, או בקש ממנו ליצור קוד הזמנה בהגדרות האפליקציה שלו והדבק אותו כאן</div>
-          <Button className={styles.emptyCta} onClick={() => emailInputRef.current?.focus()}>הזמן לקוח ראשון</Button>
+          <Button className={styles.emptyCta} onClick={() => { setAddOpen(true); emailInputRef.current?.focus(); }}>הזמן לקוח ראשון</Button>
         </div>
       ) : (
         <>

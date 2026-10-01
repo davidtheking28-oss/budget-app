@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useClientCrm, suggestTasksFromSummary } from './useClientCrm.js';
 import { useClientProfile } from './useClientProfile.js';
 import { formatDate, formatDateTime } from '../budget/monthUtils.js';
@@ -105,9 +105,13 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
   const [editMeetingAt, setEditMeetingAt] = useState('');
   const [editMeetingNotes, setEditMeetingNotes] = useState('');
   const [editMeetingForClient, setEditMeetingForClient] = useState(true);
-  // Collapsed by default — the three cards used to always show their full form
-  // and list, which pushed the page a lot longer than most visits need.
   const [openSections, setOpenSections] = useState({});
+  const sectionsInitFor = useRef(null);
+  useEffect(() => {
+    if (loading || sectionsInitFor.current === clientId) return;
+    sectionsInitFor.current = clientId;
+    setOpenSections({ tasks: tasks.some(t => !t.done), meetings: meetings.length > 0 });
+  }, [loading, clientId, tasks, meetings]);
   function toggleSection(key) { setOpenSections(prev => ({ ...prev, [key]: !prev[key] })); }
 
   function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); }

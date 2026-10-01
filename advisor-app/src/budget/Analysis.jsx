@@ -40,7 +40,7 @@ export default function Analysis({ clientUserId, year, month }) {
 
   const byCat = {};
   monthTx.forEach(t => { byCat[t.cat] = (byCat[t.cat] || 0) + t.amount; });
-  const labels = Object.keys(byCat);
+  const labels = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
   const values = labels.map(l => byCat[l]);
   const total = values.reduce((s, v) => s + v, 0);
   const colors = labels.map(catColor);

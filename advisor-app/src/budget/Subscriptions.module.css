@@ -446,3 +446,9 @@
   .kpiRow { flex-direction: column; }
   .kpi + .kpi::before { inset-inline-start: var(--space-4); inset-inline-end: var(--space-4); top: 0; bottom: auto; width: auto; height: 1px; }
 }
+
+.sectionEmptyCard {
+  padding-block: var(--space-3);
+  box-shadow: none;
+  background: transparent;
+}
