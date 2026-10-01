@@ -6,13 +6,13 @@ import { monthSummary } from './budgetMath.js';
 import { chartTheme } from '../categories.js';
 import { tracksSummary, amortizationSchedule, yearlyRollup, trackMonthlyPayment } from './mortgageMath.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import styles from './Mortgage.module.css';
 import { fmt, formatAmountInput, unformatAmountInput } from '../format.js';
-import { useCountUp } from '../useCountUp.js';
 
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
@@ -69,10 +69,6 @@ const BOI_RATE_ASOF = { date: '2026-09-16', rate: 3.25 };
 const CPI_YEARLY_ASOF = { date: '2026-08', pct: 1.5 };
 const PRIME_MARGIN = 1.5; // standard Israeli prime = BOI rate + 1.5%
 const PRIME_RATE = BOI_RATE_ASOF.rate + PRIME_MARGIN;
-
-function KpiValue({ value }) {
-  return <>{fmt(useCountUp(value))}</>;
-}
 
 export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
@@ -195,37 +191,19 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
 
   return (
     <div>
-      <h2 className={styles.cardTitle}>כשירות רכישה כללית</h2>
-      <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
-        הערכה לפי ההכנסה, ההוצאות והנכסים הנזילים בתקציב.
-      </div>
-      <div className={styles.kpiRow}>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>קרן חירום נדרשת</div>
-          <div className={styles.kpiValue}><KpiValue value={emergencyFundTarget} /></div>
-          <div className={styles.kpiMeta}>3× הוצאות חודשיות כולל הלוואות</div>
-        </div>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>הון עצמי זמין לרכישה</div>
-          <div className={styles.kpiValue}><KpiValue value={availableEquity} /></div>
-          <div className={styles.kpiMeta}>נכסים נזילים בניכוי קרן חירום</div>
-        </div>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>משכנתא מקסימלית</div>
-          <div className={styles.kpiValue}><KpiValue value={maxMortgage} /></div>
-          <div className={styles.kpiMeta}>לפי החזר חודשי של {fmt(maxMonthlyPayment)}</div>
-        </div>
-        <div className={styles.kpi + ' ' + styles.kpiMain}>
-          <div className={styles.kpiLabel}>שווי נכס מקסימלי לאיתור</div>
-          {maxPropertyValue > 0 ? (
-            <div className={styles.kpiValue}><KpiValue value={maxPropertyValue} /></div>
-          ) : (
-            <div className={styles.kpiValue + ' ' + styles.kpiEmpty}>אין עדיין כשירות מספקת</div>
-          )}
-        </div>
-      </div>
+      <Hero
+        label="שווי נכס מקסימלי לאיתור"
+        value={maxPropertyValue > 0 ? fmt(maxPropertyValue) : 'אין עדיין כשירות מספקת'}
+        tone={maxPropertyValue > 0 ? 'pos' : undefined}
+        note="הערכה לפי ההכנסה, ההוצאות והנכסים הנזילים בתקציב"
+        side={[
+          { label: 'משכנתא מקסימלית', value: fmt(maxMortgage), meta: `החזר של ${fmt(maxMonthlyPayment)} בחודש` },
+          { label: 'הון עצמי זמין', value: fmt(availableEquity), meta: 'נזיל, אחרי קרן חירום' },
+          { label: 'קרן חירום נדרשת', value: fmt(emergencyFundTarget), meta: '3 חודשי הוצאות' }
+        ]}
+      />
 
-      <h2 className={styles.cardTitle} style={{ marginTop: 'var(--space-6)' }}>סימולטור משכנתא — מסלולים וריביות</h2>
+      <h2 className={styles.cardTitle}>סימולטור משכנתא — מסלולים וריביות</h2>
       <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
         חישוב לפי המסלולים שתזינו כאן, כולל בדיקה מול הוראה 329 של בנק ישראל.
       </div>

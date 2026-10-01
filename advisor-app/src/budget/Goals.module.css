@@ -33,18 +33,6 @@
   box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
 }
 
-.rollup {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text2);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  display: inline-block;
-  margin-bottom: var(--space-4);
-  animation: riseIn var(--motion) var(--ease-out-expo) both;
-}
-
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

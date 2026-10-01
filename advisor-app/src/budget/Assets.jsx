@@ -4,6 +4,7 @@ import { Pie } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { stableColor } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -89,20 +90,16 @@ export default function Assets({ clientUserId, advisorId }) {
 
   return (
     <div>
-      <div className={styles.kpiRow}>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>סך הכל נכסים</div>
-          <div className={styles.kpiValue}>{fmt(totalAssets)}</div>
-        </div>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>סך הכל התחייבויות</div>
-          <div className={styles.kpiValue + ' ' + styles.kpiNeg}>{fmt(totalLiabilities)}</div>
-        </div>
-        <div className={styles.kpi + ' ' + styles.kpiMain}>
-          <div className={styles.kpiLabel}>שווי נקי</div>
-          <div className={styles.kpiValue + ' ' + (netWorth >= 0 ? styles.kpiPos : styles.kpiNeg)}>{fmt(netWorth)}</div>
-        </div>
-      </div>
+      <Hero
+        label="שווי נקי"
+        value={fmt(netWorth)}
+        tone={netWorth < 0 ? 'neg' : 'pos'}
+        note="נכסים פחות התחייבויות"
+        side={[
+          { label: 'נכסים', value: fmt(totalAssets) },
+          { label: 'התחייבויות', value: fmt(totalLiabilities), tone: 'expense' }
+        ]}
+      />
 
       <div className={styles.split}>
         <div className={styles.card}>

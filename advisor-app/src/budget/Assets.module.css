@@ -1,8 +1,5 @@
 /* Same reasoning as Budget's kpiRow: one strip with dividers instead of three
-   identical boxes, with net worth — the number that actually answers "how is
-   this client doing" — carrying more visual weight than the two figures that
-   feed it. */
-.kpiRow {
+   identical boxes {
   display: flex;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -12,41 +9,6 @@
   overflow: hidden;
 }
 
-.kpi {
-  flex: 1;
-  position: relative;
-  min-width: 0;
-  padding: var(--space-4);
-}
-
-.kpi + .kpi::before {
-  content: '';
-  position: absolute;
-  inset-inline-start: 0;
-  top: var(--space-3);
-  bottom: var(--space-3);
-  width: 1px;
-  background: var(--border);
-}
-
-.kpiMain { background: var(--hover); }
-.kpiMain .kpiValue { font-size: var(--text-display-md); }
-
-.kpiLabel {
-  font-size: var(--text-xs);
-  color: var(--text2);
-  margin-bottom: var(--space-2);
-}
-
-.kpiValue {
-  font-family: var(--font-body);
-  font-size: var(--text-display-sm);
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-.kpiPos { color: var(--green); }
 .kpiNeg { color: var(--red); }
 
 .split {
@@ -217,8 +179,7 @@
 }
 
 @media (max-width: 860px) {
-  .kpiRow { flex-direction: column; }
-  .kpi + .kpi::before { inset-inline-start: var(--space-4); inset-inline-end: var(--space-4); top: 0; bottom: auto; width: auto; height: 1px; }
+
   .split { grid-template-columns: 1fr; }
   .donutRow { flex-direction: column; }
 }

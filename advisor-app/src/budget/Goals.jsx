@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -115,8 +116,23 @@ export default function Goals({ clientUserId, advisorId }) {
   const totalSaved = goals.reduce((s, g) => s + (g.saved || 0), 0);
   const totalTarget = goals.reduce((s, g) => s + (g.target || 0), 0);
 
+  const monthlyNeed = goals.reduce((s, g) => s + (g.months > 0 ? Math.max(0, (g.target || 0) - (g.saved || 0)) / g.months : 0), 0);
+  const achievedPct = totalTarget > 0 ? Math.min(100, Math.round((totalSaved / totalTarget) * 100)) : 0;
+
   return (
     <div>
+      {goals.length > 0 && (
+        <Hero
+          label="נדרש לחסוך כל חודש"
+          value={fmt(monthlyNeed)}
+          tone="pos"
+          note="כדי לעמוד בכל היעדים בזמן"
+          side={[
+            { label: 'יעדים', value: String(goals.length) },
+            { label: 'הושג עד כה', value: `${achievedPct}%`, meta: `${fmt(totalSaved)} מתוך ${fmt(totalTarget)}` }
+          ]}
+        />
+      )}
       <div className={styles.form}>
         <input className={styles.input} placeholder="שם היעד" aria-label="שם היעד" value={name} onChange={e => setName(e.target.value)} />
         <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום יעד" aria-label="סכום היעד" value={target} onChange={e => setTarget(e.target.value)} />
@@ -137,7 +153,6 @@ export default function Goals({ clientUserId, advisorId }) {
         </div>
       ) : (
         <>
-          <div className={styles.rollup}>{`${goals.length} יעדים פעילים · נחסכו ${fmt(totalSaved)} מתוך ${fmt(totalTarget)}`}</div>
           <div className={styles.grid}>
             {goals.map((g, i) => {
               const pct = g.target ? Math.min(Math.round((g.saved / g.target) * 100), 100) : 0;

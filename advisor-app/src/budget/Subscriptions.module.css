@@ -394,59 +394,6 @@
   color: var(--red);
 }
 
-
-.kpiRow {
-  display: flex;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  margin-bottom: var(--space-4);
-  overflow: hidden;
-}
-
-.kpi {
-  flex: 1;
-  position: relative;
-  min-width: 0;
-  padding: var(--space-4);
-}
-
-.kpi + .kpi::before {
-  content: '';
-  position: absolute;
-  inset-inline-start: 0;
-  top: var(--space-3);
-  bottom: var(--space-3);
-  width: 1px;
-  background: var(--border);
-}
-
-.kpiLabel {
-  font-size: var(--text-xs);
-  color: var(--text2);
-  margin-bottom: var(--space-2);
-}
-
-.kpiValue {
-  font-family: var(--font-body);
-  font-size: var(--text-display-sm);
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-.kpiSub {
-  font-size: var(--text-xs);
-  color: var(--text3);
-  margin-top: var(--space-2);
-}
-
-@media (max-width: 720px) {
-  .kpiRow { flex-direction: column; }
-  .kpi + .kpi::before { inset-inline-start: var(--space-4); inset-inline-end: var(--space-4); top: 0; bottom: auto; width: auto; height: 1px; }
-}
-
 .sectionEmptyCard {
   padding-block: var(--space-3);
   box-shadow: none;

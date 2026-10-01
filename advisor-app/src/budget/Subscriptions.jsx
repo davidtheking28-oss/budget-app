@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -161,16 +162,15 @@ export default function Subscriptions({ clientUserId, advisorId }) {
 
   return (
     <div>
-      <div className={styles.kpiRow}>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>מנויים פעילים</div>
-          <div className={styles.kpiValue}>{activeSubsCount}</div>
-        </div>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>עלות חודשית כוללת</div>
-          <div className={styles.kpiValue}>{fmt(totalMonthlyCommitments)}</div>
-        </div>
-      </div>
+      <Hero
+        label="הוצאות קבועות בחודש"
+        value={fmt(totalMonthlyCommitments)}
+        note={`${fmt(totalMonthlyCommitments * 12)} בשנה`}
+        side={[
+          { label: 'מנויים פעילים', value: String(activeSubsCount), meta: monthlySubsCost > 0 ? `${fmt(monthlySubsCost)} בחודש` : null },
+          { label: 'ביטוחים', value: fmt(insurancesMonthly) }
+        ]}
+      />
 
       {renewingSoon.length > 0 && (
         <div className={styles.renewalBanner} role="status" aria-live="polite">

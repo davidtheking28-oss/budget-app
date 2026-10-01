@@ -6,6 +6,7 @@ import { computeInsights } from './insights.js';
 import { addMonths, getMonthTx } from './monthUtils.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Skeleton from '../components/Skeleton.jsx';
+import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { catColor, chartTheme } from '../categories.js';
 import styles from './Dashboard.module.css';
@@ -66,28 +67,21 @@ export default function Dashboard({ clientUserId, year, month }) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.hero}>
-        <div className={styles.heroMain}>
-          <div className={styles.heroLabel}>{summary.net < 0 ? 'חריגה החודש' : 'נשאר החודש'}</div>
-          <div className={styles.heroValue + ' ' + (summary.net < 0 ? styles.expense : styles.net)}>{fmt(summary.net)}</div>
-          <div className={styles.heroNote}>
-            <span className={styles.statusBadge + ' ' + styles[financialStatus.tone]}>
-              <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
-            </span>
-            {summary.income > 0 && <span>{savingsRate.toFixed(1)}% מההכנסה · יעד חיסכון {SAVINGS_TARGET}%</span>}
-          </div>
-        </div>
-        <div className={styles.heroSide}>
-          <div>
-            <div className={styles.heroLabel}>הכנסות</div>
-            <div className={styles.heroSideValue + ' ' + styles.income}>{fmt(summary.income)}</div>
-          </div>
-          <div>
-            <div className={styles.heroLabel}>הוצאות</div>
-            <div className={styles.heroSideValue + ' ' + styles.expense}>{fmt(summary.expense)}</div>
-          </div>
-        </div>
-      </div>
+      <Hero
+        label={summary.net < 0 ? 'חריגה החודש' : 'נשאר החודש'}
+        value={fmt(summary.net)}
+        tone={summary.net < 0 ? 'neg' : 'pos'}
+        note={<>
+          <span className={styles.statusBadge + ' ' + styles[financialStatus.tone]}>
+            <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
+          </span>
+          {summary.income > 0 && <span>{savingsRate.toFixed(1)}% מההכנסה · יעד חיסכון {SAVINGS_TARGET}%</span>}
+        </>}
+        side={[
+          { label: 'הכנסות', value: fmt(summary.income), tone: 'income' },
+          { label: 'הוצאות', value: fmt(summary.expense), tone: 'expense' }
+        ]}
+      />
 
       <div className={styles.cardRow}>
         <div className={styles.card}>

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
-import { getMonthTx } from './monthUtils.js';
+import { addMonths, getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { catColor, chartTheme } from '../categories.js';
 import styles from './Analysis.module.css';
@@ -55,12 +56,26 @@ export default function Analysis({ clientUserId, year, month }) {
     }]
   };
 
+  const prev = addMonths(year, month, -1);
+  const prevTotal = getMonthTx(data.transactions, prev.year, prev.month).filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+  const diff = total - prevTotal;
+
   const activeCat = labels.includes(whatIfCat) ? whatIfCat : labels[0];
   const catAmount = byCat[activeCat] || 0;
   const savings = Math.round(catAmount * (cutPct / 100));
   const newTotal = total - savings;
 
   return (
+    <>
+      <Hero
+        label="סה״כ הוצאות החודש"
+        value={fmt(total)}
+        note={prevTotal > 0 ? `${diff <= 0 ? 'פחות' : 'יותר'} ב־${fmt(Math.abs(diff))} מהחודש הקודם (${Math.round(Math.abs(diff) / prevTotal * 100)}%)` : null}
+        side={[
+          { label: 'הקטגוריה הגדולה', value: labels[0], meta: `${Math.round((values[0] / total) * 100)}% · ${fmt(values[0])}` },
+          { label: 'קטגוריות', value: String(labels.length) }
+        ]}
+      />
     <div className={styles.wrapOuter}>
     <div className={styles.wrap}>
       <div className={styles.donutBox}>
@@ -128,5 +143,6 @@ export default function Analysis({ clientUserId, year, month }) {
         </div>
       </div>
     </div>
+    </>
   );
 }

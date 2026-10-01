@@ -16,6 +16,7 @@ const LOAN_CATEGORY = 'החזר הלוואות + חיוב קבוע';
 const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS, SAVINGS_CATEGORY];
 import { supabase, SUPA_URL } from '../supabaseClient.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -418,6 +419,19 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   return (
     <div>
+      {cashflow?.hasIncomeData && (
+        <Hero
+          label="תזרים חודשי ממוצע"
+          value={fmt(cashflow.netInAccount)}
+          tone={cashflow.netInAccount < 0 ? 'neg' : 'pos'}
+          note={`לפי ${cashflow.monthsCovered} חודשי דפי חשבון`}
+          side={[
+            { label: 'הכנסה ממוצעת', value: fmt(cashflow.income), tone: 'income' },
+            { label: 'הוצאה ממוצעת', value: fmt(cashflow.expense), tone: 'expense' },
+            cashflow.savings > 0 && { label: 'העברות לחיסכון', value: fmt(cashflow.savings) }
+          ].filter(Boolean)}
+        />
+      )}
       <div className={styles.card}>
         <div className={styles.cardTitle}>העלאת דפי חשבון</div>
         <div className={styles.dropZone} onDragOver={e => e.preventDefault()} onDrop={onDrop}>

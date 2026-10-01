@@ -1,9 +1,9 @@
 import { useClientBudget } from './useClientBudget.js';
 import { effectiveLimit, incomeSourcesFor, monthSummary } from './budgetMath.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
-import styles from './Budget.module.css';
 import { fmt } from '../format.js';
 
 export default function Budget({ clientUserId, advisorId, year, month }) {
@@ -27,24 +27,16 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
 
   return (
     <div>
-
-      <div className={styles.kpiRow}>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>סך הכל הכנסות</div>
-          <div className={styles.kpiValue}>{fmt(summary.income)}</div>
-          <div className={styles.kpiSub}>{plannedIncome > 0 ? `מתוך ${fmt(plannedIncome)} מתוכנן` : 'אין הכנסה מתוכננת'}</div>
-        </div>
-        <div className={styles.kpi}>
-          <div className={styles.kpiLabel}>סך הכל הוצאות</div>
-          <div className={styles.kpiValue}>{fmt(summary.expense)}</div>
-          <div className={styles.kpiSub}>{totalBudgeted > 0 ? `מתוך ${fmt(totalBudgeted)} מתוקצב` : 'אין תקציב מוגדר'}</div>
-        </div>
-        <div className={styles.kpi + ' ' + styles.kpiFlow}>
-          <div className={styles.kpiLabel}>תזרים</div>
-          <div className={styles.kpiValue + ' ' + (flow < 0 ? styles.kpiNeg : styles.kpiPos)}>{fmt(flow)}</div>
-          <div className={styles.kpiSub}>{flow < 0 ? 'חריגה מההכנסות' : 'פנוי החודש'}</div>
-        </div>
-      </div>
+      <Hero
+        label={flow < 0 ? 'חריגה מההכנסות' : 'פנוי החודש'}
+        value={fmt(flow)}
+        tone={flow < 0 ? 'neg' : 'pos'}
+        note={totalBudgeted > 0 ? `נוצל ${Math.round((summary.expense / totalBudgeted) * 100)}% מהתקציב` : 'אין תקציב מוגדר'}
+        side={[
+          { label: 'הכנסות', value: fmt(summary.income), tone: 'income', meta: plannedIncome > 0 ? `מתוך ${fmt(plannedIncome)} מתוכנן` : null },
+          { label: 'הוצאות', value: fmt(summary.expense), tone: 'expense', meta: totalBudgeted > 0 ? `מתוך ${fmt(totalBudgeted)} מתוקצב` : null }
+        ]}
+      />
 
       <BudgetWizard data={data} save={save} year={year} month={month} />
     </div>

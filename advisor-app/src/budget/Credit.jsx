@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -279,17 +280,22 @@ export default function Credit({ clientUserId, advisorId }) {
   });
   const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
   const loansMonthly = loans.reduce((s, l) => s + (l.monthly || 0), 0);
+  const paymentsMonthly = payments.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
   const paymentsLeft = payments.reduce((s, p) => { const total = parseFloat(p.total) || 0; return s + Math.max(0, total - currentInstallments(p, total)) * (parseFloat(p.amount) || 0); }, 0);
 
   return (
     <div>
-
       {(loans.length > 0 || payments.length > 0 || overdraft.balance > 0) && (
-        <div className={styles.statStrip}>
-          {loans.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(loansBalance)}</div><div className={styles.statLabel}>יתרת הלוואות</div></div>}
-          {payments.length > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(paymentsLeft)}</div><div className={styles.statLabel}>יתרת תשלומים</div></div>}
-          {overdraft.balance > 0 && <div className={styles.stat}><div className={styles.statValue}>{fmt(overdraft.balance)}</div><div className={styles.statLabel}>מינוס בבנק{overdraft.rate ? ` · ${overdraft.rate}%` : ''}</div></div>}
-        </div>
+        <Hero
+          label="החזר חודשי"
+          value={fmt(loansMonthly + paymentsMonthly)}
+          note={[loans.length > 0 && `${loans.length} הלוואות`, payments.length > 0 && `${payments.length} עסקאות בתשלומים`].filter(Boolean).join(' · ')}
+          side={[
+            loans.length > 0 && { label: 'יתרת הלוואות', value: fmt(loansBalance) },
+            payments.length > 0 && { label: 'יתרת תשלומים', value: fmt(paymentsLeft) },
+            overdraft.balance > 0 && { label: 'מינוס בבנק', value: fmt(overdraft.balance), tone: 'expense', meta: overdraft.rate ? `ריבית ${overdraft.rate}%` : null }
+          ].filter(Boolean)}
+        />
       )}
       <div className={styles.section}>
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconLoans}>{ICONS.loans}</span>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
