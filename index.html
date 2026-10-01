@@ -3934,7 +3934,7 @@ function renderTxCategorized(byCat){
 }
 function _expIncomeSectionHtml(){
   const past=_viewingPastMonth();
-  const sources=past?_incomeSourcesFor(currentYear,currentMonth):userSettings.incomeSources;
+  const sources=_incomeSourcesFor(currentYear,currentMonth);
   const rows=sources.map((src,i)=>{
     const amount=parseFloat(src.amount)||0;
     const body='<div class="budget-tx-empty">'+(src.day?'מתקבל ב-'+esc(String(src.day))+' לחודש':'לא הוגדר יום קבלה')+'</div>';
@@ -3947,24 +3947,36 @@ function _expIncomeSectionHtml(){
     +(past?'':'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>');
 }
 function _incomeFields(src){return [{label:'שם המקור',value:src.name||'',placeholder:'משכורת'},{label:'סכום חודשי (₪)',type:'number',value:src.amount||''},{label:'יום קבלה בחודש (לתזכורת)',type:'number',value:src.day||''}];}
+function _cloneSources(a){return (a||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
+function _incomeWorkList(){_seedIncomeHistory();return _cloneSources(_incomeSourcesFor(currentYear,currentMonth));}
+function _incomeCommit(list){
+  if(!userSettings.incomeHistory)userSettings.incomeHistory={};
+  const n=new Date();
+  const vk=mk(currentYear,currentMonth),ck=_curMonthKey();
+  const key=vk>ck?vk:ck;
+  userSettings.incomeHistory[key]=_cloneSources(list);
+  userSettings.incomeSources=_cloneSources(_incomeSourcesFor(n.getFullYear(),n.getMonth()));
+  saveSettingsData();refreshAll();
+}
 async function _expEditIncome(i){
-  const src=userSettings.incomeSources[i];if(!src)return;
+  const list=_incomeWorkList();const src=list[i];if(!src)return;
   const v=await promptSheet({title:'עריכת מקור הכנסה',fields:_incomeFields(src)});
   if(v===null)return;
   src.name=v[0].trim();src.amount=v[1];src.day=v[2];
-  saveSettingsData();refreshAll();
+  _incomeCommit(list);
 }
 function _expDeleteIncome(i){
-  const backup=userSettings.incomeSources[i];if(!backup)return;
-  userSettings.incomeSources.splice(i,1);
-  saveSettingsData();refreshAll();
-  showUndoToast('🗑️ מקור ההכנסה הוסר',()=>{userSettings.incomeSources.splice(i,0,backup);saveSettingsData();refreshAll();},()=>{});
+  const list=_incomeWorkList();const backup=list[i];if(!backup)return;
+  list.splice(i,1);
+  _incomeCommit(list);
+  showUndoToast('🗑️ מקור ההכנסה הוסר',()=>{const l=_incomeWorkList();l.splice(i,0,backup);_incomeCommit(l);},()=>{});
 }
 async function addIncomeSource(){
   const v=await promptSheet({title:'מקור הכנסה חדש',fields:_incomeFields({})});
   if(v===null||(!v[0].trim()&&!v[1]))return;
-  userSettings.incomeSources.push({name:v[0].trim(),amount:v[1],day:v[2]});
-  saveSettingsData();refreshAll();
+  const list=_incomeWorkList();
+  list.push({name:v[0].trim(),amount:v[1],day:v[2]});
+  _incomeCommit(list);
 }
 function toggleAdvancedFilters(){
   const el=document.getElementById('txAdvancedFilters');
@@ -4209,7 +4221,7 @@ async function _doCloudSave(){
       const cloudNewer=cloudTs>localTs;
       const hist=cloudNewer?{...(userSettings.incomeHistory||{}),...(cloudSettings.incomeHistory||{})}:{...(cloudSettings.incomeHistory||{}),...(userSettings.incomeHistory||{})};
       if(cloudNewer&&_stableStr(cloudSettings)!==_stableStr({...userSettings,incomeHistory:cloudSettings.incomeHistory})){userSettings={...userSettings,...cloudSettings};changed=true;}
-      if(Object.keys(hist).length)userSettings.incomeHistory=hist;
+      if(Object.keys(hist).length){userSettings.incomeHistory=hist;_syncCurrentIncome();}
       localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));
       if(cloudNewer)localStorage.setItem(_modeKey('budget_settings_ts'),String(cloudTs));
     }
@@ -4264,7 +4276,7 @@ async function _loadFromCloud(silent){
       _advisorAssets=bundle.assets||[];
       _advisorOverdraft=bundle.overdraft||{balance:0};
       const cloudSettings=bundle.settings;
-      if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...cloudSettings};if(!cloudSettings.incomeHistory){delete userSettings.incomeHistory;_seedIncomeHistory();}localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
+      if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...cloudSettings};if(!cloudSettings.incomeHistory){delete userSettings.incomeHistory;_seedIncomeHistory();}_syncCurrentIncome();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
       if(!silent||changed){refreshAll();}
       _decideOnboarding();
     } else {
@@ -4727,8 +4739,10 @@ if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
 if(!userSettings.customFixedCats) userSettings.customFixedCats = [];
 _seedIncomeHistory();
+_syncCurrentIncome();
 function _seedIncomeHistory(){if(!userSettings.incomeHistory&&(userSettings.incomeSources||[]).length)userSettings.incomeHistory={'0000-00':(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}))};}
 function _incomeSnap(){_seedIncomeHistory();if(!userSettings.incomeHistory){if(!(userSettings.incomeSources||[]).length)return;userSettings.incomeHistory={};}userSettings.incomeHistory[_curMonthKey()]=(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
+function _syncCurrentIncome(){if(!userSettings.incomeHistory)return;const n=new Date();userSettings.incomeSources=_cloneSources(_incomeSourcesFor(n.getFullYear(),n.getMonth()));}
 function _incomeSourcesFor(y,m){const h=userSettings.incomeHistory;if(!h)return userSettings.incomeSources||[];const key=mk(y,m);const keys=Object.keys(h).filter(k=>k<=key).sort();return keys.length?h[keys[keys.length-1]]:(userSettings.incomeSources||[]);}
 function saveSettingsData(){_incomeSnap();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
 
@@ -7820,6 +7834,7 @@ function switchMode(mode){
   userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
   if(!userSettings.incomeSources)userSettings.incomeSources=[];
   _seedIncomeHistory();
+  _syncCurrentIncome();
   if(!userSettings.customCats)userSettings.customCats=[];
   if(!userSettings.customFixedCats)userSettings.customFixedCats=[];
   userSettings.businessMode=prevBM;   // feature flag, not "am I in business mode"

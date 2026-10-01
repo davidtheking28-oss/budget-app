@@ -3,7 +3,7 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } fro
 import { Bar } from 'react-chartjs-2';
 import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
-import { monthKeyOf } from './budgetMath.js';
+import { monthKeyOf, incomeSourcesFor } from './budgetMath.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -107,7 +107,7 @@ export default function BudgetWizard({ data, save, year, month }) {
   }, [monthTx]);
 
   const [incomes, setIncomes] = useState(() => {
-    const existing = data?.settings?.incomeSources || [];
+    const existing = incomeSourcesFor(data?.settings, new Date().getFullYear(), new Date().getMonth());
     return existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '' })) : [{ name: 'שכר', amount: '', day: '' }];
   });
   const [fixed, setFixed] = useState(() => {

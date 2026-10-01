@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor } from './budgetMath.js';
 
 const data = {
@@ -176,5 +176,20 @@ describe('per-month income sources', () => {
     const data = { settings, transactions: [tx('2026-09-05'), tx('2026-10-05')] };
     expect(monthSummary(data, 2026, 8).income).toBe(10000);
     expect(monthSummary(data, 2026, 9).income).toBe(12000);
+  });
+});
+
+describe('income for a month with no activity matches the client app', () => {
+  afterEach(() => vi.useRealTimers());
+  const data = { settings: { incomeSources: [{ name: 'שכר', amount: '10000' }] }, transactions: [] };
+
+  it('a past month with no transactions has no source income', () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 9, 15));
+    expect(monthSummary(data, 2026, 8).income).toBe(0);
+  });
+
+  it('the current month still counts unposted sources', () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 9, 15));
+    expect(monthSummary(data, 2026, 9).income).toBe(10000);
   });
 });

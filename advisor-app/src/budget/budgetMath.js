@@ -53,7 +53,9 @@ export function effectiveIncome(transactions, incomeSources) {
 
 export function monthSummary(data, year, month) {
   const monthTx = getMonthTx(data?.transactions, year, month);
-  const { income } = effectiveIncome(monthTx, incomeSourcesFor(data?.settings, year, month));
+  const now = new Date();
+  const isCurrent = year === now.getFullYear() && month === now.getMonth();
+  const { income } = !isCurrent && !monthTx.length ? { income: 0 } : effectiveIncome(monthTx, incomeSourcesFor(data?.settings, year, month));
   const expense = monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const budgets = data?.budgets || {};
   const spentByCat = {};
