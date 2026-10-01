@@ -85,6 +85,7 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
   const [overdraftDraft, setOverdraftDraft] = useState('');
   const [overdraftRateDraft, setOverdraftRateDraft] = useState('');
   const [editingOverdraft, setEditingOverdraft] = useState(false);
+  const [committing, setCommitting] = useState(false);
 
   function resetLoanForm() { setLoanForm({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' }); setEditingLoanId(null); }
   async function submitLoan() {
@@ -132,10 +133,10 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     if (term && term !== Infinity) return (l.monthly || 0) * term;
     return l.remaining || 0;
   }
-  function consolSelection(loans, payments) {
+  function consolSelection(loans, payments, od = overdraft) {
     const loanIds = Object.keys(consolChecked).filter(id => consolChecked[id]);
     const paymentIds = Object.keys(consolPaymentsChecked).filter(id => consolPaymentsChecked[id]);
-    const includeOverdraft = consolOverdraftChecked && (overdraft.balance || 0) > 0;
+    const includeOverdraft = consolOverdraftChecked && (od.balance || 0) > 0;
     const pickedLoans = loans.filter(l => loanIds.includes(String(l.id)));
     const pickedPayments = payments.filter(p => paymentIds.includes(String(p.id)));
     const loanMonthly = pickedLoans.reduce((s, l) => s + (l.monthly || 0), 0);
@@ -143,10 +144,10 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     const loanTotalCost = pickedLoans.reduce((s, l) => s + loanRemainingCost(l), 0);
     const paymentMonthly = pickedPayments.reduce((s, p) => s + (paymentRemainingValue(p).left > 0 ? (parseFloat(p.amount) || 0) : 0), 0);
     const paymentRemaining = pickedPayments.reduce((s, p) => s + paymentRemainingValue(p).value, 0);
-    const overdraftAmount = includeOverdraft ? (overdraft.balance || 0) : 0;
+    const overdraftAmount = includeOverdraft ? (od.balance || 0) : 0;
     // The overdraft has no fixed payoff term — it just accrues interest — so its
     // "cost" is a monthly interest charge, not an amortizing payment.
-    const overdraftMonthlyCost = includeOverdraft ? overdraftAmount * ((overdraft.rate || 0) / 1200) : 0;
+    const overdraftMonthlyCost = includeOverdraft ? overdraftAmount * ((od.rate || 0) / 1200) : 0;
     return {
       loanIds, paymentIds, includeOverdraft, overdraftMonthlyCost,
       currentMonthly: loanMonthly + paymentMonthly + overdraftMonthlyCost,
@@ -179,13 +180,16 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     const rate = parseFloat(consolForm.rate) || 0;
     const months = parseInt(consolForm.months) || 0;
     if (!months) { toast('נדרשת תקופה מוצעת', 'error'); return; }
+    if (committing) return;
+    setCommitting(true);
     const { loanIds, paymentIds, includeOverdraft } = sel;
     const newLoanId = Date.now() + Math.random();
     const previousOverdraftBalance = overdraft.balance || 0;
+    const closedAt = new Date().toISOString();
     const ok = await save(cur => {
       const curLoans = cur.loans || [];
       const curPayments = cur.payments || [];
-      const s = consolSelection(curLoans.filter(l => !l.closed), curPayments.filter(p => !p.closed));
+      const s = consolSelection(curLoans.filter(l => !l.closed), curPayments.filter(p => !p.closed), cur.overdraft || { balance: 0 });
       const newMonthly = pmtSpitzer(s.currentRemaining, rate, months);
       const newLoan = {
         id: newLoanId,
@@ -197,14 +201,16 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
         rate,
         previousMonthly: s.currentMonthly,
         previousRemaining: s.currentRemaining,
-        consolidatedAt: new Date().toISOString()
+        consolidatedAt: closedAt
       };
-      return {
-        loans: [...curLoans.map(l => loanIds.includes(String(l.id)) ? { ...l, closed: true } : l), newLoan],
-        payments: curPayments.map(p => paymentIds.includes(String(p.id)) ? { ...p, closed: true } : p),
-        overdraft: includeOverdraft ? { ...(cur.overdraft || {}), balance: 0 } : cur.overdraft
+      const patch = {
+        loans: [...curLoans.map(l => loanIds.includes(String(l.id)) && !l.closed ? { ...l, closed: true, closedAt } : l), newLoan],
+        payments: curPayments.map(p => paymentIds.includes(String(p.id)) && !p.closed ? { ...p, closed: true, closedAt } : p)
       };
+      if (includeOverdraft) patch.overdraft = { ...(cur.overdraft || {}), balance: 0 };
+      return patch;
     });
+    setCommitting(false);
     if (!ok) return;
     setConsolChecked({});
     setConsolPaymentsChecked({});
@@ -217,11 +223,14 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
     });
   }
   async function undoConsolidation(newLoanId, loanIds, paymentIds, includeOverdraft, previousOverdraftBalance) {
-    const ok = await save(cur => ({
-      loans: (cur.loans || []).filter(l => l.id !== newLoanId).map(l => loanIds.includes(String(l.id)) ? { ...l, closed: false } : l),
-      payments: (cur.payments || []).map(p => paymentIds.includes(String(p.id)) ? { ...p, closed: false } : p),
-      overdraft: includeOverdraft ? { ...(cur.overdraft || {}), balance: previousOverdraftBalance } : cur.overdraft
-    }));
+    const ok = await save(cur => {
+      const patch = {
+        loans: (cur.loans || []).filter(l => l.id !== newLoanId).map(l => loanIds.includes(String(l.id)) ? { ...l, closed: false, closedAt: undefined } : l),
+        payments: (cur.payments || []).map(p => paymentIds.includes(String(p.id)) ? { ...p, closed: false, closedAt: undefined } : p)
+      };
+      if (includeOverdraft && !(cur.overdraft?.balance > 0)) patch.overdraft = { ...(cur.overdraft || {}), balance: previousOverdraftBalance };
+      return patch;
+    });
     if (ok) toast('המחזור בוטל', 'success');
   }
   async function saveOverdraft() {
@@ -255,7 +264,7 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
   }
 
   const loans = [...(data.loans || [])].filter(l => !l.closed).sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
-  const closedLoans = [...(data.loans || [])].filter(l => l.closed).sort((a, b) => new Date(b.consolidatedAt || 0) - new Date(a.consolidatedAt || 0));
+  const closedLoans = [...(data.loans || [])].filter(l => l.closed).sort((a, b) => new Date(b.closedAt || 0) - new Date(a.closedAt || 0));
   const closedPayments = [...(data.payments || [])].filter(p => p.closed);
   const overdraft = data.overdraft || { balance: 0 };
   const loanMonthsLeft = l => loanPayoffMonths(l.remaining, l.monthly, l.rate);
@@ -351,8 +360,8 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
                     <div>
                       <div className={styles.name}>{l.name || 'הלוואה'}</div>
                       <div className={styles.meta}>
-                        {l.consolidatedAt ? `נסגרה במחזור · ${new Date(l.consolidatedAt).toLocaleDateString('he-IL')}` : 'נסגרה במחזור'}
-                        {l.previousMonthly != null ? ` · היה ${fmt(l.previousMonthly)}/חודש` : ''}
+                        {l.closedAt ? `נסגרה במחזור · ${new Date(l.closedAt).toLocaleDateString('he-IL')}` : 'נסגרה במחזור'}
+                        {l.monthly ? ` · היה ${fmt(l.monthly)}/חודש` : ''}
                       </div>
                     </div>
                   </div>
@@ -481,7 +490,7 @@ export default function Credit({ clientUserId, advisorId, month, onSelectMonth }
             </div>
             {consolResult && (
               <div style={{ marginTop: 'var(--space-3)' }}>
-                <Button onClick={() => commitConsolidation(loans, payments)}>בצע מחזור</Button>
+                <Button onClick={() => commitConsolidation(loans, payments)} disabled={committing}>{committing ? 'מבצע…' : 'בצע מחזור'}</Button>
               </div>
             )}
           </>

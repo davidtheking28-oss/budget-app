@@ -60,7 +60,7 @@ async function run(theme) {
   r.sections = await page.evaluate(() => [...document.querySelectorAll('#allTxList .section-title')].map(e => e.textContent.trim()));
   r.incomeRows = await page.evaluate(() => [...document.querySelectorAll('#allTxList .exp-row')].map(e => e.querySelector('.exp-name')?.textContent + '|' + e.querySelector('.exp-amt')?.textContent + '|icons:' + e.querySelectorAll('.exp-icon-sm').length).filter(s => s.startsWith('משכורת') || s.includes('בונוס') || s.includes('פרילנס')));
   await page.screenshot({ path: SHOT + `qa_${theme}_tx_top.png` });
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.evaluate(() => (()=>{const mm=document.querySelector('main');mm.scrollTop=mm.scrollHeight;})());
   await page.waitForTimeout(400);
   await page.screenshot({ path: SHOT + `qa_${theme}_tx_bottom.png` });
   r.txBottom = await page.evaluate(() => {
@@ -71,7 +71,7 @@ async function run(theme) {
     return { lastText: last.textContent.trim().slice(0, 30), lastBottom: Math.round(lr.bottom), navTop: Math.round(nav.top), fabTop: Math.round(fab.top), fabVisible: getComputedStyle(document.querySelector('.fab')).display, scrollY: scrollY, docH: document.documentElement.scrollHeight };
   });
   await page.evaluate(() => document.documentElement.style.setProperty('--safe-bottom', '34px'));
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.evaluate(() => (()=>{const mm=document.querySelector('main');mm.scrollTop=mm.scrollHeight;})());
   await page.waitForTimeout(300);
   await page.screenshot({ path: SHOT + `qa_${theme}_tx_bottom_safe34.png` });
   r.txBottomSafe = await page.evaluate(() => {
@@ -86,7 +86,7 @@ async function run(theme) {
   await page.waitForTimeout(400);
   r.geomSafe = await geom();
   await page.screenshot({ path: SHOT + `qa_${theme}_toast_install_safe34.png` });
-  await page.evaluate(() => { document.getElementById('installBanner').classList.remove('show'); document.documentElement.style.removeProperty('--safe-bottom'); window.scrollTo(0, 0); });
+  await page.evaluate(() => { document.getElementById('installBanner').classList.remove('show'); document.documentElement.style.removeProperty('--safe-bottom'); document.querySelector('main').scrollTop=0; });
   await page.waitForTimeout(2600);
   await page.evaluate(() => showToast('✓ טוסט'));
   await page.waitForTimeout(400);
@@ -156,7 +156,7 @@ async function run(theme) {
   await page.waitForTimeout(300);
   r.overdraft = await page.evaluate(() => document.getElementById('overdraftCard')?.textContent);
   await page.screenshot({ path: SHOT + `qa_${theme}_loans_overdraft.png` });
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.evaluate(() => (()=>{const mm=document.querySelector('main');mm.scrollTop=mm.scrollHeight;})());
   await page.waitForTimeout(400);
   await page.screenshot({ path: SHOT + `qa_${theme}_loans_bottom.png` });
   r.loansBottom = await page.evaluate(() => {
