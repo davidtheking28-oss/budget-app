@@ -4,6 +4,7 @@ import { Pie } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { stableColor } from '../categories.js';
 import Skeleton from '../components/Skeleton.jsx';
+import AddForm from '../components/AddForm.jsx';
 import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -104,14 +105,14 @@ export default function Assets({ clientUserId, advisorId }) {
       <div className={styles.split}>
         <div className={styles.card}>
           <div className={styles.cardTitle}>שווי נכסים</div>
-          <div className={styles.form}>
+          <AddForm label="הוסף נכס" className={styles.form}>
             <input className={styles.input} placeholder="שם הנכס" aria-label="שם הנכס" value={name} onChange={e => setName(e.target.value)} />
             <select aria-label="סוג הנכס" className={styles.input} value={category} onChange={e => setCategory(e.target.value)}>
               {ASSET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום הנכס" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} />
             <Button onClick={submit}>הוסף</Button>
-          </div>
+          </AddForm>
           {assets.length ? (
             <div className={styles.list}>
               {[...assets].sort((a, b) => (b.amount || 0) - (a.amount || 0)).map(a => (
@@ -161,12 +162,12 @@ export default function Assets({ clientUserId, advisorId }) {
 
       <div className={styles.card + ' ' + styles.cardStandalone}>
         <CollapsibleSection title="התחייבויות">
-        <div className={styles.form}>
+        <AddForm label="הוסף התחייבות" className={styles.form}>
           <input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} />
           <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההתחייבות" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} />
           <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להתחייבות" value={loanMonthly} onChange={e => setLoanMonthly(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitLoan()} />
           <Button onClick={submitLoan}>הוסף</Button>
-        </div>
+        </AddForm>
         {loans.length ? (
           <div className={styles.list}>
             {[...loans].sort((a, b) => (b.remaining || 0) - (a.remaining || 0)).map(l => (

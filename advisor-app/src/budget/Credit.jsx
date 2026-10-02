@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
+import AddForm from '../components/AddForm.jsx';
 import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -301,7 +302,7 @@ export default function Credit({ clientUserId, advisorId }) {
       <div className={styles.section}>
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconLoans}>{ICONS.loans}</span>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
-        <div className={styles.form}>
+        <AddForm label="הוסף הלוואה" open={editingLoanId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם ההלוואה" aria-label="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
           <input className={styles.input} placeholder="גורם מלווה" aria-label="גורם מלווה" value={loanForm.lender} onChange={e => setLoanForm({ ...loanForm, lender: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להלוואה" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} />
@@ -310,7 +311,7 @@ export default function Credit({ clientUserId, advisorId }) {
           <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} />
           <Button onClick={submitLoan}>{editingLoanId != null ? 'שמור' : 'הוסף הלוואה'}</Button>
           {editingLoanId != null && <Button variant="ghost" onClick={resetLoanForm}>ביטול</Button>}
-        </div>
+        </AddForm>
         {[['הלוואות ארוכות טווח (18+ חודשים לסיום)', longTermLoans], ['הלוואות קצרות טווח (מתחת ל-18 חודשים לסיום)', shortTermLoans], ['לא ניתן לסווג (חסרה יתרה/ריבית)', unclassifiedLoans]].map(([groupLabel, groupLoans]) => groupLoans.length ? (
           <div key={groupLabel}>
             <div className={styles.sectionEmpty} style={{ fontWeight: 700, color: 'var(--text)', textAlign: 'right', padding: '10px 2px 4px' }}>{groupLabel}</div>
@@ -522,14 +523,14 @@ export default function Credit({ clientUserId, advisorId }) {
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         <PaymentsTimeline payments={payments} />
-        <div className={styles.form}>
+        <AddForm label="הוסף תשלומים" open={editingPaymentId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם העסקה" aria-label="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="numeric" placeholder="סה״כ תשלומים" aria-label="סך כל התשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
           <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלומים שנותרו" aria-label="תשלומים שנותרו" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום לתשלום" aria-label="סכום לתשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
           <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוסף תשלום'}</Button>
           {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
-        </div>
+        </AddForm>
         {payments.length ? (
           <div className={styles.grid}>
             {payments.map((p, i) => {

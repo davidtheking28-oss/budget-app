@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
+import AddForm from '../components/AddForm.jsx';
 import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -134,12 +135,12 @@ export default function Goals({ clientUserId, advisorId }) {
           ]}
         />
       )}
-      <div className={styles.form}>
+      <AddForm label="הוסף יעד" className={styles.form}>
         <input className={styles.input} placeholder="שם היעד" aria-label="שם היעד" value={name} onChange={e => setName(e.target.value)} />
         <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום יעד" aria-label="סכום היעד" value={target} onChange={e => setTarget(e.target.value)} />
         <input className={styles.input} type="number" inputMode="numeric" placeholder="חודשים" aria-label="מספר חודשים ליעד" value={months} onChange={e => setMonths(e.target.value)} onKeyDown={e => e.key === 'Enter' && addGoal()} />
         <Button onClick={addGoal} disabled={adding}>הוסף יעד</Button>
-      </div>
+      </AddForm>
 
       {!goals.length ? (
         <div className={styles.empty}>

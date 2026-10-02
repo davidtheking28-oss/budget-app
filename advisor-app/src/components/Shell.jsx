@@ -156,6 +156,7 @@ export default function Shell({ title, clientName, onBack, nav, activeNav, onNav
   return (
     <div className={styles.shellTabs} dir="rtl" inert={shellInert ? '' : undefined}>
       <IconRail
+        clientName={clientName}
         onBack={onBack}
         onSearch={onSearch}
         onPrint={onPrint}
@@ -169,7 +170,10 @@ export default function Shell({ title, clientName, onBack, nav, activeNav, onNav
       <div className={styles.topbarBleed}>
         <div className={styles.topbar}>
           <div className={styles.topbarStart}>
-            <div className={styles.clientName} title={clientName}>{clientName}</div>
+            <div className={styles.titleBlock}>
+              {title && <h1 className={styles.pageTitle}>{title}</h1>}
+              {clientName && <div className={styles.mobileClient}>{clientName}</div>}
+            </div>
           </div>
           <div className={styles.topbarEnd}>
             {sidebarInfo}
@@ -178,7 +182,6 @@ export default function Shell({ title, clientName, onBack, nav, activeNav, onNav
         </div>
       </div>
       <main className={styles.contentTabs}>
-        {title && <h1 className={styles.pageTitle}>{title}</h1>}
         {children}
       </main>
     </div>

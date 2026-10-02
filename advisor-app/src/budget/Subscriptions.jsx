@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
+import AddForm from '../components/AddForm.jsx';
 import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -185,7 +186,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       <div className={styles.section + (subs.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconSubs}>{ICONS.subs}</span>מנויים<span className={styles.countBadge}>{subs.length}</span>{monthlySubsCost > 0 ? ` · ${fmt(monthlySubsCost)} לחודש` : ''}</>} defaultOpen={subs.length > 0}>
         {!subs.length && <div className={styles.sectionEmpty}>אין מנויים רשומים</div>}
-        <div className={styles.form}>
+        <AddForm label="הוסף מנוי" open={editingSubId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם המנוי" aria-label="שם המנוי" value={subForm.name} onChange={e => setSubForm({ ...subForm, name: e.target.value })} />
           <select aria-label="קטגוריית המנוי" className={styles.input} value={subForm.category} onChange={e => setSubForm({ ...subForm, category: e.target.value })}>
             {SUB_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -199,7 +200,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           <input className={styles.input} type="date" placeholder="חידוש הבא" aria-label="תאריך החידוש הבא" value={subForm.nextDate} onChange={e => setSubForm({ ...subForm, nextDate: e.target.value })} />
           <Button onClick={submitSub}>{editingSubId != null ? 'שמור' : 'הוסף מנוי'}</Button>
           {editingSubId != null && <Button variant="ghost" onClick={resetSubForm}>ביטול</Button>}
-        </div>
+        </AddForm>
         {subShares.length > 1 && (
           <>
             <div className={styles.miniBar}>
@@ -253,7 +254,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       <div className={styles.section + (insurances.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.planning}</span>ביטוחים<span className={styles.countBadge}>{insurances.length}</span>{insurancesMonthly > 0 ? ` · ${fmt(insurancesMonthly)} לחודש` : ''}</>} defaultOpen={insurances.length > 0}>
         {!insurances.length && <div className={styles.sectionEmpty}>אין ביטוחים רשומים</div>}
-        <div className={styles.form}>
+        <AddForm label="הוסף ביטוח" open={editingInsId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם הביטוח" aria-label="שם הביטוח" value={insForm.name} onChange={e => setInsForm({ ...insForm, name: e.target.value })} />
           <select aria-label="סוג הביטוח" className={styles.input} value={insForm.type} onChange={e => setInsForm({ ...insForm, type: e.target.value })}>
             {INSURANCE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -261,7 +262,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" aria-label="סכום חודשי לביטוח" value={insForm.monthly} onChange={e => setInsForm({ ...insForm, monthly: e.target.value })} />
           <Button onClick={submitInsurance}>{editingInsId != null ? 'שמור' : 'הוסף ביטוח'}</Button>
           {editingInsId != null && <Button variant="ghost" onClick={resetInsForm}>ביטול</Button>}
-        </div>
+        </AddForm>
         {insurances.length ? (
           <div className={styles.list}>
             {insurances.map((x, i) => (
@@ -284,12 +285,12 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       <div className={styles.section + (grooming.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.grooming}</span>טיפוח וקוסמטיקה<span className={styles.countBadge}>{grooming.length}</span>{groomingMonthly > 0 ? ` · ${fmt(groomingMonthly)} לחודש` : ''}</>} defaultOpen={grooming.length > 0}>
         {!grooming.length && <div className={styles.sectionEmpty}>אין פריטים רשומים</div>}
-        <div className={styles.form}>
+        <AddForm label="הוסף פריט" open={editingGroomId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם הפריט" aria-label="שם הפריט" value={groomForm.name} onChange={e => setGroomForm({ ...groomForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" aria-label="סכום חודשי" value={groomForm.monthly} onChange={e => setGroomForm({ ...groomForm, monthly: e.target.value })} />
           <Button onClick={submitGroom}>{editingGroomId != null ? 'שמור' : 'הוסף'}</Button>
           {editingGroomId != null && <Button variant="ghost" onClick={resetGroomForm}>ביטול</Button>}
-        </div>
+        </AddForm>
         {grooming.length ? (
           <div className={styles.list}>
             {grooming.map((x, i) => (
@@ -309,12 +310,12 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       <div className={styles.section + (events.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.events}</span>אירועים ומתנות<span className={styles.countBadge}>{events.length}</span>{eventsMonthly > 0 ? ` · ${fmt(eventsMonthly)} לחודש` : ''}</>} defaultOpen={events.length > 0}>
         {!events.length && <div className={styles.sectionEmpty}>אין אירועים רשומים</div>}
-        <div className={styles.form}>
+        <AddForm label="הוסף אירוע" open={editingEventId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם האירוע" aria-label="שם האירוע" value={eventForm.name} onChange={e => setEventForm({ ...eventForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="עלות שנתית" aria-label="עלות שנתית" value={eventForm.annual} onChange={e => setEventForm({ ...eventForm, annual: e.target.value })} />
           <Button onClick={submitEvent}>{editingEventId != null ? 'שמור' : 'הוסף'}</Button>
           {editingEventId != null && <Button variant="ghost" onClick={resetEventForm}>ביטול</Button>}
-        </div>
+        </AddForm>
         {events.length ? (
           <div className={styles.list}>
             {events.map((x, i) => (
@@ -334,12 +335,12 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       <div className={styles.section + (education.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.education}</span>חינוך וחוגים<span className={styles.countBadge}>{education.length}</span>{educationMonthly > 0 ? ` · ${fmt(educationMonthly)} לחודש` : ''}</>} defaultOpen={education.length > 0}>
         {!education.length && <div className={styles.sectionEmpty}>אין פריטים רשומים</div>}
-        <div className={styles.form}>
+        <AddForm label="הוסף פריט" open={editingEduId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם הפריט" aria-label="שם הפריט" value={eduForm.name} onChange={e => setEduForm({ ...eduForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" aria-label="סכום חודשי" value={eduForm.monthly} onChange={e => setEduForm({ ...eduForm, monthly: e.target.value })} />
           <Button onClick={submitEdu}>{editingEduId != null ? 'שמור' : 'הוסף'}</Button>
           {editingEduId != null && <Button variant="ghost" onClick={resetEduForm}>ביטול</Button>}
-        </div>
+        </AddForm>
         {education.length ? (
           <div className={styles.list}>
             {education.map((x, i) => (
@@ -359,12 +360,12 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       <div className={styles.section + (annualExpenses.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.annual}</span>הוצאות שנתיות<span className={styles.countBadge}>{annualExpenses.length}</span>{annualExpensesMonthly > 0 ? ` · ${fmt(annualExpensesMonthly)} לחודש` : ''}</>} defaultOpen={annualExpenses.length > 0}>
         {!annualExpenses.length && <div className={styles.sectionEmpty}>אין הוצאות רשומות</div>}
-        <div className={styles.form}>
+        <AddForm label="הוסף הוצאה" open={editingAnnualExpId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם ההוצאה" aria-label="שם ההוצאה" value={annualExpForm.name} onChange={e => setAnnualExpForm({ ...annualExpForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="עלות שנתית" aria-label="עלות שנתית" value={annualExpForm.annual} onChange={e => setAnnualExpForm({ ...annualExpForm, annual: e.target.value })} />
           <Button onClick={submitAnnualExp}>{editingAnnualExpId != null ? 'שמור' : 'הוסף'}</Button>
           {editingAnnualExpId != null && <Button variant="ghost" onClick={resetAnnualExpForm}>ביטול</Button>}
-        </div>
+        </AddForm>
         {annualExpenses.length ? (
           <div className={styles.list}>
             {annualExpenses.map((x, i) => (

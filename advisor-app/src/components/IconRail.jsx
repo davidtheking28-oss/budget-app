@@ -3,7 +3,7 @@ import styles from './IconRail.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
-export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme }) {
+export default function IconRail({ clientName, onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme }) {
   const globalActions = [
     onBack && {
       key: 'clients',
@@ -36,7 +36,10 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
 
   return (
     <div className={styles.rail}>
-      <div className={styles.mark} aria-hidden="true"><Logo /></div>
+      <div className={styles.head}>
+        <div className={styles.mark} aria-hidden="true"><Logo /></div>
+        {clientName && <div className={styles.clientName} title={clientName}>{clientName}</div>}
+      </div>
       <nav className={styles.actions} aria-label="ניווט">
         {globalActions.map(a => (
           <button
@@ -58,6 +61,7 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
           const groupStart = i === 0 || n.group !== nav[i - 1].group;
           return [
             groupStart && i > 0 ? <span key={n.key + '-div'} className={styles.divider} aria-hidden="true" /> : null,
+            groupStart && n.groupLabel ? <span key={n.key + '-grp'} className={styles.groupLabel}>{n.groupLabel}</span> : null,
             <button
               key={n.key}
               type="button"
@@ -73,6 +77,7 @@ export default function IconRail({ onBack, homeActive, onSearch, onPrint, onPres
         })}
 
         {nav && nav.length > 0 && trailingActions.length > 0 && <span className={styles.divider} aria-hidden="true" />}
+        {trailingActions.length > 0 && <span className={styles.groupLabel}>ללקוח</span>}
 
         {trailingActions.map(a => (
           <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}>
