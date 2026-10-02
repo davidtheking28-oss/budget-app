@@ -142,7 +142,7 @@ export default function Assets({ clientUserId, advisorId }) {
           ) : (
             <div className={styles.empty}>אין עדיין התחייבויות רשומות</div>
           )}
-          <div className={styles.note}>הלוואות שנוספו כאן מופיעות גם בטאב «מנויים והלוואות», שם אפשר להגדיר ריבית ומלווה.</div>
+          <div className={styles.note}>הלוואות שנוספו כאן מופיעות גם בטאב «הלוואות ואשראי», שם אפשר להגדיר ריבית ומלווה.</div>
         </Card>
       </CardGrid>
     </div>

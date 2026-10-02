@@ -304,6 +304,11 @@
   .accountEmail {
     max-width: 110px;
   }
+
+  .accountPanel {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+  }
 }
 
 @media (max-width: 560px) {
