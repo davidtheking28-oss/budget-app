@@ -292,7 +292,7 @@ export default function Credit({ clientUserId, advisorId }) {
         />
       )}
       <div className={styles.section}>
-        <CollapsibleSection defaultOpen={loans.length > 0} locked={loans.length > 0} title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
+        <CollapsibleSection defaultOpen locked title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
         <AddForm label="הוסף הלוואה" open={editingLoanId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם ההלוואה" aria-label="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
@@ -345,6 +345,54 @@ export default function Credit({ clientUserId, advisorId }) {
             </div>
           </div>
         ) : null)}
+      </CollapsibleSection>
+      </div>
+      <div className={styles.section}>
+        <CollapsibleSection defaultOpen locked title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
+        {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
+        <PaymentsTimeline payments={payments} />
+        <AddForm label="הוסף תשלומים" open={editingPaymentId != null} className={styles.form}>
+          <input className={styles.input} placeholder="שם העסקה" aria-label="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="numeric" placeholder="סה״כ תשלומים" aria-label="סך כל התשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלומים שנותרו" aria-label="תשלומים שנותרו" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום לתשלום" aria-label="סכום לתשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
+          <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוסף תשלום'}</Button>
+          {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
+        </AddForm>
+        {payments.length ? (
+          <div className={styles.grid}>
+            {payments.map((p, i) => {
+              const total = parseFloat(p.total) || 0;
+              const cur = currentInstallments(p, total);
+              const left = Math.max(0, total - cur);
+              const done = total > 0 && left <= 0;
+              const paidPct = total > 0 ? Math.min(100, Math.max(0, Math.round((cur / total) * 100))) : null;
+              const showBar = paidPct !== null && !done;
+              return (
+                <div key={p.id} className={`${styles.row} ${styles.rowCard}${showBar ? ' ' + styles.rowStacked : ''}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }} role="button" tabIndex={0} onClick={() => startEditPayment(p)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditPayment(p))}>
+                  <div className={styles.rowMain}>
+                    <div>
+                      <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg> הושלם</span>}</div>
+                      <div className={styles.meta}>{total ? `נותרו ${left} מתוך ${total} תשלומים` : ''}</div>
+                    </div>
+                    <div className={styles.rowActions}>
+                      <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
+                      <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'התשלום'} נמחק`); }} />
+                    </div>
+                  </div>
+                  {showBar && (
+                    <div className={styles.loanBarRow}>
+                      <div className={styles.loanBar} role="progressbar" aria-label="אחוז ששולם" aria-valuenow={paidPct} aria-valuemin={0} aria-valuemax={100}>
+                        <div className={styles.loanBarFill} style={{ transform: `scaleX(${paidPct / 100})` }} />
+                      </div>
+                      <div className={styles.loanBarPct}>{paidPct}%</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
       </CollapsibleSection>
       </div>
 
@@ -511,54 +559,6 @@ export default function Credit({ clientUserId, advisorId }) {
 
       </div>
 
-      <div className={styles.section}>
-        <CollapsibleSection defaultOpen={payments.length > 0} locked={payments.length > 0} title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
-        {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
-        <PaymentsTimeline payments={payments} />
-        <AddForm label="הוסף תשלומים" open={editingPaymentId != null} className={styles.form}>
-          <input className={styles.input} placeholder="שם העסקה" aria-label="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="סה״כ תשלומים" aria-label="סך כל התשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלומים שנותרו" aria-label="תשלומים שנותרו" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום לתשלום" aria-label="סכום לתשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
-          <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוסף תשלום'}</Button>
-          {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
-        </AddForm>
-        {payments.length ? (
-          <div className={styles.grid}>
-            {payments.map((p, i) => {
-              const total = parseFloat(p.total) || 0;
-              const cur = currentInstallments(p, total);
-              const left = Math.max(0, total - cur);
-              const done = total > 0 && left <= 0;
-              const paidPct = total > 0 ? Math.min(100, Math.max(0, Math.round((cur / total) * 100))) : null;
-              const showBar = paidPct !== null && !done;
-              return (
-                <div key={p.id} className={`${styles.row} ${styles.rowCard}${showBar ? ' ' + styles.rowStacked : ''}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }} role="button" tabIndex={0} onClick={() => startEditPayment(p)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditPayment(p))}>
-                  <div className={styles.rowMain}>
-                    <div>
-                      <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg> הושלם</span>}</div>
-                      <div className={styles.meta}>{total ? `נותרו ${left} מתוך ${total} תשלומים` : ''}</div>
-                    </div>
-                    <div className={styles.rowActions}>
-                      <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
-                      <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'התשלום'} נמחק`); }} />
-                    </div>
-                  </div>
-                  {showBar && (
-                    <div className={styles.loanBarRow}>
-                      <div className={styles.loanBar} role="progressbar" aria-label="אחוז ששולם" aria-valuenow={paidPct} aria-valuemin={0} aria-valuemax={100}>
-                        <div className={styles.loanBarFill} style={{ transform: `scaleX(${paidPct / 100})` }} />
-                      </div>
-                      <div className={styles.loanBarPct}>{paidPct}%</div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-      </CollapsibleSection>
-      </div>
     </div>
   );
 }

@@ -125,8 +125,6 @@
 }
 
 .trackTableWrap .table th {
-  background: var(--accent);
-  color: var(--accent-ink);
   white-space: nowrap;
 }
 .trackTableWrap .table td { padding: var(--space-2); }
