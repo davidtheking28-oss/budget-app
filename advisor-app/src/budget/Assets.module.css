@@ -1,14 +1,3 @@
-/* Same reasoning as Budget's kpiRow: one strip with dividers instead of three
-   identical boxes {
-  display: flex;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  margin-bottom: var(--space-5);
-  overflow: hidden;
-}
-
 .kpiNeg { color: var(--red); }
 
 .split {

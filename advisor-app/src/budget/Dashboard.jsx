@@ -33,7 +33,10 @@ export default function Dashboard({ clientUserId, year, month }) {
 
   const SAVINGS_TARGET = 15;
   const savingsRate = summary.income > 0 ? (summary.net / summary.income) * 100 : 0;
-  const financialStatus = summary.net < 0
+  const hasData = summary.income > 0 || summary.expense > 0;
+  const financialStatus = !hasData
+    ? { label: 'אין נתונים לחודש', tone: 'neutral' }
+    : summary.net < 0
     ? { label: 'קריטי', tone: 'danger' }
     : insights.some(i => i.kind === 'danger' || i.kind === 'warn')
       ? { label: 'לתשומת לב', tone: 'warn' }

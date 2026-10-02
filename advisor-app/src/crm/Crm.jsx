@@ -5,7 +5,6 @@ import { formatDate, formatDateTime } from '../budget/monthUtils.js';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import Skeleton from '../components/Skeleton.jsx';
-import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { toast } from '../toast.js';
 import styles from './Crm.module.css';
@@ -137,12 +136,6 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
   const overdueTasks = tasks.filter(t => !t.done && t.due_date && t.due_date < todayIso).length;
   const soonMeetings = meetings.filter(m => { const d = daysUntil(m.scheduled_at); return d !== null && d >= 0 && d <= 3; }).length;
 
-  const openTasks = tasks.filter(t => !t.done).length;
-  const nextMeeting = meetings.filter(m => new Date(m.scheduled_at) >= now).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))[0];
-  const nextMeetingLabel = nextMeeting
-    ? new Date(nextMeeting.scheduled_at).toLocaleString('he-IL', { weekday: 'short', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })
-    : 'אין פגישה מתוכננת';
-
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) {
     return (
@@ -156,10 +149,8 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
 
   return (
     <div>
-      <Hero
-        label="הפגישה הבאה"
-        value={nextMeetingLabel}
-        note={(overdueTasks > 0 || soonMeetings > 0) && <>
+      {(overdueTasks > 0 || soonMeetings > 0) && (
+        <div className={styles.reminderBar}>
           {overdueTasks > 0 && (
             <button type="button" className={styles.reminderChip + ' ' + styles.reminderChipBad} onClick={() => setOpenSections(prev => ({ ...prev, tasks: true }))}>
               {overdueTasks} משימות באיחור
@@ -170,12 +161,8 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
               {soonMeetings} פגישות בקרוב
             </button>
           )}
-        </>}
-        side={[
-          { label: 'משימות פתוחות', value: String(openTasks) },
-          { label: 'פגישות', value: String(meetings.length) }
-        ]}
-      />
+        </div>
+      )}
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
         <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('profile')} aria-expanded={!!openSections.profile}>
