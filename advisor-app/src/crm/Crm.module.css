@@ -70,16 +70,6 @@
   padding-top: var(--space-4);
 }
 
-.iconChip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-}
-
 .reminderBar {
   display: flex;
   flex-wrap: wrap;
@@ -110,10 +100,6 @@
 }
 
 .reminderChipBad:hover { border-color: var(--red); }
-
-.iconMeetings { background: var(--accent-dim); color: var(--accent); }
-.iconTasks { background: rgba(var(--green-rgb), 0.12); color: var(--green); }
-.iconProfile { background: rgba(var(--gold-rgb), 0.12); color: var(--gold); }
 
 .countBadge {
   color: var(--text3);

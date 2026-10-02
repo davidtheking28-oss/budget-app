@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formatDate, formatDateTime } from '../budget/monthUtils.js';
 import { initials } from '../clientIdentity.js';
+import Hero from './Hero.jsx';
 import styles from './ClientContextBar.module.css';
 
 const iconProps = { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' };
@@ -22,6 +23,7 @@ export default function ClientContextBar({ name, isVip, email, phone, createdAt,
   }
 
   return (
+    <>
     <div className={styles.bar}>
       <div className={styles.top}>
         <div className={styles.identity}>
@@ -111,39 +113,15 @@ export default function ClientContextBar({ name, isVip, email, phone, createdAt,
         </div>
       </div>
 
-      <div className={styles.stats}>
-        <div className={styles.stat + ' ' + styles.statTile}>
-          <div className={styles.statIcon}>
-            <svg {...iconProps} width={18} height={18}><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></svg>
-          </div>
-          <div className={styles.statBody}>
-            <span className={styles.statValue}>{meeting || 'לא נקבעה'}</span>
-            <span className={styles.statLabel}>הפגישה הבאה</span>
-          </div>
-        </div>
-
-        <button type="button" className={styles.stat + ' ' + styles.statTile + ' ' + styles.statClickable} onClick={onOpenCrm}>
-          <div className={styles.statIcon + (openTasks > 0 ? ' ' + styles.statGold : '')}>
-            <svg {...iconProps} width={18} height={18}><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
-          </div>
-          <div className={styles.statBody}>
-            <span className={styles.statValue}>{openTasks}</span>
-            <span className={styles.statLabel}>משימות פתוחות</span>
-          </div>
-        </button>
-
-        {household && (
-          <div className={styles.stat + ' ' + styles.statTile}>
-            <div className={styles.statIcon + ' ' + styles.statAccent}>
-              <svg {...iconProps} width={18} height={18}><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.4 2.9-5.6 6.5-5.6s6.5 2.2 6.5 5.6" /><circle cx="17" cy="8" r="2.6" /><path d="M16 14.6c2.6.4 4.5 2.2 4.5 5.4" /></svg>
-            </div>
-            <div className={styles.statBody}>
-              <span className={styles.statValue}>{household.partnerEmail || 'זוגי'}</span>
-              <span className={styles.statLabel}>שיתוף תקציב</span>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
+    <Hero
+        label="הפגישה הבאה"
+        value={meeting || 'לא נקבעה'}
+        side={[
+          { label: 'משימות פתוחות', value: String(openTasks) },
+          household && { label: 'שיתוף תקציב', value: household.partnerEmail || 'זוגי' }
+        ].filter(Boolean)}
+      />
+    </>
   );
 }

@@ -55,6 +55,7 @@
   font-weight: 700;
   margin-top: 2px;
   color: var(--text);
+  overflow-wrap: anywhere;
 }
 
 .sideMeta {

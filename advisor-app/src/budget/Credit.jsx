@@ -61,14 +61,6 @@ export function spitzerPrincipalFromPmt(pmt, annualRate, months) {
   return pmt * (1 - Math.pow(1 + r, -months)) / r;
 }
 
-const ICONS = {
-  loans: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg>,
-  payments: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></svg>,
-  calc: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01" /></svg>,
-  merge: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 3v7a4 4 0 0 0 4 4h4M16 3v7a4 4 0 0 1-4 4M16 3l3 3-3 3M8 3L5 6l3 3" /></svg>,
-  home: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" /></svg>
-};
-
 export default function Credit({ clientUserId, advisorId }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
@@ -300,7 +292,7 @@ export default function Credit({ clientUserId, advisorId }) {
         />
       )}
       <div className={styles.section}>
-        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconLoans}>{ICONS.loans}</span>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
+        <CollapsibleSection title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
         <AddForm label="הוסף הלוואה" open={editingLoanId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם ההלוואה" aria-label="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
@@ -358,7 +350,7 @@ export default function Credit({ clientUserId, advisorId }) {
 
       {(closedLoans.length > 0 || closedPayments.length > 0) && (
         <div className={styles.section}>
-          <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.merge}</span>היסטוריית מחזורים<span className={styles.countBadge}>{closedLoans.length + closedPayments.length}</span></>} defaultOpen={false}>
+          <CollapsibleSection title={<>היסטוריית מחזורים<span className={styles.countBadge}>{closedLoans.length + closedPayments.length}</span></>} defaultOpen={false}>
             <div className={styles.grid}>
               {closedLoans.map(l => (
                 <div key={l.id} className={`${styles.row} ${styles.rowCard}`} style={{ opacity: 0.7 }}>
@@ -390,7 +382,7 @@ export default function Credit({ clientUserId, advisorId }) {
 
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
-        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.calc}</span>מחשבון שפיצר</>}>
+        <CollapsibleSection title={<>מחשבון שפיצר</>}>
         <div className={styles.form}>
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום הלוואה" aria-label="סכום הלוואה" value={spForm.principal} onChange={e => setSpForm({ ...spForm, principal: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית" value={spForm.rate} onChange={e => setSpForm({ ...spForm, rate: e.target.value })} />
@@ -407,7 +399,7 @@ export default function Credit({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.section}>
-        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconFixed}>{ICONS.merge}</span>סימולציית מחזור / איחוד</>}>
+        <CollapsibleSection title={<>סימולציית מחזור / איחוד</>}>
         {!loans.length && !payments.length && !(overdraft.balance > 0) && <div className={styles.sectionEmpty}>אין הלוואות, תשלומים או מינוס למחזור</div>}
         {(loans.length > 0 || payments.length > 0 || overdraft.balance > 0) && (
           <>
@@ -520,7 +512,7 @@ export default function Credit({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.section}>
-        <CollapsibleSection title={<><span className={styles.iconChip + ' ' + styles.iconPayments}>{ICONS.payments}</span>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
+        <CollapsibleSection title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         <PaymentsTimeline payments={payments} />
         <AddForm label="הוסף תשלומים" open={editingPaymentId != null} className={styles.form}>

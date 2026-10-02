@@ -5,6 +5,7 @@ import { formatDate, formatDateTime } from '../budget/monthUtils.js';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import Skeleton from '../components/Skeleton.jsx';
+import AddForm from '../components/AddForm.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { toast } from '../toast.js';
 import styles from './Crm.module.css';
@@ -166,7 +167,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
         <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('profile')} aria-expanded={!!openSections.profile}>
-          <span className={styles.iconChip + ' ' + styles.iconProfile}>{ICONS.profile}</span>פרטי קשר ורקע
+          פרטי קשר ורקע
           <span className={styles.chevron + (openSections.profile ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
         </button>
         <div className={styles.sectionBody + (openSections.profile ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.profile ? '' : undefined}>
@@ -192,12 +193,12 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
       </div>
       <div className={styles.section}>
         <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('meetings')} aria-expanded={!!openSections.meetings}>
-          <span className={styles.iconChip + ' ' + styles.iconMeetings}>{ICONS.meetings}</span>פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}
+          פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}
           <span className={styles.chevron + (openSections.meetings ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
         </button>
         <div className={styles.sectionBody + (openSections.meetings ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.meetings ? '' : undefined}>
         <div className={styles.sectionBodyInner}>
-        <div className={styles.form}>
+        <AddForm label="קבע פגישה" className={styles.form}>
           <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
           <input className={styles.input} type="datetime-local" step="1800" aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
           <label className={styles.forClientLabel}>
@@ -205,7 +206,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
             גלוי ללקוח
           </label>
           <Button disabled={!meetingAt} onClick={submitMeeting}>קבע פגישה</Button>
-        </div>
+        </AddForm>
         {meetings.length ? (
           <div className={styles.list}>
             {meetings.map((m, i) => editingMeeting === m.id ? (
@@ -300,12 +301,12 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
 
       <div className={styles.section}>
         <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('tasks')} aria-expanded={!!openSections.tasks}>
-          <span className={styles.iconChip + ' ' + styles.iconTasks}>{ICONS.tasks}</span>משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}
+          משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}
           <span className={styles.chevron + (openSections.tasks ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
         </button>
         <div className={styles.sectionBody + (openSections.tasks ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.tasks ? '' : undefined}>
         <div className={styles.sectionBodyInner}>
-        <div className={styles.form}>
+        <AddForm label="הוסף משימות" className={styles.form}>
           <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
           <input className={styles.input} type="date" aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
           <label className={styles.forClientLabel}>
@@ -313,7 +314,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
             גלוי ללקוח
           </label>
           <Button disabled={!taskTitle.trim()} onClick={submitTask}>הוסף משימה</Button>
-        </div>
+        </AddForm>
         {tasks.length ? (
           <div className={styles.list}>
             {tasks.map((t, i) => editingTask === t.id ? (
