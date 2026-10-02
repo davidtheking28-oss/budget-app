@@ -46,6 +46,8 @@
   text-align: start;
 }
 
+.sectionTitle:disabled { cursor: default; color: var(--text); }
+
 .chevron {
   margin-inline-start: auto;
   display: flex;

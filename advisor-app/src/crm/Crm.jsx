@@ -119,6 +119,8 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
     setOpenSections(prev => ({ ...prev, [key]: true }));
   }, [action]);
   const signal = type => (action?.type === type ? action.id : 0);
+  const isLocked = key => (key === 'profile' ? true : key === 'tasks' ? tasks.length > 0 : meetings.length > 0);
+  const isOpen = key => isLocked(key) || !!openSections[key];
   function toggleSection(key) { setOpenSections(prev => ({ ...prev, [key]: !prev[key] })); }
 
   function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); }
@@ -160,23 +162,23 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
         <div className={styles.reminderBar}>
           {overdueTasks > 0 && (
             <button type="button" className={styles.reminderChip + ' ' + styles.reminderChipBad} onClick={() => setOpenSections(prev => ({ ...prev, tasks: true }))}>
-              {overdueTasks} משימות באיחור
+              {overdueTasks === 1 ? 'משימה אחת באיחור' : `${overdueTasks} משימות באיחור`}
             </button>
           )}
           {soonMeetings > 0 && (
             <button type="button" className={styles.reminderChip} onClick={() => setOpenSections(prev => ({ ...prev, meetings: true }))}>
-              {soonMeetings} פגישות בקרוב
+              {soonMeetings === 1 ? 'פגישה אחת בקרוב' : `${soonMeetings} פגישות בקרוב`}
             </button>
           )}
         </div>
       )}
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
-        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('profile')} aria-expanded={!!openSections.profile}>
+        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('profile')} aria-expanded={isOpen('profile')} disabled={isLocked('profile')}>
           פרטי קשר ורקע
-          <span className={styles.chevron + (openSections.profile ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
+          {!isLocked('profile') && <span className={styles.chevron + (openSections.profile ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>}
         </button>
-        <div className={styles.sectionBody + (openSections.profile ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.profile ? '' : undefined}>
+        <div className={styles.sectionBody + (isOpen('profile') ? ' ' + styles.sectionBodyOpen : '')} inert={!isOpen('profile') ? '' : undefined}>
           <div className={styles.sectionBodyInner}>
             <KeyValue label="אימייל" value={email} ltr />
             {phoneDraft && <KeyValue label="טלפון" value={phoneDraft} ltr />}
@@ -203,11 +205,11 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
         </div>
       </div>
       <div className={styles.section}>
-        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('meetings')} aria-expanded={!!openSections.meetings}>
+        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('meetings')} aria-expanded={isOpen('meetings')} disabled={isLocked('meetings')}>
           פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}
-          <span className={styles.chevron + (openSections.meetings ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
+          {!isLocked('meetings') && <span className={styles.chevron + (openSections.meetings ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>}
         </button>
-        <div className={styles.sectionBody + (openSections.meetings ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.meetings ? '' : undefined}>
+        <div className={styles.sectionBody + (isOpen('meetings') ? ' ' + styles.sectionBodyOpen : '')} inert={!isOpen('meetings') ? '' : undefined}>
         <div className={styles.sectionBodyInner}>
         <AddForm label="קבע פגישה" openSignal={signal('meeting')} className={styles.form}>
           <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
@@ -311,11 +313,11 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
       </div>
 
       <div className={styles.section}>
-        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('tasks')} aria-expanded={!!openSections.tasks}>
+        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('tasks')} aria-expanded={isOpen('tasks')} disabled={isLocked('tasks')}>
           משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}
-          <span className={styles.chevron + (openSections.tasks ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>
+          {!isLocked('tasks') && <span className={styles.chevron + (openSections.tasks ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>}
         </button>
-        <div className={styles.sectionBody + (openSections.tasks ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.tasks ? '' : undefined}>
+        <div className={styles.sectionBody + (isOpen('tasks') ? ' ' + styles.sectionBodyOpen : '')} inert={!isOpen('tasks') ? '' : undefined}>
         <div className={styles.sectionBodyInner}>
         <AddForm label="הוסף משימות" openSignal={signal('task')} className={styles.form}>
           <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
