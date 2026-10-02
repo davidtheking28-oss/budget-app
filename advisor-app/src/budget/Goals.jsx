@@ -117,19 +117,20 @@ export default function Goals({ clientUserId, advisorId }) {
   const totalTarget = goals.reduce((s, g) => s + (g.target || 0), 0);
 
   const monthlyNeed = goals.reduce((s, g) => s + (g.months > 0 ? Math.max(0, (g.target || 0) - (g.saved || 0)) / g.months : 0), 0);
+  const hasDeadlines = goals.some(g => g.months > 0);
   const achievedPct = totalTarget > 0 ? Math.min(100, Math.round((totalSaved / totalTarget) * 100)) : 0;
 
   return (
     <div>
       {goals.length > 0 && (
         <Hero
-          label="נדרש לחסוך כל חודש"
-          value={fmt(monthlyNeed)}
+          {...(hasDeadlines
+            ? { label: 'נדרש לחסוך כל חודש', value: fmt(monthlyNeed), note: 'כדי לעמוד בכל היעדים בזמן' }
+            : { label: 'הושג עד כה', value: `${achievedPct}%`, note: 'לא הוגדרו מועדים ליעדים' })}
           tone="pos"
-          note="כדי לעמוד בכל היעדים בזמן"
           side={[
             { label: 'יעדים', value: String(goals.length) },
-            { label: 'הושג עד כה', value: `${achievedPct}%`, meta: `${fmt(totalSaved)} מתוך ${fmt(totalTarget)}` }
+            hasDeadlines ? { label: 'הושג עד כה', value: `${achievedPct}%`, meta: `${fmt(totalSaved)} מתוך ${fmt(totalTarget)}` } : { label: 'נחסך', value: fmt(totalSaved), meta: `מתוך ${fmt(totalTarget)}` }
           ]}
         />
       )}

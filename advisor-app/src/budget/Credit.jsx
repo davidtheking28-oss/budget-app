@@ -280,7 +280,8 @@ export default function Credit({ clientUserId, advisorId }) {
   });
   const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
   const loansMonthly = loans.reduce((s, l) => s + (l.monthly || 0), 0);
-  const paymentsMonthly = payments.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+  const activePayments = payments.filter(p => { const t = parseFloat(p.total) || 0; return !(t > 0 && t - currentInstallments(p, t) <= 0); });
+  const paymentsMonthly = activePayments.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
   const paymentsLeft = payments.reduce((s, p) => { const total = parseFloat(p.total) || 0; return s + Math.max(0, total - currentInstallments(p, total)) * (parseFloat(p.amount) || 0); }, 0);
 
   return (
@@ -289,7 +290,7 @@ export default function Credit({ clientUserId, advisorId }) {
         <Hero
           label="החזר חודשי"
           value={fmt(loansMonthly + paymentsMonthly)}
-          note={[loans.length > 0 && `${loans.length} הלוואות`, payments.length > 0 && `${payments.length} עסקאות בתשלומים`].filter(Boolean).join(' · ')}
+          note={[loans.length > 0 && `${loans.length} הלוואות`, activePayments.length > 0 && `${activePayments.length} עסקאות בתשלומים`].filter(Boolean).join(' · ')}
           side={[
             loans.length > 0 && { label: 'יתרת הלוואות', value: fmt(loansBalance) },
             payments.length > 0 && { label: 'יתרת תשלומים', value: fmt(paymentsLeft) },

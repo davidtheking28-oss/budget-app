@@ -70,7 +70,7 @@ export default function Analysis({ clientUserId, year, month }) {
       <Hero
         label="סה״כ הוצאות החודש"
         value={fmt(total)}
-        note={prevTotal > 0 ? `${diff <= 0 ? 'פחות' : 'יותר'} ב־${fmt(Math.abs(diff))} מהחודש הקודם (${Math.round(Math.abs(diff) / prevTotal * 100)}%)` : null}
+        note={prevTotal > 0 ? (diff === 0 ? 'זהה לחודש הקודם' : `${diff < 0 ? 'פחות' : 'יותר'} ב־${fmt(Math.abs(diff))} מהחודש הקודם (${Math.round(Math.abs(diff) / prevTotal * 100)}%)`) : null}
         side={[
           { label: 'הקטגוריה הגדולה', value: labels[0], meta: `${Math.round((values[0] / total) * 100)}% · ${fmt(values[0])}` },
           { label: 'קטגוריות', value: String(labels.length) }
