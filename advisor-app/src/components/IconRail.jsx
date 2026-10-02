@@ -48,6 +48,7 @@ export default function IconRail({ clientName, onBack, homeActive, onSearch, onP
             className={styles.railBtn + (a.key === 'clients' && homeActive ? ' ' + styles.railBtnActive : '')}
             onClick={a.onClick}
             aria-label={a.label}
+            title={a.label}
             aria-current={a.key === 'clients' && homeActive ? 'page' : undefined}
           >
             {a.icon}
@@ -68,6 +69,7 @@ export default function IconRail({ clientName, onBack, homeActive, onSearch, onP
               className={styles.railBtn + (n.key === activeNav ? ' ' + styles.railBtnActive : '')}
               onClick={() => onNavChange(n.key)}
               aria-label={n.label}
+              title={n.label}
               aria-current={n.key === activeNav ? 'page' : undefined}
             >
               {n.icon}
@@ -80,7 +82,8 @@ export default function IconRail({ clientName, onBack, homeActive, onSearch, onP
         {trailingActions.length > 0 && <span className={styles.groupLabel}>ללקוח</span>}
 
         {trailingActions.map(a => (
-          <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}>
+          <button key={a.key} type="button" className={styles.railBtn} onClick={a.onClick} aria-label={a.label}
+            title={a.label}>
             {a.icon}
             <span className={styles.label}>{a.label}</span>
           </button>

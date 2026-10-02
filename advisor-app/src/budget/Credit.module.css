@@ -92,13 +92,6 @@
   gap: 0;
 }
 
-.list {
-  display: flex;
-  flex-direction: column;
-  max-width: 640px;
-  margin: 0 auto;
-}
-
 .row {
   display: flex;
   align-items: center;
@@ -108,10 +101,6 @@
   border-bottom: 1px solid var(--border);
   animation: riseIn var(--motion) var(--ease-out-expo) both;
   transition: transform 0.25s var(--ease-out-expo);
-}
-
-.list .row:last-child {
-  border-bottom: none;
 }
 
 .rowCard {

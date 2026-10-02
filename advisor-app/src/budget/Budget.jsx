@@ -38,6 +38,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
     const spent = spentByCat[c] || 0;
     return { cat: c, limit, spent, ratio: limit > 0 ? spent / limit : 0 };
   }).sort((a, b) => b.limit - a.limit);
+  if (budgetRows.length === 0 && !wizardOpen) setWizardOpen(true);
 
   return (
     <div>
@@ -69,7 +70,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
         </CardGrid>
       )}
 
-      {wizardOpen || budgetRows.length === 0
+      {wizardOpen
         ? <BudgetWizard data={data} save={save} year={year} month={month} />
         : <Button variant="ghost" onClick={() => setWizardOpen(true)}>בניית תקציב עם הלקוח</Button>}
     </div>

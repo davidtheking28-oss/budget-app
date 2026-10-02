@@ -5,7 +5,7 @@ import styles from './ClientContextBar.module.css';
 
 const iconProps = { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' };
 
-export default function ClientContextBar({ isVip, phone, createdAt, nextMeeting, openTasks, household, tags, manualTags, onAddTag, onRemoveTag, onOpenCrm, budgetMode, onBudgetModeChange }) {
+export default function ClientContextBar({ isVip, phone, createdAt, nextMeeting, openTasks, household, tags, manualTags, onAddTag, onRemoveTag, onAction, budgetMode, onBudgetModeChange }) {
   const [addingTag, setAddingTag] = useState(false);
   const [tagDraft, setTagDraft] = useState('');
   const meeting = nextMeeting ? formatDateTime(nextMeeting) : null;
@@ -36,7 +36,7 @@ export default function ClientContextBar({ isVip, phone, createdAt, nextMeeting,
               {phone}
             </span>
           ) : (
-            <button type="button" className={styles.contactMissing} onClick={onOpenCrm}>+ הוסף טלפון</button>
+            <button type="button" className={styles.contactMissing} onClick={() => onAction('profile')}>+ הוסף טלפון</button>
           )}
           {(tags || []).map(tag => <span key={tag} className={styles.tagBadge}>{tag}</span>)}
           {(manualTags || []).map(tag => (
@@ -83,11 +83,11 @@ export default function ClientContextBar({ isVip, phone, createdAt, nextMeeting,
             >עסקי</button>
           </span>
         )}
-        <button type="button" className={styles.actionTile} onClick={onOpenCrm}>
+        <button type="button" className={styles.actionTile} onClick={() => onAction('task')}>
           <svg {...iconProps} width={18} height={18}><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
           משימה חדשה
         </button>
-        <button type="button" className={styles.actionTile} onClick={onOpenCrm}>
+        <button type="button" className={styles.actionTile} onClick={() => onAction('meeting')}>
           <svg {...iconProps} width={18} height={18}><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></svg>
           פגישה חדשה
         </button>

@@ -117,13 +117,13 @@ export default function Analysis({ clientUserId, year, month }) {
         <Card title="שינויים בולטים">
           {changes.length ? changes.map(c => (
             <Row key={c.cat} name={c.cat} amount={(c.delta > 0 ? '+' : '−') + fmt(Math.abs(c.delta))} amountTone={c.delta > 0 ? 'neg' : 'pos'} />
-          )) : <div className={styles.cardEmpty}>אין חודש קודם להשוואה</div>}
+          )) : <div className={styles.cardEmpty}>{prevTotal > 0 ? 'אין שינויים בולטים מהחודש הקודם' : 'אין חודש קודם להשוואה'}</div>}
         </Card>
       </CardGrid>
       <CardGrid single>
         <Card title="פילוח לפי קטגוריה">
           {labels.map((l, i) => (
-            <Row key={l} name={l} sub={Math.round((values[i] / total) * 100) + '% מההוצאות'} amount={fmt(values[i])} pct={(values[i] / values[0]) * 100} />
+            <Row key={l} name={l} sub={(total > 0 ? Math.round((values[i] / total) * 100) : 0) + '% מההוצאות'} amount={fmt(values[i])} pct={(values[i] / values[0]) * 100} />
           ))}
         </Card>
       </CardGrid>

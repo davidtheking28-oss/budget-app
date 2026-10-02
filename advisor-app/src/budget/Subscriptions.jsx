@@ -145,7 +145,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
   const subsByCategory = {};
   activeSubs.forEach(s => { (subsByCategory[s.category] = subsByCategory[s.category] || []).push(s); });
   const tips = [
-    ...renewingSoon.map(s => ({ name: `${s.name} מתחדש בקרוב`, sub: `ב־${formatDate(s.nextDate)} · ${fmt(monthlyEquivalent(s.cycle, s.amount || 0))} בחודש` })),
+    ...renewingSoon.filter(s => s.active).map(s => ({ name: `${s.name} מתחדש בקרוב`, sub: `ב־${formatDate(s.nextDate)} · ${fmt(monthlyEquivalent(s.cycle, s.amount || 0))} בחודש` })),
     ...Object.entries(subsByCategory).filter(([, list]) => list.length >= 2).map(([category, list]) => {
       const cheapest = Math.min(...list.map(s => monthlyEquivalent(s.cycle, s.amount || 0)));
       return { name: `${list.length} מנויים בקטגוריית ${category}`, sub: `אפשר לשקול לוותר על אחד מהם · חיסכון של עד ${fmt(cheapest)} בחודש` };

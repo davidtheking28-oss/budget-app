@@ -72,6 +72,7 @@ export default function App() {
   const initial = readUrlState();
   const [selectedClient, setSelectedClient] = useState(initial.selectedClient);
   const [nav, setNav] = useState(initial.nav);
+  const [crmAction, setCrmAction] = useState(null);
   const [budgetMode, setBudgetMode] = useState(initial.budgetMode);
   const [ym, setYm] = useState(initial.ym);
   const [reportMode, setReportMode] = useState(false);
@@ -225,7 +226,7 @@ export default function App() {
             manualTags={clientProfile?.tags || []}
             onAddTag={addClientTag}
             onRemoveTag={removeClientTag}
-            onOpenCrm={() => setNav('crm')}
+            onAction={type => setCrmAction({ type, id: Date.now() })}
             budgetMode={budgetMode}
             onBudgetModeChange={setBudgetMode}
           />
@@ -238,7 +239,7 @@ export default function App() {
         {nav === 'credit' && <Credit clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
         {nav === 'mortgage' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Mortgage clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
-        {nav === 'crm' && <Crm advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={refreshClientSummary} />}
+        {nav === 'crm' && <Crm action={crmAction} advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={refreshClientSummary} />}
         {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
       </Shell>
       </BudgetModeContext.Provider>

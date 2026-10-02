@@ -14,7 +14,6 @@ import styles from './Crm.module.css';
 const ICONS = {
   meetings: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
   tasks: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>,
-  profile: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2" /><circle cx="8" cy="11" r="2" /><path d="M4 17c0-1.8 1.8-3 4-3s4 1.2 4 3" /><line x1="14" y1="9" x2="19" y2="9" /><line x1="14" y1="13" x2="19" y2="13" /></svg>,
   edit: <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>,
   chevron: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
 };
@@ -51,7 +50,7 @@ function daysUntil(dateStr) {
   return Math.ceil((target - now) / 86400000);
 }
 
-export default function Crm({ advisorId, clientId, email, onChange }) {
+export default function Crm({ action, advisorId, clientId, email, onChange }) {
   const { tasks, meetings, loading, error, reload, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId);
   const { profile, save: saveProfile } = useClientProfile(advisorId, clientId);
   const [nameDraft, setNameDraft] = useState('');
@@ -114,6 +113,12 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
     sectionsInitFor.current = clientId;
     setOpenSections({ profile: true, tasks: tasks.some(t => !t.done), meetings: meetings.length > 0 });
   }, [loading, clientId, tasks, meetings]);
+  useEffect(() => {
+    if (!action) return;
+    const key = { task: 'tasks', meeting: 'meetings', profile: 'profile' }[action.type];
+    setOpenSections(prev => ({ ...prev, [key]: true }));
+  }, [action]);
+  const signal = type => (action?.type === type ? action.id : 0);
   function toggleSection(key) { setOpenSections(prev => ({ ...prev, [key]: !prev[key] })); }
 
   function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); }
@@ -176,7 +181,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
             <KeyValue label="אימייל" value={email} ltr />
             {phoneDraft && <KeyValue label="טלפון" value={phoneDraft} ltr />}
             {backgroundDraft && <KeyValue label="רקע" value={backgroundDraft} />}
-            <AddForm label="עריכת פרטים" open={profileDirty} className={styles.profileEdit}>
+            <AddForm label="עריכת פרטים" open={profileDirty} openSignal={signal('profile')} className={styles.profileEdit}>
               <div className={styles.formPlain}>
                 <input className={styles.input} aria-label="שם הלקוח" placeholder="שם הלקוח" style={{ flex: '0 0 200px' }} value={nameDraft} onChange={e => { setNameDraft(e.target.value); setProfileDirty(true); }} />
                 <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
@@ -204,7 +209,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
         </button>
         <div className={styles.sectionBody + (openSections.meetings ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.meetings ? '' : undefined}>
         <div className={styles.sectionBodyInner}>
-        <AddForm label="קבע פגישה" className={styles.form}>
+        <AddForm label="קבע פגישה" openSignal={signal('meeting')} className={styles.form}>
           <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
           <input className={styles.input} type="datetime-local" step="1800" aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
           <label className={styles.forClientLabel}>
@@ -312,7 +317,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
         </button>
         <div className={styles.sectionBody + (openSections.tasks ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.tasks ? '' : undefined}>
         <div className={styles.sectionBodyInner}>
-        <AddForm label="הוסף משימות" className={styles.form}>
+        <AddForm label="הוסף משימות" openSignal={signal('task')} className={styles.form}>
           <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
           <input className={styles.input} type="date" aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
           <label className={styles.forClientLabel}>

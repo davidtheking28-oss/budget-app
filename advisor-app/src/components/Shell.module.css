@@ -85,7 +85,7 @@
   top: auto;
   bottom: calc(100% + var(--space-2));
   inset-inline-start: 0;
-  width: 232px;
+  width: 100%;
 }
 
 .accountIcon {

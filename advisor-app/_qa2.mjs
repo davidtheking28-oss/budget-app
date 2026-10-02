@@ -1,0 +1,10 @@
+import {start,go,log,body,SH,errs} from './_lib.mjs';
+const {b,p}=await start();
+const dump=async(t)=>console.log('--',t,'\n',await p.evaluate(()=>[...document.querySelectorAll('button,input,select,textarea')].filter(e=>e.offsetParent).map(e=>`${e.tagName}${e.type?'['+e.type+']':''} "${(e.getAttribute('aria-label')||e.innerText||e.placeholder||e.value||'').trim().slice(0,30).replace(/\n/g,' ')}"`).slice(14).join('\n')));
+await go(p,'crm');
+await p.screenshot({path:SH+'crm0.png'});
+await p.getByRole('button',{name:/הוסף משימות/}).click();await p.waitForTimeout(300);await dump('task form');
+await p.screenshot({path:SH+'crm-taskform.png'});
+await p.getByRole('button',{name:/קבע פגישה/}).click();await p.waitForTimeout(300);await dump('meet form');
+await p.getByRole('button',{name:/עריכת פרטים/}).click();await p.waitForTimeout(300);await dump('profile form');
+console.log(errs);await b.close();
