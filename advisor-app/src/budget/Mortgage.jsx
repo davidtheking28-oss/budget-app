@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Chart as ChartJS, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
@@ -74,6 +74,10 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const [form, setForm] = useState(null);
   const [openTrackId, setOpenTrackId] = useState(null);
+  const editRef = useRef(null);
+  useEffect(() => {
+    if (openTrackId) editRef.current?.querySelector('select, input')?.focus();
+  }, [openTrackId]);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -266,7 +270,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                       {open && (
                         <tr>
                           <td colSpan={7}>
-                            <div className={styles.trackEdit}>
+                            <div ref={editRef} className={styles.trackEdit}>
                               <label className={styles.field}><span>לוח סילוקין</span><select className={styles.input} aria-label="לוח סילוקין" value={t.amortMethod} onChange={e => updateTrack(t.id, { amortMethod: e.target.value })}> {AMORT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)} </select></label>
                               <label className={styles.field}><span>סוג מסלול</span><select className={styles.input} aria-label="סוג מסלול" value={t.type} onChange={e => onType(e.target.value)}> {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.abbr}</option>)} </select></label>
                               <label className={styles.field}><span>מטרה</span><select className={styles.input} aria-label="מטרת המסלול" value={t.purpose} onChange={e => updateTrack(t.id, { purpose: e.target.value })}> {PURPOSES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)} </select></label>

@@ -173,6 +173,8 @@ function addFiles(setQueue, fileList, defaultMonth, onDropped) {
   });
 }
 
+const monthsLabel = n => (n === 1 ? 'חודש אחד' : `${n} חודשים`);
+
 export default function EconomicMapping({ clientUserId, advisorId }) {
   const { data, loading, error, save, reload, markUploadFailure } = useEconomicMapping(clientUserId, advisorId);
   const { data: budgetData, save: saveBudget } = useClientBudget(clientUserId, advisorId);
@@ -425,7 +427,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           label="תזרים חודשי ממוצע"
           value={fmt(cashflow.netInAccount)}
           tone={cashflow.netInAccount < 0 ? 'neg' : 'pos'}
-          note={`לפי ${cashflow.monthsCovered} חודשי דפי חשבון`}
+          note={`לפי ${monthsLabel(cashflow.monthsCovered)} של דפי חשבון`}
           side={[
             { label: 'הכנסה ממוצעת', value: fmt(cashflow.income), tone: 'income' },
             { label: 'הוצאה ממוצעת', value: fmt(cashflow.expense), tone: 'expense' },
@@ -524,7 +526,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       {categories.length > 0 && (
         <div className={styles.card + ' ' + styles.cardStandalone}>
           <div className={styles.cardTitle}>מיפוי כלכלי</div>
-          <div className={styles.coverageNote}>מבוסס על {data.months_covered} חודשים שהועלו</div>
+          <div className={styles.coverageNote}>מבוסס על {monthsLabel(data.months_covered)} שהועלו</div>
 
           {fixedCats.length > 0 && (
             <>
@@ -629,7 +631,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       {cashflow && cashflow.hasIncomeData && (
         <div className={styles.card + ' ' + styles.cardStandalone}>
           <div className={styles.cardTitle}>תזרים: הכנסות מול הוצאות</div>
-          <div className={styles.coverageNote}>מבוסס על {cashflow.monthsCovered} חודשים שהועלו</div>
+          <div className={styles.coverageNote}>מבוסס על {monthsLabel(cashflow.monthsCovered)} שהועלו</div>
 
           <div className={styles.cashflowChart}>
             <Bar
