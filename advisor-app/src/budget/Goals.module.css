@@ -33,114 +33,14 @@
   box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--space-3);
-  margin-top: var(--space-2);
-}
-
-.item {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4) var(--space-5);
-  animation: riseIn var(--motion) var(--ease-out-expo) both;
-  transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
-}
-
-.item:hover { transform: translateY(-2px); border-color: var(--border-strong); }
-
-/* Reserve two title lines so the progress bar sits at the same offset in every
-   card, however long the goal name is. */
-.top {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  min-height: calc(var(--text-lg) * 1.35 * 2);
-  margin-bottom: var(--space-3);
-}
-
-.name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--text-lg);
-  line-height: 1.35;
-}
-
-.amounts {
-  font-variant-numeric: tabular-nums;
-  font-size: var(--text-sm);
-  color: var(--text2);
-  direction: ltr;
-  unicode-bidi: isolate;
-}
-
-.bar {
-  position: relative;
-  height: 18px;
-  border-radius: var(--radius-sm);
-  background: var(--track);
-  overflow: hidden;
-}
-
-.fill {
-  position: absolute;
-  inset-inline-start: 0;
-  top: 0;
-  height: 100%;
-  width: 100%;
-  border-radius: var(--radius-sm);
-  background: var(--accent);
-  transform-origin: right;
-  transition: transform 0.4s var(--ease-out-expo);
-}
-
-.fillPct {
-  position: absolute;
-  top: 50%;
-  right: 7px;
-  transform: translateY(-50%);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--accent-ink);
-  direction: ltr;
-  unicode-bidi: isolate;
-  pointer-events: none;
-}
-
-.pctOutside {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--text2);
-  direction: ltr;
-  unicode-bidi: isolate;
-  pointer-events: none;
-}
-
-.meta {
-  margin-top: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--text3);
-}
-
 .txActions {
   display: flex;
   gap: var(--space-2);
-  margin-top: auto;
-  padding-top: var(--space-3);
+  padding-bottom: var(--space-2);
 }
 
 .txBtn, .txBtnNeutral {
-  flex: 1;
-  padding: 7px 10px;
+  padding: 6px 14px;
   border-radius: var(--radius-sm);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -168,8 +68,7 @@
 .txRow {
   display: flex;
   gap: var(--space-2);
-  margin-top: auto;
-  padding-top: var(--space-3);
+  padding-bottom: var(--space-2);
 }
 
 .txInput {
@@ -216,3 +115,11 @@
   justify-content: center;
   color: var(--text3);
 }
+
+.goalItem + .goalItem {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+

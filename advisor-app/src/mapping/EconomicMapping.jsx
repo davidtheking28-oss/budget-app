@@ -17,6 +17,7 @@ const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS, SAVINGS_CATEGORY];
 import { supabase, SUPA_URL } from '../supabaseClient.js';
 import Skeleton from '../components/Skeleton.jsx';
 import Hero from '../components/Hero.jsx';
+import { Card, CardGrid, KeyValue, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -431,6 +432,27 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
             cashflow.savings > 0 && { label: 'העברות לחיסכון', value: fmt(cashflow.savings) }
           ].filter(Boolean)}
         />
+      )}
+      {cashflow?.hasIncomeData && (
+        <CardGrid>
+          <Card title="הוצאה חודשית לפי סוג">
+            {(() => {
+              const top = Math.max(fixedTotal, variableTotal, cashflow.savings, 1);
+              return (
+                <>
+                  <Row name="קבועות" amount={fmt(fixedTotal)} pct={(fixedTotal / top) * 100} />
+                  <Row name="משתנות" amount={fmt(variableTotal)} pct={(variableTotal / top) * 100} />
+                  {cashflow.savings > 0 && <Row name="חיסכון" amount={fmt(cashflow.savings)} pct={(cashflow.savings / top) * 100} />}
+                </>
+              );
+            })()}
+          </Card>
+          <Card title="תמונת מצב">
+            <KeyValue label="הכנסה חודשית" value={fmt(cashflow.income)} />
+            <KeyValue label="הוצאה חודשית" value={fmt(cashflow.expense)} />
+            <KeyValue label="תזרים בחשבון" value={fmt(cashflow.netInAccount)} />
+          </Card>
+        </CardGrid>
       )}
       <div className={styles.card}>
         <div className={styles.cardTitle}>העלאת דפי חשבון</div>

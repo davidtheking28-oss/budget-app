@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import { Bar, Pie } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
+import { monthSummary } from './budgetMath.js';
 import { addMonths, getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
 import Hero from '../components/Hero.jsx';
+import { Card, CardGrid, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { catColor, chartTheme } from '../categories.js';
 import styles from './Analysis.module.css';
 import { fmt } from '../format.js';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+
+const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
 
 export default function Analysis({ clientUserId, year, month }) {
   const CT = chartTheme();
@@ -60,6 +64,32 @@ export default function Analysis({ clientUserId, year, month }) {
   const prevTotal = getMonthTx(data.transactions, prev.year, prev.month).filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const diff = total - prevTotal;
 
+  const prevByCat = {};
+  getMonthTx(data.transactions, prev.year, prev.month).filter(t => t.type === 'expense').forEach(t => {
+    prevByCat[t.cat] = (prevByCat[t.cat] || 0) + t.amount;
+  });
+  const changes = prevTotal > 0
+    ? [...new Set([...labels, ...Object.keys(prevByCat)])]
+        .map(c => ({ cat: c, delta: (byCat[c] || 0) - (prevByCat[c] || 0) }))
+        .filter(x => x.delta !== 0)
+        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+        .slice(0, 4)
+    : [];
+
+  const allTrendMonths = [];
+  for (let i = 5; i >= 0; i--) allTrendMonths.push(addMonths(year, month, -i));
+  const allTrendData = allTrendMonths.map(({ year: y, month: m }) => monthSummary(data, y, m));
+  const firstWithData = allTrendData.findIndex(x => x.income > 0 || x.expense > 0);
+  const trendMonths = allTrendMonths.slice(Math.max(0, firstWithData));
+  const trendData = allTrendData.slice(Math.max(0, firstWithData));
+  const trendChart = {
+    labels: trendMonths.map(({ month: m }) => MONTH_SHORT[m]),
+    datasets: [
+      { label: 'הכנסות', data: trendData.map(x => x.income), backgroundColor: CT.green, borderRadius: 6, maxBarThickness: 34, hoverBackgroundColor: CT.greenHover },
+      { label: 'הוצאות', data: trendData.map(x => x.expense), backgroundColor: CT.red, borderRadius: 6, maxBarThickness: 34, hoverBackgroundColor: CT.redHover }
+    ]
+  };
+
   const activeCat = labels.includes(whatIfCat) ? whatIfCat : labels[0];
   const catAmount = byCat[activeCat] || 0;
   const savings = Math.round(catAmount * (cutPct / 100));
@@ -76,7 +106,34 @@ export default function Analysis({ clientUserId, year, month }) {
           { label: 'קטגוריות', value: String(labels.length) }
         ]}
       />
+      <CardGrid>
+        <Card title="הכנסות מול הוצאות">
+          <div className={styles.trendChart}>
+            <Bar
+              data={trendChart}
+              options={{
+                maintainAspectRatio: false,
+                animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
+                scales: {
+                  x: { ticks: { color: CT.text2, font: { family: CT.font }, maxRotation: 0, minRotation: 0 }, grid: { display: false } },
+                  y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+                },
+                plugins: {
+                  legend: { align: 'end', labels: { color: CT.text2, font: { family: CT.font }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8 } },
+                  tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+                }
+              }}
+            />
+          </div>
+        </Card>
+        <Card title="שינויים בולטים">
+          {changes.length ? changes.map(c => (
+            <Row key={c.cat} name={c.cat} amount={(c.delta > 0 ? '+' : '−') + fmt(Math.abs(c.delta))} amountTone={c.delta > 0 ? 'neg' : 'pos'} />
+          )) : <div className={styles.cardEmpty}>אין חודש קודם להשוואה</div>}
+        </Card>
+      </CardGrid>
     <div className={styles.wrapOuter}>
+    <h2 className={styles.cardTitle}>פילוח לפי קטגוריה</h2>
     <div className={styles.wrap}>
       <div className={styles.donutBox}>
         <Pie

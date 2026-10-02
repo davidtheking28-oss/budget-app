@@ -175,3 +175,23 @@
   justify-content: center;
   color: var(--text3);
 }
+
+.trendChart {
+  height: 240px;
+  min-width: 0;
+  position: relative;
+}
+
+.cardEmpty {
+  padding: var(--space-5) 0;
+  color: var(--text3);
+  font-size: var(--text-base);
+  text-align: center;
+}
+
+.cardTitle {
+  margin: 0 0 var(--space-4);
+  color: var(--text);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}

@@ -6,6 +6,7 @@ import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
+import { KeyValue } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { toast } from '../toast.js';
 import styles from './Crm.module.css';
@@ -111,7 +112,7 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
   useEffect(() => {
     if (loading || sectionsInitFor.current === clientId) return;
     sectionsInitFor.current = clientId;
-    setOpenSections({ tasks: tasks.some(t => !t.done), meetings: meetings.length > 0 });
+    setOpenSections({ profile: true, tasks: tasks.some(t => !t.done), meetings: meetings.length > 0 });
   }, [loading, clientId, tasks, meetings]);
   function toggleSection(key) { setOpenSections(prev => ({ ...prev, [key]: !prev[key] })); }
 
@@ -172,22 +173,27 @@ export default function Crm({ advisorId, clientId, email, onChange }) {
         </button>
         <div className={styles.sectionBody + (openSections.profile ? ' ' + styles.sectionBodyOpen : '')} inert={!openSections.profile ? '' : undefined}>
           <div className={styles.sectionBodyInner}>
-            <div className={styles.formPlain}>
-              <input className={styles.input} aria-label="שם הלקוח" placeholder="שם הלקוח" style={{ flex: '0 0 200px' }} value={nameDraft} onChange={e => { setNameDraft(e.target.value); setProfileDirty(true); }} />
-              <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
-              <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" style={{ flex: '0 0 160px' }} value={phoneDraft} onChange={e => { setPhoneDraft(e.target.value); setProfileDirty(true); }} />
-            </div>
-            <textarea
-              className={styles.textarea}
-              style={{ width: '100%', marginTop: 'var(--space-3)', minHeight: 72 }}
-              aria-label="רקע על הלקוח"
-              placeholder="רקע על הלקוח: מצב משפחתי, מטרות, הקשר שכדאי לזכור…"
-              value={backgroundDraft}
-              onChange={e => { setBackgroundDraft(e.target.value); setProfileDirty(true); }}
-            />
-            <div style={{ marginTop: 'var(--space-3)' }}>
-              <Button onClick={saveProfileFields} disabled={!profileDirty}>שמור</Button>
-            </div>
+            <KeyValue label="אימייל" value={email} ltr />
+            {phoneDraft && <KeyValue label="טלפון" value={phoneDraft} ltr />}
+            {backgroundDraft && <KeyValue label="רקע" value={backgroundDraft} />}
+            <AddForm label="עריכת פרטים" open={profileDirty} className={styles.profileEdit}>
+              <div className={styles.formPlain}>
+                <input className={styles.input} aria-label="שם הלקוח" placeholder="שם הלקוח" style={{ flex: '0 0 200px' }} value={nameDraft} onChange={e => { setNameDraft(e.target.value); setProfileDirty(true); }} />
+                <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
+                <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" style={{ flex: '0 0 160px' }} value={phoneDraft} onChange={e => { setPhoneDraft(e.target.value); setProfileDirty(true); }} />
+              </div>
+              <textarea
+                className={styles.textarea}
+                style={{ width: '100%', marginTop: 'var(--space-3)', minHeight: 72 }}
+                aria-label="רקע על הלקוח"
+                placeholder="רקע על הלקוח: מצב משפחתי, מטרות, הקשר שכדאי לזכור…"
+                value={backgroundDraft}
+                onChange={e => { setBackgroundDraft(e.target.value); setProfileDirty(true); }}
+              />
+              <div style={{ marginTop: 'var(--space-3)' }}>
+                <Button onClick={saveProfileFields} disabled={!profileDirty}>שמור</Button>
+              </div>
+            </AddForm>
           </div>
         </div>
       </div>

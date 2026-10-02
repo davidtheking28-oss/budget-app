@@ -3,6 +3,7 @@ import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
 import Hero from '../components/Hero.jsx';
+import { Card, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -29,8 +30,8 @@ export default function Goals({ clientUserId, advisorId }) {
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
     return (
-      <div className={styles.grid}>
-        <Skeleton height="90px" radius="14px" />
+      <div>
+        <Skeleton height="90px" radius="14px" style={{ marginBottom: 12 }} />
         <Skeleton height="90px" radius="14px" />
       </div>
     );
@@ -154,53 +155,47 @@ export default function Goals({ clientUserId, advisorId }) {
           אין עדיין יעדי חיסכון
         </div>
       ) : (
-        <>
-          <div className={styles.grid}>
-            {goals.map((g, i) => {
-              const pct = g.target ? Math.min(Math.round((g.saved / g.target) * 100), 100) : 0;
-              const expanded = txCard?.id === g.id;
-              return (
-                <div key={g.id} className={styles.item} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
-                  <div className={styles.top}>
-                    <div className={styles.name}>{g.name}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div className={styles.amounts}>{fmt(g.saved || 0)} / {fmt(g.target || 0)}</div>
-                      <DeleteButton title="מחק יעד" onClick={() => deleteGoal(g.id)} />
-                    </div>
+        <Card title="היעדים">
+          {goals.map(g => {
+            const pct = g.target ? Math.min(Math.round((g.saved / g.target) * 100), 100) : 0;
+            const monthly = g.months > 0 ? Math.max(0, (g.target || 0) - (g.saved || 0)) / g.months : 0;
+            const expanded = txCard?.id === g.id;
+            return (
+              <div key={g.id} className={styles.goalItem}>
+                <Row
+                  name={g.name}
+                  sub={`${fmt(g.saved || 0)} מתוך ${fmt(g.target || 0)}${g.months > 0 ? ` · יעד ל־${g.months} חודשים` : ''}`}
+                  pct={pct}
+                  barTone={pct >= 100 ? undefined : pct < 30 ? 'warn' : undefined}
+                  amount={monthly > 0 ? `${fmt(monthly)}/ח׳` : null}
+                >
+                  <DeleteButton title="מחק יעד" onClick={() => deleteGoal(g.id)} />
+                </Row>
+                {expanded ? (
+                  <div className={styles.txRow}>
+                    <input
+                      ref={amountInputRef}
+                      className={styles.txInput}
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="סכום" aria-label="סכום להפקדה ליעד"
+                      value={amount}
+                      onChange={e => setAmount(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && confirmTx()}
+                    />
+                    <Button variant={txCard.dir === 'withdraw' ? 'ghost' : 'primary'} onClick={confirmTx} disabled={confirming}>{txCard.dir === 'withdraw' ? 'משוך' : 'הוסף'}</Button>
+                    <Button variant="ghost" onClick={closeTx}>ביטול</Button>
                   </div>
-                  <div className={styles.bar}>
-                    <div className={styles.fill} style={{ transform: `scaleX(${Math.max(pct, 4) / 100})` }} />
-                    {pct >= 12
-                      ? <span className={styles.fillPct}>{pct}%</span>
-                      : <span className={styles.pctOutside} style={{ right: `calc(${pct}% + 6px)` }}>{pct}%</span>}
+                ) : (
+                  <div className={styles.txActions}>
+                    <button className={styles.txBtn} onClick={() => openTx(g.id, 'add')}>הוסף לחיסכון</button>
+                    {g.saved > 0 && <button className={styles.txBtnNeutral} onClick={() => openTx(g.id, 'withdraw')}>− משוך</button>}
                   </div>
-                  {g.months > 0 && <div className={styles.meta}>יעד ל-{g.months} חודשים</div>}
-                  {expanded ? (
-                    <div className={styles.txRow}>
-                      <input
-                        ref={amountInputRef}
-                        className={styles.txInput}
-                        type="number"
-                        inputMode="decimal"
-                        placeholder="סכום" aria-label="סכום להפקדה ליעד"
-                        value={amount}
-                        onChange={e => setAmount(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && confirmTx()}
-                      />
-                      <Button variant={txCard.dir === 'withdraw' ? 'ghost' : 'primary'} onClick={confirmTx} disabled={confirming}>{txCard.dir === 'withdraw' ? 'משוך' : 'הוסף'}</Button>
-                      <Button variant="ghost" onClick={closeTx}>ביטול</Button>
-                    </div>
-                  ) : (
-                    <div className={styles.txActions}>
-                      <button className={styles.txBtn} onClick={() => openTx(g.id, 'add')}>הוסף לחיסכון</button>
-                      {g.saved > 0 && <button className={styles.txBtnNeutral} onClick={() => openTx(g.id, 'withdraw')}>− משוך</button>}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
+                )}
+              </div>
+            );
+          })}
+        </Card>
       )}
     </div>
   );
