@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
 import { addMonths, getMonthTx } from './monthUtils.js';
@@ -8,11 +8,11 @@ import Skeleton from '../components/Skeleton.jsx';
 import Hero from '../components/Hero.jsx';
 import { Card, CardGrid, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
-import { catColor, chartTheme } from '../categories.js';
+import { chartTheme } from '../categories.js';
 import styles from './Analysis.module.css';
 import { fmt } from '../format.js';
 
-ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
 
@@ -48,18 +48,6 @@ export default function Analysis({ clientUserId, year, month }) {
   const labels = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
   const values = labels.map(l => byCat[l]);
   const total = values.reduce((s, v) => s + v, 0);
-  const colors = labels.map(catColor);
-
-  const chartData = {
-    labels,
-    datasets: [{
-      data: values,
-      backgroundColor: colors,
-      borderColor: CT.bg,
-      borderWidth: 2
-    }]
-  };
-
   const prev = addMonths(year, month, -1);
   const prevTotal = getMonthTx(data.transactions, prev.year, prev.month).filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const diff = total - prevTotal;
@@ -132,74 +120,43 @@ export default function Analysis({ clientUserId, year, month }) {
           )) : <div className={styles.cardEmpty}>אין חודש קודם להשוואה</div>}
         </Card>
       </CardGrid>
-    <div className={styles.wrapOuter}>
-    <h2 className={styles.cardTitle}>פילוח לפי קטגוריה</h2>
-    <div className={styles.wrap}>
-      <div className={styles.donutBox}>
-        <Pie
-          data={chartData}
-          options={{
-            maintainAspectRatio: false,
-            cutout: '68%',
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: CT.surface,
-                titleColor: CT.text,
-                bodyColor: CT.text2,
-                borderColor: CT.border,
-                borderWidth: 1,
-                padding: 12,
-                titleFont: { family: CT.font },
-                bodyFont: { family: CT.font }
-              }
-            }
-          }}
-        />
-        <div className={styles.donutCenter}>
-          <div className={styles.donutTotal}>{fmt(total)}</div>
-          <div className={styles.donutTotalLabel}>סה"כ הוצאות</div>
-        </div>
-      </div>
-      <div className={styles.legend}>
-        {labels.map((l, i) => (
-          <div key={l} className={styles.legendRow}>
-            <span className={styles.legendDot} style={{ background: colors[i] }} />
-            <span className={styles.legendLabel}>{l}</span>
-            <span className={styles.legendPct}>{Math.round((values[i] / total) * 100)}%</span>
-            <span className={styles.legendValue}>{fmt(values[i])}</span>
+      <CardGrid single>
+        <Card title="פילוח לפי קטגוריה">
+          {labels.map((l, i) => (
+            <Row key={l} name={l} sub={Math.round((values[i] / total) * 100) + '% מההוצאות'} amount={fmt(values[i])} pct={(values[i] / values[0]) * 100} />
+          ))}
+        </Card>
+      </CardGrid>
+      <CardGrid single>
+        <Card title="מה אם נצמצם קטגוריה?">
+          <div className={styles.whatIf}>
+          <div className={styles.whatIfRow}>
+            <select
+              className={styles.whatIfSelect}
+              aria-label="קטגוריה לצמצום"
+              value={activeCat}
+              onChange={e => setWhatIfCat(e.target.value)}
+            >
+              {labels.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+            <input
+              className={styles.whatIfSlider}
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={cutPct}
+              aria-label="אחוז צמצום"
+              onChange={e => setCutPct(Number(e.target.value))}
+            />
+            <span className={styles.whatIfPct}>-{cutPct}%</span>
           </div>
-        ))}
-      </div>
-    </div>
-      <div className={styles.whatIf}>
-        <div className={styles.whatIfTitle}>מה אם נצמצם קטגוריה?</div>
-        <div className={styles.whatIfRow}>
-          <select
-            className={styles.whatIfSelect}
-            aria-label="קטגוריה לצמצום"
-            value={activeCat}
-            onChange={e => setWhatIfCat(e.target.value)}
-          >
-            {labels.map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
-          <input
-            className={styles.whatIfSlider}
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            value={cutPct}
-            aria-label="אחוז צמצום"
-            onChange={e => setCutPct(Number(e.target.value))}
-          />
-          <span className={styles.whatIfPct}>-{cutPct}%</span>
-        </div>
-        <div className={styles.whatIfResult}>
-          חיסכון של <b>{fmt(savings)}</b> בחודש · סה"כ הוצאות יורד ל-<b>{fmt(newTotal)}</b>
-        </div>
-      </div>
-    </div>
+          <div className={styles.whatIfResult}>
+            חיסכון של <b>{fmt(savings)}</b> בחודש · סה"כ הוצאות יורד ל-<b>{fmt(newTotal)}</b>
+          </div>
+          </div>
+        </Card>
+      </CardGrid>
     </>
   );
 }

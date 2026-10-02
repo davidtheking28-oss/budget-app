@@ -3,6 +3,7 @@ import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
 import Hero from '../components/Hero.jsx';
+import { Card, CardGrid, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -140,6 +141,17 @@ export default function Subscriptions({ clientUserId, advisorId }) {
   in7Days.setDate(in7Days.getDate() + 7);
   const renewingSoon = subs.filter(s => s.nextDate && new Date(s.nextDate) <= in7Days && new Date(s.nextDate) >= new Date());
 
+  const activeSubs = subs.filter(s => s.active);
+  const subsByCategory = {};
+  activeSubs.forEach(s => { (subsByCategory[s.category] = subsByCategory[s.category] || []).push(s); });
+  const tips = [
+    ...renewingSoon.map(s => ({ name: `${s.name} מתחדש בקרוב`, sub: `ב־${formatDate(s.nextDate)} · ${fmt(monthlyEquivalent(s.cycle, s.amount || 0))} בחודש` })),
+    ...Object.entries(subsByCategory).filter(([, list]) => list.length >= 2).map(([category, list]) => {
+      const cheapest = Math.min(...list.map(s => monthlyEquivalent(s.cycle, s.amount || 0)));
+      return { name: `${list.length} מנויים בקטגוריית ${category}`, sub: `אפשר לשקול לוותר על אחד מהם · חיסכון של עד ${fmt(cheapest)} בחודש` };
+    })
+  ];
+
   const insurances = [...(data.insurances || [])].sort((a, b) => (b.monthly || 0) - (a.monthly || 0));
   const insurancesMonthly = insurances.reduce((s, x) => s + (x.monthly || 0), 0);
   const grooming = [...(data.grooming || [])].sort((a, b) => (b.monthly || 0) - (a.monthly || 0));
@@ -164,18 +176,16 @@ export default function Subscriptions({ clientUserId, advisorId }) {
         ]}
       />
 
-      {renewingSoon.length > 0 && (
-        <div className={styles.renewalBanner} role="status" aria-live="polite">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <path d="M16 2v4M8 2v4M3 10h18" />
-          </svg>
-          {renewingSoon.map(s => `${s.name} מתחדש ב-${formatDate(s.nextDate)}`).join(' · ')}
-        </div>
+      {tips.length > 0 && (
+        <CardGrid single>
+          <Card title="הצעות לחיסכון ותשומת לב">
+            {tips.map((t, i) => <Row key={i} name={t.name} sub={t.sub} />)}
+          </Card>
+        </CardGrid>
       )}
       <div className={styles.sectionsGrid}>
       <div className={styles.section + (subs.length ? '' : ' ' + styles.sectionEmptyCard)}>
-        <CollapsibleSection title={<>מנויים<span className={styles.countBadge}>{subs.length}</span>{monthlySubsCost > 0 ? ` · ${fmt(monthlySubsCost)} לחודש` : ''}</>} defaultOpen={subs.length > 0}>
+        <CollapsibleSection title={<>מנויים<span className={styles.countBadge}>{subs.length}</span>{monthlySubsCost > 0 ? ` · ${fmt(monthlySubsCost)} לחודש` : ''}</>} defaultOpen={subs.length > 0} locked={subs.length > 0}>
         {!subs.length && <div className={styles.sectionEmpty}>אין מנויים רשומים</div>}
         <AddForm label="הוסף מנוי" open={editingSubId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם המנוי" aria-label="שם המנוי" value={subForm.name} onChange={e => setSubForm({ ...subForm, name: e.target.value })} />
@@ -243,7 +253,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.section + (insurances.length ? '' : ' ' + styles.sectionEmptyCard)}>
-        <CollapsibleSection title={<>ביטוחים<span className={styles.countBadge}>{insurances.length}</span>{insurancesMonthly > 0 ? ` · ${fmt(insurancesMonthly)} לחודש` : ''}</>} defaultOpen={insurances.length > 0}>
+        <CollapsibleSection title={<>ביטוחים<span className={styles.countBadge}>{insurances.length}</span>{insurancesMonthly > 0 ? ` · ${fmt(insurancesMonthly)} לחודש` : ''}</>} defaultOpen={insurances.length > 0} locked={insurances.length > 0}>
         {!insurances.length && <div className={styles.sectionEmpty}>אין ביטוחים רשומים</div>}
         <AddForm label="הוסף ביטוח" open={editingInsId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם הביטוח" aria-label="שם הביטוח" value={insForm.name} onChange={e => setInsForm({ ...insForm, name: e.target.value })} />
@@ -274,7 +284,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.section + (grooming.length ? '' : ' ' + styles.sectionEmptyCard)}>
-        <CollapsibleSection title={<>טיפוח וקוסמטיקה<span className={styles.countBadge}>{grooming.length}</span>{groomingMonthly > 0 ? ` · ${fmt(groomingMonthly)} לחודש` : ''}</>} defaultOpen={grooming.length > 0}>
+        <CollapsibleSection title={<>טיפוח וקוסמטיקה<span className={styles.countBadge}>{grooming.length}</span>{groomingMonthly > 0 ? ` · ${fmt(groomingMonthly)} לחודש` : ''}</>} defaultOpen={grooming.length > 0} locked={grooming.length > 0}>
         {!grooming.length && <div className={styles.sectionEmpty}>אין פריטים רשומים</div>}
         <AddForm label="הוסף פריט" open={editingGroomId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם הפריט" aria-label="שם הפריט" value={groomForm.name} onChange={e => setGroomForm({ ...groomForm, name: e.target.value })} />
@@ -299,7 +309,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.section + (events.length ? '' : ' ' + styles.sectionEmptyCard)}>
-        <CollapsibleSection title={<>אירועים ומתנות<span className={styles.countBadge}>{events.length}</span>{eventsMonthly > 0 ? ` · ${fmt(eventsMonthly)} לחודש` : ''}</>} defaultOpen={events.length > 0}>
+        <CollapsibleSection title={<>אירועים ומתנות<span className={styles.countBadge}>{events.length}</span>{eventsMonthly > 0 ? ` · ${fmt(eventsMonthly)} לחודש` : ''}</>} defaultOpen={events.length > 0} locked={events.length > 0}>
         {!events.length && <div className={styles.sectionEmpty}>אין אירועים רשומים</div>}
         <AddForm label="הוסף אירוע" open={editingEventId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם האירוע" aria-label="שם האירוע" value={eventForm.name} onChange={e => setEventForm({ ...eventForm, name: e.target.value })} />
@@ -324,7 +334,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.section + (education.length ? '' : ' ' + styles.sectionEmptyCard)}>
-        <CollapsibleSection title={<>חינוך וחוגים<span className={styles.countBadge}>{education.length}</span>{educationMonthly > 0 ? ` · ${fmt(educationMonthly)} לחודש` : ''}</>} defaultOpen={education.length > 0}>
+        <CollapsibleSection title={<>חינוך וחוגים<span className={styles.countBadge}>{education.length}</span>{educationMonthly > 0 ? ` · ${fmt(educationMonthly)} לחודש` : ''}</>} defaultOpen={education.length > 0} locked={education.length > 0}>
         {!education.length && <div className={styles.sectionEmpty}>אין פריטים רשומים</div>}
         <AddForm label="הוסף פריט" open={editingEduId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם הפריט" aria-label="שם הפריט" value={eduForm.name} onChange={e => setEduForm({ ...eduForm, name: e.target.value })} />
@@ -349,7 +359,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.section + (annualExpenses.length ? '' : ' ' + styles.sectionEmptyCard)}>
-        <CollapsibleSection title={<>הוצאות שנתיות<span className={styles.countBadge}>{annualExpenses.length}</span>{annualExpensesMonthly > 0 ? ` · ${fmt(annualExpensesMonthly)} לחודש` : ''}</>} defaultOpen={annualExpenses.length > 0}>
+        <CollapsibleSection title={<>הוצאות שנתיות<span className={styles.countBadge}>{annualExpenses.length}</span>{annualExpensesMonthly > 0 ? ` · ${fmt(annualExpensesMonthly)} לחודש` : ''}</>} defaultOpen={annualExpenses.length > 0} locked={annualExpenses.length > 0}>
         {!annualExpenses.length && <div className={styles.sectionEmpty}>אין הוצאות רשומות</div>}
         <AddForm label="הוסף הוצאה" open={editingAnnualExpId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם ההוצאה" aria-label="שם ההוצאה" value={annualExpForm.name} onChange={e => setAnnualExpForm({ ...annualExpForm, name: e.target.value })} />

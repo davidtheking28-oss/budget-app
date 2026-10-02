@@ -292,7 +292,7 @@ export default function Credit({ clientUserId, advisorId }) {
         />
       )}
       <div className={styles.section}>
-        <CollapsibleSection defaultOpen={loans.length > 0} title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
+        <CollapsibleSection defaultOpen={loans.length > 0} locked={loans.length > 0} title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
         <AddForm label="הוסף הלוואה" open={editingLoanId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם ההלוואה" aria-label="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
@@ -512,7 +512,7 @@ export default function Credit({ clientUserId, advisorId }) {
       </div>
 
       <div className={styles.section}>
-        <CollapsibleSection defaultOpen={payments.length > 0} title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
+        <CollapsibleSection defaultOpen={payments.length > 0} locked={payments.length > 0} title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         <PaymentsTimeline payments={payments} />
         <AddForm label="הוסף תשלומים" open={editingPaymentId != null} className={styles.form}>

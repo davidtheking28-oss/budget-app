@@ -8,8 +8,18 @@ const CHEVRON = <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stro
 // collapsed by default so a page with several of these doesn't dump every
 // list and form on screen at once. The page keeps styling its own header
 // content (icon chip colors, badge) and just hands it in as `title`.
-export default function CollapsibleSection({ title, defaultOpen = false, children }) {
+export default function CollapsibleSection({ title, defaultOpen = false, locked = false, children }) {
   const [open, setOpen] = useState(defaultOpen);
+  if (locked) {
+    return (
+      <>
+        <div className={styles.sectionTitle + ' ' + styles.sectionTitleLocked}>{title}</div>
+        <div className={styles.sectionBody + ' ' + styles.sectionBodyOpen}>
+          <div className={styles.sectionBodyInner}>{children}</div>
+        </div>
+      </>
+    );
+  }
   return (
     <>
       <button type="button" className={styles.sectionTitle} onClick={() => setOpen(v => !v)} aria-expanded={open}>

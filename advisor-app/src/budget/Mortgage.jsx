@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Chart as ChartJS, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useClientBudget } from './useClientBudget.js';
@@ -73,6 +73,7 @@ const PRIME_RATE = BOI_RATE_ASOF.rate + PRIME_MARGIN;
 export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const [form, setForm] = useState(null);
+  const [openTrackId, setOpenTrackId] = useState(null);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -164,7 +165,9 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   }
   function addTrack() {
     const base = ensureFormTracks();
-    setForm({ ...base, tracks: [...base.tracks, { id: Date.now() + Math.random(), ...EMPTY_TRACK }] });
+    const id = Date.now() + Math.random();
+    setForm({ ...base, tracks: [...base.tracks, { id, ...EMPTY_TRACK }] });
+    setOpenTrackId(id);
   }
   function removeTrack(id) {
     const base = ensureFormTracks();
@@ -223,9 +226,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>אחוז</th><th>לוח סילוקין</th><th>מסלול</th><th>מטרה</th><th>תדירות עדכון</th><th>תאריך עדכון</th>
-                  <th>סכום</th><th>תקופה</th><th>עוגן</th><th>תוספת</th><th>ריבית</th>
-                  <th>החזר חודשי</th><th>קיצור / פרעון</th><th>החזר ל-100,000 ₪</th><th></th>
+                  <th>מסלול</th><th>סכום</th><th>חלק</th><th>תקופה</th><th>ריבית</th><th>החזר חודשי</th><th></th>
                 </tr>
               </thead>
               <tbody>
@@ -245,57 +246,50 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                     const annualRate = t.anchor === 'prime' ? String(PRIME_RATE + (parseFloat(margin) || 0)) : t.annualRate;
                     updateTrack(t.id, { margin, annualRate });
                   };
+                  const open = openTrackId === t.id;
                   return (
-                    <tr key={t.id}>
-                      <td>{pct.toFixed(0)}%</td>
-                      <td>
-                        <select className={styles.cellInput} aria-label="לוח סילוקין" value={t.amortMethod} onChange={e => updateTrack(t.id, { amortMethod: e.target.value })}>
-                          {AMORT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                        </select>
-                      </td>
-                      <td>
-                        <select className={styles.cellInput} aria-label="סוג מסלול" value={t.type} onChange={e => onType(e.target.value)}>
-                          {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.abbr}</option>)}
-                        </select>
-                      </td>
-                      <td>
-                        <select className={styles.cellInput} aria-label="מטרת המסלול" value={t.purpose} onChange={e => updateTrack(t.id, { purpose: e.target.value })}>
-                          {PURPOSES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-                        </select>
-                      </td>
-                      <td><input className={styles.cellInput} type="number" inputMode="numeric" placeholder="חודשים" aria-label="תדירות עדכון בחודשים" value={t.rateFrequency} onChange={e => updateTrack(t.id, { rateFrequency: e.target.value })} /></td>
-                      <td><input className={styles.cellInput} type="date" aria-label="תאריך עדכון קרוב" value={t.rateUpdateDate} onChange={e => updateTrack(t.id, { rateUpdateDate: e.target.value })} /></td>
-                      <td><input className={styles.cellInput} type="text" inputMode="decimal" placeholder="סכום" aria-label="סכום המסלול" value={formatAmountInput(t.principal)} onChange={e => updateTrack(t.id, { principal: unformatAmountInput(e.target.value) })} /></td>
-                      <td><input className={styles.cellInput} type="number" inputMode="numeric" placeholder="שנים" aria-label="תקופה בשנים" value={t.years} onChange={e => updateTrack(t.id, { years: e.target.value })} /></td>
-                      <td>
-                        <select className={styles.cellInput} aria-label="עוגן" value={t.anchor} onChange={e => onAnchor(e.target.value)}>
-                          {ANCHORS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
-                        </select>
-                      </td>
-                      <td><input className={styles.cellInput} type="number" inputMode="decimal" placeholder="%" aria-label="תוספת מעל העוגן" value={t.margin} onChange={e => onMargin(e.target.value)} /></td>
-                      <td>
-                        <input
-                          className={styles.cellInput}
-                          type="number"
-                          inputMode="decimal"
-                          placeholder="%"
-                          aria-label="ריבית שנתית"
-                          value={t.annualRate}
-                          readOnly={t.anchor === 'prime'}
-                          title={t.anchor === 'prime' ? 'נגזר אוטומטית מריבית הפריים + תוספת' : undefined}
-                          onChange={e => updateTrack(t.id, { annualRate: e.target.value })}
-                        />
-                      </td>
-                      <td>{fmt(monthly)}</td>
-                      <td>
-                        <div className={styles.trackActions}>
-                          <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר קיצור תקופה יתווסף בהמשך', 'info')} aria-disabled="true" aria-describedby="trackActionsSoon">קיצור</button>
-                          <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר פירעון מוקדם יתווסף בהמשך', 'info')} aria-disabled="true" aria-describedby="trackActionsSoon">פרעון</button>
-                        </div>
-                      </td>
-                      <td>{fmt(perHundredK)}</td>
-                      <td><DeleteButton onClick={() => removeTrack(t.id)} title="מחק מסלול" /></td>
-                    </tr>
+                    <Fragment key={t.id}>
+                      <tr>
+                        <td>{TRACK_TYPES.find(x => x.value === t.type)?.abbr || t.type}</td>
+                        <td>{fmt(parseFloat(t.principal) || 0)}</td>
+                        <td>{pct.toFixed(0)}%</td>
+                        <td>{t.years ? t.years + ' שנים' : '—'}</td>
+                        <td>{t.annualRate ? t.annualRate + '%' : '—'}</td>
+                        <td>{fmt(monthly)}</td>
+                        <td>
+                          <div className={styles.trackActions}>
+                            <button type="button" className={styles.editBtn} aria-expanded={open} onClick={() => setOpenTrackId(open ? null : t.id)}>{open ? 'סגור' : 'עריכה'}</button>
+                            <DeleteButton onClick={() => removeTrack(t.id)} title="מחק מסלול" />
+                          </div>
+                        </td>
+                      </tr>
+                      {open && (
+                        <tr>
+                          <td colSpan={7}>
+                            <div className={styles.trackEdit}>
+                              <label className={styles.field}><span>לוח סילוקין</span><select className={styles.input} aria-label="לוח סילוקין" value={t.amortMethod} onChange={e => updateTrack(t.id, { amortMethod: e.target.value })}> {AMORT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)} </select></label>
+                              <label className={styles.field}><span>סוג מסלול</span><select className={styles.input} aria-label="סוג מסלול" value={t.type} onChange={e => onType(e.target.value)}> {TRACK_TYPES.map(x => <option key={x.value} value={x.value}>{x.abbr}</option>)} </select></label>
+                              <label className={styles.field}><span>מטרה</span><select className={styles.input} aria-label="מטרת המסלול" value={t.purpose} onChange={e => updateTrack(t.id, { purpose: e.target.value })}> {PURPOSES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)} </select></label>
+                              <label className={styles.field}><span>סכום</span><input className={styles.input} type="text" inputMode="decimal" placeholder="סכום" aria-label="סכום המסלול" value={formatAmountInput(t.principal)} onChange={e => updateTrack(t.id, { principal: unformatAmountInput(e.target.value) })} /></label>
+                              <label className={styles.field}><span>תקופה (שנים)</span><input className={styles.input} type="number" inputMode="numeric" placeholder="שנים" aria-label="תקופה בשנים" value={t.years} onChange={e => updateTrack(t.id, { years: e.target.value })} /></label>
+                              <label className={styles.field}><span>עוגן</span><select className={styles.input} aria-label="עוגן" value={t.anchor} onChange={e => onAnchor(e.target.value)}> {ANCHORS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)} </select></label>
+                              <label className={styles.field}><span>תוספת %</span><input className={styles.input} type="number" inputMode="decimal" placeholder="%" aria-label="תוספת מעל העוגן" value={t.margin} onChange={e => onMargin(e.target.value)} /></label>
+                              <label className={styles.field}><span>ריבית %</span><input className={styles.input} type="number" inputMode="decimal" placeholder="%" aria-label="ריבית שנתית" value={t.annualRate} readOnly={t.anchor === 'prime'} title={t.anchor === 'prime' ? 'נגזר אוטומטית מריבית הפריים + תוספת' : undefined} onChange={e => updateTrack(t.id, { annualRate: e.target.value })} /></label>
+                              <label className={styles.field}><span>תדירות עדכון (חודשים)</span><input className={styles.input} type="number" inputMode="numeric" placeholder="חודשים" aria-label="תדירות עדכון בחודשים" value={t.rateFrequency} onChange={e => updateTrack(t.id, { rateFrequency: e.target.value })} /></label>
+                              <label className={styles.field}><span>תאריך עדכון</span><input className={styles.input} type="date" aria-label="תאריך עדכון קרוב" value={t.rateUpdateDate} onChange={e => updateTrack(t.id, { rateUpdateDate: e.target.value })} /></label>
+                              <div className={styles.field}>
+                                <span>החזר ל-100,000 ₪</span>
+                                <b>{fmt(perHundredK)}</b>
+                              </div>
+                              <div className={styles.trackActions}>
+                                <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר קיצור תקופה יתווסף בהמשך', 'info')} aria-disabled="true" aria-describedby="trackActionsSoon">קיצור</button>
+                                <button className={styles.editBtn + ' ' + styles.placeholderBtn} onClick={() => toast('פיצ׳ר פירעון מוקדם יתווסף בהמשך', 'info')} aria-disabled="true" aria-describedby="trackActionsSoon">פרעון</button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
                   );
                 })}
               </tbody>
