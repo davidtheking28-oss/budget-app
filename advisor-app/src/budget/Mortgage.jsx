@@ -203,12 +203,11 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         ]}
       />
 
-      <h2 className={styles.cardTitle}>סימולטור משכנתא — מסלולים וריביות</h2>
-      <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
-        חישוב לפי המסלולים שתזינו כאן, כולל בדיקה מול הוראה 329 של בנק ישראל.
-      </div>
       <div className={styles.card}>
-        <h3 className={styles.cardTitle}>תרחיש נכס</h3>
+        <h2 className={styles.cardTitle}>מסלולי משכנתא</h2>
+        <div className={styles.note} style={{ marginTop: 0, marginBottom: 'var(--space-3)' }}>
+          חישוב לפי המסלולים שתזינו כאן, כולל בדיקה מול הוראה 329 של בנק ישראל.
+        </div>
         <div className={styles.form}>
           <input className={styles.input} placeholder="גוף מממן" aria-label="גוף מממן" value={scenario.financier} onChange={e => setField('financier', e.target.value)} />
           <input className={styles.input + ' ' + styles.amountInput} type="text" inputMode="decimal" placeholder="שווי נכס" aria-label="שווי נכס" value={formatAmountInput(scenario.propertyValue)} onChange={e => setField('propertyValue', unformatAmountInput(e.target.value))} />
@@ -217,7 +216,6 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           </select>
         </div>
 
-        <h3 className={styles.cardTitle} style={{ fontSize: 'var(--text-md)' }}>מסלולי משכנתא</h3>
         {!scenario.tracks?.length && <div className={styles.empty} style={{ padding: 'var(--space-3) 0' }}>אין עדיין מסלולים — הוסף מסלול ראשון</div>}
         {scenario.tracks?.length > 0 && (
           <div className={styles.tableWrap + ' ' + styles.trackTableWrap} style={{ marginBottom: 'var(--space-3)' }}>

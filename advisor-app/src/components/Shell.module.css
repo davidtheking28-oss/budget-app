@@ -61,6 +61,33 @@
   color: var(--text);
 }
 
+.accountUp {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.accountUp .accountTrigger {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 8px 12px;
+  background: none;
+  border-color: transparent;
+}
+
+.accountUp .accountEmail {
+  max-width: 130px;
+  flex: 1;
+  text-align: right;
+}
+
+.accountUp .accountPanel {
+  top: auto;
+  bottom: calc(100% + var(--space-2));
+  inset-inline-start: 0;
+  width: 232px;
+}
+
 .accountIcon {
   display: none;
 }

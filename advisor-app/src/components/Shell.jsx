@@ -6,7 +6,19 @@ import IconRail from './IconRail.jsx';
 import SearchBar from './SearchBar.jsx';
 import styles from './Shell.module.css';
 
-function AccountMenu({ email, advisorId }) {
+function useDesktop() {
+  const query = '(min-width: 861px)';
+  const [desktop, setDesktop] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = e => setDesktop(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return desktop;
+}
+
+function AccountMenu({ email, advisorId, up }) {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -72,7 +84,7 @@ function AccountMenu({ email, advisorId }) {
   }
 
   return (
-    <div className={styles.accountMenu}>
+    <div className={styles.accountMenu + (up ? ' ' + styles.accountUp : '')}>
       <button ref={triggerRef} type="button" className={styles.accountTrigger} onClick={() => setOpen(o => !o)} aria-expanded={open} aria-haspopup="true" aria-label={`חשבון: ${email}`}>
         <svg className={styles.accountIcon} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" /></svg>
         <span className={styles.accountEmail}>{email}</span>
@@ -129,6 +141,7 @@ function AccountMenu({ email, advisorId }) {
 }
 
 export default function Shell({ title, clientName, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+  const desktop = useDesktop();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [activeNav]);
@@ -166,6 +179,7 @@ export default function Shell({ title, clientName, onBack, nav, activeNav, onNav
         onNavChange={onNavChange}
         theme={theme}
         onToggleTheme={onToggleTheme}
+        footer={desktop ? <AccountMenu email={email} advisorId={advisorId} up /> : null}
       />
       <div className={styles.topbarBleed}>
         <div className={styles.topbar}>
@@ -177,7 +191,7 @@ export default function Shell({ title, clientName, onBack, nav, activeNav, onNav
           </div>
           <div className={styles.topbarEnd}>
             {sidebarInfo}
-            <AccountMenu email={email} advisorId={advisorId} />
+            {!desktop && <AccountMenu email={email} advisorId={advisorId} />}
           </div>
         </div>
       </div>

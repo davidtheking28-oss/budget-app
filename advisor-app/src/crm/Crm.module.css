@@ -4,19 +4,20 @@
    fixed cell no matter what any other card is doing. */
 .sectionsGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   align-items: start;
   gap: var(--space-5);
   margin-bottom: var(--space-6);
 }
 
-@media (max-width: 560px) {
+@media (max-width: 860px) {
   .sectionsGrid { grid-template-columns: 1fr; }
+  .sectionsGrid > :nth-child(2) { grid-column: auto; }
 }
 
-@media (min-width: 561px) {
-  .sectionsGrid > :nth-child(2) { grid-row: span 2; }
-}
+.sectionsGrid > :nth-child(3) { order: 1; }
+.sectionsGrid > :nth-child(1) { order: 2; }
+.sectionsGrid > :nth-child(2) { order: 3; grid-column: 1 / -1; }
 
 .section {
   background: var(--surface);
@@ -202,8 +203,6 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  max-width: 640px;
 }
 
 .row {
@@ -211,19 +210,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
-  animation: riseIn var(--motion) var(--ease-out-expo) both;
-  transition: border-color 0.2s ease, transform 0.2s var(--ease-out-expo);
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
 }
 
-.row:hover {
-  border-color: var(--border-strong);
-  transform: translateX(-2px);
-}
+.row:first-child { border-top: none; }
 
 .taskRow {
   align-items: center;

@@ -88,8 +88,8 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--space-3);
+  grid-template-columns: 1fr;
+  gap: 0;
 }
 
 .list {
@@ -115,13 +115,16 @@
 }
 
 .rowCard {
-  padding: var(--space-4) var(--space-4);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: var(--shadow-card);
-  transition: border-color 0.25s ease, transform 0.25s var(--ease-out-expo);
+  padding: var(--space-3) 0;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.grid > .rowCard:first-child {
+  border-top: none;
 }
 
 .rowStacked {

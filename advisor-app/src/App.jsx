@@ -215,9 +215,7 @@ export default function App() {
       >
         {nav === 'crm' && (
           <ClientContextBar
-            name={clientProfile?.name}
             isVip={!!clientProfile?.is_vip}
-            email={selectedClient.email}
             phone={clientProfile?.phone}
             createdAt={clientProfile?.created_at}
             nextMeeting={nextMeeting}

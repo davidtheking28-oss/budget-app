@@ -3,7 +3,7 @@ import styles from './IconRail.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
-export default function IconRail({ clientName, onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme }) {
+export default function IconRail({ clientName, onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, footer }) {
   const globalActions = [
     onBack && {
       key: 'clients',
@@ -100,6 +100,7 @@ export default function IconRail({ clientName, onBack, homeActive, onSearch, onP
           <span className={styles.label}>{theme === 'dark' ? 'מצב בהיר' : 'מצב כהה'}</span>
         </button>
       )}
+      {footer}
     </div>
   );
 }
