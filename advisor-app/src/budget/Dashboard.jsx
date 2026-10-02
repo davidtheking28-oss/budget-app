@@ -47,9 +47,11 @@ export default function Dashboard({ clientUserId, year, month }) {
         value={fmt(summary.net)}
         tone={summary.net < 0 ? 'neg' : 'pos'}
         note={<>
-          <span className={styles.statusBadge + ' ' + styles[financialStatus.tone]}>
-            <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
-          </span>
+          {financialStatus.tone === 'danger' && (
+            <span className={styles.statusBadge + ' ' + styles[financialStatus.tone]}>
+              <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
+            </span>
+          )}
           {summary.income > 0 && <span>{savingsRate.toFixed(1)}% מההכנסה · יעד חיסכון {SAVINGS_TARGET}%</span>}
         </>}
         side={[
@@ -84,8 +86,8 @@ export default function Dashboard({ clientUserId, year, month }) {
             <ul className={styles.insights}>
               {attention.map((ins, i) => (
                 <li key={i} className={styles.insight}>
-                  <span className={styles.insightDot + ' ' + styles[ins.kind]} aria-hidden="true" />
-                  {ins.text}
+                  <b className={styles.insightTitle}><span className={styles.insightDot + ' ' + styles[ins.kind]} aria-hidden="true" />{ins.text.split(' — ')[0]}</b>
+                  {ins.text.includes(' — ') && <span className={styles.insightSub}>{ins.text.split(' — ').slice(1).join(' — ')}</span>}
                 </li>
               ))}
             </ul>

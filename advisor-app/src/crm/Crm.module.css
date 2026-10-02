@@ -22,9 +22,8 @@
 .section {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  box-shadow: var(--shadow-card);
+  border-radius: 16px;
+  padding: 18px 20px;
 }
 
 /* A button, not a div — the whole header toggles the section. Collapsed by
@@ -40,7 +39,7 @@
   padding: 0;
   color: var(--text);
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   text-align: start;

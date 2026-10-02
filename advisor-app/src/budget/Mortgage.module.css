@@ -1,9 +1,8 @@
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  box-shadow: var(--shadow-card);
+  border-radius: 16px;
+  padding: 18px 20px;
 }
 
 .cardStandalone {
@@ -43,9 +42,10 @@
 
 .cardTitle {
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text);
-  margin-bottom: var(--space-4);
+  margin-bottom: 12px;
 }
 
 .form {

@@ -3,7 +3,7 @@ import styles from './IconRail.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
-export default function IconRail({ clientName, onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, footer }) {
+export default function IconRail({ clientName, clientSince, onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, footer }) {
   const globalActions = [
     onBack && {
       key: 'clients',
@@ -38,7 +38,10 @@ export default function IconRail({ clientName, onBack, homeActive, onSearch, onP
     <div className={styles.rail}>
       <div className={styles.head}>
         <div className={styles.mark} aria-hidden="true"><Logo /></div>
-        {clientName && <div className={styles.clientName} title={clientName}>{clientName}</div>}
+        <div className={styles.headText}>
+          {clientName && <div className={styles.clientName} title={clientName}>{clientName}</div>}
+          {clientSince && <div className={styles.clientSince}>לקוח מאז {clientSince}</div>}
+        </div>
       </div>
       <nav className={styles.actions} aria-label="ניווט">
         {globalActions.map(a => (

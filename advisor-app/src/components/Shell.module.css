@@ -15,7 +15,7 @@
   gap: var(--space-4);
   width: 100%;
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
-  margin: 0 auto;
+  margin: 0 auto 0 0;
   padding: var(--space-5) var(--page-pad);
 }
 
@@ -274,7 +274,7 @@
   padding: var(--space-5) var(--page-pad) var(--space-8);
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
   width: 100%;
-  margin: 0 auto;
+  margin: 0 auto 0 0;
   animation: tabIn var(--motion) var(--ease-out-expo) both;
 }
 
@@ -340,8 +340,8 @@
 .pageTitle {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: var(--text-display-md);
-  letter-spacing: -0.01em;
+  font-size: 24px;
+  letter-spacing: 0;
   color: var(--text);
   margin: 0;
   white-space: nowrap;

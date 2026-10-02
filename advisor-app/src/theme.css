@@ -23,9 +23,9 @@
   --text: #0f231e;
   --text2: #455550;
   --text3: #5b6f69;
-  --page-max: 1720px;
-  --page-pad: 40px;
-  --rail-w: 232px;
+  --page-max: 1036px;
+  --page-pad: 32px;
+  --rail-w: 220px;
   --border: rgba(15, 35, 30, 0.09);
   --border-strong: rgba(15, 35, 30, 0.16);
   --red: #b02631;

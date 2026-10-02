@@ -2,58 +2,56 @@
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: var(--space-5) 40px;
-  padding: 24px 28px;
-  margin-bottom: 20px;
+  gap: 16px 32px;
+  padding: 22px 24px;
+  margin-bottom: 16px;
   min-width: 0;
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   border: 1px solid var(--border);
   background: var(--surface);
-  box-shadow: var(--shadow-card);
 }
 
 .main { min-width: 0; }
 
 .label {
   color: var(--text2);
-  font-size: var(--text-sm);
-  font-weight: 600;
+  font-size: 14px;
 }
 
 .value {
   font-variant-numeric: tabular-nums;
-  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  font-size: 40px;
   font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  margin-top: 4px;
-  color: var(--text);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--accent);
 }
+
+.valueCompact { font-size: 30px; }
 
 .note {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-top: var(--space-3);
+  margin-top: 4px;
   color: var(--text3);
-  font-size: var(--text-sm);
+  font-size: 13px;
 }
 
 .side {
   margin-inline-start: auto;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4) 36px;
+  gap: 16px 28px;
 }
 
 .sideItem { min-width: 0; }
 
 .sideValue {
   font-variant-numeric: tabular-nums;
-  font-size: var(--text-xl);
+  font-size: 19px;
   font-weight: 700;
-  margin-top: 2px;
   color: var(--text);
   overflow-wrap: anywhere;
 }
@@ -77,5 +75,6 @@
 
 @media (max-width: 560px) {
   .hero { padding: 20px; }
+  .value { font-size: 32px; }
   .side { margin-inline-start: 0; gap: var(--space-4) 28px; }
 }

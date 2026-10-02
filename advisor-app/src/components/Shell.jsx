@@ -140,7 +140,7 @@ function AccountMenu({ email, advisorId, up }) {
   );
 }
 
-export default function Shell({ title, clientName, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+export default function Shell({ title, clientName, clientSince, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   const desktop = useDesktop();
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -170,6 +170,7 @@ export default function Shell({ title, clientName, onBack, nav, activeNav, onNav
     <div className={styles.shellTabs} dir="rtl" inert={shellInert ? '' : undefined}>
       <IconRail
         clientName={clientName}
+        clientSince={clientSince}
         onBack={onBack}
         onSearch={onSearch}
         onPrint={onPrint}

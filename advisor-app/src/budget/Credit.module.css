@@ -71,9 +71,8 @@
 .section {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  box-shadow: var(--shadow-card);
+  border-radius: 16px;
+  padding: 18px 20px;
   margin-bottom: var(--space-6);
 }
 

@@ -211,6 +211,7 @@ export default function App() {
         email={session.user.email}
         advisorId={session.user.id}
         clientName={clientProfile?.name || selectedClient.email}
+        clientSince={clientProfile?.created_at ? `${String(new Date(clientProfile.created_at).getMonth() + 1).padStart(2, '0')}.${new Date(clientProfile.created_at).getFullYear()}` : null}
         sidebarInfo={NAV.find(n => n.key === nav)?.usesMonth ? <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} /> : null}
         inert={searchOpen}
       >

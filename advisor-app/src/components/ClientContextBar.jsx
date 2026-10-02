@@ -23,7 +23,7 @@ export default function ClientContextBar({ isVip, phone, createdAt, nextMeeting,
 
   return (
     <>
-      <Hero
+      <Hero compact
         label="הפגישה הבאה"
         value={meeting || 'לא נקבעה'}
         note={<>
