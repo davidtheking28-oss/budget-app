@@ -180,8 +180,7 @@
 }
 
 .rowCard:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-2px);
+  border-color: var(--border);
 }
 
 .name {
@@ -259,9 +258,10 @@
 }
 
 .consolGroupRow td {
-  background: var(--surface2);
+  padding-top: var(--space-4);
+  font-size: var(--text-xs);
   font-weight: 700;
-  color: var(--text);
+  color: var(--text3);
 }
 
 .consolCheckLabel {

@@ -9,6 +9,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
 import { getMonthTx } from './monthUtils.js';
 import { fmt } from '../format.js';
+import styles from './Budget.module.css';
 
 export default function Budget({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
@@ -72,7 +73,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
 
       {wizardOpen
         ? <BudgetWizard data={data} save={save} year={year} month={month} />
-        : <Button variant="ghost" onClick={() => setWizardOpen(true)}>בניית תקציב עם הלקוח</Button>}
+        : <Button variant="ghost" className={styles.addBtn} onClick={() => setWizardOpen(true)}>בניית תקציב עם הלקוח</Button>}
     </div>
   );
 }

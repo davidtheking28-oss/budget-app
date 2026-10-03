@@ -55,6 +55,7 @@
 
 .amount {
   flex-shrink: 0;
+  min-width: 5.5em;
   color: var(--text);
   font-size: 15px;
   font-weight: 700;

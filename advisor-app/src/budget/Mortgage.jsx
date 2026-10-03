@@ -300,7 +300,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             </table>
           </div>
         )}
-        <Button variant="ghost" onClick={addTrack}>+ הוסף מסלול</Button>
+        <button type="button" className={styles.addTrack} onClick={addTrack}>+ הוסף מסלול</button>
 
         {loanAmount > 0 && (
           <div className={styles.totalsBar}>
@@ -309,7 +309,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
             <span>תקופה מקסימלית: <b>{Math.round(termMonths / 12)} שנים</b></span>
           </div>
         )}
-        <Button onClick={submitScenario}>שמור תרחיש</Button>
+        <div className={styles.actions}><Button onClick={submitScenario}>שמור תרחיש</Button></div>
 
         {propertyValue > 0 ? (
           <div className={styles.resultGrid}>

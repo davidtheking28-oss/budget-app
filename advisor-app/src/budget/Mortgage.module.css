@@ -38,7 +38,6 @@
 
 .rowGood td:nth-child(5) { color: var(--green); font-weight: 600; }
 .rowBad td:nth-child(5) { color: var(--red); font-weight: 600; }
-.rowBad { background: rgba(var(--red-rgb), 0.05); }
 
 .cardTitle {
   font-family: var(--font-display);
@@ -64,7 +63,7 @@
   flex: 1;
   min-width: 130px;
   min-height: 42px;
-  background: var(--surface2);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -90,23 +89,47 @@
 
 .resultGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-3);
-  max-width: 720px;
+  grid-template-columns: 1fr;
+  margin-top: var(--space-3);
 }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.addTrack {
+  align-self: flex-start;
+  padding: 8px 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 40px;
+  transition: background .18s ease, border-color .18s ease;
+}
+
+.addTrack:hover { background: var(--accent-dim); border-color: rgba(var(--accent-rgb), 0.5); }
 
 .resultRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-3);
-  background: var(--surface2);
-  border-radius: var(--radius-sm);
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
 }
 
-.resultLabel { font-size: var(--text-sm); color: var(--text2); }
-.resultValue { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
+.resultRow:first-child { border-top: none; }
+
+.resultLabel { font-size: 13px; color: var(--text3); }
+.resultValue { font-size: 15px; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
 .resultGood { color: var(--green); }
 .resultBad { color: var(--red); }
 
@@ -184,4 +207,8 @@
   color: var(--text3);
   font-size: var(--text-xs);
   font-weight: 600;
+}
+
+@media (max-width: 860px) {
+  .addTrack { min-height: 44px; }
 }

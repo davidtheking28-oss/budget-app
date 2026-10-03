@@ -602,7 +602,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                     <Button variant="ghost" onClick={() => setLinkForm(null)}>ביטול</Button>
                   </div>
                 ) : (
-                  <Button variant="ghost" onClick={() => setLinkForm({ desc: c.desc, name: c.desc, monthly: c.monthly, amount: '' })}>עדכן</Button>
+                  <Button variant="ghost" className={styles.addBtn} onClick={() => setLinkForm({ desc: c.desc, name: c.desc, monthly: c.monthly, amount: '' })}>עדכן</Button>
                 )}
               </div>
             ))}
@@ -620,7 +620,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                     <Button variant="ghost" onClick={() => setLinkForm(null)}>ביטול</Button>
                   </div>
                 ) : (
-                  <Button variant="ghost" onClick={() => setLinkForm({ desc: c.desc, name: c.desc, monthly: c.monthly, amount: '' })}>עדכן</Button>
+                  <Button variant="ghost" className={styles.addBtn} onClick={() => setLinkForm({ desc: c.desc, name: c.desc, monthly: c.monthly, amount: '' })}>עדכן</Button>
                 )}
               </div>
             ))}

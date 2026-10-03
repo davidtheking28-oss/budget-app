@@ -167,7 +167,8 @@ export default function Goals({ clientUserId, advisorId }) {
                   sub={`${fmt(g.saved || 0)} מתוך ${fmt(g.target || 0)}${g.months > 0 ? ` · יעד ל־${g.months} חודשים` : ''}`}
                   pct={pct}
                   barTone={pct >= 100 ? undefined : pct < 30 ? 'warn' : undefined}
-                  amount={monthly > 0 ? `${fmt(monthly)}/ח׳` : null}
+                  amount={monthly > 0 ? `${fmt(monthly)}/ח׳` : pct >= 100 ? 'הושלם' : null}
+                  amountTone={monthly > 0 ? undefined : pct >= 100 ? 'pos' : undefined}
                 >
                   <DeleteButton title="מחק יעד" onClick={() => deleteGoal(g.id)} />
                 </Row>

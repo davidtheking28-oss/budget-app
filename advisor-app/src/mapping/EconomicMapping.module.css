@@ -26,9 +26,9 @@
   align-items: center;
   gap: var(--space-3);
   text-align: center;
-  border: 1.5px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  padding: var(--space-6) var(--space-5);
+  border: 1px dashed var(--border-strong);
+  border-radius: 12px;
+  padding: var(--space-5);
   color: var(--text2);
   cursor: pointer;
   transition: border-color .18s var(--ease-out-expo), color .18s var(--ease-out-expo);
@@ -327,20 +327,20 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-3);
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
 }
 
+.linkRow:first-child { border-top: none; }
+
 .linkDesc {
-  font-size: var(--text-sm);
+  font-size: 15px;
   font-weight: 600;
   color: var(--text);
 }
 
 .linkMeta {
-  font-size: var(--text-xs);
+  font-size: 13px;
   color: var(--text3);
   margin-top: 2px;
 }
@@ -381,3 +381,18 @@
   .barLabel { flex-basis: 100px; }
 }
 
+
+.addBtn.addBtn {
+  padding: 8px 14px;
+  background: none;
+  border: 1px dashed var(--border-strong);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.addBtn.addBtn:hover:not(:disabled) {
+  background: var(--accent-dim);
+  border-color: rgba(var(--accent-rgb), 0.5);
+  color: var(--accent);
+}
