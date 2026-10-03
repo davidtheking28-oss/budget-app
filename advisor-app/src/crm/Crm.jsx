@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useClientCrm, suggestTasksFromSummary } from './useClientCrm.js';
 import { useClientProfile } from './useClientProfile.js';
 import { formatDate, formatDateTime } from '../budget/monthUtils.js';
@@ -15,7 +15,6 @@ const ICONS = {
   meetings: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
   tasks: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>,
   edit: <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>,
-  chevron: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
 };
 
 function downloadIcs(meeting) {
@@ -106,22 +105,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
   const [editMeetingAt, setEditMeetingAt] = useState('');
   const [editMeetingNotes, setEditMeetingNotes] = useState('');
   const [editMeetingForClient, setEditMeetingForClient] = useState(true);
-  const [openSections, setOpenSections] = useState({});
-  const sectionsInitFor = useRef(null);
-  useEffect(() => {
-    if (loading || sectionsInitFor.current === clientId) return;
-    sectionsInitFor.current = clientId;
-    setOpenSections({ profile: true, tasks: tasks.some(t => !t.done), meetings: meetings.length > 0 });
-  }, [loading, clientId, tasks, meetings]);
-  useEffect(() => {
-    if (!action) return;
-    const key = { task: 'tasks', meeting: 'meetings', profile: 'profile' }[action.type];
-    setOpenSections(prev => ({ ...prev, [key]: true }));
-  }, [action]);
   const signal = type => (action?.type === type ? action.id : 0);
-  const isLocked = key => (key === 'profile' ? true : key === 'tasks' ? tasks.length > 0 : meetings.length > 0);
-  const isOpen = key => isLocked(key) || !!openSections[key];
-  function toggleSection(key) { setOpenSections(prev => ({ ...prev, [key]: !prev[key] })); }
 
   function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); }
   function saveEditTask(id) { editTask(id, editTaskTitle, editTaskDue, editTaskForClient); setEditingTask(null); }
@@ -161,24 +145,23 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
       {(overdueTasks > 0 || soonMeetings > 0) && (
         <div className={styles.reminderBar}>
           {overdueTasks > 0 && (
-            <button type="button" className={styles.reminderChip + ' ' + styles.reminderChipBad} onClick={() => setOpenSections(prev => ({ ...prev, tasks: true }))}>
+            <span className={styles.reminderChip + ' ' + styles.reminderChipBad}>
               {overdueTasks === 1 ? 'משימה אחת באיחור' : `${overdueTasks} משימות באיחור`}
-            </button>
+            </span>
           )}
           {soonMeetings > 0 && (
-            <button type="button" className={styles.reminderChip} onClick={() => setOpenSections(prev => ({ ...prev, meetings: true }))}>
+            <span className={styles.reminderChip}>
               {soonMeetings === 1 ? 'פגישה אחת בקרוב' : `${soonMeetings} פגישות בקרוב`}
-            </button>
+            </span>
           )}
         </div>
       )}
       <div className={styles.sectionsGrid}>
       <div className={styles.section}>
-        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('profile')} aria-expanded={isOpen('profile')} disabled={isLocked('profile')}>
+        <h2 className={styles.sectionTitle}>
           פרטי קשר ורקע
-          {!isLocked('profile') && <span className={styles.chevron + (openSections.profile ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>}
-        </button>
-        <div className={styles.sectionBody + (isOpen('profile') ? ' ' + styles.sectionBodyOpen : '')} inert={!isOpen('profile') ? '' : undefined}>
+        </h2>
+        <div>
           <div className={styles.sectionBodyInner}>
             <KeyValue label="אימייל" value={email} ltr />
             {phoneDraft && <KeyValue label="טלפון" value={phoneDraft} ltr />}
@@ -205,11 +188,10 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
         </div>
       </div>
       <div className={styles.section}>
-        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('meetings')} aria-expanded={isOpen('meetings')} disabled={isLocked('meetings')}>
+        <h2 className={styles.sectionTitle}>
           פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}
-          {!isLocked('meetings') && <span className={styles.chevron + (openSections.meetings ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>}
-        </button>
-        <div className={styles.sectionBody + (isOpen('meetings') ? ' ' + styles.sectionBodyOpen : '')} inert={!isOpen('meetings') ? '' : undefined}>
+        </h2>
+        <div>
         <div className={styles.sectionBodyInner}>
         <AddForm label="קבע פגישה" openSignal={signal('meeting')} className={styles.form}>
           <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
@@ -313,11 +295,10 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
       </div>
 
       <div className={styles.section}>
-        <button type="button" className={styles.sectionTitle} onClick={() => toggleSection('tasks')} aria-expanded={isOpen('tasks')} disabled={isLocked('tasks')}>
+        <h2 className={styles.sectionTitle}>
           משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}
-          {!isLocked('tasks') && <span className={styles.chevron + (openSections.tasks ? ' ' + styles.chevronOpen : '')}>{ICONS.chevron}</span>}
-        </button>
-        <div className={styles.sectionBody + (isOpen('tasks') ? ' ' + styles.sectionBodyOpen : '')} inert={!isOpen('tasks') ? '' : undefined}>
+        </h2>
+        <div>
         <div className={styles.sectionBodyInner}>
         <AddForm label="הוסף משימות" openSignal={signal('task')} className={styles.form}>
           <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />

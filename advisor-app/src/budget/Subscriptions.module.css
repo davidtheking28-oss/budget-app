@@ -75,7 +75,7 @@
 
 .sectionEmpty {
   color: var(--text3);
-  font-size: var(--text-sm);
+  font-size: 14px;
 }
 
 .miniBar {
@@ -139,7 +139,7 @@
   align-items: center;
   justify-content: space-between;
   min-width: 0;
-  padding: var(--space-3) var(--space-1);
+  padding: 10px 0;
   border-bottom: 1px solid var(--border);
   animation: riseIn var(--motion) var(--ease-out-expo) both;
   transition: transform 0.25s var(--ease-out-expo);
@@ -152,19 +152,20 @@
 .rowMain {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: var(--space-4);
   flex: 1;
   min-width: 0;
 }
 
 .name {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 15px;
 }
 
 .meta {
   color: var(--text3);
-  font-size: var(--text-sm);
+  font-size: 13px;
   margin-top: 2px;
 }
 
@@ -174,6 +175,7 @@
   font-weight: 700;
   direction: ltr;
   unicode-bidi: isolate;
+  font-size: 15px;
 }
 
 .amountSuffix {

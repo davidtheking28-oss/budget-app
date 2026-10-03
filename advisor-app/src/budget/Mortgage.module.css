@@ -118,7 +118,7 @@
 }
 
 .empty {
-  font-size: var(--text-sm);
+  font-size: 14px;
   color: var(--text3);
   padding: var(--space-5) 0;
   text-align: center;

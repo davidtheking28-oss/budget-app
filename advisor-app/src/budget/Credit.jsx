@@ -292,7 +292,7 @@ export default function Credit({ clientUserId, advisorId }) {
         />
       )}
       <div className={styles.section}>
-        <CollapsibleSection defaultOpen locked title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
+        <CollapsibleSection title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
         <AddForm label="הוסף הלוואה" open={editingLoanId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם ההלוואה" aria-label="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
@@ -348,7 +348,7 @@ export default function Credit({ clientUserId, advisorId }) {
       </CollapsibleSection>
       </div>
       <div className={styles.section}>
-        <CollapsibleSection defaultOpen locked title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
+        <CollapsibleSection title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         <PaymentsTimeline payments={payments} />
         <AddForm label="הוסף תשלומים" open={editingPaymentId != null} className={styles.form}>
@@ -398,7 +398,7 @@ export default function Credit({ clientUserId, advisorId }) {
 
       {(closedLoans.length > 0 || closedPayments.length > 0) && (
         <div className={styles.section}>
-          <CollapsibleSection title={<>היסטוריית מחזורים<span className={styles.countBadge}>{closedLoans.length + closedPayments.length}</span></>} defaultOpen={false}>
+          <CollapsibleSection title={<>היסטוריית מחזורים<span className={styles.countBadge}>{closedLoans.length + closedPayments.length}</span></>}>
             <div className={styles.grid}>
               {closedLoans.map(l => (
                 <div key={l.id} className={`${styles.row} ${styles.rowCard}`} style={{ opacity: 0.7 }}>
