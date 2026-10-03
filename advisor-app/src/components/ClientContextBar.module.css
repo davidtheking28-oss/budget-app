@@ -58,6 +58,7 @@
 
 .tagAddInput {
   width: 110px;
+  min-height: 24px;
   font-size: var(--text-xs);
   padding: 2px 8px;
   border-radius: var(--radius-sm);

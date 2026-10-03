@@ -221,7 +221,7 @@ h1, h2, h3 {
 
 @media (max-width: 860px) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-  select {
+  select:not([multiple]):not([size]) {
     min-height: 44px;
   }
 }

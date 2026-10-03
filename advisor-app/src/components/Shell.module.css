@@ -318,6 +318,12 @@
   }
 }
 
+@media (max-width: 860px) {
+  .accountTrigger {
+    min-height: 44px;
+  }
+}
+
 @media (max-width: 560px) {
   .accountEmail {
     display: none;
