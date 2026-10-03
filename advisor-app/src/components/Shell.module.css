@@ -305,9 +305,16 @@
     max-width: 110px;
   }
 
+  .shell .topbar, .shellTabs .topbar { position: relative; }
+
+  .accountMenu { position: static; }
+
   .accountPanel {
     inset-inline-start: auto;
-    inset-inline-end: 0;
+    inset-inline-end: var(--page-pad);
+    width: min(320px, calc(100% - var(--page-pad) * 2));
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
   }
 }
 

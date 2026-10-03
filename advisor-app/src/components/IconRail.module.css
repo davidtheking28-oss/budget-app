@@ -100,6 +100,11 @@
   display: none;
 }
 
+.railBtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 .railBtn:hover {
   background: var(--bg);
   color: var(--text2);
@@ -140,11 +145,19 @@
   .actions {
     flex-direction: row;
     align-items: center;
+    flex: 1 1 0;
     overflow-x: auto;
+    overflow-y: hidden;
+    padding-inline: 10px;
+    overscroll-behavior-x: contain;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(to right, transparent 0, #000 10px, #000 calc(100% - 10px), transparent 100%);
   }
 
   .actions::-webkit-scrollbar { display: none; }
+
+  .railBtn:focus-visible { outline-offset: -3px; }
 
   .divider {
     display: block;
@@ -168,5 +181,5 @@
     clip: rect(0, 0, 0, 0);
   }
 
-  .themeBtn { margin-top: 0; margin-inline-start: auto; }
+  .themeBtn { margin-top: 0; }
 }

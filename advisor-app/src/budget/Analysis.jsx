@@ -108,7 +108,7 @@ export default function Analysis({ clientUserId, year, month }) {
                 },
                 plugins: {
                   legend: { align: 'end', labels: { color: CT.text2, font: { family: CT.font }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8 } },
-                  tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+                  tooltip: { backgroundColor: CT.surface, titleColor: CT.text, bodyColor: CT.text2, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
                 }
               }}
             />

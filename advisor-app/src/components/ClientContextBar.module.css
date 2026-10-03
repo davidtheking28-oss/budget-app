@@ -47,6 +47,7 @@
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius-sm);
   padding: 2px 8px;
+  min-height: 24px;
   cursor: pointer;
   transition: color .18s ease, border-color .18s ease;
 }
@@ -82,6 +83,9 @@
 .contactItem svg { flex-shrink: 0; color: var(--text3); }
 
 .contactMissing {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text3);
@@ -185,4 +189,9 @@
 
 @media (max-width: 720px) {
   .modeOn, .modeOff { min-height: 44px; }
+}
+
+@media (max-width: 860px) {
+  .actionTile { min-height: 44px; }
+  .addTagBtn, .contactMissing { min-height: 44px; }
 }

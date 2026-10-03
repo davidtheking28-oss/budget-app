@@ -19,3 +19,7 @@
   background: var(--accent-dim);
   border-color: rgba(var(--accent-rgb), 0.5);
 }
+
+@media (max-width: 860px) {
+  .trigger { min-height: 44px; }
+}

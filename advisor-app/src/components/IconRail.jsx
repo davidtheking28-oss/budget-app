@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import Logo from './Logo.jsx';
 import styles from './IconRail.module.css';
 
@@ -34,6 +35,14 @@ export default function IconRail({ clientName, clientSince, onBack, homeActive, 
     }
   ].filter(Boolean);
 
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    if (!window.matchMedia('(max-width: 860px)').matches) return;
+    const el = navRef.current?.querySelector('[aria-current="page"]');
+    el?.scrollIntoView({ inline: 'center', block: 'nearest' });
+  }, [activeNav, homeActive]);
+
   return (
     <div className={styles.rail}>
       <div className={styles.head}>
@@ -43,7 +52,7 @@ export default function IconRail({ clientName, clientSince, onBack, homeActive, 
           {clientSince && <div className={styles.clientSince}>לקוח מאז {clientSince}</div>}
         </div>
       </div>
-      <nav className={styles.actions} aria-label="ניווט">
+      <nav ref={navRef} className={styles.actions} aria-label="ניווט">
         {globalActions.map(a => (
           <button
             key={a.key}

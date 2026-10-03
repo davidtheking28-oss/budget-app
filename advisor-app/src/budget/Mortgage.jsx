@@ -385,7 +385,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
                 },
                 plugins: {
                   legend: { display: false },
-                  tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+                  tooltip: { backgroundColor: CT.surface, titleColor: CT.text, bodyColor: CT.text2, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
                 }
               }} />
             </div>

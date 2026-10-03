@@ -160,7 +160,7 @@ export default function BudgetWizard({ data, save, year, month }) {
     },
     plugins: {
       legend: { position: 'bottom', labels: { color: CT.text2, font: { family: CT.font }, boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'circle' } },
-      tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+      tooltip: { backgroundColor: CT.surface, titleColor: CT.text, bodyColor: CT.text2, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
     }
   };
 

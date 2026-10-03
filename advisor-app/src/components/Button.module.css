@@ -42,3 +42,7 @@
 .ghost:active:not(:disabled) {
   transform: scale(0.96);
 }
+
+@media (max-width: 860px) {
+  .btn { min-height: 44px; }
+}

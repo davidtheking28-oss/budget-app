@@ -647,7 +647,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                 },
                 plugins: {
                   legend: { labels: { color: CT.text2, font: { family: CT.font } } },
-                  tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+                  tooltip: { backgroundColor: CT.surface, titleColor: CT.text, bodyColor: CT.text2, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
                 }
               }}
             />
@@ -708,7 +708,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                 },
                 plugins: {
                   legend: { labels: { color: CT.text2, font: { family: CT.font } } },
-                  tooltip: { backgroundColor: CT.surface, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
+                  tooltip: { backgroundColor: CT.surface, titleColor: CT.text, bodyColor: CT.text2, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
                 }
               }}
             />

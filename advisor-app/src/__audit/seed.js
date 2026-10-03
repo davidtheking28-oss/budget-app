@@ -54,6 +54,11 @@ const budgets = {
 
 const full = {
   user_id: CLIENT_A,
+  mortgage_scenario: { financier: 'בנק לדוגמה', propertyValue: 2000000, purchaseType: 'single', tracks: [
+    { id: 1, type: 'fixed_unlinked', principal: 600000, annualRate: 4.6, years: 25, anchor: '', margin: 0, rateFrequency: '', rateUpdateDate: '', purpose: 'purchase', amortMethod: 'spitzer' },
+    { id: 2, type: 'prime', principal: 400000, annualRate: 6, years: 20, anchor: 'prime', margin: -0.5, rateFrequency: '', rateUpdateDate: '', purpose: 'purchase', amortMethod: 'spitzer' },
+    { id: 3, type: 'variable_linked', principal: 300000, annualRate: 3.2, years: 30, anchor: '', margin: 0, rateFrequency: '60', rateUpdateDate: '', purpose: 'any', amortMethod: 'equal_principal' }
+  ] },
   // business mode lives in its own nested column in the client app; kept distinct from the
   // personal figures so the advisor's פרטי/עסקי toggle is visibly verifiable
   business: {

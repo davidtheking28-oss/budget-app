@@ -15,7 +15,7 @@
 .input {
   padding: 10px var(--space-3);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: 1px solid var(--control-border);
   background: var(--input-bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -268,4 +268,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 24px;
+}
+
+.consolCheckLabel input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
 }

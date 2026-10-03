@@ -101,7 +101,7 @@
 .input, .textarea {
   padding: 10px var(--space-3);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: 1px solid var(--control-border);
   background: var(--input-bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -330,7 +330,7 @@
   width: 18px;
   height: 18px;
   margin: 0;
-  border: 1.5px solid var(--border-strong);
+  border: 1.5px solid var(--control-border);
   border-radius: var(--radius-xs);
   background: var(--surface);
   cursor: pointer;
@@ -427,4 +427,13 @@
 
 .profileEdit {
   margin-top: var(--space-3);
+}
+
+:root[data-theme="dark"] .done {
+  opacity: 1;
+  color: var(--text2);
+}
+
+@media (max-width: 860px) {
+  .rowBody, .taskBody { min-height: 44px; }
 }

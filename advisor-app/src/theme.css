@@ -28,6 +28,7 @@
   --rail-w: 220px;
   --border: rgba(15, 35, 30, 0.09);
   --border-strong: rgba(15, 35, 30, 0.16);
+  --control-border: var(--border);
   --red: #b02631;
   --green: #046b4d;
   --red-hover: #cd2f3c;
@@ -116,6 +117,7 @@
   --text3: #829691;
   --border: rgba(232, 239, 236, 0.10);
   --border-strong: rgba(232, 239, 236, 0.20);
+  --control-border: rgba(232, 239, 236, 0.42);
   --hover: rgba(232, 239, 236, 0.05);
   --input-bg: #0f1614;
   --track: rgba(232, 239, 236, 0.12);
@@ -215,4 +217,11 @@ h1, h2, h3 {
 @keyframes riseIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 860px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select {
+    min-height: 44px;
+  }
 }

@@ -23,9 +23,14 @@
   font-family: inherit;
 }
 
+:root[data-theme="dark"] .whatIfSelect {
+  border-color: var(--control-border);
+}
+
 .whatIfSlider {
   flex: 1;
   min-width: 0;
+  min-height: 24px;
   accent-color: var(--accent);
 }
 
