@@ -15,7 +15,7 @@
   gap: var(--space-4);
   width: 100%;
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
-  margin: 0 auto 0 0;
+  margin: 0 auto;
   padding: var(--space-5) var(--page-pad);
 }
 
@@ -274,7 +274,7 @@
   padding: var(--space-5) var(--page-pad) var(--space-8);
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
   width: 100%;
-  margin: 0 auto 0 0;
+  margin: 0 auto;
   animation: tabIn var(--motion) var(--ease-out-expo) both;
 }
 
