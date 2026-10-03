@@ -29,8 +29,8 @@
 }
 
 .ghost {
-  background: var(--hover);
-  border: 1px solid var(--border-strong);
+  background: none;
+  border: 1px solid var(--border);
   color: var(--text2);
 }
 
