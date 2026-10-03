@@ -73,7 +73,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
   }, [profileDirty]);
   async function saveProfileFields() {
     const ok = await saveProfile({ name: nameDraft, phone: phoneDraft, background: backgroundDraft });
-    if (ok) setProfileDirty(false);
+    if (ok) { setProfileDirty(false); notify(); }
   }
   const [summaryDrafts, setSummaryDrafts] = useState({});
   const [taskTitle, setTaskTitle] = useState('');

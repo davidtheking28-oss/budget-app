@@ -82,7 +82,7 @@ export default function App() {
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const { theme, toggle: toggleTheme } = useTheme();
   const { nextMeeting, openTasks, household, refresh: refreshClientSummary } = useClientSummary(session?.user?.id, selectedClient?.id);
-  const { profile: clientProfile, addTag: addClientTag, removeTag: removeClientTag } = useClientProfile(session?.user?.id, selectedClient?.id);
+  const { profile: clientProfile, reload: reloadClientProfile, addTag: addClientTag, removeTag: removeClientTag } = useClientProfile(session?.user?.id, selectedClient?.id);
   const [hasMortgage, setHasMortgage] = useState(false);
 
   useEffect(() => {
@@ -240,7 +240,7 @@ export default function App() {
         {nav === 'credit' && <Credit clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
         {nav === 'mortgage' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Mortgage clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
-        {nav === 'crm' && <Crm action={crmAction} advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={refreshClientSummary} />}
+        {nav === 'crm' && <Crm action={crmAction} advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={() => { refreshClientSummary(); reloadClientProfile(); }} />}
         {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
       </Shell>
       </BudgetModeContext.Provider>

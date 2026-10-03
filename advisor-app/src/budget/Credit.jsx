@@ -66,6 +66,7 @@ export default function Credit({ clientUserId, advisorId }) {
 
   const [loanForm, setLoanForm] = useState({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' });
   const [editingLoanId, setEditingLoanId] = useState(null);
+  const [loanFormSignal, setLoanFormSignal] = useState(0);
   const [paymentForm, setPaymentForm] = useState({ name: '', total: '', current: '', amount: '' });
   const [editingPaymentId, setEditingPaymentId] = useState(null);
   const [spForm, setSpForm] = useState({ principal: '', rate: '', months: '' });
@@ -110,6 +111,7 @@ export default function Credit({ clientUserId, advisorId }) {
   function spitzerToLoan() {
     if (!spResult) return;
     setLoanForm({ name: 'הלוואה (משפיצר)', lender: '', monthly: String(Math.round(spResult.pmt * 100) / 100), remaining: String(spResult.P), original: String(spResult.P), rate: String(spResult.rate) });
+    setLoanFormSignal(n => n + 1);
   }
   function toggleConsol(id) { setConsolChecked(c => ({ ...c, [id]: !c[id] })); }
   function toggleConsolPayment(id) { setConsolPaymentsChecked(c => ({ ...c, [id]: !c[id] })); }
@@ -294,7 +296,7 @@ export default function Credit({ clientUserId, advisorId }) {
       <div className={styles.section}>
         <CollapsibleSection title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
-        <AddForm label="הוסף הלוואה" open={editingLoanId != null} className={styles.form}>
+        <AddForm label="הוסף הלוואה" open={editingLoanId != null} openSignal={loanFormSignal} className={styles.form}>
           <input className={styles.input} placeholder="שם ההלוואה" aria-label="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
           <input className={styles.input} placeholder="גורם מלווה" aria-label="גורם מלווה" value={loanForm.lender} onChange={e => setLoanForm({ ...loanForm, lender: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להלוואה" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} />

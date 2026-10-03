@@ -81,7 +81,7 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
   function onKeyDown(e) {
     if (e.key === 'ArrowDown') { e.preventDefault(); setActive(a => Math.min(a + 1, filtered.length - 1)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(a => Math.max(a - 1, 0)); }
-    else if (e.key === 'Enter' && filtered[active]) { select(filtered[active]); }
+    else if (e.key === 'Enter' && filtered[active]) { e.preventDefault(); select(filtered[active]); }
     else if (e.key === 'Tab') {
       const focusable = panelRef.current?.querySelectorAll('input, button');
       if (!focusable || !focusable.length) return;
