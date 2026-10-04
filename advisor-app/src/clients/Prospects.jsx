@@ -143,16 +143,16 @@ export default function Prospects({ advisorId, onConvert }) {
             </div>
           </AddForm>
 
-          <div ref={statusFiltersRef} className={styles.filters} role="group" aria-label="סינון לפי סטטוס">
-            {[{ key: 'open', label: 'פתוחים' }, ...STATUSES, { key: 'all', label: 'הכול' }].map(f => (
-              <button key={f.key} type="button" className={styles.filter + (filter === f.key ? ' ' + styles.filterOn : '')} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>{f.label}</button>
-            ))}
-          </div>
-
-          <div className={styles.filters} role="group" aria-label="סינון לפי חום">
-            {[{ key: 'all', label: 'כל הלידים' }, ...TEMPS].map(f => (
-              <button key={f.key} type="button" className={styles.filter + (tempFilter === f.key ? ' ' + styles.filterOn : '')} aria-pressed={tempFilter === f.key} onClick={() => setTempFilter(f.key)}>{f.key === 'all' ? f.label : 'ליד ' + f.label}</button>
-            ))}
+          <div className={styles.filterBar}>
+            <div ref={statusFiltersRef} className={styles.filters} role="group" aria-label="סינון לפי סטטוס">
+              {[{ key: 'open', label: 'פתוחים' }, ...STATUSES, { key: 'all', label: 'הכול' }].map(f => (
+                <button key={f.key} type="button" className={styles.filter + (filter === f.key ? ' ' + styles.filterOn : '')} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>{f.label}</button>
+              ))}
+            </div>
+            <select className={styles.tempSelect} aria-label="סינון לפי חום" value={tempFilter} onChange={e => setTempFilter(e.target.value)}>
+              <option value="all">כל הלידים</option>
+              {TEMPS.map(t => <option key={t.key} value={t.key}>ליד {t.label}</option>)}
+            </select>
           </div>
 
           {visible.length === 0 ? (
@@ -188,8 +188,10 @@ export default function Prospects({ advisorId, onConvert }) {
                   {p.status !== 'not_relevant' && (
                     <Button variant="ghost" className={styles.convertBtn + (CONVERT_STATUSES.includes(p.status) ? ' ' + styles.convertBtnOn : '')} onClick={() => onConvert(p)} aria-label={`פתח כלקוח · ${p.name}`}>פתח כלקוח</Button>
                   )}
-                  <EditButton title={`ערוך · ${p.name}`} data-edit-prospect={p.id} onClick={() => startEdit(p)} />
-                  <DeleteButton title={`מחק · ${p.name}`} onClick={() => deleteProspect(p.id)} />
+                  <span className={styles.icons}>
+                    <EditButton title={`ערוך · ${p.name}`} data-edit-prospect={p.id} onClick={() => startEdit(p)} />
+                    <DeleteButton title={`מחק · ${p.name}`} onClick={() => deleteProspect(p.id)} />
+                  </span>
                 </div>
               </div>
             );
