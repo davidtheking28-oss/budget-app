@@ -147,6 +147,30 @@
   white-space: nowrap;
 }
 
+.dated {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text3);
+  font-size: 13px;
+}
+
+.dateInput {
+  min-height: 32px;
+  padding: 2px 8px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.dateInput:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 .followDue {
   color: var(--red);
   font-weight: 700;
@@ -199,6 +223,7 @@
 @media (max-width: 860px) {
   .row { flex-direction: column; }
   .side { justify-content: flex-start; }
-  .status { min-height: 44px; }
+  .status,
+  .dateInput { min-height: 44px; }
   .filter { min-height: 44px; }
 }

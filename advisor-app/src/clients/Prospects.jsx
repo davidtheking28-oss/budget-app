@@ -15,7 +15,9 @@ import styles from './Prospects.module.css';
 const STATUSES = [
   { key: 'new', label: 'חדש', tone: 'info' },
   { key: 'contacted', label: 'נוצר קשר', tone: 'warn' },
-  { key: 'meeting', label: 'נקבעה פגישה', tone: 'good' },
+  { key: 'followup', label: 'פולואפ', tone: 'warn' },
+  { key: 'meeting', label: 'נקבע', tone: 'good' },
+  { key: 'closed', label: 'נסגר', tone: 'done' },
   { key: 'converted', label: 'הפך ללקוח', tone: 'done' },
   { key: 'not_relevant', label: 'לא רלוונטי', tone: 'muted' }
 ];
@@ -24,7 +26,8 @@ const TEMPS = [
   { key: 'warm', label: 'פושר', tone: 'warmTemp' },
   { key: 'cold', label: 'קר', tone: 'cold' }
 ];
-const OPEN_STATUSES = ['new', 'contacted', 'meeting'];
+const OPEN_STATUSES = ['new', 'contacted', 'followup', 'meeting'];
+const DATED_STATUSES = { followup: 'פולואפ', meeting: 'נקבע ל' };
 const SOURCES = ['המלצה', 'רשתות חברתיות', 'אתר', 'וואטסאפ', 'אחר'];
 const EMPTY = { temperature: 'warm', name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', follow_up_at: '' };
 
@@ -46,7 +49,7 @@ export default function Prospects({ advisorId }) {
   const open = prospects.filter(p => OPEN_STATUSES.includes(p.status));
   const dueNow = open.filter(p => p.follow_up_at && p.follow_up_at <= today).length;
   const thisMonth = prospects.filter(p => (p.contacted_at || '').startsWith(today.slice(0, 7))).length;
-  const converted = prospects.filter(p => p.status === 'converted').length;
+  const converted = prospects.filter(p => p.status === 'converted' || p.status === 'closed').length;
 
   const hot = open.filter(p => p.temperature === 'hot').length;
   const byStatus = filter === 'all' ? prospects : filter === 'open' ? open : prospects.filter(p => p.status === filter);
@@ -148,7 +151,12 @@ export default function Prospects({ advisorId }) {
                   {p.notes && <div className={styles.notes}>{p.notes}</div>}
                 </div>
                 <div className={styles.side}>
-                  {p.follow_up_at && <span className={styles.follow + (overdue ? ' ' + styles.followDue : '')}>לחזור: {formatDate(p.follow_up_at)}</span>}
+                  {DATED_STATUSES[p.status] ? (
+                    <label className={styles.dated + (overdue ? ' ' + styles.followDue : '')}>
+                      <span>{DATED_STATUSES[p.status]}</span>
+                      <input className={styles.dateInput} type="date" aria-label={`תאריך ${DATED_STATUSES[p.status]}`} value={p.follow_up_at || ''} onChange={e => updateProspect(p.id, { follow_up_at: e.target.value || null })} />
+                    </label>
+                  ) : p.follow_up_at && <span className={styles.follow + (overdue ? ' ' + styles.followDue : '')}>לחזור: {formatDate(p.follow_up_at)}</span>}
                   <select className={styles.status + ' ' + styles[statusInfo(p.status).tone]} aria-label="סטטוס" value={p.status} onChange={e => updateProspect(p.id, { status: e.target.value })}>
                     {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                   </select>
