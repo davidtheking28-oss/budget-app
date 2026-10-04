@@ -98,13 +98,22 @@ export default function BudgetWizard({ data, save, year, month }) {
     });
     return map;
   }, [monthTx]);
-  const variableActual = useMemo(() => {
+  const [actualEdits, setActualEdits] = useState({});
+  const variableActualBase = useMemo(() => {
     const map = {};
     monthTx.filter(t => t.type === 'expense' && !FIXED_CATS.includes(t.cat)).forEach(t => {
       map[t.cat] = (map[t.cat] || 0) + t.amount;
     });
     return map;
   }, [monthTx]);
+  const variableActual = useMemo(() => {
+    const map = { ...variableActualBase };
+    Object.entries(actualEdits).forEach(([name, v]) => {
+      const n = parseFloat(v);
+      if (Number.isFinite(n) && n >= (variableActualBase[name] || 0)) map[name] = n;
+    });
+    return map;
+  }, [variableActualBase, actualEdits]);
 
   const [incomes, setIncomes] = useState(() => {
     const existing = incomeSourcesFor(data?.settings, new Date().getFullYear(), new Date().getMonth());
@@ -184,6 +193,13 @@ export default function BudgetWizard({ data, save, year, month }) {
 
     if (!cleanIncomes.length) { toast('צריך לפחות מקור הכנסה אחד', 'error'); setStep(0); return; }
 
+    const today = new Date();
+    const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const adjustments = Object.entries(actualEdits)
+      .map(([cat, v]) => ({ cat, delta: (parseFloat(v) || 0) - (variableActualBase[cat] || 0) }))
+      .filter(a => a.delta > 0)
+      .map((a, i) => ({ id: 'adj' + Date.now() + '_' + i, type: 'expense', cat: a.cat, desc: 'התאמת ביצוע (אשף תקציב)', amount: Math.round(a.delta * 100) / 100, date: todayIso, recurring: false }));
+
     setSaving(true);
     const ok = await save(cur => {
       const nextBudgets = { ...(cur.budgets || {}) };
@@ -204,6 +220,7 @@ export default function BudgetWizard({ data, save, year, month }) {
         },
         fixed_expenses: cleanFixed,
         budgets: nextBudgets,
+        ...(adjustments.length ? { transactions: [...adjustments, ...(cur.transactions || [])] } : {}),
         goals: cleanGoals
       };
     });
@@ -219,7 +236,7 @@ export default function BudgetWizard({ data, save, year, month }) {
   ].filter(b => b.value > 0);
   const breakdownTotal = breakdown.reduce((s, b) => s + b.value, 0) || 1;
 
-  function rowList(list, setter, placeholder, suggestions, actualOf, compact = false, dayField = false) {
+  function rowList(list, setter, placeholder, suggestions, actualOf, compact = false, dayField = false, editableActual = false) {
     const dayBox = (r, i) => dayField && (
       <div className={styles.itemAmountBox}>
         <div className={styles.itemAmountBoxLabel}>יום בחודש</div>
@@ -254,7 +271,20 @@ export default function BudgetWizard({ data, save, year, month }) {
         {actualOf && (
           <div className={styles.itemActualBox}>
             <div className={styles.itemAmountBoxLabel}>ביצוע</div>
-            <div className={styles.itemActualValue}>{fmt(actualOf(r.name, r.amount))}</div>
+            {editableActual ? (
+              <input
+                className={styles.itemAmountInput}
+                type="number"
+                inputMode="decimal"
+                min={variableActualBase[r.name] || 0}
+                aria-label="ביצוע בפועל"
+                value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
+                placeholder="0"
+                onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
+              />
+            ) : (
+              <div className={styles.itemActualValue}>{fmt(actualOf(r.name, r.amount))}</div>
+            )}
           </div>
         )}
       </>
@@ -352,7 +382,7 @@ export default function BudgetWizard({ data, save, year, month }) {
         {step === 2 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>הוצאות משתנות</div>
-            {rowList(variable, setVariable, 'שם הקטגוריה', [], name => variableActual[name] || 0, true)}
+            {rowList(variable, setVariable, 'שם הקטגוריה', [], name => variableActual[name] || 0, true, false, true)}
           </div>
         )}
 
