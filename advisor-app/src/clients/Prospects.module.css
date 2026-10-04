@@ -3,6 +3,17 @@
   flex-direction: column;
 }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -239,6 +250,7 @@
   .side { justify-content: flex-start; }
   .status,
   .convertBtn,
+  .input,
   .dateInput { min-height: 44px; }
   .filter { min-height: 44px; }
 }

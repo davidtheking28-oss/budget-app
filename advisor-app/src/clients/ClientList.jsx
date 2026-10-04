@@ -222,6 +222,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
 
   return (
     <div>
+      <h1 className={styles.srOnly}>הלקוחות שלי</h1>
       <div inert={pipelineOpen ? '' : undefined}>
       {/* A brand-new advisor has nothing to count, and three zeroes are the first
           thing they would otherwise see. Let the empty state be the whole page —

@@ -1,8 +1,8 @@
 import styles from './EditButton.module.css';
 
-export default function EditButton({ onClick, title = 'ערוך' }) {
+export default function EditButton({ onClick, title = 'ערוך', ...rest }) {
   return (
-    <button type="button" className={styles.edit} onClick={onClick} title={title} aria-label={title}>
+    <button type="button" className={styles.edit} onClick={onClick} title={title} aria-label={title} {...rest}>
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M12 20h9" />
         <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />

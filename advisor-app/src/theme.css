@@ -28,7 +28,7 @@
   --rail-w: 220px;
   --border: rgba(15, 35, 30, 0.09);
   --border-strong: rgba(15, 35, 30, 0.16);
-  --control-border: var(--border);
+  --control-border: #6f817b;
   --red: #b02631;
   --green: #046b4d;
   --red-hover: #cd2f3c;

@@ -324,7 +324,7 @@ export default function Credit({ clientUserId, advisorId }) {
                       </div>
                       <div className={styles.rowActions}>
                         <div className={styles.amount}>{fmt(l.monthly || 0)}</div>
-                        <EditButton onClick={e => { e.stopPropagation(); startEditLoan(l); }} />
+                        <EditButton title={`ערוך · ${l.name || 'ההלוואה'}`} onClick={e => { e.stopPropagation(); startEditLoan(l); }} />
                         <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id, `${l.name || 'ההלוואה'} נמחקה`); }} />
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export default function Credit({ clientUserId, advisorId }) {
                     </div>
                     <div className={styles.rowActions}>
                       <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
-                      <EditButton onClick={e => { e.stopPropagation(); startEditPayment(p); }} />
+                      <EditButton title={`ערוך · ${p.name || 'התשלום'}`} onClick={e => { e.stopPropagation(); startEditPayment(p); }} />
                         <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'התשלום'} נמחק`); }} />
                     </div>
                   </div>

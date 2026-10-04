@@ -782,3 +782,18 @@
   padding: 4px 12px;
   font-size: 13px;
 }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .followLink { min-height: 44px; }
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useProspects } from './useProspects.js';
 import { formatDate, localISODate } from '../budget/monthUtils.js';
 import Hero from '../components/Hero.jsx';
@@ -42,6 +42,11 @@ export default function Prospects({ advisorId, onConvert }) {
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const nameRef = useRef(null);
+
+  useEffect(() => {
+    if (editingId != null) nameRef.current?.focus();
+  }, [editingId]);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="16px" />;
@@ -83,6 +88,7 @@ export default function Prospects({ advisorId, onConvert }) {
 
   return (
     <div className={styles.page}>
+      <h1 className={styles.srOnly}>מתעניינים</h1>
       <Hero
         label="מתעניינים פתוחים"
         value={String(open.length)}
@@ -97,7 +103,7 @@ export default function Prospects({ advisorId, onConvert }) {
       <CardGrid single>
         <Card title="מתעניינים">
           <AddForm label="הוסף מתעניין" open={editingId != null} className={styles.form}>
-            <input className={styles.input} placeholder="שם" aria-label="שם המתעניין" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <input ref={nameRef} className={styles.input} placeholder="שם" aria-label="שם המתעניין" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <input className={styles.input} placeholder="טלפון" aria-label="טלפון" dir="ltr" inputMode="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             <input className={styles.input} placeholder="אימייל" aria-label="אימייל" dir="ltr" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             <input className={styles.input} placeholder="מקור ההגעה" aria-label="מקור ההגעה" list="prospect-sources" value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} />
@@ -155,17 +161,18 @@ export default function Prospects({ advisorId, onConvert }) {
                   {DATED_STATUSES[p.status] ? (
                     <label className={styles.dated + (overdue ? ' ' + styles.followDue : '')}>
                       <span>{DATED_STATUSES[p.status]}</span>
-                      <input className={styles.dateInput} type="date" aria-label={`תאריך ${DATED_STATUSES[p.status]}`} value={p.follow_up_at || ''} onChange={e => updateProspect(p.id, { follow_up_at: e.target.value || null })} />
+                      <input className={styles.dateInput} type="date" aria-label={`תאריך ${DATED_STATUSES[p.status]} · ${p.name}`} value={p.follow_up_at || ''} onChange={e => updateProspect(p.id, { follow_up_at: e.target.value || null })} />
                     </label>
                   ) : p.follow_up_at && <span className={styles.follow + (overdue ? ' ' + styles.followDue : '')}>לחזור: {formatDate(p.follow_up_at)}</span>}
-                  <select className={styles.status + ' ' + styles[statusInfo(p.status).tone]} aria-label="סטטוס" value={p.status} onChange={e => updateProspect(p.id, { status: e.target.value })}>
+                  {overdue && <span className={styles.followDue}>{p.follow_up_at === today ? 'להיום' : 'באיחור'}</span>}
+                  <select className={styles.status + ' ' + styles[statusInfo(p.status).tone]} aria-label={`סטטוס · ${p.name}`} value={p.status} onChange={e => updateProspect(p.id, { status: e.target.value })}>
                     {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                   </select>
                   {p.status !== 'not_relevant' && (
-                    <Button variant="ghost" className={styles.convertBtn + (CONVERT_STATUSES.includes(p.status) ? ' ' + styles.convertBtnOn : '')} onClick={() => onConvert(p)}>פתח כלקוח</Button>
+                    <Button variant="ghost" className={styles.convertBtn + (CONVERT_STATUSES.includes(p.status) ? ' ' + styles.convertBtnOn : '')} onClick={() => onConvert(p)} aria-label={`פתח כלקוח · ${p.name}`}>פתח כלקוח</Button>
                   )}
-                  <EditButton onClick={() => startEdit(p)} />
-                  <DeleteButton onClick={() => deleteProspect(p.id)} />
+                  <EditButton title={`ערוך · ${p.name}`} onClick={() => startEdit(p)} />
+                  <DeleteButton title={`מחק · ${p.name}`} onClick={() => deleteProspect(p.id)} />
                 </div>
               </div>
             );

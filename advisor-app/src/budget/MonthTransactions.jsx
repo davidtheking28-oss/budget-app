@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CardGrid, Card, Row } from '../components/Rows.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -22,6 +22,17 @@ export default function MonthTransactions({ data, save, mode, year, month }) {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
+  const formRef = useRef(null);
+  const restoreId = useRef(null);
+
+  useEffect(() => {
+    if (editingId != null) {
+      formRef.current?.querySelector('select')?.focus();
+    } else if (restoreId.current != null) {
+      document.querySelector(`[data-edit-tx="${restoreId.current}"]`)?.focus();
+      restoreId.current = null;
+    }
+  }, [editingId]);
 
   const originals = new Map((data.transactions || []).map(t => [t.id, t]));
   const rows = filterMonthTx(getMonthTx(data.transactions, year, month), filter);
@@ -33,7 +44,7 @@ export default function MonthTransactions({ data, save, mode, year, month }) {
     setForm({ cat: t.cat || '', desc: t.desc || '', amount: String(t.amount ?? ''), date: (t.date || '').slice(0, 10) });
   }
 
-  function cancelEdit() { setEditingId(null); setForm(null); }
+  function cancelEdit() { restoreId.current = editingId; setEditingId(null); setForm(null); }
 
   async function submitEdit() {
     const { patch, error } = txPatchFromForm(form);
@@ -72,7 +83,7 @@ export default function MonthTransactions({ data, save, mode, year, month }) {
           const t = originals.get(row.id) || row;
           if (editingId === t.id && form) {
             return (
-              <div key={t.id} className={styles.editForm}>
+              <div key={t.id} ref={formRef} className={styles.editForm} onKeyDown={e => { if (e.key === 'Escape') cancelEdit(); }}>
                 <select className={styles.input} aria-label="קטגוריה" value={form.cat} onChange={e => setForm({ ...form, cat: e.target.value })}>
                   {catOptions(t).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -95,8 +106,8 @@ export default function MonthTransactions({ data, save, mode, year, month }) {
               amount={(isIncome ? '+' : '') + fmt(t.amount)}
               amountTone={isIncome ? 'pos' : undefined}
             >
-              <EditButton title="ערוך עסקה" onClick={() => startEdit(t.id)} />
-              <DeleteButton title="מחק עסקה" onClick={() => removeItem(save, 'transactions', t.id, 'העסקה נמחקה')} />
+              <EditButton title={`ערוך עסקה · ${t.desc || t.cat}`} data-edit-tx={t.id} onClick={() => startEdit(t.id)} />
+              <DeleteButton title={`מחק עסקה · ${t.desc || t.cat}`} onClick={() => removeItem(save, 'transactions', t.id, 'העסקה נמחקה')} />
             </Row>
           );
         })}
