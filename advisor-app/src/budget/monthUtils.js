@@ -29,13 +29,15 @@ export function formatDateTime(iso) {
   return dateTimeFmt.format(d);
 }
 
-function withInsuranceCategory(t) {
-  return t.type === 'expense' && t.cat === 'בריאות' && /^ביטוח/.test((t.desc || '').trim()) ? { ...t, cat: 'ביטוחים' } : t;
-}
+const isLegacyInsurance = t => t.type === 'expense' && t.cat === 'בריאות' && /^ביטוח/.test((t.desc || '').trim());
 
 export function getMonthTx(transactions, y, m) {
   const prefix = mk(y, m);
-  return (transactions || []).filter(t => t.date && t.date.startsWith(prefix)).map(withInsuranceCategory);
+  const inMonth = (transactions || []).filter(t => t.date && t.date.startsWith(prefix));
+  const hasStandingInsurance = inMonth.some(t => t.fx && t.type === 'expense' && t.cat === 'ביטוחים');
+  return inMonth
+    .filter(t => !(hasStandingInsurance && isLegacyInsurance(t)))
+    .map(t => (isLegacyInsurance(t) ? { ...t, cat: 'ביטוחים' } : t));
 }
 
 export function addMonths(y, m, delta) {

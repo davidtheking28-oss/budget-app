@@ -14,6 +14,12 @@ describe('getMonthTx', () => {
     expect(out.find(t => t.id === 2).cat).toBe('בריאות');
   });
 
+  it('drops the legacy health-insurance charge when the standing insurance expense exists', () => {
+    const withFx = [...tx, { id: 4, type: 'expense', cat: 'ביטוחים', desc: 'ביטוחים', amount: 117, date: '2026-10-01', fx: true }];
+    const out = getMonthTx(withFx, 2026, 9);
+    expect(out.map(t => t.id).sort()).toEqual([2, 4]);
+  });
+
   it('only returns the requested month', () => {
     expect(getMonthTx(tx, 2026, 9)).toHaveLength(2);
   });
