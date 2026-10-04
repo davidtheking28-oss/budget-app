@@ -244,7 +244,9 @@ export function makeDb(mode) {
     advisor_prospects: empty ? [] : [
       { id: 'pr1', advisor_id: ADVISOR, temperature: 'hot', name: 'רונית שלום', phone: '052-7654321', email: 'ronit.shalom@gmail.com', source: 'המלצה', notes: 'רוצה לסדר תקציב משפחתי אחרי שהגיעה להלוואה גדולה', contacted_at: d(Math.max(1, now.getDate() - 3)), follow_up_at: d(Math.max(1, now.getDate() - 1)), status: 'new', created_at: iso(3) },
       { id: 'pr2', advisor_id: ADVISOR, temperature: 'warm', name: 'אורי מזרחי', phone: '050-1112233', email: null, source: 'רשתות חברתיות', notes: 'שאל על ליווי לרכישת דירה', contacted_at: d(Math.max(1, now.getDate() - 9)), follow_up_at: d(Math.min(28, now.getDate() + 4)), status: 'contacted', created_at: iso(9) },
-      { id: 'pr3', advisor_id: ADVISOR, temperature: 'cold', name: 'דנה ברק', phone: null, email: 'dana.barak@gmail.com', source: 'אתר', notes: null, contacted_at: d(Math.max(1, now.getDate() - 20)), follow_up_at: null, status: 'converted', created_at: iso(20) }
+      { id: 'pr3', advisor_id: ADVISOR, temperature: 'cold', name: 'דנה ברק', phone: null, email: 'dana.barak@gmail.com', source: 'אתר', notes: null, contacted_at: d(Math.max(1, now.getDate() - 20)), follow_up_at: null, status: 'converted', created_at: iso(20) },
+      { id: 'pr4', advisor_id: ADVISOR, temperature: 'hot', name: 'יעל גולן', phone: '054-9988776', email: 'yael.golan@gmail.com', source: 'המלצה', notes: 'סגרה חבילת ליווי', contacted_at: d(Math.max(1, now.getDate() - 14)), follow_up_at: null, status: 'closed', created_at: iso(14) },
+      { id: 'pr5', advisor_id: ADVISOR, temperature: 'warm', name: 'תומר אדרי', phone: '053-4455667', email: 'tomer.adri@gmail.com', source: 'וואטסאפ', notes: null, contacted_at: d(Math.max(1, now.getDate() - 6)), follow_up_at: d(Math.max(1, now.getDate() - 4)), status: 'followup', created_at: iso(6) }
     ],
     households: empty ? [] : [
       { id: 'h1', owner_id: CLIENT_A, owner_email: 'yael.abramovich@gmail.com', member_id: 'partner-of-' + CLIENT_A, member_email: 'partner.abramovich@gmail.com', invite_code: 'USEDUP1', created_at: iso(80) }

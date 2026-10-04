@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+const U='http://localhost:5232/?client=11111111-1111-1111-1111-111111111111&nav=';
+const b=await chromium.launch();const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+await p.goto(U+'budget');const card=p.locator('section',{hasText:'עסקאות החודש'});await card.waitFor();
+await card.locator('button[aria-label="ערוך עסקה"]').first().click();
+await card.getByLabel('תיאור').fill('נערך בבדיקה');await card.getByRole('button',{name:'שמור'}).click();
+await card.locator('button[aria-label="מחק עסקה"]').last().click();
+await p.waitForTimeout(31000);
+await p.getByRole('button',{name:'יעדים'}).or(p.getByText('יעדים',{exact:true})).first().click();
+await p.waitForTimeout(800);
+await p.getByText('תקציב',{exact:true}).first().click();
+await card.waitFor();await p.waitForTimeout(1000);
+console.log('rows',await card.locator('button[aria-label="מחק עסקה"]').count(),'edited',(await card.innerText()).includes('נערך בבדיקה'),errs);
+await b.close();

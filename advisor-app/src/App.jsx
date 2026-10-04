@@ -74,6 +74,7 @@ export default function App() {
   const initial = readUrlState();
   const [selectedClient, setSelectedClient] = useState(initial.selectedClient);
   const [homeView, setHomeView] = useUrlParam('view', 'clients');
+  const [inviteDraft, setInviteDraft] = useState(null);
   const [nav, setNav] = useState(initial.nav);
   const [crmAction, setCrmAction] = useState(null);
   const [budgetMode, setBudgetMode] = useState(initial.budgetMode);
@@ -171,7 +172,9 @@ export default function App() {
           onHomeClients={() => setHomeView('clients')}
           homeLinks={[{ key: 'prospects', label: 'מתעניינים', active: homeView === 'prospects', onClick: () => setHomeView('prospects'), icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 3-5.8 6.5-5.8s6.5 2.2 6.5 5.8" /><path d="M19 8v6M16 11h6" /></svg> }]}
         >
-          {homeView === 'prospects' ? <Prospects advisorId={session.user.id} /> : <ClientList advisorId={session.user.id} onSelect={switchClient} />}
+          {homeView === 'prospects'
+            ? <Prospects advisorId={session.user.id} onConvert={p => { setInviteDraft({ prospectId: p.id, email: p.email || '' }); setHomeView('clients'); }} />
+            : <ClientList advisorId={session.user.id} onSelect={switchClient} inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} onOpenProspects={() => setHomeView('prospects')} />}
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />

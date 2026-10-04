@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useClientBudget } from './useClientBudget.js';
+import { useContext, useState } from 'react';
+import { useClientBudget, BudgetModeContext } from './useClientBudget.js';
+import MonthTransactions from './MonthTransactions.jsx';
 import { effectiveLimit, incomeSourcesFor, monthSummary } from './budgetMath.js';
 import Skeleton from '../components/Skeleton.jsx';
 import Hero from '../components/Hero.jsx';
@@ -13,6 +14,7 @@ import styles from './Budget.module.css';
 
 export default function Budget({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
+  const mode = useContext(BudgetModeContext);
   const [wizardOpen, setWizardOpen] = useState(false);
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -70,6 +72,8 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
           </Card>
         </CardGrid>
       )}
+
+      <MonthTransactions data={data} save={save} mode={mode} year={year} month={month} />
 
       {wizardOpen
         ? <BudgetWizard data={data} save={save} year={year} month={month} />

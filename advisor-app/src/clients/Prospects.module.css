@@ -194,6 +194,20 @@
   outline-offset: 1px;
 }
 
+.convertBtn {
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.convertBtnOn,
+.convertBtnOn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
 .temp {
   margin-inline-start: 8px;
   padding: 1px 8px;
@@ -224,6 +238,7 @@
   .row { flex-direction: column; }
   .side { justify-content: flex-start; }
   .status,
+  .convertBtn,
   .dateInput { min-height: 44px; }
   .filter { min-height: 44px; }
 }

@@ -27,6 +27,7 @@ const TEMPS = [
   { key: 'cold', label: 'קר', tone: 'cold' }
 ];
 const OPEN_STATUSES = ['new', 'contacted', 'followup', 'meeting'];
+const CONVERT_STATUSES = ['closed', 'converted'];
 const DATED_STATUSES = { followup: 'פולואפ', meeting: 'נקבע ל' };
 const SOURCES = ['המלצה', 'רשתות חברתיות', 'אתר', 'וואטסאפ', 'אחר'];
 const EMPTY = { temperature: 'warm', name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', follow_up_at: '' };
@@ -34,7 +35,7 @@ const EMPTY = { temperature: 'warm', name: '', phone: '', email: '', source: '',
 const tempInfo = key => TEMPS.find(t => t.key === key) || TEMPS[1];
 const statusInfo = key => STATUSES.find(s => s.key === key) || STATUSES[0];
 
-export default function Prospects({ advisorId }) {
+export default function Prospects({ advisorId, onConvert }) {
   const { prospects, loading, error, reload, addProspect, updateProspect, deleteProspect } = useProspects(advisorId);
   const [filter, setFilter] = useUrlParam('pf', 'open');
   const [tempFilter, setTempFilter] = useUrlParam('pt', 'all');
@@ -160,6 +161,9 @@ export default function Prospects({ advisorId }) {
                   <select className={styles.status + ' ' + styles[statusInfo(p.status).tone]} aria-label="סטטוס" value={p.status} onChange={e => updateProspect(p.id, { status: e.target.value })}>
                     {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                   </select>
+                  {p.status !== 'not_relevant' && (
+                    <Button variant="ghost" className={styles.convertBtn + (CONVERT_STATUSES.includes(p.status) ? ' ' + styles.convertBtnOn : '')} onClick={() => onConvert(p)}>פתח כלקוח</Button>
+                  )}
                   <EditButton onClick={() => startEdit(p)} />
                   <DeleteButton onClick={() => deleteProspect(p.id)} />
                 </div>

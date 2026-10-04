@@ -1,0 +1,81 @@
+.filters {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.filter {
+  padding: 6px 14px;
+  min-height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--control-border);
+  background: transparent;
+  color: var(--text2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--motion) var(--ease-out-expo), background var(--motion) var(--ease-out-expo);
+}
+
+.filter:hover { background: var(--accent-dim); }
+
+.active,
+.active:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.empty {
+  padding: var(--space-4) 0 var(--space-2);
+  color: var(--text3);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.tag {
+  margin-inline-start: var(--space-2);
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text2);
+  font-size: 12px;
+}
+
+.editForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+
+.input {
+  flex: 1;
+  min-width: 140px;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--control-border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  outline: none;
+}
+
+.input:focus-visible {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-basis: 100%;
+}
+
+@media (max-width: 860px) {
+  .input { font-size: 16px; min-width: 100%; }
+  .filter { min-height: 44px; flex: 1; }
+}

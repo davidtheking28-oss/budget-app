@@ -3,9 +3,11 @@ import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
 import { usePendingInvites } from './usePendingInvites.js';
 import { usePipeline } from './usePipeline.js';
+import { useProspects } from './useProspects.js';
+import { Card, Row } from '../components/Rows.jsx';
 import PipelineModal from './PipelineModal.jsx';
 import { isStale, relativeTime } from './useClientFreshness.js';
-import { formatDateTime } from '../budget/monthUtils.js';
+import { formatDate, formatDateTime, localISODate } from '../budget/monthUtils.js';
 import { useCountUp } from '../useCountUp.js';
 import { useUrlParam } from '../useUrlParam.js';
 import Skeleton from '../components/Skeleton.jsx';
@@ -112,10 +114,22 @@ const INVITE_ERROR_MESSAGES = {
   already_invited: 'כבר קיימת הזמנה פתוחה לכתובת הזו'
 };
 
-export default function ClientList({ advisorId, onSelect }) {
+const OPEN_PROSPECT_STATUSES = ['new', 'contacted', 'followup', 'meeting'];
+const TEMP_LABELS = { hot: 'חם', warm: 'פושר', cold: 'קר' };
+
+function overdueText(followUpAt, today) {
+  const days = Math.round((Date.parse(today) - Date.parse(followUpAt)) / 86400000);
+  if (days <= 0) return 'להיום';
+  return days === 1 ? 'באיחור של יום' : `באיחור של ${days} ימים`;
+}
+
+export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUsed, onOpenProspects }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
   const { invites: pendingInvites, reload: reloadInvites } = usePendingInvites(advisorId);
   const { leads, loading: leadsLoading, addLead, setStage: setLeadStage, deleteLead } = usePipeline(advisorId);
+  const { prospects, loading: prospectsLoading, error: prospectsError, updateProspect } = useProspects(advisorId);
+  const [linkedProspectId, setLinkedProspectId] = useState(null);
+  const draftHandled = useRef(null);
   const [pipelineOpen, setPipelineOpen] = useState(false);
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
@@ -127,7 +141,17 @@ export default function ClientList({ advisorId, onSelect }) {
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
   const [addOpen, setAddOpen] = useState(false);
-  useEffect(() => { if (addOpen) emailInputRef.current?.focus(); }, [addOpen]);
+  useEffect(() => { if (addOpen) emailInputRef.current?.focus(); }, [addOpen, loading]);
+
+  useEffect(() => {
+    if (!inviteDraft || draftHandled.current === inviteDraft) return;
+    draftHandled.current = inviteDraft;
+    setAddOpen(true);
+    setEmail(inviteDraft.email);
+    setLinkedProspectId(inviteDraft.prospectId);
+    if (!inviteDraft.email) toast('לפרט אימייל כדי להזמין את הלקוח', 'info');
+    onDraftUsed();
+  }, [inviteDraft, onDraftUsed]);
 
   async function claimCode() {
     const trimmed = code.trim().toUpperCase();
@@ -156,6 +180,7 @@ export default function ClientList({ advisorId, onSelect }) {
     toast('ההזמנה נשלחה', 'success');
     reloadInvites();
     setEmail('');
+    if (linkedProspectId != null) { updateProspect(linkedProspectId, { status: 'converted' }); setLinkedProspectId(null); }
   }
 
   async function removeInvite(id) {
@@ -176,7 +201,7 @@ export default function ClientList({ advisorId, onSelect }) {
 
   if (error) return <ErrorState onRetry={reload} />;
 
-  if (loading) {
+  if (loading || (prospectsLoading && !prospectsError)) {
     return (
       <div>
         <Skeleton height="64px" radius="14px" style={{ marginBottom: 36 }} />
@@ -190,6 +215,10 @@ export default function ClientList({ advisorId, onSelect }) {
   const overageCount = clients.filter(c => c.hasOverage).length;
   const overageAmountTotal = clients.reduce((s, c) => s + (c.overageAmount || 0), 0);
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
+  const todayISO = localISODate();
+  const dueProspects = prospects
+    .filter(p => OPEN_PROSPECT_STATUSES.includes(p.status) && p.follow_up_at && p.follow_up_at <= todayISO)
+    .sort((a, b) => a.follow_up_at.localeCompare(b.follow_up_at));
 
   return (
     <div>
@@ -239,6 +268,26 @@ export default function ClientList({ advisorId, onSelect }) {
       )}
 
       <div inert={pipelineOpen ? '' : undefined}>
+      {dueProspects.length > 0 && (
+        <div className={styles.followCard}>
+          <Card title="פולואפים להיום">
+            {dueProspects.map(p => (
+              <div key={p.id} className={styles.followRow} onClick={onOpenProspects}>
+                <Row
+                  name={<>{p.name}<span className={styles.followTemp + ' ' + styles[p.temperature || 'warm']}>{TEMP_LABELS[p.temperature] || TEMP_LABELS.warm}</span></>}
+                  sub={[p.source, p.contacted_at && `פנה ב-${formatDate(p.contacted_at)}`].filter(Boolean).join(' · ')}
+                >
+                  <div className={styles.followSide}>
+                    {p.phone && <a className={styles.followPhone} href={`tel:${p.phone}`} dir="ltr" onClick={e => e.stopPropagation()}>{p.phone}</a>}
+                    <span className={styles.followLate}>{overdueText(p.follow_up_at, todayISO)}</span>
+                  </div>
+                </Row>
+              </div>
+            ))}
+            <Button variant="ghost" className={styles.followLink} onClick={onOpenProspects}>לדף המתעניינים</Button>
+          </Card>
+        </div>
+      )}
       <div className={styles.sectionHead}>
         <div className={styles.sectionTitleGroup}>
           <h2 className={styles.sectionTitle}>הלקוחות שלי {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
