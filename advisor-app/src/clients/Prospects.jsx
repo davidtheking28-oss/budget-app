@@ -121,7 +121,7 @@ export default function Prospects({ advisorId, onConvert }) {
 
       <CardGrid single>
         <Card title="מתעניינים">
-          <AddForm label="הוסף מתעניין" open={editingId != null} closeSignal={closeSignal} className={styles.form}>
+          <AddForm label="הוסף מתעניין" open={editingId != null} closeSignal={closeSignal} onEscape={reset} className={styles.form}>
             <input ref={nameRef} className={styles.input} placeholder="שם" aria-label="שם המתעניין" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <input className={styles.input} placeholder="טלפון" aria-label="טלפון" dir="ltr" inputMode="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             <input className={styles.input} placeholder="אימייל" aria-label="אימייל" dir="ltr" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
