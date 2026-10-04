@@ -91,17 +91,19 @@ export default function BudgetWizard({ data, save, year, month }) {
     if (posted) return posted;
     return parseFloat(plannedAmount) || 0;
   };
+  const isInsuranceTx = t => t.cat === 'בריאות' && /^ביטוח/.test((t.desc || '').trim());
   const fixedActual = useMemo(() => {
     const map = {};
-    monthTx.filter(t => t.type === 'expense' && FIXED_CATS.includes(t.cat)).forEach(t => {
-      map[t.cat] = (map[t.cat] || 0) + t.amount;
+    monthTx.filter(t => t.type === 'expense' && (FIXED_CATS.includes(t.cat) || isInsuranceTx(t))).forEach(t => {
+      const cat = isInsuranceTx(t) ? 'ביטוחים' : t.cat;
+      map[cat] = (map[cat] || 0) + t.amount;
     });
     return map;
   }, [monthTx]);
   const [actualEdits, setActualEdits] = useState({});
   const variableActualBase = useMemo(() => {
     const map = {};
-    monthTx.filter(t => t.type === 'expense' && !FIXED_CATS.includes(t.cat)).forEach(t => {
+    monthTx.filter(t => t.type === 'expense' && !FIXED_CATS.includes(t.cat) && !isInsuranceTx(t)).forEach(t => {
       map[t.cat] = (map[t.cat] || 0) + t.amount;
     });
     return map;
