@@ -6,6 +6,7 @@ import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+import EditButton from '../components/EditButton.jsx';
 import { toast } from '../toast.js';
 import { addItem, updateItem, removeItem } from './itemHelpers.js';
 import PaymentsTimeline from './PaymentsTimeline.jsx';
@@ -323,6 +324,7 @@ export default function Credit({ clientUserId, advisorId }) {
                       </div>
                       <div className={styles.rowActions}>
                         <div className={styles.amount}>{fmt(l.monthly || 0)}</div>
+                        <EditButton onClick={e => { e.stopPropagation(); startEditLoan(l); }} />
                         <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id, `${l.name || 'ההלוואה'} נמחקה`); }} />
                       </div>
                     </div>
@@ -379,7 +381,8 @@ export default function Credit({ clientUserId, advisorId }) {
                     </div>
                     <div className={styles.rowActions}>
                       <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
-                      <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'התשלום'} נמחק`); }} />
+                      <EditButton onClick={e => { e.stopPropagation(); startEditPayment(p); }} />
+                        <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'התשלום'} נמחק`); }} />
                     </div>
                   </div>
                   {showBar && (
