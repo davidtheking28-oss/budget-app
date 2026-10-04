@@ -273,13 +273,14 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
         <div className={styles.followCard}>
           <Card title="פולואפים להיום">
             {dueProspects.map(p => (
-              <div key={p.id} className={styles.followRow} onClick={onOpenProspects}>
+              <div key={p.id} className={styles.followRow}>
+                <button type="button" className={styles.followRowBtn} onClick={onOpenProspects} aria-label={`${p.name} - פתח בדף המתעניינים`} />
                 <Row
                   name={<>{p.name}<span className={styles.followTemp + ' ' + styles[p.temperature || 'warm']}>{TEMP_LABELS[p.temperature] || TEMP_LABELS.warm}</span></>}
                   sub={[p.source, p.contacted_at && `פנה ב-${formatDate(p.contacted_at)}`].filter(Boolean).join(' · ')}
                 >
                   <div className={styles.followSide}>
-                    {p.phone && <a className={styles.followPhone} href={`tel:${p.phone}`} dir="ltr" onClick={e => e.stopPropagation()}>{p.phone}</a>}
+                    {p.phone && <a className={styles.followPhone} href={`tel:${p.phone}`} dir="ltr">{p.phone}</a>}
                     <span className={styles.followLate}>{overdueText(p.follow_up_at, todayISO)}</span>
                   </div>
                 </Row>

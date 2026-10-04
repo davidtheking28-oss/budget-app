@@ -272,7 +272,13 @@
 }
 
 .consolCheckLabel input {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  flex-shrink: 0;
   accent-color: var(--accent);
+}
+
+@media (max-width: 860px) {
+  .consolCheckLabel { min-height: 44px; }
 }

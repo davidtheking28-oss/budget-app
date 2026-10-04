@@ -43,9 +43,16 @@ export default function Prospects({ advisorId, onConvert }) {
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
   const nameRef = useRef(null);
+  const statusFiltersRef = useRef(null);
+  const restoreId = useRef(null);
 
   useEffect(() => {
-    if (editingId != null) nameRef.current?.focus();
+    if (editingId != null) {
+      nameRef.current?.focus();
+    } else if (restoreId.current != null) {
+      document.querySelector(`[data-edit-prospect="${restoreId.current}"]`)?.focus();
+      restoreId.current = null;
+    }
   }, [editingId]);
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -66,7 +73,17 @@ export default function Prospects({ advisorId, onConvert }) {
     setForm({ temperature: p.temperature || 'warm', name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', follow_up_at: p.follow_up_at || '' });
   }
 
-  function reset() { setEditingId(null); setForm(EMPTY); }
+  function reset() {
+    restoreId.current = editingId;
+    setEditingId(null);
+    setForm(EMPTY);
+  }
+
+  async function changeStatus(id, status) {
+    const stillShown = filter === 'all' || (filter === 'open' ? OPEN_STATUSES.includes(status) : status === filter);
+    await updateProspect(id, { status });
+    if (!stillShown) statusFiltersRef.current?.querySelector('[aria-pressed="true"]')?.focus();
+  }
 
   async function submit() {
     if (!form.name.trim()) return;
@@ -126,7 +143,7 @@ export default function Prospects({ advisorId, onConvert }) {
             </div>
           </AddForm>
 
-          <div className={styles.filters} role="group" aria-label="סינון לפי סטטוס">
+          <div ref={statusFiltersRef} className={styles.filters} role="group" aria-label="סינון לפי סטטוס">
             {[{ key: 'open', label: 'פתוחים' }, ...STATUSES, { key: 'all', label: 'הכול' }].map(f => (
               <button key={f.key} type="button" className={styles.filter + (filter === f.key ? ' ' + styles.filterOn : '')} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>{f.label}</button>
             ))}
@@ -165,13 +182,13 @@ export default function Prospects({ advisorId, onConvert }) {
                     </label>
                   ) : p.follow_up_at && <span className={styles.follow + (overdue ? ' ' + styles.followDue : '')}>לחזור: {formatDate(p.follow_up_at)}</span>}
                   {overdue && <span className={styles.followDue}>{p.follow_up_at === today ? 'להיום' : 'באיחור'}</span>}
-                  <select className={styles.status + ' ' + styles[statusInfo(p.status).tone]} aria-label={`סטטוס · ${p.name}`} value={p.status} onChange={e => updateProspect(p.id, { status: e.target.value })}>
+                  <select className={styles.status + ' ' + styles[statusInfo(p.status).tone]} aria-label={`סטטוס · ${p.name}`} value={p.status} onChange={e => changeStatus(p.id, e.target.value)}>
                     {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                   </select>
                   {p.status !== 'not_relevant' && (
                     <Button variant="ghost" className={styles.convertBtn + (CONVERT_STATUSES.includes(p.status) ? ' ' + styles.convertBtnOn : '')} onClick={() => onConvert(p)} aria-label={`פתח כלקוח · ${p.name}`}>פתח כלקוח</Button>
                   )}
-                  <EditButton title={`ערוך · ${p.name}`} onClick={() => startEdit(p)} />
+                  <EditButton title={`ערוך · ${p.name}`} data-edit-prospect={p.id} onClick={() => startEdit(p)} />
                   <DeleteButton title={`מחק · ${p.name}`} onClick={() => deleteProspect(p.id)} />
                 </div>
               </div>
