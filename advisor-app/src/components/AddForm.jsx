@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from './AddForm.module.css';
 
-export default function AddForm({ label, open: forceOpen = false, openSignal = 0, className, children }) {
+export default function AddForm({ label, open: forceOpen = false, openSignal = 0, closeSignal = 0, className, children }) {
   const [open, setOpen] = useState(false);
   const [focusOnOpen, setFocusOnOpen] = useState(false);
   const formRef = useRef(null);
+
+  useEffect(() => {
+    if (closeSignal) setOpen(false);
+  }, [closeSignal]);
 
   useEffect(() => {
     if (openSignal) { setOpen(true); setFocusOnOpen(true); }

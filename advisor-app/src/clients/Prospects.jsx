@@ -42,6 +42,7 @@ export default function Prospects({ advisorId, onConvert }) {
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [closeSignal, setCloseSignal] = useState(0);
   const nameRef = useRef(null);
   const statusFiltersRef = useRef(null);
   const restoreId = useRef(null);
@@ -77,6 +78,7 @@ export default function Prospects({ advisorId, onConvert }) {
     restoreId.current = editingId;
     setEditingId(null);
     setForm(EMPTY);
+    setCloseSignal(n => n + 1);
   }
 
   async function changeStatus(id, status) {
@@ -119,7 +121,7 @@ export default function Prospects({ advisorId, onConvert }) {
 
       <CardGrid single>
         <Card title="מתעניינים">
-          <AddForm label="הוסף מתעניין" open={editingId != null} className={styles.form}>
+          <AddForm label="הוסף מתעניין" open={editingId != null} closeSignal={closeSignal} className={styles.form}>
             <input ref={nameRef} className={styles.input} placeholder="שם" aria-label="שם המתעניין" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <input className={styles.input} placeholder="טלפון" aria-label="טלפון" dir="ltr" inputMode="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             <input className={styles.input} placeholder="אימייל" aria-label="אימייל" dir="ltr" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
@@ -139,7 +141,7 @@ export default function Prospects({ advisorId, onConvert }) {
             <textarea className={styles.textarea} placeholder="הערות ומה ביקש" aria-label="הערות ומה ביקש" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
             <div className={styles.actions}>
               <Button onClick={submit} disabled={saving || !form.name.trim()}>{editingId != null ? 'שמור' : 'הוסף מתעניין'}</Button>
-              {editingId != null && <Button variant="ghost" onClick={reset}>ביטול</Button>}
+              <Button variant="ghost" onClick={reset}>ביטול</Button>
             </div>
           </AddForm>
 
