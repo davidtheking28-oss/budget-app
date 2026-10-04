@@ -241,6 +241,11 @@ export function makeDb(mode) {
       { id: 'p3', advisor_id: ADVISOR, name: 'עסק — סטודיו נטע', case_owner: 'דוד', savings_goal: 'תזרים עסקי', last_meeting: d(Math.max(1, now.getDate() - 5)), next_meeting: d(Math.min(28, now.getDate() + 1)), stage: 'intro_meeting', created_at: iso(10) },
       { id: 'p4', advisor_id: ADVISOR, name: 'משפחת אברהמי', case_owner: 'דוד', savings_goal: 'חריגת אשראי', last_meeting: d(Math.max(1, now.getDate() - 20)), next_meeting: d(Math.max(1, now.getDate() - 1)), stage: 'needs_attention', created_at: iso(70) }
     ],
+    advisor_prospects: empty ? [] : [
+      { id: 'pr1', advisor_id: ADVISOR, name: 'רונית שלום', phone: '052-7654321', email: 'ronit.shalom@gmail.com', source: 'המלצה', notes: 'רוצה לסדר תקציב משפחתי אחרי שהגיעה להלוואה גדולה', contacted_at: d(Math.max(1, now.getDate() - 3)), follow_up_at: d(Math.max(1, now.getDate() - 1)), status: 'new', created_at: iso(3) },
+      { id: 'pr2', advisor_id: ADVISOR, name: 'אורי מזרחי', phone: '050-1112233', email: null, source: 'רשתות חברתיות', notes: 'שאל על ליווי לרכישת דירה', contacted_at: d(Math.max(1, now.getDate() - 9)), follow_up_at: d(Math.min(28, now.getDate() + 4)), status: 'contacted', created_at: iso(9) },
+      { id: 'pr3', advisor_id: ADVISOR, name: 'דנה ברק', phone: null, email: 'dana.barak@gmail.com', source: 'אתר', notes: null, contacted_at: d(Math.max(1, now.getDate() - 20)), follow_up_at: null, status: 'converted', created_at: iso(20) }
+    ],
     households: empty ? [] : [
       { id: 'h1', owner_id: CLIENT_A, owner_email: 'yael.abramovich@gmail.com', member_id: 'partner-of-' + CLIENT_A, member_email: 'partner.abramovich@gmail.com', invite_code: 'USEDUP1', created_at: iso(80) }
     ]

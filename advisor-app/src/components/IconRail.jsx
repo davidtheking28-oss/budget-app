@@ -4,7 +4,7 @@ import styles from './IconRail.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
-export default function IconRail({ clientName, clientSince, onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, footer }) {
+export default function IconRail({ homeLinks, clientName, clientSince, onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, footer }) {
   const globalActions = [
     onBack && {
       key: 'clients',
@@ -12,6 +12,7 @@ export default function IconRail({ clientName, clientSince, onBack, homeActive, 
       onClick: onBack,
       icon: <svg {...svgProps}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 3-5.8 6.5-5.8s6.5 2.2 6.5 5.8" /><path d="M17 8.5a3 3 0 0 0 0 5" /><path d="M18.5 20c0-2.6-.9-4.4-2.3-5.4" /></svg>
     },
+    ...(homeLinks || []),
     onSearch && {
       key: 'search',
       label: 'חיפוש לקוח',
@@ -57,11 +58,11 @@ export default function IconRail({ clientName, clientSince, onBack, homeActive, 
           <button
             key={a.key}
             type="button"
-            className={styles.railBtn + (a.key === 'clients' && homeActive ? ' ' + styles.railBtnActive : '')}
+            className={styles.railBtn + ((a.key === 'clients' && homeActive) || a.active ? ' ' + styles.railBtnActive : '')}
             onClick={a.onClick}
             aria-label={a.label}
             title={a.label}
-            aria-current={a.key === 'clients' && homeActive ? 'page' : undefined}
+            aria-current={(a.key === 'clients' && homeActive) || a.active ? 'page' : undefined}
           >
             {a.icon}
             <span className={styles.label}>{a.label}</span>

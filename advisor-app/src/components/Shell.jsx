@@ -140,7 +140,7 @@ function AccountMenu({ email, advisorId, up }) {
   );
 }
 
-export default function Shell({ title, clientName, clientSince, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+export default function Shell({ homeLinks, onHomeClients, title, clientName, clientSince, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   const desktop = useDesktop();
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -149,7 +149,7 @@ export default function Shell({ title, clientName, clientSince, onBack, nav, act
   if (!nav) {
     return (
       <div className={styles.shell} dir="rtl" inert={shellInert ? '' : undefined}>
-        <IconRail onBack={() => {}} homeActive onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
+        <IconRail homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
         <div className={styles.topbarBleed}>
           <div className={styles.topbar}>
             <div className={styles.logo}>תקציב אישי · יועץ</div>

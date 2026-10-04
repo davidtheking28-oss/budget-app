@@ -23,6 +23,8 @@ import { useClientSummary } from './crm/useClientSummary.js';
 import { useClientProfile } from './crm/useClientProfile.js';
 import { BudgetModeContext, MODES } from './budget/useClientBudget.js';
 import { useTheme } from './useTheme.js';
+import { useUrlParam } from './useUrlParam.js';
+import Prospects from './clients/Prospects.jsx';
 
 const Dashboard = lazy(() => import('./budget/Dashboard.jsx'));
 const Analysis = lazy(() => import('./budget/Analysis.jsx'));
@@ -71,6 +73,7 @@ export default function App() {
   const { session, loading, isRecovery, clearRecovery } = useSession();
   const initial = readUrlState();
   const [selectedClient, setSelectedClient] = useState(initial.selectedClient);
+  const [homeView, setHomeView] = useUrlParam('view', 'clients');
   const [nav, setNav] = useState(initial.nav);
   const [crmAction, setCrmAction] = useState(null);
   const [budgetMode, setBudgetMode] = useState(initial.budgetMode);
@@ -158,8 +161,17 @@ export default function App() {
   if (!selectedClient) {
     return (
       <>
-        <Shell email={session.user.email} advisorId={session.user.id} onSearch={() => setSearchOpen(true)} theme={theme} onToggleTheme={toggleTheme} inert={searchOpen}>
-          <ClientList advisorId={session.user.id} onSelect={switchClient} />
+        <Shell
+          email={session.user.email}
+          advisorId={session.user.id}
+          onSearch={() => setSearchOpen(true)}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          inert={searchOpen}
+          onHomeClients={() => setHomeView('clients')}
+          homeLinks={[{ key: 'prospects', label: 'מתעניינים', active: homeView === 'prospects', onClick: () => setHomeView('prospects'), icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 3-5.8 6.5-5.8s6.5 2.2 6.5 5.8" /><path d="M19 8v6M16 11h6" /></svg> }]}
+        >
+          {homeView === 'prospects' ? <Prospects advisorId={session.user.id} /> : <ClientList advisorId={session.user.id} onSelect={switchClient} />}
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />
