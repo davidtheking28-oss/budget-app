@@ -4,8 +4,9 @@
 }
 
 .form {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  align-items: end;
   gap: 10px;
   margin-bottom: 14px;
   padding: 14px;
@@ -15,7 +16,7 @@
 
 .input,
 .textarea {
-  flex: 1 1 180px;
+  width: 100%;
   min-width: 0;
   min-height: 40px;
   padding: 8px 12px;
@@ -28,7 +29,7 @@
 }
 
 .textarea {
-  flex-basis: 100%;
+  grid-column: 1 / -1;
   min-height: 72px;
   resize: vertical;
 }
@@ -41,7 +42,6 @@
 
 .field {
   display: flex;
-  flex: 1 1 180px;
   flex-direction: column;
   gap: 4px;
   color: var(--text3);
@@ -50,7 +50,7 @@
 
 .actions {
   display: flex;
-  flex-basis: 100%;
+  grid-column: 1 / -1;
   gap: 8px;
 }
 
@@ -169,6 +169,19 @@
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
+
+.temp {
+  margin-inline-start: 8px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.hot { background: rgba(var(--red-rgb), 0.12); color: var(--red); }
+.warmTemp { background: rgba(var(--yellow-rgb), 0.14); color: var(--yellow); }
+.cold { background: var(--surface2); color: var(--text2); }
 
 .info { color: var(--text2); }
 .warn { color: var(--yellow); }

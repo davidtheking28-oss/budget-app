@@ -19,15 +19,22 @@ const STATUSES = [
   { key: 'converted', label: 'הפך ללקוח', tone: 'done' },
   { key: 'not_relevant', label: 'לא רלוונטי', tone: 'muted' }
 ];
+const TEMPS = [
+  { key: 'hot', label: 'חם', tone: 'hot' },
+  { key: 'warm', label: 'פושר', tone: 'warmTemp' },
+  { key: 'cold', label: 'קר', tone: 'cold' }
+];
 const OPEN_STATUSES = ['new', 'contacted', 'meeting'];
 const SOURCES = ['המלצה', 'רשתות חברתיות', 'אתר', 'וואטסאפ', 'אחר'];
-const EMPTY = { name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', follow_up_at: '' };
+const EMPTY = { temperature: 'warm', name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', follow_up_at: '' };
 
+const tempInfo = key => TEMPS.find(t => t.key === key) || TEMPS[1];
 const statusInfo = key => STATUSES.find(s => s.key === key) || STATUSES[0];
 
 export default function Prospects({ advisorId }) {
   const { prospects, loading, error, reload, addProspect, updateProspect, deleteProspect } = useProspects(advisorId);
   const [filter, setFilter] = useUrlParam('pf', 'open');
+  const [tempFilter, setTempFilter] = useUrlParam('pt', 'all');
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -41,11 +48,13 @@ export default function Prospects({ advisorId }) {
   const thisMonth = prospects.filter(p => (p.contacted_at || '').startsWith(today.slice(0, 7))).length;
   const converted = prospects.filter(p => p.status === 'converted').length;
 
-  const visible = filter === 'all' ? prospects : filter === 'open' ? open : prospects.filter(p => p.status === filter);
+  const hot = open.filter(p => p.temperature === 'hot').length;
+  const byStatus = filter === 'all' ? prospects : filter === 'open' ? open : prospects.filter(p => p.status === filter);
+  const visible = tempFilter === 'all' ? byStatus : byStatus.filter(p => (p.temperature || 'warm') === tempFilter);
 
   function startEdit(p) {
     setEditingId(p.id);
-    setForm({ name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', follow_up_at: p.follow_up_at || '' });
+    setForm({ temperature: p.temperature || 'warm', name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', follow_up_at: p.follow_up_at || '' });
   }
 
   function reset() { setEditingId(null); setForm(EMPTY); }
@@ -54,6 +63,7 @@ export default function Prospects({ advisorId }) {
     if (!form.name.trim()) return;
     setSaving(true);
     const row = {
+      temperature: form.temperature,
       name: form.name.trim(),
       phone: form.phone.trim() || null,
       email: form.email.trim() || null,
@@ -72,11 +82,11 @@ export default function Prospects({ advisorId }) {
       <Hero
         label="מתעניינים פתוחים"
         value={String(open.length)}
-        note={`${prospects.length} פניות בסך הכול`}
+        note={`${prospects.length} פניות בסך הכול · ${converted} הפכו ללקוחות`}
         side={[
           { label: 'לחזור אליהם', value: String(dueNow), meta: 'תאריך חזרה הגיע' },
-          { label: 'פניות החודש', value: String(thisMonth) },
-          { label: 'הפכו ללקוחות', value: String(converted) }
+          { label: 'לידים חמים', value: String(hot) },
+          { label: 'פניות החודש', value: String(thisMonth) }
         ]}
       />
 
@@ -87,6 +97,9 @@ export default function Prospects({ advisorId }) {
             <input className={styles.input} placeholder="טלפון" aria-label="טלפון" dir="ltr" inputMode="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             <input className={styles.input} placeholder="אימייל" aria-label="אימייל" dir="ltr" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             <input className={styles.input} placeholder="מקור ההגעה" aria-label="מקור ההגעה" list="prospect-sources" value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} />
+            <select className={styles.input} aria-label="חום הליד" value={form.temperature} onChange={e => setForm({ ...form, temperature: e.target.value })}>
+              {TEMPS.map(t => <option key={t.key} value={t.key}>ליד {t.label}</option>)}
+            </select>
             <datalist id="prospect-sources">{SOURCES.map(s => <option key={s} value={s} />)}</datalist>
             <label className={styles.field}>
               <span>תאריך פנייה</span>
@@ -109,6 +122,12 @@ export default function Prospects({ advisorId }) {
             ))}
           </div>
 
+          <div className={styles.filters} role="group" aria-label="סינון לפי חום">
+            {[{ key: 'all', label: 'כל הלידים' }, ...TEMPS].map(f => (
+              <button key={f.key} type="button" className={styles.filter + (tempFilter === f.key ? ' ' + styles.filterOn : '')} aria-pressed={tempFilter === f.key} onClick={() => setTempFilter(f.key)}>{f.key === 'all' ? f.label : 'ליד ' + f.label}</button>
+            ))}
+          </div>
+
           {visible.length === 0 ? (
             <div className={styles.empty}>{prospects.length === 0 ? 'עוד לא נרשמו מתעניינים' : 'אין מתעניינים בסינון הזה'}</div>
           ) : visible.map(p => {
@@ -116,7 +135,7 @@ export default function Prospects({ advisorId }) {
             return (
               <div key={p.id} className={styles.row}>
                 <div className={styles.main}>
-                  <div className={styles.name}>{p.name}</div>
+                  <div className={styles.name}>{p.name}<span className={styles.temp + ' ' + styles[tempInfo(p.temperature).tone]}>{tempInfo(p.temperature).label}</span></div>
                   <div className={styles.sub}>
                     {[p.source, p.contacted_at && `פנה ב-${formatDate(p.contacted_at)}`].filter(Boolean).join(' · ')}
                   </div>
