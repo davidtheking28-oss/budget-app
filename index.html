@@ -458,7 +458,8 @@
     }
     .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;}
     .dash-insight-emoji{font-size:1.4rem;flex-shrink:0;}
-    .dash-insight-text{font-size:0.85rem;font-weight:700;color:var(--text);line-height:1.4;}
+    .dash-insight-text{display:flex;flex-direction:column;gap:4px;font-size:0.85rem;font-weight:700;color:var(--text);line-height:1.4;}
+    .dash-balance-value{font-size:1.6rem;line-height:1.2;} .dash-balance-daily{font-weight:400;color:var(--text2);} .dash-all-cats{display:block;width:100%;min-height:44px;margin-top:12px;color:var(--accent);font-weight:700;border:1px solid var(--border);border-radius:12px;background:var(--surface2);}
     .sub-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);position:relative;box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),box-shadow 0.15s;}
     .sub-card[onclick]:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.11);}
     .sub-card[onclick]:active{transform:scale(0.985);}
@@ -1950,17 +1951,19 @@
       <div class="dash-bignum-val" id="dashBigNum">₪0</div>
       <div class="dash-bignum-label" id="dashBigLabel">מתחילת החודש</div>
     </div>
+    <div class="dash-insight-card" id="dashInsightCard" style="display:none">
+      <span class="dash-insight-emoji">💰</span>
+      <div class="dash-insight-text" id="dashInsightText"></div>
+    </div>
     <div class="dash-goals-card">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <div class="dash-goals-title">התקציב החודשי שלי</div>
         <button onclick="showPage('goals')" style="background:none;border:none;color:var(--accent);font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;padding:8px;margin:-8px;min-height:44px">🎯 יעדי חיסכון</button>
       </div>
       <div class="dash-rings-grid" id="dashRingsGrid"></div>
+      <button type="button" class="dash-all-cats" onclick="selectBudgetCat(null);showPage('budget',document.getElementById('nav-budget'))">כל קטגוריות התקציב ←</button>
     </div>
-    <div class="dash-insight-card" id="dashInsightCard" style="display:none">
-      <span class="dash-insight-emoji">💰</span>
-      <div class="dash-insight-text" id="dashInsightText"></div>
-    </div>
+
 
     <!-- Recurring Alert -->
     <div id="recurringAlert" class="recurring-alert dash-card border rounded-2xl p-4 flex gap-3 items-start shadow-sm mb-3">
@@ -5653,7 +5656,9 @@ function renderDashGoals(){
   if(bigNum){bigNum.textContent=fmt(total);bigNum.style.color='var(--accent)';}
   if(bigLabel)bigLabel.textContent=_dashPeriod==='week'?'ב-7 הימים האחרונים':_dashPeriod==='all'?'סך הכל':'מתחילת החודש';
   const _dashCats=getEffectiveExpenseCats();
-  const cats=Object.keys(budgets).filter(c=>_dashCats.includes(c)).sort().slice(0,8);
+  const limitFor=cat=>(_dashPeriod==='month'&&budgets[cat])?Math.max(0,budgets[cat]+_budgetCarry(cat)):(budgets[cat]||0);
+  const priority=cat=>{const spent=spentByCat[cat]||0;const limit=limitFor(cat);return _dashPeriod==='month'?(limit>0?spent/limit:(spent>0?Infinity:0)):spent;};
+  const cats=Object.keys(budgets).filter(c=>_dashCats.includes(c)).sort((a,b)=>priority(b)-priority(a)||a.localeCompare(b,'he')).slice(0,8);
   const R=34,C=2*Math.PI*R;
   grid.innerHTML=cats.length?cats.map(cat=>{
     const s=spentByCat[cat]||0;
@@ -5684,7 +5689,7 @@ function renderDashGoals(){
       const remaining=income-total;
       const daysLeft=Math.max(1,daysInMonth(currentYear,currentMonth)-now.getDate()+1);
       const perDay=Math.max(0,remaining)/daysLeft;
-      insightText.textContent=(remaining>=0?'נשאר לך '+fmt(remaining)+' לחודש הזה - '+fmt(perDay)+' ליום':'חרגת ב-'+fmt(Math.abs(remaining))+' החודש');
+      insightText.innerHTML='<span class="dash-balance-caption">'+(remaining>=0?'נשאר לך החודש':'חריגה החודש')+'</span><strong class="dash-balance-value" style="color:var(--'+(remaining>=0?'accent':'red')+')"><bdi dir="ltr">'+esc(fmt(Math.abs(remaining)))+'</bdi></strong>'+(remaining>=0?'<span class="dash-balance-daily">כ־<bdi dir="ltr">'+esc(fmt(perDay))+'</bdi> ליום עד סוף החודש</span>':'<span class="dash-balance-daily">ההוצאות גבוהות מההכנסה החודשית</span>');
       insight.style.display='flex';
     } else insight.style.display='none';
   } else if(insight){insight.style.display='none';}
