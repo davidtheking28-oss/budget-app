@@ -2386,6 +2386,11 @@
   <div id="page-settings" class="page">
     <div class="form-stack">
       <div class="settings-section">
+        <div class="settings-section-title">בדיקת תצוגה</div>
+        <button type="button" id="settingsDisplayCheck" class="btn btn-outline btn-full" onclick="showDisplayDiagnostics('settingsDisplayDiagnostics')">בדיקת תצוגה במכשיר</button>
+        <textarea id="settingsDisplayDiagnostics" hidden readonly aria-label="נתוני בדיקת התצוגה" dir="ltr" rows="10" style="width:100%;margin-top:12px;padding:12px;box-sizing:border-box;font-size:16px;border:1px solid var(--border);border-radius:12px;color:var(--text);background:var(--surface2);user-select:text;"></textarea>
+      </div>
+      <div class="settings-section">
         <div class="settings-section-title">פרופיל</div>
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
           <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingAvatar">?</div>
@@ -5106,10 +5111,10 @@ function pickBackupFile(){
   input.click();
 }
 
-function showDisplayDiagnostics(){
+function showDisplayDiagnostics(outputId='displayDiagnostics'){
   const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {width:Math.round(r.width),height:Math.round(r.height),top:Math.round(r.top),bottom:Math.round(r.bottom)};};
-  const report={build:'display-28',installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
-  const output=document.getElementById('displayDiagnostics');
+  const report={build:'display-31',installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
+  const output=document.getElementById(outputId);
   output.value=JSON.stringify(report,null,2);output.hidden=false;
 }
 function openSupportSheet(){
