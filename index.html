@@ -459,7 +459,7 @@
     .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;}
     .dash-insight-emoji{font-size:1.4rem;flex-shrink:0;}
     .dash-insight-text{display:flex;flex-direction:column;gap:4px;font-size:0.85rem;font-weight:700;color:var(--text);line-height:1.4;}
-    .dash-balance-value{font-size:1.6rem;line-height:1.2;} .dash-balance-daily{font-weight:400;color:var(--text2);} .dash-all-cats{display:block;width:100%;min-height:44px;margin-top:12px;color:var(--accent);font-weight:700;border:1px solid var(--border);border-radius:12px;background:var(--surface2);}
+    .dash-balance-value{font-size:1.6rem;line-height:1.2;} .dash-balance-daily{font-weight:400;color:var(--text2);} .tx-date-range{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:0 16px 12px;align-items:center;} .tx-date-range input{min-width:0;width:100%;min-height:44px;} .tx-date-range #clearDateBtn{grid-column:1/-1;justify-self:end;} .dash-all-cats{display:block;width:100%;min-height:44px;margin-top:12px;color:var(--accent);font-weight:700;border:1px solid var(--border);border-radius:12px;background:var(--surface2);}
     .sub-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:10px;border:1px solid var(--border);position:relative;box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),box-shadow 0.15s;}
     .sub-card[onclick]:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.11);}
     .sub-card[onclick]:active{transform:scale(0.985);}
@@ -2154,10 +2154,10 @@
           <button class="range-chip" data-range="year" onclick="setRangeChip('year')">השנה</button>
           <button class="range-chip" data-range="all" onclick="setRangeChip('all')">הכול</button>
         </div>
-        <div style="display:flex;gap:8px;padding:0 16px 8px;align-items:center;">
-          <span style="font-size:0.72rem;color:var(--text3);font-weight:600;flex-shrink:0;">מתאריך:</span>
+        <div class="tx-date-range">
+          <label for="txFromDate" style="font-size:0.8rem;color:var(--text2);font-weight:600;">מתאריך:</label>
           <input type="date" id="txFromDate" onchange="renderTxPage()" aria-label="מתאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
-          <span style="font-size:0.72rem;color:var(--text3);font-weight:600;flex-shrink:0;">עד:</span>
+          <label for="txToDate" style="font-size:0.8rem;color:var(--text2);font-weight:600;">עד:</label>
           <input type="date" id="txToDate" onchange="renderTxPage()" aria-label="עד תאריך" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font-size:0.75rem;font-family:inherit;color:var(--text);background:var(--surface2);outline:none;"/>
           <button id="clearDateBtn" type="button" onclick="clearDateFilter()" aria-label="נקה סינון תאריכים" style="display:none;background:none;border:none;color:var(--text3);font-size:0.75rem;cursor:pointer;padding:4px;min-width:44px;min-height:44px;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;">✕</button>
         </div>
@@ -2170,6 +2170,7 @@
   </div>
 
   <div id="page-analytics" class="page">
+    <div id="tasksLoadStatus" role="status" style="display:none;padding:12px;border:1px solid var(--border);border-radius:12px;margin-bottom:12px;color:var(--text2);">לא ניתן לעדכן את המשימות והפגישות כרגע. <button type="button" class="btn btn-outline" onclick="_loadAdvisorTasks().then(renderTasksPage)" style="margin-top:8px;">נסה שוב</button></div>
     <div id="tasksNoAdvisor" class="empty" style="display:none"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><p>עוד אין יועץ מקושר</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">כשתתחבר ליועץ פיננסי, המשימות והפגישות שהוא קובע איתך יופיעו כאן</p></div>
     <div id="tasksContent" style="display:none">
       <div class="section" id="meetingsSection">
@@ -4775,15 +4776,20 @@ let _advisorOverdraft={balance:0};
 //    supabase/migrations/023_client_visible_advisor_tasks.sql; not part of the
 //    budget_data sync protocol, so nothing here touches _collections()/_buildMerged) ──
 let _advisorTasks=[];
+let _advisorTasksError=false;
 let _advisorMeetings=[];
 async function _loadAdvisorTasks(){
+  _advisorTasksError=false;
   if(!_sb||!_cloudUser||!_advisorLink||_advisorLink.status!=='active'){_advisorTasks=[];_advisorMeetings=[];return;}
-  const [tasksRes,meetingsRes]=await Promise.all([
-    _sb.from('advisor_tasks').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('due_date',{ascending:true,nullsFirst:false}),
-    _sb.from('advisor_meetings').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('scheduled_at',{ascending:true})
-  ]);
-  _advisorTasks=tasksRes.data||[];
-  _advisorMeetings=meetingsRes.data||[];
+  try{
+    const [tasksRes,meetingsRes]=await Promise.all([
+      _sb.from('advisor_tasks').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('due_date',{ascending:true,nullsFirst:false}),
+      _sb.from('advisor_meetings').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('scheduled_at',{ascending:true})
+    ]);
+    if(tasksRes.error||meetingsRes.error)throw tasksRes.error||meetingsRes.error;
+    _advisorTasks=tasksRes.data||[];
+    _advisorMeetings=meetingsRes.data||[];
+  }catch(e){_advisorTasksError=true;}
 }
 function _heDateTime(iso){
   const d=new Date(iso);
@@ -4792,13 +4798,17 @@ function _heDateTime(iso){
 async function toggleAdvisorTask(id,done){
   const t=_advisorTasks.find(x=>x.id===id);if(!t)return;
   const prev=t.done;t.done=done;renderTasksPage();
-  const {data,error}=await _sb.rpc('set_task_done',{p_task_id:id,p_done:done});
-  if(error||!data){t.done=prev;renderTasksPage();showToast('❌ עדכון המשימה נכשל');}
+  try{
+    const {data,error}=await _sb.rpc('set_task_done',{p_task_id:id,p_done:done});
+    if(error||!data)throw error||new Error('task update failed');
+  }catch(e){t.done=prev;renderTasksPage();showToast('❌ עדכון המשימה נכשל — נסה שוב');}
 }
 function renderTasksPage(){
   const noAdvisor=document.getElementById('tasksNoAdvisor');
   const content=document.getElementById('tasksContent');
   if(!noAdvisor||!content)return;
+  const loadStatus=document.getElementById('tasksLoadStatus');
+  if(loadStatus)loadStatus.style.display=(_advisorTasksError&&_advisorLink?.status==='active')?'':'none';
   if(!_advisorLink||_advisorLink.status!=='active'){
     noAdvisor.style.display='';content.style.display='none';
     return;

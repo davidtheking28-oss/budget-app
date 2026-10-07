@@ -323,3 +323,21 @@ test('quick amount fills the input without saving an expense',()=>{
 test('navigation highlight follows the icon vertically when labels are visible',()=>{
  const indicator={style:{},dataset:{}};const nav={getBoundingClientRect:()=>({left:10,top:200})};const icon={getBoundingClientRect:()=>({left:30,top:204,width:42})};const active={querySelector:()=>icon};const ctx=functions(['_positionNavIndicator'],{document:{querySelector:s=>s==='.bottom-nav'?nav:s==='.nav-indicator'?indicator:active}});ctx._positionNavIndicator();assert.equal(indicator.style.top,'4px');assert.equal(indicator.style.transform,'translateX(20px)');
 });
+
+test('failed advisor task updates restore the task for response and network errors',async()=>{
+ for(const rpc of [async()=>({error:{message:'denied'},data:null}),async()=>{throw new Error('offline');},async()=>({data:false,error:null})]){
+  const task={id:'task',done:false};let notices=0;
+  const ctx=functions(['toggleAdvisorTask'],{_advisorTasks:[task],_sb:{rpc},renderTasksPage:()=>{},showToast:()=>{notices++;}});
+  await ctx.toggleAdvisorTask('task',true);assert.equal(task.done,false);assert.equal(notices,1);
+ }
+ const task={id:'task',done:false};const ctx=functions(['toggleAdvisorTask'],{_advisorTasks:[task],_sb:{rpc:async()=>({data:true,error:null})},renderTasksPage:()=>{},showToast:()=>{throw new Error('unexpected failure');}});
+ await ctx.toggleAdvisorTask('task',true);assert.equal(task.done,true);
+});
+test('failed advisor reads preserve the last task and meeting lists',async()=>{
+ for(const thrown of [false,true]){
+  const tasks=[{id:'cached-task'}],meetings=[{id:'cached-meeting'}];
+  const query={select(){return this;},eq(){return this;},order:async()=>({error:{message:'offline'},data:null})};
+  const ctx=functions(['_loadAdvisorTasks'],{_advisorTasks:tasks,_advisorMeetings:meetings,_advisorTasksError:false,_cloudUser:{id:'client'},_advisorLink:{status:'active'},_sb:{from:()=>{if(thrown)throw new Error('offline');return query;}}});
+  await ctx._loadAdvisorTasks();assert.equal(ctx._advisorTasks,tasks);assert.equal(ctx._advisorMeetings,meetings);assert.equal(ctx._advisorTasksError,true);
+ }
+});
