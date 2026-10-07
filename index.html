@@ -178,7 +178,10 @@
     #inlineMonthNav>button[data-month-arrow]{flex-shrink:0;}
     #inlineMonthNav>button:not([data-month-arrow]){padding-left:8px;padding-right:8px;}
     #headerMonthLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    @media(max-width:360px){#inlineMonthNav>button:not([data-month-arrow]) i{display:none;}}
+    @media(max-width:360px){
+      #inlineMonthNav{left:calc(64px + env(safe-area-inset-left,0px))!important;right:calc(10px + env(safe-area-inset-right,0px))!important;width:auto!important;max-width:none!important;gap:4px!important;padding:5px 4px!important;}
+      #inlineMonthNav>button:not([data-month-arrow]) i{display:none;}
+    }
     #inlineMonthNav.nav-hidden{top:-70px!important;}
     .page{display:none;}.page.active{display:block;}
     @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -1316,18 +1319,11 @@
        (rem-based text/buttons/spacing shrink together, proportionally)
        ════════════════════════════════════════════════════════════ */
     @media (max-width:480px){
-      html{font-size:14.5px;}
+      html{font-size:16px;}
       :root{--main-px:10px;}
-    }
-    @media (max-width:400px){
-      html{font-size:14px;}
     }
     @media (max-width:360px){
-      html{font-size:13.3px;}
       :root{--main-px:10px;}
-    }
-    @media (max-width:330px){
-      html{font-size:12.7px;}
     }
 
 
@@ -1529,6 +1525,12 @@
     .dash-ring-remaining.danger{color:var(--red);}
     .dash-ring-item:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
     @media(max-width:600px){
+      .tx-desc,.budget-tx-desc{font-size:15px;}
+      .tx-amount{font-size:16px;}
+      .tx-date-label,.badge,.exp-auto-badge,.sf-empty{font-size:12px;}
+      .budget-tx-groupsum,.budget-tx-grouplabel,.budget-move-btn{font-size:14px;}
+      #txFilterChips>button{font-size:14px!important;}
+      .settings-row-label{font-size:16px;}
       .dash-ring-item{padding:12px;gap:10px;}
       .dash-ring-frac{font-size:13px;line-height:1.5;}
       .dash-ring-frac bdi{font-size:14px;font-weight:700;color:var(--text);}
@@ -2143,18 +2145,18 @@
       <div class="balance-hero-bloom" style="bottom:-38%;left:-10%;width:45%;padding-bottom:45%;opacity:0.55;"></div>
       <div class="relative" style="z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center">
         <div id="txFlowViewToggle" style="display:flex;gap:2px;background:rgba(0,0,0,0.18);border-radius:999px;padding:3px;flex-shrink:0">
-          <button type="button" data-view="plan" onclick="setTxFlowView('plan')" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0">תכנון</button>
-          <button type="button" class="active" data-view="actual" onclick="setTxFlowView('actual')" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.72rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0">בפועל</button>
+          <button type="button" data-view="plan" onclick="setTxFlowView('plan')" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0">תכנון</button>
+          <button type="button" class="active" data-view="actual" onclick="setTxFlowView('actual')" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0">בפועל</button>
         </div>
         <div class="text-sm font-semibold mt-2" style="color:#fff">התזרים שלך החודש</div>
         <div class="font-extrabold font-mono tracking-tight mt-2" id="txPageFlow" style="color:#fff;font-size:clamp(2.1rem,10vw,2.8rem);line-height:1.05;white-space:nowrap">₪0</div>
         <div style="display:flex;gap:10px;margin-top:16px">
           <div style="flex:1;background:rgba(0,0,0,0.18);border-radius:14px;padding:10px 14px;text-align:center">
-            <div style="font-size:0.72rem;color:#fff;font-weight:700">הכנסות</div>
+            <div style="font-size:0.8125rem;color:#fff;font-weight:700">הכנסות</div>
             <div id="txPageIncome" style="font-weight:800;color:#fff;font-size:1rem;margin-top:2px">₪0</div>
           </div>
           <div style="flex:1;background:rgba(255,255,255,0.95);border-radius:14px;padding:10px 14px;text-align:center">
-            <div style="font-size:0.72rem;color:#5b6472;font-weight:700">הוצאות</div>
+            <div style="font-size:0.8125rem;color:#5b6472;font-weight:700">הוצאות</div>
             <div id="txPageExpense" style="font-weight:800;color:#1a1f2b;font-size:1rem;margin-top:2px">₪0</div>
           </div>
         </div>
@@ -2420,7 +2422,7 @@
           <div style="flex:1;min-width:0;">
             <input id="settingName" type="text" placeholder="הכנס שם..." aria-label="שם" autocomplete="off" autocorrect="off" spellcheck="false" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.name=this.value.trim();saveSettingsData();updateHeaderTitle()"
               style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
-            <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
+            <div style="font-size:0.8125rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
           </div>
         </div>
         <div id="partnerRow" style="display:none;margin-bottom:8px;">
@@ -2428,7 +2430,7 @@
             <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f43f5e);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingPartnerAvatar">?</div>
             <div style="flex:1;min-width:0;">
               <div id="settingPartnerLabel" style="font-size:1.05rem;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
-              <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;">שותף/ה לתקציב המשותף</div>
+              <div style="font-size:0.8125rem;color:var(--text3);margin-top:3px;">שותף/ה לתקציב המשותף</div>
             </div>
           </div>
           <button onclick="leaveHousehold()" class="btn btn-outline btn-sm" style="width:100%;color:var(--red);border-color:var(--red)">✕ בטל שיתוף</button>
@@ -2445,7 +2447,7 @@
         <div class="settings-row">
           <div>
             <div class="settings-row-label">הפרד חשבון עסקי</div>
-            <div style="font-size:0.75rem;color:var(--text3);margin-top:2px;">נתונים נפרדים לעסק ולחשבון הפרטי</div>
+            <div style="font-size:0.8125rem;color:var(--text3);margin-top:2px;">נתונים נפרדים לעסק ולחשבון הפרטי</div>
           </div>
           <label class="ios-toggle">
             <input type="checkbox" id="settingBusinessMode" onchange="toggleBusinessMode(this.checked)" aria-label="הפרד חשבון עסקי">
@@ -2458,7 +2460,7 @@
         <div class="settings-row">
           <div>
             <div class="settings-row-label">התראות Push</div>
-            <div style="font-size:0.75rem;color:var(--text3);margin-top:2px;">תזכורות, חריגות תקציב וחידושי מנויים</div>
+            <div style="font-size:0.8125rem;color:var(--text3);margin-top:2px;">תזכורות, חריגות תקציב וחידושי מנויים</div>
           </div>
           <label class="ios-toggle">
             <input type="checkbox" id="settingPushEnabled" onchange="togglePush(this.checked)" aria-label="התראות Push">
@@ -2493,7 +2495,7 @@
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();importBankCSV()"><span>🏦</span> ייבא עסקאות מקובץ בנק (CSV)</button>
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();exportBackup()"><span>💾</span> ייצוא גיבוי מלא (JSON)</button>
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();pickBackupFile()"><span>♻️</span> שחזור מקובץ גיבוי</button>
-            <button type="button" class="set-dd-opt" onclick="restoreAutoBackup()"><span>🕘</span> שחזור מגיבוי אוטומטי <span id="autoBkInfo" style="color:var(--text3);font-size:0.78rem;margin-right:4px"></span></button>
+            <button type="button" class="set-dd-opt" onclick="restoreAutoBackup()"><span>🕘</span> שחזור מגיבוי אוטומטי <span id="autoBkInfo" style="color:var(--text3);font-size:0.8125rem;margin-right:4px"></span></button>
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();resetAllData()" style="color:var(--red)"><span>🗑️</span> איפוס כל הנתונים</button>
           </div>
         </div>
@@ -2513,11 +2515,11 @@
         <div id="advisorLinkSection"></div>
       </div>
       <div style="text-align:center;margin-top:14px;padding-bottom:4px">
-        <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">🔒 מדיניות פרטיות</button>
-        <span style="color:var(--border);margin:0 6px">·</span>
-        <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.78rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">📄 תנאי שימוש</button>
-        <span style="color:var(--border);margin:0 6px">·</span>
-        <span style="color:var(--text3);font-size:0.78rem">v2.8</span>
+        <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">🔒 מדיניות פרטיות</button>
+        <span aria-hidden="true" style="color:var(--border);margin:0 6px">·</span>
+        <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">📄 תנאי שימוש</button>
+        <span aria-hidden="true" style="color:var(--border);margin:0 6px">·</span>
+        <span style="color:var(--text3);font-size:0.8125rem">v2.8</span>
       </div>
     </div>
   </div>
