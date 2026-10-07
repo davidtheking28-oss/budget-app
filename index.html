@@ -2404,11 +2404,6 @@
   <div id="page-settings" class="page">
     <div class="form-stack">
       <div class="settings-section">
-        <div class="settings-section-title">בדיקת תצוגה</div>
-        <button type="button" id="settingsDisplayCheck" class="btn btn-outline btn-full" onclick="showDisplayDiagnostics('settingsDisplayDiagnostics')">בדיקת תצוגה במכשיר</button>
-        <textarea id="settingsDisplayDiagnostics" hidden readonly aria-label="נתוני בדיקת התצוגה" dir="ltr" rows="10" style="width:100%;margin-top:12px;padding:12px;box-sizing:border-box;font-size:16px;border:1px solid var(--border);border-radius:12px;color:var(--text);background:var(--surface2);user-select:text;"></textarea>
-      </div>
-      <div class="settings-section">
         <div class="settings-section-title">פרופיל</div>
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
           <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingAvatar">?</div>
@@ -2646,8 +2641,6 @@
   <div class="sheet" style="max-height:86vh">
     <div class="sheet-handle"></div>
     <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">✉️ צור קשר<button onclick="closeSheet('supportSheet')" aria-label="סגור" class="sheet-close-x">✕</button></div>
-    <button type="button" class="btn btn-outline btn-full" onclick="showDisplayDiagnostics()">בדיקת תצוגה במכשיר</button>
-    <textarea id="displayDiagnostics" hidden readonly aria-label="נתוני תצוגה לצורך בדיקת התקלה" dir="ltr" rows="10" style="width:100%;margin:12px 0;padding:12px;box-sizing:border-box;font-size:16px;border:1px solid var(--border);border-radius:12px;color:var(--text);background:var(--surface2);user-select:text;"></textarea>
     <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:8px;">
       <div class="form-field">
         <label for="supportTopic" style="font-size:0.82rem;font-weight:600;color:var(--text2)">נושא</label>
@@ -5129,21 +5122,6 @@ function pickBackupFile(){
   input.click();
 }
 
-function showDisplayDiagnostics(outputId='displayDiagnostics'){
-  const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {width:Math.round(r.width),height:Math.round(r.height),top:Math.round(r.top),bottom:Math.round(r.bottom)};};
-  const probe=document.createElement('div');
-  probe.style.cssText='position:fixed;visibility:hidden;pointer-events:none;width:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:content-box';
-  document.body.appendChild(probe);
-  const safeStyle=getComputedStyle(probe);
-  const safeArea={top:parseFloat(safeStyle.paddingTop),bottom:parseFloat(safeStyle.paddingBottom)};
-  probe.style.padding='0';
-  const cssHeights={};
-  for(const unit of ['vh','svh','lvh','dvh']){probe.style.height='100'+unit;cssHeights[unit]=Math.round(probe.getBoundingClientRect().height);}
-  probe.remove();
-  const report={build:'display-37',safeArea,cssHeights,statusBarStyle:document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content,installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
-  const output=document.getElementById(outputId);
-  output.value=JSON.stringify(report,null,2);output.hidden=false;
-}
 function openSupportSheet(){
   closeAllSetDD();
   const em=document.getElementById('supportEmail');
