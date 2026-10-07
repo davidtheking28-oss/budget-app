@@ -5131,7 +5131,16 @@ function pickBackupFile(){
 
 function showDisplayDiagnostics(outputId='displayDiagnostics'){
   const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {width:Math.round(r.width),height:Math.round(r.height),top:Math.round(r.top),bottom:Math.round(r.bottom)};};
-  const report={build:'display-32',installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
+  const probe=document.createElement('div');
+  probe.style.cssText='position:fixed;visibility:hidden;pointer-events:none;width:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:content-box';
+  document.body.appendChild(probe);
+  const safeStyle=getComputedStyle(probe);
+  const safeArea={top:parseFloat(safeStyle.paddingTop),bottom:parseFloat(safeStyle.paddingBottom)};
+  probe.style.padding='0';
+  const cssHeights={};
+  for(const unit of ['vh','svh','lvh','dvh']){probe.style.height='100'+unit;cssHeights[unit]=Math.round(probe.getBoundingClientRect().height);}
+  probe.remove();
+  const report={build:'display-33',safeArea,cssHeights,statusBarStyle:document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content,installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
   const output=document.getElementById(outputId);
   output.value=JSON.stringify(report,null,2);output.hidden=false;
 }
