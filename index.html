@@ -426,7 +426,7 @@
     body.dark .dash-goals-card{box-shadow:0 1px 0 rgba(255,255,255,0.02);}
     .dash-goals-title{font-size:0.95rem;font-weight:800;color:var(--text);margin-bottom:14px;}
     .dash-rings-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;}
-    .dash-ring-item{display:flex;flex-direction:column;align-items:center;gap:8px;width:72px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .dash-ring-item{border:0;padding:0;background:none;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:8px;width:112px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
     .dash-ring-wrap{position:relative;width:64px;height:64px;flex-shrink:0;}
     .dash-ring-svg{width:64px;height:64px;flex-shrink:0;transform:rotate(-90deg);}
     .dash-ring-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
@@ -439,7 +439,21 @@
     .dash-ring-fill.danger{stroke:var(--red);}
     .dash-ring-label{width:100%;text-align:center;}
     .dash-ring-name{font-size:0.7rem;font-weight:700;color:var(--text);line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-    .dash-ring-frac{font-size:0.64rem;color:var(--text3);font-weight:600;margin-top:2px;}
+    .dash-ring-frac{font-size:0.75rem;color:var(--text2);font-weight:600;margin-top:6px;display:flex;flex-direction:column;gap:3px;}
+    .dash-ring-frac bdi{font-variant-numeric:tabular-nums;white-space:nowrap;}
+    @media(max-width:600px){
+      .dash-toprow{gap:8px;margin-bottom:6px;}
+      .dash-avatar{width:36px;height:36px;font-size:1rem;}
+      .dash-bignum{margin-bottom:10px;}
+      .dash-bignum-val{font-size:2.2rem;}
+      .dash-goals-card{padding:14px 12px;}
+      .dash-goals-title{margin-bottom:8px;}
+      .dash-rings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px;}
+      .dash-ring-item{width:auto;min-width:0;padding:12px 8px;border:1px solid var(--border);border-radius:14px;background:var(--surface2);gap:8px;}
+      .dash-ring-wrap,.dash-ring-svg{width:56px;height:56px;}
+      .dash-ring-name{font-size:max(14px,0.875rem);line-height:1.4;min-height:2.8em;}
+      .dash-ring-frac{font-size:max(13px,0.8125rem);}
+    }
     .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;}
     .dash-insight-emoji{font-size:1.4rem;flex-shrink:0;}
     .dash-insight-text{font-size:0.85rem;font-weight:700;color:var(--text);line-height:1.4;}
@@ -5623,7 +5637,7 @@ function renderDashGoals(){
     const lim=(_dashPeriod==='month'&&budgets[cat])?Math.max(0,budgets[cat]+_budgetCarry(cat)):(budgets[cat]||0);
     const pct=lim?Math.min(s/lim,1):0;
     const state=progState(Math.round(pct*100),[[90,'danger'],[70,'warn'],[0,'']]);
-    return '<div class="dash-ring-item" data-cat="'+esc(cat)+'" title="'+esc(cat)+'">'
+    return '<button type="button" class="dash-ring-item" data-cat="'+esc(cat)+'" title="'+esc(cat)+'">'
       +'<div class="dash-ring-wrap">'
         +'<svg aria-hidden="true" focusable="false" viewBox="0 0 80 80" class="dash-ring-svg">'
           +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-track"/>'
@@ -5631,8 +5645,8 @@ function renderDashGoals(){
         +'</svg>'
         +'<div class="dash-ring-emoji" aria-hidden="true"><div class="dash-ring-emoji-chip" style="background:'+budgetChipColor(cat).base+';color:'+budgetChipColor(cat).sel+'">'+catIconSvg(cat)+'</div></div>'
       +'</div>'
-      +'<div class="dash-ring-label"><div class="dash-ring-name">'+esc(cat)+'</div><div class="dash-ring-frac">'+fmt(s)+'/'+fmt(lim)+'</div></div>'
-    +'</div>';
+      +'<div class="dash-ring-label"><div class="dash-ring-name">'+esc(cat)+'</div><div class="dash-ring-frac"><span>הוצאתי <bdi dir="ltr">'+fmt(s)+'</bdi></span><span>תקציב <bdi dir="ltr">'+fmt(lim)+'</bdi></span></div></div>'
+    +'</button>';
   }).join(''):'<div class="budget-tx-empty" style="grid-column:1/-1">עדיין לא הוגדרו תקציבי קטגוריה</div>';
   grid.querySelectorAll('.dash-ring-item').forEach(el=>{
     el.onclick=()=>{showPage('budget',document.getElementById('nav-budget'));selectBudgetCat(el.dataset.cat);};
