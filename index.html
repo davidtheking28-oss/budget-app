@@ -1525,7 +1525,17 @@
       }
     }
 
+    .dash-ring-remaining{font-size:14px;font-weight:700;color:var(--green);display:flex;justify-content:center;flex-wrap:wrap;gap:4px;line-height:1.4;}
+    .dash-ring-remaining.danger{color:var(--red);}
+    .dash-ring-item:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
     @media(max-width:600px){
+      .dash-ring-item{padding:12px;gap:10px;}
+      .dash-ring-frac{font-size:13px;line-height:1.5;}
+      .dash-ring-frac bdi{font-size:14px;font-weight:700;color:var(--text);}
+      .dash-ring-remaining{grid-column:1/-1;justify-content:flex-start;padding-top:8px;border-top:1px solid var(--border);}
+      .tx-meta,.tx-note,.budget-tx-date{font-size:13px;line-height:1.5;}
+      .meeting-summary-label{font-size:13px;}
+      .meeting-summary-body{font-size:14px;line-height:1.6;}
       #page-settings .form-stack{gap:12px;}
       #page-settings .settings-section{margin-bottom:0;padding:16px;}
       #page-settings .btn,#page-settings .set-dd-trigger,#page-settings .set-dd-opt{font-size:14px;line-height:1.45;text-align:start;overflow-wrap:anywhere;}
@@ -5693,7 +5703,7 @@ function renderDashGoals(){
   grid.innerHTML=cats.length?cats.map(cat=>{
     const s=spentByCat[cat]||0;
     const lim=(_dashPeriod==='month'&&budgets[cat])?Math.max(0,budgets[cat]+_budgetCarry(cat)):(budgets[cat]||0);
-    const pct=lim?Math.min(s/lim,1):0;
+    const pct=lim?Math.min(s/lim,1):(s>0?1:0);
     const state=progState(Math.round(pct*100),[[90,'danger'],[70,'warn'],[0,'']]);
     return '<button type="button" class="dash-ring-item" data-cat="'+esc(cat)+'" title="'+esc(cat)+'">'
       +'<div class="dash-ring-wrap">'
@@ -5704,6 +5714,7 @@ function renderDashGoals(){
         +'<div class="dash-ring-emoji" aria-hidden="true"><div class="dash-ring-emoji-chip" style="background:'+budgetChipColor(cat).base+';color:'+budgetChipColor(cat).sel+'">'+catIconSvg(cat)+'</div></div>'
       +'</div>'
       +'<div class="dash-ring-label"><div class="dash-ring-name">'+esc(cat)+'</div><div class="dash-ring-frac"><span>הוצאתי <bdi dir="ltr">'+fmt(s)+'</bdi></span><span>תקציב <bdi dir="ltr">'+fmt(lim)+'</bdi></span></div></div>'
+      +(_dashPeriod==='month'?'<div class="dash-ring-remaining'+(s>lim?' danger':'')+'"><span>'+(s>lim?'חריגה':'נשאר')+'</span> <bdi dir="ltr">'+fmt(Math.abs(lim-s))+'</bdi></div>':'')
     +'</button>';
   }).join(''):'<div class="budget-tx-empty" style="grid-column:1/-1">עדיין לא הוגדרו תקציבי קטגוריה</div>';
   grid.querySelectorAll('.dash-ring-item').forEach(el=>{
