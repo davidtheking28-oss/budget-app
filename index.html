@@ -5140,7 +5140,7 @@ function showDisplayDiagnostics(outputId='displayDiagnostics'){
   const cssHeights={};
   for(const unit of ['vh','svh','lvh','dvh']){probe.style.height='100'+unit;cssHeights[unit]=Math.round(probe.getBoundingClientRect().height);}
   probe.remove();
-  const report={build:'display-34',safeArea,cssHeights,statusBarStyle:document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content,installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
+  const report={build:'display-35',safeArea,cssHeights,statusBarStyle:document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content,installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
   const output=document.getElementById(outputId);
   output.value=JSON.stringify(report,null,2);output.hidden=false;
 }
@@ -9036,7 +9036,7 @@ setTimeout(autoCarryRecurring,500);
       }
     });
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('./sw.js').then(function(reg){
+      navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(function(reg){
         try{ reg.update().catch(function(){}); }catch(e){}
         setInterval(function(){ try{ reg.update().catch(function(){}); }catch(e){} }, 60*60*1000);
       }).catch(function(){});

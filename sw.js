@@ -2,7 +2,7 @@
    HTML is network-first (online users always get the latest app; cache is
    the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v34';
+const CACHE = 'budget-app-v35';
 const SHELL = [
   './',
   './index.html',
@@ -82,7 +82,7 @@ self.addEventListener('fetch', (e) => {
   if (isHTML) {
     // network-first: online users always get the latest app; cache is offline fallback only
     const fallback = () => caches.match(req).then((r) => r || caches.match('./index.html'));
-    const network = fetch(req).then(async (res) => {
+    const network = fetch(req,{cache:'no-store'}).then(async (res) => {
       if (res.status >= 500) throw new Error('App temporarily unavailable');
       if (res.status === 200) {
         try { await (await caches.open(CACHE)).put(req, res.clone()); } catch (err) {}
