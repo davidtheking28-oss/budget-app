@@ -171,7 +171,14 @@
     /* Centered with left:0;right:0;margin:0 auto — NOT left:50%+translateX(-50%),
        which renders persistently off-center in a standalone iOS PWA (same bug the
        .fab hit above). Keep this technique if you touch it. */
-    #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:0!important;right:0!important;width:fit-content!important;max-width:calc(100vw - 24px)!important;transform:none!important;z-index:200!important;margin:0 auto!important;transition:top 0.25s cubic-bezier(0.22,1,0.36,1);}
+    #inlineMonthNav{position:fixed!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:0!important;right:0!important;width:fit-content!important;max-width:calc(100vw - 128px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))!important;transform:none!important;z-index:200!important;margin:0 auto!important;transition:top 0.25s cubic-bezier(0.22,1,0.36,1);}
+    #headerSettings{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:calc(10px + env(safe-area-inset-left,0px));z-index:201;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:50%;background:var(--surface);color:var(--text);cursor:pointer;}
+    #headerSettings svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    #inlineMonthNav>button{min-width:0;}
+    #inlineMonthNav>button[data-month-arrow]{flex-shrink:0;}
+    #inlineMonthNav>button:not([data-month-arrow]){padding-left:8px;padding-right:8px;}
+    #headerMonthLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    @media(max-width:360px){#inlineMonthNav>button:not([data-month-arrow]) i{display:none;}}
     #inlineMonthNav.nav-hidden{top:-70px!important;}
     .page{display:none;}.page.active{display:block;}
     @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -1640,6 +1647,7 @@
   <button id="installX" class="install-x" type="button" aria-label="סגור">✕</button>
 </div>
 <div id="appHeader" style="position:fixed;top:0;left:0;right:0;z-index:200;height:env(safe-area-inset-top,0px);background:var(--bg);"></div>
+<button type="button" id="headerSettings" aria-label="הגדרות" title="הגדרות" onclick="showPage('settings',document.getElementById('nav-more'))"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 
 <div class="search-overlay" id="searchOverlay">
   <div class="search-bar-row">
@@ -3237,7 +3245,7 @@ function _unlockBodyScroll(){
   if(el){ el.style.overflow=''; el.scrollTop=_scrollLockY; }
 }
 function _sheetSetBackgroundInert(on){
-  document.querySelectorAll('main,.bottom-nav').forEach(el=>{if(on)el.setAttribute('inert','');else el.removeAttribute('inert');});
+  document.querySelectorAll('main,.bottom-nav,#headerSettings').forEach(el=>{if(on)el.setAttribute('inert','');else el.removeAttribute('inert');});
   ['fab','fabHint'].forEach(id=>{const el=document.getElementById(id);if(el){if(on)el.setAttribute('inert','');else el.removeAttribute('inert');}});
 }
 function _sheetKeydown(e){
