@@ -156,7 +156,7 @@
     [data-month-arrow]{width:44px!important;height:44px!important;}
     @keyframes fadeInUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
     @keyframes fabPulse{0%,100%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 0 rgba(var(--accent-rgb),0.4);}50%{box-shadow:0 8px 28px rgba(var(--accent-rgb),0.5),0 0 0 14px rgba(var(--accent-rgb),0);}}
-    main{padding:calc(76px + env(safe-area-inset-top,0px)) calc(var(--main-px) + env(safe-area-inset-right,0px)) 16px calc(var(--main-px) + env(safe-area-inset-left,0px));max-width:600px;margin:0 auto;height:calc(100% - var(--nav-bottom) - 154px);overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:none;-webkit-overflow-scrolling:touch;}
+    main{padding:calc(76px + env(safe-area-inset-top,0px)) calc(var(--main-px) + env(safe-area-inset-right,0px)) calc(var(--nav-bottom) + 82px) calc(var(--main-px) + env(safe-area-inset-left,0px));max-width:600px;margin:0 auto;height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:none;-webkit-overflow-scrolling:touch;}
     @media (min-width:860px){
       main{max-width:760px;}
     }
@@ -449,10 +449,12 @@
       .dash-goals-card{padding:14px 12px;}
       .dash-goals-title{margin-bottom:8px;}
       .dash-rings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:6px;}
-      .dash-ring-item{width:auto;min-width:0;padding:12px 8px;border:1px solid var(--border);border-radius:14px;background:var(--surface2);gap:8px;}
-      .dash-ring-wrap,.dash-ring-svg{width:56px;height:56px;}
-      .dash-ring-name{font-size:max(14px,0.875rem);line-height:1.4;min-height:2.8em;}
-      .dash-ring-frac{font-size:max(13px,0.8125rem);}
+      .dash-ring-item{display:grid;grid-template-columns:40px minmax(0,1fr);align-content:start;align-items:center;width:auto;min-width:0;padding:10px;border:1px solid var(--border);border-radius:14px;background:var(--surface2);gap:8px;}
+      .dash-ring-wrap,.dash-ring-svg{width:40px;height:40px;}
+      .dash-ring-label{display:contents;}
+      .dash-ring-name{display:block;font-size:max(14px,0.875rem);line-height:1.35;text-align:right;-webkit-line-clamp:unset;min-height:0;}
+      .dash-ring-frac{grid-column:1/-1;flex-direction:row;justify-content:space-between;gap:4px;margin-top:2px;font-size:max(12px,0.8125rem);text-align:right;}
+      .dash-ring-frac bdi{display:block;}
     }
     .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;}
     .dash-insight-emoji{font-size:1.4rem;flex-shrink:0;}
@@ -922,6 +924,7 @@
     .loans-summary.has-loans .loans-summary-val{color:white;}
     /* ===== 4-item nav ===== */
     .bottom-nav .nav-item{flex-direction:column;gap:1px;}
+    .bottom-nav .fab{position:relative;bottom:auto;left:auto;right:auto;margin:0;flex:0 0 44px;width:44px;height:44px;box-shadow:none;}
     .bottom-nav .nav-item .nav-label{display:block;font-size:11px;font-weight:700;line-height:1.2;color:var(--text2);}
     .bottom-nav .nav-item.active .nav-label{color:var(--accent);}
     main{scroll-padding-top:calc(76px + env(safe-area-inset-top,0px));scroll-padding-bottom:16px;}
@@ -2565,7 +2568,6 @@
 </div>
 
 <div id="fabHint" style="display:none;position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 88px);left:0;right:0;width:fit-content;margin:0 auto;background:var(--accent);color:white;padding:8px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;white-space:nowrap;z-index:191;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.4);animation:fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1);pointer-events:none;">לחץ כאן להוסיף הוצאה ☝️<div style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--accent);"></div></div>
-<button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
 
 <nav class="bottom-nav" aria-label="ניווט ראשי">
   <div class="nav-indicator" aria-hidden="true"></div>
@@ -2583,6 +2585,7 @@
     <span class="nav-label">הוצאות</span>
   </button>
 
+  <button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
   <button class="nav-item" onclick="showPage('budget',this)" id="nav-budget" aria-label="תקציב">
     <div class="nav-icon">
       <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
