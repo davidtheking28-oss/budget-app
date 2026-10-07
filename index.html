@@ -54,7 +54,7 @@
     /* --bg/--surface/--surface2/--border/--text/--text2/--text3 for light mode live in the
        "LIGHT-MODE POLISH" block further down (body:not(.dark)) — it always wins over these,
        so no light-mode fallback values are set here to avoid two sources of truth. */
-    :root{--accent:#0a7a62;--accent2:#0a7a62;--accent-rgb:10,122,98;--green:#046b4d;--green-light:#d7f0e6;--red:#b02631;--red-light:#fbe6e3;--blue:#1d4ed8;--blue-light:#dbeafe;--yellow:#a35a06;--yellow-light:#fef3c7;--purple:#a8621f;--purple-light:#f7ead9;--teal:#0d9488;--teal-light:#ccfbf1;--nav-h:66px;--header-h:60px;--safe-bottom:env(safe-area-inset-bottom,0px);--nav-bottom:calc(var(--safe-bottom) + 12px);--radius:18px;--radius-sm:12px;--main-px:16px;
+    :root{--accent:#0a7a62;--accent2:#0a7a62;--accent-rgb:10,122,98;--green:#046b4d;--green-light:#d7f0e6;--red:#b02631;--red-light:#fbe6e3;--blue:#1d4ed8;--blue-light:#dbeafe;--yellow:#a35a06;--yellow-light:#fef3c7;--purple:#a8621f;--purple-light:#f7ead9;--teal:#0d9488;--teal-light:#ccfbf1;--nav-h:66px;--header-h:60px;--safe-bottom:env(safe-area-inset-bottom,0px);--nav-bottom:calc(var(--safe-bottom) + 4px);--radius:18px;--radius-sm:12px;--main-px:16px;
       /* ── Typography system ── */
       --font-sans:'Assistant',-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
       --font-num:var(--font-sans);
@@ -923,7 +923,8 @@
     .loans-summary-sub{font-size:0.75rem;color:var(--text3);margin-top:4px;}
     .loans-summary.has-loans .loans-summary-val{color:white;}
     /* ===== 4-item nav ===== */
-    .bottom-nav .nav-item{flex-direction:column;gap:1px;}
+    .bottom-nav{display:grid;grid-template-columns:repeat(2,minmax(0,3fr)) 44px repeat(3,minmax(0,2fr));}
+    .bottom-nav .nav-item{flex-direction:column;gap:1px;min-width:0;}
     .bottom-nav .fab{position:relative;bottom:auto;left:auto;right:auto;margin:0;flex:0 0 44px;width:44px;height:44px;box-shadow:none;}
     .bottom-nav .nav-item .nav-label{display:block;font-size:11px;font-weight:700;line-height:1.2;color:var(--text2);}
     .bottom-nav .nav-item.active .nav-label{color:var(--accent);}
