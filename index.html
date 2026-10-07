@@ -54,7 +54,7 @@
     /* --bg/--surface/--surface2/--border/--text/--text2/--text3 for light mode live in the
        "LIGHT-MODE POLISH" block further down (body:not(.dark)) — it always wins over these,
        so no light-mode fallback values are set here to avoid two sources of truth. */
-    :root{--accent:#0a7a62;--accent2:#0a7a62;--accent-rgb:10,122,98;--green:#046b4d;--green-light:#d7f0e6;--red:#b02631;--red-light:#fbe6e3;--blue:#1d4ed8;--blue-light:#dbeafe;--yellow:#a35a06;--yellow-light:#fef3c7;--purple:#a8621f;--purple-light:#f7ead9;--teal:#0d9488;--teal-light:#ccfbf1;--nav-h:66px;--header-h:60px;--safe-bottom:env(safe-area-inset-bottom,0px);--nav-bottom:calc(var(--safe-bottom) + 4px);--radius:18px;--radius-sm:12px;--main-px:16px;
+    :root{--accent:#0a7a62;--accent2:#0a7a62;--accent-rgb:10,122,98;--green:#046b4d;--green-light:#d7f0e6;--red:#b02631;--red-light:#fbe6e3;--blue:#1d4ed8;--blue-light:#dbeafe;--yellow:#a35a06;--yellow-light:#fef3c7;--purple:#a8621f;--purple-light:#f7ead9;--teal:#0d9488;--teal-light:#ccfbf1;--nav-h:66px;--header-h:60px;--safe-bottom:env(safe-area-inset-bottom,0px);--nav-bottom:max(8px,calc(var(--safe-bottom) - 14px));--radius:18px;--radius-sm:12px;--main-px:16px;
       /* ── Typography system ── */
       --font-sans:'Assistant',-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
       --font-num:var(--font-sans);
@@ -5140,7 +5140,7 @@ function showDisplayDiagnostics(outputId='displayDiagnostics'){
   const cssHeights={};
   for(const unit of ['vh','svh','lvh','dvh']){probe.style.height='100'+unit;cssHeights[unit]=Math.round(probe.getBoundingClientRect().height);}
   probe.remove();
-  const report={build:'display-33',safeArea,cssHeights,statusBarStyle:document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content,installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
+  const report={build:'display-34',safeArea,cssHeights,statusBarStyle:document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content,installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
   const output=document.getElementById(outputId);
   output.value=JSON.stringify(report,null,2);output.hidden=false;
 }
