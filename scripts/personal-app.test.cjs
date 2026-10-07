@@ -351,7 +351,7 @@ test('app updates wait until the open form is closed before reloading',()=>{
 function offlineWorkerContext(previous=false){
  const events={},items=new Map(),deleted=[];let waiting=0;
  const cache={add:async()=>{throw new Error('network failed');},match:async key=>items.get(key),put:async(key,value)=>items.set(key,value)};
- const ctx=vm.createContext({URL,Response,Promise,self:{location:{origin:'https://app.test'},addEventListener:(key,fn)=>{events[key]=fn;},skipWaiting:async()=>{waiting++;}},caches:{open:async()=>cache,match:async()=>previous?new Response('cached'):undefined,keys:async()=>['budget-app-old','another-app','budget-app-v27'],delete:async key=>{deleted.push(key);}},fetch:()=>new Promise(()=>{}),setTimeout:fn=>{ctx.fireTimeout=fn;return 1;},clearTimeout:()=>{}});
+ const ctx=vm.createContext({URL,Response,Promise,self:{location:{origin:'https://app.test'},addEventListener:(key,fn)=>{events[key]=fn;},skipWaiting:async()=>{waiting++;}},caches:{open:async()=>cache,match:async()=>previous?new Response('cached'):undefined,keys:async()=>['budget-app-old','another-app',fs.readFileSync(path.join(root,'sw.js'),'utf8').match(/const CACHE = '([^']+)'/)[1]],delete:async key=>{deleted.push(key);}},fetch:()=>new Promise(()=>{}),setTimeout:fn=>{ctx.fireTimeout=fn;return 1;},clearTimeout:()=>{}});
  vm.runInContext(fs.readFileSync(path.join(root,'sw.js'),'utf8'),ctx);return {ctx,events,deleted,waiting:()=>waiting};
 }
 test('an incomplete offline shell cannot replace the installed worker',async()=>{

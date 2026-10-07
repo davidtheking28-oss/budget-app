@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
   <meta name="theme-color" content="#100f0d"/>
   <meta name="color-scheme" content="light dark"/>
   <title>תקציב אישי</title>
@@ -925,9 +925,9 @@
     .loans-summary.has-loans .loans-summary-val{color:white;}
     /* ===== 4-item nav ===== */
     @media(max-width:600px){:root{--main-px:10px;}}
-    .bottom-nav{display:grid;grid-template-columns:repeat(2,minmax(0,3fr)) 44px repeat(3,minmax(0,2fr));}
+    .bottom-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));}
     .bottom-nav .nav-item{flex-direction:column;gap:1px;min-width:0;}
-    .bottom-nav .fab{position:relative;bottom:auto;left:auto;right:auto;margin:0;flex:0 0 44px;width:44px;height:44px;box-shadow:none;}
+    .bottom-nav .fab{position:relative;bottom:auto;left:auto;right:auto;margin:0;justify-self:center;flex:0 0 44px;width:44px;height:44px;box-shadow:none;}
     .bottom-nav .nav-item .nav-label{display:block;font-size:11px;font-weight:700;line-height:1.2;color:var(--text2);}
     .bottom-nav .nav-item.active .nav-label{color:var(--accent);}
     main{scroll-padding-top:calc(76px + env(safe-area-inset-top,0px));scroll-padding-bottom:16px;}
@@ -1310,14 +1310,14 @@
        ════════════════════════════════════════════════════════════ */
     @media (max-width:480px){
       html{font-size:14.5px;}
-      :root{--main-px:13px;}
+      :root{--main-px:10px;}
     }
     @media (max-width:400px){
       html{font-size:14px;}
     }
     @media (max-width:360px){
       html{font-size:13.3px;}
-      :root{--main-px:11px;}
+      :root{--main-px:10px;}
     }
     @media (max-width:330px){
       html{font-size:12.7px;}
@@ -2401,6 +2401,7 @@
       </div>
       <div class="settings-section">
         <div class="settings-section-title">תכנון</div>
+        <button type="button" id="settingsTasksBtn" onclick="showPage('analytics',document.getElementById('nav-more'))" class="btn btn-outline btn-full" style="margin-bottom:8px;">משימות ופגישות עם היועץ</button>
         <button onclick="showPage('more')" class="btn btn-outline btn-full">🎯 יעדים, הוצאות קבועות, מנויים והלוואות</button>
       </div>
       <div class="settings-section">
@@ -2599,14 +2600,7 @@
     <span class="nav-label">תקציב</span>
   </button>
 
-  <button class="nav-item" onclick="showPage('analytics',this)" id="nav-analytics" aria-label="משימות">
-    <div class="nav-icon">
-      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    </div>
-    <span class="nav-label">משימות</span>
-  </button>
-
-  <button class="nav-item" onclick="showPage('settings',this)" id="nav-more" aria-label="הגדרות">
+<button class="nav-item" onclick="showPage('settings',this)" id="nav-more" aria-label="הגדרות">
     <div class="nav-icon">
       <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
@@ -2621,6 +2615,8 @@
   <div class="sheet" style="max-height:86vh">
     <div class="sheet-handle"></div>
     <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">✉️ צור קשר<button onclick="closeSheet('supportSheet')" aria-label="סגור" class="sheet-close-x">✕</button></div>
+    <button type="button" class="btn btn-outline btn-full" onclick="showDisplayDiagnostics()">בדיקת תצוגה במכשיר</button>
+    <textarea id="displayDiagnostics" hidden readonly aria-label="נתוני תצוגה לצורך בדיקת התקלה" dir="ltr" rows="10" style="width:100%;margin:12px 0;padding:12px;box-sizing:border-box;font-size:16px;border:1px solid var(--border);border-radius:12px;color:var(--text);background:var(--surface2);user-select:text;"></textarea>
     <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:8px;">
       <div class="form-field">
         <label for="supportTopic" style="font-size:0.82rem;font-weight:600;color:var(--text2)">נושא</label>
@@ -5102,6 +5098,12 @@ function pickBackupFile(){
   input.click();
 }
 
+function showDisplayDiagnostics(){
+  const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {width:Math.round(r.width),height:Math.round(r.height),top:Math.round(r.top),bottom:Math.round(r.bottom)};};
+  const report={build:'display-28',installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
+  const output=document.getElementById('displayDiagnostics');
+  output.value=JSON.stringify(report,null,2);output.hidden=false;
+}
 function openSupportSheet(){
   closeAllSetDD();
   const em=document.getElementById('supportEmail');
