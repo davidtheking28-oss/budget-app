@@ -303,3 +303,16 @@ test('sheet backwards keyboard wrap skips visually hidden header buttons',()=>{
  const ctx=functions(['_sheetKeydown'],{_openSheets:new Set(['wizard']),getComputedStyle:el=>({visibility:el===hidden?'hidden':'visible'}),document:{activeElement:first,getElementById:()=>({querySelectorAll:()=>[hidden,first,last]})}});
  ctx._sheetKeydown({key:'Tab',shiftKey:true,preventDefault:()=>{}});assert.equal(focused,'last');
 });
+
+function workerBootContext(controlled=false){
+ const events={};let reloads=0,catches=0;const reg={update:()=>({catch:()=>{catches++;}})};
+ const ctx=vm.createContext({navigator:{serviceWorker:{controller:controlled?{}:null,addEventListener:(event,fn)=>{events[event]=fn;},register:async()=>reg,getRegistration:async()=>reg}},location:{protocol:'https:',hostname:'example.test',reload:()=>{reloads++;}},window:{addEventListener:(event,fn)=>{events[event]=fn;}},document:{addEventListener:(event,fn)=>{events[event]=fn;}},setInterval:()=>{}});
+ const start=html.indexOf("  if('serviceWorker' in navigator"),end=html.indexOf('  var deferred=',start);vm.runInContext(html.slice(start,end),ctx);return {ctx,events,reloads:()=>reloads,catches:()=>catches};
+}
+test('first service worker installation preserves the current page and later updates reload once',()=>{
+ const t=workerBootContext();t.events.controllerchange();assert.equal(t.reloads(),0);t.events.controllerchange();t.events.controllerchange();assert.equal(t.reloads(),1);
+ const existing=workerBootContext(true);existing.events.controllerchange();assert.equal(existing.reloads(),1);
+});
+test('service worker update checks attach a rejection handler',async()=>{
+ const t=workerBootContext();t.events.load();await new Promise(r=>setImmediate(r));assert.equal(t.catches(),1);
+});

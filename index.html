@@ -8919,16 +8919,18 @@ setTimeout(autoCarryRecurring,500);
     /* when a NEW service worker takes control, reload once so the fresh app applies
        immediately instead of the user staying stuck on an old cached version */
     var _swReloaded=false;
+    var _swControlled=!!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if(!_swControlled){_swControlled=true;return;}
       if(_swReloaded) return; _swReloaded=true; location.reload();
     });
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js').then(function(reg){
-        try{ reg.update(); }catch(e){}
-        setInterval(function(){ try{ reg.update(); }catch(e){} }, 60*60*1000);
+        try{ reg.update().catch(function(){}); }catch(e){}
+        setInterval(function(){ try{ reg.update().catch(function(){}); }catch(e){} }, 60*60*1000);
       }).catch(function(){});
     });
-    document.addEventListener('visibilitychange', function(){ if(!document.hidden && navigator.serviceWorker.controller){ navigator.serviceWorker.getRegistration().then(function(r){ if(r){ try{ r.update(); }catch(e){} } }).catch(function(){}); } });
+    document.addEventListener('visibilitychange', function(){ if(!document.hidden && navigator.serviceWorker.controller){ navigator.serviceWorker.getRegistration().then(function(r){ if(r){ try{ r.update().catch(function(){}); }catch(e){} } }).catch(function(){}); } });
   }
   var deferred=null;
   var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
