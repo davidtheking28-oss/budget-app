@@ -1525,6 +1525,24 @@
       }
     }
 
+    @media(max-width:600px){
+      #page-settings .form-stack{gap:12px;}
+      #page-settings .settings-section{margin-bottom:0;padding:16px;}
+      #page-settings .btn,#page-settings .set-dd-trigger,#page-settings .set-dd-opt{font-size:14px;line-height:1.45;text-align:start;overflow-wrap:anywhere;}
+      #page-settings .settings-section-title{font-size:17px;margin-bottom:12px;}
+      #txFlowViewToggle button{min-height:44px!important;min-width:72px;font-size:14px!important;}
+      #txFilterChips{flex-wrap:wrap;overflow:visible;gap:8px;padding:12px;}
+      #txFilterChips .filter-chip{flex:1;padding-inline:10px;font-size:14px;}
+      #rangeChips .range-chip{min-height:44px;font-size:14px;}
+      .budget-chip{height:108px;gap:8px;}
+      .budget-chip-name{font-size:14px;overflow-wrap:anywhere;}
+      .budget-detail-name,.budget-detail-planlabel{font-size:14px;}
+      #page-analytics .budget-tx-card{padding:16px;}
+      #page-analytics .budget-tx-desc{font-size:16px;line-height:1.5;overflow-wrap:anywhere;}
+      #page-analytics .budget-tx-date{font-size:14px;line-height:1.5;margin-top:6px;}
+      #page-analytics .empty p{line-height:1.6;max-width:280px;margin-inline:auto;}
+    }
+
     @media (hover:none) and (pointer:coarse){
       input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{font-size:16px!important;}
     }
@@ -5113,7 +5131,7 @@ function pickBackupFile(){
 
 function showDisplayDiagnostics(outputId='displayDiagnostics'){
   const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {width:Math.round(r.width),height:Math.round(r.height),top:Math.round(r.top),bottom:Math.round(r.bottom)};};
-  const report={build:'display-31',installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
+  const report={build:'display-32',installed:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches,screen:{width:screen.width,height:screen.height},viewport:{width:innerWidth,height:innerHeight,visibleHeight:Math.round(window.visualViewport?.height||innerHeight),offsetTop:Math.round(window.visualViewport?.offsetTop||0)},body:rect('body'),main:rect('main'),navigation:rect('.bottom-nav'),gutter:getComputedStyle(document.documentElement).getPropertyValue('--main-px').trim(),device:navigator.userAgent};
   const output=document.getElementById(outputId);
   output.value=JSON.stringify(report,null,2);output.hidden=false;
 }
