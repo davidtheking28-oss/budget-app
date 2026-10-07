@@ -316,3 +316,10 @@ test('first service worker installation preserves the current page and later upd
 test('service worker update checks attach a rejection handler',async()=>{
  const t=workerBootContext();t.events.load();await new Promise(r=>setImmediate(r));assert.equal(t.catches(),1);
 });
+
+test('quick amount fills the input without saving an expense',()=>{
+ let inputEvent;const input={value:'',dispatchEvent:e=>{inputEvent=e;}};const ctx=functions(['_setQuickAmount'],{Event,document:{getElementById:()=>input},haptic:()=>{}});ctx._setQuickAmount(50);assert.equal(input.value,'50');assert.equal(inputEvent.type,'input');assert.equal(inputEvent.bubbles,true);
+});
+test('navigation highlight follows the icon vertically when labels are visible',()=>{
+ const indicator={style:{},dataset:{}};const nav={getBoundingClientRect:()=>({left:10,top:200})};const icon={getBoundingClientRect:()=>({left:30,top:204,width:42})};const active={querySelector:()=>icon};const ctx=functions(['_positionNavIndicator'],{document:{querySelector:s=>s==='.bottom-nav'?nav:s==='.nav-indicator'?indicator:active}});ctx._positionNavIndicator();assert.equal(indicator.style.top,'4px');assert.equal(indicator.style.transform,'translateX(20px)');
+});

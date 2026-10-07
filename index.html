@@ -921,7 +921,13 @@
     .loans-summary-sub{font-size:0.75rem;color:var(--text3);margin-top:4px;}
     .loans-summary.has-loans .loans-summary-val{color:white;}
     /* ===== 4-item nav ===== */
-    .bottom-nav .nav-item .nav-label{display:none;}
+    .bottom-nav .nav-item{flex-direction:column;gap:1px;}
+    .bottom-nav .nav-item .nav-label{display:block;font-size:11px;font-weight:700;line-height:1.2;color:var(--text2);}
+    .bottom-nav .nav-item.active .nav-label{color:var(--accent);}
+    main{scroll-padding-top:calc(76px + env(safe-area-inset-top,0px));scroll-padding-bottom:16px;}
+    .sheet,.wiz-body-padded,#wizBody1{overscroll-behavior-y:contain;scroll-padding-block:16px;}
+    .quick-amounts{display:flex;justify-content:center;gap:8px;margin:0 0 8px;}
+    .quick-amounts button{flex:1;max-width:96px;min-height:44px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;}
     /* ── Income source row in settings ─────── */
     /* ── Settings sheet ─────────────────── */
     .settings-section{padding:18px 16px;border:none;background:var(--surface);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,0.05),0 10px 24px -8px rgba(0,0,0,0.09);margin-bottom:16px;}
@@ -1689,6 +1695,11 @@
             <span class="wiz-amount-currency">₪</span>
             <input type="number" id="txAmount" class="wiz-amount-input" placeholder="0" min="0" step="0.01" inputmode="decimal" aria-label="סכום בשקלים" oninput="this.style.width=Math.max(2,this.value.length+1)+'ch'" onkeydown="if(event.key==='Enter'){event.preventDefault();addTransaction();}">
           </div>
+        </div>
+        <div class="quick-amounts" role="group" aria-label="בחירת סכום מהירה">
+          <button type="button" onclick="_setQuickAmount(20)" aria-label="סכום 20 שקלים"><bdi dir="ltr">₪20</bdi></button>
+          <button type="button" onclick="_setQuickAmount(50)" aria-label="סכום 50 שקלים"><bdi dir="ltr">₪50</bdi></button>
+          <button type="button" onclick="_setQuickAmount(100)" aria-label="סכום 100 שקלים"><bdi dir="ltr">₪100</bdi></button>
         </div>
         <div id="wizLastAmtChip" style="display:none;text-align:center;margin-bottom:2px;"><button onclick="applyLastAmt()" style="background:var(--surface);border:1.5px dashed var(--border);color:var(--text2);padding:7px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;">פעם קודמת: <span id="wizLastAmtVal"></span> — להשתמש?</button></div>
         <div>
@@ -3459,6 +3470,13 @@ function wizNext(){
   else{addTransaction();}
 }
 let _wizLastAmt=null;
+function _setQuickAmount(amount){
+  const el=document.getElementById('txAmount');
+  if(!el)return;
+  el.value=String(amount);
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  haptic(6);
+}
 function applyLastAmt(){
   const el=document.getElementById('txAmount');
   if(el&&_wizLastAmt){ el.value=_wizLastAmt; el.focus(); }
@@ -8242,6 +8260,7 @@ function _positionNavIndicator(){
   const x=iconRect.left-navRect.left+(iconRect.width-42)/2;
   ind.style.transition=ind.dataset.ready?'':'none';
   ind.dataset.ready='1';
+  ind.style.top=(iconRect.top-navRect.top)+'px';
   ind.style.transform='translateX('+x+'px)';
 }
 window.addEventListener('resize',_positionNavIndicator);
