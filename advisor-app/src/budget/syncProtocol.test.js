@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stampSync, mergeSyncMeta } from './useClientBudget.js';
+import { stampSync, mergeSyncMeta, mergeBudgetPatch, writeBudgetVersion } from './useClientBudget.js';
 
 // Faithful copies of the client app's merge logic (index.html _mergeArrays / _mergeBudgets),
 // so these tests fail if the advisor ever stops speaking the same sync protocol.
@@ -110,5 +110,33 @@ describe('mergeSyncMeta', () => {
     const out = mergeSyncMeta(null, undefined);
     expect(out.del.tx).toEqual({});
     expect(out.bu).toEqual({});
+  });
+});
+
+describe('advisor merges fresh data before a versioned write', () => {
+  it('preserves concurrent additions and edits to other items', () => {
+    const prev = { transactions: [{ id: 'a', amount: 10, u: 1000 }, { id: 'b', amount: 20, u: 1000 }] };
+    const patch = stampSync(prev, { transactions: [{ id: 'a', amount: 99, u: 1000 }, prev.transactions[1]] }, 2000);
+    const fresh = { transactions: [{ id: 'a', amount: 10, u: 1000 }, { id: 'b', amount: 55, u: 3000 }, { id: 'c', amount: 7, u: 1500 }] };
+    const merged = mergeBudgetPatch(fresh, patch);
+    expect(merged.transactions.find(t => t.id === 'a').amount).toBe(99);
+    expect(merged.transactions.find(t => t.id === 'b').amount).toBe(55);
+    expect(merged.transactions.find(t => t.id === 'c').amount).toBe(7);
+  });
+  it('honors client deletions and does not resurrect removed budget categories', () => {
+    const fresh = { transactions: [], budgets: { food: 10, insurance: 20 }, sync_meta: { del: { tx: { a: 3000 } }, bu: { food: 1000, insurance: 1000 } } };
+    const prev = { transactions: [{ id: 'a', amount: 10, u: 1000 }], budgets: { food: 10, insurance: 20 } };
+    const patch = stampSync(prev, { transactions: prev.transactions, budgets: { food: 15 } }, 2000);
+    const merged = mergeBudgetPatch(fresh, patch);
+    expect(merged.transactions).toEqual([]);
+    expect(merged.budgets).toEqual({ food: 15 });
+  });
+  it('rejects stale versions instead of reporting success', async () => {
+    const filters = [];
+    const query = { eq: (...args) => { filters.push(args); return query; }, select: () => query, maybeSingle: async () => ({ data: null, error: null }) };
+    const db = { from: () => ({ update: () => query }) };
+    const result = await writeBudgetVersion(db, { user_id: 'client' }, { updated_at: 'old' });
+    expect(result.conflict).toBe(true);
+    expect(filters).toContainEqual(['updated_at', 'old']);
   });
 });

@@ -68,6 +68,50 @@ export function stampSync(prev, patch, now = Date.now()) {
   return touched ? { ...out, sync_meta: meta } : out;
 }
 
+export function mergeBudgetPatch(fresh, patch) {
+  const meta = mergeSyncMeta(fresh.sync_meta, patch.sync_meta);
+  const out = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (key === 'sync_meta') { out[key] = meta; continue; }
+    const delKey = DEL_KEY[key];
+    if (delKey && Array.isArray(value)) {
+      const items = new Map();
+      for (const item of [...(fresh[key] || []), ...value]) {
+        if (!item || item.id == null) continue;
+        const id = String(item.id), prior = items.get(id);
+        if (!prior || (item.u || 0) >= (prior.u || 0)) items.set(id, item);
+      }
+      for (const [id, ts] of Object.entries(meta.del[delKey] || {})) {
+        if ((items.get(id)?.u || 0) <= ts) items.delete(id);
+      }
+      out[key] = [...items.values()];
+    } else if (key === 'budgets') {
+      out[key] = { ...(fresh.budgets || {}) };
+      for (const [cat, amount] of Object.entries(value)) {
+        if (!(cat in out[key]) || (patch.sync_meta?.bu?.[cat] || 0) >= (fresh.sync_meta?.bu?.[cat] || 0)) out[key][cat] = amount;
+      }
+      for (const [cat, ts] of Object.entries(meta.del.budgets || {})) {
+        if ((meta.bu[cat] || 0) <= ts) delete out[key][cat];
+      }
+    } else {
+      const prior = fresh[key];
+      out[key] = prior && typeof prior === 'object' && !Array.isArray(prior) && value && typeof value === 'object' && !Array.isArray(value)
+        ? { ...prior, ...value } : value;
+    }
+  }
+  return out;
+}
+
+export async function writeBudgetVersion(db, payload, previous) {
+  let query;
+  if (previous) {
+    query = db.from('budget_data').update(payload).eq('user_id', payload.user_id);
+    query = previous.updated_at == null ? query.is('updated_at', null) : query.eq('updated_at', previous.updated_at);
+  } else query = db.from('budget_data').insert(payload);
+  const { data, error } = await query.select('user_id').maybeSingle();
+  return { error, conflict: error?.code === '23505' || (!error && !data) };
+}
+
 const STALE_MS = 30000;
 
 // The client app keeps business-mode data in a single nested `business` jsonb column and
@@ -215,36 +259,26 @@ async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
   const next = { ...prev, ...patch };
   invalidate(k);
   setEntry(k, { data: next, error: null, ts: Date.now() });
-  // re-fetch the latest row and shallow-merge object-typed patch fields onto it, so a
-  // concurrent edit to a sibling key in the same jsonb column isn't silently clobbered
-  const { data: freshRow } = await supabase
-    .from('budget_data')
-    .select('*')
-    .eq('user_id', clientUserId)
-    .maybeSingle();
-  // in business mode every collection lives inside the single `business` jsonb column
-  const freshBundle = mode === 'business' ? (freshRow?.business || {}) : (freshRow || {});
-  const mergedPatch = {};
-  for (const key of Object.keys(patch)) {
-    const freshVal = freshBundle[key];
-    const patchVal = patch[key];
-    if (key === 'sync_meta') {
-      // union tombstones/budget stamps with whatever landed since, so a concurrent
-      // deletion by the client isn't dropped and then resurrected
-      mergedPatch[key] = mergeSyncMeta(freshVal, patchVal);
-      continue;
-    }
-    mergedPatch[key] = (freshVal && typeof freshVal === 'object' && !Array.isArray(freshVal) &&
-      patchVal && typeof patchVal === 'object' && !Array.isArray(patchVal))
-      ? { ...freshVal, ...patchVal }
-      : patchVal;
+  let error = null;
+  let savedBundle;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const { data: freshRow, error: readError } = await supabase
+      .from('budget_data').select('*').eq('user_id', clientUserId).maybeSingle();
+    if (readError) { error = readError; break; }
+    const freshBundle = mode === 'business' ? (freshRow?.business || {}) : (freshRow || {});
+    const mergedPatch = mergeBudgetPatch(freshBundle, patch);
+    const row = {
+      user_id: clientUserId, updated_by: advisorId,
+      updated_at: new Date(Math.max(Date.now(), (Date.parse(freshRow?.updated_at) || 0) + 1)).toISOString(),
+    };
+    if (mode === 'business') row.business = { ...freshBundle, ...mergedPatch };
+    else Object.assign(row, mergedPatch);
+    const result = await writeBudgetVersion(supabase, row, freshRow);
+    if (result.conflict) { error = { message: 'sync conflict' }; continue; }
+    error = result.error;
+    savedBundle = { ...freshBundle, ...mergedPatch, user_id: clientUserId };
+    break;
   }
-  const row = { user_id: clientUserId, updated_by: advisorId, updated_at: new Date().toISOString() };
-  if (mode === 'business') row.business = { ...freshBundle, ...mergedPatch };
-  else Object.assign(row, mergedPatch);
-  const { error } = await supabase
-    .from('budget_data')
-    .upsert(row, { onConflict: 'user_id' });
   if (error) {
     // Roll back but leave `error` null: the cache is shared across tabs, and a failed
     // write must not replace every screen's valid data with a full-page error. The
@@ -253,6 +287,7 @@ async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
     toast('שגיאה בשמירה, נסה שוב', 'error');
     return false;
   }
+  if (cache.get(k)?.data === next) setEntry(k, { data: savedBundle, error: null, ts: Date.now() });
   return true;
 }
 

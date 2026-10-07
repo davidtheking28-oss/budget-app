@@ -42,6 +42,9 @@ jobs:
           console.log(blocks.length+' script blocks parsed clean');
           "
 
+      - name: Test personal app
+        run: node --test scripts/personal-app.test.cjs
+
       - name: Inject Supabase anon key
         env:
           SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}

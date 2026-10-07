@@ -238,6 +238,7 @@
     .recurring-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);display:inline-block;}
     .filter-row{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--border);}
     .filter-row::-webkit-scrollbar{display:none;}
+    @media(max-width:360px){#txFilterChips{flex-wrap:wrap;overflow:visible;}}
     .filter-chip{flex-shrink:0;padding:6px 14px;min-height:44px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text2);font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background 0.15s,color 0.15s,border-color 0.15s;}
     .filter-chip:hover:not(.active){background:var(--surface);border-color:var(--text3);}
     .filter-chip.active{background:var(--accent2);color:white;border-color:var(--accent2);}
@@ -1584,7 +1585,7 @@
   <img id="gifImg" src="data:," alt=""/>
 </div>
 <div id="confirmOverlay" class="confirm-overlay">
-  <div class="confirm-box" role="alertdialog" aria-modal="true">
+  <div class="confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMsg">
     <div class="confirm-icon" id="confirmIcon">⚠️</div>
     <div class="confirm-title" id="confirmTitle"></div>
     <div class="confirm-msg" id="confirmMsg"></div>
@@ -1595,7 +1596,7 @@
   </div>
 </div>
 <div id="promptOverlay" class="confirm-overlay">
-  <div class="confirm-box" role="alertdialog" aria-modal="true">
+  <div class="confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="promptTitle">
     <div class="confirm-title" id="promptTitle"></div>
     <form id="promptForm" onsubmit="return false">
       <div id="promptFields" style="display:flex;flex-direction:column;gap:10px;margin:14px 0;text-align:right"></div>
@@ -1639,7 +1640,7 @@
   <div class="sheet wiz-sheet">
     <div class="wiz-hdr" id="wizHdr">
       <div class="wiz-hdr-top">
-        <button class="wiz-step-btn" id="wizStepBtn" onclick="wizBack()">1/2</button>
+        <button class="wiz-step-btn" aria-label="סגור" id="wizStepBtn" onclick="wizBack()">1/2</button>
         <h2 class="wiz-ttl" id="wizTtl">מה קניתי?</h2>
         <button class="wiz-next-btn" id="wizNextBtn" onclick="wizNext()" aria-label="הבא">›</button>
       </div>
@@ -1698,7 +1699,7 @@
           <div class="wiz2-card" style="position:relative;display:flex;align-items:center;justify-content:space-between;overflow:hidden;">
             <span id="txDateDisplay" style="font-size:0.85rem;font-weight:600;color:var(--text);"></span>
             <span style="color:var(--text3);">📅</span>
-            <input type="date" id="txDateVisible" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;" oninput="document.getElementById('txDate').value=this.value;wizUpdateDate()"/>
+            <input type="date" aria-label="תאריך עסקה" id="txDateVisible" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;" oninput="document.getElementById('txDate').value=this.value;wizUpdateDate()"/>
           </div>
         </div>
       </div>
@@ -1889,6 +1890,7 @@
 
 <main id="main-content">
   <div id="page-dashboard" class="page active">
+    <p id="saveStatus" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.875rem;font-weight:600;margin:0 4px 12px;color:var(--text2)"></p>
     <div id="meetingAlerts" role="status" aria-live="polite"></div>
     <!-- Mode switcher -->
     <div id="modeSwitcher" style="display:none;justify-content:center;margin:-10px 0 14px;position:relative;">
@@ -2840,17 +2842,17 @@ function _mergeFixedCatInto(oldKeys,newKey){
   if(hadBud){budgets[newKey]=(budgets[newKey]||0)+budSum;changed=true;}
   const byNewId={};
   transactions.forEach(t=>{
-    if(t.type!=='expense'||!oldKeys.includes(t.cat))return;
-    changed=true;
-    t.cat=newKey;
+    if(t.type!=='expense'||(!oldKeys.includes(t.cat)&&!(t.fx&&t.cat===newKey)))return;
+    if(t.cat!==newKey){changed=true;t.cat=newKey;}
     if(t.fx){
       const mkey=String(t.id).split('|')[1];
       const newId=_fxTxId(mkey,newKey);
       if(byNewId[newId]&&byNewId[newId]!==t){
         byNewId[newId].amount=(parseFloat(byNewId[newId].amount)||0)+(parseFloat(t.amount)||0);
-        t._dropMe=true;
+        t._dropMe=true;changed=true;
       } else {
-        t.id=newId;
+        if(t.id!==newId||t.desc!==newKey)changed=true;
+        t.id=newId;t.desc=newKey;
         byNewId[newId]=t;
       }
     }
@@ -2859,11 +2861,13 @@ function _mergeFixedCatInto(oldKeys,newKey){
   return changed;
 }
 function _migrateInsuranceCats(){
-  const changed=_mergeFixedCatInto(['ביטוחי בריאות וחיים','ביטוח בריאות'],'ביטוחים');
-  if(changed){
-    const row=fixedExpenses.find(f=>f.id==='ביטוחים');
-    if(row&&parseFloat(row.amount)>0)insurances.push({id:Date.now(),name:'ביטוח',monthly:parseFloat(row.amount)});
+  let changed=_mergeFixedCatInto(['ביטוחי בריאות וחיים','ביטוח בריאות'],'ביטוחים');
+  const row=fixedExpenses.find(f=>f.id==='ביטוחים');
+  if(row){
+    const id=-2026100701;
+    if(parseFloat(row.amount)>0&&!insurances.some(i=>i.id===id))insurances.push({id,name:'ביטוח',monthly:parseFloat(row.amount)});
     fixedExpenses=fixedExpenses.filter(f=>f.id!=='ביטוחים');
+    changed=true;
   }
   return changed;
 }
@@ -2953,6 +2957,59 @@ const INCOME_CATS =['שכר','שכר בן/בת זוג','פרילנס','קצבת 
    this list used to lead with — same swatches, brand-first ordering. */
 const COLORS=['#34d3a9','#2dd4bf','#34d399','#4ade80','#a3e635','#fbbf24','#facc15','#fb923c','#f87171','#38bdf8','#818cf8','#a78bfa','#e879f9','#f472b6'];
 
+function _accountKeys(){
+  return Object.keys(localStorage).filter(k=>k.startsWith('budget_')&&!k.startsWith('budget_profile:')&&!['budget_local_owner','budget_account_transition','budget_theme','budget_dark','budget_install_dismiss','budget_vapid_pub'].includes(k));
+}
+function _switchLocalAccount(next){
+  const previous=localStorage.getItem('budget_local_owner')||'guest';
+  let transition=localStorage.getItem('budget_account_transition');
+  if(!transition&&previous===next)return false;
+  if(!transition){
+    const snapshot={};
+    _accountKeys().forEach(k=>{snapshot[k]=localStorage.getItem(k);});
+    localStorage.setItem('budget_profile:'+previous,JSON.stringify(snapshot));
+    const target=JSON.parse(localStorage.getItem('budget_profile:'+next)||'{}');
+    transition=JSON.stringify({next,data:target});
+    localStorage.setItem('budget_account_transition',transition);
+  }
+  const target=JSON.parse(transition);
+  _accountKeys().forEach(k=>localStorage.removeItem(k));
+  Object.entries(target.data).forEach(([k,v])=>{if(k.startsWith('budget_')&&!k.startsWith('budget_profile:')&&k!=='budget_local_owner'&&k!=='budget_account_transition')localStorage.setItem(k,v);});
+  localStorage.setItem('budget_local_owner',target.next);
+  localStorage.removeItem('budget_account_transition');
+  return true;
+}
+function _readStored(key,fallback){
+  const valid=v=>Array.isArray(fallback)?Array.isArray(v):v!==null&&typeof v==='object'&&!Array.isArray(v);
+  let raw;
+  try{
+    raw=localStorage.getItem(key);
+    if(raw===null)return fallback;
+    const value=JSON.parse(raw);
+    if(valid(value))return value;
+  }catch(e){}
+  try{if(raw!=null)localStorage.setItem('budget_corrupt:'+key,raw);}catch(e){}
+  for(const backup of ['budget_autobackup','budget_autobackup_prev']){
+    try{
+      const saved=JSON.parse(localStorage.getItem(backup)||'null')?.data?.[key];
+      if(saved==null)continue;
+      const value=JSON.parse(saved);
+      if(valid(value)){localStorage.setItem(key,saved);return value;}
+    }catch(e){}
+  }
+  return fallback;
+}
+window.addEventListener('storage',event=>{if(event.key==='budget_local_owner')location.reload();});
+let _localAccountReady=true;
+(function(){
+  try{
+    const key=Object.keys(localStorage).find(k=>k.startsWith('sb-')&&k.endsWith('-auth-token'));
+    const user=key?JSON.parse(localStorage.getItem(key))?.user:null;
+    if(!localStorage.getItem('budget_local_owner')&&user?.id&&!localStorage.getItem('budget_account_transition'))localStorage.setItem('budget_local_owner',user.id);
+    _switchLocalAccount(user?.id||'guest');
+  }catch(e){_localAccountReady=false;}
+})();
+
 (function(){
   if(localStorage.getItem('budget_tx')!==null)return;
   try{
@@ -2966,23 +3023,27 @@ const COLORS=['#34d3a9','#2dd4bf','#34d399','#4ade80','#a3e635','#fbbf24','#facc
     location.reload();
   }catch(e){}
 })();
+const _localStorageOwner=localStorage.getItem('budget_local_owner')||'guest';
+function _canWriteLocalData(){
+  return _localAccountReady&&!localStorage.getItem('budget_account_transition')&&(localStorage.getItem('budget_local_owner')||'guest')===_localStorageOwner;
+}
 let _activeMode = localStorage.getItem('budget_active_mode') || 'personal';
 function _modeKey(k){ return _activeMode==='personal'?k:k+'_'+_activeMode; }
 
-let transactions  = JSON.parse(localStorage.getItem(_modeKey('budget_tx'))    ||'[]');
-let goals         = JSON.parse(localStorage.getItem(_modeKey('budget_goals')) ||'[]');
-let subscriptions = JSON.parse(localStorage.getItem(_modeKey('budget_subs'))  ||'[]');
-let budgets       = JSON.parse(localStorage.getItem(_modeKey('budget_limits'))||'{}');
-let loans         = JSON.parse(localStorage.getItem(_modeKey('budget_loans')) ||'[]');
-let payments      = JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
+let transactions  = _readStored(_modeKey('budget_tx'),[]);
+let goals         = _readStored(_modeKey('budget_goals'),[]);
+let subscriptions = _readStored(_modeKey('budget_subs'),[]);
+let budgets       = _readStored(_modeKey('budget_limits'),{});
+let loans         = _readStored(_modeKey('budget_loans'),[]);
+let payments      = _readStored(_modeKey('budget_payments'),[]);
 // A loan/payment "closed" by a mahzor (consolidation) stays in the array so its
 // history and the advisor's before/after comparison survive — every display and
 // total must read through these instead of the raw arrays, or a closed item
 // keeps counting toward balances after it was folded into a new consolidated loan.
 function activeLoans(){ return loans.filter(l=>!l.closed); }
 function activePayments(){ return payments.filter(p=>!p.closed); }
-let fixedExpenses = JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))   ||'[]');
-let insurances    = JSON.parse(localStorage.getItem(_modeKey('budget_insurances'))||'[]');
+let fixedExpenses = _readStored(_modeKey('budget_fixed'),[]);
+let insurances    = _readStored(_modeKey('budget_insurances'),[]);
 
 // ── Sync metadata: per-item timestamps + tombstones for merge-safe cloud sync ──
 function _emptyMeta(){return {del:{tx:{},goals:{},subs:{},loans:{},payments:{},fixed:{},insurances:{},budgets:{}},bu:{}};}
@@ -3044,6 +3105,7 @@ let _recurRefused = new Set();
 let catChart=null, barChart=null;
 
 function saveData(){
+  if(!_canWriteLocalData())return;
   _stampChanges();
   localStorage.setItem(_modeKey('budget_tx'),    JSON.stringify(transactions));
   localStorage.setItem(_modeKey('budget_goals'), JSON.stringify(goals));
@@ -3057,9 +3119,18 @@ function saveData(){
   scheduleCloudSave();
 }
 let _saveDataDebounceTimer=null;
+function _flushLocalSave(){
+  if(_saveDataDebounceTimer===null)return;
+  clearTimeout(_saveDataDebounceTimer);
+  _saveDataDebounceTimer=null;
+  if(!_canWriteLocalData())return;
+  saveData();
+}
+window.addEventListener('pagehide',_flushLocalSave);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)_flushLocalSave();});
 function saveDataDebounced(){
   clearTimeout(_saveDataDebounceTimer);
-  _saveDataDebounceTimer=setTimeout(saveData,400);
+  _saveDataDebounceTimer=setTimeout(_flushLocalSave,400);
 }
 
 function fmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';const str=Math.round(Math.abs(n)).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});return sym+str.replace(/[-−]/g,'');}
@@ -3144,7 +3215,7 @@ function _sheetKeydown(e){
   const ov=document.getElementById(id);if(!ov)return;
   if(e.key==='Escape'){closeSheet(id);return;}
   if(e.key==='Tab'){
-    const focusables=ov.querySelectorAll('a[href],button:not([disabled]):not([inert]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');
+    const focusables=[...ov.querySelectorAll('a[href],button:not([disabled]):not([inert]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.closest('[inert]'));
     if(!focusables.length)return;
     const first=focusables[0],last=focusables[focusables.length-1];
     if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
@@ -3152,6 +3223,15 @@ function _sheetKeydown(e){
   }
 }
 let _sheetOpenerEl=null;
+function _dialogKeydown(e,ov,cancel,submit){
+  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();cancel();return;}
+  if(e.key==='Enter'&&document.activeElement.tagName!=='BUTTON'){e.preventDefault();e.stopImmediatePropagation();submit();return;}
+  if(e.key!=='Tab')return;
+  const items=[...ov.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]')].filter(el=>el.getClientRects().length);
+  const first=items[0],last=items[items.length-1];if(!first)return;
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+}
 function openSheet(id){
   const ov=document.getElementById(id);
   if(id==='addBudgetSheet'){const b=ov.querySelector('.btn-primary');if(b){b.textContent='שמור תקציב';b.disabled=false;}}
@@ -3298,6 +3378,8 @@ function wizExpandCat(cat,el){
 function wizRender(){
   const isExp=txTypeFilter==='expense';
   document.getElementById('wizNextBtn').textContent='✓';
+  document.getElementById('wizNextBtn').setAttribute('aria-label','שמור עסקה');
+  document.getElementById('wizStepBtn').setAttribute('aria-label',wizStep===1?'סגור':'חזור לשלב הקודם');
   document.getElementById('wizNextBtn').style.visibility=wizStep===1?'hidden':'visible';
   const _po=document.getElementById('wizPillOuter');if(_po)_po.style.display=wizStep===1?'':'none';
   document.getElementById('wizStepBtn').innerHTML=wizStep===1?'<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>':'<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;vertical-align:middle;"><polyline points="15 18 21 12 15 6"/><line x1="21" y1="12" x2="3" y2="12"/></svg>';
@@ -4101,7 +4183,11 @@ function _dismissMeetingReminder(id){
 }
 
 // ── Merge helpers: timestamp-based, tombstone-aware ──
-let _syncPending=false;
+let _syncPending=localStorage.getItem(_modeKey('budget_sync_pending'))==='1';
+let _localSaveVersion=0;
+let _localSaveFailed=false;
+let _cloudSyncVerified=false;
+let _cloudSaveFailed=false;
 let _syncRetryTimer=null;
 let _syncFailedNotified=false;
 let _cloudSaveInFlight=false;
@@ -4170,8 +4256,11 @@ function _applyMerged(m){
     ||JSON.stringify(m.insurances)!==JSON.stringify(insurances)
     ||JSON.stringify(m.budgets)!==JSON.stringify(budgets);
   transactions=m.transactions;goals=m.goals;subscriptions=m.subscriptions;loans=m.loans;payments=m.payments;fixedExpenses=m.fixed_expenses;insurances=m.insurances;budgets=m.budgets;
-  _migrateCats();   // cloud rows may still carry the old category names
-  _fixRefinedCats();
+  _rebuildShadow();
+  let normalized=_migrateCats();   // cloud rows may still carry the old category names
+  normalized=_fixRefinedCats()||normalized;
+  if(normalized)_stampChanges();
+  Object.assign(m,{transactions,goals,subscriptions,loans,payments,fixed_expenses:fixedExpenses,insurances,budgets});
   localStorage.setItem(_modeKey('budget_tx'),JSON.stringify(transactions));
   localStorage.setItem(_modeKey('budget_goals'),JSON.stringify(goals));
   localStorage.setItem(_modeKey('budget_subs'),JSON.stringify(subscriptions));
@@ -4182,92 +4271,136 @@ function _applyMerged(m){
   localStorage.setItem(_modeKey('budget_insurances'),JSON.stringify(insurances));
   localStorage.setItem(_modeKey('budget_sync_meta'),JSON.stringify(_syncMeta));
   _rebuildShadow();
-  return changed;
+  if(normalized)scheduleCloudSave();
+  return changed||normalized;
 }
 
 // ── Sync status indicator (dot removed — sync runs silently; status text stays in Settings) ──
+function _syncStatus(){
+  if(_localSaveFailed)return {state:'error',text:'השמירה במכשיר נכשלה',color:'var(--red)'};
+  if(!_cloudUser)return {state:'local',text:'נשמר במכשיר בלבד',color:'var(--text2)'};
+  if(!navigator.onLine)return {state:'offline',text:'נשמר במכשיר · ממתין לחיבור',color:'var(--text2)'};
+  if(_cloudSaveInFlight)return {state:'syncing',text:'נשמר במכשיר · מסנכרן לענן',color:'var(--text2)'};
+  if(_cloudSaveFailed)return {state:'error',text:'נשמר במכשיר · הגיבוי לענן נכשל',color:'var(--red)'};
+  if(_syncPending)return {state:'pending',text:'נשמר במכשיר · ממתין לסנכרון',color:'var(--text2)'};
+  if(!_cloudSyncVerified)return {state:'checking',text:'בודק את הגיבוי בענן',color:'var(--text2)'};
+  return {state:'synced',text:'נשמר במכשיר ובענן',color:'var(--green)'};
+}
+function _renderSyncStatus(){
+  const status=_syncStatus();
+  document.querySelectorAll('#cloudStatus,#saveStatus').forEach(el=>{
+    el.textContent=status.text;
+    el.style.color=status.color;
+    el.dataset.state=status.state;
+  });
+}
 function _setSyncState(state){
-  const s=document.getElementById('cloudStatus');
-  if(s){
-    if(state==='synced'){s.textContent='✓ מסונכרן';s.style.color='var(--green)';}
-    else if(state==='syncing'){s.textContent='מסנכרן...';s.style.color='var(--yellow)';}
-    else{s.textContent='⏳ ממתין לסנכרון';s.style.color='var(--text3)';}
-  }
+  if(state==='synced'){_cloudSyncVerified=true;_cloudSaveFailed=false;}
+  else if(state==='error')_cloudSaveFailed=true;
+  else if(state==='syncing')_cloudSaveFailed=false;
+  _renderSyncStatus();
 }
 
 function scheduleCloudSave(){
-  if(!_cloudUser||!_sb) return;
+  if(!_canWriteLocalData())return;
   _syncPending=true;
+  _localSaveVersion++;
+  localStorage.setItem(_modeKey('budget_sync_pending'),'1');
+  _renderSyncStatus();
+  if(!_cloudUser||!_sb||!_localAccountReady||localStorage.getItem('budget_local_owner')!==_cloudUser.id) return;
   clearTimeout(_cloudSaveTimer);
   _cloudSaveTimer = setTimeout(_doCloudSave, 2000);
 }
 function _stableStr(v){if(Array.isArray(v))return '['+v.map(_stableStr).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).filter(k=>v[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+_stableStr(v[k])).join(',')+'}';return JSON.stringify(v);}
+async function _writeBudgetVersion(payload,previous){
+  let query;
+  if(previous){
+    query=_sb.from('budget_data').update(payload).eq('user_id',payload.user_id);
+    query=previous.updated_at==null?query.is('updated_at',null):query.eq('updated_at',previous.updated_at);
+  }else query=_sb.from('budget_data').insert(payload);
+  const {data,error}=await query.select('user_id').maybeSingle();
+  return {error,conflict:error?.code==='23505'||(!error&&!data)};
+}
 async function _doCloudSave(){
-  if(!_cloudUser||!_sb) return;
+  if(!_cloudUser||!_sb||!_localAccountReady||localStorage.getItem('budget_local_owner')!==_cloudUser.id) return;
   if(_cloudSaveInFlight){_syncPending=true;_cloudSaveQueued=true;return;}
   const uid=_getDataUserId();if(!uid)return;
+  const account=_cloudUser.id,mode=_activeMode;
   _cloudSaveInFlight=true;
   _setSyncState('syncing');
   try{
-    const isBiz=_activeMode!=='personal';
-    const {data:row,error:selErr}=await _sb.from('budget_data').select('*').eq('user_id',uid).maybeSingle();
-    if(selErr)throw selErr;
-    const bundle=(isBiz?row?.business:row)||{};
-    const cloudMeta=isBiz?bundle.sync_meta:row?.sync_meta;
-    const localBu={...(_syncMeta.bu||{})};
-    if(cloudMeta)_syncMeta=_mergeMeta(_syncMeta,cloudMeta);
-    const merged=_buildMerged(bundle,localBu,cloudMeta&&cloudMeta.bu);
-    let changed=_applyMerged(merged);
-    const cloudSettings=bundle.settings;
-    if(cloudSettings&&cloudSettings.name!==undefined){
-      const cloudTs=row&&row.updated_at?new Date(row.updated_at).getTime():0;
-      const localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');
-      const cloudNewer=cloudTs>localTs;
-      const hist=cloudNewer?{...(userSettings.incomeHistory||{}),...(cloudSettings.incomeHistory||{})}:{...(cloudSettings.incomeHistory||{}),...(userSettings.incomeHistory||{})};
-      if(cloudNewer&&_stableStr(cloudSettings)!==_stableStr({...userSettings,incomeHistory:cloudSettings.incomeHistory})){userSettings={...userSettings,...cloudSettings};changed=true;}
-      if(Object.keys(hist).length){userSettings.incomeHistory=hist;_syncCurrentIncome();}
-      localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));
-      if(cloudNewer)localStorage.setItem(_modeKey('budget_settings_ts'),String(cloudTs));
+    let changed=false;
+    for(let attempt=0;attempt<4;attempt++){
+      const isBiz=mode!=='personal';
+      const {data:row,error:selErr}=await _sb.from('budget_data').select('*').eq('user_id',uid).maybeSingle();
+      if(selErr)throw selErr;
+      if(_cloudUser?.id!==account||_activeMode!==mode||_getDataUserId()!==uid||localStorage.getItem('budget_local_owner')!==account)return;
+      const bundle=(isBiz?row?.business:row)||{};
+      const cloudMeta=isBiz?bundle.sync_meta:row?.sync_meta;
+      const localBu={...(_syncMeta.bu||{})};
+      if(cloudMeta)_syncMeta=_mergeMeta(_syncMeta,cloudMeta);
+      const merged=_buildMerged(bundle,localBu,cloudMeta&&cloudMeta.bu);
+      changed=_applyMerged(merged)||changed;
+      const cloudSettings=bundle.settings;
+      if(cloudSettings&&cloudSettings.name!==undefined){
+        const cloudTs=row&&row.updated_at?new Date(row.updated_at).getTime():0;
+        const localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');
+        const cloudNewer=cloudTs>localTs;
+        const hist=cloudNewer?{...(userSettings.incomeHistory||{}),...(cloudSettings.incomeHistory||{})}:{...(cloudSettings.incomeHistory||{}),...(userSettings.incomeHistory||{})};
+        if(cloudNewer&&_stableStr(cloudSettings)!==_stableStr({...userSettings,incomeHistory:cloudSettings.incomeHistory})){userSettings={...userSettings,...cloudSettings};changed=true;}
+        if(Object.keys(hist).length){userSettings.incomeHistory=hist;_syncCurrentIncome();}
+        localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));
+        if(cloudNewer)localStorage.setItem(_modeKey('budget_settings_ts'),String(cloudTs));
+      }
+      const payload={user_id:uid,updated_at:new Date(Math.max(Date.now(),(Date.parse(row?.updated_at)||0)+1)).toISOString(),updated_by:account};
+      if(isBiz){
+        payload.business={...bundle,...merged,sync_meta:_syncMeta,settings:userSettings};
+      }else{
+        Object.assign(payload,merged,{settings:userSettings,sync_meta:_syncMeta});
+        _missingCols.forEach(c=>delete payload[c]);
+      }
+      const savingVersion=_localSaveVersion;
+      let {error,conflict}=await _writeBudgetVersion(payload,row);
+      for(let i=0;error&&error.code==='PGRST204'&&i<_OPTIONAL_COLS.length;i++){
+        const col=(/'([^']+)'/.exec(error.message||'')||[])[1];
+        if(!_OPTIONAL_COLS.includes(col)||payload[col]===undefined)break;
+        _DEBUG&&console.warn('cloud save: column "'+col+'" missing, syncing without it');
+        _missingCols.add(col);
+        delete payload[col];
+        ({error,conflict}=await _writeBudgetVersion(payload,row));
+      }
+      if(conflict){if(attempt===3)throw new Error('sync conflict');continue;}
+      if(error)throw error;
+      if(_cloudUser?.id!==account||_activeMode!==mode||_getDataUserId()!==uid)return;
+      if(_localSaveVersion!==savingVersion)_cloudSaveQueued=true;
+      break;
     }
-    const payload={user_id:uid,updated_at:new Date().toISOString(),updated_by:_cloudUser.id};
-    if(isBiz){
-      payload.business={...bundle,...merged,sync_meta:_syncMeta,settings:userSettings};
-    }else{
-      Object.assign(payload,merged,{settings:userSettings,sync_meta:_syncMeta});
-      _missingCols.forEach(c=>delete payload[c]);
-    }
-    let {error}=await _sb.from('budget_data').upsert(payload,{onConflict:'user_id'});
-    for(let i=0;error&&error.code==='PGRST204'&&i<_OPTIONAL_COLS.length;i++){
-      const col=(/'([^']+)'/.exec(error.message||'')||[])[1];
-      if(!_OPTIONAL_COLS.includes(col)||payload[col]===undefined)break;
-      _DEBUG&&console.warn('cloud save: column "'+col+'" missing, syncing without it');
-      _missingCols.add(col);
-      delete payload[col];
-      ({error}=await _sb.from('budget_data').upsert(payload,{onConflict:'user_id'}));
-    }
-    if(error)throw error;
-    _syncPending=false;
-    _setSyncState('synced');
+    _syncPending=_cloudSaveQueued;
+    localStorage.setItem(_modeKey('budget_sync_pending'),_syncPending?'1':'0');
+    _setSyncState(_syncPending?'pending':'synced');
     if(_syncFailedNotified){_syncFailedNotified=false;showToast('✓ הסנכרון לענן חזר לתקין');}
     if(changed)refreshAll();
   }catch(e){
     _DEBUG&&console.warn('cloud save',e);
     _syncPending=true;
-    _setSyncState('pending');
+    _setSyncState('error');
     if(!_syncFailedNotified){_syncFailedNotified=true;showToast('⚠️ בעיה בסנכרון לענן — ננסה שוב');}
     clearTimeout(_syncRetryTimer);
     _syncRetryTimer=setTimeout(()=>{if(_syncPending)_doCloudSave();},30000);
   }finally{
     _cloudSaveInFlight=false;
+    _renderSyncStatus();
     if(_cloudSaveQueued){_cloudSaveQueued=false;scheduleCloudSave();}
   }
 }
 async function _loadFromCloud(silent){
-  if(!_cloudUser||!_sb) return;
+  if(!_cloudUser||!_sb||!_localAccountReady||localStorage.getItem('budget_local_owner')!==_cloudUser.id) return;
   const uid=_getDataUserId();if(!uid)return;
+  const account=_cloudUser.id,mode=_activeMode;
   try{
     const {data,error}=await _sb.from('budget_data').select('*').eq('user_id',uid).maybeSingle();
     if(error)throw error;
+    if(_cloudUser?.id!==account||_activeMode!==mode||_getDataUserId()!==uid||localStorage.getItem('budget_local_owner')!==account)return;
     if(data){
       const isBiz=_activeMode!=='personal';
       const bundle=(isBiz?data.business:data)||{};
@@ -4287,8 +4420,10 @@ async function _loadFromCloud(silent){
       if(!_householdOwner)await _doCloudSave();
       _decideOnboarding();
     }
+    if(_syncPending)scheduleCloudSave();
+    else _setSyncState('synced');
     renderCloudSection();
-  }catch(e){_DEBUG&&console.warn('cloud load',e);_decideOnboarding();}
+  }catch(e){_setSyncState('error');_DEBUG&&console.warn('cloud load',e);_decideOnboarding();}
 }
 // ── Push notifications ────────────────────────────────────────────
 function _pushSupported(){return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;}
@@ -4380,6 +4515,7 @@ async function savePushPrefs(){
 }
 
 async function cloudSignOut(){
+  _flushLocalSave();
   await _sb?.auth.signOut();
   _cloudUser=null;
   renderCloudSection();
@@ -4391,14 +4527,16 @@ function renderCloudSection(){
   updatePartnerFromHousehold();
   if(!_cloudUser){
     el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">התחבר עם Gmail. הנתונים יגובו ויהיו זמינים בכל מכשיר</div>'
+      +'<p id="cloudStatus" role="status" aria-live="polite" style="font-size:0.875rem;font-weight:600;margin-bottom:10px"></p>'
       +'<button class="btn btn-primary btn-full" onclick="authGoogleSignIn()">המשך עם Gmail</button>';
+    _renderSyncStatus();
     return;
   }
   // מחובר — בנה את ה-UI
   let html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
     +'<div><div style="font-size:0.88rem;font-weight:700;color:var(--text)">☁️ מחובר לענן</div>'
     +'<div style="font-size:0.72rem;color:var(--text3);margin-top:2px">'+esc(_cloudUser.email)+'</div></div>'
-    +'<span id="cloudStatus" style="font-size:0.75rem;font-weight:700;color:var(--green)">✓ מסונכרן</span></div>';
+    +'<span id="cloudStatus" role="status" aria-live="polite" style="font-size:0.875rem;font-weight:700;max-width:48%;text-align:end"></span></div>';
 
   // household section
   if(!_cloudHousehold){
@@ -4442,6 +4580,7 @@ function renderCloudSection(){
 
   html+='<div style="margin-top:10px"><button class="btn btn-outline btn-sm" onclick="cloudSignOut()" style="width:100%;color:var(--text3)">התנתק</button></div>';
   el.innerHTML=html;
+  _renderSyncStatus();
 }
 async function _loadHousehold(){
   if(!_cloudUser||!_sb)return;
@@ -4700,6 +4839,16 @@ document.addEventListener('DOMContentLoaded',function(){
   _errSetSender&&_errSetSender(_errSend);
   if(_sb){
     _sb.auth.onAuthStateChange((event,session)=>{
+      const next=session?.user?.id||'guest';
+      if(!_localAccountReady)return;
+      if(next!==(localStorage.getItem('budget_local_owner')||'guest')){
+        _flushLocalSave();
+        clearTimeout(_cloudSaveTimer);
+        clearTimeout(_syncRetryTimer);
+        _switchLocalAccount(next);
+        location.reload();
+        return;
+      }
       _cloudUser=session?.user||null;
       _loadAdvisorStatus().then(_applyAdvisorGate);
       renderCloudSection();
@@ -4714,6 +4863,9 @@ document.addEventListener('DOMContentLoaded',function(){
       }
     });
     _sb.auth.getSession().then(async ({data:{session}})=>{
+      if(!_localAccountReady){showToast('לא ניתן להכין את הנתונים לחשבון — בדוק מקום פנוי במכשיר');return;}
+      const next=session?.user?.id||'guest';
+      if(_switchLocalAccount(next)){location.reload();return;}
       _cloudUser=session?.user||null;
       if(_cloudUser)_loadMeetingAlerts();
       if(_cloudUser){
@@ -4738,7 +4890,7 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 });
 
-let userSettings = JSON.parse(localStorage.getItem(_modeKey('budget_settings')) || '{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
+let userSettings = _readStored(_modeKey('budget_settings'),{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]});
 if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
 if(!userSettings.customFixedCats) userSettings.customFixedCats = [];
@@ -4748,7 +4900,7 @@ function _seedIncomeHistory(){if(!userSettings.incomeHistory&&(userSettings.inco
 function _incomeSnap(){_seedIncomeHistory();if(!userSettings.incomeHistory){if(!(userSettings.incomeSources||[]).length)return;userSettings.incomeHistory={};}userSettings.incomeHistory[_curMonthKey()]=(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
 function _syncCurrentIncome(){if(!userSettings.incomeHistory)return;const n=new Date();userSettings.incomeSources=_cloneSources(_incomeSourcesFor(n.getFullYear(),n.getMonth()));}
 function _incomeSourcesFor(y,m){const h=userSettings.incomeHistory;if(!h)return userSettings.incomeSources||[];const key=mk(y,m);const keys=Object.keys(h).filter(k=>k<=key).sort();return keys.length?h[keys[keys.length-1]]:(userSettings.incomeSources||[]);}
-function saveSettingsData(){_incomeSnap();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
+function saveSettingsData(){if(!_canWriteLocalData())return;_incomeSnap();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
 
 // One definition of "income for a month", used by every screen. Posted income
 // transactions plus any standing source from settings that wasn't posted, so a
@@ -4866,7 +5018,13 @@ function importBackup(input){
   reader.onload = async e => {
     try {
       const data = JSON.parse(e.target.result);
-      if(!data.transactions) throw new Error('קובץ לא תקין');
+      if(!data||typeof data!=='object'||!Array.isArray(data.transactions))throw new Error('קובץ לא תקין');
+      for(const key of ['transactions','goals','subscriptions','loans','payments','fixedExpenses','insurances']){
+        if(data[key]!==undefined&&(!Array.isArray(data[key])||data[key].some(item=>!item||typeof item!=='object'||Array.isArray(item)||item.id==null)))throw new Error('קובץ לא תקין');
+      }
+      for(const key of ['budgets','userSettings']){
+        if(data[key]!==undefined&&(!data[key]||typeof data[key]!=='object'||Array.isArray(data[key])))throw new Error('קובץ לא תקין');
+      }
       if(!(await confirmSheet({icon:'♻️',title:'שחזור גיבוי',message:'שחזור יחליף את כל הנתונים הקיימים. להמשיך?',confirmText:'שחזר',danger:true}))) return;
       transactions = data.transactions || [];
       goals = data.goals || [];
@@ -6138,14 +6296,14 @@ async function _expEditInsurance(id){
   if(!vals)return;
   const[name,monthly]=vals;
   i.name=name.trim();i.monthly=parseFloat(monthly)||0;
-  saveData();renderTxPage();
+  _fxPushMonth('ביטוחים');saveData();renderTxPage();
 }
 function _expDeleteInsurance(id){
   const idx=insurances.findIndex(i=>i.id===id);if(idx<0)return;
   const backup=insurances[idx];
   insurances=insurances.filter(i=>i.id!==id);
-  saveData();renderTxPage();
-  showUndoToast('🗑️ הביטוח הוסר',()=>{insurances.splice(idx,0,backup);saveData();renderTxPage();},()=>{});
+  _fxPushMonth('ביטוחים');saveData();renderTxPage();
+  showUndoToast('🗑️ הביטוח הוסר',()=>{insurances.splice(idx,0,backup);_fxPushMonth('ביטוחים');saveData();renderTxPage();},()=>{});
 }
 async function _expAddInsurance(){
   const vals=await promptSheet({title:'ביטוח חדש',fields:[
@@ -6155,7 +6313,7 @@ async function _expAddInsurance(){
   if(!vals||!vals[0]||!vals[0].trim())return;
   const[name,monthly]=vals;
   insurances.push({id:Date.now(),name:name.trim(),monthly:parseFloat(monthly)||0});
-  saveData();renderTxPage();
+  _fxPushMonth('ביטוחים');saveData();renderTxPage();
   showToast('✓ ביטוח נוסף');
 }
 async function _expAddPayment(){
@@ -7498,7 +7656,7 @@ function init(){
   }catch(e){}
   setTimeout(()=>animateHeroNums('dashboard'),200);
   (function(){
-    function _syncOffline(){document.body.classList.toggle('offline',!navigator.onLine);}
+    function _syncOffline(){document.body.classList.toggle('offline',!navigator.onLine);_renderSyncStatus();}
     window.addEventListener('online',()=>{_syncOffline();if(_syncPending)scheduleCloudSave();});
     window.addEventListener('offline',_syncOffline);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden&&_syncPending&&navigator.onLine)scheduleCloudSave();});
@@ -7749,6 +7907,7 @@ function hideSplash(){
 let _authGateTimer=null;
 let _gateDone=false;
 function _initAuthGate(){
+  if(!_localAccountReady){hideSplash();showAuthScreen();return;}
   localStorage.removeItem('auth_skipped');
   if(!_sb||SUPA_ANON==='__SUPABASE_ANON__'){
     _gateDone=true;
@@ -7824,18 +7983,19 @@ function _proceedToApp(){
 }
 function switchMode(mode){
   if(mode===_activeMode)return;
+  _flushLocalSave();
   _activeMode=mode;
   localStorage.setItem('budget_active_mode',mode);
-  transactions=JSON.parse(localStorage.getItem(_modeKey('budget_tx'))||'[]');
-  goals=JSON.parse(localStorage.getItem(_modeKey('budget_goals'))||'[]');
-  subscriptions=JSON.parse(localStorage.getItem(_modeKey('budget_subs'))||'[]');
-  budgets=JSON.parse(localStorage.getItem(_modeKey('budget_limits'))||'{}');
-  loans=JSON.parse(localStorage.getItem(_modeKey('budget_loans'))||'[]');
-  payments=JSON.parse(localStorage.getItem(_modeKey('budget_payments'))||'[]');
-  fixedExpenses=JSON.parse(localStorage.getItem(_modeKey('budget_fixed'))||'[]');
-  insurances=JSON.parse(localStorage.getItem(_modeKey('budget_insurances'))||'[]');
+  transactions=_readStored(_modeKey('budget_tx'),[]);
+  goals=_readStored(_modeKey('budget_goals'),[]);
+  subscriptions=_readStored(_modeKey('budget_subs'),[]);
+  budgets=_readStored(_modeKey('budget_limits'),{});
+  loans=_readStored(_modeKey('budget_loans'),[]);
+  payments=_readStored(_modeKey('budget_payments'),[]);
+  fixedExpenses=_readStored(_modeKey('budget_fixed'),[]);
+  insurances=_readStored(_modeKey('budget_insurances'),[]);
   const prevBM=userSettings.businessMode;
-  userSettings=JSON.parse(localStorage.getItem(_modeKey('budget_settings'))||'{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]}');
+  userSettings=_readStored(_modeKey('budget_settings'),{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]});
   if(!userSettings.incomeSources)userSettings.incomeSources=[];
   _seedIncomeHistory();
   _syncCurrentIncome();
@@ -8653,6 +8813,7 @@ setTimeout(autoCarryRecurring,500);
     opts=opts||{};
     return new Promise(function(resolve){
       var ov=document.getElementById('confirmOverlay'); if(!ov){ resolve(window.confirm(opts.message||'')); return; }
+      var opener=document.activeElement;
       var box=ov.querySelector('.confirm-box');
       document.getElementById('confirmIcon').textContent=opts.icon||(opts.danger?'⚠️':'❓');
       document.getElementById('confirmTitle').textContent=opts.title||'אישור';
@@ -8663,12 +8824,13 @@ setTimeout(autoCarryRecurring,500);
       box.classList.toggle('danger',!!opts.danger);
       ov.classList.add('show');
       if(typeof haptic==='function'){try{haptic(8);}catch(e){}}
-      function cleanup(val){ ov.classList.remove('show'); okBtn.onclick=null; caBtn.onclick=null; ov.onclick=null; document.removeEventListener('keydown',onKey); resolve(val); }
-      function onKey(e){ if(e.key==='Escape')cleanup(false); else if(e.key==='Enter')cleanup(true); }
+      function cleanup(val){ ov.classList.remove('show'); okBtn.onclick=null; caBtn.onclick=null; ov.onclick=null; document.removeEventListener('keydown',onKey,true); if(opener&&document.contains(opener))opener.focus(); resolve(val); }
+      function onKey(e){_dialogKeydown(e,ov,function(){cleanup(false);},function(){cleanup(true);});}
+      (opts.okOnly?okBtn:caBtn).focus();
       okBtn.onclick=function(){cleanup(true);};
       caBtn.onclick=function(){cleanup(false);};
       ov.onclick=function(e){ if(e.target===ov) cleanup(false); };
-      document.addEventListener('keydown',onKey);
+      document.addEventListener('keydown',onKey,true);
     });
   };
   window.promptSheet=function(opts){
@@ -8677,6 +8839,7 @@ setTimeout(autoCarryRecurring,500);
     return new Promise(function(resolve){
       var ov=document.getElementById('promptOverlay');
       if(!ov){ resolve(fields.length===1?window.prompt(fields[0].label,fields[0].value):null); return; }
+      var opener=document.activeElement;
       document.getElementById('promptTitle').textContent=opts.title||'';
       var wrap=document.getElementById('promptFields'); wrap.innerHTML='';
       var inputs=fields.map(function(f,i){
@@ -8698,25 +8861,51 @@ setTimeout(autoCarryRecurring,500);
       if(typeof haptic==='function'){try{haptic(8);}catch(e){}}
       setTimeout(function(){var f=document.getElementById('promptFieldFirst');if(f){f.focus();f.select();}},50);
       function collect(){ return fields.length===1?inputs[0].value:inputs.map(function(i){return i.value;}); }
-      function cleanup(val){ ov.classList.remove('show'); okBtn.onclick=null; caBtn.onclick=null; ov.onclick=null; document.removeEventListener('keydown',onKey); resolve(val); }
-      function onKey(e){ if(e.key==='Escape')cleanup(null); else if(e.key==='Enter'){e.preventDefault();cleanup(collect());} }
+      function cleanup(val){ ov.classList.remove('show'); okBtn.onclick=null; caBtn.onclick=null; ov.onclick=null; document.removeEventListener('keydown',onKey,true); if(opener&&document.contains(opener))opener.focus(); resolve(val); }
+      function onKey(e){_dialogKeydown(e,ov,function(){cleanup(null);},function(){cleanup(collect());});}
       okBtn.onclick=function(){cleanup(collect());};
       caBtn.onclick=function(){cleanup(null);};
       ov.onclick=function(e){ if(e.target===ov) cleanup(null); };
-      document.addEventListener('keydown',onKey);
+      document.addEventListener('keydown',onKey,true);
     });
   };
   window.restoreAutoBackup=async function(){
     if(typeof closeAllSetDD==='function') closeAllSetDD();
     var raw=localStorage.getItem('budget_autobackup');
     if(!raw){ if(typeof showToast==='function') showToast('אין עדיין גיבוי אוטומטי'); return; }
-    var s; try{ s=JSON.parse(raw); }catch(e){ if(typeof showToast==='function') showToast('❌ גיבוי פגום'); return; }
-    var d=new Date(s.ts);
-    var msg='לשחזר מהגיבוי האוטומטי מ-'+d.toLocaleDateString('he-IL')+'? הנתונים הנוכחיים יוחלפו.';
-    if(!(await confirmSheet({icon:'♻️',title:'שחזור גיבוי אוטומטי',message:msg,confirmText:'שחזר',danger:true}))) return;
-    try{ Object.keys(s.data).forEach(function(k){ localStorage.setItem(k,s.data[k]); }); }catch(e){}
-    // מנקים סימוני מחיקה כדי שהסנכרון לענן לא ימחק שוב את מה ששוחזר
-    try{ localStorage.removeItem('budget_sync_meta'); localStorage.removeItem('budget_sync_meta_business'); }catch(e){}
+    let s;
+    try{
+      s=JSON.parse(raw);
+      if(!s||!s.data||typeof s.data!=='object'||Array.isArray(s.data)||!Number.isFinite(s.ts))throw new Error('backup');
+      for(const key of BK_KEYS){
+        if(s.data[key]===undefined)continue;
+        if(typeof s.data[key]!=='string')throw new Error('backup');
+        const value=JSON.parse(s.data[key]);
+        const base=key.replace(/_business$/,'');
+        if(['budget_tx','budget_goals','budget_subs','budget_loans','budget_payments','budget_fixed','budget_insurances'].includes(base)){
+          if(!Array.isArray(value)||value.some(item=>!item||typeof item!=='object'||Array.isArray(item)||item.id==null))throw new Error('backup');
+        }else if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('backup');
+      }
+    }catch(e){if(typeof showToast==='function')showToast('❌ גיבוי פגום');return;}
+    const d=new Date(s.ts);
+    const msg='לשחזר מהגיבוי האוטומטי מ-'+d.toLocaleDateString('he-IL')+'? הנתונים הנוכחיים יוחלפו.';
+    if(!(await confirmSheet({icon:'♻️',title:'שחזור גיבוי אוטומטי',message:msg,confirmText:'שחזר',danger:true})))return;
+    const keys=BK_KEYS.concat(['budget_sync_meta','budget_sync_meta_business']);
+    const before=new Map(keys.map(key=>[key,localStorage.getItem(key)]));
+    try{
+      for(const key of BK_KEYS){
+        if(s.data[key]===undefined)localStorage.removeItem(key);
+        else localStorage.setItem(key,s.data[key]);
+      }
+      localStorage.removeItem('budget_sync_meta');localStorage.removeItem('budget_sync_meta_business');
+    }catch(e){
+      let rolledBack=true;
+      for(const [key,value] of before){
+        try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch(err){rolledBack=false;}
+      }
+      if(typeof showToast==='function')showToast(rolledBack?'❌ השחזור נכשל. הנתונים הקודמים נשמרו':'❌ השחזור לא הושלם. הגיבוי נשמר; פנה מקום במכשיר ונסה שוב');
+      return;
+    }
     location.reload();
   };
   var _sd=window.saveData; if(typeof _sd==='function'){ window.saveData=function(){ var r=_sd.apply(this,arguments); try{tick();}catch(e){} return r; }; }
@@ -8813,16 +9002,20 @@ setTimeout(autoCarryRecurring,500);
     window[name]=function(){
       try{
         var r=orig.apply(this, arguments);
-        if(verifyKey){ var v=localStorage.getItem(verifyKey); if(v===null) throw new Error('write not verified'); }
+        if(verifyKey){ var v=localStorage.getItem(typeof verifyKey==='function'?verifyKey():verifyKey); if(v===null) throw new Error('write not verified'); }
+        _localSaveFailed=false;
+        _renderSyncStatus();
         return r;
       }catch(e){
+        _localSaveFailed=true;
+        _renderSyncStatus();
         _DEBUG&&console.warn('[save]', name, e);
         if(!warned){ warned=true; try{ if(typeof showToast==='function') showToast('⚠️ שמירת הנתונים נכשלה — בדוק מקום פנוי או צא מגלישה פרטית'); }catch(_){} setTimeout(function(){warned=false;},4000); }
       }
     };
   }
-  harden('saveData','budget_tx');
-  harden('saveSettingsData','budget_settings');
+  harden('saveData',()=>_modeKey('budget_tx'));
+  harden('saveSettingsData',()=>_modeKey('budget_settings'));
 })();
 </script>
 <script>
@@ -8840,22 +9033,27 @@ setTimeout(autoCarryRecurring,500);
         // מסך מלא — ממלא את כל הגובה הנראה, ללא חלל
         sh.style.height=h+'px';
         sh.style.maxHeight=h+'px';
-        ov.style.paddingBottom='';
+        ov.style.paddingTop=Math.max(0,vv.offsetTop)+'px';
+        ov.style.paddingBottom=kbH>0?kbH+'px':'';
       } else {
+        ov.style.paddingTop='';
         sh.style.height='';
         sh.style.maxHeight=Math.floor(h*0.92)+'px';
         ov.style.paddingBottom=kbH>0?kbH+'px':'';
       }
     });
   }
-  function resetAll(){
-    document.querySelectorAll('.sheet-overlay').forEach(function(ov){
+  function resetClosed(){
+    document.querySelectorAll('.sheet-overlay:not(.open)').forEach(function(ov){
       var sh=ov.querySelector('.sheet,.wiz-sheet');
       if(sh){sh.style.maxHeight='';sh.style.height='';}
+      ov.style.paddingTop='';
       ov.style.paddingBottom='';
     });
+    sync();
   }
   vv.addEventListener('resize',sync);
+  vv.addEventListener('scroll',sync);
   var _orig=window.openSheet;
   window.openSheet=function(id){
     _orig&&_orig.apply(this,arguments);
@@ -8864,7 +9062,7 @@ setTimeout(autoCarryRecurring,500);
   var _origClose=window.closeSheet;
   window.closeSheet=function(id){
     _origClose&&_origClose.apply(this,arguments);
-    setTimeout(resetAll,250);
+    setTimeout(resetClosed,250);
   };
 })();
 </script>
