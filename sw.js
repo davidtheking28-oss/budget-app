@@ -2,7 +2,7 @@
    HTML is network-first (online users always get the latest app; cache is
    the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v26';
+const CACHE = 'budget-app-v27';
 const SHELL = [
   './',
   './index.html',
@@ -17,16 +17,25 @@ const SHELL = [
    read by the OS only at install time, which always happens online). */
 
 self.addEventListener('install', (e) => {
-  self.skipWaiting();
-  e.waitUntil(
-    caches.open(CACHE).then((c) => Promise.allSettled(SHELL.map((u) => c.add(u))))
-  );
+  e.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await Promise.allSettled(SHELL.map(async (url) => {
+      try { await cache.add(url); }
+      catch (err) {
+        const previous = await caches.match(url);
+        if (previous) await cache.put(url, previous);
+      }
+    }));
+    for (const url of SHELL.filter(url => url === './index.html' || url.startsWith('https://'))) {
+      if (!(await cache.match(url))) throw new Error('Required offline asset unavailable');
+    }
+    await self.skipWaiting();
+  })());
 });
-
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('budget-app-') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -63,24 +72,33 @@ self.addEventListener('fetch', (e) => {
   // Never intercept cross-origin requests (Supabase API, etc.) — this SW's
   // scope covers /advisor/ too, and cache-first here previously served
   // stale/empty API responses to both apps indefinitely.
-  if (new URL(req.url).origin !== self.location.origin && !SHELL.some(u => u === req.url)) return;
+  const url = new URL(req.url);
+  const appFont = (url.origin === 'https://fonts.googleapis.com' && url.pathname === '/css2' && url.searchParams.get('family')?.startsWith('Assistant:')) || (url.origin === 'https://fonts.gstatic.com' && url.pathname.startsWith('/s/assistant/'));
+  if (url.origin !== self.location.origin && !appFont && !SHELL.some(u => u === req.url)) return;
 
   const accept = req.headers.get('accept') || '';
   const isHTML = req.mode === 'navigate' || accept.includes('text/html');
 
   if (isHTML) {
     // network-first: online users always get the latest app; cache is offline fallback only
-    e.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res && res.status === 200) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy));
-          }
-          return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match('./index.html')))
-    );
+    const fallback = () => caches.match(req).then((r) => r || caches.match('./index.html'));
+    const network = fetch(req).then(async (res) => {
+      if (res.status >= 500) throw new Error('App temporarily unavailable');
+      if (res.status === 200) {
+        try { await (await caches.open(CACHE)).put(req, res.clone()); } catch (err) {}
+      }
+      return res;
+    }).catch(fallback);
+    e.waitUntil?.(network.then(() => {}, () => {}));
+    e.respondWith((async () => {
+      let timer;
+      try {
+        return await Promise.race([
+          network,
+          new Promise((resolve) => { timer = setTimeout(() => fallback().then((cached) => resolve(cached || network), () => resolve(network)), 3000); })
+        ]);
+      } finally { clearTimeout(timer); }
+    })());
     return;
   }
 
@@ -91,7 +109,7 @@ self.addEventListener('fetch', (e) => {
       return fetch(req).then((res) => {
         if (res && res.status === 200 && (res.type === 'basic' || res.type === 'cors')) {
           const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
+          caches.open(appFont ? 'budget-fonts-v1' : CACHE).then((c) => c.put(req, copy));
         }
         return res;
       }).catch(() => new Response('', { status: 504, statusText: 'offline' }));

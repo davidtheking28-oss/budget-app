@@ -8975,7 +8975,19 @@ setTimeout(autoCarryRecurring,500);
     var _swControlled=!!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener('controllerchange', function(){
       if(!_swControlled){_swControlled=true;return;}
-      if(_swReloaded) return; _swReloaded=true; location.reload();
+      if(_swReloaded) return;
+      const tryReload=function(){
+        if(document.querySelector?.('.sheet-overlay.open,.month-sheet-overlay.open,#confirmOverlay.show,#promptOverlay.show,.onboard-overlay.open'))return;
+        if(document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]'))return;
+        if(_swReloaded)return;
+        _swReloaded=true;
+        if(typeof _flushLocalSave==='function')_flushLocalSave();
+        location.reload();
+      };
+      tryReload();
+      if(!_swReloaded){
+        const timer=setInterval(function(){tryReload();if(_swReloaded)clearInterval(timer);},1000);
+      }
     });
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js').then(function(reg){

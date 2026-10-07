@@ -304,9 +304,9 @@ test('sheet backwards keyboard wrap skips visually hidden header buttons',()=>{
  ctx._sheetKeydown({key:'Tab',shiftKey:true,preventDefault:()=>{}});assert.equal(focused,'last');
 });
 
-function workerBootContext(controlled=false){
+function workerBootContext(controlled=false,extra={}){
  const events={};let reloads=0,catches=0;const reg={update:()=>({catch:()=>{catches++;}})};
- const ctx=vm.createContext({navigator:{serviceWorker:{controller:controlled?{}:null,addEventListener:(event,fn)=>{events[event]=fn;},register:async()=>reg,getRegistration:async()=>reg}},location:{protocol:'https:',hostname:'example.test',reload:()=>{reloads++;}},window:{addEventListener:(event,fn)=>{events[event]=fn;}},document:{addEventListener:(event,fn)=>{events[event]=fn;}},setInterval:()=>{}});
+ const ctx=vm.createContext({navigator:{serviceWorker:{controller:controlled?{}:null,addEventListener:(event,fn)=>{events[event]=fn;},register:async()=>reg,getRegistration:async()=>reg}},location:{protocol:'https:',hostname:'example.test',reload:()=>{reloads++;}},window:{addEventListener:(event,fn)=>{events[event]=fn;}},document:{addEventListener:(event,fn)=>{events[event]=fn;}},setInterval:()=>{},clearInterval:()=>{},...extra});
  const start=html.indexOf("  if('serviceWorker' in navigator"),end=html.indexOf('  var deferred=',start);vm.runInContext(html.slice(start,end),ctx);return {ctx,events,reloads:()=>reloads,catches:()=>catches};
 }
 test('first service worker installation preserves the current page and later updates reload once',()=>{
@@ -340,4 +340,29 @@ test('failed advisor reads preserve the last task and meeting lists',async()=>{
   const ctx=functions(['_loadAdvisorTasks'],{_advisorTasks:tasks,_advisorMeetings:meetings,_advisorTasksError:false,_cloudUser:{id:'client'},_advisorLink:{status:'active'},_sb:{from:()=>{if(thrown)throw new Error('offline');return query;}}});
   await ctx._loadAdvisorTasks();assert.equal(ctx._advisorTasks,tasks);assert.equal(ctx._advisorMeetings,meetings);assert.equal(ctx._advisorTasksError,true);
  }
+});
+
+test('app updates wait until the open form is closed before reloading',()=>{
+ let open=true,tick,flushes=0;
+ const t=workerBootContext(true,{document:{activeElement:{matches:()=>open},querySelector:()=>open?{}:null,addEventListener:()=>{}},setInterval:fn=>{tick=fn;return 1;},_flushLocalSave:()=>{flushes++;}});
+ t.events.controllerchange();assert.equal(t.reloads(),0);assert.equal(flushes,0);
+ open=false;tick();assert.equal(t.reloads(),1);assert.equal(flushes,1);tick();assert.equal(t.reloads(),1);
+});
+function offlineWorkerContext(previous=false){
+ const events={},items=new Map(),deleted=[];let waiting=0;
+ const cache={add:async()=>{throw new Error('network failed');},match:async key=>items.get(key),put:async(key,value)=>items.set(key,value)};
+ const ctx=vm.createContext({URL,Response,Promise,self:{location:{origin:'https://app.test'},addEventListener:(key,fn)=>{events[key]=fn;},skipWaiting:async()=>{waiting++;}},caches:{open:async()=>cache,match:async()=>previous?new Response('cached'):undefined,keys:async()=>['budget-app-old','another-app','budget-app-v27'],delete:async key=>{deleted.push(key);}},fetch:()=>new Promise(()=>{}),setTimeout:fn=>{ctx.fireTimeout=fn;return 1;},clearTimeout:()=>{}});
+ vm.runInContext(fs.readFileSync(path.join(root,'sw.js'),'utf8'),ctx);return {ctx,events,deleted,waiting:()=>waiting};
+}
+test('an incomplete offline shell cannot replace the installed worker',async()=>{
+ const t=offlineWorkerContext();let install;t.events.install({waitUntil:p=>{install=p;}});await assert.rejects(install,/Required offline/);assert.equal(t.waiting(),0);
+});
+test('worker upgrade recovers cached assets and preserves unrelated app caches',async()=>{
+ const t=offlineWorkerContext(true);let install;t.events.install({waitUntil:p=>{install=p;}});await install;assert.equal(t.waiting(),1);
+ let activation;t.events.activate({waitUntil:p=>{activation=p;}});t.ctx.self.clients={claim:async()=>{}};await activation;assert.deepEqual(t.deleted,['budget-app-old']);
+});
+test('a slow connection opens the cached app after the fallback timeout',async()=>{
+ const t=offlineWorkerContext(true);let response;
+ t.events.fetch({request:{url:'https://app.test/index.html',method:'GET',mode:'navigate',headers:{get:()=>''}},respondWith:p=>{response=p;},waitUntil:()=>{}});
+ t.ctx.fireTimeout();assert.equal(await (await response).text(),'cached');
 });
