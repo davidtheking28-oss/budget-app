@@ -93,6 +93,7 @@ export default function Assets({ clientUserId, advisorId }) {
         <Button onClick={submit}>הוסף</Button>
       </AddForm>
           {assets.length ? (
+            <div className={styles.tableWrap} role="region" aria-label="טבלת נכסים" tabIndex={0}>
             <table className={styles.table}>
               <thead>
                 <tr><th>נכס</th><th>סוג</th><th>שווי</th><th>חלק</th><th></th></tr>
@@ -109,6 +110,7 @@ export default function Assets({ clientUserId, advisorId }) {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <div className={styles.empty}>אין עדיין נכסים רשומים</div>
           )}
@@ -124,6 +126,7 @@ export default function Assets({ clientUserId, advisorId }) {
             <Button onClick={submitLoan}>הוסף</Button>
           </AddForm>
           {loans.length ? (
+            <div className={styles.tableWrap} role="region" aria-label="טבלת התחייבויות" tabIndex={0}>
             <table className={styles.table}>
               <thead>
                 <tr><th>התחייבות</th><th>החזר חודשי</th><th>יתרה</th><th></th></tr>
@@ -139,6 +142,7 @@ export default function Assets({ clientUserId, advisorId }) {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <div className={styles.empty}>אין עדיין התחייבויות רשומות</div>
           )}
