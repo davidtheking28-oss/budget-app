@@ -1020,6 +1020,8 @@
     .mode-btn{padding:8px 18px;border-radius:10px;border:none;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text2);background:transparent;transition:background 0.18s,color 0.18s;white-space:nowrap;text-align:center;}
     .mode-btn.active{background:var(--accent);color:#fff;}
     /* ── iOS toggle ──────────────────────────── */
+    .form-input-error{color:var(--red);font-size:14px;line-height:1.5;margin:8px 0 0;}
+    [aria-invalid="true"]{outline:2px solid var(--red);outline-offset:2px;}
     .ios-toggle{position:relative;display:inline-block;width:44px;height:26px;cursor:pointer;flex-shrink:0;}
     .ios-toggle input{opacity:0;width:0;height:0;position:absolute;}
     .ios-t{position:absolute;inset:0;background:var(--border);border-radius:13px;transition:background 0.22s;}
@@ -3335,7 +3337,24 @@ function closeSheet(id){
     ov.classList.remove('open');
   }
 }
+function _clearInputError(id){
+  const input=document.getElementById(id);
+  const error=document.getElementById(id+'Error');
+  if(error)error.remove();
+  if(input){input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');}
+}
+function _showInputError(id,message){
+  _clearInputError(id);
+  const input=document.getElementById(id);
+  const error=document.createElement('p');
+  error.id=id+'Error';error.className='form-input-error';error.setAttribute('role','alert');error.textContent=message;
+  const container=input.closest('.form-field,.wiz-body')||document.getElementById('wizBody1');
+  if(input.closest('.form-field'))container.appendChild(error);else container.prepend(error);
+  input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby',error.id);input.focus();
+}
+document.addEventListener('input',event=>{if(event.target.getAttribute('aria-invalid')==='true')_clearInputError(event.target.id);});
 function openAddTx(){
+  ['txDesc','txAmount','txDateVisible'].forEach(_clearInputError);
   openSheet('addTxSheet');
   wizStep=1;
   document.getElementById('txDesc').value='';
@@ -3403,9 +3422,9 @@ function setTxType(type){
 }
 function wizRenderCats(cats){
   const list=document.getElementById('wizCatList');
-  list.innerHTML=cats.map((c,i)=>{
+  list.innerHTML=cats.map(c=>{
     const hasSub=!!CAT_SUBCATS[c];
-    return '<button type="button" class="wiz-cat-row'+(i===0?' wiz-sel':'')+'" data-cat="'+esc(c)+'" data-expand="'+(hasSub?'1':'0')+'">'+
+    return '<button type="button" class="wiz-cat-row'+(c===txSelectedCat?' wiz-sel':'')+'" data-cat="'+esc(c)+'" data-expand="'+(hasSub?'1':'0')+'">'+
       '<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+';color:'+budgetChipColor(c).sel+'">'+catIconSvg(c)+'</div>'+
       '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+esc(c)+'</span>'+
       (hasSub?'<span class="wiz-expand-arrow">›</span>':'<span class="wiz-sel-check">✓</span>')+
@@ -3480,6 +3499,7 @@ function detectNlp(){
 }
 function wizNext(){
   if(wizStep===1){
+    if(!document.getElementById('txDesc').value.trim()){_showInputError('txDesc',txTypeFilter==='income'?'כתוב את מקור ההכנסה':'כתוב תיאור קצר של ההוצאה');return;}
     // Apply NLP: pre-fill amount and category if detected
     detectNlp();
     if(_nlpAmount){
@@ -3565,9 +3585,9 @@ function addTransaction(prefill){
   const recurring=prefill?false           :(function(){var e=document.getElementById('txRecurring');return e?e.checked:false;})();
   const isFixed  =prefill?(prefill.fixed!==undefined?prefill.fixed:(prefill.type==='income'||prefill.recurring)):txFixedType==='fixed';
   if(!prefill){
-    if(!desc)             {showToast('✏️ מה קנית? כתוב תיאור קצר');return;}
-    if(!amount||amount<=0){const _ae=document.getElementById('txAmount');if(_ae){_ae.classList.remove('input-error');void _ae.offsetWidth;_ae.classList.add('input-error');setTimeout(()=>_ae.classList.remove('input-error'),400);_ae.focus();}showToast('₪ כמה עלה? הזן סכום');return;}
-    if(!date)             {showToast('📅 בחר תאריך לעסקה');return;}
+    if(!desc){wizStep=1;wizRender();_showInputError('txDesc','כתוב תיאור קצר לעסקה');return;}
+    if(!amount||amount<=0){_showInputError('txAmount','הזן סכום גדול מאפס');return;}
+    if(!date){_showInputError('txDateVisible','בחר תאריך לעסקה');return;}
   }
   const note=prefill?'':(document.getElementById('txNote')?.value.trim()||'');
   transactions.unshift({id:Date.now()+Math.random(),type,cat,desc,amount,date,recurring,fixed:isFixed,note});
@@ -5309,6 +5329,7 @@ let editingTxId = null;
 function editTx(id){
   const tx = transactions.find(t => t.id === id);
   if(!tx) return;
+  ['editTxDesc','editTxAmount','editTxDate'].forEach(_clearInputError);
   editingTxId = id;
   document.getElementById('editTxDesc').value   = tx.desc || '';
   const _en=document.getElementById('editTxNote');if(_en)_en.value=tx.note||'';
@@ -5333,7 +5354,9 @@ function saveEditTx(){
   const amount = parseFloat(document.getElementById('editTxAmount').value);
   const date   = document.getElementById('editTxDate').value;
   const cat    = document.getElementById('editTxCat').value;
-  if(!desc || !amount || amount<=0 || !date){ showToast('מלא תיאור, סכום ותאריך'); return; }
+  if(!desc){_showInputError('editTxDesc','כתוב תיאור קצר לעסקה');return;}
+  if(!amount||amount<=0){_showInputError('editTxAmount','הזן סכום גדול מאפס');return;}
+  if(!date){_showInputError('editTxDate','בחר תאריך לעסקה');return;}
   tx.desc      = desc;
   tx.amount    = amount;
   tx.date      = date;
@@ -6000,7 +6023,7 @@ function renderAnalytics(){
 function setBudget(){
   const cat=document.getElementById('budgetCat').value;
   const limit=parseFloat(document.getElementById('budgetLimit').value);
-  if(!limit||limit<=0){showToast('₪ הזן גבול הוצאה לקטגוריה');return;}
+  if(!limit||limit<=0){_showInputError('budgetLimit','הזן תקרה חודשית גדולה מאפס');return;}
   budgets[cat]=limit;saveData();
   document.getElementById('budgetLimit').value='';
   const _bb=document.querySelector('#addBudgetSheet .btn-primary');if(_bb){_bb.textContent='✓';_bb.disabled=true;}
@@ -6211,6 +6234,7 @@ function renderBudgetDetail(spent,effLim){
 let _budgetTxListOpen=true;
 function toggleBudgetTxList(){_budgetTxListOpen=!_budgetTxListOpen;const el=document.getElementById('main-content'),y=el?el.scrollTop:0;renderBudget();if(el)el.scrollTop=y;}
 function editBudgetCat(cat){
+  _clearInputError('budgetLimit');
   document.getElementById('budgetCat').value=cat;
   document.getElementById('budgetLimit').value=budgets[cat]||'';
   openSheet('addBudgetSheet');
