@@ -135,3 +135,25 @@
   font-size: var(--text-xs);
   text-align: center;
 }
+
+@media (min-width: 861px) {
+  .panel {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 28vh);
+  }
+
+  .input, .hint {
+    flex-shrink: 0;
+  }
+
+  .list {
+    min-height: 0;
+  }
+
+  .email {
+    direction: ltr;
+    unicode-bidi: isolate;
+    text-align: start;
+  }
+}

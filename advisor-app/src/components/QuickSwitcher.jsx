@@ -69,6 +69,11 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
     };
   }, [open, advisorId]);
 
+  useEffect(() => {
+    if (!open) return;
+    panelRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+  }, [active, query, clients, open]);
+
   if (!open && !closing) return null;
 
   const filtered = clients.filter(c => c.client_email.toLowerCase().includes(query.toLowerCase()));
@@ -123,9 +128,9 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
               onKeyDown={onKeyDown}
             >
               <div className={styles.avatar} aria-hidden="true">{initials(c.client_email)}</div>
-              <div className={styles.email}>{c.client_email}</div>
+              <div className={styles.email} title={c.client_email}>{c.client_email}</div>
             </button>
-          )) : <div className={styles.empty}>אין תוצאות</div>}
+          )) : <div className={styles.empty} role="status">{query ? 'לא נמצאו לקוחות. נסה לחפש חלק אחר מכתובת האימייל.' : 'אין עדיין לקוחות פעילים. הוסף לקוח דרך ״הלקוחות שלי״.'}</div>}
         </div>
         <div className={styles.hint}>↑↓ לניווט · Enter לבחירה · Esc לסגירה</div>
       </div>

@@ -314,8 +314,8 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
             {tasks.map((t, i) => editingTask === t.id ? (
               <div key={t.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                 <div className={styles.form} style={{ margin: 0, flex: 1 }}>
-                  <input className={styles.input} value={editTaskTitle} onChange={e => setEditTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditTask(t.id)} />
-                  <input className={styles.input} type="date" value={editTaskDue} onChange={e => setEditTaskDue(e.target.value)} />
+                  <input className={styles.input} aria-label="תיאור המשימה" value={editTaskTitle} onChange={e => setEditTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditTask(t.id)} />
+                  <input className={styles.input} type="date" aria-label="תאריך יעד למשימה" value={editTaskDue} onChange={e => setEditTaskDue(e.target.value)} />
                   <label className={styles.forClientLabel}>
                     <input type="checkbox" className={styles.checkbox} checked={editTaskForClient} onChange={e => setEditTaskForClient(e.target.checked)} />
                     גלוי ללקוח
