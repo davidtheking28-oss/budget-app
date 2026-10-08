@@ -310,42 +310,53 @@ export default function Credit({ clientUserId, advisorId }) {
         {[['הלוואות ארוכות טווח (18+ חודשים לסיום)', longTermLoans], ['הלוואות קצרות טווח (מתחת ל-18 חודשים לסיום)', shortTermLoans], ['לא ניתן לסווג (חסרה יתרה/ריבית)', unclassifiedLoans]].map(([groupLabel, groupLoans]) => groupLoans.length ? (
           <div key={groupLabel}>
             <div className={styles.sectionEmpty} style={{ fontWeight: 700, color: 'var(--text)', textAlign: 'right', padding: '10px 2px 4px' }}>{groupLabel}</div>
-            <div className={styles.grid}>
-              {groupLoans.map((l, i) => {
-                const pct = l.original ? Math.min(100, Math.max(0, Math.round(((l.original - (l.remaining || 0)) / l.original) * 100))) : null;
-                const payoff = loanPayoffLabel(l);
-                const danger = payoff?.danger;
-                return (
-                  <div key={l.id} className={`${styles.row} ${styles.rowCard}${pct !== null ? ` ${styles.rowStacked} ${styles.rowWide}` : ''}${danger ? ' ' + styles.rowDanger : ''}`} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }} role="button" tabIndex={0} onClick={() => startEditLoan(l)} onKeyDown={e => e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditLoan(l))}>
-                    <div className={styles.rowMain}>
-                      <div>
-                        <div className={styles.name}>{l.name || 'הלוואה'}</div>
-                        <div className={styles.meta}>{l.lender ? l.lender + ' · ' : ''}{l.remaining !== undefined ? 'יתרה ' + fmt(l.remaining) + (l.original ? ' מתוך ' + fmt(l.original) : '') : ''}</div>
-                      </div>
-                      <div className={styles.rowActions}>
-                        <div className={styles.amount}>{fmt(l.monthly || 0)}</div>
-                        <EditButton title={`ערוך · ${l.name || 'ההלוואה'}`} onClick={e => { e.stopPropagation(); startEditLoan(l); }} />
-                        <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id, `${l.name || 'ההלוואה'} נמחקה`); }} />
-                      </div>
-                    </div>
-                    {pct !== null && (
-                      <div className={styles.loanBarRow}>
-                        <div className={styles.loanBar} role="progressbar" aria-label="אחוז שנפרע" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-                          <div className={styles.loanBarFill + (pct >= 70 ? ' ' + styles.loanBarFillGood : '')} style={{ transform: `scaleX(${pct / 100})` }} />
-                        </div>
-                        <div className={styles.loanBarPct}>{pct}%</div>
-                      </div>
-                    )}
-                    {payoff && <div className={payoff.danger ? styles.payoffDanger : styles.payoffLabel}>{payoff.text}</div>}
-                    {l.previousMonthly != null && (
-                      <div className={styles.payoffLabel} style={{ color: 'var(--green)' }}>
-                        מחזור: היה {fmt(l.previousMonthly)}/חודש ← עכשיו {fmt(l.monthly || 0)}/חודש
-                        {l.previousMonthly > (l.monthly || 0) ? ` (חיסכון ${fmt(l.previousMonthly - (l.monthly || 0))})` : ''}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            <div className={styles.loanTableWrap}>
+              <table className={styles.loanTable}>
+                <thead>
+                  <tr>
+                    <th>שם החוב</th>
+                    <th>סכום מקורי</th>
+                    <th>יתרת קרן</th>
+                    <th>ריבית %</th>
+                    <th>תשלומים שנותרו</th>
+                    <th>החזר חודשי</th>
+                    <th>נפרע</th>
+                    <th><span className={styles.srOnly}>פעולות</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {groupLoans.map(l => {
+                    const pct = l.original ? Math.min(100, Math.max(0, Math.round(((l.original - (l.remaining || 0)) / l.original) * 100))) : null;
+                    const payoff = loanPayoffLabel(l);
+                    const monthsLeft = loanMonthsLeft(l);
+                    return (
+                      <tr key={l.id} className={styles.loanTr + (payoff?.danger ? ' ' + styles.loanTrDanger : '')} onClick={() => startEditLoan(l)}>
+                        <td>
+                          <div className={styles.name}>{l.name || 'הלוואה'}</div>
+                          {l.lender && <div className={styles.meta}>{l.lender}</div>}
+                          {payoff && <div className={payoff.danger ? styles.payoffDanger : styles.payoffLabel}>{payoff.text}</div>}
+                          {l.previousMonthly != null && (
+                            <div className={styles.payoffLabel} style={{ color: 'var(--green)' }}>
+                              מחזור: היה {fmt(l.previousMonthly)}/חודש ← עכשיו {fmt(l.monthly || 0)}/חודש
+                              {l.previousMonthly > (l.monthly || 0) ? ` (חיסכון ${fmt(l.previousMonthly - (l.monthly || 0))})` : ''}
+                            </div>
+                          )}
+                        </td>
+                        <td>{l.original ? fmt(l.original) : '—'}</td>
+                        <td>{l.remaining !== undefined ? fmt(l.remaining) : '—'}</td>
+                        <td>{l.rate ? l.rate : '—'}</td>
+                        <td>{monthsLeft === null ? '—' : monthsLeft === Infinity ? '∞' : Math.ceil(monthsLeft)}</td>
+                        <td className={styles.loanMonthly}>{fmt(l.monthly || 0)}</td>
+                        <td>{pct !== null ? pct + '%' : '—'}</td>
+                        <td className={styles.loanActions}>
+                          <EditButton title={`ערוך · ${l.name || 'ההלוואה'}`} onClick={e => { e.stopPropagation(); startEditLoan(l); }} />
+                          <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id, `${l.name || 'ההלוואה'} נמחקה`); }} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         ) : null)}
