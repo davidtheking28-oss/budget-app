@@ -236,6 +236,72 @@ export default function BudgetWizard({ data, save, year, month }) {
   ].filter(b => b.value > 0);
   const breakdownTotal = breakdown.reduce((s, b) => s + b.value, 0) || 1;
 
+  function tableList(list, setter, placeholder, actualOf, editableActual = false) {
+    const total = sumAmounts(list);
+    const pctOf = r => {
+      const a = parseFloat(r.amount) || 0;
+      if (!total || !a) return '';
+      const p = a / total * 100;
+      return p < 1 ? '<1%' : Math.round(p) + '%';
+    };
+    return (
+      <>
+        <div className={styles.tbl}>
+          <div className={styles.tblHead}>
+            <span>קטגוריה</span>
+            <span>תקציב</span>
+            <span>ביצוע</span>
+            <span />
+          </div>
+          {list.map((r, i) => {
+            const actual = actualEdits[r.name] ?? (actualOf(r.name, r.amount) || 0);
+            const over = (parseFloat(actual) || 0) > (parseFloat(r.amount) || 0);
+            return (
+              <div className={styles.tblRow} key={i}>
+                <div className={styles.tblName}>
+                  <span className={styles.itemIcon} aria-hidden="true">{getCategoryIcon(r.name)}</span>
+                  <input
+                    className={styles.itemName}
+                    aria-label="שם"
+                    placeholder={placeholder}
+                    value={r.name}
+                    onChange={e => updateRow(setter, i, { name: e.target.value })}
+                  />
+                  <span className={styles.tblPct}>{pctOf(r)}</span>
+                </div>
+                <input
+                  className={styles.tblInput}
+                  type="number"
+                  inputMode="decimal"
+                  aria-label={'תקציב · ' + (r.name || 'שורה חדשה')}
+                  placeholder="0"
+                  value={r.amount}
+                  onChange={e => updateRow(setter, i, { amount: e.target.value })}
+                />
+                {editableActual ? (
+                  <input
+                    className={styles.tblInput + (over ? ' ' + styles.tblOver : '')}
+                    type="number"
+                    inputMode="decimal"
+                    min={variableActualBase[r.name] || 0}
+                    aria-label={'ביצוע · ' + (r.name || 'שורה חדשה')}
+                    placeholder="0"
+                    value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
+                    onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
+                  />
+                ) : (
+                  <div className={styles.tblValue + (over ? ' ' + styles.tblOverText : '')}>{fmt(actual)}</div>
+                )}
+                <DeleteButton onClick={() => removeRow(setter, i)} />
+              </div>
+            );
+          })}
+        </div>
+        <Button variant="ghost" onClick={() => addRow(setter)}>+ הוסף שורה</Button>
+      </>
+    );
+  }
+
   function rowList(list, setter, placeholder, suggestions, actualOf, compact = false, dayField = false, editableActual = false) {
     const dayBox = (r, i) => dayField && (
       <div className={styles.itemAmountBox}>
@@ -374,15 +440,21 @@ export default function BudgetWizard({ data, save, year, month }) {
 
         {step === 1 && (
           <div className={styles.card}>
-            <div className={styles.cardTitle}>הוצאות קבועות</div>
-            {rowList(fixed, setFixed, 'שם ההוצאה הקבועה', [], name => fixedActual[name] || 0, true)}
+            <div className={styles.cardTitleRow}>
+              <span className={styles.cardTitle}>הוצאות חודשיות קבועות</span>
+              <span className={styles.cardTotal}>{fmt(totalFixed)}</span>
+            </div>
+            {tableList(fixed, setFixed, 'שם ההוצאה הקבועה', name => fixedActual[name] || 0)}
           </div>
         )}
 
         {step === 2 && (
           <div className={styles.card}>
-            <div className={styles.cardTitle}>הוצאות משתנות</div>
-            {rowList(variable, setVariable, 'שם הקטגוריה', [], name => variableActual[name] || 0, true, false, true)}
+            <div className={styles.cardTitleRow}>
+              <span className={styles.cardTitle}>הוצאות חודשיות משתנות</span>
+              <span className={styles.cardTotal}>{fmt(totalVar)}</span>
+            </div>
+            {tableList(variable, setVariable, 'שם הקטגוריה', name => variableActual[name] || 0, true)}
           </div>
         )}
 
