@@ -16,7 +16,7 @@ export function useClientList(advisorId) {
 
     const { data: roster, error } = await supabase
       .from('advisor_clients')
-      .select('id, client_id, client_email, created_at')
+      .select('id, client_id, client_email, name, created_at')
       .eq('advisor_id', advisorId)
       .eq('status', 'active')
       .order('created_at', { ascending: false });

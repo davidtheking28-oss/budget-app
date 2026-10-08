@@ -839,3 +839,92 @@
 :root[data-theme="dark"] .pendingInitial {
   color: var(--text3);
 }
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.clientName {
+  color: var(--text);
+  font-size: var(--text-md);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 861px) {
+  .tableWrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .table {
+    table-layout: fixed;
+  }
+
+  .table th:nth-child(1) { width: 28%; }
+  .table th:nth-child(2) { width: 28%; }
+  .table th:nth-child(3) { width: 14%; }
+  .table th:nth-child(4) { width: 14%; }
+  .table th:nth-child(5) { width: 16%; }
+
+  .table td {
+    padding-block: var(--space-4);
+  }
+
+  .identity .emailText {
+    font-size: var(--text-sm);
+    color: var(--text2);
+  }
+
+  .info {
+    flex: 1;
+  }
+
+  .chips {
+    margin-top: 0;
+    gap: 6px;
+  }
+
+  .rowMeta {
+    flex-basis: 100%;
+    white-space: normal;
+    line-height: 1.5;
+  }
+
+  .clientRow:focus-within {
+    background: var(--hover);
+  }
+
+  .rowUrgent td:first-child {
+    box-shadow: inset -3px 0 0 rgba(var(--red-rgb), 0.6);
+  }
+
+  .rowActions {
+    flex-wrap: wrap;
+  }
+
+  .openCardBtn {
+    min-height: 36px;
+    background: var(--accent-dim);
+    padding-inline: var(--space-2);
+  }
+
+  .remainingStat {
+    padding-inline-start: 0;
+  }
+
+  .statSecondary {
+    min-height: 100px;
+  }
+
+  .statSecondaryLabel {
+    line-height: 1.4;
+    letter-spacing: 0;
+  }
+}

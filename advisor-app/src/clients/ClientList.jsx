@@ -408,7 +408,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
                   c.openTasks > 0 && { text: `${c.openTasks} משימות פתוחות`, cls: styles.taskChip }
                 ].filter(Boolean);
                 const notes = [
-                  ...flags.slice(1).map(f => f.text),
                   c.lastMeetingAt && `פגישה אחרונה ${relativeTime(c.lastMeetingAt)}`,
                   c.totalTasks > 0 && `בוצעו ${c.doneTasks}/${c.totalTasks} משימות`,
                   c.updatedAt && isStale(c.updatedAt) && `לא עודכן ${relativeTime(c.updatedAt)}`
@@ -422,20 +421,23 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
                     <td data-label="לקוח">
                       <button type="button" className={styles.clientCellBtn} onClick={() => onSelect(c.client_id, c.client_email)}>
                         <div className={styles.initial} aria-hidden="true">
-                          {initials(c.client_email)}
+                          {initials(c.name?.trim() || c.client_email)}
                           {urgent && <span className={styles.alertDot} title="דורש טיפול" />}
                         </div>
                         <div className={styles.info}>
                           <div className={styles.email}>
                             <HealthBadge score={c.healthScore} />
-                            <span className={styles.emailText} title={c.client_email}>{c.client_email}</span>
+                            <div className={styles.identity}>
+                              {c.name?.trim() && <span className={styles.clientName} title={c.name}>{c.name}</span>}
+                              <span className={styles.emailText} title={c.client_email}>{c.client_email}</span>
+                            </div>
                           </div>
                         </div>
                       </button>
                     </td>
                     <td data-label="סטטוס">
                       <div className={styles.chips}>
-                        {flags[0] && <div className={flags[0].cls}>{flags[0].text}</div>}
+                        {flags.map(flag => <span key={flag.text} className={flag.cls}>{flag.text}</span>)}
                         {notes.length > 0 && <span className={styles.rowMeta}>{notes.join(' · ')}</span>}
                       </div>
                     </td>
