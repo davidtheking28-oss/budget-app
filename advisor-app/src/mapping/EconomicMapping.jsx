@@ -16,8 +16,6 @@ const LOAN_CATEGORY = 'החזר הלוואות + חיוב קבוע';
 const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS, SAVINGS_CATEGORY];
 import { supabase, SUPA_URL } from '../supabaseClient.js';
 import Skeleton from '../components/Skeleton.jsx';
-import Hero from '../components/Hero.jsx';
-import { Card, CardGrid, KeyValue, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -186,6 +184,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [confirmingRestoreIndex, setConfirmingRestoreIndex] = useState(null);
   const [linkForm, setLinkForm] = useState(null);
   const [linking, setLinking] = useState(false);
+  const [flowPeriod, setFlowPeriod] = useState('month');
   const fileInputRef = useRef(null);
   const opts = monthOptions();
 
@@ -399,13 +398,21 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       });
     }
   };
-  const cashflowChartData = cashflow ? {
-    labels: ['ממוצע חודשי'],
-    datasets: [
-      { label: 'הכנסה חודשית', data: [cashflow.income], backgroundColor: CT.green, borderRadius: 5, hoverBackgroundColor: CT.greenHover, barPercentage: 0.6, categoryPercentage: 0.7 },
-      { label: 'הוצאה', data: [cashflow.expense], backgroundColor: CT.red, borderRadius: 5, hoverBackgroundColor: CT.redHover, barPercentage: 0.6, categoryPercentage: 0.7 }
-    ]
+  const periodMul = flowPeriod === 'year' ? 12 : 1;
+  const actualChartData = cashflow ? {
+    labels: ['הכנסות', 'הוצאות'],
+    datasets: [{ data: [cashflow.income * periodMul, cashflow.expense * periodMul], backgroundColor: [CT.green, CT.red], hoverBackgroundColor: [CT.greenHover, CT.redHover], borderRadius: 6, barPercentage: 0.45, categoryPercentage: 0.9 }]
   } : null;
+  const actualChartOptions = {
+    maintainAspectRatio: false,
+    layout: { padding: { top: 28 } },
+    animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
+    scales: {
+      x: { reverse: true, ticks: { color: CT.text2, font: { family: CT.font, weight: '600' } }, grid: { display: false } },
+      y: { display: false, beginAtZero: true, grid: { display: false } }
+    },
+    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+  };
 
   // compares the oldest archived mapping to the current one, so the advisor can show
   // the client how their cashflow moved between the first upload and now
@@ -423,38 +430,30 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   return (
     <div>
       {cashflow?.hasIncomeData && (
-        <Hero
-          label="תזרים חודשי ממוצע"
-          value={fmt(cashflow.netInAccount)}
-          tone={cashflow.netInAccount < 0 ? 'neg' : 'pos'}
-          note={`לפי ${monthsLabel(cashflow.monthsCovered)} של דפי חשבון`}
-          side={[
-            { label: 'הכנסה ממוצעת', value: fmt(cashflow.income), tone: 'income' },
-            { label: 'הוצאה ממוצעת', value: fmt(cashflow.expense), tone: 'expense' },
-            cashflow.savings > 0 && { label: 'העברות לחיסכון', value: fmt(cashflow.savings) }
-          ].filter(Boolean)}
-        />
-      )}
-      {cashflow?.hasIncomeData && (
-        <CardGrid>
-          <Card title="הוצאה חודשית לפי סוג">
-            {(() => {
-              const top = Math.max(fixedTotal, variableTotal, cashflow.savings, 1);
-              return (
-                <>
-                  <Row name="קבועות" amount={fmt(fixedTotal)} pct={(fixedTotal / top) * 100} />
-                  <Row name="משתנות" amount={fmt(variableTotal)} pct={(variableTotal / top) * 100} />
-                  {cashflow.savings > 0 && <Row name="חיסכון" amount={fmt(cashflow.savings)} pct={(cashflow.savings / top) * 100} />}
-                </>
-              );
-            })()}
-          </Card>
-          <Card title="תמונת מצב">
-            <KeyValue label="הכנסה חודשית" value={fmt(cashflow.income)} />
-            <KeyValue label="הוצאה חודשית" value={fmt(cashflow.expense)} />
-            <KeyValue label="תזרים בחשבון" value={fmt(cashflow.netInAccount)} />
-          </Card>
-        </CardGrid>
+        <div className={styles.card + ' ' + styles.cardStandalone + ' ' + styles.actualCard}>
+          <div className={styles.actualTitle}>ביצוע</div>
+          <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(cashflow.monthsCovered)} של דפי חשבון</div>
+          <div className={styles.actualChart} role="img" aria-label={`ביצוע: הכנסות ${fmt(cashflow.income * periodMul)}, הוצאות ${fmt(cashflow.expense * periodMul)}`}>
+            <Bar data={actualChartData} plugins={[barValueLabels]} options={actualChartOptions} />
+          </div>
+          <div className={styles.flowBox}>
+            <div className={styles.flowBoxHead}>
+              <span className={styles.flowBoxTitle}>תזרים</span>
+              <div className={styles.flowToggle} role="group" aria-label="תקופה">
+                <button type="button" aria-pressed={flowPeriod === 'month'} className={flowPeriod === 'month' ? styles.flowToggleActive : ''} onClick={() => setFlowPeriod('month')}>חודשי</button>
+                <button type="button" aria-pressed={flowPeriod === 'year'} className={flowPeriod === 'year' ? styles.flowToggleActive : ''} onClick={() => setFlowPeriod('year')}>שנתי</button>
+              </div>
+            </div>
+            <div className={styles.cashflowRow}>
+              <span className={styles.cashflowRowLabel}>בחשבון</span>
+              <span className={styles.cashflowRowValue + (cashflow.netInAccount < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netInAccount * periodMul)}</span>
+            </div>
+            <div className={styles.cashflowRow}>
+              <span className={styles.cashflowRowLabel}>בלי חיסכון</span>
+              <span className={styles.cashflowRowValue + (cashflow.netExcludingSavings < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netExcludingSavings * periodMul)}</span>
+            </div>
+          </div>
+        </div>
       )}
       <div className={styles.card}>
         <div className={styles.cardTitle}>העלאת דפי חשבון</div>
@@ -624,44 +623,6 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                 )}
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {cashflow && cashflow.hasIncomeData && (
-        <div className={styles.card + ' ' + styles.cardStandalone}>
-          <div className={styles.cardTitle}>תזרים: הכנסות מול הוצאות</div>
-          <div className={styles.coverageNote}>מבוסס על {monthsLabel(cashflow.monthsCovered)} שהועלו</div>
-
-          <div className={styles.cashflowChart}>
-            <Bar
-              data={cashflowChartData}
-              plugins={[barValueLabels]}
-              options={{
-                maintainAspectRatio: false,
-                layout: { padding: { top: 20 } },
-                animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
-                scales: {
-                  x: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { display: false } },
-                  y: { ticks: { display: false }, grid: { color: CT.border } }
-                },
-                plugins: {
-                  legend: { labels: { color: CT.text2, font: { family: CT.font } } },
-                  tooltip: { backgroundColor: CT.surface, titleColor: CT.text, bodyColor: CT.text2, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
-                }
-              }}
-            />
-          </div>
-
-          <div className={styles.cashflowRows}>
-            <div className={styles.cashflowRow}>
-              <span className={styles.cashflowRowLabel}>תזרים חודשי בחשבון</span>
-              <span className={styles.cashflowRowValue + (cashflow.netInAccount < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netInAccount)}</span>
-            </div>
-            <div className={styles.cashflowRow}>
-              <span className={styles.cashflowRowLabel}>תזרים חודשי ללא הפרשות לחיסכון</span>
-              <span className={styles.cashflowRowValue + (cashflow.netExcludingSavings < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netExcludingSavings)}</span>
-            </div>
           </div>
         </div>
       )}
