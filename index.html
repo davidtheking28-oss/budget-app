@@ -2483,14 +2483,19 @@
 
   <div id="page-settings" class="page">
     <div class="form-stack">
+      <div class="settings-section" aria-labelledby="settingsStorageTitle">
+        <h2 class="settings-section-title" id="settingsStorageTitle">שמירה וסנכרון</h2>
+        <p id="settingsSaveStatus" role="status" aria-live="polite" aria-atomic="true" style="font-size:16px;font-weight:700;margin:0;color:var(--text2)"></p>
+        <p style="font-size:14px;line-height:1.5;color:var(--text2);margin:8px 0 0">השינויים נשמרים אוטומטית במכשיר. גיבוי בענן זמין לאחר התחברות.</p>
+      </div>
       <div class="settings-section">
-        <div class="settings-section-title">פרופיל</div>
+        <h2 class="settings-section-title">פרופיל</h2>
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
           <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingAvatar">?</div>
           <div style="flex:1;min-width:0;">
             <input id="settingName" type="text" placeholder="הכנס שם..." aria-label="שם" autocomplete="off" autocorrect="off" spellcheck="false" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.name=this.value.trim();saveSettingsData();updateHeaderTitle()"
               style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
-            <div style="font-size:0.8125rem;color:var(--text3);margin-top:3px;">לחץ לעריכה</div>
+            <div style="font-size:0.8125rem;color:var(--text3);margin-top:3px;">השם נשמר אוטומטית בזמן העריכה</div>
           </div>
         </div>
         <div id="partnerRow" style="display:none;margin-bottom:8px;">
@@ -2506,12 +2511,7 @@
         <button id="addPartnerBtn" onclick="openPartnerShare()" class="btn btn-outline btn-full" style="margin-bottom:4px">+ הוסף בן/בת זוג</button>
       </div>
       <div class="settings-section">
-        <div class="settings-section-title">תכנון</div>
-        <button type="button" id="settingsTasksBtn" onclick="showPage('analytics',document.getElementById('nav-analytics'))" class="btn btn-outline btn-full" style="margin-bottom:8px;">משימות ופגישות עם היועץ</button>
-        <button onclick="showPage('more')" class="btn btn-outline btn-full">🎯 יעדים, הוצאות קבועות, מנויים והלוואות</button>
-      </div>
-      <div class="settings-section">
-        <div class="settings-section-title">חשבון עסקי</div>
+        <h2 class="settings-section-title">חשבון עסקי</h2>
         <div class="settings-row">
           <div>
             <div class="settings-row-label">הפרד חשבון עסקי</div>
@@ -2524,7 +2524,24 @@
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-section-title">התראות</div>
+        <h2 class="settings-section-title">תכנון</h2>
+        <button type="button" id="settingsTasksBtn" onclick="showPage('analytics',document.getElementById('nav-analytics'))" class="btn btn-outline btn-full" style="margin-bottom:8px;">משימות ופגישות עם היועץ</button>
+        <button onclick="showPage('more')" class="btn btn-outline btn-full">🎯 יעדים, הוצאות קבועות, מנויים והלוואות</button>
+      </div>
+      <div class="settings-section">
+        <h2 class="settings-section-title">מראה האפליקציה</h2>
+        <div class="set-dd" id="themeDD">
+          <button type="button" class="set-dd-trigger" onclick="toggleSetDD('themeDD')"><span id="themeDDCur">🌗 תצוגה</span><svg aria-hidden="true" focusable="false" class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <div class="set-dd-menu">
+            <button type="button" class="set-dd-opt" data-v="light" onclick="pickTheme('light')"><span>☀️</span> בהיר</button>
+            <button type="button" class="set-dd-opt" data-v="dark" onclick="pickTheme('dark')"><span>🌙</span> כהה</button>
+            <button type="button" class="set-dd-opt" data-v="system" onclick="pickTheme('system')"><span>🖥️</span> לפי המערכת</button>
+          </div>
+        </div>
+        <button id="settingsInstallBtn" type="button" class="btn btn-outline btn-full" onclick="triggerInstall()" style="display:none;margin-top:8px;align-items:center;justify-content:center;gap:8px"><span style="font-size:1.1rem">📲</span> התקן אפליקציה</button>
+      </div>
+      <div class="settings-section">
+        <h2 class="settings-section-title">התראות</h2>
         <div class="settings-row">
           <div>
             <div class="settings-row-label">התראות במכשיר</div>
@@ -2544,19 +2561,7 @@
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-section-title">תצוגה</div>
-        <div class="set-dd" id="themeDD">
-          <button type="button" class="set-dd-trigger" onclick="toggleSetDD('themeDD')"><span id="themeDDCur">🌗 תצוגה</span><svg aria-hidden="true" focusable="false" class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
-          <div class="set-dd-menu">
-            <button type="button" class="set-dd-opt" data-v="light" onclick="pickTheme('light')"><span>☀️</span> בהיר</button>
-            <button type="button" class="set-dd-opt" data-v="dark" onclick="pickTheme('dark')"><span>🌙</span> כהה</button>
-            <button type="button" class="set-dd-opt" data-v="system" onclick="pickTheme('system')"><span>🖥️</span> לפי המערכת</button>
-          </div>
-        </div>
-        <button id="settingsInstallBtn" type="button" class="btn btn-outline btn-full" onclick="triggerInstall()" style="display:none;margin-top:8px;align-items:center;justify-content:center;gap:8px"><span style="font-size:1.1rem">📲</span> התקן אפליקציה</button>
-      </div>
-      <div class="settings-section">
-        <div class="settings-section-title">נתונים</div>
+        <h2 class="settings-section-title">גיבוי ושחזור</h2>
         <div class="set-dd" id="dataDD">
           <button type="button" class="set-dd-trigger" onclick="toggleSetDD('dataDD')"><span>💾 ייבוא, ייצוא וגיבוי</span><svg aria-hidden="true" focusable="false" class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
           <div class="set-dd-menu">
@@ -2564,23 +2569,27 @@
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();exportBackup()"><span>💾</span> ייצוא גיבוי מלא (JSON)</button>
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();pickBackupFile()"><span>♻️</span> שחזור מקובץ גיבוי</button>
             <button type="button" class="set-dd-opt" onclick="restoreAutoBackup()"><span>🕘</span> שחזור מגיבוי אוטומטי <span id="autoBkInfo" style="color:var(--text3);font-size:0.8125rem;margin-right:4px"></span></button>
-            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();resetAllData()" style="color:var(--red)"><span>🗑️</span> איפוס כל הנתונים</button>
           </div>
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-section-title">חשבון ופרטיות</div>
-        <button type="button" class="set-dd-opt" style="width:100%" onclick="openSupportSheet()"><span>✉️</span> צור קשר / דיווח על תקלה</button>
-        <button type="button" class="set-dd-opt" style="width:100%;color:var(--red)" onclick="deleteAccount()"><span>⛔</span> מחיקת חשבון לצמיתות</button>
-      </div>
-      <div class="settings-section">
-        <div class="settings-section-title">סנכרון ושיתוף</div>
+        <h2 class="settings-section-title">סנכרון ושיתוף</h2>
         <div id="cloudSection"></div>
       </div>
-      <!-- ── Advisor link (client side) ── -->
       <div class="settings-section">
-        <div class="settings-section-title">יועץ פיננסי</div>
+        <h2 class="settings-section-title">יועץ פיננסי</h2>
         <div id="advisorLinkSection"></div>
+      </div>
+      <div class="settings-section">
+        <h2 class="settings-section-title">עזרה ופרטיות</h2>
+        <button type="button" class="set-dd-opt" style="width:100%" onclick="openSupportSheet()"><span>✉️</span> צור קשר / דיווח על תקלה</button>
+      </div>
+      <div class="settings-section" id="settingsDangerSection" style="border:1px solid var(--red)">
+        <h2 class="settings-section-title">איפוס ומחיקה</h2>
+        <p style="font-size:14px;line-height:1.5;color:var(--text2);margin:0 0 12px">פעולות אלה מוחקות נתונים. מומלץ להוריד גיבוי לפני שממשיכים.</p>
+        <button type="button" class="btn btn-outline btn-full" onclick="exportBackup()" style="margin-bottom:8px">הורד גיבוי לפני מחיקה</button>
+        <button type="button" class="set-dd-opt" style="width:100%;color:var(--red)" onclick="resetAllData()">איפוס כל הנתונים</button>
+        <button type="button" class="set-dd-opt" style="width:100%;color:var(--red)" onclick="deleteAccount()">מחיקת חשבון לצמיתות</button>
       </div>
       <div style="text-align:center;margin-top:14px;padding-bottom:4px">
         <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">🔒 מדיניות פרטיות</button>
@@ -4485,7 +4494,7 @@ function _syncStatus(){
 }
 function _renderSyncStatus(){
   const status=_syncStatus();
-  document.querySelectorAll('#cloudStatus,#saveStatus').forEach(el=>{
+  document.querySelectorAll('#cloudStatus,#saveStatus,#settingsSaveStatus').forEach(el=>{
     el.textContent=status.text;
     el.style.color=status.color;
     el.dataset.state=status.state;

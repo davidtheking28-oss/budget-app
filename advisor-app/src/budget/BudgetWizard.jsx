@@ -13,7 +13,7 @@ import { fmt } from '../format.js';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
 
-const STEPS = ['הכנסות', 'הוצאות קבועות', 'הוצאות משתנות', 'סיכום'];
+const STEPS = ['הכנסות', 'הוצאות', 'סיכום'];
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
@@ -439,26 +439,25 @@ export default function BudgetWizard({ data, save, year, month }) {
         )}
 
         {step === 1 && (
-          <div className={styles.card}>
-            <div className={styles.cardTitleRow}>
-              <span className={styles.cardTitle}>הוצאות חודשיות קבועות</span>
-              <span className={styles.cardTotal}>{fmt(totalFixed)}</span>
+          <div className={styles.expGrid}>
+            <div className={styles.card}>
+              <div className={styles.cardTitleRow}>
+                <span className={styles.cardTitle}>הוצאות חודשיות קבועות</span>
+                <span className={styles.cardTotal}>{fmt(totalFixed)}</span>
+              </div>
+              {tableList(fixed, setFixed, 'שם ההוצאה הקבועה', name => fixedActual[name] || 0)}
             </div>
-            {tableList(fixed, setFixed, 'שם ההוצאה הקבועה', name => fixedActual[name] || 0)}
+            <div className={styles.card}>
+              <div className={styles.cardTitleRow}>
+                <span className={styles.cardTitle}>הוצאות חודשיות משתנות</span>
+                <span className={styles.cardTotal}>{fmt(totalVar)}</span>
+              </div>
+              {tableList(variable, setVariable, 'שם הקטגוריה', name => variableActual[name] || 0, true)}
+            </div>
           </div>
         )}
 
         {step === 2 && (
-          <div className={styles.card}>
-            <div className={styles.cardTitleRow}>
-              <span className={styles.cardTitle}>הוצאות חודשיות משתנות</span>
-              <span className={styles.cardTotal}>{fmt(totalVar)}</span>
-            </div>
-            {tableList(variable, setVariable, 'שם הקטגוריה', name => variableActual[name] || 0, true)}
-          </div>
-        )}
-
-        {step === 3 && (
           <div className={styles.card}>
             <div className={styles.cardTitle}>סיכום התקציב</div>
 
