@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
 import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
 import { resizeImageToJpeg } from './resizeImage.js';
-import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, chartTheme } from '../categories.js';
+import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
 import { addItem } from '../budget/itemHelpers.js';
 
@@ -21,7 +21,7 @@ import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import CollapsibleSection from '../components/CollapsibleSection.jsx';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { toast } from '../toast.js';
 import styles from './EconomicMapping.module.css';
 import { fmt } from '../format.js';
@@ -185,6 +185,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [linkForm, setLinkForm] = useState(null);
   const [linking, setLinking] = useState(false);
   const [flowPeriod, setFlowPeriod] = useState('month');
+  const [donutView, setDonutView] = useState('type');
   const fileInputRef = useRef(null);
   const opts = monthOptions();
 
@@ -398,6 +399,30 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       });
     }
   };
+  const donutItems = (() => {
+    if (!cashflow?.hasIncomeData) return [];
+    if (donutView === 'type') {
+      return [
+        { name: 'קבועות', value: fixedTotal },
+        { name: 'משתנות', value: variableTotal },
+        { name: 'חיסכון', value: cashflow.savings }
+      ].filter(i => i.value > 0);
+    }
+    const top = categories.slice(0, 7).map(c => ({ name: c, value: data.category_averages[c] }));
+    const rest = categories.slice(7).reduce((sum, c) => sum + data.category_averages[c], 0);
+    return rest > 0 ? [...top, { name: 'אחר', value: rest }] : top;
+  })();
+  const donutTotal = donutItems.reduce((sum, i) => sum + i.value, 0) || 1;
+  const donutData = {
+    labels: donutItems.map(i => i.name),
+    datasets: [{ data: donutItems.map(i => i.value), backgroundColor: donutItems.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]), borderColor: CT.surface, borderWidth: 2 }]
+  };
+  const donutOptions = {
+    maintainAspectRatio: false,
+    cutout: '62%',
+    animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
+    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+  };
   const periodMul = flowPeriod === 'year' ? 12 : 1;
   const actualChartData = cashflow ? {
     labels: ['הכנסות', 'הוצאות'],
@@ -430,7 +455,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   return (
     <div>
       {cashflow?.hasIncomeData && (
-        <div className={styles.card + ' ' + styles.cardStandalone + ' ' + styles.actualCard}>
+        <div className={styles.topGrid}>
+        <div className={styles.card + ' ' + styles.cardStandalone}>
           <div className={styles.actualTitle}>ביצוע</div>
           <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(cashflow.monthsCovered)} של דפי חשבון</div>
           <div className={styles.actualChart} role="img" aria-label={`ביצוע: הכנסות ${fmt(cashflow.income * periodMul)}, הוצאות ${fmt(cashflow.expense * periodMul)}`}>
@@ -454,7 +480,32 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
             </div>
           </div>
         </div>
+        <div className={styles.card + ' ' + styles.cardStandalone}>
+          <div className={styles.actualTitle}>לאן הולך הכסף</div>
+          <div className={styles.actualSub}>הוצאה חודשית ממוצעת</div>
+          <div className={styles.flowToggle} role="group" aria-label="חלוקה">
+            <button type="button" aria-pressed={donutView === 'type'} className={donutView === 'type' ? styles.flowToggleActive : ''} onClick={() => setDonutView('type')}>לפי סוג</button>
+            <button type="button" aria-pressed={donutView === 'cat'} className={donutView === 'cat' ? styles.flowToggleActive : ''} onClick={() => setDonutView('cat')}>לפי קטגוריה</button>
+          </div>
+          <div className={styles.donutWrap}>
+            <div className={styles.donut} role="img" aria-label="התפלגות ההוצאות">
+              <Doughnut data={donutData} options={donutOptions} />
+            </div>
+            <div className={styles.donutLegend}>
+              {donutItems.map((i, idx) => (
+                <div className={styles.donutRow} key={i.name}>
+                  <span className={styles.donutDot} style={{ background: CHART_PALETTE[idx % CHART_PALETTE.length] }} />
+                  <span className={styles.donutName}>{i.name}</span>
+                  <span className={styles.donutPct}>{Math.round(i.value / donutTotal * 100)}%</span>
+                  <span className={styles.donutAmt}>{fmt(i.value)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        </div>
       )}
+
       <div className={styles.card}>
         <div className={styles.cardTitle}>העלאת דפי חשבון</div>
         <div className={styles.dropZone} onDragOver={e => e.preventDefault()} onDrop={onDrop}>
