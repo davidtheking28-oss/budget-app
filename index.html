@@ -136,6 +136,8 @@
     #page-dashboard .dash-ring-item{border:1px solid var(--border);}
     #page-dashboard #recentTxList .tx-desc-name,#page-transactions .tx-desc-name{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.45;}
 
+    #undoToast{bottom:calc(var(--nav-bottom) + 82px);visibility:hidden;pointer-events:none;}
+    #undoToast.show{visibility:visible;pointer-events:auto;}
   </style>
   <style>
     /* --bg/--surface/--surface2/--border/--text/--text2/--text3 for light mode live in the
@@ -711,9 +713,9 @@
     body.dark .wiz-fix-btn.active{box-shadow:0 2px 8px rgba(var(--accent-rgb),0.25);}
     body.dark .toggle-opt.active{box-shadow:0 2px 8px rgba(var(--accent-rgb),0.2);}
     body.dark .btn-primary{box-shadow:0 4px 16px rgba(var(--accent-rgb),0.2);}
-    #toast{position:fixed;bottom:calc(var(--nav-bottom) + 158px);left:0;right:0;width:fit-content;max-width:calc(100vw - 32px);margin:0 auto;transform:translateY(16px);background:#1a1a2e;color:white;padding:10px 22px;border-radius:24px;font-size:0.88rem;font-weight:600;line-height:1.45;text-align:center;z-index:9999;opacity:0;transition:opacity 0.22s cubic-bezier(0.22,1,0.36,1),transform 0.22s cubic-bezier(0.22,1,0.36,1);box-shadow:0 4px 20px rgba(0,0,0,0.3);}
-    body.dark #toast{background:#30363d;}
-    #toast.show{opacity:1;transform:translateY(0);}
+    #toast,#undoToast{position:fixed;bottom:calc(var(--nav-bottom) + 158px);left:0;right:0;width:fit-content;max-width:calc(100vw - 32px);margin:0 auto;transform:translateY(16px);background:#1a1a2e;color:white;padding:10px 22px;border-radius:24px;font-size:0.88rem;font-weight:600;line-height:1.45;text-align:center;z-index:9999;opacity:0;transition:opacity 0.22s cubic-bezier(0.22,1,0.36,1),transform 0.22s cubic-bezier(0.22,1,0.36,1);box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+    body.dark #toast,body.dark #undoToast{background:#30363d;}
+    #toast.show,#undoToast.show{opacity:1;transform:translateY(0);}
     #toast[data-type=success]{background:rgba(5,150,105,0.97);}
     #toast[data-type=error]{background:rgba(185,28,28,0.97);}
     #toast[data-type=warning]{background:rgba(180,100,0,0.97);}
@@ -2758,6 +2760,7 @@
 
 <div id="offlineBanner">📶 אין חיבור לאינטרנט: הנתונים נשמרים מקומית</div>
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="undoToast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <div class="sheet-overlay" id="supportSheet" onclick="if(event.target===this)closeSheet('supportSheet')">
   <div class="sheet" style="max-height:86vh">
@@ -3324,15 +3327,15 @@ function showToast(msg,type){const t=document.getElementById('toast');t.textCont
 let _deleteTimer=null,_undoFn=null,_pendingCommitFn=null;
 function showUndoToast(msg,undoFn,commitFn){
   if(_deleteTimer){clearTimeout(_deleteTimer);if(_pendingCommitFn)_pendingCommitFn();}
-  const t=document.getElementById('toast');
-  t.innerHTML=msg+' <button onclick="undoDelete()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:9px 16px;border-radius:12px;cursor:pointer;font-size:0.8rem;font-weight:700;margin-right:8px;min-height:44px">בטל</button>';
+  const t=document.getElementById('undoToast');
+  t.innerHTML=msg+' <button onclick="undoDelete()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:9px 16px;border-radius:12px;cursor:pointer;font-size:0.8rem;font-weight:700;margin-right:8px;min-height:44px">בטל מחיקה</button>';
   t.classList.add('show');_undoFn=undoFn;_pendingCommitFn=commitFn;
-  _deleteTimer=setTimeout(()=>{t.classList.remove('show');_undoFn=null;_pendingCommitFn=null;commitFn();},5000);
+  _deleteTimer=setTimeout(()=>{t.classList.remove('show');_deleteTimer=null;_undoFn=null;_pendingCommitFn=null;commitFn();},8000);
 }
 function undoDelete(){
   if(_deleteTimer){clearTimeout(_deleteTimer);_deleteTimer=null;}
   _pendingCommitFn=null;
-  const t=document.getElementById('toast');t.classList.remove('show');
+  const t=document.getElementById('undoToast');t.classList.remove('show');
   if(_undoFn){_undoFn();_undoFn=null;}
 }
 function getMonthTx(y,m){return transactions.filter(t=>(t.date||'').startsWith(mk(y,m)));}

@@ -1,6 +1,4 @@
-import { useContext } from 'react';
-import { useClientBudget, BudgetModeContext } from './useClientBudget.js';
-import MonthTransactions from './MonthTransactions.jsx';
+import { useClientBudget } from './useClientBudget.js';
 import { effectiveLimit, incomeSourcesFor, monthSummary } from './budgetMath.js';
 import Skeleton from '../components/Skeleton.jsx';
 import Hero from '../components/Hero.jsx';
@@ -10,7 +8,6 @@ import { fmt } from '../format.js';
 
 export default function Budget({ clientUserId, advisorId, year, month }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
-  const mode = useContext(BudgetModeContext);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -42,8 +39,6 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
       />
 
       <BudgetWizard data={data} save={save} year={year} month={month} />
-
-      <MonthTransactions data={data} save={save} mode={mode} year={year} month={month} />
     </div>
   );
 }
