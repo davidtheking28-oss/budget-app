@@ -1657,6 +1657,20 @@
       input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{font-size:16px!important;}
     }
 
+
+    body.dark .bottom-nav,body:not(.dark) .bottom-nav{background:color-mix(in srgb,var(--surface) 94%,transparent);border-color:var(--border);}
+    .bottom-nav .nav-item .nav-icon{border-radius:14px;}
+    .bottom-nav .nav-item .nav-icon svg{width:23px;height:23px;stroke:var(--text2);stroke-width:1.9;}
+    .bottom-nav button.nav-item .nav-label{font-size:12px;line-height:1.2;font-weight:700;letter-spacing:0;color:var(--text2);}
+    .bottom-nav .nav-item.active .nav-label{font-weight:800;color:var(--accent);}
+    .bottom-nav .nav-item.active .nav-icon svg{stroke:white;stroke-width:2.2;}
+    body.dark .bottom-nav .nav-item.active .nav-icon svg{stroke:var(--bg);}
+    .bottom-nav .nav-indicator{border-radius:14px;box-shadow:0 2px 8px rgba(var(--accent-rgb),.2);}
+    .bottom-nav button.fab{width:48px;height:48px;flex-basis:48px;background:var(--accent);box-shadow:0 3px 12px rgba(var(--accent-rgb),.22);}
+    .bottom-nav .fab svg{stroke:white;}
+    body.dark .bottom-nav .fab svg{stroke:var(--bg);}
+    .bottom-nav .nav-item:focus-visible,.bottom-nav .fab:focus-visible{outline:2px solid var(--accent);outline-offset:-3px;}
+
   </style>
 </head>
 <body class="dark">
