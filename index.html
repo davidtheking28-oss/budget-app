@@ -106,6 +106,20 @@
 #txFilterStatus{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;color:var(--text2);font-size:14px;border-bottom:1px solid var(--border);}
 #txFilterStatus[hidden]{display:none;}
 #page-transactions .tx-date-label{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+
+    #page-settings .settings-page-intro{margin:4px 4px 18px;}
+    #page-settings .settings-page-intro h1{font-size:26px;line-height:1.25;font-weight:800;color:var(--text);margin:0 0 6px;}
+    #page-settings .settings-page-intro p{font-size:14px;line-height:1.5;color:var(--text2);margin:0;}
+    #page-settings .settings-section{border:1px solid var(--border);border-radius:20px;}
+    #page-settings .settings-section-title{display:flex;align-items:center;gap:10px;font-weight:800;line-height:1.35;}
+    #page-settings .settings-heading-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex-shrink:0;border-radius:11px;background:var(--surface2);color:var(--accent);}
+    #page-settings .settings-heading-icon svg{width:20px;height:20px;}
+    #page-settings .settings-storage-card{border-color:var(--accent);}
+    #page-settings #settingName{background:var(--surface2)!important;border:1px solid var(--border)!important;border-radius:12px;padding:10px 12px!important;font-size:18px!important;min-height:44px;}
+    #page-settings #settingName:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+    #settingsDangerSection .settings-heading-icon{background:var(--red-light);color:var(--red);}
+    #page-settings .settings-section .btn-full{border-radius:12px;}
+
   </style>
   <style>
     /* --bg/--surface/--surface2/--border/--text/--text2/--text3 for light mode live in the
@@ -2482,14 +2496,15 @@
   </div>
 
   <div id="page-settings" class="page">
+    <div class="settings-page-intro"><h1>הגדרות</h1><p>הפרטים, ההעדפות והנתונים שלך</p></div>
     <div class="form-stack">
-      <div class="settings-section" aria-labelledby="settingsStorageTitle">
-        <h2 class="settings-section-title" id="settingsStorageTitle">שמירה וסנכרון</h2>
+      <div class="settings-section settings-storage-card" aria-labelledby="settingsStorageTitle">
+        <h2 class="settings-section-title" id="settingsStorageTitle"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M9 12l2 2 4-4"/><path d="M12 3l8 4v5c0 5-8 9-8 9s-8-4-8-9V7z"/></svg></span><span>שמירה וסנכרון</span></h2>
         <p id="settingsSaveStatus" role="status" aria-live="polite" aria-atomic="true" style="font-size:16px;font-weight:700;margin:0;color:var(--text2)"></p>
         <p style="font-size:14px;line-height:1.5;color:var(--text2);margin:8px 0 0">השינויים נשמרים אוטומטית במכשיר. גיבוי בענן זמין לאחר התחברות.</p>
       </div>
       <div class="settings-section">
-        <h2 class="settings-section-title">פרופיל</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span><span>פרופיל</span></h2>
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
           <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingAvatar">?</div>
           <div style="flex:1;min-width:0;">
@@ -2511,7 +2526,7 @@
         <button id="addPartnerBtn" onclick="openPartnerShare()" class="btn btn-outline btn-full" style="margin-bottom:4px">+ הוסף בן/בת זוג</button>
       </div>
       <div class="settings-section">
-        <h2 class="settings-section-title">חשבון עסקי</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V3h8v4M3 12h18M12 10v4"/></svg></span><span>חשבון עסקי</span></h2>
         <div class="settings-row">
           <div>
             <div class="settings-row-label">הפרד חשבון עסקי</div>
@@ -2524,12 +2539,12 @@
         </div>
       </div>
       <div class="settings-section">
-        <h2 class="settings-section-title">תכנון</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span><span>תכנון</span></h2>
         <button type="button" id="settingsTasksBtn" onclick="showPage('analytics',document.getElementById('nav-analytics'))" class="btn btn-outline btn-full" style="margin-bottom:8px;">משימות ופגישות עם היועץ</button>
         <button onclick="showPage('more')" class="btn btn-outline btn-full">🎯 יעדים, הוצאות קבועות, מנויים והלוואות</button>
       </div>
       <div class="settings-section">
-        <h2 class="settings-section-title">מראה האפליקציה</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg></span><span>מראה האפליקציה</span></h2>
         <div class="set-dd" id="themeDD">
           <button type="button" class="set-dd-trigger" onclick="toggleSetDD('themeDD')"><span id="themeDDCur">🌗 תצוגה</span><svg aria-hidden="true" focusable="false" class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
           <div class="set-dd-menu">
@@ -2541,7 +2556,7 @@
         <button id="settingsInstallBtn" type="button" class="btn btn-outline btn-full" onclick="triggerInstall()" style="display:none;margin-top:8px;align-items:center;justify-content:center;gap:8px"><span style="font-size:1.1rem">📲</span> התקן אפליקציה</button>
       </div>
       <div class="settings-section">
-        <h2 class="settings-section-title">התראות</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span><span>התראות</span></h2>
         <div class="settings-row">
           <div>
             <div class="settings-row-label">התראות במכשיר</div>
@@ -2561,7 +2576,7 @@
         </div>
       </div>
       <div class="settings-section">
-        <h2 class="settings-section-title">גיבוי ושחזור</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg></span><span>גיבוי ושחזור</span></h2>
         <div class="set-dd" id="dataDD">
           <button type="button" class="set-dd-trigger" onclick="toggleSetDD('dataDD')"><span>💾 ייבוא, ייצוא וגיבוי</span><svg aria-hidden="true" focusable="false" class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
           <div class="set-dd-menu">
@@ -2573,19 +2588,19 @@
         </div>
       </div>
       <div class="settings-section">
-        <h2 class="settings-section-title">סנכרון ושיתוף</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M6 16H5a4 4 0 1 1 1-8 6 6 0 0 1 12 1 4 4 0 0 1 1 7h-1M12 12v9m-3-3 3 3 3-3"/></svg></span><span>סנכרון ושיתוף</span></h2>
         <div id="cloudSection"></div>
       </div>
       <div class="settings-section">
-        <h2 class="settings-section-title">יועץ פיננסי</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M21 11a8 8 0 0 1-8 8H5l-3 3V11a8 8 0 0 1 16-1M7 10h6M7 14h4"/></svg></span><span>יועץ פיננסי</span></h2>
         <div id="advisorLinkSection"></div>
       </div>
       <div class="settings-section">
-        <h2 class="settings-section-title">עזרה ופרטיות</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 4M12 17h.01"/></svg></span><span>עזרה ופרטיות</span></h2>
         <button type="button" class="set-dd-opt" style="width:100%" onclick="openSupportSheet()"><span>✉️</span> צור קשר / דיווח על תקלה</button>
       </div>
       <div class="settings-section" id="settingsDangerSection" style="border:1px solid var(--red)">
-        <h2 class="settings-section-title">איפוס ומחיקה</h2>
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></span><span>איפוס ומחיקה</span></h2>
         <p style="font-size:14px;line-height:1.5;color:var(--text2);margin:0 0 12px">פעולות אלה מוחקות נתונים. מומלץ להוריד גיבוי לפני שממשיכים.</p>
         <button type="button" class="btn btn-outline btn-full" onclick="exportBackup()" style="margin-bottom:8px">הורד גיבוי לפני מחיקה</button>
         <button type="button" class="set-dd-opt" style="width:100%;color:var(--red)" onclick="resetAllData()">איפוס כל הנתונים</button>

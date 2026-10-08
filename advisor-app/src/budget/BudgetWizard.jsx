@@ -17,34 +17,19 @@ const STEPS = ['הכנסות', 'הוצאות', 'סיכום'];
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
-// Picks black or white for the in-bar value label based on the bar's own fill
-// color, so it stays readable whether that color is the light theme's deep
-// green/red or the dark theme's much lighter pastel equivalents.
-function readableOn(hex) {
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
-  if (!m) return '#000';
-  const [r, g, b] = m.slice(1).map(h => parseInt(h, 16));
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.6 ? '#000' : '#fff';
-}
-
-const barValueLabels = {
-  id: 'barValueLabels',
+const topLabels = {
+  id: 'topLabels',
   afterDatasetsDraw(chart) {
     const { ctx } = chart;
+    const color = getComputedStyle(chart.canvas).color;
     chart.data.datasets.forEach((ds, di) => {
-      const meta = chart.getDatasetMeta(di);
-      if (meta.hidden) return;
-      const textColor = readableOn(ds.backgroundColor);
-      meta.data.forEach((bar, i) => {
-        const value = ds.data[i];
-        if (!value) return;
+      chart.getDatasetMeta(di).data.forEach((bar, i) => {
         ctx.save();
-        ctx.font = "700 14px " + (chart.options.font?.family || 'inherit');
-        ctx.fillStyle = textColor;
+        ctx.font = '700 15px ' + (chart.options.font?.family || 'inherit');
+        ctx.fillStyle = color;
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(fmt(value), bar.x, (bar.y + bar.base) / 2);
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(fmt(ds.data[i]), bar.x, bar.y - 8);
         ctx.restore();
       });
     });
@@ -66,7 +51,7 @@ function sameCategory(a, b) {
 export default function BudgetWizard({ data, save, year, month }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [flowView, setFlowView] = useState('actual');
+  const [flowPeriod, setFlowPeriod] = useState('month');
 
   // Income sources and fixed expenses aren't month-scoped in storage — they're the
   // recurring plan and already apply to every month by default. What's missing is
@@ -153,25 +138,25 @@ export default function BudgetWizard({ data, save, year, month }) {
   const actualSavings = fixedActual[SAVINGS_CATEGORY] || 0;
 
   const CT = chartTheme();
-  const summaryChartData = {
-    labels: [flowView === 'plan' ? 'תכנון' : 'בפועל'],
-    datasets: [
-      { label: 'הכנסות', data: [flowView === 'plan' ? totalIncome : totalIncomeActual], backgroundColor: CT.green, borderRadius: 6, barPercentage: 0.7, categoryPercentage: 0.6, hoverBackgroundColor: CT.greenHover },
-      { label: 'הוצאות', data: [flowView === 'plan' ? (totalFixed + totalVar) : (totalFixedActual + totalVarActual)], backgroundColor: CT.red, borderRadius: 6, barPercentage: 0.7, categoryPercentage: 0.6, hoverBackgroundColor: CT.redHover }
-    ]
-  };
   const summaryChartOptions = {
     maintainAspectRatio: false,
+    layout: { padding: { top: 28 } },
     animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
     scales: {
-      x: { ticks: { color: CT.text2, font: { family: CT.font, weight: '600' } }, grid: { display: false } },
-      y: { display: false, grid: { display: false } }
+      x: { reverse: true, ticks: { color: CT.text2, font: { family: CT.font, weight: '600' } }, grid: { display: false } },
+      y: { display: false, beginAtZero: true, grid: { display: false } }
     },
-    plugins: {
-      legend: { position: 'bottom', labels: { color: CT.text2, font: { family: CT.font }, boxWidth: 10, boxHeight: 10, usePointStyle: true, pointStyle: 'circle' } },
-      tooltip: { backgroundColor: CT.surface, titleColor: CT.text, bodyColor: CT.text2, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
-    }
+    plugins: { legend: { display: false }, tooltip: { enabled: false } }
   };
+  const chartDataOf = (income, expenses) => ({
+    labels: ['הכנסות', 'הוצאות'],
+    datasets: [{ data: [income, expenses], backgroundColor: [CT.green, CT.red], hoverBackgroundColor: [CT.greenHover, CT.redHover], borderRadius: 6, barPercentage: 0.45, categoryPercentage: 0.9 }]
+  });
+  const periodMul = flowPeriod === 'year' ? 12 : 1;
+  const summaryCards = [
+    { key: 'plan', title: 'תכנון', sub: 'מה תוכנן לחודש הזה', income: totalIncome, expenses: totalFixed + totalVar, flow: left, flowNoSavings: left + plannedSavings },
+    { key: 'actual', title: 'ביצוע', sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, flowNoSavings: actualFlow + actualSavings }
+  ];
 
   function addRow(setter, name = '') { setter(prev => [...prev, { name, amount: '' }]); }
   function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...patch } : r)); }
@@ -461,6 +446,35 @@ export default function BudgetWizard({ data, save, year, month }) {
           <div className={styles.card}>
             <div className={styles.cardTitle}>סיכום התקציב</div>
 
+            <div className={styles.sumGrid}>
+              {summaryCards.map(c => (
+                <div className={styles.sumCard} key={c.key}>
+                  <div className={styles.sumTitle}>{c.title}</div>
+                  <div className={styles.sumSub}>{c.sub}</div>
+                  <div className={styles.summaryChart} role="img" aria-label={`${c.title}: הכנסות ${fmt(c.income * periodMul)}, הוצאות ${fmt(c.expenses * periodMul)}`}>
+                    <Bar data={chartDataOf(c.income * periodMul, c.expenses * periodMul)} plugins={[topLabels]} options={summaryChartOptions} />
+                  </div>
+                  <div className={styles.flowBox}>
+                    <div className={styles.flowBoxHead}>
+                      <span className={styles.flowBoxTitle}>תזרים</span>
+                      <div className={styles.flowToggle} role="group" aria-label={`תקופה · ${c.title}`}>
+                        <button type="button" aria-pressed={flowPeriod === 'month'} className={flowPeriod === 'month' ? styles.flowToggleActive : ''} onClick={() => setFlowPeriod('month')}>חודשי</button>
+                        <button type="button" aria-pressed={flowPeriod === 'year'} className={flowPeriod === 'year' ? styles.flowToggleActive : ''} onClick={() => setFlowPeriod('year')}>שנתי</button>
+                      </div>
+                    </div>
+                    <div className={styles.flowLine}>
+                      <span>בחשבון</span>
+                      <span className={c.flow < 0 ? styles.negative : styles.positive}>{fmt(c.flow * periodMul)}</span>
+                    </div>
+                    <div className={styles.flowLine}>
+                      <span>בלי חיסכון</span>
+                      <span className={c.flowNoSavings < 0 ? styles.negative : styles.positive}>{fmt(c.flowNoSavings * periodMul)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <div className={styles.reviewCols}>
               <div className={styles.reviewCol}>
                 <div className={styles.reviewColTitle}>הכנסות</div>
@@ -544,30 +558,6 @@ export default function BudgetWizard({ data, save, year, month }) {
                 </div>
               </div>
             )}
-
-            <div className={styles.flowToggle}>
-              <button type="button" className={flowView === 'plan' ? styles.flowToggleActive : ''} onClick={() => setFlowView('plan')}>תכנון</button>
-              <button type="button" className={flowView === 'actual' ? styles.flowToggleActive : ''} onClick={() => setFlowView('actual')}>בפועל</button>
-            </div>
-
-            <div className={styles.summaryChart}>
-              <Bar data={summaryChartData} plugins={[barValueLabels]} options={summaryChartOptions} />
-            </div>
-
-            <div className={styles.flowCaptionRow}>
-              <div className={styles.flowCaptionCol}>
-                <div className={styles.flowCaptionLine}>
-                  <span>תזרים חודשי</span>
-                  <span className={(flowView === 'plan' ? left : actualFlow) < 0 ? styles.negative : styles.positive}>{fmt(flowView === 'plan' ? left : actualFlow)}</span>
-                </div>
-                {(plannedSavings > 0 || actualSavings > 0) && (
-                  <div className={styles.flowCaptionLine}>
-                    <span>ללא הפקדה לחיסכון</span>
-                    <span className={(flowView === 'plan' ? (left + plannedSavings) : (actualFlow + actualSavings)) < 0 ? styles.negative : styles.positive}>{fmt(flowView === 'plan' ? (left + plannedSavings) : (actualFlow + actualSavings))}</span>
-                  </div>
-                )}
-              </div>
-            </div>
 
             <div className={styles.summaryNote}>השמירה תעדכן את התקציב, ההוצאות הקבועות, מקורות ההכנסה והיעדים באפליקציה של הלקוח.</div>
           </div>
