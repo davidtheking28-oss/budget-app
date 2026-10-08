@@ -120,6 +120,22 @@
     #settingsDangerSection .settings-heading-icon{background:var(--red-light);color:var(--red);}
     #page-settings .settings-section .btn-full{border-radius:12px;}
 
+
+    .app-page-intro{margin:4px 4px 18px;}
+    .app-page-intro h1{font-size:26px;line-height:1.25;font-weight:800;color:var(--text);margin:0 0 6px;}
+    .app-page-intro p{font-size:14px;line-height:1.5;color:var(--text2);margin:0;}
+    #page-analytics .section-title{font-size:17px;font-weight:800;margin:0;}
+    #page-analytics .budget-tx-desc{font-size:16px;line-height:1.5;}
+    #page-analytics .budget-tx-date{font-size:14px;margin-top:6px;}
+    #page-analytics input[data-task-id]{width:24px!important;height:24px!important;}
+    body.dark #page-analytics input[data-task-id]{color-scheme:dark;}
+    #page-analytics .meeting-summary-label{color:var(--text2);font-weight:700;}
+    #page-budget .budget-detail-name{font-size:16px;color:var(--text);line-height:1.4;}
+    #page-budget .budget-detail-planvalue{font-size:19px;}
+    #page-dashboard .dash-card-title{font-size:16px;font-weight:800;}
+    #page-dashboard .dash-ring-item{border:1px solid var(--border);}
+    #page-dashboard #recentTxList .tx-desc-name,#page-transactions .tx-desc-name{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.45;}
+
   </style>
   <style>
     /* --bg/--surface/--surface2/--border/--text/--text2/--text3 for light mode live in the
@@ -2290,15 +2306,16 @@
   </div>
 
   <div id="page-analytics" class="page">
+    <div class="app-page-intro"><h1>משימות ופגישות</h1><p>הפגישות הקרובות והמשימות שלך עם היועץ</p></div>
     <div id="tasksLoadStatus" role="status" style="display:none;padding:12px;border:1px solid var(--border);border-radius:12px;margin-bottom:12px;color:var(--text2);">לא ניתן לעדכן את המשימות והפגישות כרגע. <button type="button" class="btn btn-outline" onclick="_loadAdvisorTasks().then(renderTasksPage)" style="margin-top:8px;">נסה שוב</button></div>
     <div id="tasksNoAdvisor" class="empty" style="display:none"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><p>עוד אין יועץ מקושר</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">כשתתחבר ליועץ פיננסי, המשימות והפגישות שהוא קובע איתך יופיעו כאן</p></div>
     <div id="tasksContent" style="display:none">
       <div class="section" id="meetingsSection">
-        <div class="section-header"><div class="section-title">פגישות</div></div>
+        <div class="section-header"><h2 class="section-title"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--accent)"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>פגישות</h2></div>
         <div class="section-body" id="meetingsList"></div>
       </div>
       <div class="section" id="clientTasksSection">
-        <div class="section-header"><div class="section-title">משימות</div></div>
+        <div class="section-header"><h2 class="section-title"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--accent)"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>משימות</h2></div>
         <div class="section-body" id="clientTasksList"></div>
       </div>
     </div>
@@ -2350,6 +2367,7 @@
   </div>
 
   <div id="page-budget" class="page">
+    <div class="app-page-intro"><h1>התקציב שלי</h1><p>בחר קטגוריה כדי לראות את התכנון וההוצאות בפועל</p></div>
     <div id="budgetEmpty" class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg></div><p>קבע תקרה חודשית לקטגוריה כמו "אוכל" או "קניות" ותדע מיד כשחרגת</p><button class="btn-empty" onclick="openSheet('addBudgetSheet')"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הגדר תקציב ראשון</button></div>
     <div id="budgetChipStrip" class="budget-chip-strip" style="display:none"></div>
     <div id="budgetCatDetail" style="display:none"></div>
