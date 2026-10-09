@@ -4166,7 +4166,7 @@ function _expTxListHtml(cat,byCat){
 }
 function _expStructListHtml(kind){
   if(kind==='loans'){
-    const rows=activeLoans().map(l=>'<div class="exp-struct-row" onclick="event.stopPropagation();editLoan('+l.id+')"><span>'+esc(l.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(l.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteLoan('+l.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    const rows=activeLoans().map(l=>'<div class="exp-struct-row"><button type="button" class="exp-struct-edit" onclick="event.stopPropagation();editLoan('+l.id+')" aria-label="ערוך הלוואה '+esc(l.name)+'">'+esc(l.name)+'</button><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(l.monthly)||0)+'</span><button type="button" class="exp-icon-sm" onclick="event.stopPropagation();deleteLoan('+l.id+')" aria-label="מחק הלוואה '+esc(l.name)+'">'+_expTrashSvg+'</button></span></div>').join('');
     return (rows||'<div class="budget-tx-empty">אין הלוואות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openAddLoanSheet()">+ הוסף הלוואה</button>';
   }
   if(kind==='insurance'){
@@ -4175,7 +4175,7 @@ function _expStructListHtml(kind){
   }
   if(kind==='subs'){
     const active=subscriptions.filter(s=>s.active);
-    const rows=active.map(s=>'<div class="exp-struct-row" onclick="event.stopPropagation();editSub('+s.id+')"><span>'+esc(s.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(subME(s))+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deleteSub('+s.id+',this)" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    const rows=active.map(s=>'<div class="exp-struct-row"><button type="button" class="exp-struct-edit" onclick="event.stopPropagation();editSub('+s.id+')" aria-label="ערוך מנוי '+esc(s.name)+'">'+esc(s.name)+'</button><span class="exp-pay-icons"><span class="exp-amt">'+fmt(subME(s))+'</span><button type="button" class="exp-icon-sm" onclick="event.stopPropagation();deleteSub('+s.id+',this)" aria-label="מחק מנוי '+esc(s.name)+'">'+_expTrashSvg+'</button></span></div>').join('');
     return (rows||'<div class="budget-tx-empty">אין מנויים פעילים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openSheet(\'addSubSheet\')">+ הוסף מנוי</button>';
   }
   if(kind==='payments'){
@@ -4185,7 +4185,7 @@ function _expStructListHtml(kind){
       return '<div class="exp-pay-card">'
         +'<div class="exp-pay-top">'
           +'<span class="exp-pay-name">'+esc(p.name)+'</span>'
-          +'<span class="exp-pay-icons"><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expEditPayment('+p.id+')" aria-label="ערוך">'+_expEditSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();deletePayment('+p.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span>'
+          +'<span class="exp-pay-icons"><button type="button" class="exp-icon-sm" onclick="event.stopPropagation();_expEditPayment('+p.id+')" aria-label="ערוך תשלום '+esc(p.name)+'">'+_expEditSvg+'</button><button type="button" class="exp-icon-sm" onclick="event.stopPropagation();deletePayment('+p.id+')" aria-label="מחק תשלום '+esc(p.name)+'">'+_expTrashSvg+'</button></span>'
         +'</div>'
         +'<div class="exp-pay-bottom">'
           +'<div class="exp-pay-col"><div class="exp-pay-row">סה״כ: <b>'+_payFmt(total*amt)+'</b></div><div class="exp-pay-row"><b>'+c.current+'/'+total+'</b></div></div>'
@@ -5292,6 +5292,7 @@ function importBackup(input){
         if(data[key]!==undefined&&(!data[key]||typeof data[key]!=='object'||Array.isArray(data[key])))throw new Error('קובץ לא תקין');
       }
       if(!(await confirmSheet({icon:'♻️',title:'שחזור גיבוי',message:'שחזור יחליף את כל הנתונים הקיימים. להמשיך?',confirmText:'שחזר',danger:true}))) return;
+      showPage('dashboard',document.getElementById('nav-dashboard'));
       transactions = data.transactions || [];
       goals = data.goals || [];
       subscriptions = data.subscriptions || [];
@@ -5304,7 +5305,6 @@ function importBackup(input){
       saveData();
       saveSettingsData();
       refreshAll();
-      showPage('dashboard',document.getElementById('nav-dashboard'));
       showToast('✓ הנתונים שוחזרו בהצלחה!');
     } catch(err) { showToast('❌ לא ניתן לקרוא את הקובץ. נסה קובץ אחר'); }
   };

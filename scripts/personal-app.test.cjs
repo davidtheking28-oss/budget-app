@@ -266,6 +266,13 @@ test('invalid optional backup fields are rejected before replacing transactions'
 test('valid exported data restores all collections and settings',async()=>{
  const ctx=backupContext({transactions:[{id:1,amount:20}],insurances:[{id:2,monthly:100}],budgets:{Food:200},userSettings:{name:'restored'}});ctx.importBackup({files:[{}]});await ctx.done;assert.equal(ctx.transactions[0].amount,20);assert.equal(ctx.insurances[0].monthly,100);assert.equal(ctx.userSettings.name,'restored');
 });
+test('restoring from settings leaves the old form before applying the restored settings',async()=>{
+ const ctx=backupContext({transactions:[{id:1}],userSettings:{name:'restored',savingsGoal:350}});
+ ctx.showPage=()=>{ctx.userSettings.name='old form';ctx.userSettings.savingsGoal=10;};
+ ctx.importBackup({files:[{}]});await ctx.done;
+ assert.equal(ctx.userSettings.name,'restored');assert.equal(ctx.userSettings.savingsGoal,350);
+});
+
 test('payments finish across a year boundary and do not remain in cash flow',()=>{
  const ctx=functions(['_monthsElapsed','_payCalc'],{_curMonthKey:()=> '2027-01'});assert.equal(ctx._payCalc({total:12,current:11,currentAnchor:'2026-12',amount:100}).left,0);assert.equal(ctx._payCalc({total:12,current:10,currentAnchor:'2026-12',amount:100}).sum,100);
 });
