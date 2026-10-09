@@ -498,6 +498,7 @@
     body.dark .cashflow-page .badge{background:rgba(255,255,255,0.08);color:var(--text)}
     .exp-auto-badge{font-size:0.66rem;color:var(--text3);font-weight:600;}
     .exp-body{padding:2px 4px 4px;margin-top:-4px;margin-bottom:8px;}
+    .exp-struct-edit{flex:1;min-width:0;min-height:44px;border:none;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer;padding:0 8px;overflow-wrap:anywhere;}
     .exp-struct-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface2);border-radius:12px;margin-bottom:6px;font-size:0.85rem;}
     .exp-pay-card{padding:12px 14px;background:var(--surface2);border-radius:12px;margin-bottom:8px;}
     .exp-pay-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
@@ -4169,7 +4170,7 @@ function _expStructListHtml(kind){
     return (rows||'<div class="budget-tx-empty">אין הלוואות</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();openAddLoanSheet()">+ הוסף הלוואה</button>';
   }
   if(kind==='insurance'){
-    const rows=insurances.map(i=>'<div class="exp-struct-row" onclick="event.stopPropagation();_expEditInsurance('+i.id+')"><span>'+esc(i.name)+'</span><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(i.monthly)||0)+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();_expDeleteInsurance('+i.id+')" aria-label="מחק">'+_expTrashSvg+'</span></span></div>').join('');
+    const rows=insurances.map(i=>'<div class="exp-struct-row"><button type="button" class="exp-struct-edit" onclick="event.stopPropagation();_expEditInsurance('+i.id+')" aria-label="ערוך ביטוח '+esc(i.name)+'">'+esc(i.name)+'</button><span class="exp-pay-icons"><span class="exp-amt">'+fmt(parseFloat(i.monthly)||0)+'</span><button type="button" class="exp-icon-sm" onclick="event.stopPropagation();_expDeleteInsurance('+i.id+')" aria-label="מחק ביטוח '+esc(i.name)+'">'+_expTrashSvg+'</button></span></div>').join('');
     return (rows||'<div class="budget-tx-empty">אין ביטוחים</div>')+'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expAddInsurance()">+ הוסף ביטוח</button>';
   }
   if(kind==='subs'){
@@ -8509,10 +8510,10 @@ function _positionNavIndicator(){
   const icon=active.querySelector('.nav-icon')||active;
   const navRect=nav.getBoundingClientRect();
   const iconRect=icon.getBoundingClientRect();
-  const x=iconRect.left-navRect.left+(iconRect.width-42)/2;
+  const x=iconRect.left-navRect.left+(iconRect.width-42)/2-nav.clientLeft;
   ind.style.transition=ind.dataset.ready?'':'none';
   ind.dataset.ready='1';
-  ind.style.top=(iconRect.top-navRect.top)+'px';
+  ind.style.top=(iconRect.top-navRect.top+(iconRect.height-42)/2-nav.clientTop)+'px';
   ind.style.transform='translateX('+x+'px)';
 }
 window.addEventListener('resize',_positionNavIndicator);

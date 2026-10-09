@@ -321,7 +321,18 @@ test('quick amount fills the input without saving an expense',()=>{
  let inputEvent;const input={value:'',dispatchEvent:e=>{inputEvent=e;}};const ctx=functions(['_setQuickAmount'],{Event,document:{getElementById:()=>input},haptic:()=>{}});ctx._setQuickAmount(50);assert.equal(input.value,'50');assert.equal(inputEvent.type,'input');assert.equal(inputEvent.bubbles,true);
 });
 test('navigation highlight follows the icon vertically when labels are visible',()=>{
- const indicator={style:{},dataset:{}};const nav={getBoundingClientRect:()=>({left:10,top:200})};const icon={getBoundingClientRect:()=>({left:30,top:204,width:42})};const active={querySelector:()=>icon};const ctx=functions(['_positionNavIndicator'],{document:{querySelector:s=>s==='.bottom-nav'?nav:s==='.nav-indicator'?indicator:active}});ctx._positionNavIndicator();assert.equal(indicator.style.top,'4px');assert.equal(indicator.style.transform,'translateX(20px)');
+ const indicator={style:{},dataset:{}};const nav={clientLeft:0,clientTop:0,getBoundingClientRect:()=>({left:10,top:200})};const icon={getBoundingClientRect:()=>({left:30,top:204,width:42,height:42})};const active={querySelector:()=>icon};const ctx=functions(['_positionNavIndicator'],{document:{querySelector:s=>s==='.bottom-nav'?nav:s==='.nav-indicator'?indicator:active}});ctx._positionNavIndicator();assert.equal(indicator.style.top,'4px');assert.equal(indicator.style.transform,'translateX(20px)');
+});
+
+test('navigation highlight remains centered while the icon is pressed and accounts for the border',()=>{
+  const indicator={style:{},dataset:{}};
+  const nav={clientLeft:1,clientTop:1,getBoundingClientRect:()=>({left:10,top:200})};
+  const icon={getBoundingClientRect:()=>({left:33,top:207,width:36,height:36})};
+  const active={querySelector:()=>icon};
+  const ctx=functions(['_positionNavIndicator'],{document:{querySelector:s=>s==='.bottom-nav'?nav:s==='.nav-indicator'?indicator:active}});
+  ctx._positionNavIndicator();
+  assert.equal(indicator.style.top,'3px');
+  assert.equal(indicator.style.transform,'translateX(19px)');
 });
 
 test('failed advisor task updates restore the task for response and network errors',async()=>{
