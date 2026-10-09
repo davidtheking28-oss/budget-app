@@ -1,2 +1,67 @@
 alter table public.report_shares add column if not exists expires_at timestamptz not null default (now() + interval '30 days');
--- get_shared_report now also requires expires_at > now()
+
+create or replace function public.get_shared_report(p_token uuid)
+ returns jsonb
+ language plpgsql
+ security definer
+ set search_path to 'public'
+as $function$
+declare
+  v_share public.report_shares%rowtype;
+  v_row public.budget_data%rowtype;
+  v_advisor record;
+  v_client_email text;
+  v_data jsonb;
+  v_month_prefix text;
+  v_tx jsonb;
+  v_filtered_tx jsonb;
+begin
+  select * into v_share from public.report_shares
+    where id = p_token and revoked_at is null and expires_at > now();
+  if not found then
+    return jsonb_build_object('found', false);
+  end if;
+
+  select * into v_row from public.budget_data where user_id = v_share.client_id;
+
+  select display_name, logo_url into v_advisor from public.advisors where user_id = v_share.advisor_id;
+
+  select client_email into v_client_email from public.advisor_clients
+    where advisor_id = v_share.advisor_id and client_id = v_share.client_id
+    limit 1;
+
+  v_month_prefix := v_share.year || '-' || lpad((v_share.month + 1)::text, 2, '0');
+
+  v_tx := case when v_share.budget_mode = 'business'
+    then coalesce(v_row.business -> 'transactions', '[]'::jsonb)
+    else coalesce(v_row.transactions, '[]'::jsonb) end;
+
+  select coalesce(jsonb_agg(elem), '[]'::jsonb) into v_filtered_tx
+    from jsonb_array_elements(v_tx) elem
+    where elem ->> 'date' like v_month_prefix || '%';
+
+  if v_share.budget_mode = 'business' then
+    v_data := jsonb_build_object(
+      'budgets', coalesce(v_row.business -> 'budgets', '{}'::jsonb),
+      'transactions', v_filtered_tx,
+      'goals', coalesce(v_row.business -> 'goals', '[]'::jsonb)
+    );
+  else
+    v_data := jsonb_build_object(
+      'budgets', coalesce(v_row.budgets, '{}'::jsonb),
+      'transactions', v_filtered_tx,
+      'goals', coalesce(v_row.goals, '[]'::jsonb)
+    );
+  end if;
+
+  return jsonb_build_object(
+    'found', true,
+    'year', v_share.year,
+    'month', v_share.month,
+    'client_email', v_client_email,
+    'advisor_display_name', v_advisor.display_name,
+    'advisor_logo_url', v_advisor.logo_url,
+    'data', v_data
+  );
+end;
+$function$;

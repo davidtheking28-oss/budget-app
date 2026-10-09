@@ -6,6 +6,7 @@ const CORS = {
 }
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
+const DAILY_LIMIT_MAX = 300
 const RATE_LIMIT_MAX = 20
 
 async function checkRateLimit(req: Request): Promise<boolean> {
@@ -28,6 +29,13 @@ async function checkRateLimit(req: Request): Promise<boolean> {
       .eq('user_id', user.id)
       .gte('created_at', since)
     if ((count ?? 0) >= RATE_LIMIT_MAX) return false
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { count: dayCount } = await supabase
+      .from('ai_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', dayAgo)
+    if ((dayCount ?? 0) >= DAILY_LIMIT_MAX) return false
     await supabase.from('ai_requests').insert({ user_id: user.id })
     return true
   } catch (err) {

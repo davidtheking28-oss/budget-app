@@ -6,6 +6,7 @@ const CORS = {
 }
 
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
+const DAILY_LIMIT_MAX = 300
 // A statement upload fires one call per page/photo at client concurrency ~3, not one
 // call per "process" click — a legitimate 15-page upload must never trip this mid-run.
 const RATE_LIMIT_MAX = 40
@@ -30,6 +31,13 @@ async function checkRateLimit(req: Request): Promise<boolean> {
       .eq('user_id', user.id)
       .gte('created_at', since)
     if ((count ?? 0) >= RATE_LIMIT_MAX) return false
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { count: dayCount } = await supabase
+      .from('ai_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', dayAgo)
+    if ((dayCount ?? 0) >= DAILY_LIMIT_MAX) return false
     await supabase.from('ai_requests').insert({ user_id: user.id })
     return true
   } catch (err) {
