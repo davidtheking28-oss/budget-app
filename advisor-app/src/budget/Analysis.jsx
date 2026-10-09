@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { useClientBudget } from './useClientBudget.js';
+import { useClientBudget, BudgetModeContext } from './useClientBudget.js';
+import MonthTransactions from './MonthTransactions.jsx';
 import { monthSummary } from './budgetMath.js';
 import { addMonths, getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
@@ -16,9 +17,10 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
 
-export default function Analysis({ clientUserId, year, month }) {
+export default function Analysis({ clientUserId, advisorId, year, month }) {
   const CT = chartTheme();
-  const { data, loading, error, reload } = useClientBudget(clientUserId);
+  const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
+  const mode = useContext(BudgetModeContext);
   const [whatIfCat, setWhatIfCat] = useState('');
   const [cutPct, setCutPct] = useState(20);
   if (error) return <ErrorState onRetry={reload} />;
@@ -157,6 +159,8 @@ export default function Analysis({ clientUserId, year, month }) {
           </div>
         </Card>
       </CardGrid>
+
+      <MonthTransactions data={data} save={save} mode={mode} year={year} month={month} />
     </>
   );
 }
