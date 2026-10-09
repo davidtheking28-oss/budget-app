@@ -2,13 +2,13 @@
    HTML is network-first (online users always get the latest app; cache is
    the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v51';
+const CACHE = 'budget-app-v52';
 const SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './icon-192.png',
-  './apple-touch-icon.png',
+  './assets/icon-192.png',
+  './assets/apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js'
 ];
@@ -46,8 +46,8 @@ self.addEventListener('push', (e) => {
   e.waitUntil(
     self.registration.showNotification(d.title || 'תקציב', {
       body: d.body || '',
-      icon: './icon-192.png',
-      badge: './icon-192.png',
+      icon: './assets/icon-192.png',
+      badge: './assets/icon-192.png',
       dir: 'rtl',
       lang: 'he',
       data: { url: d.url || './' }
