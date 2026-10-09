@@ -121,10 +121,6 @@
   gap: var(--space-2);
 }
 
-.rowWide {
-  grid-column: span 2;
-}
-
 .rowMain {
   display: flex;
   align-items: center;
@@ -155,10 +151,6 @@
   transition: transform 0.4s var(--ease-out-expo);
 }
 
-.loanBarFillGood {
-  background: var(--green);
-}
-
 .loanBarPct {
   flex-shrink: 0;
   min-width: 2.4em;
@@ -169,14 +161,6 @@
   font-weight: 700;
   color: var(--text3);
   font-variant-numeric: tabular-nums;
-}
-
-.rowDanger {
-  border-color: rgba(var(--red-rgb), 0.3);
-}
-
-.rowDanger:hover {
-  border-color: rgba(var(--red-rgb), 0.45);
 }
 
 .rowCard:hover {
