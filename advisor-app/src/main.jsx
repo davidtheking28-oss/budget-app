@@ -10,6 +10,11 @@ import './theme.css';
 // A ?share=<token> link is a fully public, unauthenticated view — resolved
 // once here, before App ever mounts, so its useSession()/auth gating never
 // comes into play for this path.
+const embedded = window.self !== window.top;
+if (embedded) {
+  try { window.top.location = window.self.location; } catch { /* top navigation blocked: render nothing */ }
+}
+
 const shareToken = new URLSearchParams(window.location.search).get('share');
 
 installErrorReporter();
@@ -22,7 +27,7 @@ if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
   ChartJS.defaults.transitions = { active: { animation: { duration: 0 } } };
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+if (!embedded) ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
       {shareToken ? <SharedReport token={shareToken} /> : <App />}
