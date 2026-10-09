@@ -26,7 +26,7 @@ export default function Report({ clientUserId, advisorId, year, month, email, on
     setShareId(undefined);
     supabase.from('report_shares').select('id')
       .eq('advisor_id', advisorId).eq('client_id', clientUserId)
-      .eq('year', year).eq('month', month).is('revoked_at', null)
+      .eq('year', year).eq('month', month).is('revoked_at', null).gt('expires_at', new Date().toISOString())
       .maybeSingle()
       .then(({ data: row }) => { if (!cancelled) setShareId(row?.id ?? null); });
     return () => { cancelled = true; };
@@ -42,7 +42,7 @@ export default function Report({ clientUserId, advisorId, year, month, email, on
     if (err || !id) { toast('שגיאה ביצירת הקישור', 'error'); return; }
     setShareId(id);
     const url = `${window.location.origin}${window.location.pathname}?share=${id}`;
-    try { await navigator.clipboard.writeText(url); toast('הקישור הועתק', 'success'); }
+    try { await navigator.clipboard.writeText(url); toast('הקישור הועתק, תקף ל-30 יום', 'success'); }
     catch { toast('הקישור נוצר, אך ההעתקה נכשלה', 'info'); }
   }
 

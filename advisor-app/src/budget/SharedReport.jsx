@@ -36,7 +36,7 @@ export default function SharedReport({ token }) {
     );
   }
   if (payload === null) {
-    return <ErrorState message="הקישור לא נמצא, או שבוטל על ידי היועץ" />;
+    return <ErrorState message="הקישור לא נמצא, שבוטל על ידי היועץ או שפג תוקפו" />;
   }
 
   const { year, month, client_email: email, advisor_display_name: advisorName, advisor_logo_url: logoUrl, data } = payload;
