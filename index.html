@@ -7947,8 +7947,8 @@ function init(){
   renderMonthGrid();
   updateHeaderTitle();
   _initAuthGate();
-  refreshAll();
   try{showPage('dashboard',document.getElementById('nav-dashboard'));}catch(e){}
+  renderDailyWidget();
   initSheetSwipe();
   initTabSwipe();
   initPullRefresh();
@@ -8911,9 +8911,14 @@ setTimeout(autoCarryRecurring,500);
     }catch(e){ _DEBUG&&console.warn('renderDashCharts',e); }
   }
 
-  var _rd=window.renderDashboard;
-  if(typeof _rd==='function'){ window.renderDashboard=function(){ var r=_rd.apply(this,arguments); setTimeout(renderDashCharts,0); return r; }; }
-  document.addEventListener('DOMContentLoaded', function(){ setTimeout(renderDashCharts, 80); });
+  let _dashChartsTimer=null;
+  function scheduleDashCharts(){
+    clearTimeout(_dashChartsTimer);
+    _dashChartsTimer=setTimeout(()=>{_dashChartsTimer=null;renderDashCharts();},0);
+  }
+  const _rd=window.renderDashboard;
+  if(typeof _rd==='function'){ window.renderDashboard=function(){ const r=_rd.apply(this,arguments); scheduleDashCharts(); return r; }; }
+  document.addEventListener('DOMContentLoaded', scheduleDashCharts);
 
   document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
   document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});
