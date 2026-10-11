@@ -149,17 +149,17 @@ function viewportContext(){
   const vv={height:500,offsetTop:0,listeners:{},addEventListener:(name,fn)=>{vv.listeners[name]=fn;}};
   function overlay(wizard,open=true){
     const sheet={style:{},classList:{contains:cls=>wizard&&cls==='wiz-sheet'}};
-    return {open,style:{},querySelector:()=>sheet,sheet};
+    return {open,style:{},querySelector:()=>sheet,sheet,contains:el=>el.overlay===sheet};
   }
   const main=overlay(true),child=overlay(false);
   sheets.set('main',main);sheets.set('child',child);
   const window={visualViewport:vv,innerHeight:844,openSheet:id=>{sheets.get(id).open=true;},closeSheet:id=>{sheets.get(id).open=false;}};
-  const document={querySelectorAll:selector=>[...sheets.values()].filter(ov=>selector.includes(':not(.open)')?!ov.open:selector.includes('.open')?ov.open:true)};
+  const document={listeners:{},addEventListener:(name,fn)=>{document.listeners[name]=fn;},querySelectorAll:selector=>[...sheets.values()].filter(ov=>selector.includes(':not(.open)')?!ov.open:selector.includes('.open')?ov.open:true)};
   const source=html.match(/\(function\(\)\{\s*var vv=window\.visualViewport;[^]*?\}\)\(\);/);
   assert.ok(source);
-  vm.runInNewContext(source[0],{window,document,setTimeout:fn=>fn()});
+  vm.runInNewContext(source[0],{window,document,setTimeout:fn=>fn(),requestAnimationFrame:fn=>fn()});
   vv.listeners.resize();
-  return {window,vv,main,child};
+  return {window,vv,main,child,document};
 }
 test('closing a nested dialog keeps the remaining wizard sized to the keyboard viewport',()=>{
   const {window,main}=viewportContext();
@@ -439,4 +439,52 @@ test('unchanged expense list preserves nodes while changes replace content',()=>
   ctx._setTxListHtml(el,'updated');assert.equal(writes,2);assert.equal(el.value,'updated');
   ctx._setTxListHtml(el,'');ctx._setTxListHtml(el,'');assert.equal(writes,3);assert.equal(el.value,'');
   ctx._setTxListHtml(null,'unused');assert.equal(toggles.length,3);
+});
+
+
+test('keyboard resize reveals obscured focused fields without scrolling visible ones',()=>{
+  const {vv,main,document}=viewportContext();
+  let scrolls=0;
+  let rect={top:450,bottom:550};
+  document.activeElement={overlay:main.sheet,matches:()=>true,getBoundingClientRect:()=>rect,scrollIntoView:options=>{assert.equal(options.block,'nearest');scrolls++;}};
+  vv.listeners.resize();assert.equal(scrolls,1);
+  rect={top:200,bottom:250};vv.listeners.resize();assert.equal(scrolls,1);
+  rect={top:0,bottom:40};document.listeners.focusin();assert.equal(scrolls,2);
+});
+
+
+test('reduced motion cancels running number animation and displays the exact value',()=>{
+  const cancelled=[];
+  const el={_cuVal:500,_cuRAF:7,_cuTO:8,textContent:'old'};
+  const ctx=functions(['countUp'],{window:{matchMedia:()=>({matches:true})},fmt:n=>'₪'+Math.abs(n),cancelAnimationFrame:id=>cancelled.push(id),clearTimeout:id=>cancelled.push(id)});
+  ctx.countUp(el,500);assert.equal(el.textContent,'₪500');assert.equal(el._cuRAF,0);assert.equal(el._cuTO,0);assert.deepEqual(cancelled,[7,8]);
+  ctx.countUp(el,-123);assert.equal(el.textContent,'-₪123');
+});
+
+
+test('rapid sheet reopening cancels the previous close and focus callbacks',()=>{
+  const timers=new Map();let timerId=0;
+  const classes=new Set();const sheet={style:{}};
+  const opener={focus:()=>{document.activeElement=opener;}};
+  const field={getClientRects:()=>[{}],closest:()=>null,focus:()=>{document.activeElement=field;},blur:()=>{document.activeElement=opener;}};
+  const overlay={classList:{add:c=>classes.add(c),remove:c=>classes.delete(c)},setAttribute:()=>{},querySelector:()=>sheet,querySelectorAll:()=>[field],contains:el=>el===field};
+  const document={activeElement:opener,getElementById:id=>id==='fixture'?overlay:null,contains:()=>true,addEventListener:()=>{},removeEventListener:()=>{}};
+  const ctx=functions(['openSheet','closeSheet'],{document,_openSheets:new Set(),_sheetOpenerEl:null,_lockBodyScroll:()=>{},_unlockBodyScroll:()=>{},_sheetSetBackgroundInert:()=>{},_sheetKeydown:()=>{},getComputedStyle:()=>({visibility:'visible'}),setTimeout:fn=>{timers.set(++timerId,fn);return timerId;},clearTimeout:id=>timers.delete(id)});
+  ctx.openSheet('fixture');ctx.closeSheet('fixture');ctx.openSheet('fixture');
+  assert.equal(timers.size,1);for(const callback of timers.values())callback();
+  assert.ok(classes.has('open'));assert.equal(document.activeElement,field);assert.equal(sheet.style.animation,'');
+  ctx.closeSheet('fixture');assert.equal(document.activeElement,opener);
+});
+
+test('tab swipe leaves transaction gestures alone and cancels interrupted gestures',()=>{
+  const listeners={};let clicks=0;
+  const main={addEventListener:(name,fn)=>{listeners[name]=fn;}};
+  const nav=[{classList:{contains:()=>true}},{classList:{contains:()=>false},click:()=>{clicks++;}}];
+  const ctx=functions(['initTabSwipe'],{document:{getElementById:()=>main,querySelectorAll:()=>nav},window:{getComputedStyle:()=>({overflowX:'visible'})},_openSheets:new Set()});
+  ctx.initTabSwipe();
+  const target={parentElement:main,closest:()=>({})};
+  const start={touches:[{clientX:200,clientY:100}],target};const end={changedTouches:[{clientX:50,clientY:100}]};
+  listeners.touchstart(start);listeners.touchend(end);assert.equal(clicks,0);
+  target.closest=()=>null;listeners.touchstart(start);listeners.touchcancel();listeners.touchend(end);assert.equal(clicks,0);
+  listeners.touchstart(start);listeners.touchend(end);assert.equal(clicks,1);
 });
