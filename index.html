@@ -138,6 +138,10 @@
     #page-dashboard .dash-ring-item{border:1px solid var(--border);}
     #page-dashboard #recentTxList .tx-desc-name,#page-transactions .tx-desc-name{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.45;}
 
+    #appUpdateBanner{position:absolute;bottom:calc(var(--nav-bottom) + 74px);left:10px;right:10px;max-width:420px;margin:0 auto;padding:14px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:18px;box-shadow:0 8px 28px rgba(0,0,0,.18);z-index:450;}
+    #appUpdateBanner[hidden],#settingsUpdateBtn[hidden]{display:none!important;}
+    #appUpdateBanner .update-actions{display:flex;gap:8px;margin-top:10px;}
+    #appUpdateBanner .update-actions button{flex:1;min-height:44px;}
     #undoToast{bottom:calc(var(--nav-bottom) + 82px);visibility:hidden;pointer-events:none;}
     #undoToast.show{visibility:visible;pointer-events:auto;}
   </style>
@@ -2590,6 +2594,7 @@
             <button type="button" class="set-dd-opt" data-v="system" onclick="pickTheme('system')"><span>🖥️</span> לפי המערכת</button>
           </div>
         </div>
+        <button id="settingsUpdateBtn" type="button" class="btn btn-outline btn-full" onclick="applyAppUpdate()" hidden style="margin-top:8px">עדכון גרסה זמין · עדכן עכשיו</button>
         <button id="settingsInstallBtn" type="button" class="btn btn-outline btn-full" onclick="triggerInstall()" style="display:none;margin-top:8px;align-items:center;justify-content:center;gap:8px"><span style="font-size:1.1rem">📲</span> התקן אפליקציה</button>
       </div>
       <div class="settings-section">
@@ -2775,6 +2780,7 @@
   </button>
 </nav>
 
+<div id="appUpdateBanner" hidden><div role="status" aria-live="polite"><strong>גרסה חדשה מוכנה</strong><div style="font-size:0.875rem;color:var(--text2);margin-top:4px">אפשר לעדכן עכשיו או להמשיך ולעדכן אחר כך.</div></div><div class="update-actions"><button type="button" class="btn btn-primary" onclick="applyAppUpdate()">עדכן עכשיו</button><button type="button" class="btn btn-outline" onclick="deferAppUpdate()">מאוחר יותר</button></div></div>
 <div id="offlineBanner">📶 אין חיבור לאינטרנט: הנתונים נשמרים מקומית</div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="undoToast" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -9257,25 +9263,35 @@ setTimeout(autoCarryRecurring,500);
 <script>
 (function(){
   if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
-    /* when a NEW service worker takes control, reload once so the fresh app applies
-       immediately instead of the user staying stuck on an old cached version */
-    var _swReloaded=false;
-    var _swControlled=!!navigator.serviceWorker.controller;
-    navigator.serviceWorker.addEventListener('controllerchange', function(){
+    let _swReloaded=false;
+    let _swControlled=!!navigator.serviceWorker.controller;
+    let _updatePending=false;
+    let _updateDeferred=false;
+    function updateBusy(){
+      return !!document.querySelector?.('.sheet-overlay.open,.month-sheet-overlay.open,#confirmOverlay.show,#promptOverlay.show,.onboard-overlay.open')||!!document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]');
+    }
+    function renderAppUpdate(){
+      const banner=document.getElementById('appUpdateBanner');
+      const button=document.getElementById('settingsUpdateBtn');
+      if(banner)banner.hidden=!_updatePending||_updateDeferred||updateBusy();
+      if(button)button.hidden=!_updatePending;
+    }
+    window.applyAppUpdate=function(){
+      if(!_updatePending||_swReloaded)return;
+      if(updateBusy()){showToast('סיים או סגור את הטופס כדי לעדכן');return;}
+      if(document.getElementById('page-settings')?.classList.contains('active')&&typeof saveSettings==='function')saveSettings();
+      if(typeof _flushLocalSave==='function')_flushLocalSave();
+      if(typeof _localSaveFailed!=='undefined'&&_localSaveFailed){showToast('השמירה במכשיר לא הצליחה. נסה שוב לפני העדכון');return;}
+      _swReloaded=true;
+      location.reload();
+    };
+    window.deferAppUpdate=function(){_updateDeferred=true;renderAppUpdate();};
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
       if(!_swControlled){_swControlled=true;return;}
-      if(_swReloaded) return;
-      const tryReload=function(){
-        if(document.querySelector?.('.sheet-overlay.open,.month-sheet-overlay.open,#confirmOverlay.show,#promptOverlay.show,.onboard-overlay.open'))return;
-        if(document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]'))return;
-        if(_swReloaded)return;
-        _swReloaded=true;
-        if(typeof _flushLocalSave==='function')_flushLocalSave();
-        location.reload();
-      };
-      tryReload();
-      if(!_swReloaded){
-        const timer=setInterval(function(){tryReload();if(_swReloaded)clearInterval(timer);},1000);
-      }
+      if(_updatePending||_swReloaded)return;
+      _updatePending=true;
+      renderAppUpdate();
+      setInterval(renderAppUpdate,1000);
     });
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(function(reg){

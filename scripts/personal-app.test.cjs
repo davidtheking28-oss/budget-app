@@ -313,13 +313,17 @@ test('sheet backwards keyboard wrap skips visually hidden header buttons',()=>{
 
 function workerBootContext(controlled=false,extra={}){
  const events={};let reloads=0,catches=0;const reg={update:()=>({catch:()=>{catches++;}})};
- const ctx=vm.createContext({navigator:{serviceWorker:{controller:controlled?{}:null,addEventListener:(event,fn)=>{events[event]=fn;},register:async()=>reg,getRegistration:async()=>reg}},location:{protocol:'https:',hostname:'example.test',reload:()=>{reloads++;}},window:{addEventListener:(event,fn)=>{events[event]=fn;}},document:{addEventListener:(event,fn)=>{events[event]=fn;}},setInterval:()=>{},clearInterval:()=>{},...extra});
+ const ctx=vm.createContext({navigator:{serviceWorker:{controller:controlled?{}:null,addEventListener:(event,fn)=>{events[event]=fn;},register:async()=>reg,getRegistration:async()=>reg}},location:{protocol:'https:',hostname:'example.test',reload:()=>{reloads++;}},window:{addEventListener:(event,fn)=>{events[event]=fn;}},document:{getElementById:()=>null,addEventListener:(event,fn)=>{events[event]=fn;}},setInterval:()=>{},clearInterval:()=>{},...extra});
  const start=html.indexOf("  if('serviceWorker' in navigator"),end=html.indexOf('  var deferred=',start);vm.runInContext(html.slice(start,end),ctx);return {ctx,events,reloads:()=>reloads,catches:()=>catches};
 }
-test('first service worker installation preserves the current page and later updates reload once',()=>{
- const t=workerBootContext();t.events.controllerchange();assert.equal(t.reloads(),0);t.events.controllerchange();t.events.controllerchange();assert.equal(t.reloads(),1);
- const existing=workerBootContext(true);existing.events.controllerchange();assert.equal(existing.reloads(),1);
+test('first install stays quiet and later updates require an explicit choice',()=>{
+ const banner={hidden:true},button={hidden:true};
+ const document={getElementById:id=>id==='appUpdateBanner'?banner:id==='settingsUpdateBtn'?button:null,addEventListener:()=>{}};
+ const t=workerBootContext(false,{document});t.events.controllerchange();assert.equal(banner.hidden,true);assert.equal(t.reloads(),0);
+ t.events.controllerchange();assert.equal(banner.hidden,false);assert.equal(button.hidden,false);assert.equal(t.reloads(),0);
+ t.ctx.window.applyAppUpdate();t.ctx.window.applyAppUpdate();assert.equal(t.reloads(),1);
 });
+
 test('service worker update checks attach a rejection handler',async()=>{
  const t=workerBootContext();t.events.load();await new Promise(r=>setImmediate(r));assert.equal(t.catches(),1);
 });
@@ -360,11 +364,21 @@ test('failed advisor reads preserve the last task and meeting lists',async()=>{
  }
 });
 
-test('app updates wait until the open form is closed before reloading',()=>{
- let open=true,tick,flushes=0;
- const t=workerBootContext(true,{document:{activeElement:{matches:()=>open},querySelector:()=>open?{}:null,addEventListener:()=>{}},setInterval:fn=>{tick=fn;return 1;},_flushLocalSave:()=>{flushes++;}});
- t.events.controllerchange();assert.equal(t.reloads(),0);assert.equal(flushes,0);
- open=false;tick();assert.equal(t.reloads(),1);assert.equal(flushes,1);tick();assert.equal(t.reloads(),1);
+test('update later remains deferred after closing a form and can be applied from settings',()=>{
+ let open=true,tick,flushes=0,settingsSaves=0;
+ const banner={hidden:true},button={hidden:true};
+ const t=workerBootContext(true,{document:{activeElement:{matches:()=>open},querySelector:()=>open?{}:null,getElementById:id=>id==='appUpdateBanner'?banner:id==='settingsUpdateBtn'?button:{classList:{contains:()=>true}},addEventListener:()=>{}},setInterval:fn=>{tick=fn;return 1;},_flushLocalSave:()=>{flushes++;},saveSettings:()=>{settingsSaves++;},showToast:()=>{}});
+ t.events.controllerchange();assert.equal(banner.hidden,true);assert.equal(t.reloads(),0);
+ t.ctx.window.applyAppUpdate();assert.equal(flushes,0);
+ open=false;tick();assert.equal(banner.hidden,false);assert.equal(t.reloads(),0);
+ t.ctx.window.deferAppUpdate();tick();assert.equal(banner.hidden,true);assert.equal(button.hidden,false);assert.equal(t.reloads(),0);
+ t.events.controllerchange();tick();assert.equal(banner.hidden,true);
+ t.ctx.window.applyAppUpdate();assert.equal(t.reloads(),1);assert.equal(flushes,1);assert.equal(settingsSaves,1);
+});
+
+test('failed local save prevents an update reload',()=>{
+ const t=workerBootContext(true,{_localSaveFailed:true,showToast:()=>{}});
+ t.events.controllerchange();t.ctx.window.applyAppUpdate();assert.equal(t.reloads(),0);
 });
 function offlineWorkerContext(previous=false){
  const events={},items=new Map(),deleted=[];let waiting=0;
