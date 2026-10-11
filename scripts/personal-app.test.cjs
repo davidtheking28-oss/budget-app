@@ -384,3 +384,21 @@ test('a slow connection opens the cached app after the fallback timeout',async()
  t.events.fetch({request:{url:'https://app.test/index.html',method:'GET',mode:'navigate',headers:{get:()=>''}},respondWith:p=>{response=p;},waitUntil:()=>{}});
  t.ctx.fireTimeout();assert.equal(await (await response).text(),'cached');
 });
+
+test('expense search coalesces rapid input and clearing applies immediately',()=>{
+  let scheduled=null,calls=0,clears=0;
+  const input={value:'ק'};
+  const ctx=functions(['queueTxSearch'],{document:{getElementById:()=>input},clearTimeout:()=>{scheduled=null;clears++;},setTimeout:(fn,delay)=>{assert.equal(delay,120);scheduled=fn;return 1;},renderTxPage:()=>{calls++;}});
+  vm.runInContext('let _txSearchTimer=null;',ctx);
+  ctx.queueTxSearch({});input.value='קניות';ctx.queueTxSearch({});
+  assert.equal(calls,0);assert.equal(clears,2);scheduled();assert.equal(calls,1);
+  input.value='';ctx.queueTxSearch({});assert.equal(calls,2);assert.equal(scheduled,null);
+});
+
+test('expense search waits until text composition completes',()=>{
+  let scheduled=null;
+  const ctx=functions(['queueTxSearch'],{document:{getElementById:()=>({value:'בדיקה'})},clearTimeout:()=>{scheduled=null;},setTimeout:fn=>{scheduled=fn;return 1;},renderTxPage:()=>{}});
+  vm.runInContext('let _txSearchTimer=null;',ctx);
+  ctx.queueTxSearch({isComposing:true});assert.equal(scheduled,null);
+  ctx.queueTxSearch({isComposing:false});assert.equal(typeof scheduled,'function');
+});

@@ -2296,7 +2296,7 @@
       </div>
       <div id="txFilterStatus" hidden><span id="txFilterStatusText"></span><button type="button" class="btn btn-outline" onclick="resetTxFilters()">אפס סינון</button></div>
       <div id="txAdvancedFilters" style="display:none">
-        <input type="search" class="search-input" id="txSearch" placeholder="חפש בעסקאות..." oninput="renderTxPage()" onfocus="this.select()" aria-label="חיפוש בעסקאות"/>
+        <input type="search" class="search-input" id="txSearch" placeholder="חפש בעסקאות..." oninput="queueTxSearch(event)" oncompositionend="queueTxSearch(event)" onsearch="renderTxPage()" onfocus="this.select()" aria-label="חיפוש בעסקאות"/>
         <div style="display:flex;gap:10px;padding:0 16px 10px;">
           <div style="flex:1;background:var(--red-light);border-radius:12px;padding:8px 12px;text-align:center">
             <div style="font-size:0.68rem;color:var(--red);font-weight:700">הוצאות בתקופה</div>
@@ -6062,7 +6062,17 @@ function setTxFlowView(v){
   document.querySelectorAll('#txFlowViewToggle button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
   renderTxPage();
 }
+let _txSearchTimer=null;
+function queueTxSearch(event){
+  clearTimeout(_txSearchTimer);
+  _txSearchTimer=null;
+  if(event?.isComposing)return;
+  if(!document.getElementById('txSearch').value){renderTxPage();return;}
+  _txSearchTimer=setTimeout(renderTxPage,120);
+}
 function renderTxPage(){
+  clearTimeout(_txSearchTimer);
+  _txSearchTimer=null;
   const fromDate=(document.getElementById('txFromDate')||{}).value||'';
   const toDate=(document.getElementById('txToDate')||{}).value||'';
   const _cdb=document.getElementById('clearDateBtn');
@@ -7423,6 +7433,8 @@ function dismissMonthReview(){
 }
 let _pageScrollY={};
 function showPage(name,btn){
+  clearTimeout(_txSearchTimer);
+  _txSearchTimer=null;
   haptic(4);
   const _mainEl=document.getElementById('main-content');
   const _prevPage=document.querySelector('.page.active');
