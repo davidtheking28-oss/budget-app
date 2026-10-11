@@ -7457,7 +7457,7 @@ function showPage(name,btn){
   if(name==='goals')        renderGoals();
   if(name==='payments')     renderPayments();
   if(name==='fixed')        renderFixed();
-  if(name==='dashboard'){if(_fxApply())saveData();renderDashboard();}
+  if(name==='dashboard'){if(_fxApply())saveData();renderDashboard();renderDailyWidget();}
   if(name==='subscriptions')renderSubscriptions();
   if(name==='budget')       renderBudget();
   if(name==='loans')        renderLoans();
@@ -7724,8 +7724,9 @@ function confirmSmsImport(){
 
 function refreshAll(){
   if(_fxApply())saveData();
-  renderDashboard();renderDailyWidget();
   const id=document.querySelector('.page.active')?.id||'';
+  if(id==='page-dashboard'||!id){renderDashboard();renderDailyWidget();}
+  else{checkRecurring();checkSubscriptions();checkRecurringIncome();}
   if(id==='page-transactions')renderTxPage();
   else if(id==='page-goals')renderGoals();
   else if(id==='page-payments')renderPayments();
@@ -7948,7 +7949,6 @@ function init(){
   updateHeaderTitle();
   _initAuthGate();
   try{showPage('dashboard',document.getElementById('nav-dashboard'));}catch(e){}
-  renderDailyWidget();
   initSheetSwipe();
   initTabSwipe();
   initPullRefresh();

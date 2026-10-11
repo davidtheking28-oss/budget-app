@@ -402,3 +402,28 @@ test('expense search waits until text composition completes',()=>{
   ctx.queueTxSearch({isComposing:true});assert.equal(scheduled,null);
   ctx.queueTxSearch({isComposing:false});assert.equal(typeof scheduled,'function');
 });
+
+
+test('refreshing another page skips hidden dashboard rendering but maintains automatic entries',()=>{
+  for(const id of ['page-transactions','page-budget','page-settings']){
+    const calls=[];
+    const label={};
+    const extra={document:{querySelector:()=>({id}),getElementById:()=>label},_fxApply:()=>true,saveData:()=>calls.push('save'),currentYear:2026,currentMonth:9,heMonth:()=> 'אוקטובר 2026'};
+    for(const name of ['renderDashboard','renderDailyWidget','checkRecurring','checkSubscriptions','checkRecurringIncome','renderTxPage','renderBudget','renderMonthGrid'])extra[name]=()=>calls.push(name);
+    const ctx=functions(['refreshAll'],extra);ctx.refreshAll();
+    assert.ok(!calls.includes('renderDashboard'));assert.ok(!calls.includes('renderDailyWidget'));
+    assert.deepEqual(calls.slice(0,4),['save','checkRecurring','checkSubscriptions','checkRecurringIncome']);
+    assert.equal(calls.includes('renderTxPage'),id==='page-transactions');assert.equal(calls.includes('renderBudget'),id==='page-budget');
+    assert.equal(label.textContent,'אוקטובר 2026');
+  }
+});
+
+test('dashboard refresh and initial refresh still update daily budget',()=>{
+  for(const id of ['page-dashboard','']){
+    const calls=[];
+    const extra={document:{querySelector:()=>id?{id}:null,getElementById:()=>({})},_fxApply:()=>false,currentYear:2026,currentMonth:9,heMonth:()=>''};
+    for(const name of ['renderDashboard','renderDailyWidget','renderMonthGrid'])extra[name]=()=>calls.push(name);
+    const ctx=functions(['refreshAll'],extra);ctx.refreshAll();
+    assert.deepEqual(calls,['renderDashboard','renderDailyWidget','renderMonthGrid']);
+  }
+});
