@@ -6282,7 +6282,7 @@ function renderBudget(){
   }
   empty.style.display='none';strip.style.display='';detail.style.display='';
   if(!_selectedBudgetCat||!allCats.includes(_selectedBudgetCat))_selectedBudgetCat=allCats[0];
-  strip.innerHTML=allCats.map(cat=>{
+  const stripHtml=allCats.map(cat=>{
     const hex=budgetChipColor(cat);
     const sel=cat===_selectedBudgetCat;
     return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" data-cat="'+esc(cat)+'" style="background:'+(sel?hex.sel:hex.base)+'">'
@@ -6291,11 +6291,16 @@ function renderBudget(){
     +'</button>';
   }).join('')
   +'<button type="button" class="budget-chip budget-chip-add" onclick="openSheet(\'addBudgetSheet\')" aria-label="הגדר תקציב לקטגוריה נוספת"><span class="budget-chip-icon">+</span></button>';
-  strip.querySelectorAll('.budget-chip[data-cat]').forEach(el=>{
-    el.onclick=()=>selectBudgetCat(el.dataset.cat);
-  });
+  const stripChanged=strip._budgetHtml!==stripHtml;
+  if(stripChanged){
+    strip.innerHTML=stripHtml;
+    strip._budgetHtml=stripHtml;
+    strip.querySelectorAll('.budget-chip[data-cat]').forEach(el=>{
+      el.onclick=()=>selectBudgetCat(el.dataset.cat);
+    });
+  }
   const selEl=strip.querySelector('.budget-chip-sel');
-  if(selEl){
+  if(selEl&&stripChanged){
     const stripRect=strip.getBoundingClientRect(),elRect=selEl.getBoundingClientRect();
     const delta=(elRect.left+elRect.width/2)-(stripRect.left+stripRect.width/2);
     if(Math.abs(delta)>2)strip.scrollBy({left:delta,behavior:'smooth'});
@@ -6333,6 +6338,7 @@ function _syncBudgetStripToScroll(){
   if(prevEl){prevEl.classList.remove('budget-chip-sel');prevEl.style.background=budgetChipColor(prevEl.dataset.cat).base;}
   best.classList.add('budget-chip-sel');
   best.style.background=budgetChipColor(cat).sel;
+  strip._budgetHtml=null;
   _selectedBudgetCat=cat;
   const mTx=getMonthTx(currentYear,currentMonth);
   const spent={};mTx.filter(t=>t.type==='expense').forEach(t=>{spent[t.cat]=(spent[t.cat]||0)+t.amount;});
@@ -6354,7 +6360,7 @@ function renderBudgetDetail(spent,effLim){
   const editSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
   const chartSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>';
   const chevronSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="budget-tx-chevron'+(_budgetTxListOpen?' budget-tx-chevron-open':'')+'"><polyline points="6 9 12 15 18 9"/></svg>';
-  detail.innerHTML=
+  const detailHtml=
     '<div class="budget-detail-inner">'
     +'<div class="budget-detail-header">'
       +'<div class="budget-detail-text">'
@@ -6393,6 +6399,9 @@ function renderBudgetDetail(spent,effLim){
       ).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>')
     +'</div>'
     +'</div>';
+  if(detail._budgetHtml===detailHtml)return;
+  detail.innerHTML=detailHtml;
+  detail._budgetHtml=detailHtml;
   const delBtn=detail.querySelector('[data-act="del-budget"]');
   if(delBtn)delBtn.onclick=()=>deleteBudget(cat);
   const editBtn=detail.querySelector('[data-act="edit-budget"]');
