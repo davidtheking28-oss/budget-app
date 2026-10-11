@@ -4131,9 +4131,10 @@ function heDate(dateStr){
   return d.getDate()+' ב'+HE_MONTHS_LONG[d.getMonth()];
 }
 function _setTxListHtml(el,html){
-  if(!el)return;
+  if(!el||el._txListHtml===html)return;
   const hadItems=el.querySelector('.tx-item')!==null;
   el.innerHTML=html;
+  el._txListHtml=html;
   el.classList.toggle('no-item-anim',hadItems);
 }
 function groupedTxHtml(list,useSwipe,showDailyTotal=false){
@@ -6120,7 +6121,7 @@ function renderTxPage(){
   const _useCategorized=!q&&!fromDate&&!toDate;
   if(_useCategorized){
     const byCat={};list.forEach(t=>{(byCat[t.cat]=byCat[t.cat]||[]).push(t);});
-    document.getElementById('allTxList').innerHTML=renderTxCategorized(byCat);
+    _setTxListHtml(document.getElementById('allTxList'),renderTxCategorized(byCat));
   } else {
     _setTxListHtml(document.getElementById('allTxList'),list.length?groupedTxHtml(list,true,true):_txEmpty);
   }

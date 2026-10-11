@@ -427,3 +427,16 @@ test('dashboard refresh and initial refresh still update daily budget',()=>{
     assert.deepEqual(calls,['renderDashboard','renderDailyWidget','renderMonthGrid']);
   }
 });
+
+
+test('unchanged expense list preserves nodes while changes replace content',()=>{
+  let writes=0,queries=0;
+  const toggles=[];
+  const el={querySelector:()=>{queries++;return {};},set innerHTML(value){writes++;this.value=value;},classList:{toggle:(...args)=>toggles.push(args)}};
+  const ctx=functions(['_setTxListHtml']);
+  ctx._setTxListHtml(el,'first');ctx._setTxListHtml(el,'first');
+  assert.equal(writes,1);assert.equal(queries,1);assert.equal(el.value,'first');
+  ctx._setTxListHtml(el,'updated');assert.equal(writes,2);assert.equal(el.value,'updated');
+  ctx._setTxListHtml(el,'');ctx._setTxListHtml(el,'');assert.equal(writes,3);assert.equal(el.value,'');
+  ctx._setTxListHtml(null,'unused');assert.equal(toggles.length,3);
+});
