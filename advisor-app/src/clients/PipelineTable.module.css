@@ -194,3 +194,11 @@
     flex-shrink: 0;
   }
 }
+
+@media (min-width: 861px) {
+  .tableWrap { border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .table th { padding: 14px 16px; color: var(--text2); font-size: var(--text-sm); }
+  .table td { padding: 16px; }
+  .table tbody tr:hover { background: var(--hover); }
+  .table tbody tr:last-child td { border-bottom: none; }
+}

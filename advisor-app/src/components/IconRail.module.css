@@ -214,3 +214,11 @@
     border-color: rgba(var(--accent-rgb), 0.24);
   }
 }
+@media (min-width: 861px) {
+  .rail { padding: 24px 14px 16px; }
+  .head { padding-bottom: 20px; }
+  .actions { gap: 4px; }
+  .railBtn { border-radius: var(--radius-sm); padding: 10px 12px; font-weight: 600; }
+  .railBtnActive { box-shadow: inset -3px 0 0 var(--accent); }
+  .groupLabel { margin-top: 20px; margin-bottom: 8px; font-weight: 700; }
+}

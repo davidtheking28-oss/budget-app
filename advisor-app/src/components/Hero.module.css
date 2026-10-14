@@ -78,3 +78,20 @@
   .value { font-size: 32px; }
   .side { margin-inline-start: 0; gap: var(--space-4) 28px; }
 }
+
+@media (min-width: 861px) {
+  .hero {
+    padding: 28px 32px;
+    gap: 24px 40px;
+    border-inline-start: 4px solid var(--accent);
+    box-shadow: var(--shadow-card);
+  }
+  .label { font-size: var(--text-base); font-weight: 600; margin-bottom: 8px; }
+  .value { font-size: 46px; letter-spacing: -0.025em; }
+  .valueCompact { font-size: 34px; }
+  .note { font-size: var(--text-sm); margin-top: 10px; }
+  .side { gap: 24px 32px; }
+  .sideItem { padding-inline-start: 24px; border-inline-start: 1px solid var(--border); }
+  .sideValue { font-size: 23px; }
+  .sideMeta { margin-top: 6px; }
+}
