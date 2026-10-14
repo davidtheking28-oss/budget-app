@@ -312,8 +312,15 @@
     /* The dashboard's "תנועות אחרונות" card groups mostly single-item dates, so the
        base spacing (18px date label + 14px row padding) stacked into a card that felt
        far more spread out than the rest of the dashboard. Tighter here only. */
-    #recentTxList .tx-item{padding:9px 0;}
-    #recentTxList .tx-date-label{padding:10px 0 4px;}
+    #recentTxList .tx-item{padding:12px 0;min-height:68px;gap:10px;}
+    #recentTxList .tx-item:hover{margin:0;padding:12px 0;}
+    #recentTxList .tx-desc{font-size:1rem;font-weight:700;}
+    #recentTxList .tx-meta{font-size:0.8rem;line-height:1.5;}
+    #recentTxList .tx-amount{font-size:1.05rem;direction:ltr;unicode-bidi:isolate;}
+    #recentTxList .tx-icon{width:38px;height:38px;border-radius:12px;}
+    #recentTxMoreBtn{background:var(--surface2)!important;border:1px solid var(--border)!important;border-radius:12px;font-size:0.875rem!important;padding:12px!important;}
+    #recentTxList .tx-date-label{padding:14px 0 6px;font-size:0.8rem;letter-spacing:0;color:var(--text2);border-top:1px solid var(--border);margin-top:4px;}
+    #recentTxList .tx-date-label:first-child{padding-top:0;border-top:0;margin-top:0;}
     .tx-item:last-child{border-bottom:none;}
     .tx-del-btn{flex-shrink:0;min-width:44px;min-height:44px;border-radius:9px;border:none;background:transparent;color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.15s,color 0.15s;}
     .tx-del-btn svg{width:16px;height:16px;stroke-width:2;}
@@ -2225,11 +2232,12 @@
       <div class="flex items-center justify-between">
         <h3 class="text-sm font-bold dash-card-title flex items-center gap-2">
           <i aria-hidden="true" data-lucide="activity" class="w-4 h-4 dash-card-sub"></i>
-          תנועות אחרונות
+          הוצאות אחרונות
         </h3>
         <button class="text-xs font-semibold hover:underline cursor-pointer" style="color:var(--accent);padding:13px 10px;margin:-13px -10px;min-height:44px" onclick="showPage('transactions',document.getElementById('nav-transactions'))">הצג הכל</button>
       </div>
-      <div class="divide-y divide-slate-100 dark:divide-zinc-800/50" id="recentTxList">
+      <p style="font-size:0.8rem;color:var(--text2);margin-top:4px">ההוצאות האחרונות בחודש הנבחר</p>
+      <div id="recentTxList">
         <!-- Renders recent transactions from JavaScript -->
       </div>
       <button type="button" id="recentTxMoreBtn" onclick="toggleDashRecentExpanded()" style="display:none;width:100%;text-align:center;background:none;border:none;color:var(--accent);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;padding:10px 0 4px">הצג עוד הוצאות</button>
@@ -6042,7 +6050,7 @@ function renderDashboard(){
   const recentTx=_dashRecentExpanded?recentTxAll:recentTxAll.slice(0,4);
   _setTxListHtml(document.getElementById('recentTxList'),recentTx.length?groupedTxHtml(recentTx,true):'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">אין הוצאות החודש</p><p>עדיין לא רשמת הוצאות החודש.<br>לחץ על הפלוס כדי להוסיף הוצאה</p><button class="btn-empty" onclick="openAddTx()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה ראשונה</button></div>');
   const moreBtn=document.getElementById('recentTxMoreBtn');
-  if(moreBtn)moreBtn.style.display=(!_dashRecentExpanded&&recentTxAll.length>4)?'':'none';
+  if(moreBtn){moreBtn.style.display=recentTxAll.length>4?'':'none';moreBtn.textContent=_dashRecentExpanded?'הצג פחות':'הצג עוד '+(recentTxAll.length-4)+' הוצאות';moreBtn.setAttribute('aria-expanded',String(_dashRecentExpanded));moreBtn.setAttribute('aria-controls','recentTxList');}
   checkRecurring();
   checkSubscriptions();
   checkRecurringIncome();
@@ -7763,7 +7771,7 @@ function refreshAll(){
 }
 
 let _dashRecentExpanded=false;
-function toggleDashRecentExpanded(){_dashRecentExpanded=true;refreshAll();}
+function toggleDashRecentExpanded(){_dashRecentExpanded=!_dashRecentExpanded;refreshAll();}
 let onboardStep=0;
 let obHasBusiness=false;
 let obIncomes=[{name:'משכורת שלי',amount:''}];
