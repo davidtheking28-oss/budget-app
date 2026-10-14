@@ -105,6 +105,7 @@ function builder(table) {
     },
     neq(col, val) { filters.push(r => String(r[col]) !== String(val)); return api; },
     in(col, vals) { filters.push(r => vals.map(String).includes(String(r[col]))); return api; },
+    gt(col, val) { filters.push(r => r[col] > val); return api; },
     gte(col, val) { filters.push(r => r[col] >= val); return api; },
     lte(col, val) { filters.push(r => r[col] <= val); return api; },
     is(col, val) { filters.push(r => r[col] === val); return api; },

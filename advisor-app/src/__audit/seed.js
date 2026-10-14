@@ -212,7 +212,7 @@ export function makeDb(mode) {
   const base = {
     advisors: [{ user_id: ADVISOR }],
     advisor_clients: empty ? [] : [
-      { id: 'r1', advisor_id: ADVISOR, client_id: CLIENT_A, client_email: 'yael.abramovich@gmail.com', status: 'active', created_at: iso(90) },
+      { id: 'r1', advisor_id: ADVISOR, client_id: CLIENT_A, client_email: 'yael.abramovich@gmail.com', name: 'יעל אברמוביץ', status: 'active', created_at: iso(90) },
       { id: 'r2', advisor_id: ADVISOR, client_id: CLIENT_B, client_email: 'moshe@example.co.il', status: 'active', created_at: iso(60) },
       { id: 'r3', advisor_id: ADVISOR, client_id: CLIENT_C, client_email: 'a-very-long-client-email-address@some-long-domain-name.com', status: 'active', created_at: iso(30) },
       { id: 'r4', advisor_id: ADVISOR, client_id: CLIENT_EMPTY, client_email: 'new.client@gmail.com', status: 'active', created_at: iso(1) },
