@@ -185,7 +185,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [linkForm, setLinkForm] = useState(null);
   const [linking, setLinking] = useState(false);
   const [flowPeriod, setFlowPeriod] = useState('month');
-  const [donutView, setDonutView] = useState('type');
+  const [donutView, setDonutView] = useState('cat');
   const fileInputRef = useRef(null);
   const opts = monthOptions();
 
@@ -488,24 +488,40 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         </div>
         <div className={styles.card + ' ' + styles.cardStandalone}>
           <div className={styles.actualTitle}>לאן הולך הכסף</div>
-          <div className={styles.actualSub}>הוצאה חודשית ממוצעת</div>
+          <div className={styles.actualSub}>כך מתחלקת ההוצאה החודשית הממוצעת בין הקטגוריות</div>
           <div className={styles.flowToggle} role="group" aria-label="חלוקה">
-            <button type="button" aria-pressed={donutView === 'type'} className={donutView === 'type' ? styles.flowToggleActive : ''} onClick={() => setDonutView('type')}>לפי סוג</button>
             <button type="button" aria-pressed={donutView === 'cat'} className={donutView === 'cat' ? styles.flowToggleActive : ''} onClick={() => setDonutView('cat')}>לפי קטגוריה</button>
+            <button type="button" aria-pressed={donutView === 'type'} className={donutView === 'type' ? styles.flowToggleActive : ''} onClick={() => setDonutView('type')}>לפי סוג</button>
           </div>
+          {donutItems.length > 0 && (
+            <p className={styles.donutInsight}>
+              {donutView === 'cat'
+                ? `הקטגוריה הגדולה ביותר היא ${donutItems[0].name}, עם ${Math.round(donutItems[0].value / donutTotal * 100)}% מההוצאות.${donutItems.length > 2 ? ` שלוש הקטגוריות הגדולות יחד הן ${Math.round(donutItems.slice(0, 3).reduce((sum, i) => sum + i.value, 0) / donutTotal * 100)}% מהכסף שיוצא.` : ''}`
+                : donutItems.map(i => `${i.name}: ${Math.round(i.value / donutTotal * 100)}%`).join(' · ')}
+            </p>
+          )}
           <div className={styles.donutWrap}>
             <div className={styles.donut} role="img" aria-label="התפלגות ההוצאות">
               <Doughnut data={donutData} options={donutOptions} />
+              <div className={styles.donutCenter}>
+                <span className={styles.donutCenterLabel}>סה״כ לחודש</span>
+                <span className={styles.donutCenterValue}>{fmt(donutTotal)}</span>
+              </div>
             </div>
             <div className={styles.donutLegend}>
-              {donutItems.map((i, idx) => (
-                <div className={styles.donutRow} key={i.name}>
-                  <span className={styles.donutDot} style={{ background: CHART_PALETTE[idx % CHART_PALETTE.length] }} />
-                  <span className={styles.donutName}>{i.name}</span>
-                  <span className={styles.donutPct}>{Math.round(i.value / donutTotal * 100)}%</span>
-                  <span className={styles.donutAmt}>{fmt(i.value)}</span>
-                </div>
-              ))}
+              {donutItems.map((i, idx) => {
+                const pct = Math.round(i.value / donutTotal * 100);
+                const color = CHART_PALETTE[idx % CHART_PALETTE.length];
+                return (
+                  <div className={styles.donutRow} key={i.name}>
+                    <span className={styles.donutDot} style={{ background: color }} />
+                    <span className={styles.donutName}>{i.name}</span>
+                    <span className={styles.donutBar} aria-hidden="true"><span style={{ width: pct + '%', background: color }} /></span>
+                    <span className={styles.donutPct}>{pct}%</span>
+                    <span className={styles.donutAmt}>{fmt(i.value)}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

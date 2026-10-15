@@ -505,8 +505,9 @@
 }
 
 .donut {
-  height: 200px;
-  max-width: 280px;
+  position: relative;
+  height: 240px;
+  max-width: 300px;
   width: 100%;
   margin: 0 auto;
 }
@@ -518,7 +519,7 @@
 
 .donutRow {
   display: grid;
-  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+  grid-template-columns: 10px minmax(0, 1.3fr) minmax(40px, 1fr) 40px minmax(64px, auto);
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) 0;
@@ -552,3 +553,46 @@
 .mappingNav a { padding: 10px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--accent); background: var(--surface); text-decoration: none; font-size: var(--text-base); font-weight: 700; }
 .mappingNav a:hover { border-color: var(--accent); }
 :global(#mapping-upload), :global(#mapping-results) { scroll-margin-top: 24px; }
+
+.donutInsight {
+  margin: var(--space-3) 0 0;
+  color: var(--text2);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.donutCenterLabel { color: var(--text3); font-size: var(--text-xs); }
+
+.donutCenterValue {
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.donutBar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface2);
+  overflow: hidden;
+}
+
+.donutBar > span { display: block; height: 100%; border-radius: 3px; }
+
+@media (min-width: 640px) {
+  .donutWrap { flex-direction: row; align-items: center; }
+  .donutWrap .donut { flex: 0 0 260px; margin: 0; }
+  .donutWrap .donutLegend { flex: 1; min-width: 0; }
+}
