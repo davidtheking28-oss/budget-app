@@ -1088,8 +1088,7 @@
     @keyframes authSlideUp{from{opacity:0;transform:translateY(32px);}to{opacity:1;transform:translateY(0);}}
     .auth-inner{width:100%;max-width:390px;padding:max(7vh,52px) 28px max(6vh,44px);display:flex;flex-direction:column;min-height:100dvh;animation:authSlideUp 0.52s cubic-bezier(0.16,1,0.3,1) both;}
     .auth-hero{display:flex;flex-direction:column;align-items:center;text-align:center;flex:1;justify-content:center;padding-bottom:36px;}
-    .auth-app-icon{width:96px;height:96px;border-radius:26px;background:linear-gradient(145deg,#1a3a6e,#0d2250);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 0 0 1px rgba(52,211,169,0.2),0 12px 40px rgba(0,0,0,0.45),0 0 60px rgba(52,211,169,0.08);}
-    .auth-app-icon-sym{font-size:2.8rem;font-weight:900;color:#34d3a9;font-family:var(--font-num);letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums lining-nums;}
+    .auth-app-icon{width:96px;height:96px;border-radius:22px;display:block;margin:0 auto 24px;box-shadow:0 12px 40px rgba(0,0,0,0.45),0 0 60px rgba(52,211,169,0.08);}
     .auth-app-name{font-size:2rem;font-weight:800;color:var(--text);letter-spacing:-1px;margin-bottom:8px;line-height:1.1;}
     .auth-app-sub{font-size:0.95rem;color:var(--text2);line-height:1.5;margin-bottom:28px;max-width:220px;}
     .auth-trust-row{display:flex;align-items:center;justify-content:center;gap:16px;}
@@ -1740,7 +1739,7 @@
   <div class="auth-inner">
     <!-- Hero -->
     <div class="auth-hero">
-      <div class="auth-app-icon"><div class="auth-app-icon-sym">₪</div></div>
+      <img class="auth-app-icon" src="./assets/icon-192.png" alt=""/>
       <div class="auth-app-name">שקל שקל</div>
       <div class="auth-app-sub">שלוט בכסף שלך. בלי סיסמאות.</div>
       <div class="auth-trust-row">
