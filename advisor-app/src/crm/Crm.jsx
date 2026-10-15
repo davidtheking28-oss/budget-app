@@ -52,7 +52,7 @@ function daysUntil(dateStr) {
 }
 
 export default function Crm({ action, advisorId, clientId, email, onChange, onDirtyChange }) {
-  const { tasks, meetings, loading, error, reload, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId);
+  const { tasks, meetings, loading, error, reload, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId, onChange);
   const { profile, save: saveProfile } = useClientProfile(advisorId, clientId);
   const [nameDraft, setNameDraft] = useState('');
   const [phoneDraft, setPhoneDraft] = useState('');

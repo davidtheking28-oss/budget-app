@@ -40,12 +40,14 @@ export async function suggestTasksFromSummary(summary) {
   } catch { return null; }
 }
 
-export function useClientCrm(advisorId, clientId) {
+export function useClientCrm(advisorId, clientId, onRestore) {
   const [tasks, setTasks] = useState([]);
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const requestIdRef = useRef(0);
+  const activeRef = useRef(false);
+  useEffect(() => { activeRef.current = true; return () => { activeRef.current = false; }; }, []);
 
   const reload = useCallback(async () => {
     if (!advisorId || !clientId) return;
@@ -158,10 +160,28 @@ export function useClientCrm(advisorId, clientId) {
 
   async function deleteMeeting(id) {
     const removed = meetings.find(m => m.id === id);
-    const { error } = await supabase.from('advisor_meetings').delete().eq('id', id).eq('advisor_id', advisorId);
+    if (!removed) return;
+    const { data: linked, error: linkError } = await supabase.from('advisor_tasks').select('id').eq('advisor_id', advisorId).eq('client_id', clientId).eq('meeting_id', id);
+    if (linkError) { toast('לא ניתן לבדוק את משימות הפגישה כרגע. הפגישה לא נמחקה.', 'error'); return; }
+    const { error } = await supabase.from('advisor_meetings').delete().eq('id', id).eq('advisor_id', advisorId).eq('client_id', clientId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setMeetings(prev => prev.filter(m => m.id !== id));
-    toast('הפגישה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addMeeting(removed.scheduled_at, removed.notes, removed.for_client) } : null);
+    setTasks(prev => prev.map(t => t.meeting_id === id ? { ...t, meeting_id: null } : t));
+    async function restoreLinks() {
+      if (!linked?.length) return;
+      const { data, error } = await supabase.from('advisor_tasks').update({ meeting_id: id }).eq('advisor_id', advisorId).eq('client_id', clientId).in('id', linked.map(t => t.id)).is('meeting_id', null).select('id');
+      if (error) { toast('הפגישה שוחזרה, אך שיוך משימות ההמשך נכשל', 'error', { label: 'נסה שוב', onClick: restoreLinks }); return; }
+      const restored = new Set((data || []).map(t => t.id));
+      setTasks(prev => prev.map(t => restored.has(t.id) ? { ...t, meeting_id: id } : t));
+    }
+    async function restore() {
+      const { data, error } = await supabase.from('advisor_meetings').insert({ id: removed.id, advisor_id: advisorId, client_id: clientId, scheduled_at: removed.scheduled_at, notes: removed.notes, for_client: removed.for_client, status: removed.status || 'pending', summary: removed.summary, decisions: removed.decisions, decline_note: removed.decline_note, created_at: removed.created_at }).select().single();
+      if (error) { toast('לא ניתן לשחזר את הפגישה כרגע', 'error', { label: 'נסה שוב', onClick: restore }); return; }
+      setMeetings(prev => [...prev.filter(m => m.id !== id), data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
+      await restoreLinks();
+      if (activeRef.current) onRestore?.();
+    }
+    toast('הפגישה נמחקה', 'success', { label: 'בטל', onClick: restore });
   }
 
   return { tasks, meetings, loading, error, reload, addTask, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary };

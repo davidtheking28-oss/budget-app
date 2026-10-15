@@ -87,10 +87,12 @@ function builder(table) {
       return api;
     },
     delete() {
+      pendingWrite = [];
       rows = () => {
         const all = db[table] || [];
         const hit = all.filter(r => filters.every(f => f(r)));
         db[table] = all.filter(r => !hit.includes(r));
+        if (table === 'advisor_meetings') (db.advisor_tasks || []).forEach(t => { if (hit.some(m => m.id === t.meeting_id)) t.meeting_id = null; });
         return clone(hit);
       };
       return api;
