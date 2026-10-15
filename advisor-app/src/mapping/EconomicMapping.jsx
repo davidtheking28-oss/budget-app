@@ -4,6 +4,7 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
 import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
 import { categorizeByDictionary } from './categorizeDict.js';
+import { learnCategory, lookupLearnedCategory, normalizeDescription } from './learnedCategories.js';
 import { resizeImageToJpeg } from './resizeImage.js';
 import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
@@ -114,9 +115,8 @@ function pickCategory(t, type) {
   const fallback = type === 'income' ? 'אחר' : 'שונות';
   const fromModel = t.category || null;
   if (fromModel === SAVINGS_CATEGORY) return fromModel;
-  const fromDictionary = categorizeByDictionary(t.desc, type);
-  if (type === 'income') return fromModel || fromDictionary || fallback;
-  return fromDictionary || fromModel || fallback;
+  if (type === 'income') return fromModel || categorizeByDictionary(t.desc, type) || fallback;
+  return lookupLearnedCategory(t.desc) || categorizeByDictionary(t.desc, type) || fromModel || fallback;
 }
 
 async function processQueue(queue, setQueue) {
@@ -342,7 +342,12 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   }
 
   async function reassignCategory(index, category) {
-    const transactions = data.transactions.map((t, i) => (i === index ? { ...t, category } : t));
+    const target = data.transactions[index];
+    const merchant = normalizeDescription(target?.desc);
+    const sameMerchant = (t, i) => i === index || (target?.type !== 'income' && t.type !== 'income' && merchant.length >= 3 && normalizeDescription(t.desc) === merchant);
+    const transactions = data.transactions.map((t, i) => (sameMerchant(t, i) ? { ...t, category } : t));
+    const changed = transactions.filter((t, i) => t !== data.transactions[i]).length;
+    if (target?.type !== 'income') learnCategory(target?.desc, category);
     const { averages, monthsCovered } = computeCategoryAverages(transactions);
     // Deliberately NOT archiving a snapshot per edit here: this fires on every single
     // category-dropdown change, and the snapshots array is capped (see process()) —
@@ -356,7 +361,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       category_averages: averages,
       months_covered: monthsCovered
     });
-    if (ok !== false) toast('הקטגוריה עודכנה', 'success');
+    if (ok !== false) toast(changed > 1 ? `הקטגוריה עודכנה ב-${changed} עסקאות של אותו בית עסק` : 'הקטגוריה עודכנה', 'success');
   }
 
   async function linkToBudget(kind) {
