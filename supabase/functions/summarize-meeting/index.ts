@@ -39,7 +39,7 @@ async function checkRateLimit(req: Request): Promise<boolean> {
 }
 
 // free-tier availability varies per model; try in order and use the first that answers
-const MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']
+const MODELS = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b']
 
 async function callGroq(key: string, messages: unknown[]) {
   let last = { status: 0, detail: 'no model tried' }
@@ -48,7 +48,7 @@ async function callGroq(key: string, messages: unknown[]) {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model, messages, temperature: 0, max_tokens: 512,
+        model, messages, ...(model.startsWith('qwen/') ? { reasoning_effort: 'none' } : {}), temperature: 0, max_tokens: 512,
         response_format: { type: 'json_object' },
       }),
     })

@@ -54,7 +54,7 @@ const CATEGORIES = [
 ]
 
 // free-tier availability varies per model; try in order and use the first that answers
-const MODELS = ['meta-llama/llama-4-scout-17b-16e-instruct', 'meta-llama/llama-4-maverick-17b-128e-instruct']
+const MODELS = ['qwen/qwen3.8-27b']
 
 async function callGroq(key: string, messages: unknown[]) {
   let last = { status: 0, detail: 'no model tried' }
@@ -63,7 +63,7 @@ async function callGroq(key: string, messages: unknown[]) {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model, messages, temperature: 0, max_tokens: 256,
+        model, messages, ...(model.startsWith('qwen/') ? { reasoning_effort: 'none' } : {}), temperature: 0, max_tokens: 256,
         response_format: { type: 'json_object' },
       }),
     })
