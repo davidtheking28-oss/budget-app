@@ -106,7 +106,8 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
   const [addOpen, setAddOpen] = useState(false);
-  useEffect(() => { if (addOpen) { setSecondaryOpen(true); emailInputRef.current?.focus(); } }, [addOpen, loading]);
+  useEffect(() => { if (addOpen) setSecondaryOpen(true); }, [addOpen]);
+  useEffect(() => { if (addOpen && secondaryOpen) emailInputRef.current?.focus(); }, [addOpen, secondaryOpen, loading]);
 
   useEffect(() => {
     if (!inviteDraft || draftHandled.current === inviteDraft) return;
