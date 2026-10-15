@@ -8,7 +8,7 @@ export function computeInsights(data, year, month) {
   const summary = monthSummary(data, year, month);
 
   summary.overCats.forEach(o => {
-    insights.push({ kind: 'danger', text: `חריגה בקטגוריית ${o.cat} — ${fmt(o.over)} מעבר לתקציב` });
+    insights.push({ kind: 'danger', category: o.cat, text: `חריגה בקטגוריית ${o.cat} — ${fmt(o.over)} מעבר לתקציב` });
   });
 
   const now = new Date();

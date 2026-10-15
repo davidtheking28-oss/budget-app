@@ -1,7 +1,7 @@
 import styles from './Rows.module.css';
 
-export function CardGrid({ single, children }) {
-  return <div className={styles.grid + (single ? ' ' + styles.single : '')}>{children}</div>;
+export function CardGrid({ single, alignStart = false, children }) {
+  return <div className={styles.grid + (single ? ' ' + styles.single : '') + (alignStart ? ' ' + styles.alignStart : '')}>{children}</div>;
 }
 
 export function Card({ title, children }) {

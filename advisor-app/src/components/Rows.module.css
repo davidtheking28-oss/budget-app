@@ -99,3 +99,5 @@
   .sub { font-size: var(--text-sm); line-height: 1.5; margin-top: 3px; }
   .amount { font-size: var(--text-md); }
 }
+
+.alignStart { align-items: start; }

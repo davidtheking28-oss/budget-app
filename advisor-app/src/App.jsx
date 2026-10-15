@@ -76,6 +76,7 @@ export default function App() {
   const [homeView, setHomeView] = useUrlParam('view', 'clients');
   const [inviteDraft, setInviteDraft] = useState(null);
   const [nav, setNav] = useState(initial.nav);
+  const [budgetCategory, setBudgetCategory] = useState(null);
   const [crmAction, setCrmAction] = useState(null);
   const [budgetMode, setBudgetMode] = useState(initial.budgetMode);
   const [ym, setYm] = useState(initial.ym);
@@ -152,6 +153,7 @@ export default function App() {
   }
 
   const switchClient = (clientId, clientEmail) => {
+    setBudgetCategory(null);
     setSelectedClient({ id: clientId, email: clientEmail });
     // Deliberately not resetting `nav`: an advisor working through 40+ clients
     // via Ctrl+K on the same tab (e.g. מיפוי כלכלי) should stay on that tab
@@ -217,7 +219,7 @@ export default function App() {
         onBack={() => setSelectedClient(null)}
         nav={NAV}
         activeNav={nav}
-        onNavChange={setNav}
+        onNavChange={key => { setBudgetCategory(null); setNav(key); }}
         onPrint={() => setReportMode(true)}
         onPresent={() => setPresentMode(true)}
         onSearch={() => setSearchOpen(true)}
@@ -247,8 +249,8 @@ export default function App() {
             onBudgetModeChange={setBudgetMode}
           />
         )}
-        {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
-        {nav === 'budget' && <Budget clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
+        {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard key={`${selectedClient.id}:${ym.year}:${ym.month}:${budgetMode}`} onOpenCategory={category => { setBudgetCategory(category); setNav('budget'); }} clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
+        {nav === 'budget' && <Budget focusCategory={budgetCategory} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis onPreviousMonth={() => changeMonth(-1)} onOpenBudget={() => setNav('budget')} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} advisorId={session.user.id} />}

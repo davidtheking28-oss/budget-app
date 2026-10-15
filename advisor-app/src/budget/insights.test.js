@@ -8,7 +8,7 @@ describe('computeInsights', () => {
       transactions: [{ type: 'expense', cat: 'מזון', amount: 1300, date: '2020-03-10' }]
     };
     const insights = computeInsights(data, 2020, 2);
-    expect(insights).toContainEqual(expect.objectContaining({ kind: 'danger' }));
+    expect(insights).toContainEqual(expect.objectContaining({ kind: 'danger', category: 'מזון' }));
   });
 
   it('flags a large unbudgeted category as a tip insight', () => {

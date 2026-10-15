@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
 import { computeInsights } from './insights.js';
@@ -9,7 +10,8 @@ import ErrorState from '../components/ErrorState.jsx';
 import styles from './Dashboard.module.css';
 import { fmt } from '../format.js';
 
-export default function Dashboard({ clientUserId, year, month }) {
+export default function Dashboard({ clientUserId, year, month, onOpenCategory }) {
+  const [expanded, setExpanded] = useState(false);
   const { data, loading, error, reload } = useClientBudget(clientUserId);
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -60,7 +62,7 @@ export default function Dashboard({ clientUserId, year, month }) {
         ]}
       />
 
-      <CardGrid>
+      <CardGrid alignStart>
         <Card title="לאן הולך הכסף">
           {catLabels.length ? (
             <>
@@ -83,15 +85,19 @@ export default function Dashboard({ clientUserId, year, month }) {
 
         <Card title="תובנות לחודש">
           {attention.length ? (
-            <ul className={styles.insights}>
-              {attention.map((ins, i) => (
+            <>
+            <ul id="dashboard-insights" className={styles.insights}>
+              {(expanded ? attention : attention.slice(0, 3)).map((ins, i) => (
                 <li key={i} className={styles.insight + ' ' + styles[ins.kind]}>
                   <span className={styles.insightKind}>{{danger: 'דורש בדיקה', warn: 'לתשומת לב', tip: 'כדאי לדעת', good: 'נקודה חיובית'}[ins.kind]}</span>
                   <b className={styles.insightTitle}><span className={styles.insightDot + ' ' + styles[ins.kind]} aria-hidden="true" />{ins.text.split(' — ')[0]}</b>
                   {ins.text.includes(' — ') && <span className={styles.insightSub}>{ins.text.split(' — ').slice(1).join(' — ')}</span>}
+                  {ins.category && onOpenCategory && <button type="button" className={styles.insightAction} onClick={() => onOpenCategory(ins.category)}>פתח תקציב · {ins.category} ←</button>}
                 </li>
               ))}
             </ul>
+            {attention.length > 3 && <button type="button" className={styles.expandInsights} aria-expanded={expanded} aria-controls="dashboard-insights" onClick={() => setExpanded(value => !value)}>{expanded ? 'הצג פחות' : `הצג עוד ${attention.length - 3} תובנות`}</button>}
+            </>
           ) : (
             <div className={styles.empty}>אין התראות החודש</div>
           )}

@@ -6,7 +6,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
 import { fmt } from '../format.js';
 
-export default function Budget({ clientUserId, advisorId, year, month }) {
+export default function Budget({ clientUserId, advisorId, year, month, focusCategory }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -38,7 +38,7 @@ export default function Budget({ clientUserId, advisorId, year, month }) {
         ]}
       />
 
-      <BudgetWizard data={data} save={save} year={year} month={month} />
+      <BudgetWizard focusCategory={focusCategory} data={data} save={save} year={year} month={month} />
     </div>
   );
 }

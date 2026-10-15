@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
@@ -48,8 +48,18 @@ function sameCategory(a, b) {
   return words(a).some(wa => words(b).some(wb => wa.slice(0, 4) === wb.slice(0, 4)));
 }
 
-export default function BudgetWizard({ data, save, year, month }) {
-  const [step, setStep] = useState(0);
+export default function BudgetWizard({ data, save, year, month, focusCategory }) {
+  const [step, setStep] = useState(focusCategory ? 1 : 0);
+  const wizardRef = useRef(null);
+  useEffect(() => {
+    if (!focusCategory) return;
+    const frame = requestAnimationFrame(() => {
+      const row = [...(wizardRef.current?.querySelectorAll('[data-budget-category]') || [])].find(el => el.dataset.budgetCategory === focusCategory);
+      row?.querySelector('input[aria-label^="תקציב"]')?.focus({ preventScroll: true });
+      row?.scrollIntoView({ block: 'center' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusCategory]);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [flowPeriod, setFlowPeriod] = useState('month');
@@ -245,7 +255,7 @@ export default function BudgetWizard({ data, save, year, month }) {
             const actual = actualEdits[r.name] ?? (actualOf(r.name, r.amount) || 0);
             const over = (parseFloat(actual) || 0) > (parseFloat(r.amount) || 0);
             return (
-              <div className={styles.tblRow} key={i}>
+              <div className={styles.tblRow + (r.name === focusCategory ? ' ' + styles.categoryFocused : '')} data-budget-category={r.name} key={i}>
                 <div className={styles.tblName}>
                   <span className={styles.itemIcon} aria-hidden="true">{getCategoryIcon(r.name)}</span>
                   <input
@@ -393,7 +403,7 @@ export default function BudgetWizard({ data, save, year, month }) {
   }
 
   return (
-    <div className={styles.wrap} onChangeCapture={() => { if (!saving) setSaveStatus('dirty'); }}>
+    <div ref={wizardRef} className={styles.wrap} onChangeCapture={() => { if (!saving) setSaveStatus('dirty'); }}>
       <div className={styles.head}>
         <div>
           <div className={styles.title}>בניית תקציב עם הלקוח</div>
