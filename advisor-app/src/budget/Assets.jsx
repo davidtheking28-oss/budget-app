@@ -7,6 +7,7 @@ import { Card, CardGrid } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+import ActionMenu from '../components/ActionMenu.jsx';
 import { toast } from '../toast.js';
 import { addItem, removeItem } from './itemHelpers.js';
 import styles from './Assets.module.css';
@@ -24,6 +25,7 @@ export default function Assets({ clientUserId, advisorId }) {
   const [loanName, setLoanName] = useState('');
   const [loanRemaining, setLoanRemaining] = useState('');
   const [loanMonthly, setLoanMonthly] = useState('');
+  const [expandedCategories, setExpandedCategories] = useState([]);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -40,6 +42,11 @@ export default function Assets({ clientUserId, advisorId }) {
   const totalAssets = assets.reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
   const totalLiabilities = loans.reduce((s, l) => s + (parseFloat(l.remaining) || 0), 0);
   const netWorth = totalAssets - totalLiabilities;
+  const assetGroups = Object.entries(assets.reduce((groups, asset) => {
+    const key = asset.category || 'אחר';
+    (groups[key] ||= []).push(asset);
+    return groups;
+  }, {})).sort((a, b) => b[1].reduce((sum, asset) => sum + (parseFloat(asset.amount) || 0), 0) - a[1].reduce((sum, asset) => sum + (parseFloat(asset.amount) || 0), 0));
 
   async function submit() {
     const amt = parseFloat(amount);
@@ -47,6 +54,7 @@ export default function Assets({ clientUserId, advisorId }) {
     const ok = await addItem(save, 'assets', { name: name.trim(), category, amount: amt });
     if (ok === false) return;
     toast('נכס נוסף', 'success');
+    setExpandedCategories(prev => prev.includes(category) ? prev : [...prev, category]);
     setName('');
     setAmount('');
   }
@@ -96,19 +104,26 @@ export default function Assets({ clientUserId, advisorId }) {
             <div className={styles.tableWrap} role="region" aria-label="טבלת נכסים" tabIndex={0}>
             <table className={styles.table}>
               <thead>
-                <tr><th>נכס</th><th>סוג</th><th>שווי</th><th>חלק</th><th></th></tr>
+                <tr><th>נכס</th><th>שווי</th><th>חלק</th><th></th></tr>
               </thead>
-              <tbody>
-                {[...assets].sort((a, b) => (b.amount || 0) - (a.amount || 0)).map(a => (
-                  <tr key={a.id}>
-                    <td className={styles.assetName}>{a.name}</td>
-                    <td><span className={styles.tag}>{a.category}</span></td>
-                    <td className={styles.num}>{fmt(a.amount)}</td>
-                    <td className={styles.num}>{totalAssets > 0 ? Math.round(((a.amount || 0) / totalAssets) * 100) + '%' : '—'}</td>
-                    <td><DeleteButton onClick={() => removeItem(save, 'assets', a.id, `${a.name} נמחק`)} /></td>
-                  </tr>
-                ))}
-              </tbody>
+              {assetGroups.map(([group, items]) => (
+                <tbody key={group}>
+                  <tr className={styles.groupRow}><th colSpan={4} scope="rowgroup">
+                    <button type="button" className={styles.groupToggle} aria-label={`${group} · ${items.length} נכסים בקבוצה`} aria-expanded={expandedCategories.includes(group)} onClick={() => setExpandedCategories(prev => prev.includes(group) ? prev.filter(c => c !== group) : [...prev, group])}>
+                      <span>{group} <small>{items.length === 1 ? 'נכס אחד' : `${items.length} נכסים`}</small></span>
+                      <span>{fmt(items.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0))} <span aria-hidden="true">{expandedCategories.includes(group) ? '−' : '+'}</span></span>
+                    </button>
+                  </th></tr>
+                  {expandedCategories.includes(group) && [...items].sort((a, b) => (b.amount || 0) - (a.amount || 0)).map(a => (
+                    <tr key={a.id}>
+                      <td className={styles.assetName}>{a.name}</td>
+                      <td className={styles.num}>{fmt(a.amount)}</td>
+                      <td className={styles.num}>{totalAssets > 0 ? Math.round(((a.amount || 0) / totalAssets) * 100) + '%' : '—'}</td>
+                      <td><ActionMenu><DeleteButton onClick={() => removeItem(save, 'assets', a.id, `${a.name} נמחק`)} /></ActionMenu></td>
+                    </tr>
+                  ))}
+                </tbody>
+              ))}
             </table>
             </div>
           ) : (
@@ -137,7 +152,7 @@ export default function Assets({ clientUserId, advisorId }) {
                     <td className={styles.assetName}>{l.name}</td>
                     <td className={styles.num}>{l.monthly > 0 ? fmt(l.monthly) : '—'}</td>
                     <td className={styles.num + ' ' + styles.kpiNeg}>{fmt(l.remaining)}</td>
-                    <td><DeleteButton onClick={() => removeItem(save, 'loans', l.id, `${l.name} נמחקה`)} /></td>
+                    <td><ActionMenu><DeleteButton onClick={() => removeItem(save, 'loans', l.id, `${l.name} נמחקה`)} /></ActionMenu></td>
                   </tr>
                 ))}
               </tbody>

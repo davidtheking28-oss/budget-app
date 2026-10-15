@@ -4,6 +4,8 @@ import { useClientProfile } from './useClientProfile.js';
 import { formatDate, formatDateTime } from '../budget/monthUtils.js';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+import EditButton from '../components/EditButton.jsx';
+import ActionMenu from '../components/ActionMenu.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
 import { KeyValue } from '../components/Rows.jsx';
@@ -271,7 +273,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
                       {m.notes && <div className={styles.meta}>{m.notes}</div>}
                       {m.status === 'declined' && m.decline_note && <div className={styles.meta}>הערת הלקוח: {m.decline_note}</div>}
                     </div>
-                    <div className={styles.rowActions}>
+                    <div className={styles.rowActions}><ActionMenu>
                       {m.for_client && m.status === 'pending' && !past && (
                         <>
                           <button type="button" className={styles.icsButton} title="סמן כמאושרת (למשל אם הלקוח אישר בטלפון)" aria-label="סמן פגישה כמאושרת" onClick={async () => { if (await respondMeeting(m.id, 'confirmed')) notify(); }}>
@@ -282,14 +284,14 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
                           </button>
                         </>
                       )}
-                      <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
+<EditButton title="ערוך פגישה" onClick={() => startEditMeeting(m)} />
                       <button type="button" className={styles.icsButton} title="הורד ליומן" aria-label="הורד ליומן" onClick={() => downloadIcs(m)}>
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                           <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><path d="M12 14v4M10 16h4" />
                         </svg>
                       </button>
                       <DeleteButton onClick={() => removeMeeting(m.id)} />
-                    </div>
+                    </ActionMenu></div>
                   </div>
                   <MeetingSummary key={m.id} meeting={m} tasks={tasks.filter(t => t.meeting_id === m.id)} onSave={setMeetingSummary} onAddTasks={addTasks} onDirtyChange={markMeetingDirty} onChange={notify} />
                 </div>
@@ -347,8 +349,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
                     <div className={styles.meta}>{t.responsible === 'client' ? 'באחריות הלקוח' : 'באחריות היועץ'}{t.task_kind === 'document' ? ' · ממתינים למסמך' : ''}</div>
                     {t.due_date && <div className={styles.meta}>יעד: {formatDate(t.due_date)}</div>}
                   </div>
-                  <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>
-                  <DeleteButton onClick={() => removeTask(t.id)} />
+<ActionMenu><EditButton title="ערוך משימה" onClick={() => startEditTask(t)} /><DeleteButton onClick={() => removeTask(t.id)} /></ActionMenu>
                 </div>
               );
             })())}

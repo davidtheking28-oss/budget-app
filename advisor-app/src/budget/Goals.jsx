@@ -7,6 +7,7 @@ import { Card, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+import ActionMenu from '../components/ActionMenu.jsx';
 import { toast } from '../toast.js';
 import { localISODate } from './monthUtils.js';
 import styles from './Goals.module.css';
@@ -170,7 +171,7 @@ export default function Goals({ clientUserId, advisorId }) {
                   amount={monthly > 0 ? `${fmt(monthly)}/ח׳` : pct >= 100 ? 'הושלם' : null}
                   amountTone={monthly > 0 ? undefined : pct >= 100 ? 'pos' : undefined}
                 >
-                  <DeleteButton title="מחק יעד" onClick={() => deleteGoal(g.id)} />
+                  <ActionMenu><DeleteButton title="מחק יעד" onClick={() => deleteGoal(g.id)} /></ActionMenu>
                 </Row>
                 {expanded ? (
                   <div className={styles.txRow}>

@@ -80,11 +80,11 @@
 }
 
 .insights { display: flex; flex-direction: column; gap: 10px; }
-.insight, .insight:first-child { padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface2); font-size: var(--text-base); line-height: 1.5; }
-.insight.danger { border-inline-start: 3px solid var(--red); }
-.insight.warn { border-inline-start: 3px solid var(--yellow); }
-.insight.good { border-inline-start: 3px solid var(--green); }
-.insight.tip { border-inline-start: 3px solid var(--accent); }
+.insight, .insight:first-child { padding: 14px 16px; border: none; border-top: 1px solid var(--border); border-radius: 0; background: transparent; font-size: var(--text-base); line-height: 1.5; }
+.insight.danger { border-inline-start: 2px solid var(--red); }
+.insight.warn { border-inline-start: 2px solid var(--yellow); }
+.insight.good { border-inline-start: none; }
+.insight.tip { border-inline-start: none; }
 .insightKind { display: block; color: var(--text2); font-size: var(--text-xs); margin-bottom: 5px; font-weight: 600; }
 .insightSub { font-size: var(--text-sm); line-height: 1.5; margin-top: 4px; color: var(--text2); }
 

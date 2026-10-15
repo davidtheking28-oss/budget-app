@@ -40,5 +40,5 @@ export default function AddForm({ label, open: forceOpen = false, openSignal = 0
       </button>
     );
   }
-  return <div ref={formRef} className={className} onKeyDown={onEscape ? e => { if (e.key === 'Escape') onEscape(); } : undefined}>{children}</div>;
+  return <div ref={formRef} className={[styles.form, className].filter(Boolean).join(' ')} onKeyDown={onEscape ? e => { if (e.key === 'Escape') onEscape(); } : undefined}>{children}</div>;
 }

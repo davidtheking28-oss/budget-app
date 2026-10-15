@@ -5,6 +5,7 @@ import { computeInsights } from './insights.js';
 import { formatDateTime, getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
 import Button from '../components/Button.jsx';
+import ActionMenu from '../components/ActionMenu.jsx';
 import Hero from '../components/Hero.jsx';
 import { Card, CardGrid, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -67,8 +68,10 @@ export default function Dashboard({ clientUserId, year, month, onOpenCategory, n
         <div className={styles.meetingInfo}><span>הפגישה הבאה</span><strong>{nextMeeting ? formatDateTime(nextMeeting) : 'לא נקבעה פגישה'}</strong><span>{openTasks} משימות פתוחות</span></div>
         <div className={styles.workActions}>
           <Button onClick={() => onAction('task')}>משימה חדשה</Button>
+<ActionMenu>
           <Button variant="ghost" onClick={() => onAction('meeting')}>פגישה חדשה</Button>
           <Button variant="ghost" onClick={onOpenMapping}>מיפוי מסמכים</Button>
+          </ActionMenu>
         </div>
       </section>
       <CardGrid alignStart>

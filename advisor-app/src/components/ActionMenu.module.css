@@ -1,0 +1,8 @@
+.actions { flex-shrink: 0; }
+.actions > summary { list-style: none; cursor: pointer; min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-size: var(--text-lg); }
+.actions > summary::-webkit-details-marker { display: none; }
+.actions > summary:hover, .actions[open] > summary { background: var(--accent-dim); color: var(--accent); }
+.actions > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.items { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.items > button { width: auto; min-height: 36px; padding: 6px 10px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-family: inherit; }
+.items > button::after { content: attr(aria-label); font-size: var(--text-sm); white-space: nowrap; }

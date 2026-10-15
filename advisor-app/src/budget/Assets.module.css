@@ -101,3 +101,9 @@
 }
 
 :root[data-density="compact"] .table td { padding-block: 8px; }
+
+.groupRow th { position: static; background: transparent; box-shadow: none; padding: 0; }
+.groupToggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 48px; padding: 12px 8px; border: none; background: var(--surface2); color: var(--text); font: inherit; font-weight: 700; text-align: start; cursor: pointer; }
+.groupToggle small { color: var(--text2); font-size: var(--text-sm); font-weight: 400; margin-inline-start: 8px; }
+.groupToggle > span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.groupToggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }

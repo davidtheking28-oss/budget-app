@@ -6,6 +6,7 @@ import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+import ActionMenu from '../components/ActionMenu.jsx';
 import EditButton from '../components/EditButton.jsx';
 import { toast } from '../toast.js';
 import { addItem, updateItem, removeItem } from './itemHelpers.js';
@@ -350,8 +351,7 @@ export default function Credit({ clientUserId, advisorId }) {
                         <td className={styles.loanMonthly}>{fmt(l.monthly || 0)}</td>
                         <td>{pct !== null ? pct + '%' : '—'}</td>
                         <td className={styles.loanActions}>
-                          <EditButton title={`ערוך · ${l.name || 'ההלוואה'}`} onClick={e => { e.stopPropagation(); startEditLoan(l); }} />
-                          <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id, `${l.name || 'ההלוואה'} נמחקה`); }} />
+                          <ActionMenu><EditButton title={`ערוך · ${l.name || 'ההלוואה'}`} onClick={e => { e.stopPropagation(); startEditLoan(l); }} /><DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id, `${l.name || 'ההלוואה'} נמחקה`); }} /></ActionMenu>
                         </td>
                       </tr>
                     );
@@ -393,8 +393,7 @@ export default function Credit({ clientUserId, advisorId }) {
                     </div>
                     <div className={styles.rowActions}>
                       <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
-                      <EditButton title={`ערוך · ${p.name || 'התשלום'}`} onClick={e => { e.stopPropagation(); startEditPayment(p); }} />
-                        <DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'התשלום'} נמחק`); }} />
+                      <ActionMenu><EditButton title={`ערוך · ${p.name || 'התשלום'}`} onClick={e => { e.stopPropagation(); startEditPayment(p); }} /><DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'התשלום'} נמחק`); }} /></ActionMenu>
                     </div>
                   </div>
                   {showBar && (

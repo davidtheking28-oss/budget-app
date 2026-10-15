@@ -93,7 +93,7 @@
 }
 
 @media (min-width: 861px) {
-  .card { padding: 24px; box-shadow: var(--shadow-card); }
+  .card { padding: 24px; }
   .title { font-size: var(--text-lg); margin-bottom: 18px; }
   .row { padding-block: 13px; }
   .sub { font-size: var(--text-sm); line-height: 1.5; margin-top: 3px; }
