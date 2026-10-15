@@ -58,6 +58,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   const [phoneDraft, setPhoneDraft] = useState('');
   const [backgroundDraft, setBackgroundDraft] = useState('');
   const [profileDirty, setProfileDirty] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
   useEffect(() => {
     setProfileDirty(false);
   }, [clientId]);
@@ -68,8 +69,12 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
     setBackgroundDraft(profile.background || '');
   }, [profile, profileDirty]);
   async function saveProfileFields() {
-    const ok = await saveProfile({ name: nameDraft, phone: phoneDraft, background: backgroundDraft });
-    if (ok) { setProfileDirty(false); notify(); }
+    if (savingProfile) return;
+    setSavingProfile(true);
+    try {
+      const ok = await saveProfile({ name: nameDraft, phone: phoneDraft, background: backgroundDraft });
+      if (ok) { setProfileDirty(false); notify(); }
+    } finally { setSavingProfile(false); }
   }
   const [meetingDirty, setMeetingDirty] = useState({});
   const markMeetingDirty = useCallback((id, dirty) => setMeetingDirty(prev => prev[id] === dirty ? prev : { ...prev, [id]: dirty }), []);
@@ -150,7 +155,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   const overdueTasks = tasks.filter(t => !t.done && t.due_date && t.due_date < todayIso).length;
   const soonMeetings = meetings.filter(m => { const d = daysUntil(m.scheduled_at); return d !== null && d >= 0 && d <= 3; }).length;
 
-  const dirty = savingTask || savingMeeting || profileChanged || Object.entries(meetingDirty).some(([id, value]) => value && meetings.some(m => m.id === id)) || !!taskTitle.trim() || !!meetingAt || !!meetingNotes.trim() || taskChanged || meetingChanged;
+  const dirty = savingProfile || savingTask || savingMeeting || profileChanged || Object.entries(meetingDirty).some(([id, value]) => value && meetings.some(m => m.id === id)) || !!taskTitle.trim() || !!meetingAt || !!meetingNotes.trim() || taskChanged || meetingChanged;
   useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
   useEffect(() => {
     if (!dirty) return;
@@ -204,20 +209,20 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
             {backgroundDraft && <KeyValue label="רקע" value={backgroundDraft} />}
             <AddForm label="עריכת פרטים" open={profileDirty} openSignal={signal('profile')} className={styles.profileEdit}>
               <div className={styles.formPlain}>
-                <input className={styles.input} aria-label="שם הלקוח" placeholder="שם הלקוח" style={{ flex: '0 0 200px' }} value={nameDraft} onChange={e => { setNameDraft(e.target.value); setProfileDirty(true); }} />
+                <input className={styles.input} disabled={savingProfile} aria-label="שם הלקוח" placeholder="שם הלקוח" style={{ flex: '0 0 200px' }} value={nameDraft} onChange={e => { setNameDraft(e.target.value); setProfileDirty(true); }} />
                 <input className={styles.input} aria-label="אימייל" value={email || ''} disabled dir="ltr" style={{ flex: '0 0 220px' }} />
-                <input className={styles.input} aria-label="טלפון" placeholder="טלפון" dir="ltr" style={{ flex: '0 0 160px' }} value={phoneDraft} onChange={e => { setPhoneDraft(e.target.value); setProfileDirty(true); }} />
+                <input className={styles.input} disabled={savingProfile} aria-label="טלפון" placeholder="טלפון" dir="ltr" style={{ flex: '0 0 160px' }} value={phoneDraft} onChange={e => { setPhoneDraft(e.target.value); setProfileDirty(true); }} />
               </div>
               <textarea
                 className={styles.textarea}
                 style={{ width: '100%', marginTop: 'var(--space-3)', minHeight: 72 }}
-                aria-label="רקע על הלקוח"
+                disabled={savingProfile} aria-label="רקע על הלקוח"
                 placeholder="רקע על הלקוח: מצב משפחתי, מטרות, הקשר שכדאי לזכור…"
                 value={backgroundDraft}
                 onChange={e => { setBackgroundDraft(e.target.value); setProfileDirty(true); }}
               />
               <div style={{ marginTop: 'var(--space-3)' }}>
-                <Button onClick={saveProfileFields} disabled={!profileChanged}>שמור</Button>
+                <Button onClick={saveProfileFields} disabled={!profileChanged || savingProfile}>שמור</Button>
               </div>
             </AddForm>
           </div>

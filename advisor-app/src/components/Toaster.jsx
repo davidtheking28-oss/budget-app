@@ -56,7 +56,7 @@ export default function Toaster() {
             <button
               type="button"
               className={styles.undo}
-              onClick={() => { i.action.onClick(); dismiss(i.id); }}
+              onClick={e => { e.currentTarget.disabled = true; i.action.onClick(); dismiss(i.id); }}
             >
               {i.action.label}
             </button>
