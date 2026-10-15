@@ -447,3 +447,5 @@
 .meetingUpcoming { background: var(--accent-dim); border-inline-start: 3px solid var(--accent); }
 .sectionTitle { font-size: var(--text-lg); }
 .section { box-shadow: var(--shadow-card); }
+
+:root[data-density="compact"] .taskRow, :root[data-density="compact"] .meetingRow { padding-block: 8px; }

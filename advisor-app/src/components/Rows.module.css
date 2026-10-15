@@ -101,3 +101,5 @@
 }
 
 .alignStart { align-items: start; }
+
+:root[data-density="compact"] .row { padding-block: 8px; } :root[data-density="compact"] .card { padding: 16px 20px; }

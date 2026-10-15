@@ -330,3 +330,5 @@
 .loanTableWrap { max-height: min(65vh, 640px); overflow: auto; }
 .loanTable th { position: sticky; top: 0; z-index: 2; background: var(--surface2); box-shadow: 0 1px 0 var(--border-strong); }
 }
+
+:root[data-density="compact"] .loanTable td { padding-block: 10px; }

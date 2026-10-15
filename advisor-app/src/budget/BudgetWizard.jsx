@@ -36,6 +36,8 @@ const topLabels = {
   }
 };
 
+function trackRow(row) { return { ...row, _before: { name: row.name, amount: row.amount, day: row.day } }; }
+
 function sumAmounts(list) {
   return list.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
 }
@@ -95,6 +97,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
     return map;
   }, [monthTx]);
   const [actualEdits, setActualEdits] = useState({});
+  const [savedActualEdits, setSavedActualEdits] = useState({});
   const variableActualBase = useMemo(() => {
     const map = {};
     monthTx.filter(t => t.type === 'expense' && !FIXED_CATS.includes(t.cat)).forEach(t => {
@@ -113,15 +116,15 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
 
   const [incomes, setIncomes] = useState(() => {
     const existing = incomeSourcesFor(data?.settings, new Date().getFullYear(), new Date().getMonth());
-    return existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '' })) : [{ name: 'שכר', amount: '', day: '' }];
+    return (existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '' })) : [{ name: 'שכר', amount: '', day: '' }]).map(trackRow);
   });
   const [fixed, setFixed] = useState(() => {
     const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
-    return FIXED_CATS.map(name => ({ name, amount: existing[name] ?? '' }));
+    return FIXED_CATS.map(name => trackRow({ name, amount: existing[name] ?? '' }));
   });
   const [variable, setVariable] = useState(() => {
     const existing = data?.budgets || {};
-    return EXPENSE_CATS.map(name => ({ name, amount: existing[name] ?? '' }));
+    return EXPENSE_CATS.map(name => trackRow({ name, amount: existing[name] ?? '' }));
   });
   const [goals] = useState(() =>
     (data?.goals || []).map(g => ({ id: g.id, name: g.name || '', target: g.target ?? '', months: g.months ?? '', saved: g.saved || 0 }))
@@ -169,7 +172,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
     { key: 'actual', title: 'ביצוע', sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, flowNoSavings: actualFlow + actualSavings }
   ];
 
-  function addRow(setter, name = '') { setter(prev => [...prev, { name, amount: '' }]); }
+  function addRow(setter, name = '') { setter(prev => [...prev, { name, amount: '', _before: {} }]); }
   function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...patch } : r)); }
   function removeRow(setter, i) { setter(prev => prev.filter((_, idx) => idx !== i)); }
 
@@ -224,6 +227,10 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
     setSaving(false);
     setSaveStatus(ok === false ? 'error' : 'saved');
     if (ok === false) return;
+    setIncomes(rows => rows.map(trackRow));
+    setFixed(rows => rows.map(trackRow));
+    setVariable(rows => rows.map(trackRow));
+    setSavedActualEdits({ ...actualEdits });
     toast('התקציב נשמר ועבר לאפליקציה של הלקוח', 'success');
   }
 
@@ -262,6 +269,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
                     className={styles.itemName}
                     aria-label="שם"
                     placeholder={placeholder}
+                    data-changed={String(r.name ?? '') !== String(r._before?.name ?? '')}
                     value={r.name}
                     onChange={e => updateRow(setter, i, { name: e.target.value })}
                   />
@@ -273,6 +281,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
                   inputMode="decimal"
                   aria-label={'תקציב · ' + (r.name || 'שורה חדשה')}
                   placeholder="0"
+                  data-changed={String(r.amount ?? '') !== String(r._before?.amount ?? '')}
                   value={r.amount}
                   onChange={e => updateRow(setter, i, { amount: e.target.value })}
                 />
@@ -284,6 +293,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
                     min={variableActualBase[r.name] || 0}
                     aria-label={'ביצוע · ' + (r.name || 'שורה חדשה')}
                     placeholder="0"
+                    data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String(savedActualEdits[r.name] ?? (actualOf(r.name, r.amount) || ''))}
                     value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
                     onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
                   />
@@ -312,6 +322,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
           max="28"
           aria-label="יום קבלת ההכנסה בחודש"
           placeholder="—"
+          data-changed={String(r.day ?? '') !== String(r._before?.day ?? '')}
           value={r.day || ''}
           onChange={e => updateRow(setter, i, { day: e.target.value })}
         />
@@ -328,7 +339,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
             inputMode="decimal"
             aria-label="סכום חודשי"
             placeholder="0"
-            value={r.amount}
+            data-changed={String(r.amount ?? '') !== String(r._before?.amount ?? '')}
+                  value={r.amount}
             onChange={e => updateRow(setter, i, { amount: e.target.value })}
           />
         </div>
@@ -342,7 +354,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
                 inputMode="decimal"
                 min={variableActualBase[r.name] || 0}
                 aria-label="ביצוע בפועל"
-                value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
+                data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String(savedActualEdits[r.name] ?? (actualOf(r.name, r.amount) || ''))}
+                    value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
                 placeholder="0"
                 onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
               />
@@ -374,7 +387,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
                   className={styles.itemName}
                   aria-label="שם"
                   placeholder={placeholder}
-                  value={r.name}
+                  data-changed={String(r.name ?? '') !== String(r._before?.name ?? '')}
+                    value={r.name}
                   onChange={e => updateRow(setter, i, { name: e.target.value })}
                 />
                 <DeleteButton onClick={() => removeRow(setter, i)} />
@@ -388,7 +402,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
                 className={styles.itemName}
                 aria-label="שם"
                 placeholder={placeholder}
-                value={r.name}
+                data-changed={String(r.name ?? '') !== String(r._before?.name ?? '')}
+                    value={r.name}
                 onChange={e => updateRow(setter, i, { name: e.target.value })}
               />
               {dayBox(r, i)}
@@ -411,6 +426,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
         </div>
       </div>
 
+      <p className={styles.changeHint}>שדות ששונו מסומנים במסגרת מקווקוות עד לשמירה מוצלחת.</p>
       <div className={styles.stepper}>
         {STEPS.map((s, i) => (
           <button

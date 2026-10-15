@@ -132,3 +132,5 @@
 .goalHeading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; }
 .goalProgress { font-size: var(--text-sm); font-weight: 700; color: var(--text2); font-variant-numeric: tabular-nums; }
 .goalCompleted .goalProgress { color: var(--green); }
+
+:root[data-density="compact"] .goalItem { padding-block: 8px; }

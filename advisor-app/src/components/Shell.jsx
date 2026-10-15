@@ -6,6 +6,19 @@ import IconRail from './IconRail.jsx';
 import SearchBar from './SearchBar.jsx';
 import styles from './Shell.module.css';
 
+function DensityToggle() {
+  const [compact, setCompact] = useState(() => localStorage.getItem('advisor_density') === 'compact');
+  useEffect(() => {
+    document.documentElement.dataset.density = compact ? 'compact' : 'comfortable';
+  }, [compact]);
+  function toggle() {
+    const next = !compact;
+    setCompact(next);
+    localStorage.setItem('advisor_density', next ? 'compact' : 'comfortable');
+  }
+  return <button type="button" className={styles.densityToggle} aria-label="תצוגה קומפקטית" aria-pressed={compact} onClick={toggle}>תצוגה: {compact ? 'קומפקטית' : 'מרווחת'}</button>;
+}
+
 function useDesktop() {
   const query = '(min-width: 861px)';
   const [desktop, setDesktop] = useState(() => window.matchMedia(query).matches);
@@ -154,6 +167,7 @@ export default function Shell({ homeLinks, onHomeClients, title, clientName, cli
           <div className={styles.topbar}>
             <div className={styles.logo}>שקל שקל · יועץ</div>
             <div className={styles.topbarEnd}>
+              <DensityToggle />
               {onSearch && <SearchBar onOpen={onSearch} />}
               <AccountMenu email={email} advisorId={advisorId} />
             </div>
@@ -191,6 +205,7 @@ export default function Shell({ homeLinks, onHomeClients, title, clientName, cli
             </div>
           </div>
           <div className={styles.topbarEnd}>
+              <DensityToggle />
             {sidebarInfo}
             {!desktop && <AccountMenu email={email} advisorId={advisorId} />}
           </div>
