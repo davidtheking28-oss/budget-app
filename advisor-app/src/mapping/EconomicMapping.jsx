@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
-import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown } from './mappingMath.js';
 import { categorizeByDictionary } from './categorizeDict.js';
 import { learnCategory, lookupLearnedCategory, normalizeDescription, syncLearnedFromAccount, pushLearnedToAccount } from './learnedCategories.js';
 import { resizeImageToJpeg } from './resizeImage.js';
@@ -407,7 +407,6 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const categories = data?.category_averages
     ? Object.keys(data.category_averages).sort((a, b) => data.category_averages[b] - data.category_averages[a])
     : [];
-  const maxAvg = categories.length ? data.category_averages[categories[0]] : 0;
   const fixedCats = categories.filter(c => FIXED_CATS.includes(c));
   const variableCats = categories.filter(c => !FIXED_CATS.includes(c));
   const fixedTotal = fixedCats.reduce((s, c) => s + data.category_averages[c], 0);
@@ -446,11 +445,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const donutItems = (() => {
     if (!cashflow?.hasIncomeData) return [];
     if (donutView === 'type') {
-      return [
-        { name: 'קבועות', value: fixedTotal },
-        { name: 'משתנות', value: variableTotal },
-        { name: 'חיסכון', value: cashflow.savings }
-      ].filter(i => i.value > 0);
+      return computeExpenseTypeBreakdown(data.category_averages);
     }
     const top = categories.slice(0, 7).map(c => ({ name: c, value: data.category_averages[c] }));
     const rest = categories.slice(7).reduce((sum, c) => sum + data.category_averages[c], 0);
@@ -508,7 +503,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         <div id="mapping-results" className={styles.topGrid}>
         <div className={styles.card + ' ' + styles.cardStandalone}>
           <div className={styles.actualTitle}>ביצוע</div>
-          <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(cashflow.monthsCovered)} של דפי חשבון</div>
+          <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(data.months_covered)} של דפי חשבון</div>
           <div className={styles.actualChart} role="img" aria-label={`ביצוע: הכנסות ${fmt(cashflow.income * periodMul)}, הוצאות ${fmt(cashflow.expense * periodMul)}`}>
             <Bar data={actualChartData} plugins={[barValueLabels]} options={actualChartOptions} />
           </div>
@@ -557,12 +552,12 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         </div>
       )}
 
-      {cashflow?.hasIncomeData && categories.length > 0 && (
+      {categories.length > 0 && (
         <div className={styles.card + ' ' + styles.cardStandalone + ' ' + styles.breakdownCard}>
           <div className={styles.breakdownHead}>
             <div>
               <h2 className={styles.actualTitle}>פירוט ההוצאות לפי קטגוריה</h2>
-              <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(cashflow.monthsCovered)} של דפי חשבון · לחיצה על קטגוריה מציגה את העסקאות שלה</div>
+              <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(data.months_covered)} של דפי חשבון · לחיצה על קטגוריה מציגה את העסקאות שלה</div>
             </div>
             <div className={styles.breakdownTotal}>
               <span>סה״כ הוצאות לחודש</span>
@@ -688,42 +683,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
       {categories.length > 0 && (
         <div className={styles.card + ' ' + styles.cardStandalone}>
-          <div className={styles.cardTitle}>מיפוי כלכלי</div>
+          <h2 className={styles.cardTitle}>בדיקה ועריכת תנועות</h2>
           <div className={styles.coverageNote}>מבוסס על {monthsLabel(data.months_covered)} שהועלו</div>
-
-          {fixedCats.length > 0 && (
-            <>
-              <div className={styles.groupHead}><span>הוצאות קבועות</span><span>{fmt(fixedTotal)}</span></div>
-              <div className={styles.barList}>
-                {fixedCats.map(cat => (
-                  <div key={cat} className={styles.barRow}>
-                    <span className={styles.barLabel}>{cat}</span>
-                    <div className={styles.barTrack}>
-                      <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: 'var(--accent)' }} />
-                    </div>
-                    <span className={styles.barValue}>{fmt(data.category_averages[cat])}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {variableCats.length > 0 && (
-            <>
-              <div className={styles.groupHead}><span>הוצאות משתנות</span><span>{fmt(variableTotal)}</span></div>
-              <div className={styles.barList}>
-                {variableCats.map(cat => (
-                  <div key={cat} className={styles.barRow}>
-                    <span className={styles.barLabel}>{cat}</span>
-                    <div className={styles.barTrack}>
-                      <div className={styles.barFill} style={{ transform: `scaleX(${maxAvg ? data.category_averages[cat] / maxAvg : 0})`, background: 'var(--accent)' }} />
-                    </div>
-                    <span className={styles.barValue}>{fmt(data.category_averages[cat])}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
 
           {cardCharges.length > 0 && (
             <div className={styles.coverageNote}>

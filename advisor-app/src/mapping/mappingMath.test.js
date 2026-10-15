@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown } from './mappingMath.js';
 
 describe('computeCategoryAverages', () => {
   it('averages a category over 3 full months', () => {
@@ -114,5 +114,17 @@ describe('card charge double counting', () => {
     ];
     expect(computeCategoryAverages(transactions).averages).toEqual({ 'מזון לבית': 400 });
     expect(computeCashflowSummary(transactions).expense).toBe(400);
+  });
+});
+
+describe('computeExpenseTypeBreakdown', () => {
+  it('counts savings once and preserves the category total', () => {
+    const parts = computeExpenseTypeBreakdown({ 'דיור': 4000, 'מזון לבית': 1200, 'הוראת קבע לחסכון': 500 });
+    expect(parts).toEqual([{ name: 'קבועות', value: 4000 }, { name: 'משתנות', value: 1200 }, { name: 'חיסכון', value: 500 }]);
+    expect(parts.reduce((sum, part) => sum + part.value, 0)).toBe(5700);
+  });
+  it('handles mappings without savings and empty mappings', () => {
+    expect(computeExpenseTypeBreakdown({ 'דיור': 100, 'שונות': 20 })).toEqual([{ name: 'קבועות', value: 100 }, { name: 'משתנות', value: 20 }]);
+    expect(computeExpenseTypeBreakdown({})).toEqual([]);
   });
 });

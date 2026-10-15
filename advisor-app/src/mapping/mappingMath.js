@@ -1,3 +1,5 @@
+import { FIXED_CATS } from '../categories.js';
+
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
 const CARD_CHARGE = /כרטיס אשראי|ישראכרט|לאומי קארד|דיינרס|אמריקן אקספרס|חיובs+(ויזה|כאל|מקס)|visa cal|isracard|max it/i;
@@ -47,4 +49,16 @@ export function computeCashflowSummary(allTransactions) {
     netExcludingSavings: income - expense + savings,
     hasIncomeData: transactions.some(isIncome)
   };
+}
+
+export function computeExpenseTypeBreakdown(averages) {
+  let fixed = 0;
+  let variable = 0;
+  let savings = 0;
+  for (const [category, value] of Object.entries(averages)) {
+    if (category === SAVINGS_CATEGORY) savings += value;
+    else if (FIXED_CATS.includes(category)) fixed += value;
+    else variable += value;
+  }
+  return [{ name: 'קבועות', value: fixed }, { name: 'משתנות', value: variable }, { name: 'חיסכון', value: savings }].filter(part => part.value !== 0);
 }
