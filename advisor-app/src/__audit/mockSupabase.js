@@ -28,6 +28,7 @@ function builder(table) {
   let wantCount = false;
 
   function resolve() {
+    if (params.get('write') === 'fail' && table === 'budget_data' && pendingWrite !== null) return { data: null, error: { message: 'QA write failed' } };
     let out = rows();
     for (const f of filters) out = out.filter(f);
     if (order) {
@@ -50,7 +51,6 @@ function builder(table) {
     select(_cols, opts) {
       if (opts?.head) head = true;
       if (opts?.count) wantCount = true;
-      if (pendingWrite) rows = () => clone(pendingWrite);
       return api;
     },
     insert(vals) {

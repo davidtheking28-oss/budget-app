@@ -325,3 +325,8 @@
 .loanTable tbody tr:last-child td { border-bottom: none; }
 .payoffLabel { margin-top: 8px; line-height: 1.6; }
 }
+
+@media (min-width: 861px) {
+.loanTableWrap { max-height: min(65vh, 640px); overflow: auto; }
+.loanTable th { position: sticky; top: 0; z-index: 2; background: var(--surface2); box-shadow: 0 1px 0 var(--border-strong); }
+}

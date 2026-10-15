@@ -94,3 +94,8 @@
 
 .tableWrap { overflow-x: auto; max-width: 100%; overscroll-behavior-x: contain; }
 .tableWrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (min-width: 861px) {
+.tableWrap { max-height: min(65vh, 640px); overflow: auto; }
+.table th { position: sticky; top: 0; z-index: 2; background: var(--surface2); box-shadow: 0 1px 0 var(--border-strong); }
+}

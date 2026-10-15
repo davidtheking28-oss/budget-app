@@ -95,3 +95,5 @@
 .netSummary strong { font-size: var(--text-lg); font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
 .netPositive { color: var(--green); }
 .netNegative { color: var(--red); }
+
+.emptyActions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }

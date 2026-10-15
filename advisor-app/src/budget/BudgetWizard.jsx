@@ -51,6 +51,7 @@ function sameCategory(a, b) {
 export default function BudgetWizard({ data, save, year, month }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('idle');
   const [flowPeriod, setFlowPeriod] = useState('month');
 
   // Income sources and fixed expenses aren't month-scoped in storage — they're the
@@ -186,6 +187,7 @@ export default function BudgetWizard({ data, save, year, month }) {
       .map((a, i) => ({ id: 'adj' + Date.now() + '_' + i, type: 'expense', cat: a.cat, desc: 'התאמת ביצוע (אשף תקציב)', amount: Math.round(a.delta * 100) / 100, date: todayIso, recurring: false }));
 
     setSaving(true);
+    setSaveStatus('saving');
     const ok = await save(cur => {
       const nextBudgets = { ...(cur.budgets || {}) };
       Object.keys(nextBudgets).forEach(c => { if (!FIXED_CATS.includes(c)) delete nextBudgets[c]; });
@@ -210,6 +212,7 @@ export default function BudgetWizard({ data, save, year, month }) {
       };
     });
     setSaving(false);
+    setSaveStatus(ok === false ? 'error' : 'saved');
     if (ok === false) return;
     toast('התקציב נשמר ועבר לאפליקציה של הלקוח', 'success');
   }
@@ -390,7 +393,7 @@ export default function BudgetWizard({ data, save, year, month }) {
   }
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} onChangeCapture={() => { if (!saving) setSaveStatus('dirty'); }}>
       <div className={styles.head}>
         <div>
           <div className={styles.title}>בניית תקציב עם הלקוח</div>
@@ -564,6 +567,9 @@ export default function BudgetWizard({ data, save, year, month }) {
         )}
       </div>
 
+      <div className={styles.saveStatus} data-status={saveStatus} role="status" aria-live="polite" aria-atomic="true" hidden={saveStatus === 'idle'}>
+        {{dirty: 'יש שינויים שטרם נשמרו', saving: 'שומר את התקציב…', saved: 'התקציב נשמר בהצלחה', error: 'התקציב לא נשמר. השינויים עדיין בטופס — נסה לשמור שוב.'}[saveStatus]}
+      </div>
       <div className={styles.footer}>
         <Button variant="ghost" onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0}>הקודם</Button>
         {step < STEPS.length - 1

@@ -606,3 +606,7 @@
 .itemAmountInput, .itemActualValue { font-size: var(--text-lg); }
 .cardTitle { font-size: var(--text-lg); }
 }
+
+.saveStatus { padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: var(--text-sm); line-height: 1.5; }
+.saveStatus[data-status="saved"] { color: var(--green); border-color: var(--green); }
+.saveStatus[data-status="error"] { color: var(--red); border-color: var(--red); }

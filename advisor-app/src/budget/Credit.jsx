@@ -311,7 +311,7 @@ export default function Credit({ clientUserId, advisorId }) {
         {[['הלוואות ארוכות טווח (18+ חודשים לסיום)', longTermLoans], ['הלוואות קצרות טווח (מתחת ל-18 חודשים לסיום)', shortTermLoans], ['לא ניתן לסווג (חסרה יתרה/ריבית)', unclassifiedLoans]].map(([groupLabel, groupLoans]) => groupLoans.length ? (
           <div key={groupLabel}>
             <div className={styles.sectionEmpty} style={{ fontWeight: 700, color: 'var(--text)', textAlign: 'right', padding: '10px 2px 4px' }}>{groupLabel}</div>
-            <div className={styles.loanTableWrap}>
+            <div className={styles.loanTableWrap} role="region" aria-label="טבלת הלוואות, גלול לצפייה בכל השורות" tabIndex={0}>
               <table className={styles.loanTable}>
                 <thead>
                   <tr>

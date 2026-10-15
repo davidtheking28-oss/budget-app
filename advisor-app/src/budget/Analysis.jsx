@@ -6,6 +6,7 @@ import MonthTransactions from './MonthTransactions.jsx';
 import { monthSummary } from './budgetMath.js';
 import { addMonths, getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Button from '../components/Button.jsx';
 import Hero from '../components/Hero.jsx';
 import { Card, CardGrid, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -17,7 +18,7 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 const MONTH_SHORT = ['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
 
-export default function Analysis({ clientUserId, advisorId, year, month }) {
+export default function Analysis({ clientUserId, advisorId, year, month, onPreviousMonth, onOpenBudget }) {
   const CT = chartTheme();
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
   const mode = useContext(BudgetModeContext);
@@ -40,7 +41,12 @@ export default function Analysis({ clientUserId, advisorId, year, month }) {
             <path d="M12 3.5v8.5h8.5" />
           </svg>
         </div>
-        אין הוצאות החודש
+        <strong>אין הוצאות בחודש הנבחר</strong>
+        <span>אפשר לבדוק חודש אחר או לפתוח את התקציב של הלקוח.</span>
+        <div className={styles.emptyActions}>
+          <Button onClick={onPreviousMonth}>לחודש הקודם</Button>
+          <Button variant="ghost" onClick={onOpenBudget}>פתח תקציב</Button>
+        </div>
       </div>
     );
   }
