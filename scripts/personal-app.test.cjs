@@ -502,3 +502,25 @@ test('tab swipe leaves transaction gestures alone and cancels interrupted gestur
   target.closest=()=>null;listeners.touchstart(start);listeners.touchcancel();listeners.touchend(end);assert.equal(clicks,0);
   listeners.touchstart(start);listeners.touchend(end);assert.equal(clicks,1);
 });
+
+test('opening the app does not restamp unchanged settings with an empty name',()=>{
+  let saves=0;
+  const ctx=functions(['updatePartnerFromHousehold'],{userSettings:{name:'',partnerName:''},_cloudHousehold:null,saveSettingsData:()=>{saves++;},updateHeaderTitle:()=>{},document:{getElementById:()=>null}});
+  ctx.updatePartnerFromHousehold();
+  assert.equal(saves,0);
+  ctx._cloudHousehold={role:'owner',member_email:'dana@example.com'};
+  ctx.updatePartnerFromHousehold();
+  assert.equal(saves,1);
+  assert.equal(ctx.userSettings.partnerName,'dana');
+  ctx.updatePartnerFromHousehold();
+  assert.equal(saves,1);
+});
+test('cloud name fills an empty local name even when local settings look newer',async()=>{
+  const cloudRow={updated_at:'2026-10-15T07:00:00.000Z',sync_meta:{},settings:{name:'David',partnerName:'',incomeSources:[]}};
+  const query={select:()=>query,eq:()=>query,maybeSingle:async()=>({data:cloudRow,error:null})};
+  const localStorage=storage({budget_local_owner:'u1',budget_settings_ts:String(Date.parse('2026-10-15T08:00:00.000Z'))});
+  const ctx=functions(['_loadFromCloud'],{localStorage,_cloudUser:{id:'u1'},_sb:{from:()=>query},_localAccountReady:true,_getDataUserId:()=>'u1',_activeMode:'personal',_modeKey:k=>k,_syncMeta:{},_mergeMeta:a=>a,_buildMerged:()=>({}),_applyMerged:()=>false,_advisorAssets:[],_advisorOverdraft:{},userSettings:{name:'',partnerName:'',incomeSources:[]},_seedIncomeHistory:()=>{},_syncCurrentIncome:()=>{},refreshAll:()=>{},_decideOnboarding:()=>{},_syncPending:false,_setSyncState:()=>{},renderCloudSection:()=>{},scheduleCloudSave:()=>{},_householdOwner:null,_doCloudSave:async()=>{},_DEBUG:false});
+  await ctx._loadFromCloud(true);
+  assert.equal(ctx.userSettings.name,'David');
+  assert.equal(JSON.parse(localStorage.getItem('budget_settings')).name,'David');
+});
