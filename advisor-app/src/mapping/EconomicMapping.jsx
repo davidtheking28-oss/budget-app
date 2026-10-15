@@ -25,6 +25,8 @@ ChartJS.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Le
 import { toast } from '../toast.js';
 import styles from './EconomicMapping.module.css';
 import { fmt } from '../format.js';
+import { formatDate } from '../budget/monthUtils.js';
+import { getCategoryIcon } from '../categoryIcons.jsx';
 
 const MAX_DIM = 1500;
 const CONCURRENCY = 3;
@@ -186,6 +188,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [linking, setLinking] = useState(false);
   const [flowPeriod, setFlowPeriod] = useState('month');
   const [donutView, setDonutView] = useState('cat');
+  const [openCat, setOpenCat] = useState(null);
   const fileInputRef = useRef(null);
   const opts = monthOptions();
 
@@ -508,23 +511,70 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                 <span className={styles.donutCenterValue}>{fmt(donutTotal)}</span>
               </div>
             </div>
-            <div className={styles.donutLegend}>
-              {donutItems.map((i, idx) => {
-                const pct = Math.round(i.value / donutTotal * 100);
-                const color = CHART_PALETTE[idx % CHART_PALETTE.length];
-                return (
-                  <div className={styles.donutRow} key={i.name}>
-                    <span className={styles.donutDot} style={{ background: color }} />
-                    <span className={styles.donutName}>{i.name}</span>
-                    <span className={styles.donutBar} aria-hidden="true"><span style={{ width: pct + '%', background: color }} /></span>
-                    <span className={styles.donutPct}>{pct}%</span>
-                    <span className={styles.donutAmt}>{fmt(i.value)}</span>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </div>
+        </div>
+      )}
+
+      {cashflow?.hasIncomeData && categories.length > 0 && (
+        <div className={styles.card + ' ' + styles.cardStandalone + ' ' + styles.breakdownCard}>
+          <div className={styles.breakdownHead}>
+            <div>
+              <h2 className={styles.actualTitle}>פירוט ההוצאות לפי קטגוריה</h2>
+              <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(cashflow.monthsCovered)} של דפי חשבון · לחיצה על קטגוריה מציגה את העסקאות שלה</div>
+            </div>
+            <div className={styles.breakdownTotal}>
+              <span>סה״כ הוצאות לחודש</span>
+              <strong>{fmt(fixedTotal + variableTotal)}</strong>
+            </div>
+          </div>
+          {[['הוצאות קבועות', fixedCats, fixedTotal], ['הוצאות משתנות', variableCats, variableTotal]].filter(([, list]) => list.length > 0).map(([groupTitle, list, groupTotal]) => {
+            const grand = fixedTotal + variableTotal || 1;
+            const maxAvg = Math.max(...list.map(c => data.category_averages[c]), 1);
+            return (
+              <section className={styles.catGroup} key={groupTitle}>
+                <div className={styles.catGroupHead}>
+                  <h3>{groupTitle}</h3>
+                  <span>{fmt(groupTotal)} · {Math.round(groupTotal / grand * 100)}% מההוצאות</span>
+                </div>
+                <ul className={styles.catList}>
+                  {list.map(c => {
+                    const avg = data.category_averages[c];
+                    const idx = categories.indexOf(c);
+                    const color = idx < CHART_PALETTE.length ? CHART_PALETTE[idx] : 'var(--text3)';
+                    const isOpen = openCat === c;
+                    const txs = isOpen
+                      ? (data.transactions || []).filter(t => t.type !== 'income' && t.category === c).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+                      : [];
+                    return (
+                      <li key={c}>
+                        <button type="button" className={styles.catRow} aria-expanded={isOpen} onClick={() => setOpenCat(isOpen ? null : c)}>
+                          <span className={styles.catDot} style={{ background: color }} aria-hidden="true" />
+                          <span className={styles.catIcon} aria-hidden="true">{getCategoryIcon(c)}</span>
+                          <span className={styles.catName}>{c}</span>
+                          <span className={styles.catBar} aria-hidden="true"><span style={{ width: (avg / maxAvg * 100) + '%', background: color }} /></span>
+                          <span className={styles.catPct}>{Math.round(avg / grand * 100)}%</span>
+                          <span className={styles.catAmt}>{fmt(avg)}</span>
+                          <span className={styles.catChev + (isOpen ? ' ' + styles.catChevOpen : '')} aria-hidden="true">‹</span>
+                        </button>
+                        {isOpen && (
+                          <div className={styles.catTx}>
+                            {txs.length === 0 ? <div className={styles.catTxEmpty}>אין עסקאות להצגה</div> : txs.map((t, i) => (
+                              <div className={styles.catTxRow} key={i}>
+                                <span className={styles.catTxDate}>{t.date ? formatDate(t.date) : '—'}</span>
+                                <span className={styles.catTxDesc}>{t.desc || '—'}</span>
+                                <span className={styles.catTxAmt}>{fmt(Number(t.amount) || 0)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            );
+          })}
         </div>
       )}
 
