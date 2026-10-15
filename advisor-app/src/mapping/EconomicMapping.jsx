@@ -199,6 +199,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [flowPeriod, setFlowPeriod] = useState('month');
   const [donutView, setDonutView] = useState('cat');
   const [openCat, setOpenCat] = useState(null);
+  const [reviewOnly, setReviewOnly] = useState(false);
   const fileInputRef = useRef(null);
   const opts = monthOptions();
 
@@ -219,6 +220,9 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       .map(([desc, total]) => ({ desc, monthly: total / months }))
       .filter(x => !lowerExisting.some(n => x.desc.toLowerCase().includes(n) || n.includes(x.desc.toLowerCase())));
   }
+
+  const isUnclassified = t => !t.category || t.category === 'שונות' || (t.type === 'income' && t.category === 'אחר');
+  const unclassifiedCount = (data?.transactions || []).filter(isUnclassified).length;
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) {
@@ -699,13 +703,19 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
             </>
           )}
 
+          {unclassifiedCount > 0 && (
+            <button type="button" className={styles.toggle} onClick={() => { setReviewOnly(v => !v); setExpanded(true); }}>
+              {reviewOnly ? 'הצג את כל התנועות' : `${unclassifiedCount} תנועות ללא סיווג - לחץ לבדיקה`}
+            </button>
+          )}
+
           <button type="button" className={styles.toggle} onClick={() => setExpanded(v => !v)}>
             {expanded ? 'הסתר תנועות גולמיות' : `הצג ${data.transactions.length} תנועות גולמיות`}
           </button>
 
           {expanded && (
             <div className={styles.list}>
-              {data.transactions.map((t, i) => (
+              {data.transactions.map((t, i) => (reviewOnly && !isUnclassified(t) ? null : (
                 <div key={i} className={styles.txRow}>
                   <span className={styles.txDate}>{t.date || '—'}</span>
                   <span className={styles.txDesc} title={t.desc}>{t.desc}</span>
@@ -714,7 +724,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                   </select>
                   <span className={styles.txAmt + (t.type === 'income' ? ' ' + styles.txAmtIncome : '')}>{t.type === 'income' ? '+' : ''}{fmt(t.amount)}</span>
                 </div>
-              ))}
+              )))}
             </div>
           )}
         </div>
