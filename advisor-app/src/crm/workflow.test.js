@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { taskMatches, lastHeldMeeting, meetingChanges } from './workflow.js';
+import { taskMatches, lastHeldMeeting, meetingChanges, daysUntil } from './workflow.js';
 
 describe('daily work and meeting preparation', () => {
   it('does not mix completed documents or future tasks into overdue work', () => {
@@ -35,5 +35,23 @@ describe('daily work and meeting preparation', () => {
     const now = new Date(2026, 9, 15, 12);
     expect(meetingChanges(rows, new Date(2026, 9, 10, 10).toISOString(), now)).toEqual({ count: 2, expense: 100 });
     expect(meetingChanges(rows, null, now)).toBeNull();
+  });
+});
+
+describe('meeting calendar reminders', () => {
+  it('distinguishes later today from tomorrow across midnight', () => {
+    const now = new Date(2026, 9, 15, 12);
+    expect(daysUntil(new Date(2026, 9, 15, 23).toISOString(), now)).toBe(0);
+    expect(daysUntil(new Date(2026, 9, 16, 0, 1).toISOString(), now)).toBe(1);
+    expect(daysUntil(new Date(2026, 9, 15, 11).toISOString(), now)).toBe(-1);
+  });
+  it('counts calendar days rather than rounding a partial 24 hour interval', () => {
+    const now = new Date(2026, 9, 24, 23);
+    expect(daysUntil(new Date(2026, 9, 25, 23, 30).toISOString(), now)).toBe(1);
+    expect(daysUntil(new Date(2026, 9, 27, 0, 1).toISOString(), now)).toBe(3);
+  });
+  it('does not create reminders from missing or invalid dates', () => {
+    expect(daysUntil(null)).toBeNull();
+    expect(daysUntil('not-a-date')).toBeNull();
   });
 });

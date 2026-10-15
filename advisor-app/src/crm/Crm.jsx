@@ -12,6 +12,7 @@ import { toast } from '../toast.js';
 import styles from './Crm.module.css';
 import MeetingSummary from './MeetingSummary.jsx';
 import MeetingPrep from './MeetingPrep.jsx';
+import { daysUntil } from './workflow.js';
 
 const ICONS = {
   meetings: <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>,
@@ -41,14 +42,6 @@ function downloadIcs(meeting) {
   a.download = 'meeting.ics';
   a.click();
   URL.revokeObjectURL(url);
-}
-
-function daysUntil(dateStr) {
-  if (!dateStr) return null;
-  const target = new Date(dateStr);
-  const now = new Date();
-  if (target < now) return -1;
-  return Math.ceil((target - now) / 86400000);
 }
 
 export default function Crm({ action, advisorId, clientId, email, onChange, onDirtyChange }) {
@@ -153,7 +146,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   const now = new Date();
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const overdueTasks = tasks.filter(t => !t.done && t.due_date && t.due_date < todayIso).length;
-  const soonMeetings = meetings.filter(m => { const d = daysUntil(m.scheduled_at); return d !== null && d >= 0 && d <= 3; }).length;
+  const soonMeetings = meetings.filter(m => { if (m.status === 'declined') return false; const d = daysUntil(m.scheduled_at); return d !== null && d >= 0 && d <= 3; }).length;
 
   const dirty = savingProfile || savingTask || savingMeeting || profileChanged || Object.entries(meetingDirty).some(([id, value]) => value && meetings.some(m => m.id === id)) || !!taskTitle.trim() || !!meetingAt || !!meetingNotes.trim() || taskChanged || meetingChanged;
   useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
@@ -260,7 +253,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
               </div>
             ) : (() => {
               const days = daysUntil(m.scheduled_at);
-              const soon = days !== null && days >= 0 && days <= 3;
+              const soon = m.status !== 'declined' && days !== null && days >= 0 && days <= 3;
               const past = days !== null && days < 0;
               return (
                 <div key={m.id} className={styles.row + ' ' + styles.meetingRow + (soon ? ' ' + styles.meetingUpcoming : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
@@ -268,7 +261,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
                     <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditMeeting(m)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditMeeting(m))}>
                       <div className={styles.name}>
                         {formatDateTime(m.scheduled_at)}
-                        {soon && <span className={styles.soonBadge}>בעוד {days === 0 ? 'היום' : days + ' ימים'}</span>}
+                        {soon && <span className={styles.soonBadge}>{days === 0 ? 'היום' : days === 1 ? 'מחר' : `בעוד ${days} ימים`}</span>}
                         {past && <span className={styles.pastBadge}>עברה</span>}
                         {!m.for_client && <span className={styles.clientBadge}>פרטי</span>}
                         {m.for_client && m.status === 'confirmed' && <span className={styles.statusConfirmed}>אושרה ע"י הלקוח</span>}

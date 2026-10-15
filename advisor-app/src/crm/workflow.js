@@ -20,3 +20,13 @@ export function meetingChanges(transactions, since, now = new Date()) {
   const rows = (transactions || []).filter(t => t.date > start && t.date <= end);
   return { count: rows.length, expense: rows.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0) };
 }
+
+export function daysUntil(dateStr, now = new Date()) {
+  if (!dateStr) return null;
+  const target = new Date(dateStr);
+  if (Number.isNaN(target.getTime())) return null;
+  if (target < now) return -1;
+  const start = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
+  return (end - start) / 86400000;
+}
