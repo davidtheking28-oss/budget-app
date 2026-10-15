@@ -77,6 +77,7 @@ export default function App() {
   const [inviteDraft, setInviteDraft] = useState(null);
   const [nav, setNav] = useState(initial.nav);
   const [budgetCategory, setBudgetCategory] = useState(null);
+  const [budgetDirty, setBudgetDirty] = useState(false);
   const [crmAction, setCrmAction] = useState(null);
   const [budgetMode, setBudgetMode] = useState(initial.budgetMode);
   const [ym, setYm] = useState(initial.ym);
@@ -152,7 +153,20 @@ export default function App() {
     return (<><NotAdvisor email={session.user.email} userId={session.user.id} requestStatus={advisorRequestStatus} onSubmitRequest={submitAdvisorRequest} /><Toaster /></>);
   }
 
+  function canLeaveBudget() {
+    return nav !== 'budget' || !budgetDirty || window.confirm('יש שינויים בתקציב שטרם נשמרו. להמשיך בלי לשמור?');
+  }
+
+  function changeBudgetMode(mode) {
+    if (mode === budgetMode || !canLeaveBudget()) return;
+    setBudgetDirty(false);
+    setBudgetCategory(null);
+    setBudgetMode(mode);
+  }
+
   const switchClient = (clientId, clientEmail, destination) => {
+    if (!canLeaveBudget()) return;
+    setBudgetDirty(false);
     if (destination?.nav) setNav(destination.nav);
     setBudgetCategory(null);
     setSelectedClient({ id: clientId, email: clientEmail });
@@ -185,8 +199,8 @@ export default function App() {
     );
   }
 
-  const changeMonth = delta => setYm(prev => addMonths(prev.year, prev.month, delta));
-  const resetMonth = () => setYm({ year: today.getFullYear(), month: today.getMonth() });
+  const changeMonth = delta => { if (!canLeaveBudget()) return; setBudgetDirty(false); setBudgetCategory(null); setYm(prev => addMonths(prev.year, prev.month, delta)); };
+  const resetMonth = () => { if (!canLeaveBudget()) return; setBudgetDirty(false); setBudgetCategory(null); setYm({ year: today.getFullYear(), month: today.getMonth() }); };
 
   if (reportMode) {
     return (
@@ -217,12 +231,12 @@ export default function App() {
       <BudgetModeContext.Provider value={budgetMode}>
       <Shell
         title={NAV.find(n => n.key === nav)?.label}
-        onBack={() => setSelectedClient(null)}
+        onBack={() => { if (canLeaveBudget()) { setBudgetDirty(false); setSelectedClient(null); } }}
         nav={NAV}
         activeNav={nav}
-        onNavChange={key => { setBudgetCategory(null); setNav(key); }}
-        onPrint={() => setReportMode(true)}
-        onPresent={() => setPresentMode(true)}
+        onNavChange={key => { if (key !== nav && !canLeaveBudget()) return; if (key !== nav) setBudgetDirty(false); setBudgetCategory(null); setNav(key); }}
+        onPrint={() => { if (canLeaveBudget()) { setBudgetDirty(false); setReportMode(true); } }}
+        onPresent={() => { if (canLeaveBudget()) { setBudgetDirty(false); setPresentMode(true); } }}
         onSearch={() => setSearchOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -230,7 +244,7 @@ export default function App() {
         advisorId={session.user.id}
         clientName={clientProfile?.name || selectedClient.email}
         budgetMode={budgetMode}
-        onBudgetModeChange={setBudgetMode}
+        onBudgetModeChange={changeBudgetMode}
         clientSince={clientProfile?.created_at ? `${String(new Date(clientProfile.created_at).getMonth() + 1).padStart(2, '0')}.${new Date(clientProfile.created_at).getFullYear()}` : null}
         sidebarInfo={NAV.find(n => n.key === nav)?.usesMonth ? <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} /> : null}
         inert={searchOpen}
@@ -252,7 +266,7 @@ export default function App() {
           />
         )}
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard nextMeeting={nextMeeting} openTasks={openTasks} onAction={type => { setCrmAction({ type, id: Date.now() }); setNav('crm'); }} onOpenMapping={() => setNav('mapping')} key={`${selectedClient.id}:${ym.year}:${ym.month}:${budgetMode}`} onOpenCategory={category => { setBudgetCategory(category); setNav('budget'); }} clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
-        {nav === 'budget' && <Budget key={`${session.user.id}:${selectedClient.id}:${budgetMode}:${ym.year}:${ym.month}`} focusCategory={budgetCategory} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
+        {nav === 'budget' && <Budget key={`${session.user.id}:${selectedClient.id}:${budgetMode}:${ym.year}:${ym.month}`} onDirtyChange={setBudgetDirty} focusCategory={budgetCategory} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis onPreviousMonth={() => changeMonth(-1)} onOpenBudget={() => setNav('budget')} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} advisorId={session.user.id} />}

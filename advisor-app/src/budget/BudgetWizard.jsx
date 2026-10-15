@@ -50,7 +50,7 @@ function sameCategory(a, b) {
   return words(a).some(wa => words(b).some(wb => wa.slice(0, 4) === wb.slice(0, 4)));
 }
 
-export default function BudgetWizard({ data, save, year, month, focusCategory }) {
+export default function BudgetWizard({ data, save, year, month, focusCategory, onDirtyChange }) {
   const [step, setStep] = useState(focusCategory ? 1 : 0);
   const wizardRef = useRef(null);
   useEffect(() => {
@@ -129,6 +129,19 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
   const [goals] = useState(() =>
     (data?.goals || []).map(g => ({ id: g.id, name: g.name || '', target: g.target ?? '', months: g.months ?? '', saved: g.saved || 0 }))
   );
+
+  const draftSignature = JSON.stringify({ incomes: incomes.map(r => [r.name, String(r.amount ?? ''), String(r.day ?? '')]), fixed: fixed.map(r => [r.name, String(r.amount ?? '')]), variable: variable.map(r => [r.name, String(r.amount ?? '')]), actualEdits });
+  const [savedDraft, setSavedDraft] = useState(draftSignature);
+  const dirty = draftSignature !== savedDraft;
+  useEffect(() => { onDirtyChange?.(dirty || saving); }, [dirty, saving, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
+  useEffect(() => {
+    if (!dirty && !saving) return;
+    const beforeUnload = event => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', beforeUnload);
+    return () => window.removeEventListener('beforeunload', beforeUnload);
+  }, [dirty, saving]);
+  useEffect(() => { if (!dirty && saveStatus === 'dirty') setSaveStatus('idle'); }, [dirty, saveStatus]);
 
   const totalIncome = useMemo(() => sumAmounts(incomes), [incomes]);
   const totalFixed = useMemo(() => sumAmounts(fixed), [fixed]);
@@ -227,6 +240,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory })
     setSaving(false);
     setSaveStatus(ok === false ? 'error' : 'saved');
     if (ok === false) return;
+    setSavedDraft(draftSignature);
     setIncomes(rows => rows.map(trackRow));
     setFixed(rows => rows.map(trackRow));
     setVariable(rows => rows.map(trackRow));
