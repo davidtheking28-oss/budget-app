@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge } from './mappingMath.js';
 
 describe('computeCategoryAverages', () => {
   it('averages a category over 3 full months', () => {
@@ -97,5 +97,22 @@ describe('computeCashflowSummary', () => {
     expect(s.income).toBe(0);
     expect(s.expense).toBe(0);
     expect(s.netInAccount).toBe(0);
+  });
+});
+
+describe('card charge double counting', () => {
+  it('detects bank lines that charge a credit card', () => {
+    expect(looksLikeCardCharge({ type: 'expense', desc: 'חיוב כרטיס אשראי ישראכרט' })).toBe(true);
+    expect(looksLikeCardCharge({ type: 'expense', desc: 'שופרסל דיל' })).toBe(false);
+    expect(looksLikeCardCharge({ type: 'income', desc: 'כרטיס אשראי זיכוי' })).toBe(false);
+  });
+
+  it('skips excluded transactions in both summaries', () => {
+    const transactions = [
+      { type: 'expense', category: 'שונות', amount: 1000, source_month: '2026-01', excluded: true },
+      { type: 'expense', category: 'מזון לבית', amount: 400, source_month: '2026-01' }
+    ];
+    expect(computeCategoryAverages(transactions).averages).toEqual({ 'מזון לבית': 400 });
+    expect(computeCashflowSummary(transactions).expense).toBe(400);
   });
 });

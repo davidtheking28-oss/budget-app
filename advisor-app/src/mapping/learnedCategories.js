@@ -61,3 +61,9 @@ export function pushLearnedToAccount(client, desc, category) {
   if (merchant.length < 2 || !category || NEUTRAL.includes(category)) return;
   client.from('advisor_merchant_rules').upsert({ merchant, category, updated_at: new Date().toISOString() }, { onConflict: 'advisor_id,merchant' }).then(() => {}, () => {});
 }
+
+export function forgetCategory(merchant, store = globalThis.localStorage) {
+  const learned = read(store);
+  delete learned[normalizeDescription(merchant)];
+  try { store?.setItem(STORAGE_KEY, JSON.stringify(learned)); } catch { /* storage unavailable */ }
+}

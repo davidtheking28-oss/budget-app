@@ -2,13 +2,14 @@ import { useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
-import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge } from './mappingMath.js';
 import { categorizeByDictionary } from './categorizeDict.js';
 import { learnCategory, lookupLearnedCategory, normalizeDescription, syncLearnedFromAccount, pushLearnedToAccount } from './learnedCategories.js';
 import { resizeImageToJpeg } from './resizeImage.js';
 import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
 import { addItem } from '../budget/itemHelpers.js';
+import MerchantRules from './MerchantRules.jsx';
 
 // The mapping's own savings-transfer category doesn't live in EXPENSE_CATS
 // (that's a personal-budget list) — it needs to stay selectable here so a
@@ -211,7 +212,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     if (!data?.transactions) return [];
     const totals = new Map();
     for (const t of data.transactions) {
-      if (t.category !== category) continue;
+      if (t.category !== category || t.excluded) continue;
       const key = (t.desc || '').trim() || 'ללא תיאור';
       totals.set(key, (totals.get(key) || 0) + (Number(t.amount) || 0));
     }
@@ -373,6 +374,19 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     if (ok !== false) toast(changed > 1 ? `הקטגוריה עודכנה ב-${changed} עסקאות של אותו בית עסק` : 'הקטגוריה עודכנה', 'success');
   }
 
+  async function setCardChargesExcluded(excluded) {
+    const transactions = data.transactions.map(t => (looksLikeCardCharge(t) ? { ...t, excluded } : t));
+    const { averages, monthsCovered } = computeCategoryAverages(transactions);
+    const ok = await save({
+      period_start: data.period_start,
+      period_end: data.period_end,
+      transactions,
+      category_averages: averages,
+      months_covered: monthsCovered
+    });
+    if (ok !== false) toast(excluded ? 'חיובי האשראי לא נספרים יותר' : 'חיובי האשראי נספרים שוב', 'success');
+  }
+
   async function linkToBudget(kind) {
     if (linking) return;
     const amount = parseFloat(linkForm.amount);
@@ -402,6 +416,9 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   // Only meaningful once the advisor has uploaded full bank-account statements
   // (income lines included), not a credit-card-only mapping — those never
   // carry a `type`, so hasIncomeData stays false and this card stays hidden.
+  const cardCharges = (data?.transactions || []).filter(looksLikeCardCharge);
+  const cardChargesExcluded = cardCharges.length > 0 && cardCharges.every(t => t.excluded);
+  const cardChargesTotal = cardCharges.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
   const cashflow = data?.transactions ? computeCashflowSummary(data.transactions) : null;
   const CT = chartTheme();
   // Prints the amount directly above each bar (like the advisor's Excel reference)
@@ -568,7 +585,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                     const color = idx < CHART_PALETTE.length ? CHART_PALETTE[idx] : 'var(--text3)';
                     const isOpen = openCat === c;
                     const txs = isOpen
-                      ? (data.transactions || []).filter(t => t.type !== 'income' && t.category === c).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+                      ? (data.transactions || []).filter(t => t.type !== 'income' && !t.excluded && t.category === c).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
                       : [];
                     return (
                       <li key={c}>
@@ -708,6 +725,17 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
             </>
           )}
 
+          {cardCharges.length > 0 && (
+            <div className={styles.coverageNote}>
+              {cardChargesExcluded
+                ? `${cardCharges.length} חיובי כרטיס אשראי מדף הבנק (${fmt(cardChargesTotal)}) לא נספרים, כדי לא לספור פעמיים הוצאות שמופיעות בפירוט האשראי.`
+                : `זוהו ${cardCharges.length} חיובי כרטיס אשראי בדף הבנק (${fmt(cardChargesTotal)}). אם העלית גם את פירוט האשראי, ההוצאות האלה נספרות פעמיים.`}
+              <button type="button" className={styles.toggle} onClick={() => setCardChargesExcluded(!cardChargesExcluded)}>
+                {cardChargesExcluded ? 'ספור אותם שוב' : 'אל תספור אותם'}
+              </button>
+            </div>
+          )}
+
           {unclassifiedCount > 0 && (
             <button type="button" className={styles.toggle} onClick={() => { setReviewOnly(v => !v); setExpanded(true); }}>
               {reviewOnly ? 'הצג את כל התנועות' : `${unclassifiedCount} תנועות ללא סיווג - לחץ לבדיקה`}
@@ -723,7 +751,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               {data.transactions.map((t, i) => (reviewOnly && !isUnclassified(t) ? null : (
                 <div key={i} className={styles.txRow}>
                   <span className={styles.txDate}>{t.date || '—'}</span>
-                  <span className={styles.txDesc} title={t.desc}>{t.desc}</span>
+                  <span className={styles.txDesc} title={t.desc}>{t.desc}{t.excluded ? ' (לא נספר)' : ''}</span>
                   <select className={styles.txCat} value={t.category || (t.type === 'income' ? 'אחר' : 'שונות')} onChange={e => reassignCategory(i, e.target.value)}>
                     {(t.type === 'income' ? INCOME_CATS : MAPPING_EXPENSE_CATS).map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -841,6 +869,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           </CollapsibleSection>
         </div>
       )}
+
+      <MerchantRules />
     </div>
   );
 }

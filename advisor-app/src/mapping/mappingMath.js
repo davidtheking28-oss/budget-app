@@ -1,7 +1,14 @@
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
-export function computeCategoryAverages(transactions) {
-  const monthsPresent = new Set(transactions.map(t => t.source_month));
+const CARD_CHARGE = /כרטיס אשראי|ישראכרט|לאומי קארד|דיינרס|אמריקן אקספרס|חיובs+(ויזה|כאל|מקס)|visa cal|isracard|max it/i;
+
+export function looksLikeCardCharge(t) {
+  return t.type !== 'income' && CARD_CHARGE.test(String(t.desc || ''));
+}
+
+export function computeCategoryAverages(allTransactions) {
+  const transactions = allTransactions.filter(t => !t.excluded);
+  const monthsPresent = new Set(allTransactions.map(t => t.source_month));
   const monthCount = monthsPresent.size || 1;
   const totals = {};
   for (const t of transactions) {
@@ -20,8 +27,9 @@ const isIncome = t => t.type === 'income';
 const isExpense = t => t.type !== 'income';
 const isSavingsTransfer = t => isExpense(t) && t.category === SAVINGS_CATEGORY;
 
-export function computeCashflowSummary(transactions) {
-  const monthsPresent = new Set(transactions.map(t => t.source_month));
+export function computeCashflowSummary(allTransactions) {
+  const transactions = allTransactions.filter(t => !t.excluded);
+  const monthsPresent = new Set(allTransactions.map(t => t.source_month));
   const monthCount = monthsPresent.size || 1;
 
   const sum = list => list.reduce((s, t) => s + (Number(t.amount) || 0), 0);
