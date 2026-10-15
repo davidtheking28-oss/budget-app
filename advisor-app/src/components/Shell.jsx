@@ -152,7 +152,7 @@ export default function Shell({ homeLinks, onHomeClients, title, clientName, cli
         <IconRail homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
         <div className={styles.topbarBleed}>
           <div className={styles.topbar}>
-            <div className={styles.logo}>תקציב אישי · יועץ</div>
+            <div className={styles.logo}>שקל שקל · יועץ</div>
             <div className={styles.topbarEnd}>
               {onSearch && <SearchBar onOpen={onSearch} />}
               <AccountMenu email={email} advisorId={advisorId} />
