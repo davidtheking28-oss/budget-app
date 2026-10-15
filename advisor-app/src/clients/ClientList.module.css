@@ -958,3 +958,24 @@
 .workbenchRow small { display: block; color: var(--text2); font-size: var(--text-sm); margin-top: 4px; }
 .workbenchRow:hover { color: var(--accent); }
 @media (max-width: 860px) { .workbench { grid-template-columns: 1fr; } }
+
+.dailyQueue, .clientViews { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 22px; margin-block: 24px; }
+.queueHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.queueHeader h2 { font-size: var(--text-lg); margin: 0; }
+.queueHeader p, .queueHeader > span, .queueEmpty { color: var(--text2); font-size: var(--text-sm); line-height: 1.6; }
+.viewButtons { display: flex; flex-wrap: wrap; gap: 8px; }
+.viewButtons button, .savedViews button { min-height: 36px; padding: 7px 12px; font: inherit; font-size: var(--text-sm); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); cursor: pointer; }
+.viewButtons button[aria-pressed="true"] { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+.queueScroll { max-height: 340px; overflow: auto; margin-top: 16px; }
+.queueRow { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--border); }
+.queueRow > div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.queueRow strong, .queueRow small { display: block; }
+.queueRow small { color: var(--text2); line-height: 1.6; margin-top: 5px; }
+.queueRow input { accent-color: var(--accent); width: 18px; height: 18px; flex-shrink: 0; }
+.viewFields { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-block: 16px; }
+.viewFields label { display: grid; gap: 6px; font-size: var(--text-sm); color: var(--text2); flex: 1 1 180px; }
+.viewFields input, .viewFields select { width: 100%; min-height: 40px; padding: 8px 12px; font: inherit; color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface2); }
+.savedViews { display: flex; gap: 10px; flex-wrap: wrap; }
+.savedViews > span { display: inline-flex; }
+.savedViews button { border-radius: 0; }
+.resumeBar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 12px 18px; background: var(--accent-dim); border-radius: var(--radius-sm); margin-bottom: 20px; }

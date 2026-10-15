@@ -6,6 +6,7 @@ import NotAdvisor from './auth/NotAdvisor.jsx';
 import { useIsAdvisor } from './auth/useIsAdvisor.js';
 import { useAdvisorRequest } from './auth/useAdvisorRequest.js';
 import Shell from './components/Shell.jsx';
+import { writeWorkspace } from './workspaceMemory.js';
 import Toaster from './components/Toaster.jsx';
 import QuickSwitcher from './components/QuickSwitcher.jsx';
 import MonthNav from './components/MonthNav.jsx';
@@ -78,6 +79,7 @@ export default function App() {
   const [nav, setNav] = useState(initial.nav);
   const [budgetCategory, setBudgetCategory] = useState(null);
   const [budgetDirty, setBudgetDirty] = useState(false);
+  const [crmDirty, setCrmDirty] = useState(false);
   const [crmAction, setCrmAction] = useState(null);
   const [budgetMode, setBudgetMode] = useState(initial.budgetMode);
   const [ym, setYm] = useState(initial.ym);
@@ -144,6 +146,11 @@ export default function App() {
     return () => { cancelled = true; };
   }, [session, selectedClient]);
 
+  useEffect(() => {
+    if (!session?.user?.id || !selectedClient || !isAdvisor) return;
+    writeWorkspace(`advisor_last:${session.user.id}`, { id: selectedClient.id, nav, mode: budgetMode, year: ym.year, month: ym.month });
+  }, [session?.user?.id, selectedClient, isAdvisor, nav, budgetMode, ym]);
+
   if (loading) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
   if (isRecovery) return (<><Login recovery onRecoveryDone={clearRecovery} /><Toaster /></>);
   if (!session) return (<><Login /><Toaster /></>);
@@ -154,6 +161,7 @@ export default function App() {
   }
 
   function canLeaveBudget() {
+    if (nav === 'crm' && crmDirty) return window.confirm('יש שינויים בפרטי הלקוח או בפגישה שטרם נשמרו. להמשיך בלי לשמור?');
     return nav !== 'budget' || !budgetDirty || window.confirm('יש שינויים בתקציב שטרם נשמרו. להמשיך בלי לשמור?');
   }
 
@@ -167,13 +175,16 @@ export default function App() {
   const switchClient = (clientId, clientEmail, destination) => {
     if (!canLeaveBudget()) return;
     setBudgetDirty(false);
-    if (destination?.nav) setNav(destination.nav);
+    if (NAV.some(n => n.key === destination?.nav)) setNav(destination.nav);
+    setCrmDirty(false);
+    setCrmAction(destination?.action ? { type: destination.action, id: Date.now() } : null);
+    if (MODES.includes(destination?.mode)) setBudgetMode(destination.mode);
     setBudgetCategory(null);
     setSelectedClient({ id: clientId, email: clientEmail });
     // Deliberately not resetting `nav`: an advisor working through 40+ clients
     // via Ctrl+K on the same tab (e.g. מיפוי כלכלי) should stay on that tab
     // across every switch, not restart at "דשבורד" each time.
-    setYm({ year: today.getFullYear(), month: today.getMonth() });
+    setYm(Number.isInteger(destination?.year) && destination.year >= 2000 && destination.year <= 2100 && Number.isInteger(destination?.month) && destination.month >= 0 && destination.month < 12 ? { year: destination.year, month: destination.month } : { year: today.getFullYear(), month: today.getMonth() });
   };
 
   if (!selectedClient) {
@@ -182,6 +193,7 @@ export default function App() {
         <Shell
           email={session.user.email}
           advisorId={session.user.id}
+          workspaceKey={`${session.user.id}:home:${homeView}`}
           onSearch={() => setSearchOpen(true)}
           theme={theme}
           onToggleTheme={toggleTheme}
@@ -191,7 +203,7 @@ export default function App() {
         >
           {homeView === 'prospects'
             ? <Prospects advisorId={session.user.id} onConvert={p => { setInviteDraft({ prospectId: p.id, email: p.email || '' }); setHomeView('clients'); }} />
-            : <ClientList advisorId={session.user.id} onSelect={switchClient} inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} onOpenProspects={() => setHomeView('prospects')} />}
+            : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={switchClient} inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} onOpenProspects={() => setHomeView('prospects')} />}
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />
@@ -231,12 +243,13 @@ export default function App() {
       <BudgetModeContext.Provider value={budgetMode}>
       <Shell
         title={NAV.find(n => n.key === nav)?.label}
-        onBack={() => { if (canLeaveBudget()) { setBudgetDirty(false); setSelectedClient(null); } }}
+        onBack={() => { if (canLeaveBudget()) { setBudgetDirty(false); setCrmDirty(false); setSelectedClient(null); } }}
         nav={NAV}
         activeNav={nav}
-        onNavChange={key => { if (key !== nav && !canLeaveBudget()) return; if (key !== nav) setBudgetDirty(false); setBudgetCategory(null); setNav(key); }}
-        onPrint={() => { if (canLeaveBudget()) { setBudgetDirty(false); setReportMode(true); } }}
-        onPresent={() => { if (canLeaveBudget()) { setBudgetDirty(false); setPresentMode(true); } }}
+        workspaceKey={`${session.user.id}:${selectedClient.id}:${nav}:${ym.year}:${ym.month}:${budgetMode}`}
+        onNavChange={key => { if (key !== nav && !canLeaveBudget()) return; if (key !== nav) { setBudgetDirty(false); setCrmDirty(false); setCrmAction(null); } setBudgetCategory(null); setNav(key); }}
+        onPrint={() => { if (canLeaveBudget()) { setBudgetDirty(false); setCrmDirty(false); setReportMode(true); } }}
+        onPresent={() => { if (canLeaveBudget()) { setBudgetDirty(false); setCrmDirty(false); setPresentMode(true); } }}
         onSearch={() => setSearchOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -273,7 +286,7 @@ export default function App() {
         {nav === 'credit' && <Credit clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
         {nav === 'mortgage' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Mortgage clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
-        {nav === 'crm' && <Crm action={crmAction} advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={() => { refreshClientSummary(); reloadClientProfile(); }} />}
+        {nav === 'crm' && <Crm key={`${session.user.id}:${selectedClient.id}`} onDirtyChange={setCrmDirty} action={crmAction} advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={() => { refreshClientSummary(); reloadClientProfile(); }} />}
         {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
       </Shell>
       </BudgetModeContext.Provider>

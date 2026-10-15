@@ -89,18 +89,21 @@ export function useClientCrm(advisorId, clientId) {
   }
 
   async function toggleTask(id, done) {
+    const before = tasks.find(t => t.id === id);
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done } : t));
     const { error } = await supabase.from('advisor_tasks').update({ done }).eq('id', id).eq('advisor_id', advisorId);
-    if (error) { toast('שגיאה בעדכון המשימה', 'error'); reload(); return; }
+    if (error) { setTasks(prev => prev.map(t => t.id === id ? before : t)); toast('שגיאה בעדכון המשימה', 'error'); return; }
     toast(done ? 'משימה סומנה כהושלמה' : 'משימה סומנה כפתוחה', 'success');
   }
 
   async function editTask(id, title, dueDate, forClient, responsible, kind) {
-    if (!title.trim()) return;
+    if (!title.trim()) return false;
+    const before = tasks.find(t => t.id === id);
     setTasks(prev => prev.map(t => t.id === id ? { ...t, title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible, task_kind: kind } : t));
     const { error } = await supabase.from('advisor_tasks').update({ title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible, task_kind: kind }).eq('id', id).eq('advisor_id', advisorId);
-    if (error) { toast('שגיאה בעדכון המשימה', 'error'); reload(); return; }
+    if (error) { setTasks(prev => prev.map(t => t.id === id ? before : t)); toast('שגיאה בעדכון המשימה', 'error'); return false; }
     toast('המשימה עודכנה', 'success');
+    return true;
   }
 
   async function deleteTask(id) {
@@ -126,11 +129,13 @@ export function useClientCrm(advisorId, clientId) {
   }
 
   async function editMeeting(id, scheduledAt, notesText, forClient) {
-    if (!scheduledAt) return;
+    if (!scheduledAt) return false;
+    const before = meetings.find(m => m.id === id);
     setMeetings(prev => prev.map(m => m.id === id ? { ...m, scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient } : m).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
     const { error } = await supabase.from('advisor_meetings').update({ scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient }).eq('id', id).eq('advisor_id', advisorId);
-    if (error) { toast('שגיאה בעדכון הפגישה', 'error'); reload(); return; }
+    if (error) { setMeetings(prev => prev.map(m => m.id === id ? before : m)); toast('שגיאה בעדכון הפגישה', 'error'); return false; }
     toast('הפגישה עודכנה', 'success');
+    return true;
   }
 
   // Lets the advisor mark a meeting confirmed/declined directly — e.g. the client

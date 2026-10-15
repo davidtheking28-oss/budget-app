@@ -229,11 +229,11 @@ export function makeDb(mode) {
       { id: 't1', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'לשלוח דוח רבעוני', due_date: d(Math.min(28, now.getDate() + 3)), done: false, for_client: false, created_at: iso(4) },
       { id: 't2', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'להשוות מסלולי משכנתא מול שלושה בנקים ולחזור עם המלצה', due_date: d(Math.max(1, now.getDate() - 2)), done: false, for_client: false, created_at: iso(9) },
       { id: 't3', advisor_id: ADVISOR, client_id: CLIENT_A, title: 'לעדכן תקציב מזון', due_date: null, done: true, for_client: true, created_at: iso(15) },
-      { id: 't4', advisor_id: ADVISOR, client_id: CLIENT_C, title: 'פגישת חירום', due_date: null, done: false, for_client: false, created_at: iso(2) }
+      { id: 't4', task_kind: 'document', responsible: 'client', advisor_id: ADVISOR, client_id: CLIENT_C, title: 'פגישת חירום', due_date: null, done: false, for_client: false, created_at: iso(2) }
     ],
     advisor_meetings: empty ? [] : [
       { id: 'm1', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: new Date(Date.now() + 4 * 86400000).toISOString(), notes: 'סקירה רבעונית', for_client: true, created_at: iso(10) },
-      { id: 'm2', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: iso(40), notes: 'פגישת היכרות', for_client: true, created_at: iso(45) }
+      { id: 'm2', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: iso(40), notes: 'פגישת היכרות', summary: 'בדיקת הכנסות והתחייבויות', decisions: 'להשוות מסלולי משכנתא', for_client: true, created_at: iso(45) }
     ],
     advisor_leads: empty ? [] : [
       { id: 'p1', advisor_id: ADVISOR, name: 'משפחת כהן', case_owner: 'דוד', savings_goal: 'קרן חירום', last_meeting: d(Math.max(1, now.getDate() - 27)), next_meeting: d(Math.min(28, now.getDate() + 6)), stage: 'monthly_tracking', created_at: iso(60) },

@@ -29,6 +29,7 @@ function builder(table) {
 
   function resolve() {
     if (params.get('write') === 'fail' && table === 'budget_data' && pendingWrite !== null) return { data: null, error: { message: 'QA write failed' } };
+    if (params.get('crmWrite') === 'fail' && ['advisor_meetings', 'advisor_tasks'].includes(table) && pendingWrite !== null) return { data: null, error: { message: 'QA CRM write failed' } };
     let out = rows();
     if (pendingWrite === null) for (const f of filters) out = out.filter(f);
     if (order) {
@@ -56,9 +57,9 @@ function builder(table) {
     insert(vals) {
       const arr = Array.isArray(vals) ? vals : [vals];
       const made = arr.map((v, i) => ({ id: 'new' + Date.now() + i, created_at: new Date().toISOString(), done: false, ...v }));
-      db[table] = [...(db[table] || []), ...made];
+      let committed = false;
       pendingWrite = made;
-      rows = () => clone(made);
+      rows = () => { if (!committed) { db[table] = [...(db[table] || []), ...made]; committed = true; } return clone(made); };
       return api;
     },
     update(patch) {

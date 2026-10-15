@@ -5,6 +5,7 @@ import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
 import IconRail from './IconRail.jsx';
 import SearchBar from './SearchBar.jsx';
 import styles from './Shell.module.css';
+import { useWorkspaceScroll } from '../useWorkspaceScroll.js';
 
 function DensityToggle() {
   const [compact, setCompact] = useState(() => localStorage.getItem('advisor_density') === 'compact');
@@ -153,11 +154,9 @@ function AccountMenu({ email, advisorId, up }) {
   );
 }
 
-export default function Shell({ homeLinks, onHomeClients, title, clientName, clientSince, budgetMode, onBudgetModeChange, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, clientName, clientSince, budgetMode, onBudgetModeChange, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   const desktop = useDesktop();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [activeNav]);
+  useWorkspaceScroll(workspaceKey);
 
   if (!nav) {
     return (

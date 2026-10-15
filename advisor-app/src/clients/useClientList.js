@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { monthSummary } from '../budget/budgetMath.js';
+import { toast } from '../toast.js';
+import { localISODate } from '../budget/monthUtils.js';
 import { computeHealthScore } from '../budget/insights.js';
 
 export function useClientList(advisorId) {
   const [clients, setClients] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [taskErrorState, setTaskError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const requestIdRef = useRef(0);
@@ -24,22 +28,25 @@ export function useClientList(advisorId) {
     if (requestId !== requestIdRef.current) return;
     if (error) { setError(error); setLoading(false); return; }
     setError(null);
-    if (!roster || !roster.length) { setClients([]); setLoading(false); return; }
+    if (!roster || !roster.length) { setClients([]); setTasks([]); setLoading(false); return; }
 
     const clientIds = roster.map(c => c.client_id);
     const now = new Date();
 
-    const [{ data: budgetRows }, { data: taskRows }, { data: meetingRows }, { data: uploadErrorRows }] = await Promise.all([
+    const [{ data: budgetRows }, { data: taskRows, error: taskError }, { data: meetingRows }, { data: uploadErrorRows }] = await Promise.all([
       supabase.from('budget_data').select('user_id, transactions, budgets, updated_at').in('user_id', clientIds),
-      supabase.from('advisor_tasks').select('client_id, done').eq('advisor_id', advisorId).in('client_id', clientIds),
+      supabase.from('advisor_tasks').select('*').eq('advisor_id', advisorId).in('client_id', clientIds),
       supabase.from('advisor_meetings').select('client_id, scheduled_at, status').eq('advisor_id', advisorId).in('client_id', clientIds),
       supabase.from('economic_mappings').select('client_id, last_upload_error').eq('advisor_id', advisorId).not('last_upload_error', 'is', null).in('client_id', clientIds)
     ]);
 
     const budgetByUser = {};
     (budgetRows || []).forEach(r => { budgetByUser[r.user_id] = r; });
-    const openTaskCounts = {}, doneTaskCounts = {}, totalTaskCounts = {};
+    const openTaskCounts = {}, doneTaskCounts = {}, totalTaskCounts = {}, waitingDocuments = {}, overdueCounts = {};
+    const today = localISODate();
     (taskRows || []).forEach(r => {
+      if (!r.done && r.task_kind === 'document') waitingDocuments[r.client_id] = (waitingDocuments[r.client_id] || 0) + 1;
+      if (!r.done && r.due_date && r.due_date < today) overdueCounts[r.client_id] = (overdueCounts[r.client_id] || 0) + 1;
       totalTaskCounts[r.client_id] = (totalTaskCounts[r.client_id] || 0) + 1;
       if (r.done) doneTaskCounts[r.client_id] = (doneTaskCounts[r.client_id] || 0) + 1;
       else openTaskCounts[r.client_id] = (openTaskCounts[r.client_id] || 0) + 1;
@@ -74,6 +81,8 @@ export function useClientList(advisorId) {
         remaining: summary ? summary.remaining : null,
         hasOverage: summary ? summary.overCats.length > 0 : false,
         overageAmount: summary ? summary.overCats.reduce((s, x) => s + x.over, 0) : 0,
+        waitingDocuments: waitingDocuments[c.client_id] || 0,
+        overdueTasks: overdueCounts[c.client_id] || 0,
         openTasks: openTaskCounts[c.client_id] || 0,
         doneTasks: doneTaskCounts[c.client_id] || 0,
         totalTasks: totalTaskCounts[c.client_id] || 0,
@@ -87,11 +96,22 @@ export function useClientList(advisorId) {
     });
 
     if (requestId !== requestIdRef.current) return;
+    setTasks(taskRows || []);
+    setTaskError(taskError);
     setClients(merged);
     setLoading(false);
   }, [advisorId]);
 
   useEffect(() => { load(); }, [load]);
 
-  return { clients, loading, error, reload: load };
+  async function completeTask(task) {
+    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, done: true } : t));
+    const { error } = await supabase.from('advisor_tasks').update({ done: true }).eq('id', task.id).eq('advisor_id', advisorId).eq('client_id', task.client_id);
+    if (error) { setTasks(prev => prev.map(t => t.id === task.id ? { ...t, done: false } : t)); toast('לא ניתן להשלים את המשימה כרגע', 'error'); return false; }
+    setClients(prev => prev.map(c => c.client_id === task.client_id ? { ...c, openTasks: Math.max(0, c.openTasks - 1), doneTasks: c.doneTasks + 1, waitingDocuments: Math.max(0, c.waitingDocuments - (task.task_kind === 'document' ? 1 : 0)), overdueTasks: Math.max(0, c.overdueTasks - (task.due_date && task.due_date < localISODate() ? 1 : 0)) } : c));
+    toast('המשימה הושלמה', 'success');
+    return true;
+  }
+
+  return { clients, tasks, taskError: taskErrorState, completeTask, loading, error, reload: load };
 }

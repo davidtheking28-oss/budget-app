@@ -17,6 +17,9 @@ import { toast } from '../toast.js';
 import { initials } from '../clientIdentity.js';
 import styles from './ClientList.module.css';
 import { fmt } from '../format.js';
+import DailyWorkQueue from './DailyWorkQueue.jsx';
+import ClientViews, { CLIENT_FILTERS, clientMatches } from './ClientViews.jsx';
+import { readWorkspace, writeWorkspace } from '../workspaceMemory.js';
 
 function HealthBadge({ score }) {
   if (score === null) return null;
@@ -124,7 +127,7 @@ function overdueText(followUpAt, today) {
 }
 
 export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUsed, onOpenProspects }) {
-  const { clients, loading, error, reload } = useClientList(advisorId);
+  const { clients, tasks, taskError, completeTask, loading, error, reload } = useClientList(advisorId);
   const { invites: pendingInvites, reload: reloadInvites } = usePendingInvites(advisorId);
   const { leads, loading: leadsLoading, addLead, setStage: setLeadStage, deleteLead } = usePipeline(advisorId);
   const { prospects, loading: prospectsLoading, error: prospectsError, updateProspect } = useProspects(advisorId);
@@ -137,7 +140,20 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
   const [invitingEmail, setInvitingEmail] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
   const [confirmingInviteId, setConfirmingInviteId] = useState(null);
-  const [listFilter, setListFilter] = useUrlParam('lf', null); // null | 'overage' | 'tasks'
+  const [remembered] = useState(() => readWorkspace(`advisor_views:${advisorId}`, {}));
+  const [query, setQuery] = useState(typeof remembered.query === 'string' ? remembered.query : '');
+  const [sort, setSort] = useState(['name', 'meeting'].includes(remembered.sort) ? remembered.sort : 'urgency');
+  const [savedViews, setSavedViews] = useState(Array.isArray(remembered.saved) ? remembered.saved : []);
+  const [lastWorkspace] = useState(() => readWorkspace(`advisor_last:${advisorId}`, null));
+  const [listFilter, setListFilter] = useUrlParam('lf', null, CLIENT_FILTERS.some(([k]) => k === remembered.filter) ? remembered.filter : null); // null | 'overage' | 'tasks'
+  useEffect(() => {
+    writeWorkspace(`advisor_views:${advisorId}`, { filter: listFilter, query, sort, saved: savedViews });
+  }, [advisorId, listFilter, query, sort, savedViews]);
+  function changeView(settings) { setListFilter(settings.filter); setQuery(settings.query || ''); setSort(settings.sort || 'urgency'); }
+  function saveView(name) {
+    const view = { id: crypto.randomUUID(), name, settings: { filter: listFilter, query, sort } };
+    setSavedViews(prev => [...prev.filter(v => v.name !== name), view]);
+  }
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -212,6 +228,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
     );
   }
 
+  const resumeClient = clients.find(c => c.client_id === lastWorkspace?.id);
   const overageCount = clients.filter(c => c.hasOverage).length;
   const overageAmountTotal = clients.reduce((s, c) => s + (c.overageAmount || 0), 0);
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
@@ -223,6 +240,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
   return (
     <div>
       <header className={styles.workspaceHeading}><div><span>סביבת העבודה שלך</span><h1>במה מטפלים עכשיו?</h1></div><p>פגישות, משימות ומסמכים — לפני שנכנסים לפרטי הלקוח.</p></header>
+      {resumeClient && <div className={styles.resumeBar}><span>המשך מהמקום שבו עצרת: <strong>{resumeClient.name || resumeClient.client_email}</strong></span><Button variant="ghost" onClick={() => onSelect(resumeClient.client_id, resumeClient.client_email, lastWorkspace)}>המשך עבודה</Button></div>}
       <div inert={pipelineOpen ? '' : undefined}>
       {/* A brand-new advisor has nothing to count, and three zeroes are the first
           thing they would otherwise see. Let the empty state be the whole page —
@@ -257,6 +275,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
       )}
       </div>
 
+      {clients.length > 0 && <DailyWorkQueue tasks={tasks} clients={clients} error={taskError} onRetry={reload} onToggle={completeTask} onSelect={onSelect} />}
       {clients.length > 0 && <section className={styles.workbench} aria-label="סדר העבודה">
         {[
           { title: 'פגישות קרובות', empty: 'אין פגישות קרובות שנקבעו', nav: 'crm', clients: clients.filter(c => c.nextMeetingAt).sort((a, b) => a.nextMeetingAt.localeCompare(b.nextMeetingAt)), detail: c => formatDateTime(c.nextMeetingAt) },
@@ -265,7 +284,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
           { title: 'חריגות לבדיקה', empty: 'אין חריגות תקציב אצל הלקוחות', nav: 'dashboard', clients: clients.filter(c => c.hasOverage).sort((a, b) => b.overageAmount - a.overageAmount), detail: c => `${fmt(c.overageAmount)} מעבר לתקציב` }
         ].map(section => <article key={section.title} className={styles.workbenchCard}>
           <h2>{section.title}<span>{section.clients.length}</span></h2>
-          {section.clients.length ? section.clients.slice(0, 2).map(c => <button type="button" key={c.client_id} className={styles.workbenchRow} onClick={() => onSelect(c.client_id, c.client_email, { nav: section.nav })}><span><strong>{c.name || c.client_email}</strong><small>{section.detail(c)}</small></span><span aria-hidden="true">←</span></button>) : <p>{section.empty}</p>}
+          {section.clients.length ? section.clients.slice(0, 2).map(c => <button type="button" key={c.client_id} className={styles.workbenchRow} onClick={() => onSelect(c.client_id, c.client_email, { nav: section.nav, action: section.title === 'פגישות קרובות' ? 'prep' : undefined })}><span><strong>{c.name || c.client_email}</strong><small>{section.detail(c)}</small></span><span aria-hidden="true">←</span></button>) : <p>{section.empty}</p>}
           {section.clients.length > 2 && <span className={styles.workbenchMore}>ועוד {section.clients.length - 2} לקוחות ברשימה למטה</span>}
         </article>)}
       </section>}
@@ -391,9 +410,10 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
         </div>
       ) : (
         <>
+          <ClientViews current={{ filter: listFilter, query, sort }} onChange={changeView} saved={savedViews} onSave={saveView} onRemove={id => setSavedViews(prev => prev.filter(v => v.id !== id))} />
           {listFilter && (
             <div className={styles.filterBanner}>
-              מסונן לפי {listFilter === 'overage' ? 'חריגות תקציב' : 'משימות פתוחות'}
+              מסונן לפי {CLIENT_FILTERS.find(([key]) => key === listFilter)?.[1] || listFilter}
               <button type="button" className={styles.filterClear} onClick={() => setListFilter(null)}>נקה סינון</button>
             </div>
           )}
@@ -410,8 +430,8 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
             </thead>
             <tbody>
               {[...clients]
-                .filter(c => listFilter === 'overage' ? c.hasOverage : listFilter === 'tasks' ? c.openTasks > 0 : true)
-                .sort(byUrgency).map(c => {
+                .filter(c => clientMatches(c, listFilter) && `${c.name || ''} ${c.client_email || ''}`.toLocaleLowerCase('he').includes(query.trim().toLocaleLowerCase('he')))
+                .sort(sort === 'name' ? (a, b) => (a.name || a.client_email).localeCompare(b.name || b.client_email, 'he') : sort === 'meeting' ? (a, b) => (a.nextMeetingAt || '9999').localeCompare(b.nextMeetingAt || '9999') : byUrgency).map(c => {
                 const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting;
                 const confirming = confirmingId === c.id;
                 const flags = [

@@ -449,3 +449,20 @@
 .section { box-shadow: var(--shadow-card); }
 
 :root[data-density="compact"] .taskRow, :root[data-density="compact"] .meetingRow { padding-block: 8px; }
+
+.fieldLabel { display: grid; gap: 6px; min-width: 0; font-size: var(--text-sm); color: var(--text2); margin-block: 10px; }
+.fieldLabel textarea { width: 100%; min-height: 76px; }
+.workflowActions { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
+.workflowActions > label { flex: 1 1 140px; }
+.followup { margin-top: 16px; padding: 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.followup summary, .summaryBlock > summary { cursor: pointer; color: var(--text); font-weight: 700; padding-block: 8px; }
+.prep { padding: 22px; margin-bottom: 20px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-md); }
+.prepHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.prepHeader h2 { font-size: var(--text-lg); margin: 0 0 6px; }
+.prepHeader p, .prepGrid p, .prepGrid li { color: var(--text2); font-size: var(--text-sm); line-height: 1.7; }
+.prepGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding-top: 20px; }
+.prepGrid h3 { font-size: var(--text-base); margin-bottom: 10px; }
+.prepGrid > div { min-width: 0; overflow-wrap: anywhere; }
+.prepGrid ul { padding-inline-start: 20px; }
+.prepText { white-space: pre-wrap; }
+@media (max-width: 1000px) { .prepGrid { grid-template-columns: 1fr; } }
