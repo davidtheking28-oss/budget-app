@@ -66,9 +66,9 @@ export function useClientCrm(advisorId, clientId) {
 
   useEffect(() => { reload(); }, [reload]);
 
-  async function addTask(title, dueDate, forClient) {
+  async function addTask(title, dueDate, forClient, details = {}) {
     if (!title.trim()) return false;
-    const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null, for_client: !!forClient }).select().single();
+    const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible: details.responsible || 'advisor', task_kind: details.task_kind || 'action', meeting_id: details.meeting_id || null }).select().single();
     if (error) { toast('שגיאה בהוספת המשימה', 'error'); return false; }
     toast('משימה נוספה', 'success');
     setTasks(prev => [data, ...prev].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
@@ -77,10 +77,10 @@ export function useClientCrm(advisorId, clientId) {
 
   // `titlesText` is the raw multi-line textarea value — one task per non-empty line,
   // so the advisor can paste/type a whole list at once instead of one field per task.
-  async function addTasks(titlesText, dueDate, forClient) {
+  async function addTasks(titlesText, dueDate, forClient, details = {}) {
     const titles = titlesText.split('\n').map(t => t.trim()).filter(Boolean);
     if (!titles.length) return false;
-    const rows = titles.map(title => ({ advisor_id: advisorId, client_id: clientId, title, due_date: dueDate || null, for_client: !!forClient }));
+    const rows = titles.map(title => ({ advisor_id: advisorId, client_id: clientId, title, due_date: dueDate || null, for_client: !!forClient, responsible: details.responsible || 'advisor', task_kind: details.task_kind || 'action', meeting_id: details.meeting_id || null }));
     const { data, error } = await supabase.from('advisor_tasks').insert(rows).select();
     if (error) { toast('שגיאה בהוספת המשימות', 'error'); return false; }
     toast(titles.length > 1 ? `${titles.length} משימות נוספו` : 'משימה נוספה', 'success');
@@ -95,10 +95,10 @@ export function useClientCrm(advisorId, clientId) {
     toast(done ? 'משימה סומנה כהושלמה' : 'משימה סומנה כפתוחה', 'success');
   }
 
-  async function editTask(id, title, dueDate, forClient) {
+  async function editTask(id, title, dueDate, forClient, responsible, kind) {
     if (!title.trim()) return;
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, title: title.trim(), due_date: dueDate || null, for_client: !!forClient } : t));
-    const { error } = await supabase.from('advisor_tasks').update({ title: title.trim(), due_date: dueDate || null, for_client: !!forClient }).eq('id', id).eq('advisor_id', advisorId);
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible, task_kind: kind } : t));
+    const { error } = await supabase.from('advisor_tasks').update({ title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible, task_kind: kind }).eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה בעדכון המשימה', 'error'); reload(); return; }
     toast('המשימה עודכנה', 'success');
   }
@@ -108,7 +108,7 @@ export function useClientCrm(advisorId, clientId) {
     const { error } = await supabase.from('advisor_tasks').delete().eq('id', id).eq('advisor_id', advisorId);
     if (error) { toast('שגיאה במחיקה', 'error'); return; }
     setTasks(prev => prev.filter(t => t.id !== id));
-    toast('המשימה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addTask(removed.title, removed.due_date, removed.for_client) } : null);
+    toast('המשימה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addTask(removed.title, removed.due_date, removed.for_client, removed) } : null);
   }
 
   async function addMeeting(scheduledAt, notesText, forClient = true) {
@@ -136,10 +136,10 @@ export function useClientCrm(advisorId, clientId) {
   // Lets the advisor mark a meeting confirmed/declined directly — e.g. the client
   // confirmed by phone/WhatsApp instead of tapping the in-app banner. Same RLS path
   // as a normal edit (advisor_id-scoped), no client action required.
-  async function setMeetingSummary(id, summary) {
-    setMeetings(prev => prev.map(m => m.id === id ? { ...m, summary: summary || null } : m));
-    const { error } = await supabase.from('advisor_meetings').update({ summary: summary || null }).eq('id', id).eq('advisor_id', advisorId);
-    if (error) { toast('שגיאה בשמירת הסיכום', 'error'); reload(); return false; }
+  async function setMeetingSummary(id, summary, decisions) {
+    const { error } = await supabase.from('advisor_meetings').update({ summary: summary || null, decisions: decisions || null }).eq('id', id).eq('advisor_id', advisorId);
+    if (error) { toast('שגיאה בשמירת הסיכום', 'error'); return false; }
+    setMeetings(prev => prev.map(m => m.id === id ? { ...m, summary: summary || null, decisions: decisions || null } : m));
     toast('סיכום הפגישה נשמר', 'success');
     return true;
   }
