@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { initials } from '../clientIdentity.js';
 import styles from './QuickSwitcher.module.css';
+import Button from './Button.jsx';
 
 // The panel is always mounted; `open` just toggles visibility. `closing`
 // keeps it rendered a moment longer so the exit can play the reverse of the
@@ -17,6 +18,9 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
     else setOpenState(next);
   }, [open, onOpenChange]);
   const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
+  const [retry, setRetry] = useState(0);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const [closing, setClosing] = useState(false);
@@ -53,21 +57,24 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
     if (!open || !advisorId) return;
     let cancelled = false;
     restoreFocusRef.current = document.activeElement;
-    setQuery('');
-    setActive(0);
+    setClients([]);
+    setLoading(true);
+    setLoadError(null);
     supabase
       .from('advisor_clients')
-      .select('client_id, client_email')
+      .select('client_id, client_email, name')
       .eq('advisor_id', advisorId)
       .eq('status', 'active')
       .order('client_email', { ascending: true })
-      .then(({ data }) => { if (!cancelled) setClients(data || []); });
+      .then(({ data, error }) => { if (!cancelled) { setClients(data || []); setLoadError(error); setLoading(false); } });
     setTimeout(() => inputRef.current?.focus(), 10);
     return () => {
       cancelled = true;
       restoreFocusRef.current?.focus?.();
     };
-  }, [open, advisorId]);
+  }, [open, advisorId, retry]);
+
+  useEffect(() => { if (open) { setQuery(''); setActive(0); } }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -76,7 +83,7 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
 
   if (!open && !closing) return null;
 
-  const filtered = clients.filter(c => c.client_email.toLowerCase().includes(query.toLowerCase()));
+  const filtered = clients.filter(c => `${c.name || ''} ${c.client_email}`.toLocaleLowerCase('he').includes(query.trim().toLocaleLowerCase('he')));
 
   function select(c) {
     onSelect(c.client_id, c.client_email);
@@ -104,8 +111,8 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
           ref={inputRef}
           className={styles.input}
           type="search"
-          aria-label="חפש לקוח לפי אימייל"
-          placeholder="חפש לקוח לפי אימייל…"
+          aria-label="חפש לקוח לפי שם או אימייל"
+          placeholder="חפש לקוח לפי שם או אימייל…"
           value={query}
           onChange={e => { setQuery(e.target.value); setActive(0); }}
           onKeyDown={onKeyDown}
@@ -115,7 +122,7 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
           aria-activedescendant={filtered[active] ? `qs-option-${filtered[active].client_id}` : undefined}
         />
         <div id="qs-listbox" className={styles.list} role="listbox">
-          {filtered.length ? filtered.map((c, i) => (
+          {loading ? <div className={styles.empty} role="status">טוען לקוחות…</div> : loadError ? <div className={styles.empty} role="alert">לא ניתן לטעון את הלקוחות כרגע. <Button variant="ghost" onClick={() => setRetry(n => n + 1)}>נסה שוב</Button></div> : filtered.length ? filtered.map((c, i) => (
             <button
               type="button"
               key={c.client_id}
@@ -127,10 +134,10 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
               onClick={() => select(c)}
               onKeyDown={onKeyDown}
             >
-              <div className={styles.avatar} aria-hidden="true">{initials(c.client_email)}</div>
-              <div className={styles.email} title={c.client_email}>{c.client_email}</div>
+              <div className={styles.avatar} aria-hidden="true">{initials(c.name || c.client_email)}</div>
+              <div className={styles.identity}>{c.name && <strong className={styles.name} title={c.name}>{c.name}</strong>}<span className={styles.email} title={c.client_email}>{c.client_email}</span></div>
             </button>
-          )) : <div className={styles.empty} role="status">{query ? 'לא נמצאו לקוחות. נסה לחפש חלק אחר מכתובת האימייל.' : 'אין עדיין לקוחות פעילים. הוסף לקוח דרך ״הלקוחות שלי״.'}</div>}
+          )) : <div className={styles.empty} role="status">{query ? 'לא נמצאו לקוחות. נסה לחפש חלק מהשם או מכתובת האימייל.' : 'אין עדיין לקוחות פעילים. הוסף לקוח דרך ״הלקוחות שלי״.'}</div>}
         </div>
         <div className={styles.hint}>↑↓ לניווט · Enter לבחירה · Esc לסגירה</div>
       </div>

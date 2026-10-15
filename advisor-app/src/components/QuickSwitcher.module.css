@@ -157,3 +157,7 @@
     text-align: start;
   }
 }
+
+.identity { flex: 1; min-width: 0; text-align: start; }
+.name { display: block; color: var(--text); font-size: var(--text-base); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.identity .email { display: block; direction: ltr; text-align: right; font-size: var(--text-sm); margin-top: 3px; }
