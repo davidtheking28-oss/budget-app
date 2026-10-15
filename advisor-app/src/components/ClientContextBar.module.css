@@ -6,9 +6,9 @@
   font-weight: 700;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
-  color: var(--gold);
-  background: rgba(var(--gold-rgb), 0.1);
-  border: 1px solid rgba(var(--gold-rgb), 0.3);
+  color: var(--workspace-mint);
+  background: var(--workspace-glass);
+  border: 1px solid var(--workspace-line);
 }
 
 .tagBadge {
@@ -19,9 +19,9 @@
   font-weight: 600;
   padding: 2px 6px 2px 8px;
   border-radius: var(--radius-sm);
-  color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.1);
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  color: var(--workspace-mint);
+  background: var(--workspace-glass);
+  border: 1px solid var(--workspace-line);
 }
 
 .tagBadge button {
@@ -62,9 +62,9 @@
   font-size: var(--text-xs);
   padding: 2px 8px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(var(--accent-rgb), 0.5);
-  background: var(--surface2);
-  color: var(--text);
+  border: 1px solid var(--workspace-line);
+  background: var(--workspace-glass);
+  color: var(--workspace-text);
   outline: none;
 }
 
@@ -109,14 +109,14 @@
 }
 
 .badgeActive {
-  color: var(--green);
-  background: rgba(var(--green-rgb), 0.10);
+  color: var(--workspace-mint);
+  background: var(--workspace-glass);
 }
 
 .badge {
-  color: var(--text2);
-  background: var(--surface2);
-  border: 1px solid var(--border);
+  color: var(--workspace-muted);
+  background: var(--workspace-glass);
+  border: 1px solid var(--workspace-line);
 }
 
 .actionsRow {
@@ -202,3 +202,6 @@
 .tagBadge button:hover { background: var(--accent-dim); }
 .addTagBtn, .contactMissing { min-height: 32px; }
 .actionTile { min-height: 40px; border-style: solid; background: var(--surface); }
+
+.tagAddInput:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
+.tagAddInput::placeholder { color: var(--workspace-muted); }
