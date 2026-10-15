@@ -1688,7 +1688,7 @@
   </style>
 </head>
 <body class="dark">
-<script>(function(){try{var m=localStorage.getItem('budget_theme');if(!m){var o=localStorage.getItem('budget_dark');m=o==='1'?'dark':(o==='0'?'light':'system');}var s=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;var dark=m==='system'?!!s:(m==='dark');document.body.classList.toggle('dark', dark);document.documentElement.style.background=dark?'#100f0d':'#eef3f1';document.documentElement.style.colorScheme=dark?'dark':'light';var cs=document.querySelector('meta[name="color-scheme"]');if(cs)cs.setAttribute('content',dark?'dark':'light');var tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.setAttribute('content',dark?'#100f0d':'#eef3f1');}catch(e){}})();</script>
+<script>(function(){try{var m=localStorage.getItem('budget_theme');if(!m){var o=localStorage.getItem('budget_dark');m=o==='1'?'dark':(o==='0'?'light':'system');}var s=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;var dark=m==='system'?!!s:(m==='dark');document.body.classList.toggle('dark', dark);window._themeChrome=function(d){document.documentElement.style.background=d?'#100f0d':'#eef3f1';document.documentElement.style.colorScheme=d?'dark':'light';var cs=document.querySelector('meta[name="color-scheme"]');if(cs)cs.setAttribute('content',d?'dark':'light');var tc=document.querySelector('meta[name="theme-color"]');if(tc)tc.setAttribute('content',d?'#100f0d':'#eef3f1');};window._themeChrome(dark);}catch(e){}})();</script>
 <script>
 // Crash reporting. Installed before anything else so a failure during boot —
 // the one you can least afford to miss — is still captured. Errors queue here
@@ -7971,6 +7971,7 @@ function init(){
   const isDark=_tmode==='system'?_sysDark:(_tmode==='dark');
   if(isDark){document.body.classList.add('dark');var _db=document.getElementById('darkBtn');if(_db)_db.innerHTML=SUN;}
   else{document.body.classList.remove('dark');var _db=document.getElementById('darkBtn');if(_db)_db.innerHTML=MOON;}
+  if(window._themeChrome)window._themeChrome(isDark);
   document.getElementById('txDate').value=localISO();
   const nm=new Date();nm.setMonth(nm.getMonth()+1);
   if(document.getElementById('subNextDate'))document.getElementById('subNextDate').value=localISO(nm);
@@ -9061,9 +9062,8 @@ setTimeout(autoCarryRecurring,500);
   function applyMode(mode){
     var dark = mode==='system' ? isSysDark() : (mode==='dark');
     document.body.classList.toggle('dark', !!dark);
-    document.documentElement.style.background=dark?'#100f0d':'#eef3f1';document.documentElement.style.colorScheme=dark?'dark':'light';var cs=document.querySelector('meta[name="color-scheme"]');if(cs)cs.setAttribute('content',dark?'dark':'light');
+    window._themeChrome(!!dark);
     try{ localStorage.setItem('budget_dark', dark?'1':'0'); }catch(e){}
-    var tc=document.querySelector('meta[name="theme-color"]'); if(tc) tc.setAttribute('content', dark?'#100f0d':'#eef3f1');
     var db=document.getElementById('darkBtn'); if(db&&typeof SUN!=='undefined') db.innerHTML=dark?SUN:MOON;
     var ap=document.querySelector('.page.active');
     if(ap&&ap.id==='page-insights'&&typeof renderAnalytics==='function'){ try{ renderAnalytics(); renderAnnualSummary(); renderInsights(); renderNetWorth(); }catch(e){} }
@@ -9083,6 +9083,10 @@ setTimeout(autoCarryRecurring,500);
   document.addEventListener('DOMContentLoaded', function(){ setTimeout(function(){ refreshTheme(); }, 200); });
   if(window.matchMedia){ var mq=window.matchMedia('(prefers-color-scheme:dark)'); var onCh=function(){ if(curMode()==='system') applyMode('system'); }; if(mq.addEventListener) mq.addEventListener('change',onCh); else if(mq.addListener) mq.addListener(onCh); }
   document.addEventListener('visibilitychange',function(){ if(!document.hidden&&curMode()==='system') applyMode('system'); });
+  function resync(){ if(curMode()==='system') applyMode('system'); }
+  window.addEventListener('pageshow',resync);
+  window.addEventListener('focus',resync);
+  [300,1200,3500].forEach(function(t){ setTimeout(resync,t); });
 })();
 </script>
 <script>
