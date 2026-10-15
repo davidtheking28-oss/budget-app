@@ -1083,20 +1083,21 @@
     .splash-sub{font-size:0.8rem;color:var(--text3);}
     @keyframes splashPulse{from{opacity:0.7;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
     /* ── Auth screen ─────────────────────────── */
-    #authScreen{position:fixed;inset:0;z-index:9998;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);transition:opacity 0.35s ease,visibility 0.35s ease;overflow-y:auto;}
+    #authScreen{position:fixed;inset:0;z-index:9998;background:radial-gradient(120% 60% at 50% 0%,rgba(var(--accent-rgb),0.16),transparent 62%),radial-gradient(90% 45% at 50% 100%,rgba(var(--accent-rgb),0.08),transparent 70%),var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);transition:opacity 0.35s ease,visibility 0.35s ease;overflow-y:auto;}
     #authScreen.hidden{opacity:0;visibility:hidden;pointer-events:none;}
     @keyframes authSlideUp{from{opacity:0;transform:translateY(32px);}to{opacity:1;transform:translateY(0);}}
     .auth-inner{width:100%;max-width:390px;padding:max(7vh,52px) 28px max(6vh,44px);display:flex;flex-direction:column;min-height:100dvh;animation:authSlideUp 0.52s cubic-bezier(0.16,1,0.3,1) both;}
     .auth-hero{display:flex;flex-direction:column;align-items:center;text-align:center;flex:1;justify-content:center;padding-bottom:36px;}
-    .auth-app-icon{width:96px;height:96px;border-radius:22px;display:block;margin:0 auto 24px;box-shadow:0 12px 40px rgba(0,0,0,0.45),0 0 60px rgba(52,211,169,0.08);}
-    .auth-app-name{font-size:2rem;font-weight:800;color:var(--text);letter-spacing:-1px;margin-bottom:8px;line-height:1.1;}
+    .auth-app-icon{width:108px;height:108px;border-radius:25px;display:block;margin:0 auto 26px;box-shadow:0 0 0 1px rgba(var(--accent-rgb),0.3),0 18px 48px rgba(var(--accent-rgb),0.28),0 4px 14px rgba(0,0,0,0.25);}
+    .auth-app-name{font-size:2.2rem;font-weight:800;color:var(--text);letter-spacing:-1px;margin-bottom:8px;line-height:1.1;}
     .auth-app-sub{font-size:0.95rem;color:var(--text2);line-height:1.5;margin-bottom:28px;max-width:220px;}
     .auth-trust-row{display:flex;align-items:center;justify-content:center;gap:16px;}
-    .auth-trust-item{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--text3);font-weight:600;}
-    .auth-trust-dot{width:3px;height:3px;border-radius:50%;background:var(--border);}
+    .auth-trust-item{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--text2);font-weight:600;}
+    .auth-trust-item svg{color:var(--accent);}
+    .auth-trust-dot{width:3px;height:3px;border-radius:50%;background:rgba(var(--accent-rgb),0.45);}
     .auth-cta-section{display:flex;flex-direction:column;gap:10px;}
-    .auth-google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;background:#ffffff;color:#1f1f1f;border:none;border-radius:16px;font-size:1rem;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.22),0 1px 3px rgba(0,0,0,0.12);transition:box-shadow 0.15s,transform 0.1s,opacity 0.15s;letter-spacing:-0.01em;}
-    .auth-google-btn:hover{box-shadow:0 4px 18px rgba(0,0,0,0.28);}
+    .auth-google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;background:#ffffff;color:#1f1f1f;border:none;border-radius:16px;font-size:1rem;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:0 8px 24px rgba(var(--accent-rgb),0.22),0 1px 3px rgba(0,0,0,0.14);transition:box-shadow 0.15s,transform 0.1s,opacity 0.15s;letter-spacing:-0.01em;}
+    .auth-google-btn:hover{box-shadow:0 10px 30px rgba(var(--accent-rgb),0.32),0 1px 3px rgba(0,0,0,0.14);}
     .auth-google-btn:active{transform:scale(0.975);opacity:0.92;}
     .auth-footer-note{text-align:center;font-size:0.64rem;color:var(--text3);line-height:1.7;margin-top:14px;opacity:0.55;}
     .auth-sep{display:flex;align-items:center;gap:10px;margin:2px 0;}
