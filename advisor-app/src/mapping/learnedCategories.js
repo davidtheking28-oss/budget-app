@@ -33,3 +33,31 @@ export function lookupLearnedCategory(desc, store = globalThis.localStorage) {
   }
   return best;
 }
+
+export function mergeLearned(entries, store = globalThis.localStorage) {
+  const learned = read(store);
+  for (const { merchant, category } of entries) {
+    if (merchant && category && !(merchant in learned)) learned[merchant] = category;
+  }
+  try { store?.setItem(STORAGE_KEY, JSON.stringify(learned)); } catch { /* storage unavailable */ }
+}
+
+export function localLearnedEntries(store = globalThis.localStorage) {
+  return Object.entries(read(store)).map(([merchant, category]) => ({ merchant, category }));
+}
+
+export async function syncLearnedFromAccount(client, store = globalThis.localStorage) {
+  const { data, error } = await client.from('advisor_merchant_rules').select('merchant, category');
+  if (error) return false;
+  const remote = new Set((data || []).map(r => r.merchant));
+  mergeLearned(data || [], store);
+  const missing = localLearnedEntries(store).filter(e => !remote.has(e.merchant));
+  if (missing.length) await client.from('advisor_merchant_rules').upsert(missing, { onConflict: 'advisor_id,merchant' });
+  return true;
+}
+
+export function pushLearnedToAccount(client, desc, category) {
+  const merchant = normalizeDescription(desc);
+  if (merchant.length < 2 || !category || NEUTRAL.includes(category)) return;
+  client.from('advisor_merchant_rules').upsert({ merchant, category, updated_at: new Date().toISOString() }, { onConflict: 'advisor_id,merchant' }).then(() => {}, () => {});
+}

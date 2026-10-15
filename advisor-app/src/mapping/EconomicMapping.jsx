@@ -4,7 +4,7 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
 import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
 import { categorizeByDictionary } from './categorizeDict.js';
-import { learnCategory, lookupLearnedCategory, normalizeDescription } from './learnedCategories.js';
+import { learnCategory, lookupLearnedCategory, normalizeDescription, syncLearnedFromAccount, pushLearnedToAccount } from './learnedCategories.js';
 import { resizeImageToJpeg } from './resizeImage.js';
 import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
@@ -268,6 +268,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     }
     setConfirmText(null);
     setProcessing(true);
+    await syncLearnedFromAccount(supabase);
     const { allTx, finalItems } = await processQueue(queue, setQueue);
     if (!allTx.length) {
       toast('לא זוהו תנועות בקבצים שהועלו', 'error');
@@ -352,7 +353,10 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     const sameMerchant = (t, i) => i === index || (target?.type !== 'income' && t.type !== 'income' && merchant.length >= 3 && normalizeDescription(t.desc) === merchant);
     const transactions = data.transactions.map((t, i) => (sameMerchant(t, i) ? { ...t, category } : t));
     const changed = transactions.filter((t, i) => t !== data.transactions[i]).length;
-    if (target?.type !== 'income') learnCategory(target?.desc, category);
+    if (target?.type !== 'income') {
+      learnCategory(target?.desc, category);
+      pushLearnedToAccount(supabase, target?.desc, category);
+    }
     const { averages, monthsCovered } = computeCategoryAverages(transactions);
     // Deliberately NOT archiving a snapshot per edit here: this fires on every single
     // category-dropdown change, and the snapshots array is capped (see process()) —

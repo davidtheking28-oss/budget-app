@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { learnCategory, lookupLearnedCategory, normalizeDescription } from './learnedCategories.js';
+import { learnCategory, lookupLearnedCategory, normalizeDescription, syncLearnedFromAccount } from './learnedCategories.js';
 
 function memoryStore() {
   const data = {};
@@ -27,5 +27,20 @@ describe('learnedCategories', () => {
     const store = memoryStore();
     learnCategory('סוחר מסתורי', 'שונות', store);
     expect(lookupLearnedCategory('סוחר מסתורי', store)).toBeNull();
+  });
+
+  it('pulls account rules into the local store and pushes local-only ones up', async () => {
+    const store = memoryStore();
+    learnCategory('קפה גרג', 'תחביבים', store);
+    const upserts = [];
+    const client = {
+      from: () => ({
+        select: async () => ({ data: [{ merchant: 'פז', category: 'דלק וחניה' }], error: null }),
+        upsert: async rows => { upserts.push(rows); return { error: null }; }
+      })
+    };
+    await syncLearnedFromAccount(client, store);
+    expect(lookupLearnedCategory('פז 123', store)).toBe('דלק וחניה');
+    expect(upserts[0]).toEqual([{ merchant: 'קפה גרג', category: 'תחביבים' }]);
   });
 });
