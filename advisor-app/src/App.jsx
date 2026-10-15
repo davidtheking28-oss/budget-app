@@ -250,7 +250,7 @@ export default function App() {
           />
         )}
         {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard key={`${selectedClient.id}:${ym.year}:${ym.month}:${budgetMode}`} onOpenCategory={category => { setBudgetCategory(category); setNav('budget'); }} clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
-        {nav === 'budget' && <Budget focusCategory={budgetCategory} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
+        {nav === 'budget' && <Budget key={`${session.user.id}:${selectedClient.id}:${budgetMode}:${ym.year}:${ym.month}`} focusCategory={budgetCategory} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis onPreviousMonth={() => changeMonth(-1)} onOpenBudget={() => setNav('budget')} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'subs' && <Subscriptions clientUserId={selectedClient.id} advisorId={session.user.id} />}
