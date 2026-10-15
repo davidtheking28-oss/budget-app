@@ -232,7 +232,7 @@ export function makeDb(mode) {
       { id: 't4', task_kind: 'document', responsible: 'client', advisor_id: ADVISOR, client_id: CLIENT_C, title: 'פגישת חירום', due_date: null, done: false, for_client: false, created_at: iso(2) }
     ],
     advisor_meetings: empty ? [] : [
-      { id: 'm1', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: new Date(Date.now() + 4 * 86400000).toISOString(), notes: 'סקירה רבעונית', for_client: true, created_at: iso(10) },
+      { id: 'm1', status: 'pending', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: new Date(Date.now() + 4 * 86400000).toISOString(), notes: 'סקירה רבעונית', for_client: true, created_at: iso(10) },
       { id: 'm2', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: iso(40), notes: 'פגישת היכרות', summary: 'בדיקת הכנסות והתחייבויות', decisions: 'להשוות מסלולי משכנתא', for_client: true, created_at: iso(45) }
     ],
     advisor_leads: empty ? [] : [
