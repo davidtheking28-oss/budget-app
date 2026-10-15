@@ -503,7 +503,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         <div id="mapping-results" className={styles.topGrid}>
         <div className={styles.card + ' ' + styles.cardStandalone}>
           <div className={styles.actualTitle}>ביצוע</div>
-          <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(data.months_covered)} של דפי חשבון</div>
+          <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(cashflow.monthsCovered)} של דפי חשבון</div>
           <div className={styles.actualChart} role="img" aria-label={`ביצוע: הכנסות ${fmt(cashflow.income * periodMul)}, הוצאות ${fmt(cashflow.expense * periodMul)}`}>
             <Bar data={actualChartData} plugins={[barValueLabels]} options={actualChartOptions} />
           </div>
