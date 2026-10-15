@@ -555,7 +555,7 @@
 @media (min-width: 640px) {
   .donutWrap { flex-direction: row; align-items: center; }
   .donutWrap .donut { flex: 0 0 260px; margin: 0; }
-  .donutWrap }
+}
 
 .breakdownCard { margin-bottom: var(--space-4); }
 
