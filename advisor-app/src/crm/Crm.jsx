@@ -77,6 +77,8 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   const [taskKind, setTaskKind] = useState('action');
   const [editResponsible, setEditResponsible] = useState('advisor');
   const [editKind, setEditKind] = useState('action');
+  const [savingTask, setSavingTask] = useState(false);
+  const [savingMeeting, setSavingMeeting] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDue, setTaskDue] = useState('');
   const [taskForClient, setTaskForClient] = useState(false);
@@ -86,14 +88,20 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   const notify = () => { if (onChange) onChange(); };
 
   async function submitMeeting() {
-    if (!meetingAt) return;
-    const ok = await addMeeting(new Date(meetingAt).toISOString(), meetingNotes, meetingForClient);
-    if (ok) { setMeetingAt(''); setMeetingNotes(''); setMeetingForClient(true); notify(); }
+    if (!meetingAt || savingMeeting) return;
+    setSavingMeeting(true);
+    try {
+      const ok = await addMeeting(new Date(meetingAt).toISOString(), meetingNotes, meetingForClient);
+      if (ok) { setMeetingAt(''); setMeetingNotes(''); setMeetingForClient(true); notify(); }
+    } finally { setSavingMeeting(false); }
   }
   async function submitTask() {
-    if (!taskTitle.trim()) return;
-    const ok = await addTasks(taskTitle, taskDue, taskForClient, { responsible: taskResponsible, task_kind: taskKind });
-    if (ok) { setTaskTitle(''); setTaskDue(''); setTaskForClient(false); notify(); }
+    if (!taskTitle.trim() || savingTask) return;
+    setSavingTask(true);
+    try {
+      const ok = await addTasks(taskTitle, taskDue, taskForClient, { responsible: taskResponsible, task_kind: taskKind });
+      if (ok) { setTaskTitle(''); setTaskDue(''); setTaskForClient(false); notify(); }
+    } finally { setSavingTask(false); }
   }
   async function removeMeeting(id) { await deleteMeeting(id); notify(); }
   async function removeTask(id) { await deleteTask(id); notify(); }
@@ -109,7 +117,12 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   const signal = type => (action?.type === type ? action.id : 0);
 
   function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); setEditResponsible(t.responsible || 'advisor'); setEditKind(t.task_kind || 'action'); }
-  async function saveEditTask(id) { if (await editTask(id, editTaskTitle, editTaskDue, editTaskForClient, editResponsible, editKind)) { setEditingTask(null); notify(); } }
+  async function saveEditTask(id) {
+    if (savingTask) return;
+    setSavingTask(true);
+    try { if (await editTask(id, editTaskTitle, editTaskDue, editTaskForClient, editResponsible, editKind)) { setEditingTask(null); notify(); } }
+    finally { setSavingTask(false); }
+  }
   // datetime-local speaks LOCAL time; toISOString() emits UTC. Converting one way without
   // the other shifted every meeting by the UTC offset each time it was opened and saved.
   function toLocalInput(iso) {
@@ -121,7 +134,10 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   async function saveEditMeeting(id) {
     const d = new Date(editMeetingAt);
     if (!editMeetingAt || Number.isNaN(d.getTime())) { toast('בחר תאריך ושעה', 'error'); return; }
-    if (await editMeeting(id, d.toISOString(), editMeetingNotes, editMeetingForClient)) { setEditingMeeting(null); notify(); }
+    if (savingMeeting) return;
+    setSavingMeeting(true);
+    try { if (await editMeeting(id, d.toISOString(), editMeetingNotes, editMeetingForClient)) { setEditingMeeting(null); notify(); } }
+    finally { setSavingMeeting(false); }
   }
 
   const now = new Date();
@@ -129,7 +145,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   const overdueTasks = tasks.filter(t => !t.done && t.due_date && t.due_date < todayIso).length;
   const soonMeetings = meetings.filter(m => { const d = daysUntil(m.scheduled_at); return d !== null && d >= 0 && d <= 3; }).length;
 
-  const dirty = profileDirty || Object.entries(meetingDirty).some(([id, value]) => value && meetings.some(m => m.id === id)) || !!taskTitle.trim() || !!meetingAt || !!meetingNotes.trim() || !!editingTask || !!editingMeeting;
+  const dirty = savingTask || savingMeeting || profileDirty || Object.entries(meetingDirty).some(([id, value]) => value && meetings.some(m => m.id === id)) || !!taskTitle.trim() || !!meetingAt || !!meetingNotes.trim() || !!editingTask || !!editingMeeting;
   useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
   useEffect(() => {
     if (!dirty) return;
@@ -215,7 +231,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
             <input type="checkbox" className={styles.checkbox} checked={meetingForClient} onChange={e => setMeetingForClient(e.target.checked)} />
             גלוי ללקוח
           </label>
-          <Button disabled={!meetingAt} onClick={submitMeeting}>קבע פגישה</Button>
+          <Button disabled={!meetingAt || savingMeeting} onClick={submitMeeting}>קבע פגישה</Button>
         </AddForm>
         {meetings.length ? (
           <div className={styles.list}>
@@ -228,7 +244,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
                     <input type="checkbox" className={styles.checkbox} checked={editMeetingForClient} onChange={e => setEditMeetingForClient(e.target.checked)} />
                     גלוי ללקוח
                   </label>
-                  <Button onClick={() => saveEditMeeting(m.id)}>שמור</Button>
+                  <Button disabled={savingMeeting} onClick={() => saveEditMeeting(m.id)}>שמור</Button>
                   <Button variant="ghost" onClick={() => setEditingMeeting(null)}>ביטול</Button>
                 </div>
               </div>
@@ -297,7 +313,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
           </label>
           <label className={styles.fieldLabel}>אחראי<select className={styles.input} aria-label="אחראי למשימות" value={taskResponsible} onChange={e => setTaskResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select></label>
           <label className={styles.fieldLabel}>סוג<select className={styles.input} aria-label="סוג המשימות" value={taskKind} onChange={e => setTaskKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select></label>
-          <Button disabled={!taskTitle.trim()} onClick={submitTask}>הוסף משימה</Button>
+          <Button disabled={!taskTitle.trim() || savingTask} onClick={submitTask}>הוסף משימה</Button>
         </AddForm>
         {tasks.length ? (
           <div className={styles.list}>
@@ -312,7 +328,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
                   </label>
                   <select className={styles.input} aria-label="אחראי למשימה" value={editResponsible} onChange={e => setEditResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select>
                   <select className={styles.input} aria-label="סוג המשימה" value={editKind} onChange={e => setEditKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select>
-                  <Button onClick={() => saveEditTask(t.id)}>שמור</Button>
+                  <Button disabled={savingTask} onClick={() => saveEditTask(t.id)}>שמור</Button>
                   <Button variant="ghost" onClick={() => setEditingTask(null)}>ביטול</Button>
                 </div>
               </div>
