@@ -3,6 +3,7 @@ import { makeDb, IDS } from './seed.js';
 const params = new URLSearchParams(window.location.search);
 const mode = params.get('data') || 'full';
 const db = makeDb(mode);
+db.report_shares = JSON.parse(sessionStorage.getItem('audit_report_shares') || '[]');
 
 // The harness is pre-authenticated on purpose, so the auth screens are otherwise
 // unreachable. ?auth=out renders the logged-out Login screen, ?auth=notadvisor
@@ -129,6 +130,24 @@ export const SUPA_URL = 'https://mock.supabase.co';
 export const supabase = {
   from: table => builder(table),
   rpc: async (fn, params) => {
+    if (fn === 'create_report_share') {
+      const id = crypto.randomUUID();
+      db.report_shares.push({ id, advisor_id: IDS.ADVISOR, client_id: params.p_client_id, year: params.p_year, month: params.p_month, budget_mode: params.p_mode, revoked_at: null, expires_at: new Date(Date.now() + 30 * 86400000).toISOString() });
+      sessionStorage.setItem('audit_report_shares', JSON.stringify(db.report_shares));
+      return { data: id, error: null };
+    }
+    if (fn === 'revoke_report_share') {
+      const row = db.report_shares.find(s => s.id === params.p_id);
+      if (row) row.revoked_at = new Date().toISOString();
+      sessionStorage.setItem('audit_report_shares', JSON.stringify(db.report_shares));
+      return { data: null, error: null };
+    }
+    if (fn === 'get_shared_report') {
+      const row = db.report_shares.find(s => s.id === params.p_token && !s.revoked_at && new Date(s.expires_at) > new Date());
+      if (!row) return { data: { found: false }, error: null };
+      const budget = db.budget_data.find(b => b.user_id === row.client_id) || {};
+      return { data: { found: true, year: row.year, month: row.month, client_email: 'qa.client@example.test', advisor_display_name: 'יועץ בדיקה', data: row.budget_mode === 'business' ? budget.business || {} : budget }, error: null };
+    }
     if (fn === 'invite_client_by_email') {
       const email = (params?.p_email || '').trim().toLowerCase();
       if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { data: 'invalid_email', error: null };
