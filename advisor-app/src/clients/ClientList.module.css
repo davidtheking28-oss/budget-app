@@ -947,18 +947,7 @@
 
 .workspaceHeading { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; }
 .workspaceHeading span, .workspaceHeading p { color: var(--text2); font-size: var(--text-sm); line-height: 1.6; margin: 0; }
-.workspaceHeading h1 { font-size: 32px; margin-top: 6px; }
-.workbench { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
-.workbenchCard { min-width: 0; padding: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
-.workbenchCard h2 { display: flex; justify-content: space-between; gap: 12px; font-size: var(--text-lg); margin-bottom: 16px; }
-.workbenchCard h2 span { color: var(--accent); font-variant-numeric: tabular-nums; }
-.workbenchCard p, .workbenchMore { font-size: var(--text-sm); color: var(--text2); line-height: 1.6; }
-.workbenchRow { width: 100%; min-height: 60px; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 0; border: none; border-top: 1px solid var(--border); background: transparent; color: var(--text); text-align: start; font-family: inherit; cursor: pointer; }
-.workbenchRow strong { display: block; font-size: var(--text-base); overflow-wrap: anywhere; }
-.workbenchRow small { display: block; color: var(--text2); font-size: var(--text-sm); margin-top: 4px; }
-.workbenchRow:hover { color: var(--accent); }
-@media (max-width: 860px) { .workbench { grid-template-columns: 1fr; } }
-
+.workspaceHeading h1 { font-size: 28px; margin: 0 0 8px; }
 .dailyQueue, .clientViews { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 22px; margin-block: 24px; }
 .queueHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
 .queueHeader h2 { font-size: var(--text-lg); margin: 0; }
@@ -980,4 +969,12 @@
 .savedViews button { border-radius: 0; }
 .resumeBar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 12px 18px; background: var(--accent-dim); border-radius: var(--radius-sm); margin-bottom: 20px; }
 
-@media (min-width: 1280px) { .workbench { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; } .workbenchCard { padding: 18px; } }
+
+
+.clientViews { border: none; border-radius: 0; padding: 0; margin: 24px 0 12px; background: transparent; }
+.clientViews .queueHeader { margin-bottom: 8px; }
+.clientViews .viewFields { margin-block: 12px; }
+.dailyQueue { padding: 18px 22px; }
+.dailyQueue .queueHeader { margin-bottom: 0; }
+.dailyQueue .queueHeader p { margin: 4px 0 0; }
+.dailyQueue .viewButtons { margin-top: 16px; }

@@ -65,49 +65,6 @@ function RemainingStat({ value }) {
   );
 }
 
-const ICON_USERS = (
-  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" /><circle cx="10" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
-const ICON_ALERT = (
-  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /><path d="M12 9v4" /><path d="M12 17h.01" />
-  </svg>
-);
-
-const ICON_CHECKLIST = (
-  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-  </svg>
-);
-
-const ICON_FUNNEL = (
-  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3Z" />
-  </svg>
-);
-
-function StatSecondary({ label, value, tone, icon, format, onClick, active }) {
-  const display = useCountUp(value);
-  const Tag = onClick ? 'button' : 'div';
-  return (
-    <Tag
-      type={onClick ? 'button' : undefined}
-      className={styles.statSecondary + (onClick ? ' ' + styles.statSecondaryClickable : '') + (active ? ' ' + styles.statSecondaryActive : '')}
-      onClick={onClick}
-      aria-pressed={onClick ? !!active : undefined}
-    >
-      <span className={styles.statIcon + (tone ? ' ' + styles[tone] : '')}>{icon}</span>
-      <div className={styles.statSecondaryBody}>
-        <span className={styles.statSecondaryValue + (tone ? ' ' + styles[tone] : '')}>{format ? format(display) : Math.round(display)}</span>
-        <span className={styles.statSecondaryLabel}>{label}</span>
-      </div>
-    </Tag>
-  );
-}
-
 const INVITE_ERROR_MESSAGES = {
   self: 'לא ניתן להזמין את עצמך',
   rate_limited: 'יותר מדי הזמנות, נסה שוב בעוד 10 דקות',
@@ -230,7 +187,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
 
   const resumeClient = clients.find(c => c.client_id === lastWorkspace?.id);
   const overageCount = clients.filter(c => c.hasOverage).length;
-  const overageAmountTotal = clients.reduce((s, c) => s + (c.overageAmount || 0), 0);
   const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
   const todayISO = localISODate();
   const dueProspects = prospects
@@ -243,43 +199,11 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
 
   return (
     <div>
-      <header className={styles.workspaceHeading}><div><span>סביבת העבודה שלך</span><h1>במה מטפלים עכשיו?</h1></div><p>פגישות, משימות ומסמכים — לפני שנכנסים לפרטי הלקוח.</p></header>
-      {resumeClient && <div className={styles.resumeBar}><span>המשך מהמקום שבו עצרת: <strong>{resumeClient.name || resumeClient.client_email}</strong></span><Button variant="ghost" onClick={() => onSelect(resumeClient.client_id, resumeClient.client_email, lastWorkspace)}>המשך עבודה</Button></div>}
-      <div inert={pipelineOpen ? '' : undefined}>
-      {/* A brand-new advisor has nothing to count, and three zeroes are the first
-          thing they would otherwise see. Let the empty state be the whole page —
-          unless they already have pipeline prospects, whose only access point is
-          this bar's KPI tile. */}
-      {(clients.length > 0 || leads.length > 0) && (
-        <>
-          <div className={styles.statBar}>
-            <StatSecondary label="לקוחות פעילים" value={clients.length} tone="statAccent" icon={ICON_USERS} />
-            <StatSecondary
-              label="חריגות תקציב החודש"
-              value={overageCount}
-              tone={overageCount > 0 ? 'statRed' : undefined}
-              icon={ICON_ALERT}
-              active={listFilter === 'overage'}
-              onClick={overageCount > 0 ? () => setListFilter(f => f === 'overage' ? null : 'overage') : undefined}
-            />
-            {overageAmountTotal > 0 && (
-              <StatSecondary label="סה״כ חריגה בכסף" value={overageAmountTotal} tone="statRed" icon={ICON_ALERT} format={fmt} />
-            )}
-            <StatSecondary
-              label="משימות פתוחות"
-              value={openTasksTotal}
-              tone={openTasksTotal > 0 ? 'statGold' : undefined}
-              icon={ICON_CHECKLIST}
-              active={listFilter === 'tasks'}
-              onClick={openTasksTotal > 0 ? () => setListFilter(f => f === 'tasks' ? null : 'tasks') : undefined}
-            />
-            <StatSecondary label="לקוחות חדשים בטיפול" value={leads.length} icon={ICON_FUNNEL} onClick={() => setPipelineOpen(true)} />
-          </div>
-        </>
-      )}
-      </div>
-
-      {clients.length > 0 && <DailyWorkQueue advisorId={advisorId} tasks={tasks} clients={clients} error={taskError} onRetry={reload} onToggle={completeTask} onSelect={onSelect} />}
+      <header className={styles.workspaceHeading}>
+        <div><h1>סביבת העבודה שלי</h1><p>{clients.length} לקוחות · {openTasksTotal} משימות פתוחות{overageCount > 0 ? ` · ${overageCount} חריגות תקציב` : ''}</p></div>
+        {resumeClient && <Button variant="ghost" onClick={() => onSelect(resumeClient.client_id, resumeClient.client_email, lastWorkspace)}>המשך עבודה עם {resumeClient.name || resumeClient.client_email}</Button>}
+      </header>
+      {leads.length > 0 && <Button variant="ghost" onClick={() => setPipelineOpen(true)}>לקוחות חדשים בטיפול ({leads.length})</Button>}
       {!clients.length ? (
         <div className={styles.empty}>
           <div className={styles.emptyMark}>
@@ -389,18 +313,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
         </>
       )}
 
-      {clients.length > 0 && <section className={styles.workbench} aria-label="סדר העבודה">
-        {[
-          { title: 'פגישות קרובות', empty: 'אין פגישות קרובות שנקבעו', nav: 'crm', clients: clients.filter(c => c.nextMeetingAt).sort((a, b) => a.nextMeetingAt.localeCompare(b.nextMeetingAt)), detail: c => formatDateTime(c.nextMeetingAt) },
-          { title: 'משימות פתוחות', empty: 'אין משימות פתוחות ללקוחות', nav: 'crm', clients: clients.filter(c => c.openTasks > 0).sort((a, b) => b.openTasks - a.openTasks), detail: c => `${c.openTasks} משימות פתוחות` },
-          { title: 'מסמכים שדורשים בדיקה', empty: 'אין מסמכים שסומנו עם שגיאת עיבוד', nav: 'mapping', clients: clients.filter(c => c.hasFailedUpload), detail: () => 'עיבוד מסמך לא הושלם' },
-          { title: 'חריגות לבדיקה', empty: 'אין חריגות תקציב אצל הלקוחות', nav: 'dashboard', clients: clients.filter(c => c.hasOverage).sort((a, b) => b.overageAmount - a.overageAmount), detail: c => `${fmt(c.overageAmount)} מעבר לתקציב` }
-        ].map(section => <article key={section.title} className={styles.workbenchCard}>
-          <h2>{section.title}<span>{section.clients.length}</span></h2>
-          {section.clients.length ? section.clients.slice(0, 2).map(c => <button type="button" key={c.client_id} className={styles.workbenchRow} onClick={() => onSelect(c.client_id, c.client_email, { nav: section.nav, action: section.title === 'פגישות קרובות' ? 'prep' : undefined })}><span><strong>{c.name || c.client_email}</strong><small>{section.detail(c)}</small></span><span aria-hidden="true">←</span></button>) : <p>{section.empty}</p>}
-          {section.clients.length > 2 && <span className={styles.workbenchMore}>ועוד {section.clients.length - 2} לקוחות ברשימת הלקוחות</span>}
-        </article>)}
-      </section>}
+      {clients.length > 0 && <DailyWorkQueue advisorId={advisorId} tasks={tasks} clients={clients} error={taskError} onRetry={reload} onToggle={completeTask} onSelect={onSelect} />}
 
       {pipelineOpen && (
         <PipelineModal
