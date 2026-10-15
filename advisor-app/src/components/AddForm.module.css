@@ -23,3 +23,5 @@
 @media (max-width: 860px) {
   .trigger { min-height: 44px; }
 }
+
+.trigger { min-height: 40px; border-style: solid; background: var(--surface2); }

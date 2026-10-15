@@ -225,7 +225,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
               const summaryValue = summaryDraft ?? m.summary ?? '';
               const summaryDirty = summaryDraft !== undefined && summaryDraft !== (m.summary ?? '');
               return (
-                <div key={m.id} className={styles.row + ' ' + styles.meetingRow} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
+                <div key={m.id} className={styles.row + ' ' + styles.meetingRow + (soon ? ' ' + styles.meetingUpcoming : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <div className={styles.rowMain}>
                     <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditMeeting(m)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditMeeting(m))}>
                       <div className={styles.name}>
@@ -329,10 +329,10 @@ export default function Crm({ action, advisorId, clientId, email, onChange }) {
               const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
               const overdue = !t.done && t.due_date && t.due_date < todayIso;
               return (
-                <div key={t.id} className={styles.row + ' ' + styles.taskRow} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
+                <div key={t.id} className={styles.row + ' ' + styles.taskRow + (t.done ? ' ' + styles.taskCompleted : overdue ? ' ' + styles.taskOverdue : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => { toggleTask(t.id, e.target.checked); notify(); }} />
                   <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
-                    <div className={styles.name}>{tasks.length > 1 && <span className={styles.taskNum}>{i + 1}.</span>}{t.title}{overdue && <span className={styles.pastBadge}>באיחור</span>}{t.for_client && <span className={styles.clientBadge}>גלוי ללקוח</span>}</div>
+                    <div className={styles.name}>{tasks.length > 1 && <span className={styles.taskNum}>{i + 1}.</span>}{t.title}{t.done && <span className={styles.completedBadge}>הושלמה</span>}{overdue && <span className={styles.pastBadge}>באיחור</span>}{t.for_client && <span className={styles.clientBadge}>גלוי ללקוח</span>}</div>
                     {t.due_date && <div className={styles.meta}>יעד: {formatDate(t.due_date)}</div>}
                   </div>
                   <span className={styles.editHint} aria-hidden="true">{ICONS.edit}</span>

@@ -595,3 +595,14 @@
   direction: ltr;
   unicode-bidi: isolate;
 }
+
+@media (min-width: 861px) {
+.rowsGrid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.itemCard { gap: 16px; padding: 18px; }
+.itemCardHead { min-height: 36px; }
+.itemAmountBox, .itemActualBox { padding: 10px 12px; }
+.itemAmountBox { border-color: var(--control-border); }
+.itemAmountBoxLabel { color: var(--text2); margin-bottom: 4px; }
+.itemAmountInput, .itemActualValue { font-size: var(--text-lg); }
+.cardTitle { font-size: var(--text-lg); }
+}

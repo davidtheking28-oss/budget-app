@@ -63,7 +63,7 @@ export default function ClientContextBar({ isVip, phone, createdAt, nextMeeting,
         </>}
         side={[
           { label: 'משימות פתוחות', value: String(openTasks) },
-          household && { label: 'שיתוף תקציב', value: household.partnerEmail || 'זוגי' }
+          household && { label: 'שיתוף תקציב', value: household.partnerEmail || 'זוגי', secondary: true }
         ].filter(Boolean)}
       />
       <div className={styles.actionsRow}>

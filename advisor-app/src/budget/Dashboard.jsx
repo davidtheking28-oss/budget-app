@@ -32,7 +32,7 @@ export default function Dashboard({ clientUserId, year, month }) {
     ? { label: 'קריטי', tone: 'danger' }
     : insights.some(i => i.kind === 'danger' || i.kind === 'warn')
       ? { label: 'לתשומת לב', tone: 'warn' }
-      : { label: 'בתקן', tone: 'good' };
+      : { label: 'מאוזן', tone: 'good' };
 
   const byCat = {};
   getMonthTx(data.transactions, year, month).filter(t => t.type === 'expense').forEach(t => {
@@ -47,7 +47,7 @@ export default function Dashboard({ clientUserId, year, month }) {
         value={fmt(summary.net)}
         tone={summary.net < 0 ? 'neg' : 'pos'}
         note={<>
-          {financialStatus.tone === 'danger' && (
+          {(
             <span className={styles.statusBadge + ' ' + styles[financialStatus.tone]}>
               <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
             </span>
@@ -66,7 +66,7 @@ export default function Dashboard({ clientUserId, year, month }) {
             <>
               {catLabels.slice(0, 4).map(l => {
                 const pct = Math.round((byCat[l] / catTotal) * 100);
-                return <Row key={l} name={l} amount={fmt(byCat[l])} pct={pct} />;
+                return <Row key={l} name={l} sub={pct + '% מסך ההוצאות'} amount={fmt(byCat[l])} pct={pct} />;
               })}
               {catLabels.length > 4 && (
                 <Row
@@ -81,11 +81,12 @@ export default function Dashboard({ clientUserId, year, month }) {
           )}
         </Card>
 
-        <Card title="דורש תשומת לב">
+        <Card title="תובנות לחודש">
           {attention.length ? (
             <ul className={styles.insights}>
               {attention.map((ins, i) => (
-                <li key={i} className={styles.insight}>
+                <li key={i} className={styles.insight + ' ' + styles[ins.kind]}>
+                  <span className={styles.insightKind}>{{danger: 'דורש בדיקה', warn: 'לתשומת לב', tip: 'כדאי לדעת', good: 'נקודה חיובית'}[ins.kind]}</span>
                   <b className={styles.insightTitle}><span className={styles.insightDot + ' ' + styles[ins.kind]} aria-hidden="true" />{ins.text.split(' — ')[0]}</b>
                   {ins.text.includes(' — ') && <span className={styles.insightSub}>{ins.text.split(' — ').slice(1).join(' — ')}</span>}
                 </li>

@@ -454,6 +454,11 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   return (
     <div>
+      <div className={styles.workflow} aria-label="שלבי המיפוי הכלכלי">
+        <div><strong>1 · העלאת מסמכים</strong><span>בחר דפי חשבון ושייך כל קובץ לחודש המתאים</span></div>
+        <div aria-live="polite"><strong>2 · עיבוד הנתונים</strong><span>{processing ? 'המסמכים בעיבוד…' : 'לאחר הבחירה, לחץ על עבד וחשב מיפוי'}</span></div>
+        <div><strong>3 · סקירת המיפוי</strong><span>בדוק את התוצאות לפני עדכון התקציב</span></div>
+      </div>
       {cashflow?.hasIncomeData && (
         <div className={styles.topGrid}>
         <div className={styles.card + ' ' + styles.cardStandalone}>

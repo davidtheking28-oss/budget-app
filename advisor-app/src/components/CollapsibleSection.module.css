@@ -17,3 +17,5 @@
 .sectionBodyInner {
   padding-top: var(--space-4);
 }
+
+.sectionTitle { font-size: var(--text-lg); line-height: 1.4; min-height: 32px; }

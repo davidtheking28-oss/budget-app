@@ -196,3 +196,9 @@
   .actionTile { min-height: 44px; }
   .addTagBtn, .contactMissing { min-height: 44px; }
 }
+
+.tagBadge { gap: 6px; padding-block: 3px; }
+.tagBadge button { width: 28px; height: 28px; border-radius: var(--radius-xs); }
+.tagBadge button:hover { background: var(--accent-dim); }
+.addTagBtn, .contactMissing { min-height: 32px; }
+.actionTile { min-height: 40px; border-style: solid; background: var(--surface); }

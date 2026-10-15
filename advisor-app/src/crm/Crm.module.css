@@ -248,7 +248,7 @@
 }
 
 .done {
-  opacity: 0.5;
+  opacity: 1;
   text-decoration: line-through;
   transition: opacity 0.25s ease;
 }
@@ -438,3 +438,12 @@
 @media (max-width: 860px) {
   .rowBody, .taskBody { min-height: 44px; }
 }
+
+ .taskRow, .meetingRow { padding: 14px 12px; border-radius: var(--radius-sm); }
+.list { gap: 8px; }
+.taskOverdue { background: rgba(var(--red-rgb), 0.05); border-inline-start: 3px solid var(--red); }
+.taskCompleted { background: var(--surface2); }
+.completedBadge { display: inline-block; margin-inline-start: 8px; padding: 2px 8px; border-radius: var(--radius-sm); background: rgba(var(--green-rgb), 0.1); color: var(--green); font-size: var(--text-xs); text-decoration: none; }
+.meetingUpcoming { background: var(--accent-dim); border-inline-start: 3px solid var(--accent); }
+.sectionTitle { font-size: var(--text-lg); }
+.section { box-shadow: var(--shadow-card); }

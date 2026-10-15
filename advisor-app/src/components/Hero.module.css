@@ -95,3 +95,6 @@
   .sideValue { font-size: 23px; }
   .sideMeta { margin-top: 6px; }
 }
+
+.sideValueSecondary { font-size: var(--text-base); font-weight: 600; line-height: 1.5; max-width: 32ch; }
+@media (min-width: 861px) { .sideValueSecondary { font-size: var(--text-base); } }

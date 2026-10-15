@@ -18,7 +18,7 @@ export default function Hero({ label, value, tone, note, side = [], compact = fa
           {side.map(s => (
             <div key={s.label} className={styles.sideItem}>
               <div className={styles.label}>{s.label}</div>
-              <div className={cls(styles.sideValue, null, s.value)}>{s.value}</div>
+              <div className={cls(styles.sideValue + (s.secondary ? ' ' + styles.sideValueSecondary : ''), s.tone, s.value)}>{s.value}</div>
               {s.meta && <div className={styles.sideMeta}>{s.meta}</div>}
             </div>
           ))}
