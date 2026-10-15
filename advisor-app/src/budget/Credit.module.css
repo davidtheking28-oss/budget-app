@@ -315,3 +315,13 @@
 }
 
 .loanActions > * { display: inline-flex; vertical-align: middle; }
+
+@media (min-width: 861px) {
+.loanTableWrap { border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.loanTable th { padding: 14px 12px; font-size: var(--text-sm); color: var(--text2); }
+.loanTable td { padding: 18px 12px; }
+.loanTable td:nth-child(3), .loanTable td.loanMonthly { color: var(--text); font-weight: 800; font-size: var(--text-md); white-space: nowrap; background: var(--surface2); }
+.loanTable td:nth-child(4), .loanTable td:nth-child(5), .loanTable td:nth-child(7) { font-size: var(--text-sm); }
+.loanTable tbody tr:last-child td { border-bottom: none; }
+.payoffLabel { margin-top: 8px; line-height: 1.6; }
+}

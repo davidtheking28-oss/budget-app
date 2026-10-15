@@ -168,6 +168,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
   return (
     <div>
       <Hero
+        tone="neutral"
         label="הוצאות קבועות בחודש"
         value={fmt(totalMonthlyCommitments)}
         note={`${fmt(totalMonthlyCommitments * 12)} בשנה`}

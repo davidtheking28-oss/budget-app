@@ -90,3 +90,8 @@
   font-size: var(--text-base);
   text-align: center;
 }
+
+.netSummary { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 16px; margin-bottom: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-size: var(--text-sm); }
+.netSummary strong { font-size: var(--text-lg); font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+.netPositive { color: var(--green); }
+.netNegative { color: var(--red); }

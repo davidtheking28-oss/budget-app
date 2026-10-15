@@ -126,3 +126,9 @@
 @media (max-width: 860px) {
   .txBtn, .txBtnNeutral { min-height: 44px; }
 }
+
+.goalItem { padding: 16px; border-radius: var(--radius-md); }
+.goalCompleted { background: rgba(var(--green-rgb), 0.06); border-inline-start: 3px solid var(--green); }
+.goalHeading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; }
+.goalProgress { font-size: var(--text-sm); font-weight: 700; color: var(--text2); font-variant-numeric: tabular-nums; }
+.goalCompleted .goalProgress { color: var(--green); }

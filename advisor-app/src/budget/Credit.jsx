@@ -284,6 +284,7 @@ export default function Credit({ clientUserId, advisorId }) {
     <div>
       {(loans.length > 0 || payments.length > 0 || overdraft.balance > 0) && (
         <Hero
+        tone="neutral"
           label="החזר חודשי"
           value={fmt(loansMonthly + paymentsMonthly)}
           note={[loans.length > 0 && `${loans.length} הלוואות`, activePayments.length > 0 && `${activePayments.length} עסקאות בתשלומים`].filter(Boolean).join(' · ')}

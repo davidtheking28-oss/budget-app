@@ -98,3 +98,5 @@
 
 .sideValueSecondary { font-size: var(--text-base); font-weight: 600; line-height: 1.5; max-width: 32ch; }
 @media (min-width: 861px) { .sideValueSecondary { font-size: var(--text-base); } }
+
+.neutral { color: var(--text); }

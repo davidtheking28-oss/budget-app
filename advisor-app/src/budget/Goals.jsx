@@ -129,7 +129,7 @@ export default function Goals({ clientUserId, advisorId }) {
           {...(hasDeadlines
             ? { label: 'נדרש לחסוך כל חודש', value: fmt(monthlyNeed), note: 'כדי לעמוד בכל היעדים בזמן' }
             : { label: 'הושג עד כה', value: `${achievedPct}%`, note: 'לא הוגדרו מועדים ליעדים' })}
-          tone="pos"
+          tone="neutral"
           side={[
             { label: 'יעדים', value: String(goals.length) },
             hasDeadlines ? { label: 'הושג עד כה', value: `${achievedPct}%`, meta: `${fmt(totalSaved)} מתוך ${fmt(totalTarget)}` } : { label: 'נחסך', value: fmt(totalSaved), meta: `מתוך ${fmt(totalTarget)}` }
@@ -161,9 +161,9 @@ export default function Goals({ clientUserId, advisorId }) {
             const monthly = g.months > 0 ? Math.max(0, (g.target || 0) - (g.saved || 0)) / g.months : 0;
             const expanded = txCard?.id === g.id;
             return (
-              <div key={g.id} className={styles.goalItem}>
+              <div key={g.id} className={styles.goalItem + (pct >= 100 ? ' ' + styles.goalCompleted : '')}>
                 <Row
-                  name={g.name}
+                  name={<span className={styles.goalHeading}><span>{g.name}</span><span className={styles.goalProgress}>{pct}%</span></span>}
                   sub={`${fmt(g.saved || 0)} מתוך ${fmt(g.target || 0)}${g.months > 0 ? ` · יעד ל־${g.months} חודשים` : ''}`}
                   pct={pct}
                   barTone={pct >= 100 ? undefined : pct < 30 ? 'warn' : undefined}

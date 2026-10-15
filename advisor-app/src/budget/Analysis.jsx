@@ -88,6 +88,7 @@ export default function Analysis({ clientUserId, advisorId, year, month }) {
   return (
     <>
       <Hero
+        tone="neutral"
         label="סה״כ הוצאות החודש"
         value={fmt(total)}
         note={prevTotal > 0 ? (diff === 0 ? 'זהה לחודש הקודם' : `${diff < 0 ? 'פחות' : 'יותר'} ב־${fmt(Math.abs(diff))} מהחודש הקודם (${Math.round(Math.abs(diff) / prevTotal * 100)}%)`) : null}
@@ -98,6 +99,10 @@ export default function Analysis({ clientUserId, advisorId, year, month }) {
       />
       <CardGrid>
         <Card title="הכנסות מול הוצאות">
+          <div className={styles.netSummary}>
+            <span>הפרש הכנסות והוצאות בחודש הנבחר</span>
+            <strong className={trendData[trendData.length - 1].net < 0 ? styles.netNegative : styles.netPositive}>{fmt(trendData[trendData.length - 1].net)}</strong>
+          </div>
           <div className={styles.trendChart}>
             <Bar
               data={trendChart}
@@ -105,11 +110,11 @@ export default function Analysis({ clientUserId, advisorId, year, month }) {
                 maintainAspectRatio: false,
                 animation: ChartJS.defaults.animation === false ? false : { duration: 700, easing: 'easeOutQuart' },
                 scales: {
-                  x: { ticks: { color: CT.text2, font: { family: CT.font }, maxRotation: 0, minRotation: 0 }, grid: { display: false } },
-                  y: { ticks: { color: CT.text2, font: { family: CT.font } }, grid: { color: CT.border } }
+                  x: { ticks: { color: CT.text2, font: { family: CT.font, size: 14 }, maxRotation: 0, minRotation: 0 }, grid: { display: false } },
+                  y: { ticks: { color: CT.text2, font: { family: CT.font, size: 14 } }, grid: { color: CT.border } }
                 },
                 plugins: {
-                  legend: { align: 'end', labels: { color: CT.text2, font: { family: CT.font }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8 } },
+                  legend: { align: 'end', labels: { color: CT.text2, font: { family: CT.font, size: 14 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8 } },
                   tooltip: { backgroundColor: CT.surface, titleColor: CT.text, bodyColor: CT.text2, borderColor: CT.border, borderWidth: 1, padding: 10, titleFont: { family: CT.font }, bodyFont: { family: CT.font } }
                 }
               }}

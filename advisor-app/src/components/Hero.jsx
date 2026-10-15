@@ -3,7 +3,7 @@ import styles from './Hero.module.css';
 const isNumeric = v => typeof v === 'string' && !/[֐-׿]/.test(v);
 const cls = (base, tone, v) => base + (TONE[tone] ? ' ' + TONE[tone] : '') + (isNumeric(v) ? ' ' + styles.ltr : '');
 
-const TONE = { pos: styles.pos, neg: styles.neg, income: styles.income, expense: styles.expense };
+const TONE = { pos: styles.pos, neg: styles.neg, income: styles.income, expense: styles.expense, neutral: styles.neutral };
 
 export default function Hero({ label, value, tone, note, side = [], compact = false }) {
   return (
