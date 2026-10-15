@@ -237,6 +237,10 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
     .filter(p => OPEN_PROSPECT_STATUSES.includes(p.status) && p.follow_up_at && p.follow_up_at <= todayISO)
     .sort((a, b) => a.follow_up_at.localeCompare(b.follow_up_at));
 
+  const visibleClients = [...clients]
+                .filter(c => clientMatches(c, listFilter) && `${c.name || ''} ${c.client_email || ''}`.toLocaleLowerCase('he').includes(query.trim().toLocaleLowerCase('he')))
+                .sort(sort === 'name' ? (a, b) => (a.name || a.client_email).localeCompare(b.name || b.client_email, 'he') : sort === 'meeting' ? (a, b) => (a.nextMeetingAt || '9999').localeCompare(b.nextMeetingAt || '9999') : byUrgency);
+
   return (
     <div>
       <header className={styles.workspaceHeading}><div><span>סביבת העבודה שלך</span><h1>במה מטפלים עכשיו?</h1></div><p>פגישות, משימות ומסמכים — לפני שנכנסים לפרטי הלקוח.</p></header>
@@ -275,127 +279,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
       )}
       </div>
 
-      {clients.length > 0 && <DailyWorkQueue tasks={tasks} clients={clients} error={taskError} onRetry={reload} onToggle={completeTask} onSelect={onSelect} />}
-      {clients.length > 0 && <section className={styles.workbench} aria-label="סדר העבודה">
-        {[
-          { title: 'פגישות קרובות', empty: 'אין פגישות קרובות שנקבעו', nav: 'crm', clients: clients.filter(c => c.nextMeetingAt).sort((a, b) => a.nextMeetingAt.localeCompare(b.nextMeetingAt)), detail: c => formatDateTime(c.nextMeetingAt) },
-          { title: 'משימות פתוחות', empty: 'אין משימות פתוחות ללקוחות', nav: 'crm', clients: clients.filter(c => c.openTasks > 0).sort((a, b) => b.openTasks - a.openTasks), detail: c => `${c.openTasks} משימות פתוחות` },
-          { title: 'מסמכים שדורשים בדיקה', empty: 'אין מסמכים שסומנו עם שגיאת עיבוד', nav: 'mapping', clients: clients.filter(c => c.hasFailedUpload), detail: () => 'עיבוד מסמך לא הושלם' },
-          { title: 'חריגות לבדיקה', empty: 'אין חריגות תקציב אצל הלקוחות', nav: 'dashboard', clients: clients.filter(c => c.hasOverage).sort((a, b) => b.overageAmount - a.overageAmount), detail: c => `${fmt(c.overageAmount)} מעבר לתקציב` }
-        ].map(section => <article key={section.title} className={styles.workbenchCard}>
-          <h2>{section.title}<span>{section.clients.length}</span></h2>
-          {section.clients.length ? section.clients.slice(0, 2).map(c => <button type="button" key={c.client_id} className={styles.workbenchRow} onClick={() => onSelect(c.client_id, c.client_email, { nav: section.nav, action: section.title === 'פגישות קרובות' ? 'prep' : undefined })}><span><strong>{c.name || c.client_email}</strong><small>{section.detail(c)}</small></span><span aria-hidden="true">←</span></button>) : <p>{section.empty}</p>}
-          {section.clients.length > 2 && <span className={styles.workbenchMore}>ועוד {section.clients.length - 2} לקוחות ברשימה למטה</span>}
-        </article>)}
-      </section>}
-
-      {pipelineOpen && (
-        <PipelineModal
-          leads={leads}
-          loading={leadsLoading}
-          addLead={addLead}
-          setStage={setLeadStage}
-          deleteLead={deleteLead}
-          onClose={() => setPipelineOpen(false)}
-        />
-      )}
-
-      <div inert={pipelineOpen ? '' : undefined}>
-      {dueProspects.length > 0 && (
-        <div className={styles.followCard}>
-          <Card title="פולואפים להיום">
-            {dueProspects.map(p => (
-              <div key={p.id} className={styles.followRow}>
-                <button type="button" className={styles.followRowBtn} onClick={onOpenProspects} aria-label={`${p.name} - פתח בדף המתעניינים`} />
-                <Row
-                  name={<>{p.name}<span className={styles.followTemp + ' ' + styles[p.temperature || 'warm']}>{TEMP_LABELS[p.temperature] || TEMP_LABELS.warm}</span></>}
-                  sub={[p.source, p.contacted_at && `פנה ב-${formatDate(p.contacted_at)}`].filter(Boolean).join(' · ')}
-                >
-                  <div className={styles.followSide}>
-                    {p.phone && <a className={styles.followPhone} href={`tel:${p.phone}`} dir="ltr">{p.phone}</a>}
-                    <span className={styles.followLate}>{overdueText(p.follow_up_at, todayISO)}</span>
-                  </div>
-                </Row>
-              </div>
-            ))}
-            <Button variant="ghost" className={styles.followLink} onClick={onOpenProspects}>לדף המתעניינים</Button>
-          </Card>
-        </div>
-      )}
-      <div className={styles.sectionHead}>
-        <div className={styles.sectionTitleGroup}>
-          <h2 className={styles.sectionTitle}>הלקוחות שלי {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
-          <Button onClick={() => setAddOpen(o => !o)} aria-expanded={addOpen}>לקוח חדש +</Button>
-        </div>
-        {addOpen && <div className={styles.addForm}>
-          <input
-            ref={codeInputRef}
-            className={styles.addInput + ' ' + styles.addInputCode}
-            name="invite-code"
-            autoComplete="off"
-            dir="ltr"
-            aria-label="קוד הזמנה מהלקוח"
-            placeholder="קוד הזמנה מהלקוח"
-            value={code}
-            onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-            onKeyDown={e => e.key === 'Enter' && claimCode()}
-          />
-          <Button variant="ghost" onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
-          <input
-            ref={emailInputRef}
-            className={styles.addInput + ' ' + styles.addInputEmail}
-            type="email"
-            name="invite-email"
-            autoComplete="off"
-            aria-label="הזמן לקוח באימייל"
-            placeholder="הזמן לקוח באימייל"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && inviteByEmail()}
-          />
-          <Button onClick={inviteByEmail} disabled={invitingEmail}>הזמן</Button>
-        </div>}
-      </div>
-
-      {pendingInvites.length > 0 && (
-        <div className={styles.pendingGroup}>
-          <div className={styles.pendingHead}>הזמנות ממתינות <span className={styles.pendingCount}>{pendingInvites.length}</span></div>
-          <div className={styles.grid + ' ' + styles.pendingGrid}>
-            {pendingInvites.map(inv => (
-              <div key={inv.id} className={styles.card + ' ' + styles.pendingCard}>
-                <div className={styles.initial + ' ' + styles.pendingInitial} aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
-                </div>
-                <div className={styles.info}>
-                  <div className={styles.email}>
-                    <span className={styles.emailText} title={inv.client_email}>{inv.client_email}</span>
-                  </div>
-                  <div className={styles.chips}>
-                    <div className={styles.pendingChip + ' ' + (inv.client_id ? styles.pendingChipAccept : styles.pendingChipSignup)}>
-                      {inv.client_id ? 'ממתין לאישור הלקוח' : 'ממתין להרשמה לאפליקציה'}
-                    </div>
-                  </div>
-                </div>
-                {confirmingInviteId === inv.id ? (
-                  <div className={styles.rowConfirmGroup}>
-                    <button type="button" className={styles.confirmRemoveBtn} onClick={() => removeInvite(inv.id)}>
-                      לאשר ביטול?
-                    </button>
-                    <button type="button" className={styles.cancelRemoveBtn} onClick={() => setConfirmingInviteId(null)}>
-                      ביטול
-                    </button>
-                  </div>
-                ) : (
-                  <button type="button" className={styles.removeBtn + ' ' + styles.pendingRemoveBtn} title="בטל הזמנה" aria-label={`בטל את ההזמנה ל-${inv.client_email}`} onClick={() => setConfirmingInviteId(inv.id)}>
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
+      {clients.length > 0 && <DailyWorkQueue advisorId={advisorId} tasks={tasks} clients={clients} error={taskError} onRetry={reload} onToggle={completeTask} onSelect={onSelect} />}
       {!clients.length ? (
         <div className={styles.empty}>
           <div className={styles.emptyMark}>
@@ -429,9 +313,8 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
               </tr>
             </thead>
             <tbody>
-              {[...clients]
-                .filter(c => clientMatches(c, listFilter) && `${c.name || ''} ${c.client_email || ''}`.toLocaleLowerCase('he').includes(query.trim().toLocaleLowerCase('he')))
-                .sort(sort === 'name' ? (a, b) => (a.name || a.client_email).localeCompare(b.name || b.client_email, 'he') : sort === 'meeting' ? (a, b) => (a.nextMeetingAt || '9999').localeCompare(b.nextMeetingAt || '9999') : byUrgency).map(c => {
+              {!visibleClients.length && <tr><td colSpan={5}><p className={styles.queueEmpty}>אין לקוחות שמתאימים לחיפוש ולסינון.</p><Button variant="ghost" onClick={() => changeView({ filter: null, query: '', sort: 'urgency' })}>הצג את כל הלקוחות</Button></td></tr>}
+              {visibleClients.map(c => {
                 const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting;
                 const confirming = confirmingId === c.id;
                 const flags = [
@@ -505,6 +388,128 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
         </div>
         </>
       )}
+
+      {clients.length > 0 && <section className={styles.workbench} aria-label="סדר העבודה">
+        {[
+          { title: 'פגישות קרובות', empty: 'אין פגישות קרובות שנקבעו', nav: 'crm', clients: clients.filter(c => c.nextMeetingAt).sort((a, b) => a.nextMeetingAt.localeCompare(b.nextMeetingAt)), detail: c => formatDateTime(c.nextMeetingAt) },
+          { title: 'משימות פתוחות', empty: 'אין משימות פתוחות ללקוחות', nav: 'crm', clients: clients.filter(c => c.openTasks > 0).sort((a, b) => b.openTasks - a.openTasks), detail: c => `${c.openTasks} משימות פתוחות` },
+          { title: 'מסמכים שדורשים בדיקה', empty: 'אין מסמכים שסומנו עם שגיאת עיבוד', nav: 'mapping', clients: clients.filter(c => c.hasFailedUpload), detail: () => 'עיבוד מסמך לא הושלם' },
+          { title: 'חריגות לבדיקה', empty: 'אין חריגות תקציב אצל הלקוחות', nav: 'dashboard', clients: clients.filter(c => c.hasOverage).sort((a, b) => b.overageAmount - a.overageAmount), detail: c => `${fmt(c.overageAmount)} מעבר לתקציב` }
+        ].map(section => <article key={section.title} className={styles.workbenchCard}>
+          <h2>{section.title}<span>{section.clients.length}</span></h2>
+          {section.clients.length ? section.clients.slice(0, 2).map(c => <button type="button" key={c.client_id} className={styles.workbenchRow} onClick={() => onSelect(c.client_id, c.client_email, { nav: section.nav, action: section.title === 'פגישות קרובות' ? 'prep' : undefined })}><span><strong>{c.name || c.client_email}</strong><small>{section.detail(c)}</small></span><span aria-hidden="true">←</span></button>) : <p>{section.empty}</p>}
+          {section.clients.length > 2 && <span className={styles.workbenchMore}>ועוד {section.clients.length - 2} לקוחות ברשימה למטה</span>}
+        </article>)}
+      </section>}
+
+      {pipelineOpen && (
+        <PipelineModal
+          leads={leads}
+          loading={leadsLoading}
+          addLead={addLead}
+          setStage={setLeadStage}
+          deleteLead={deleteLead}
+          onClose={() => setPipelineOpen(false)}
+        />
+      )}
+
+      <div inert={pipelineOpen ? '' : undefined}>
+      {dueProspects.length > 0 && (
+        <div className={styles.followCard}>
+          <Card title="פולואפים להיום">
+            {dueProspects.map(p => (
+              <div key={p.id} className={styles.followRow}>
+                <button type="button" className={styles.followRowBtn} onClick={onOpenProspects} aria-label={`${p.name} - פתח בדף המתעניינים`} />
+                <Row
+                  name={<>{p.name}<span className={styles.followTemp + ' ' + styles[p.temperature || 'warm']}>{TEMP_LABELS[p.temperature] || TEMP_LABELS.warm}</span></>}
+                  sub={[p.source, p.contacted_at && `פנה ב-${formatDate(p.contacted_at)}`].filter(Boolean).join(' · ')}
+                >
+                  <div className={styles.followSide}>
+                    {p.phone && <a className={styles.followPhone} href={`tel:${p.phone}`} dir="ltr">{p.phone}</a>}
+                    <span className={styles.followLate}>{overdueText(p.follow_up_at, todayISO)}</span>
+                  </div>
+                </Row>
+              </div>
+            ))}
+            <Button variant="ghost" className={styles.followLink} onClick={onOpenProspects}>לדף המתעניינים</Button>
+          </Card>
+        </div>
+      )}
+      <div className={styles.sectionHead}>
+        <div className={styles.sectionTitleGroup}>
+          <h2 className={styles.sectionTitle}>חיבור לקוחות והזמנות {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
+          <Button onClick={() => setAddOpen(o => !o)} aria-expanded={addOpen}>לקוח חדש +</Button>
+        </div>
+        {addOpen && <div className={styles.addForm}>
+          <input
+            ref={codeInputRef}
+            className={styles.addInput + ' ' + styles.addInputCode}
+            name="invite-code"
+            autoComplete="off"
+            dir="ltr"
+            aria-label="קוד הזמנה מהלקוח"
+            placeholder="קוד הזמנה מהלקוח"
+            value={code}
+            onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+            onKeyDown={e => e.key === 'Enter' && claimCode()}
+          />
+          <Button variant="ghost" onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
+          <input
+            ref={emailInputRef}
+            className={styles.addInput + ' ' + styles.addInputEmail}
+            type="email"
+            name="invite-email"
+            autoComplete="off"
+            aria-label="הזמן לקוח באימייל"
+            placeholder="הזמן לקוח באימייל"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && inviteByEmail()}
+          />
+          <Button onClick={inviteByEmail} disabled={invitingEmail}>הזמן</Button>
+        </div>}
+      </div>
+
+      {pendingInvites.length > 0 && (
+        <div className={styles.pendingGroup}>
+          <div className={styles.pendingHead}>הזמנות ממתינות <span className={styles.pendingCount}>{pendingInvites.length}</span></div>
+          <div className={styles.grid + ' ' + styles.pendingGrid}>
+            {pendingInvites.map(inv => (
+              <div key={inv.id} className={styles.card + ' ' + styles.pendingCard}>
+                <div className={styles.initial + ' ' + styles.pendingInitial} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>
+                </div>
+                <div className={styles.info}>
+                  <div className={styles.email}>
+                    <span className={styles.emailText} title={inv.client_email}>{inv.client_email}</span>
+                  </div>
+                  <div className={styles.chips}>
+                    <div className={styles.pendingChip + ' ' + (inv.client_id ? styles.pendingChipAccept : styles.pendingChipSignup)}>
+                      {inv.client_id ? 'ממתין לאישור הלקוח' : 'ממתין להרשמה לאפליקציה'}
+                    </div>
+                  </div>
+                </div>
+                {confirmingInviteId === inv.id ? (
+                  <div className={styles.rowConfirmGroup}>
+                    <button type="button" className={styles.confirmRemoveBtn} onClick={() => removeInvite(inv.id)}>
+                      לאשר ביטול?
+                    </button>
+                    <button type="button" className={styles.cancelRemoveBtn} onClick={() => setConfirmingInviteId(null)}>
+                      ביטול
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" className={styles.removeBtn + ' ' + styles.pendingRemoveBtn} title="בטל הזמנה" aria-label={`בטל את ההזמנה ל-${inv.client_email}`} onClick={() => setConfirmingInviteId(inv.id)}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
       </div>
     </div>
   );

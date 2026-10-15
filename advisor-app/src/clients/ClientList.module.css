@@ -979,3 +979,5 @@
 .savedViews > span { display: inline-flex; }
 .savedViews button { border-radius: 0; }
 .resumeBar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 12px 18px; background: var(--accent-dim); border-radius: var(--radius-sm); margin-bottom: 20px; }
+
+@media (min-width: 1280px) { .workbench { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; } .workbenchCard { padding: 18px; } }

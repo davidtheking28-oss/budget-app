@@ -166,7 +166,7 @@ export default function App() {
   }
 
   function changeBudgetMode(mode) {
-    if (mode === budgetMode || !canLeaveBudget()) return;
+    if (mode === budgetMode || (nav !== 'crm' && !canLeaveBudget())) return;
     setBudgetDirty(false);
     setBudgetCategory(null);
     setBudgetMode(mode);

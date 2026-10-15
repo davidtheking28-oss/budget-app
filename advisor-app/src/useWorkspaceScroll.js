@@ -19,7 +19,7 @@ export function useWorkspaceScroll(scope) {
     }
     function stop() { restoring = false; observer.disconnect(); position = window.scrollY; }
     function track() { if (!restoring) position = window.scrollY; }
-    observer.observe(document.body);
+    observer.observe(document.getElementById('root') || document.body);
     const frame = requestAnimationFrame(restore);
     window.addEventListener('scroll', track, { passive: true });
     window.addEventListener('wheel', stop, { passive: true });
