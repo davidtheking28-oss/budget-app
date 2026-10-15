@@ -16,7 +16,7 @@
   width: 100%;
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
   margin: 0 auto;
-  padding: var(--space-5) var(--page-pad);
+  padding: var(--space-4) var(--page-pad);
 }
 
 .topbarBleed {
@@ -226,7 +226,7 @@
 
 .content {
   flex: 1;
-  padding: var(--space-7) var(--page-pad) var(--space-8);
+  padding: var(--space-5) var(--page-pad) var(--space-8);
   max-width: calc(var(--page-max) + var(--page-pad) * 2);
   width: 100%;
   margin: 0 auto;
@@ -374,10 +374,10 @@
 
 .accountUp .accountTrigger { color: var(--workspace-muted); }
 .accountUp { border-color: var(--workspace-line); }
-.clientContext { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; color: var(--text2); font-size: var(--text-sm); }
+.clientContext { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 6px; color: var(--text2); font-size: var(--text-sm); }
 .contextName { max-width: 40ch; overflow-wrap: anywhere; }
 .modeContext { display: inline-flex; padding: 3px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-full); gap: 3px; }
 .modeContext button { min-height: 30px; padding: 4px 12px; border: none; border-radius: var(--radius-full); color: var(--text2); background: transparent; font-family: inherit; font-weight: 700; cursor: pointer; }
 .modeContext button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-.pageTitle { font-size: 30px; }
+
 .mobileClient { display: none; }

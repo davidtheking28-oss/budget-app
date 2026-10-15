@@ -249,7 +249,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
                       <button type="button" className={styles.clientCellBtn} onClick={() => onSelect(c.client_id, c.client_email)}>
                         <div className={styles.initial} aria-hidden="true">
                           {initials(c.name?.trim() || c.client_email)}
-                          {urgent && <span className={styles.alertDot} title="דורש טיפול" />}
                         </div>
                         <div className={styles.info}>
                           <div className={styles.email}>
