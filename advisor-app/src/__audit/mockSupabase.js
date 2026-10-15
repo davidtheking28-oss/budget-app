@@ -30,7 +30,7 @@ function builder(table) {
   function resolve() {
     if (params.get('write') === 'fail' && table === 'budget_data' && pendingWrite !== null) return { data: null, error: { message: 'QA write failed' } };
     let out = rows();
-    for (const f of filters) out = out.filter(f);
+    if (pendingWrite === null) for (const f of filters) out = out.filter(f);
     if (order) {
       const { col, asc } = order;
       out.sort((a, b) => {
