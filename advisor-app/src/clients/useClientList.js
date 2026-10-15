@@ -34,7 +34,7 @@ export function useClientList(advisorId) {
     const now = new Date();
 
     const [{ data: budgetRows }, { data: taskRows, error: taskError }, { data: meetingRows }, { data: uploadErrorRows }] = await Promise.all([
-      supabase.from('budget_data').select('user_id, transactions, budgets, updated_at').in('user_id', clientIds),
+      supabase.from('budget_data').select('user_id, transactions, budgets, settings, updated_at').in('user_id', clientIds),
       supabase.from('advisor_tasks').select('*').eq('advisor_id', advisorId).in('client_id', clientIds),
       supabase.from('advisor_meetings').select('client_id, scheduled_at, status').eq('advisor_id', advisorId).in('client_id', clientIds),
       supabase.from('economic_mappings').select('client_id, last_upload_error').eq('advisor_id', advisorId).not('last_upload_error', 'is', null).in('client_id', clientIds)

@@ -26,6 +26,7 @@ function builder(table) {
   let pendingWrite = null;
   let head = false;
   let wantCount = false;
+  let columns = null;
 
   function resolve() {
     if (params.get('write') === 'fail' && table === 'budget_data' && pendingWrite !== null) return { data: null, error: { message: 'QA write failed' } };
@@ -44,6 +45,7 @@ function builder(table) {
     const count = out.length;
     if (limit != null) out = out.slice(0, limit);
     if (head) return { data: null, error: null, count };
+    if (columns) out = out.map(row => Object.fromEntries(columns.filter(key => key in row).map(key => [key, row[key]])));
     if (single === 'maybe') return { data: out[0] || null, error: null, count };
     if (single === 'one') return { data: out[0] || null, error: out[0] ? null : { message: 'no rows' }, count };
     return { data: out, error: null, count: wantCount ? count : null };
@@ -51,6 +53,7 @@ function builder(table) {
 
   const api = {
     select(_cols, opts) {
+      columns = _cols && _cols !== '*' ? _cols.split(',').map(key => key.trim()) : null;
       if (opts?.head) head = true;
       if (opts?.count) wantCount = true;
       return api;
