@@ -524,3 +524,26 @@ test('cloud name fills an empty local name even when local settings look newer',
   assert.equal(ctx.userSettings.name,'David');
   assert.equal(JSON.parse(localStorage.getItem('budget_settings')).name,'David');
 });
+test('launch theme and every theme-color tag follow the resolved theme',()=>{
+  const match=html.match(/<script>\(function\(\)\{try\{var m=localStorage\.getItem\('budget_theme'\)[^]*?<\/script>/);
+  assert.ok(match);
+  const src=match[0].replace(/^<script>/,'').replace(/<\/script>$/,'');
+  function launch(values,systemDark){
+    const metas=[{content:''},{content:''}];const scheme={content:''};const state={dark:null};
+    const win={matchMedia:()=>({matches:systemDark})};
+    const doc={body:{classList:{toggle:(name,on)=>{state.dark=on;}}},documentElement:{style:{}},querySelector:sel=>sel.includes('color-scheme')?{setAttribute:(k,v)=>{scheme.content=v;}}:null,querySelectorAll:()=>metas.map(m=>({setAttribute:(k,v)=>{m.content=v;}}))};
+    vm.runInNewContext(src,{localStorage:storage(values),window:win,document:doc});
+    return {state,metas,scheme,doc,win};
+  }
+  const dark=launch({},true);
+  assert.equal(dark.state.dark,true);
+  assert.equal(dark.doc.documentElement.style.background,'#100f0d');
+  assert.deepEqual(dark.metas.map(m=>m.content),['#100f0d','#100f0d']);
+  dark.win._themeChrome(false);
+  assert.equal(dark.doc.documentElement.style.background,'#eef3f1');
+  assert.deepEqual(dark.metas.map(m=>m.content),['#eef3f1','#eef3f1']);
+  assert.equal(dark.scheme.content,'light');
+  const manual=launch({budget_theme:'light'},true);
+  assert.equal(manual.state.dark,false);
+  assert.deepEqual(manual.metas.map(m=>m.content),['#eef3f1','#eef3f1']);
+});
