@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="theme-color" content="#100f0d"/>
   <meta name="color-scheme" content="light dark"/>
-  <title>תקציב אישי</title>
+  <title>שקל שקל</title>
   <meta name="description" content="ניהול תקציב חודשי בעברית — מעקב הכנסות והוצאות, יעדי חיסכון, הוראות קבע ותובנות אישיות. עובד גם בלי אינטרנט, מותקן כאפליקציה בטלפון."/>
   <link rel="canonical" href="https://davidtheking28-oss.github.io/budget-app/"/>
   <meta property="og:type" content="website"/>
-  <meta property="og:site_name" content="תקציב אישי"/>
-  <meta property="og:title" content="תקציב אישי"/>
+  <meta property="og:site_name" content="שקל שקל"/>
+  <meta property="og:title" content="שקל שקל"/>
   <meta property="og:description" content="ניהול תקציב חודשי בעברית — הכנסות, הוצאות, יעדי חיסכון ותובנות. עובד גם אופליין."/>
   <meta property="og:url" content="https://davidtheking28-oss.github.io/budget-app/"/>
   <meta property="og:image" content="https://davidtheking28-oss.github.io/budget-app/assets/icon-512.png"/>
@@ -20,7 +20,7 @@
   <meta name="twitter:card" content="summary"/>
   <link rel="manifest" href="./manifest.json"/>
   <meta name="mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-title" content="תקציב"/>
+  <meta name="apple-mobile-web-app-title" content="שקל שקל"/>
   <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png"/>
   <!-- iOS splash screens — one per physical-pixel size Apple checks via strict
        device-width/device-height/-webkit-device-pixel-ratio media queries; a
@@ -1726,7 +1726,7 @@
 
 <div id="splashScreen">
   <img class="splash-logo" src="./assets/icon-192.png" alt=""/>
-  <div class="splash-title">תקציב אישי</div>
+  <div class="splash-title">שקל שקל</div>
   <div class="splash-sub" id="splashMsg">מתחבר לענן...</div>
   <div id="splashRetry" style="display:none;margin-top:16px;flex-direction:column;align-items:center;gap:10px">
     <div style="font-size:0.8rem;color:var(--text3)">החיבור לוקח יותר זמן מהרגיל</div>
@@ -1741,7 +1741,7 @@
     <!-- Hero -->
     <div class="auth-hero">
       <div class="auth-app-icon"><div class="auth-app-icon-sym">₪</div></div>
-      <div class="auth-app-name">תקציב אישי</div>
+      <div class="auth-app-name">שקל שקל</div>
       <div class="auth-app-sub">שלוט בכסף שלך. בלי סיסמאות.</div>
       <div class="auth-trust-row">
         <div class="auth-trust-item">
@@ -2539,7 +2539,7 @@
       </button>
     </div>
     <div style="margin-top:32px;text-align:center;display:flex;flex-direction:column;gap:6px;">
-      <div style="font-size:0.72rem;font-weight:700;color:var(--text3)">תקציב אישי</div>
+      <div style="font-size:0.72rem;font-weight:700;color:var(--text3)">שקל שקל</div>
       <div class="a11y-fineprint" style="font-size:0.7rem;color:var(--text2);">הנתונים שלך נשמרים מקומית במכשיר ומוצפנים בענן</div>
     </div>
   </div>
@@ -2829,7 +2829,7 @@
       <div style="background:rgba(10,122,98,0.07);border-radius:10px;padding:10px 14px;font-size:0.8rem;color:var(--accent);">השימוש באפליקציה מהווה הסכמה לתנאים אלה. אם אינך מסכים, אנא הפסק את השימוש.</div>
       <div>
         <strong style="color:var(--text);display:block;margin-bottom:5px">1. תיאור השירות</strong>
-        תקציב אישי היא אפליקציה לניהול הוצאות והכנסות אישיות. האפליקציה מיועדת לשימוש אישי בלבד. אין בה ייעוץ פיננסי, השקעות או שירות מוסדר על-פי חוק הייעוץ הפיננסי.
+        שקל שקל היא אפליקציה לניהול הוצאות והכנסות אישיות. האפליקציה מיועדת לשימוש אישי בלבד. אין בה ייעוץ פיננסי, השקעות או שירות מוסדר על-פי חוק הייעוץ הפיננסי.
       </div>
       <div>
         <strong style="color:var(--text);display:block;margin-bottom:5px">2. אחריות המשתמש</strong>
@@ -5272,7 +5272,7 @@ function updateHeaderTitle(){
   const n = userSettings.name, p = userSettings.partnerName;
   if(n && p)      el.textContent = n + ' & ' + p;
   else if(n)      el.textContent = 'תקציב של ' + n;
-  else            el.textContent = 'תקציב אישי';
+  else            el.textContent = 'שקל שקל';
 }
 
 // ── Export CSV ────────────────────────────────────────────────────
@@ -9466,7 +9466,7 @@ setTimeout(autoCarryRecurring,500);
 <div id="autoLockOverlay" role="dialog" aria-modal="true" aria-label="האפליקציה נעולה" tabindex="-1" onclick="unlockApp()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,12,22,0.97);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:20px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);">
   <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">🔒</div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-    <div style="font-size:1.15rem;font-weight:800;color:#f0ebe3;font-family:Assistant,sans-serif;letter-spacing:0;">תקציב אישי</div>
+    <div style="font-size:1.15rem;font-weight:800;color:#f0ebe3;font-family:Assistant,sans-serif;letter-spacing:0;">שקל שקל</div>
     <div style="font-size:0.82rem;color:rgba(240,235,227,0.45);font-family:Assistant,sans-serif;">הקש להמשיך</div>
   </div>
 </div>
