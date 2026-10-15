@@ -57,7 +57,7 @@ function builder(table) {
     },
     insert(vals) {
       const arr = Array.isArray(vals) ? vals : [vals];
-      const made = arr.map((v, i) => ({ id: 'new' + Date.now() + i, created_at: new Date().toISOString(), done: false, ...v }));
+      const made = arr.map((v, i) => ({ id: 'new' + Date.now() + i, created_at: new Date().toISOString(), done: false, ...(table === 'advisor_meetings' ? { status: 'pending' } : {}), ...v }));
       let committed = false;
       pendingWrite = made;
       rows = () => { if (!committed) { db[table] = [...(db[table] || []), ...made]; committed = true; } return clone(made); };
