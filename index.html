@@ -4632,7 +4632,7 @@ async function _doCloudSave(){
       if(cloudSettings&&cloudSettings.name!==undefined){
         const cloudTs=row&&row.updated_at?new Date(row.updated_at).getTime():0;
         const localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');
-        const cloudNewer=cloudTs>localTs;
+        const cloudNewer=cloudTs>localTs||(!userSettings.name&&!!cloudSettings.name);
         const hist=cloudNewer?{...(userSettings.incomeHistory||{}),...(cloudSettings.incomeHistory||{})}:{...(cloudSettings.incomeHistory||{}),...(userSettings.incomeHistory||{})};
         if(cloudNewer&&_stableStr(cloudSettings)!==_stableStr({...userSettings,incomeHistory:cloudSettings.incomeHistory})){userSettings={...userSettings,...cloudSettings};changed=true;}
         if(Object.keys(hist).length){userSettings.incomeHistory=hist;_syncCurrentIncome();}
@@ -4700,7 +4700,7 @@ async function _loadFromCloud(silent){
       _advisorAssets=bundle.assets||[];
       _advisorOverdraft=bundle.overdraft||{balance:0};
       const cloudSettings=bundle.settings;
-      if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs){userSettings={...userSettings,...cloudSettings};if(!cloudSettings.incomeHistory){delete userSettings.incomeHistory;_seedIncomeHistory();}_syncCurrentIncome();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
+      if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs||(!userSettings.name&&cloudSettings.name)){userSettings={...userSettings,...cloudSettings};if(!cloudSettings.incomeHistory){delete userSettings.incomeHistory;_seedIncomeHistory();}_syncCurrentIncome();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
       if(!silent||changed){refreshAll();}
       _decideOnboarding();
     } else {
@@ -5241,13 +5241,14 @@ function openPartnerShare(){
   document.getElementById('cloudSection')?.scrollIntoView({behavior:'smooth',block:'center'});
 }
 function updatePartnerFromHousehold(){
+  const prevPartner=userSettings.partnerName||'';
   if(_cloudHousehold&&_cloudHousehold.role==='owner'&&_cloudHousehold.member_email)
     userSettings.partnerName=_cloudHousehold.member_email.split('@')[0];
   else if(_cloudHousehold&&_cloudHousehold.role==='member')
     userSettings.partnerName='שותף/ה';
   else
     userSettings.partnerName='';
-  saveSettingsData();
+  if(userSettings.partnerName!==prevPartner)saveSettingsData();
   updateHeaderTitle();
   const hasP=!!userSettings.partnerName;
   const row=document.getElementById('partnerRow');
