@@ -15,7 +15,8 @@ import { addItem } from '../budget/itemHelpers.js';
 // transaction the parser tagged this way doesn't fall off the dropdown.
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 const LOAN_CATEGORY = 'החזר הלוואות + חיוב קבוע';
-const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS, SAVINGS_CATEGORY];
+const FOREIGN_ORDERS_CATEGORY = 'הזמנות מחו״ל';
+const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS.slice(0, -1), FOREIGN_ORDERS_CATEGORY, ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c)), 'שונות'];
 import { supabase, SUPA_URL } from '../supabaseClient.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';

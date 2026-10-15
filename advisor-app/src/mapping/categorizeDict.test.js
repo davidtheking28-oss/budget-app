@@ -20,4 +20,10 @@ describe('categorizeByDictionary', () => {
     expect(categorizeByDictionary('משכורת חודשית', 'income')).toBe('שכר');
     expect(categorizeByDictionary('משכורת חודשית', 'expense')).toBeNull();
   });
+
+  it('classifies electricity as a fixed expense and overseas shops as foreign orders', () => {
+    expect(categorizeByDictionary('תשלום חשמל', 'expense')).toBe('חשמל');
+    expect(categorizeByDictionary('ALIEXPRESS.COM', 'expense')).toBe('הזמנות מחו״ל');
+    expect(categorizeByDictionary('חשמלאי יוסי', 'expense')).toBe('שונות');
+  });
 });
