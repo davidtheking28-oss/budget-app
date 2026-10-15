@@ -114,9 +114,14 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   const [editMeetingAt, setEditMeetingAt] = useState('');
   const [editMeetingNotes, setEditMeetingNotes] = useState('');
   const [editMeetingForClient, setEditMeetingForClient] = useState(true);
+  const currentTask = tasks.find(t => t.id === editingTask);
+  const taskChanged = !!currentTask && (editTaskTitle !== currentTask.title || editTaskDue !== (currentTask.due_date || '') || editTaskForClient !== !!currentTask.for_client || editResponsible !== (currentTask.responsible || 'advisor') || editKind !== (currentTask.task_kind || 'action'));
+  const currentMeeting = meetings.find(m => m.id === editingMeeting);
+  const meetingChanged = !!currentMeeting && (editMeetingAt !== toLocalInput(currentMeeting.scheduled_at) || editMeetingNotes !== (currentMeeting.notes || '') || editMeetingForClient !== !!currentMeeting.for_client);
+  const profileChanged = profileDirty && (nameDraft !== (profile?.name || '') || phoneDraft !== (profile?.phone || '') || backgroundDraft !== (profile?.background || ''));
   const signal = type => (action?.type === type ? action.id : 0);
 
-  function startEditTask(t) { setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); setEditResponsible(t.responsible || 'advisor'); setEditKind(t.task_kind || 'action'); }
+  function startEditTask(t) { if (savingTask || taskChanged) { toast('שמור או בטל את עריכת המשימה הנוכחית לפני מעבר למשימה אחרת', 'info'); return; } setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); setEditResponsible(t.responsible || 'advisor'); setEditKind(t.task_kind || 'action'); }
   async function saveEditTask(id) {
     if (savingTask) return;
     setSavingTask(true);
@@ -130,7 +135,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
     if (Number.isNaN(d.getTime())) return '';
     return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   }
-  function startEditMeeting(m) { if (meetingDirty[m.id]) { toast('שמור קודם את הסיכום ומשימות ההמשך של הפגישה', 'info'); return; } setEditingMeeting(m.id); setEditMeetingAt(toLocalInput(m.scheduled_at)); setEditMeetingNotes(m.notes || ''); setEditMeetingForClient(!!m.for_client); }
+  function startEditMeeting(m) { if (savingMeeting || meetingChanged) { toast('שמור או בטל את עריכת הפגישה הנוכחית לפני מעבר לפגישה אחרת', 'info'); return; } if (meetingDirty[m.id]) { toast('שמור קודם את הסיכום ומשימות ההמשך של הפגישה', 'info'); return; } setEditingMeeting(m.id); setEditMeetingAt(toLocalInput(m.scheduled_at)); setEditMeetingNotes(m.notes || ''); setEditMeetingForClient(!!m.for_client); }
   async function saveEditMeeting(id) {
     const d = new Date(editMeetingAt);
     if (!editMeetingAt || Number.isNaN(d.getTime())) { toast('בחר תאריך ושעה', 'error'); return; }
@@ -145,7 +150,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
   const overdueTasks = tasks.filter(t => !t.done && t.due_date && t.due_date < todayIso).length;
   const soonMeetings = meetings.filter(m => { const d = daysUntil(m.scheduled_at); return d !== null && d >= 0 && d <= 3; }).length;
 
-  const dirty = savingTask || savingMeeting || profileDirty || Object.entries(meetingDirty).some(([id, value]) => value && meetings.some(m => m.id === id)) || !!taskTitle.trim() || !!meetingAt || !!meetingNotes.trim() || !!editingTask || !!editingMeeting;
+  const dirty = savingTask || savingMeeting || profileChanged || Object.entries(meetingDirty).some(([id, value]) => value && meetings.some(m => m.id === id)) || !!taskTitle.trim() || !!meetingAt || !!meetingNotes.trim() || taskChanged || meetingChanged;
   useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
   useEffect(() => {
     if (!dirty) return;
@@ -212,7 +217,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
                 onChange={e => { setBackgroundDraft(e.target.value); setProfileDirty(true); }}
               />
               <div style={{ marginTop: 'var(--space-3)' }}>
-                <Button onClick={saveProfileFields} disabled={!profileDirty}>שמור</Button>
+                <Button onClick={saveProfileFields} disabled={!profileChanged}>שמור</Button>
               </div>
             </AddForm>
           </div>
@@ -225,10 +230,10 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
         <div>
         <div className={styles.sectionBodyInner}>
         <AddForm label="קבע פגישה" openSignal={signal('meeting')} className={styles.form}>
-          <input className={styles.input} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
-          <input className={styles.input} type="datetime-local" step="1800" aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
+          <input className={styles.input} disabled={savingMeeting} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
+          <input className={styles.input} type="datetime-local" step="1800" disabled={savingMeeting} aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
           <label className={styles.forClientLabel}>
-            <input type="checkbox" className={styles.checkbox} checked={meetingForClient} onChange={e => setMeetingForClient(e.target.checked)} />
+            <input type="checkbox" className={styles.checkbox} disabled={savingMeeting} checked={meetingForClient} onChange={e => setMeetingForClient(e.target.checked)} />
             גלוי ללקוח
           </label>
           <Button disabled={!meetingAt || savingMeeting} onClick={submitMeeting}>קבע פגישה</Button>
@@ -238,14 +243,14 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
             {meetings.map((m, i) => editingMeeting === m.id ? (
               <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                 <div className={styles.form} style={{ margin: 0, flex: 1 }}>
-                  <input className={styles.input} aria-label="נושא הפגישה" value={editMeetingNotes} onChange={e => setEditMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditMeeting(m.id)} />
-                  <input className={styles.input} type="datetime-local" step="1800" aria-label="תאריך ושעת הפגישה" value={editMeetingAt} onChange={e => setEditMeetingAt(e.target.value)} />
+                  <input className={styles.input} disabled={savingMeeting} aria-label="נושא הפגישה" value={editMeetingNotes} onChange={e => setEditMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditMeeting(m.id)} />
+                  <input className={styles.input} type="datetime-local" step="1800" disabled={savingMeeting} aria-label="תאריך ושעת הפגישה" value={editMeetingAt} onChange={e => setEditMeetingAt(e.target.value)} />
                   <label className={styles.forClientLabel}>
-                    <input type="checkbox" className={styles.checkbox} checked={editMeetingForClient} onChange={e => setEditMeetingForClient(e.target.checked)} />
+                    <input type="checkbox" className={styles.checkbox} disabled={savingMeeting} checked={editMeetingForClient} onChange={e => setEditMeetingForClient(e.target.checked)} />
                     גלוי ללקוח
                   </label>
                   <Button disabled={savingMeeting} onClick={() => saveEditMeeting(m.id)}>שמור</Button>
-                  <Button variant="ghost" onClick={() => setEditingMeeting(null)}>ביטול</Button>
+                  <Button variant="ghost" disabled={savingMeeting} onClick={() => setEditingMeeting(null)}>ביטול</Button>
                 </div>
               </div>
             ) : (() => {
@@ -305,14 +310,14 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
         <div>
         <div className={styles.sectionBodyInner}>
         <AddForm label="הוסף משימות" openSignal={signal('task')} className={styles.form}>
-          <textarea className={styles.textarea} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
-          <input className={styles.input} type="date" aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
+          <textarea className={styles.textarea} disabled={savingTask} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
+          <input className={styles.input} type="date" disabled={savingTask} aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
           <label className={styles.forClientLabel}>
-            <input type="checkbox" className={styles.checkbox} checked={taskForClient} onChange={e => setTaskForClient(e.target.checked)} />
+            <input type="checkbox" className={styles.checkbox} disabled={savingTask} checked={taskForClient} onChange={e => setTaskForClient(e.target.checked)} />
             גלוי ללקוח
           </label>
-          <label className={styles.fieldLabel}>אחראי<select className={styles.input} aria-label="אחראי למשימות" value={taskResponsible} onChange={e => setTaskResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select></label>
-          <label className={styles.fieldLabel}>סוג<select className={styles.input} aria-label="סוג המשימות" value={taskKind} onChange={e => setTaskKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select></label>
+          <label className={styles.fieldLabel}>אחראי<select className={styles.input} disabled={savingTask} aria-label="אחראי למשימות" value={taskResponsible} onChange={e => setTaskResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select></label>
+          <label className={styles.fieldLabel}>סוג<select className={styles.input} disabled={savingTask} aria-label="סוג המשימות" value={taskKind} onChange={e => setTaskKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select></label>
           <Button disabled={!taskTitle.trim() || savingTask} onClick={submitTask}>הוסף משימה</Button>
         </AddForm>
         {tasks.length ? (
@@ -320,16 +325,16 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
             {tasks.map((t, i) => editingTask === t.id ? (
               <div key={t.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                 <div className={styles.form} style={{ margin: 0, flex: 1 }}>
-                  <input className={styles.input} aria-label="תיאור המשימה" value={editTaskTitle} onChange={e => setEditTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditTask(t.id)} />
-                  <input className={styles.input} type="date" aria-label="תאריך יעד למשימה" value={editTaskDue} onChange={e => setEditTaskDue(e.target.value)} />
+                  <input className={styles.input} disabled={savingTask} aria-label="תיאור המשימה" value={editTaskTitle} onChange={e => setEditTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditTask(t.id)} />
+                  <input className={styles.input} type="date" disabled={savingTask} aria-label="תאריך יעד למשימה" value={editTaskDue} onChange={e => setEditTaskDue(e.target.value)} />
                   <label className={styles.forClientLabel}>
-                    <input type="checkbox" className={styles.checkbox} checked={editTaskForClient} onChange={e => setEditTaskForClient(e.target.checked)} />
+                    <input type="checkbox" className={styles.checkbox} disabled={savingTask} checked={editTaskForClient} onChange={e => setEditTaskForClient(e.target.checked)} />
                     גלוי ללקוח
                   </label>
-                  <select className={styles.input} aria-label="אחראי למשימה" value={editResponsible} onChange={e => setEditResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select>
-                  <select className={styles.input} aria-label="סוג המשימה" value={editKind} onChange={e => setEditKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select>
+                  <select className={styles.input} disabled={savingTask} aria-label="אחראי למשימה" value={editResponsible} onChange={e => setEditResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select>
+                  <select className={styles.input} disabled={savingTask} aria-label="סוג המשימה" value={editKind} onChange={e => setEditKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select>
                   <Button disabled={savingTask} onClick={() => saveEditTask(t.id)}>שמור</Button>
-                  <Button variant="ghost" onClick={() => setEditingTask(null)}>ביטול</Button>
+                  <Button variant="ghost" disabled={savingTask} onClick={() => setEditingTask(null)}>ביטול</Button>
                 </div>
               </div>
             ) : (() => {
