@@ -6,7 +6,7 @@ import { usePipeline } from './usePipeline.js';
 import { useProspects } from './useProspects.js';
 import { Card, Row } from '../components/Rows.jsx';
 import PipelineModal from './PipelineModal.jsx';
-import { isStale, relativeTime } from './useClientFreshness.js';
+import { isStale } from './useClientFreshness.js';
 import { formatDate, formatDateTime, localISODate } from '../budget/monthUtils.js';
 import { useCountUp } from '../useCountUp.js';
 import { useUrlParam } from '../useUrlParam.js';
@@ -20,16 +20,6 @@ import { fmt } from '../format.js';
 import DailyWorkQueue from './DailyWorkQueue.jsx';
 import ClientViews, { CLIENT_FILTERS, clientMatches } from './ClientViews.jsx';
 import { readWorkspace, writeWorkspace } from '../workspaceMemory.js';
-
-function HealthBadge({ score }) {
-  if (score === null) return null;
-  const tone = score >= 75 ? styles.healthGood : score >= 45 ? styles.healthWarn : styles.healthBad;
-  return (
-    <span className={styles.healthBadge + ' ' + tone} title={`ציון בריאות פיננסית: ${score} מתוך 100`}>
-      {score}
-    </span>
-  );
-}
 
 // Clients arrive in roster order, which buries the ones that need attention.
 // Rank by urgency, then by the weakest health score.
@@ -96,6 +86,8 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
   const [submitting, setSubmitting] = useState(false);
   const [invitingEmail, setInvitingEmail] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
+  const [actionsId, setActionsId] = useState(null);
+  const [secondaryOpen, setSecondaryOpen] = useState(false);
   const [confirmingInviteId, setConfirmingInviteId] = useState(null);
   const [remembered] = useState(() => readWorkspace(`advisor_views:${advisorId}`, {}));
   const [query, setQuery] = useState(typeof remembered.query === 'string' ? remembered.query : '');
@@ -114,7 +106,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
   const [addOpen, setAddOpen] = useState(false);
-  useEffect(() => { if (addOpen) emailInputRef.current?.focus(); }, [addOpen, loading]);
+  useEffect(() => { if (addOpen) { setSecondaryOpen(true); emailInputRef.current?.focus(); } }, [addOpen, loading]);
 
   useEffect(() => {
     if (!inviteDraft || draftHandled.current === inviteDraft) return;
@@ -203,7 +195,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
         <div><h1>סביבת העבודה שלי</h1><p>{clients.length} לקוחות · {openTasksTotal} משימות פתוחות{overageCount > 0 ? ` · ${overageCount} חריגות תקציב` : ''}</p></div>
         {resumeClient && <Button variant="ghost" onClick={() => onSelect(resumeClient.client_id, resumeClient.client_email, lastWorkspace)}>המשך עבודה עם {resumeClient.name || resumeClient.client_email}</Button>}
       </header>
-      {leads.length > 0 && <Button variant="ghost" onClick={() => setPipelineOpen(true)}>לקוחות חדשים בטיפול ({leads.length})</Button>}
       {!clients.length ? (
         <div className={styles.empty}>
           <div className={styles.emptyMark}>
@@ -239,18 +230,13 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
             <tbody>
               {!visibleClients.length && <tr><td colSpan={5}><p className={styles.queueEmpty}>אין לקוחות שמתאימים לחיפוש ולסינון.</p><Button variant="ghost" onClick={() => changeView({ filter: null, query: '', sort: 'urgency' })}>הצג את כל הלקוחות</Button></td></tr>}
               {visibleClients.map(c => {
-                const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting;
+                const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting || c.overdueTasks > 0;
                 const confirming = confirmingId === c.id;
                 const flags = [
                   c.hasOverage && { text: 'חריגת תקציב', cls: styles.overageChip },
                   c.hasFailedUpload && { text: 'העלאה נכשלה', cls: styles.uploadErrorChip },
                   c.hasDeclinedMeeting && { text: 'פגישה נדחתה', cls: styles.overageChip },
-                  c.openTasks > 0 && { text: `${c.openTasks} משימות פתוחות`, cls: styles.taskChip }
-                ].filter(Boolean);
-                const notes = [
-                  c.lastMeetingAt && `פגישה אחרונה ${relativeTime(c.lastMeetingAt)}`,
-                  c.totalTasks > 0 && `בוצעו ${c.doneTasks}/${c.totalTasks} משימות`,
-                  c.updatedAt && isStale(c.updatedAt) && `לא עודכן ${relativeTime(c.updatedAt)}`
+                  c.overdueTasks > 0 && { text: `${c.overdueTasks} משימות באיחור`, cls: styles.taskChip }
                 ].filter(Boolean);
                 return (
                   <tr
@@ -266,10 +252,8 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
                         </div>
                         <div className={styles.info}>
                           <div className={styles.email}>
-                            <HealthBadge score={c.healthScore} />
                             <div className={styles.identity}>
-                              {c.name?.trim() && <span className={styles.clientName} title={c.name}>{c.name}</span>}
-                              <span className={styles.emailText} title={c.client_email}>{c.client_email}</span>
+                              {c.name?.trim() ? <span className={styles.clientName} title={c.name}>{c.name}</span> : <span className={styles.emailText} title={c.client_email}>{c.client_email}</span>}
                             </div>
                           </div>
                         </div>
@@ -278,7 +262,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
                     <td data-label="סטטוס">
                       <div className={styles.chips}>
                         {flags.map(flag => <span key={flag.text} className={flag.cls}>{flag.text}</span>)}
-                        {notes.length > 0 && <span className={styles.rowMeta}>{notes.join(' · ')}</span>}
+                        {!flags.length && <span className={styles.quietStatus}>אין התראות</span>}
                       </div>
                     </td>
                     <td data-label="יתרה החודש" className={styles.remainingCell}>
@@ -288,20 +272,15 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
                     <td data-label="" className={styles.actionsCell}>
                       <div className={styles.rowActions}>
                         <button type="button" className={styles.openCardBtn} onClick={e => { e.stopPropagation(); onSelect(c.client_id, c.client_email); }}>פתח כרטיס</button>
-                        {confirming ? (
-                          <div className={styles.rowConfirmGroup}>
-                            <button type="button" className={styles.confirmRemoveBtn} onClick={e => { e.stopPropagation(); removeClient(c.id); }}>
-                              לאשר ניתוק?
-                            </button>
-                            <button type="button" className={styles.cancelRemoveBtn} onClick={e => { e.stopPropagation(); setConfirmingId(null); }}>
-                              ביטול
-                            </button>
-                          </div>
-                        ) : (
-                          <button type="button" className={styles.removeBtn + ' ' + styles.rowRemoveBtn} title="נתק לקוח" aria-label="נתק לקוח" onClick={e => { e.stopPropagation(); setConfirmingId(c.id); }}>
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                          </button>
-                        )}
+                        <div className={styles.clientActions}>
+                          <button type="button" className={styles.moreActions} aria-label={`פעולות עבור ${c.name?.trim() || c.client_email}`} aria-expanded={actionsId === c.id} onClick={() => { setActionsId(v => v === c.id ? null : c.id); setConfirmingId(null); }}>⋯</button>
+                          {actionsId === c.id && <div className={styles.actionOptions}>
+                            {confirming ? <>
+                              <button type="button" className={styles.confirmRemoveBtn} onClick={() => removeClient(c.id)}>לאשר ניתוק?</button>
+                              <button type="button" className={styles.cancelRemoveBtn} onClick={() => { setConfirmingId(null); setActionsId(null); }}>ביטול</button>
+                            </> : <button type="button" className={styles.confirmRemoveBtn} onClick={() => setConfirmingId(c.id)}>נתק לקוח</button>}
+                          </div>}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -326,7 +305,12 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
         />
       )}
 
-      <div inert={pipelineOpen ? '' : undefined}>
+      <section className={styles.secondarySection} inert={pipelineOpen ? '' : undefined}>
+      <button type="button" className={styles.secondaryToggle} aria-expanded={secondaryOpen} aria-controls="client-secondary" onClick={() => setSecondaryOpen(v => !v)}>
+        <span>הזמנות ומעקב</span><span>{pendingInvites.length} הזמנות ממתינות · {dueProspects.length} מעקבים להיום <span aria-hidden="true">{secondaryOpen ? '−' : '+'}</span></span>
+      </button>
+      <div id="client-secondary" hidden={!secondaryOpen}>
+      {leads.length > 0 && <Button variant="ghost" onClick={() => setPipelineOpen(true)}>לקוחות חדשים בטיפול ({leads.length})</Button>}
       {dueProspects.length > 0 && (
         <div className={styles.followCard}>
           <Card title="פולואפים להיום">
@@ -424,6 +408,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
 
 
       </div>
+      </section>
     </div>
   );
 }
