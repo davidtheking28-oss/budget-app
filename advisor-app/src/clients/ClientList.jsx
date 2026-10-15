@@ -398,7 +398,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
         ].map(section => <article key={section.title} className={styles.workbenchCard}>
           <h2>{section.title}<span>{section.clients.length}</span></h2>
           {section.clients.length ? section.clients.slice(0, 2).map(c => <button type="button" key={c.client_id} className={styles.workbenchRow} onClick={() => onSelect(c.client_id, c.client_email, { nav: section.nav, action: section.title === 'פגישות קרובות' ? 'prep' : undefined })}><span><strong>{c.name || c.client_email}</strong><small>{section.detail(c)}</small></span><span aria-hidden="true">←</span></button>) : <p>{section.empty}</p>}
-          {section.clients.length > 2 && <span className={styles.workbenchMore}>ועוד {section.clients.length - 2} לקוחות ברשימה למטה</span>}
+          {section.clients.length > 2 && <span className={styles.workbenchMore}>ועוד {section.clients.length - 2} לקוחות ברשימת הלקוחות</span>}
         </article>)}
       </section>}
 
