@@ -3,6 +3,7 @@ import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, T
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
 import { computeCategoryAverages, computeCashflowSummary } from './mappingMath.js';
+import { categorizeByDictionary } from './categorizeDict.js';
 import { resizeImageToJpeg } from './resizeImage.js';
 import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
@@ -109,6 +110,15 @@ async function callParseStatement(page, monthHint) {
   return body;
 }
 
+function pickCategory(t, type) {
+  const fallback = type === 'income' ? 'אחר' : 'שונות';
+  const fromModel = t.category || null;
+  if (fromModel === SAVINGS_CATEGORY) return fromModel;
+  const fromDictionary = categorizeByDictionary(t.desc, type);
+  if (type === 'income') return fromModel || fromDictionary || fallback;
+  return fromDictionary || fromModel || fallback;
+}
+
 async function processQueue(queue, setQueue) {
   const allTx = [];
   const finalItems = [];
@@ -137,7 +147,7 @@ async function processQueue(queue, setQueue) {
             desc: t.desc || '',
             amount: t.amount,
             type,
-            category: t.category || (type === 'income' ? 'אחר' : 'שונות'),
+            category: pickCategory(t, type),
             source_month: sourceMonth
           });
         }
