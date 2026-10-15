@@ -117,7 +117,8 @@ export default function App() {
   }
 
   useEffect(() => {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(window.location.search);
+    for (const key of ['client', 'nav', 'y', 'm', 'mode']) params.delete(key);
     if (selectedClient) {
       params.set('client', selectedClient.id);
       params.set('nav', nav);
