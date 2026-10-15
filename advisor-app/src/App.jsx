@@ -152,7 +152,8 @@ export default function App() {
     return (<><NotAdvisor email={session.user.email} userId={session.user.id} requestStatus={advisorRequestStatus} onSubmitRequest={submitAdvisorRequest} /><Toaster /></>);
   }
 
-  const switchClient = (clientId, clientEmail) => {
+  const switchClient = (clientId, clientEmail, destination) => {
+    if (destination?.nav) setNav(destination.nav);
     setBudgetCategory(null);
     setSelectedClient({ id: clientId, email: clientEmail });
     // Deliberately not resetting `nav`: an advisor working through 40+ clients
@@ -228,6 +229,8 @@ export default function App() {
         email={session.user.email}
         advisorId={session.user.id}
         clientName={clientProfile?.name || selectedClient.email}
+        budgetMode={budgetMode}
+        onBudgetModeChange={setBudgetMode}
         clientSince={clientProfile?.created_at ? `${String(new Date(clientProfile.created_at).getMonth() + 1).padStart(2, '0')}.${new Date(clientProfile.created_at).getFullYear()}` : null}
         sidebarInfo={NAV.find(n => n.key === nav)?.usesMonth ? <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} /> : null}
         inert={searchOpen}
@@ -246,10 +249,9 @@ export default function App() {
             onRemoveTag={removeClientTag}
             onAction={type => setCrmAction({ type, id: Date.now() })}
             budgetMode={budgetMode}
-            onBudgetModeChange={setBudgetMode}
           />
         )}
-        {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard key={`${selectedClient.id}:${ym.year}:${ym.month}:${budgetMode}`} onOpenCategory={category => { setBudgetCategory(category); setNav('budget'); }} clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
+        {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard nextMeeting={nextMeeting} openTasks={openTasks} onAction={type => { setCrmAction({ type, id: Date.now() }); setNav('crm'); }} onOpenMapping={() => setNav('mapping')} key={`${selectedClient.id}:${ym.year}:${ym.month}:${budgetMode}`} onOpenCategory={category => { setBudgetCategory(category); setNav('budget'); }} clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'budget' && <Budget key={`${session.user.id}:${selectedClient.id}:${budgetMode}:${ym.year}:${ym.month}`} focusCategory={budgetCategory} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis onPreviousMonth={() => changeMonth(-1)} onOpenBudget={() => setNav('budget')} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} advisorId={session.user.id} />}

@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
 import { computeInsights } from './insights.js';
-import { getMonthTx } from './monthUtils.js';
+import { formatDateTime, getMonthTx } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
+import Button from '../components/Button.jsx';
 import Hero from '../components/Hero.jsx';
 import { Card, CardGrid, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import styles from './Dashboard.module.css';
 import { fmt } from '../format.js';
 
-export default function Dashboard({ clientUserId, year, month, onOpenCategory }) {
+export default function Dashboard({ clientUserId, year, month, onOpenCategory, nextMeeting, openTasks = 0, onAction, onOpenMapping }) {
   const [expanded, setExpanded] = useState(false);
   const { data, loading, error, reload } = useClientBudget(clientUserId);
 
@@ -62,6 +63,14 @@ export default function Dashboard({ clientUserId, year, month, onOpenCategory })
         ]}
       />
 
+      <section className={styles.workbar} aria-label="עבודה עם הלקוח">
+        <div className={styles.meetingInfo}><span>הפגישה הבאה</span><strong>{nextMeeting ? formatDateTime(nextMeeting) : 'לא נקבעה פגישה'}</strong><span>{openTasks} משימות פתוחות</span></div>
+        <div className={styles.workActions}>
+          <Button onClick={() => onAction('task')}>משימה חדשה</Button>
+          <Button variant="ghost" onClick={() => onAction('meeting')}>פגישה חדשה</Button>
+          <Button variant="ghost" onClick={onOpenMapping}>מיפוי מסמכים</Button>
+        </div>
+      </section>
       <CardGrid alignStart>
         <Card title="לאן הולך הכסף">
           {catLabels.length ? (

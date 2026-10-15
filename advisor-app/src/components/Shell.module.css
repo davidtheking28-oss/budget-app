@@ -371,3 +371,13 @@
 .densityToggle { min-height: 36px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text2); font-family: inherit; font-size: var(--text-sm); cursor: pointer; white-space: nowrap; }
 .densityToggle[aria-pressed="true"] { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 .topbarEnd { flex-wrap: wrap; }
+
+.accountUp .accountTrigger { color: var(--workspace-muted); }
+.accountUp { border-color: var(--workspace-line); }
+.clientContext { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; color: var(--text2); font-size: var(--text-sm); }
+.contextName { max-width: 40ch; overflow-wrap: anywhere; }
+.modeContext { display: inline-flex; padding: 3px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-full); gap: 3px; }
+.modeContext button { min-height: 30px; padding: 4px 12px; border: none; border-radius: var(--radius-full); color: var(--text2); background: transparent; font-family: inherit; font-weight: 700; cursor: pointer; }
+.modeContext button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.pageTitle { font-size: 30px; }
+.mobileClient { display: none; }

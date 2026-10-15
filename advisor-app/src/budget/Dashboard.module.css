@@ -95,3 +95,12 @@
 .insightAction:hover { text-decoration: underline; }
 .expandInsights { width: 100%; margin-top: 12px; padding: 10px 16px; background: var(--surface2); border: 1px solid var(--border); }
 .expandInsights:hover { border-color: var(--accent); }
+
+.workbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 18px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.meetingInfo { display: flex; flex-direction: column; gap: 5px; font-size: var(--text-sm); color: var(--text2); }
+.meetingInfo strong { font-size: var(--text-md); color: var(--text); }
+.workActions { display: flex; gap: 8px; flex-wrap: wrap; }
+.statusBadge.good { color: var(--workspace-mint); background: var(--workspace-glass); }
+.statusBadge.warn { color: var(--workspace-text); background: var(--workspace-glass); }
+.statusBadge.neutral { color: var(--workspace-muted); background: var(--workspace-glass); }
+.statusBadge.danger { color: var(--workspace-red); background: var(--workspace-glass); }

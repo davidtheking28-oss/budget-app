@@ -222,7 +222,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
 
   return (
     <div>
-      <h1 className={styles.srOnly}>הלקוחות שלי</h1>
+      <header className={styles.workspaceHeading}><div><span>סביבת העבודה שלך</span><h1>במה מטפלים עכשיו?</h1></div><p>פגישות, משימות ומסמכים — לפני שנכנסים לפרטי הלקוח.</p></header>
       <div inert={pipelineOpen ? '' : undefined}>
       {/* A brand-new advisor has nothing to count, and three zeroes are the first
           thing they would otherwise see. Let the empty state be the whole page —
@@ -256,6 +256,19 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
         </>
       )}
       </div>
+
+      {clients.length > 0 && <section className={styles.workbench} aria-label="סדר העבודה">
+        {[
+          { title: 'פגישות קרובות', empty: 'אין פגישות קרובות שנקבעו', nav: 'crm', clients: clients.filter(c => c.nextMeetingAt).sort((a, b) => a.nextMeetingAt.localeCompare(b.nextMeetingAt)), detail: c => formatDateTime(c.nextMeetingAt) },
+          { title: 'משימות פתוחות', empty: 'אין משימות פתוחות ללקוחות', nav: 'crm', clients: clients.filter(c => c.openTasks > 0).sort((a, b) => b.openTasks - a.openTasks), detail: c => `${c.openTasks} משימות פתוחות` },
+          { title: 'מסמכים שדורשים בדיקה', empty: 'אין מסמכים שסומנו עם שגיאת עיבוד', nav: 'mapping', clients: clients.filter(c => c.hasFailedUpload), detail: () => 'עיבוד מסמך לא הושלם' },
+          { title: 'חריגות לבדיקה', empty: 'אין חריגות תקציב אצל הלקוחות', nav: 'dashboard', clients: clients.filter(c => c.hasOverage).sort((a, b) => b.overageAmount - a.overageAmount), detail: c => `${fmt(c.overageAmount)} מעבר לתקציב` }
+        ].map(section => <article key={section.title} className={styles.workbenchCard}>
+          <h2>{section.title}<span>{section.clients.length}</span></h2>
+          {section.clients.length ? section.clients.slice(0, 2).map(c => <button type="button" key={c.client_id} className={styles.workbenchRow} onClick={() => onSelect(c.client_id, c.client_email, { nav: section.nav })}><span><strong>{c.name || c.client_email}</strong><small>{section.detail(c)}</small></span><span aria-hidden="true">←</span></button>) : <p>{section.empty}</p>}
+          {section.clients.length > 2 && <span className={styles.workbenchMore}>ועוד {section.clients.length - 2} לקוחות ברשימה למטה</span>}
+        </article>)}
+      </section>}
 
       {pipelineOpen && (
         <PipelineModal

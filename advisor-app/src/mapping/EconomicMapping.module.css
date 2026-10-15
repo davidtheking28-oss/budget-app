@@ -547,3 +547,8 @@
 .cardTitle, .actualTitle { font-size: var(--text-lg); }
 .dropLabel { background: var(--surface2); border-color: var(--control-border); }
 @media (max-width: 860px) { .workflow { grid-template-columns: 1fr; } }
+
+.mappingNav { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.mappingNav a { padding: 10px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--accent); background: var(--surface); text-decoration: none; font-size: var(--text-base); font-weight: 700; }
+.mappingNav a:hover { border-color: var(--accent); }
+:global(#mapping-upload), :global(#mapping-results) { scroll-margin-top: 24px; }

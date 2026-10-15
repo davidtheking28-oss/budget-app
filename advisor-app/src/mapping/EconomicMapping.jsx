@@ -454,13 +454,14 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   return (
     <div>
+      <nav className={styles.mappingNav} aria-label="עבודה עם המיפוי"><a href="#mapping-upload">העלאת מסמכים</a>{cashflow?.hasIncomeData && <a href="#mapping-results">סקירת התוצאות</a>}</nav>
       <div className={styles.workflow} aria-label="שלבי המיפוי הכלכלי">
         <div><strong>1 · העלאת מסמכים</strong><span>בחר דפי חשבון ושייך כל קובץ לחודש המתאים</span></div>
         <div aria-live="polite"><strong>2 · עיבוד הנתונים</strong><span>{processing ? 'המסמכים בעיבוד…' : 'לאחר הבחירה, לחץ על עבד וחשב מיפוי'}</span></div>
         <div><strong>3 · סקירת המיפוי</strong><span>בדוק את התוצאות לפני עדכון התקציב</span></div>
       </div>
       {cashflow?.hasIncomeData && (
-        <div className={styles.topGrid}>
+        <div id="mapping-results" className={styles.topGrid}>
         <div className={styles.card + ' ' + styles.cardStandalone}>
           <div className={styles.actualTitle}>ביצוע</div>
           <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(cashflow.monthsCovered)} של דפי חשבון</div>
@@ -512,7 +513,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       )}
 
       <div className={styles.card}>
-        <div className={styles.cardTitle}>העלאת דפי חשבון</div>
+        <h2 id="mapping-upload" className={styles.cardTitle}>העלאת דפי חשבון</h2>
         <div className={styles.dropZone} onDragOver={e => e.preventDefault()} onDrop={onDrop}>
           <input
             ref={fileInputRef}

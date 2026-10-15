@@ -1,7 +1,15 @@
 :root {
   color-scheme: light;
-  --bg: #eef3f1;
+  --bg: #f5f6f2;
   --bg-2: #f6f9f8;
+  --workspace-rail: #102c25;
+  --workspace-hero: #163d32;
+  --workspace-text: #faf9ed;
+  --workspace-muted: #c4d7ce;
+  --workspace-mint: #a6e5bf;
+  --workspace-red: #ffb7ac;
+  --workspace-line: rgba(255, 255, 255, 0.16);
+  --workspace-glass: rgba(255, 255, 255, 0.07);
   --surface: #ffffff;
   --surface2: #f2f7f5;
   --accent: #0a7a62;

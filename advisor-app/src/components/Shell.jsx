@@ -153,7 +153,7 @@ function AccountMenu({ email, advisorId, up }) {
   );
 }
 
-export default function Shell({ homeLinks, onHomeClients, title, clientName, clientSince, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+export default function Shell({ homeLinks, onHomeClients, title, clientName, clientSince, budgetMode, onBudgetModeChange, onBack, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   const desktop = useDesktop();
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -201,7 +201,13 @@ export default function Shell({ homeLinks, onHomeClients, title, clientName, cli
           <div className={styles.topbarStart}>
             <div className={styles.titleBlock}>
               {title && <h1 className={styles.pageTitle}>{title}</h1>}
-              {clientName && <div className={styles.mobileClient}>{clientName}</div>}
+              <div className={styles.clientContext}>
+                <span className={styles.contextName}>{clientName || 'טוען פרטי לקוח…'}</span>
+                <div className={styles.modeContext} role="group" aria-label="סוג התקציב">
+                  <button type="button" aria-pressed={budgetMode !== 'business'} onClick={() => onBudgetModeChange('personal')}>פרטי</button>
+                  <button type="button" aria-pressed={budgetMode === 'business'} onClick={() => onBudgetModeChange('business')}>עסקי</button>
+                </div>
+              </div>
             </div>
           </div>
           <div className={styles.topbarEnd}>

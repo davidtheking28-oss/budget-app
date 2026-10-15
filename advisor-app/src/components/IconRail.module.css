@@ -222,3 +222,10 @@
   .railBtnActive { box-shadow: inset -3px 0 0 var(--accent); }
   .groupLabel { margin-top: 20px; margin-bottom: 8px; font-weight: 700; }
 }
+
+.rail { background: var(--workspace-rail); border-color: var(--workspace-line); }
+.clientName { color: var(--workspace-text); }
+.clientSince, .groupLabel, .railBtn { color: var(--workspace-muted); }
+.groupLabel { border-color: var(--workspace-line); }
+.railBtn:hover { background: var(--workspace-glass); color: var(--workspace-text); }
+.railBtnActive, .railBtnActive:hover { background: var(--workspace-hero); color: var(--workspace-mint); border-color: var(--workspace-line); box-shadow: none; }
