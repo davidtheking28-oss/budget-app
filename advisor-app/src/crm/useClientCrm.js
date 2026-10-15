@@ -152,10 +152,12 @@ export function useClientCrm(advisorId, clientId, onRestore) {
   }
 
   async function respondMeeting(id, status) {
+    const before = meetings.find(m => m.id === id);
     setMeetings(prev => prev.map(m => m.id === id ? { ...m, status } : m));
     const { error } = await supabase.from('advisor_meetings').update({ status }).eq('id', id).eq('advisor_id', advisorId);
-    if (error) { toast('שגיאה בעדכון הפגישה', 'error'); reload(); return; }
+    if (error) { setMeetings(prev => prev.map(m => m.id === id ? before : m)); toast('שגיאה בעדכון הפגישה', 'error'); return false; }
     toast(status === 'confirmed' ? 'הפגישה סומנה כמאושרת' : 'הפגישה סומנה כנדחתה', 'success');
+    return true;
   }
 
   async function deleteMeeting(id) {

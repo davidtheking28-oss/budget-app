@@ -276,10 +276,10 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
                     <div className={styles.rowActions}>
                       {m.for_client && m.status === 'pending' && !past && (
                         <>
-                          <button type="button" className={styles.icsButton} title="סמן כמאושרת (למשל אם הלקוח אישר בטלפון)" aria-label="סמן פגישה כמאושרת" onClick={() => respondMeeting(m.id, 'confirmed')}>
+                          <button type="button" className={styles.icsButton} title="סמן כמאושרת (למשל אם הלקוח אישר בטלפון)" aria-label="סמן פגישה כמאושרת" onClick={async () => { if (await respondMeeting(m.id, 'confirmed')) notify(); }}>
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
                           </button>
-                          <button type="button" className={styles.icsButton} title="סמן כנדחתה" aria-label="סמן פגישה כנדחתה" onClick={() => respondMeeting(m.id, 'declined')}>
+                          <button type="button" className={styles.icsButton} title="סמן כנדחתה" aria-label="סמן פגישה כנדחתה" onClick={async () => { if (await respondMeeting(m.id, 'declined')) notify(); }}>
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
                           </button>
                         </>
