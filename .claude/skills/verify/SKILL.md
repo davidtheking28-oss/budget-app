@@ -76,5 +76,5 @@ so every screen renders with fake data from `src/__audit/`). The alias pattern
 must be `/^.*\/supabaseClient\.js$/` — a bare `/supabaseClient\.js$/` replaces
 only the matched fragment and produces a broken absolute path.
 
-Theme is applied at module load, so set `localStorage.advisor_theme = 'dark'`
+Theme is applied at module load, so set `localStorage.advisor_theme_choice = 'dark'`
 **before** navigating, then reload. Toggling it mid-session gives false readings.
