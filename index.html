@@ -681,9 +681,9 @@
     .wiz-body-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
     .wiz-sec-ttl{font-size:0.95rem;font-weight:800;color:var(--accent);letter-spacing:0.1px;}
     .cat-tile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-    .wiz-cat-row{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:18px 8px;border:1.5px solid var(--border);border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s,transform 0.15s,border-color 0.15s,background 0.15s;width:100%;background:var(--surface);font-family:inherit;text-align:center;}
+    .wiz-cat-row{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:12px 6px;border:1.5px solid var(--border);border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s,transform 0.15s,border-color 0.15s,background 0.15s;width:100%;background:var(--surface);font-family:inherit;text-align:center;}
     .wiz-cat-row:active{opacity:0.7;transform:scale(0.97);}
-    .wiz-cat-name{font-size:0.78rem;font-weight:600;color:var(--text);font-family:var(--font-sans);line-height:1.25;}
+    .wiz-cat-name{display:flex;align-items:center;justify-content:center;min-height:2.5em;flex:0 0 auto;width:100%;overflow-wrap:anywhere;font-size:0.78rem;font-weight:600;color:var(--text);font-family:var(--font-sans);line-height:1.25;}
     .wiz-cat-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;}
     .wiz-cat-icon svg{width:21px;height:21px;}
     .wiz-cat-row.wiz-sel{border-color:var(--accent);background:rgba(var(--accent-rgb),0.06);}
@@ -694,7 +694,7 @@
     .wiz-cat-addwrap{grid-column:1/-1;}
     .wiz-sub-list{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:none;border-radius:0;margin:0;overflow:visible;animation:wizSubIn 0.2s cubic-bezier(0.22,1,0.36,1) both;}
     @keyframes wizSubIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-    .wiz-sub-row{padding:18px 8px;}
+    .wiz-sub-row{padding:12px 6px;}
     .wiz-sub-icon{width:38px!important;height:38px!important;border-radius:11px!important;}
     .wiz-expand-arrow{display:none;}
     .wiz-cat-row.wiz-expanded{border-color:var(--accent);}
@@ -3614,7 +3614,7 @@ function wizRenderCats(cats){
     const hasSub=!!CAT_SUBCATS[c];
     return '<button type="button" class="wiz-cat-row'+(c===txSelectedCat?' wiz-sel':'')+'" data-cat="'+esc(c)+'" data-expand="'+(hasSub?'1':'0')+'">'+
       '<div class="wiz-cat-icon" style="background:'+budgetChipColor(c).base+';color:'+budgetChipColor(c).sel+'">'+catIconSvg(c)+'</div>'+
-      '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+esc(c)+'</span>'+
+      '<span class="wiz-cat-name">'+esc(c)+'</span>'+
       (hasSub?'<span class="wiz-expand-arrow">›</span>':'<span class="wiz-sel-check">✓</span>')+
       '</button>';
   }).join('')+
@@ -3646,7 +3646,7 @@ function wizExpandCat(cat,el){
   div.innerHTML=subCats.map(sc=>
     '<button type="button" class="wiz-cat-row wiz-sub-row" data-cat="'+esc(sc)+'">'+
     '<div class="wiz-cat-icon wiz-sub-icon" style="background:'+budgetChipColor(sc).base+';color:'+budgetChipColor(sc).sel+'">'+catIconSvg(sc)+'</div>'+
-    '<span class="wiz-cat-name" style="flex:1;padding:0 12px;">'+esc(sc)+'</span>'+
+    '<span class="wiz-cat-name">'+esc(sc)+'</span>'+
     '<span class="wiz-sel-check">✓</span></button>'
   ).join('');
   div.querySelectorAll('.wiz-cat-row[data-cat]').forEach(el2=>{
