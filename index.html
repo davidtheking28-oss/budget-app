@@ -680,6 +680,7 @@
     .wiz-date-chip input[type=date]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
     .wiz-body-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
     .wiz-sec-ttl{font-size:0.95rem;font-weight:800;color:var(--accent);letter-spacing:0.1px;}
+    #wizCatList .wiz-cat-row[hidden],#wizCatList .wiz-sub-list[hidden]{display:none;}
     .cat-tile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
     .wiz-cat-row{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:12px 6px;border:1.5px solid var(--border);border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s,transform 0.15s,border-color 0.15s,background 0.15s;width:100%;background:var(--surface);font-family:inherit;text-align:center;}
     .wiz-cat-row:active{opacity:0.7;transform:scale(0.97);}
@@ -1863,6 +1864,7 @@
         </div>
       </div>
       <div id="wizCatList" class="cat-tile-grid"></div>
+      <div id="wizCatEmpty" role="status" hidden style="text-align:center;padding:16px 0;color:var(--text2);"><p>לא נמצאו קטגוריות מתאימות</p><button type="button" class="btn btn-outline" onclick="wizFilterCats('')">הצג את כל הקטגוריות</button></div>
     </div>
     <div class="wiz-body" id="wizBody2" style="display:none;">
       <div class="wiz-body-padded">
@@ -3622,6 +3624,19 @@ function wizRenderCats(cats){
   list.querySelectorAll('.wiz-cat-row[data-cat]').forEach(el=>{
     el.onclick=()=>{el.dataset.expand==='1'?wizExpandCat(el.dataset.cat,el):wizPickCat(el.dataset.cat,el);};
   });
+  wizFilterCats(document.getElementById('txDesc').value);
+}
+function wizFilterCats(value,matched=categorize(value,txTypeFilter)){
+  const query=normDesc(value);
+  const list=document.getElementById('wizCatList');
+  let count=0;
+  list.querySelectorAll(':scope > .wiz-cat-row').forEach(row=>{
+    const cat=row.dataset.cat;
+    row.hidden=!!query&&!normDesc(cat).includes(query)&&cat!==matched;
+    if(!row.hidden)count++;
+  });
+  list.querySelectorAll('.wiz-sub-list').forEach(sub=>{sub.hidden=sub.previousElementSibling.hidden;});
+  document.getElementById('wizCatEmpty').hidden=!query||count>0;
 }
 function wizPickCat(cat,el){
   txSelectedCat=cat;
@@ -5591,6 +5606,7 @@ function showWizSuggestion(cat){
   const bar=document.getElementById('wizSuggestBar');
   if(!bar)return;
   txSelectedCat=cat;
+  wizFilterCats(document.getElementById('txDesc').value,cat);
   const emoji=CAT_ICONS[cat]||'📌';
   document.getElementById('wizSuggestEmoji').textContent=emoji;
   document.getElementById('wizSuggestLabel').textContent=cat;
@@ -5655,6 +5671,7 @@ async function _onReceiptPicked(input){
 }
 
 async function callAiCategorize(val){
+  const requestType=txTypeFilter;
   try{
     const {data:{session}}=_sb?await _sb.auth.getSession():{data:{session:null}};
     if(!session)return;
@@ -5666,6 +5683,7 @@ async function callAiCategorize(val){
     });
     if(!res.ok)return;
     const data=await res.json();
+    if(document.getElementById('txDesc').value!==val||txTypeFilter!==requestType)return;
     if(data.category&&allCats.includes(data.category)){
       showWizSuggestion(data.category);
       if(data.amount&&!document.getElementById('txAmount').value){
@@ -5875,6 +5893,8 @@ function lookupLastAmount(desc){
   return best;
 }
 function wizDescNlp(val){
+  const matched=categorize(val,txTypeFilter);
+  wizFilterCats(val,matched);
   const bar = document.getElementById('wizSuggestBar');
   if(!val || val.length < 2){
     if(bar) bar.style.display='none';
@@ -5883,7 +5903,6 @@ function wizDescNlp(val){
     return;
   }
   // Local keyword match (instant)
-  const matched = categorize(val, txTypeFilter);
   if(matched) showWizSuggestion(matched);
   else if(bar) bar.style.display='none';
 

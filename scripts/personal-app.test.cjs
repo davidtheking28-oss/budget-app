@@ -547,3 +547,30 @@ test('launch theme and every theme-color tag follow the resolved theme',()=>{
   assert.equal(manual.state.dark,false);
   assert.deepEqual(manual.metas.map(m=>m.content),['#e5eeeb','#e5eeeb']);assert.equal(manual.bar.content,'default');
 });
+
+test('category suggestions ignore a response for an older description',async()=>{
+  const desc={value:'טקסט חדש'};
+  const shown=[];
+  const ctx=functions(['callAiCategorize'],{
+    txTypeFilter:'expense',_sb:{auth:{getSession:async()=>({data:{session:{access_token:'test'}}})}},
+    SUPA_URL:'https://example.invalid',SUPA_ANON:'test',userSettings:{},
+    getEffectiveCats:()=>['מזון לבית'],document:{getElementById:()=>desc},
+    fetch:async()=>({ok:true,json:async()=>({category:'מזון לבית'})}),
+    showWizSuggestion:cat=>shown.push(cat)
+  });
+  await ctx.callAiCategorize('תיאור קודם');
+  assert.deepEqual(shown,[]);
+});
+
+test('category suggestions still accept a response for the current description',async()=>{
+  const shown=[];
+  const ctx=functions(['callAiCategorize'],{
+    txTypeFilter:'expense',_sb:{auth:{getSession:async()=>({data:{session:{access_token:'test'}}})}},
+    SUPA_URL:'https://example.invalid',SUPA_ANON:'test',userSettings:{},
+    getEffectiveCats:()=>['מזון לבית'],document:{getElementById:()=>({value:'סופר'})},
+    fetch:async()=>({ok:true,json:async()=>({category:'מזון לבית'})}),
+    showWizSuggestion:cat=>shown.push(cat)
+  });
+  await ctx.callAiCategorize('סופר');
+  assert.deepEqual(shown,['מזון לבית']);
+});
