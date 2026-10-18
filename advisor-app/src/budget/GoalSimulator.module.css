@@ -1,0 +1,50 @@
+.sim {
+  margin-top: var(--space-5);
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  min-width: 0;
+}
+
+.title { margin: 0 0 var(--space-3); font-size: var(--text-base); font-weight: 700; color: var(--text); }
+
+.inputs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: var(--space-3); }
+
+.field { flex: 1; min-width: 140px; display: grid; gap: 4px; font-size: var(--text-sm); color: var(--text2); }
+
+.field input {
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--control-border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  outline: none;
+  min-width: 0;
+}
+
+.field input:focus-visible { border-color: rgba(var(--accent-rgb), 0.5); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35); }
+
+@media (max-width: 860px) { .field input { font-size: 16px; } }
+
+.verdict { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-bottom: var(--space-2); }
+.verdict > div { display: grid; gap: 2px; }
+.verdict b { font-size: 20px; font-variant-numeric: tabular-nums; color: var(--text); }
+.k { font-size: var(--text-sm); color: var(--text2); }
+.verdict b.good { color: var(--accent); }
+
+.gain { margin: 0 0 var(--space-3); font-size: var(--text-sm); color: var(--text2); }
+
+.chart { direction: ltr; display: block; width: 100%; height: auto; max-width: 100%; }
+.targetLine { stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 4; }
+.lineNow { stroke: var(--text3); stroke-width: 2; }
+.lineNext { stroke: var(--accent); stroke-width: 2.5; }
+.axis { fill: var(--text3); font-size: 11px; font-family: var(--font-body); }
+
+.legend { display: flex; gap: 18px; margin-top: var(--space-2); font-size: var(--text-sm); color: var(--text2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.swNow { background: var(--text3); }
+.swNext { background: var(--accent); }
