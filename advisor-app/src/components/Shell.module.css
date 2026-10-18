@@ -399,3 +399,10 @@
 .clientSub { margin-top: 6px; color: var(--text2); font-size: var(--text-md); }
 .clientHeadEnd { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .modeContext button[aria-pressed="true"] { background: var(--primary); color: var(--primary-ink); }
+
+@media (max-width: 860px) {
+  .titleBlock { display: flex; flex-direction: column; }
+  .clientContext { order: -1; margin-top: 0; margin-bottom: 4px; }
+  .contextName { font-size: 1.6rem; font-weight: 800; line-height: 1.15; color: var(--text); }
+  .pageTitle { font-size: var(--text-md); font-weight: 700; color: var(--text2); }
+}
