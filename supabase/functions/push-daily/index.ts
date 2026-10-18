@@ -29,6 +29,17 @@ function ilDate(offsetDays = 0) {
 
 const fmt = (n: number) => '₪' + Math.round(n).toLocaleString('he-IL')
 
+// Mid-month pace check: a category that is not near its limit yet but, at the current daily rate,
+// will finish the month well over it. Needs a week of data and a real share already spent so one
+// early lump purchase on day 7 does not read as a trend.
+function paceProjection(spent: number, limit: number, day: number, daysInMonth: number) {
+  if (!limit || !spent || day < 7) return null
+  const pct = (spent / limit) * 100
+  if (pct < 30 || pct >= 90) return null
+  const projected = (spent / day) * daysInMonth
+  return projected >= limit * 1.1 ? projected : null
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
@@ -149,6 +160,11 @@ Deno.serve(async (req) => {
           notifications.push({ kind: 'budget', key: `${ym}:${cat}:100`, title: 'חריגה מתקציב ⚠️', body: `הוצאת ${fmt(spent[cat])} על ${cat} — מעבר לתקציב של ${fmt(limit)}` })
         } else if (pct >= 90) {
           notifications.push({ kind: 'budget', key: `${ym}:${cat}:90`, title: 'מתקרבים לתקרה 📊', body: `נוצלו ${Math.round(pct)}% מתקציב ${cat} (${fmt(spent[cat])} מתוך ${fmt(limit)})` })
+        } else {
+          const projected = paceProjection(spent[cat], limit, Number(today.slice(8)), new Date(Number(today.slice(0, 4)), Number(today.slice(5, 7)), 0).getDate())
+          if (projected) {
+            notifications.push({ kind: 'budget', key: `${ym}:${cat}:pace`, title: 'בקצב הזה תחרוג מהתקציב 🔮', body: `${cat}: צפי ${fmt(projected)} החודש מול תקציב ${fmt(limit)}` })
+          }
         }
       }
     }

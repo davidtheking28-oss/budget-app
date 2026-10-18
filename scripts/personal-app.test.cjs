@@ -574,3 +574,18 @@ test('category suggestions still accept a response for the current description',
   await ctx.callAiCategorize('סופר');
   assert.deepEqual(shown,['מזון לבית']);
 });
+
+test('push-daily pace warning needs a week, real spend, and a clear overshoot',()=>{
+  const src=fs.readFileSync(path.join(root,'supabase/functions/push-daily/index.ts'),'utf8');
+  const m=src.match(/function paceProjection[\s\S]*?\n}\n/);
+  assert.ok(m,'paceProjection missing');
+  const pace=vm.runInNewContext('('+m[0].replace(/: number/g,'').replace(/^function paceProjection/,'function')+')');
+  assert.equal(pace(400,1000,10,30),1200);
+  assert.equal(pace(400,1000,6,30),null);
+  assert.equal(pace(200,1000,7,30),null);
+  assert.equal(pace(950,1000,10,30),null);
+  assert.equal(pace(300,1000,10,30),null);
+  assert.equal(pace(0,1000,10,30),null);
+  assert.equal(pace(320,1000,10,30),null);
+  assert.equal(pace(380,1000,10,30),1140);
+});
