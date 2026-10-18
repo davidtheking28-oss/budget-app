@@ -5,9 +5,9 @@ const cls = (base, tone, v) => base + (TONE[tone] ? ' ' + TONE[tone] : '') + (is
 
 const TONE = { pos: styles.pos, neg: styles.neg, income: styles.income, expense: styles.expense, neutral: styles.neutral };
 
-export default function Hero({ label, value, tone, note, side = [], compact = false }) {
-  return (
-    <section className={styles.hero}>
+export default function Hero({ label, value, tone, note, side = [], compact = false, visual = null }) {
+  const body = (
+    <>
       <div className={styles.main}>
         <div className={styles.label}>{label}</div>
         <div className={cls(styles.value + (compact ? ' ' + styles.valueCompact : ''), tone, value)}>{value}</div>
@@ -24,6 +24,11 @@ export default function Hero({ label, value, tone, note, side = [], compact = fa
           ))}
         </div>
       )}
+    </>
+  );
+  return (
+    <section className={styles.hero}>
+      {visual ? <><div className={styles.leftCol}>{body}</div><div className={styles.visual}>{visual}</div></> : body}
     </section>
   );
 }

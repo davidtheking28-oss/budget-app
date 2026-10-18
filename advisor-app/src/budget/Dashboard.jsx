@@ -7,6 +7,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import Button from '../components/Button.jsx';
 import ActionMenu from '../components/ActionMenu.jsx';
 import Hero from '../components/Hero.jsx';
+import Donut, { donutSlices } from '../components/Donut.jsx';
 import { Card, CardGrid, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import styles from './Dashboard.module.css';
@@ -44,6 +45,8 @@ export default function Dashboard({ clientUserId, year, month, onOpenCategory, n
   });
   const catLabels = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
   const catTotal = catLabels.reduce((s, l) => s + byCat[l], 0);
+  const flagged = attention.filter(i => i.kind === 'danger' || i.kind === 'warn');
+  const flaggedCats = [...new Set(flagged.map(i => i.category).filter(Boolean))];
   return (
     <div className={styles.page}>
       <Hero
@@ -62,16 +65,31 @@ export default function Dashboard({ clientUserId, year, month, onOpenCategory, n
           { label: 'הכנסות', value: fmt(summary.income), tone: 'income' },
           { label: 'הוצאות', value: fmt(summary.expense), tone: 'expense' }
         ]}
+        visual={catLabels.length ? <Donut title="הוצאות לפי קטגוריה" items={donutSlices(byCat)} /> : null}
       />
 
-      <section className={styles.workbar} aria-label="עבודה עם הלקוח">
-        <div className={styles.meetingInfo}><span>הפגישה הבאה</span><strong>{nextMeeting ? formatDateTime(nextMeeting) : 'לא נקבעה פגישה'}</strong><span>{openTasks} משימות פתוחות</span></div>
-        <div className={styles.workActions}>
-          <Button onClick={() => onAction('task')}>משימה חדשה</Button>
-<ActionMenu>
-          <Button variant="ghost" onClick={() => onAction('meeting')}>פגישה חדשה</Button>
-          <Button variant="ghost" onClick={onOpenMapping}>מיפוי מסמכים</Button>
-          </ActionMenu>
+      <section className={styles.tiles} aria-label="סיכום וניהול הלקוח">
+        <div className={styles.tile + (flagged.length ? ' ' + styles.tileAlert : '')}>
+          <span className={styles.tileKey}>דורש בדיקה</span>
+          <strong className={styles.tileValue}>{flagged.length ? `${flagged.length} חריגות` : 'הכול תקין'}</strong>
+          <span className={styles.tileSub}>{flaggedCats.length ? flaggedCats.slice(0, 3).join(', ') : 'אין חריגות החודש'}</span>
+        </div>
+        <div className={styles.tile}>
+          <span className={styles.tileKey}>חיסכון החודש</span>
+          <strong className={styles.tileValue}>{hasData && summary.income > 0 ? `${savingsRate.toFixed(1)}%` : '—'}</strong>
+          <span className={styles.tileSub}>מההכנסה, יעד {SAVINGS_TARGET}%</span>
+        </div>
+        <div className={styles.tile}>
+          <span className={styles.tileKey}>הפגישה הבאה</span>
+          <strong className={styles.tileValue}>{nextMeeting ? formatDateTime(nextMeeting) : 'לא נקבעה'}</strong>
+          <span className={styles.tileSub}>{openTasks} משימות פתוחות</span>
+          <div className={styles.tileActions}>
+            <Button onClick={() => onAction('task')}>משימה חדשה</Button>
+            <ActionMenu>
+              <Button variant="ghost" onClick={() => onAction('meeting')}>פגישה חדשה</Button>
+              <Button variant="ghost" onClick={onOpenMapping}>מיפוי מסמכים</Button>
+            </ActionMenu>
+          </div>
         </div>
       </section>
       <CardGrid alignStart>

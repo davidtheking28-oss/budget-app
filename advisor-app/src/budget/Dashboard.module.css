@@ -104,3 +104,13 @@
 .statusBadge.warn { color: var(--workspace-text); background: var(--workspace-glass); }
 .statusBadge.neutral { color: var(--workspace-muted); background: var(--workspace-glass); }
 .statusBadge.danger { color: var(--workspace-red); background: var(--workspace-glass); }
+
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 860px) { .tiles { grid-template-columns: minmax(0, 1fr); } }
+.tile { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 18px 22px; border-radius: 22px; background: var(--surface2); border: 1px solid var(--border); }
+.tileAlert { background: rgba(var(--red-rgb), 0.08); border-color: rgba(var(--red-rgb), 0.2); }
+.tileAlert .tileValue { color: var(--red); }
+.tileKey { color: var(--text3); font-size: var(--text-sm); font-weight: 600; }
+.tileValue { font-size: 1.7rem; line-height: 1.2; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tileSub { color: var(--text2); font-size: var(--text-sm); }
+.tileActions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }

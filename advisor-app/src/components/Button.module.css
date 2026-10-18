@@ -16,12 +16,12 @@
 }
 
 .primary {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--primary);
+  color: var(--primary-ink);
 }
 
 .primary:hover:not(:disabled) {
-  background: var(--accent-2);
+  background: var(--primary-hover);
 }
 
 .primary:active:not(:disabled) {

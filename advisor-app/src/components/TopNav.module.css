@@ -1,0 +1,88 @@
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  max-width: calc(var(--page-max) + var(--page-pad) * 2);
+  margin: 0 auto;
+  padding: 12px var(--page-pad);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: var(--text-lg); color: var(--text); white-space: nowrap; flex-shrink: 0; }
+
+.links { display: flex; gap: 4px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.links::-webkit-scrollbar { display: none; }
+
+.pill {
+  padding: 8px 15px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: var(--text-md);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pill:hover { background: var(--hover); color: var(--text); }
+.pillOn, .pillOn:hover { background: var(--primary); color: var(--primary-ink); }
+
+.end { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
+
+.themeBtn {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.themeBtn:hover { color: var(--text); border-color: var(--text3); }
+
+.sub {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: calc(var(--page-max) + var(--page-pad) * 2);
+  margin: 0 auto;
+  padding: 0 var(--page-pad);
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-top: 1px solid var(--border);
+}
+.sub::-webkit-scrollbar { display: none; }
+
+.subItem { display: inline-flex; align-items: center; }
+
+.sep { width: 1px; height: 18px; background: var(--border-strong); margin: 0 10px; flex: none; }
+
+.tab {
+  position: relative;
+  padding: 12px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: var(--text-md);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tab:hover { color: var(--text); }
+.tabOn { color: var(--text); font-weight: 800; }
+.tabOn::after { content: ""; position: absolute; inset-inline: 12px; bottom: 0; height: 3px; border-radius: 2px 2px 0 0; background: var(--primary); }
+
+.pill:focus-visible, .tab:focus-visible, .themeBtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
