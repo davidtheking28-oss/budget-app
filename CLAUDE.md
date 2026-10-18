@@ -23,7 +23,7 @@ production build. See the `verify` skill for how to drive both apps.
 
 **The Supabase project is shared with the trading-journal app.** Budget owns
 `budget_data`, `households`, `push_subscriptions`, `push_log`, and the
-`parse-receipt` / `parse-expense` / `push-daily` edge functions. Everything else
+`parse-receipt` / `parse-expense` / `budget-push` edge functions (renamed from `push-daily`, which the trading-journal CI redeploys over with its own stale copy). Everything else
 (`trades`, `screener_*`, `investments`, `market_cache`, `app_secrets`, `flex_*`)
 belongs to the trading journal — leave it alone. Edge-function secrets are shared;
 `parse-expense`/`parse-receipt` use `GROQ_API_KEY` (Groq's free tier — text +

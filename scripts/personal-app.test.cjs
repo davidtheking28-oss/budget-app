@@ -576,7 +576,7 @@ test('category suggestions still accept a response for the current description',
 });
 
 test('push-daily pace warning needs a week, real spend, and a clear overshoot',()=>{
-  const src=fs.readFileSync(path.join(root,'supabase/functions/push-daily/index.ts'),'utf8');
+  const src=fs.readFileSync(path.join(root,'supabase/functions/budget-push/index.ts'),'utf8');
   const m=src.match(/function paceProjection[\s\S]*?\n}\n/);
   assert.ok(m,'paceProjection missing');
   const pace=vm.runInNewContext('('+m[0].replace(/: number/g,'').replace(/^function paceProjection/,'function')+')');

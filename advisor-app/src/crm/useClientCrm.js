@@ -11,7 +11,7 @@ async function notifyMeetingInstant(meetingId) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return null;
-    const res = await fetch(SUPA_URL + '/functions/v1/push-daily?action=notify-meeting', {
+    const res = await fetch(SUPA_URL + '/functions/v1/budget-push?action=notify-meeting', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
       body: JSON.stringify({ meetingId })

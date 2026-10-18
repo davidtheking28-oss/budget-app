@@ -4739,7 +4739,7 @@ function _urlB64ToU8(b64){const pad='='.repeat((4-b64.length%4)%4);const raw=ato
 async function _getVapidPublic(){
   let k=localStorage.getItem('budget_vapid_pub');
   if(k)return k;
-  const res=await fetch(SUPA_URL+'/functions/v1/push-daily?action=vapid',{headers:{'Authorization':'Bearer '+SUPA_ANON}});
+  const res=await fetch(SUPA_URL+'/functions/v1/budget-push?action=vapid',{headers:{'Authorization':'Bearer '+SUPA_ANON}});
   if(!res.ok)throw new Error('vapid fetch failed');
   k=(await res.json()).publicKey;
   localStorage.setItem('budget_vapid_pub',k);
