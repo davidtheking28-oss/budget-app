@@ -47,9 +47,9 @@
 .filterChip:hover { color: var(--text); border-color: var(--border-strong); }
 
 .filterChipActive {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
 }
 
 .tableWrap {

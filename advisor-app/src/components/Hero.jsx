@@ -5,12 +5,14 @@ const cls = (base, tone, v) => base + (TONE[tone] ? ' ' + TONE[tone] : '') + (is
 
 const TONE = { pos: styles.pos, neg: styles.neg, income: styles.income, expense: styles.expense, neutral: styles.neutral };
 
+const money = v => (typeof v === 'string' && v.startsWith('₪') ? <><span className={styles.cur}>₪</span>{v.slice(1)}</> : v);
+
 export default function Hero({ label, value, tone, note, side = [], compact = false, visual = null }) {
   const body = (
     <>
       <div className={styles.main}>
         <div className={styles.label}>{label}</div>
-        <div className={cls(styles.value + (compact ? ' ' + styles.valueCompact : ''), tone, value)}>{value}</div>
+        <div className={cls(styles.value + (compact ? ' ' + styles.valueCompact : ''), tone, value)}>{money(value)}</div>
         {note && <div className={styles.note}>{note}</div>}
       </div>
       {side.length > 0 && (

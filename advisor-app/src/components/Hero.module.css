@@ -114,3 +114,5 @@
 .visual { min-width: 0; display: flex; align-items: center; justify-content: center; }
 .leftCol .side { margin: 22px 0 0; padding-top: 18px; border-top: 1px solid var(--workspace-line); justify-content: flex-start; gap: 8px 36px; }
 .leftCol .sideItem, .hero .leftCol .sideItem { border: none; padding: 0; }
+
+.hero .value .cur { font-size: 0.42em; font-weight: 700; opacity: 0.85; vertical-align: 0.62em; margin-inline-end: 0.12em; }

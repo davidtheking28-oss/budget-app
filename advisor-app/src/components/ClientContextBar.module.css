@@ -175,8 +175,8 @@
 }
 
 .modeOn {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--primary);
+  color: var(--primary-ink);
 }
 
 .modeOff {

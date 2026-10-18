@@ -52,9 +52,9 @@
 .stepDot:hover { color: var(--text); border-color: var(--border-strong); }
 .stepDone { color: var(--text); border-color: rgba(var(--green-rgb), 0.35); }
 .stepActive {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
 }
 
 .positive { color: var(--green); }
