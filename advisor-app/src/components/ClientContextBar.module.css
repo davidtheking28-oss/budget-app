@@ -135,9 +135,9 @@
   gap: 6px;
   padding: 8px 14px;
   border-radius: 8px;
-  border: 1px dashed var(--border-strong);
+  border: 1px solid var(--border-strong);
   background: none;
-  color: var(--accent);
+  color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
@@ -148,8 +148,8 @@
 }
 
 .actionTile:hover {
-  border-color: var(--accent);
-  background: var(--accent-dim);
+  border-color: var(--text);
+  background: var(--hover);
 }
 
 .modeToggle {
