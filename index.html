@@ -2638,6 +2638,7 @@
           <button type="button" class="set-dd-trigger" onclick="toggleSetDD('dataDD')"><span>💾 ייבוא, ייצוא וגיבוי</span><svg aria-hidden="true" focusable="false" class="set-dd-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
           <div class="set-dd-menu">
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();importBankCSV()"><span>🏦</span> ייבא עסקאות מקובץ בנק (CSV)</button>
+            <button type="button" class="set-dd-opt" onclick="closeAllSetDD();importStatementImages()"><span>📷</span> ייבא דף חשבון או אשראי מתמונה</button>
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();exportBackup()"><span>💾</span> ייצוא גיבוי מלא (JSON)</button>
             <button type="button" class="set-dd-opt" onclick="closeAllSetDD();pickBackupFile()"><span>♻️</span> שחזור מקובץ גיבוי</button>
             <button type="button" class="set-dd-opt" onclick="restoreAutoBackup()"><span>🕘</span> שחזור מגיבוי אוטומטי <span id="autoBkInfo" style="color:var(--text3);font-size:0.8125rem;margin-right:4px"></span></button>
@@ -9073,6 +9074,45 @@ setTimeout(autoCarryRecurring,500);
         } catch(err){ _DEBUG&&console.warn(err); if(typeof showToast==='function') showToast('❌ לא ניתן לקרוא את הקובץ. נסה קובץ אחר'); }
       };
       reader.readAsArrayBuffer(file);
+    };
+    input.click();
+  };
+
+  window.importStatementImages=function(){
+    var input=document.createElement('input'); input.type='file'; input.accept='image/*'; input.multiple=true;
+    input.onchange=async function(e){
+      var files=Array.prototype.slice.call(e.target.files||[],0,12); if(!files.length) return;
+      var sess=_sb?(await _sb.auth.getSession()).data.session:null;
+      if(!sess){ showToast('יש להתחבר כדי להשתמש בתכונה הזו'); return; }
+      showToast('📷 קורא '+files.length+' תמונות...');
+      var found=[], failed=0;
+      for(var i=0;i<files.length;i++){
+        try{
+          var img=await _resizeImage(files[i],1500);
+          var res=await fetch(SUPA_URL+'/functions/v1/parse-statement',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+sess.access_token,'apikey':SUPA_ANON},body:JSON.stringify({image:img.data,mediaType:img.type})});
+          var data=await res.json().catch(function(){return {};});
+          if(!res.ok||data.error){ failed++; continue; }
+          found=found.concat(data.transactions||[]);
+        }catch(_e){ failed++; }
+      }
+      var existing=new Set(transactions.map(function(t){return t.date+'|'+t.desc+'|'+Math.abs(t.amount);}));
+      var fresh=[], dup=0;
+      found.forEach(function(t){
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(t.date||'')||!t.desc||!t.amount) return;
+        var key=t.date+'|'+t.desc+'|'+t.amount;
+        if(existing.has(key)){ dup++; return; }
+        existing.add(key); fresh.push(t);
+      });
+      if(!fresh.length){ showToast(dup?'כל העסקאות כבר קיימות ('+dup+' כפילויות)':(failed?'❌ לא הצלחתי לקרוא את התמונות':'❌ לא נמצאו עסקאות בתמונות')); return; }
+      var sumOf=function(type){ return Math.round(fresh.filter(function(t){return t.type===type;}).reduce(function(s,t){return s+t.amount;},0)); };
+      var msg='נמצאו '+fresh.length+' עסקאות\nהוצאות: ₪'+sumOf('expense').toLocaleString('he-IL')+'\nהכנסות: ₪'+sumOf('income').toLocaleString('he-IL')+(dup?'\n'+dup+' כפילויות ידולגו':'')+(failed?'\n'+failed+' תמונות לא נקראו':'')+'\n\nלייבא?';
+      if(!confirm(msg)) return;
+      fresh.forEach(function(t){
+        var cat=categorize(t.desc,t.type)||(t.type==='expense'?(_activeMode==='business'?'אחר':'שונות'):'אחר');
+        transactions.push({id:Date.now()+Math.random(),type:t.type,cat:cat,desc:t.desc,amount:t.amount,date:t.date,recurring:false});
+      });
+      saveData(); refreshAll(); showPage('dashboard',document.getElementById('nav-dashboard'));
+      showToast('✓ יובאו '+fresh.length+' עסקאות — כדאי לעבור על הקטגוריות');
     };
     input.click();
   };
