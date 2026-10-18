@@ -9,10 +9,10 @@ export function useAdvisorProfile(userId) {
     let cancelled = false;
     supabase
       .from('advisors')
-      .select('display_name, logo_url')
+      .select('display_name, logo_url, brand_color')
       .eq('user_id', userId)
       .maybeSingle()
-      .then(({ data }) => { if (!cancelled) setProfile(data || { display_name: null, logo_url: null }); });
+      .then(({ data }) => { if (!cancelled) setProfile(data || { display_name: null, logo_url: null, brand_color: null }); });
     return () => { cancelled = true; };
   }, [userId]);
 
@@ -45,5 +45,12 @@ export function useAdvisorProfile(userId) {
     return true;
   }
 
-  return { profile, saveName, saveLogo, removeLogo };
+  async function saveBrandColor(hex) {
+    const { error } = await supabase.from('advisors').update({ brand_color: hex }).eq('user_id', userId);
+    if (error) return false;
+    setProfile(p => ({ ...p, brand_color: hex }));
+    return true;
+  }
+
+  return { profile, saveName, saveLogo, removeLogo, saveBrandColor };
 }

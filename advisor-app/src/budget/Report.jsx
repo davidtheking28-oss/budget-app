@@ -3,6 +3,7 @@ import { useClientBudget, BudgetModeContext } from './useClientBudget.js';
 import { monthSummary, effectiveLimit } from './budgetMath.js';
 import { computeInsights } from './insights.js';
 import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
+import { brandStyle } from '../brandColor.js';
 import { initials } from '../clientIdentity.js';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
@@ -71,7 +72,7 @@ export default function Report({ clientUserId, advisorId, year, month, email, on
   const cats = Object.keys(data.budgets || {}).filter(c => data.budgets[c]).sort();
 
   return (
-    <div className={styles.page} dir="rtl">
+    <div className={styles.page} dir="rtl" style={brandStyle(profile?.brand_color)}>
       <div className={styles.printButton}>
         <Button onClick={() => window.print()}>הדפס</Button>
         <Button variant="ghost" className={styles.closeButton} onClick={onClose}>סגור</Button>

@@ -1,5 +1,6 @@
 import { useClientBudget } from './useClientBudget.js';
 import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
+import { brandStyle } from '../brandColor.js';
 import { initials } from '../clientIdentity.js';
 import { monthSummary, effectiveLimit } from './budgetMath.js';
 import { loanPayoffMonths, currentInstallments } from './Credit.jsx';
@@ -82,7 +83,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
   const hasAnyData = cats.length > 0 || subs.length > 0 || fixed.length > 0 || loans.length > 0 || payments.length > 0 || goals.length > 0 || assets.length > 0;
 
   return (
-    <div className={styles.page} dir="rtl">
+    <div className={styles.page} dir="rtl" style={brandStyle(profile?.brand_color)}>
       <div className={styles.topBar}>
         <Button variant="ghost" onClick={onClose}>סגור</Button>
       </div>

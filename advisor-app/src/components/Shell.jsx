@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
+import { DEFAULT_BRAND } from '../brandColor.js';
 import IconRail from './IconRail.jsx';
 import SearchBar from './SearchBar.jsx';
 import styles from './Shell.module.css';
@@ -36,7 +37,7 @@ function AccountMenu({ email, advisorId, up }) {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
-  const { profile, saveName, saveLogo, removeLogo } = useAdvisorProfile(advisorId);
+  const { profile, saveName, saveLogo, removeLogo, saveBrandColor } = useAdvisorProfile(advisorId);
   const [name, setName] = useState('');
   const [savingName, setSavingName] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -97,6 +98,11 @@ function AccountMenu({ email, advisorId, up }) {
     if (ok) toast('הלוגו הוסר', 'success');
   }
 
+  async function pickBrandColor(hex) {
+    const ok = await saveBrandColor(hex);
+    toast(ok ? 'צבע המותג נשמר' : 'שגיאה בשמירת צבע המותג', ok ? 'success' : 'error');
+  }
+
   return (
     <div className={styles.accountMenu + (up ? ' ' + styles.accountUp : '')}>
       <button ref={triggerRef} type="button" className={styles.accountTrigger} onClick={() => setOpen(o => !o)} aria-expanded={open} aria-haspopup="true" aria-label={`חשבון: ${email}`}>
@@ -138,6 +144,11 @@ function AccountMenu({ email, advisorId, up }) {
               {uploadingLogo ? 'מעלה…' : profile?.logo_url ? 'החלף לוגו' : 'העלה לוגו'}
             </button>
             {profile?.logo_url && <button type="button" className={styles.accountLogoutBtn} onClick={clearLogo}>הסר</button>}
+          </div>
+          <div className={styles.logoRow}>
+            <input type="color" aria-label="צבע מותג" className={styles.colorInput} value={profile?.brand_color || DEFAULT_BRAND} onChange={e => pickBrandColor(e.target.value)} />
+            <span className={styles.accountPanelHint}>צבע מותג בדוחות</span>
+            {profile?.brand_color && <button type="button" className={styles.accountLogoutBtn} onClick={() => pickBrandColor(null)}>איפוס</button>}
           </div>
           <div className={styles.accountDivider} />
           <button type="button" className={styles.accountLogoutBtn} onClick={() => supabase.auth.signOut()}>

@@ -381,3 +381,13 @@
 .modeContext button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 
 .mobileClient { display: none; }
+
+.colorInput {
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}

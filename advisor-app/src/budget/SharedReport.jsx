@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient.js';
 import { monthSummary, effectiveLimit } from './budgetMath.js';
 import { computeInsights } from './insights.js';
 import { initials } from '../clientIdentity.js';
+import { brandStyle } from '../brandColor.js';
 import Logo from '../components/Logo.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -39,13 +40,13 @@ export default function SharedReport({ token }) {
     return <ErrorState message="הקישור לא נמצא, שבוטל על ידי היועץ או שפג תוקפו" />;
   }
 
-  const { year, month, client_email: email, advisor_display_name: advisorName, advisor_logo_url: logoUrl, data } = payload;
+  const { year, month, client_email: email, advisor_display_name: advisorName, advisor_logo_url: logoUrl, advisor_brand_color: brandColor, data } = payload;
   const summary = monthSummary(data, year, month);
   const insights = computeInsights(data, year, month);
   const cats = Object.keys(data.budgets || {}).filter(c => data.budgets[c]).sort();
 
   return (
-    <div className={styles.page} dir="rtl">
+    <div className={styles.page} dir="rtl" style={brandStyle(brandColor)}>
       <div className={styles.printButton}>
         <Button onClick={() => window.print()}>הדפס</Button>
       </div>

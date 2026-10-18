@@ -17,7 +17,7 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  border-bottom: 2px solid var(--border-strong);
+  border-bottom: 2px solid var(--brand, var(--border-strong));
   padding-bottom: var(--space-4);
   margin-bottom: var(--space-5);
   animation: riseIn var(--motion) var(--ease-out-expo) both;
