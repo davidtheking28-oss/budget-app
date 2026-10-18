@@ -577,7 +577,7 @@ test('category suggestions still accept a response for the current description',
 
 test('push-daily pace warning needs a week, real spend, and a clear overshoot',()=>{
   const src=fs.readFileSync(path.join(root,'supabase/functions/budget-push/index.ts'),'utf8');
-  const m=src.match(/function paceProjection[\s\S]*?\n}\n/);
+  const m=src.match(/function paceProjection[\s\S]*?\r?\n}\r?\n/);
   assert.ok(m,'paceProjection missing');
   const pace=vm.runInNewContext('('+m[0].replace(/: number/g,'').replace(/^function paceProjection/,'function')+')');
   assert.equal(pace(400,1000,10,30),1200);
@@ -588,4 +588,28 @@ test('push-daily pace warning needs a week, real spend, and a clear overshoot',(
   assert.equal(pace(0,1000,10,30),null);
   assert.equal(pace(320,1000,10,30),null);
   assert.equal(pace(380,1000,10,30),1140);
+});
+
+test('user category rules beat learned categories, longest match wins, and apply retroactively',()=>{
+  const transactions=[
+    {type:'expense',cat:'שונות',desc:'שופרסל דיל תל אביב',amount:100},
+    {type:'expense',cat:'מזון לבית',desc:'שופרסל',amount:50},
+    {type:'income',cat:'אחר',desc:'שופרסל החזר',amount:20},
+    {type:'expense',cat:'שונות',desc:'שופרסל אונליין',amount:70,fx:true},
+  ];
+  const userSettings={catRules:[
+    {id:1,match:'שופרסל',cat:'מזון לבית',type:'expense'},
+    {id:2,match:'שופרסל דיל',cat:'אוכל בחוץ ובילויים',type:'expense'},
+  ]};
+  const ctx=functions(['normDesc','ruleCategory','applyCatRule'],{userSettings,transactions});
+  const valid=['מזון לבית','אוכל בחוץ ובילויים','שונות'];
+  assert.equal(ctx.ruleCategory('שופרסל דיל תל אביב','expense',valid),'אוכל בחוץ ובילויים');
+  assert.equal(ctx.ruleCategory('שופרסל סניף 12','expense',valid),'מזון לבית');
+  assert.equal(ctx.ruleCategory('שופרסל','income',valid),null);
+  assert.equal(ctx.ruleCategory('שופרסל','expense',['שונות']),null);
+  assert.equal(ctx.ruleCategory('סופר אחר','expense',valid),null);
+  assert.equal(ctx.applyCatRule(userSettings.catRules[0]),1);
+  assert.equal(transactions[0].cat,'מזון לבית');
+  assert.equal(transactions[2].cat,'אחר');
+  assert.equal(transactions[3].cat,'שונות');
 });

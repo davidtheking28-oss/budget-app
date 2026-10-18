@@ -1269,6 +1269,12 @@
        its icons white. The dark theme background is the same color as this strip,
        so the bar blends in; in light mode the strip stays dark so the icons
        remain legible. */
+    .cat-rules-list{display:flex;flex-direction:column;gap:6px;max-height:34vh;overflow-y:auto;}
+    .cat-rule-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px 12px;font-size:0.85rem;}
+    .cat-rule-text{min-width:0;overflow-wrap:anywhere;}
+    .cat-rule-del{flex:none;width:44px;height:44px;border:none;background:none;color:var(--text3);font-size:1rem;cursor:pointer;}
+    .cat-rule-empty{color:var(--text3);font-size:0.85rem;padding:6px 2px;}
+    .cat-rule-apply{display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--text2);min-height:44px;cursor:pointer;}
     #statusBarScrim{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:#100f0d;z-index:999;pointer-events:none;}
     body.dark #statusBarScrim{background:radial-gradient(ellipse 150% 60% at 50% 6%,#24201a 0%,var(--bg) 62%) top/100vw 100dvh no-repeat;}
     /* Pull-to-refresh — body has overscroll-behavior:none so the browser's own
@@ -2065,6 +2071,23 @@
   </div>
 </div>
 
+<div class="sheet-overlay" id="catRulesSheet" onclick="if(event.target===this)closeSheet('catRulesSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🏷️ חוקי סיווג אוטומטיים</div>
+    <div class="form-stack">
+      <div id="catRulesList" class="cat-rules-list"></div>
+      <div class="form-field"><label for="ruleMatch">כשהתיאור מכיל</label><input type="text" id="ruleMatch" placeholder="לדוגמה: שופרסל" autocomplete="off" onfocus="this.select()"/></div>
+      <div class="form-row">
+        <div class="form-field"><label for="ruleType">סוג</label><select id="ruleType" onchange="ruleFillCats()"><option value="expense">הוצאה</option><option value="income">הכנסה</option></select></div>
+        <div class="form-field"><label for="ruleCat">קטגוריה</label><select id="ruleCat"></select></div>
+      </div>
+      <label class="cat-rule-apply"><input type="checkbox" id="ruleApply" checked>עדכן גם עסקאות קיימות</label>
+      <button class="btn btn-primary btn-full" onclick="addCatRule()">הוסף חוק</button>
+    </div>
+  </div>
+</div>
+
 <div class="sheet-overlay" id="addBudgetSheet" onclick="if(event.target===this)closeSheet('addBudgetSheet')">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -2631,6 +2654,10 @@
           <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefMonthly" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">סיכום חודשי</label>
           <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefAdvisor" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">משימות והודעות מהיועץ</label>
         </div>
+      </div>
+      <div class="settings-section">
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1"/></svg></span><span>סיווג אוטומטי</span></h2>
+        <button type="button" class="set-dd-trigger" onclick="openCatRules()"><span>🏷️ חוקי סיווג לפי בית עסק</span></button>
       </div>
       <div class="settings-section">
         <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg></span><span>גיבוי ושחזור</span></h2>
@@ -5210,6 +5237,7 @@ document.addEventListener('DOMContentLoaded',function(){
 let userSettings = _readStored(_modeKey('budget_settings'),{"name":"","partnerName":"","currency":"₪","savingsGoal":0,"incomeSources":[]});
 if(!userSettings.incomeSources) userSettings.incomeSources = [];
 if(!userSettings.customCats)    userSettings.customCats    = [];
+if(!userSettings.catRules)      userSettings.catRules      = [];
 if(!userSettings.customFixedCats) userSettings.customFixedCats = [];
 _seedIncomeHistory();
 _syncCurrentIncome();
@@ -5582,6 +5610,46 @@ function saveEditTx(){
   showToast('✓ העסקה עודכנה');
 }
 
+// ── Category rules ───────────────────────────────────────────────
+function openCatRules(){
+  document.getElementById('ruleMatch').value='';
+  document.getElementById('ruleType').value='expense';
+  ruleFillCats();
+  renderCatRules();
+  openSheet('catRulesSheet');
+}
+function ruleFillCats(){
+  const type=document.getElementById('ruleType').value;
+  const sel=document.getElementById('ruleCat');
+  sel.innerHTML=getEffectiveCats(type).map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+}
+function renderCatRules(){
+  const rules=userSettings.catRules||[];
+  const el=document.getElementById('catRulesList');
+  el.innerHTML=rules.length?rules.map(r=>'<div class="cat-rule-row"><span class="cat-rule-text">כשהתיאור מכיל <b>'+esc(r.match)+'</b> ← '+esc(r.cat)+(r.type==='income'?' (הכנסה)':'')+'</span><button type="button" class="cat-rule-del" aria-label="מחק חוק" onclick="deleteCatRule('+r.id+')">✕</button></div>').join(''):'<div class="cat-rule-empty">עדיין אין חוקים. הוסף חוק ראשון למטה.</div>';
+}
+function addCatRule(){
+  const match=document.getElementById('ruleMatch').value.trim();
+  const type=document.getElementById('ruleType').value;
+  const cat=document.getElementById('ruleCat').value;
+  if(normDesc(match).length<2){showToast('❌ הזן לפחות 2 אותיות לזיהוי');return;}
+  if(!cat){showToast('❌ בחר קטגוריה');return;}
+  const rules=userSettings.catRules=(userSettings.catRules||[]).filter(r=>!(r.type===type&&normDesc(r.match)===normDesc(match)));
+  const rule={id:Date.now(),match,cat,type};
+  rules.push(rule);
+  let n=0;
+  if(document.getElementById('ruleApply').checked){n=applyCatRule(rule);if(n){saveData();refreshAll();}}
+  saveSettingsData();
+  document.getElementById('ruleMatch').value='';
+  renderCatRules();
+  showToast('✓ החוק נשמר'+(n?' · עודכנו '+n+' עסקאות':''));
+}
+function deleteCatRule(id){
+  userSettings.catRules=(userSettings.catRules||[]).filter(r=>r.id!==id);
+  saveSettingsData();
+  renderCatRules();
+}
+
 // ── Custom categories ────────────────────────────────────────────
 async function openAddCustomCat(){
   const name=await promptSheet({title:'קטגוריה חדשה',label:'שם הקטגוריה החדשה:'});
@@ -5856,11 +5924,33 @@ function learnCat(desc, cat, type, amount){
   if(keys.length > 400){ keys.slice(0, keys.length - 400).forEach(k => delete learnedCats[k]); }
   try{ localStorage.setItem('budget_learned_cats', JSON.stringify(learnedCats)); }catch(e){}
 }
+function ruleCategory(desc, type, validCats){
+  const key = normDesc(desc);
+  if(!key) return null;
+  let best = null, bestLen = 0;
+  for(const r of (userSettings.catRules||[])){
+    if(r.type !== type) continue;
+    const m = normDesc(r.match);
+    if(m.length >= 2 && m.length > bestLen && key.includes(m) && validCats.includes(r.cat)){ best = r.cat; bestLen = m.length; }
+  }
+  return best;
+}
+function applyCatRule(rule){
+  const m = normDesc(rule.match);
+  let n = 0;
+  transactions.forEach(t => {
+    if(t.type === rule.type && !t.fx && t.cat !== rule.cat && normDesc(t.desc).includes(m)){ t.cat = rule.cat; n++; }
+  });
+  return n;
+}
 function categorize(desc, type){
   const isBiz = _activeMode==='business';
   const validCats = isBiz ? getEffectiveCats(type) : (type === 'income' ? INCOME_CATS : EXPENSE_CATS);
   const key = normDesc(desc);
   if(!key) return null;
+  // 0) חוק שהמשתמש הגדיר — גובר על כל מה שנלמד
+  const byRule = ruleCategory(desc, type, validCats);
+  if(byRule) return byRule;
   // 1) התאמה מדויקת ממה שנלמד
   if(learnedCats[key] && validCats.includes(learnedCats[key])) return learnedCats[key];
   // 2) התאמה חלקית ממה שנלמד — המפתח הארוך ביותר שמוכל בתיאור
