@@ -97,8 +97,8 @@
   cursor: pointer;
   border: 1px solid transparent;
 }
-.btn { background: var(--primary); color: var(--primary-ink); }
-.btn:hover:not(:disabled) { background: var(--primary-hover); }
+.btn { background: var(--accent); color: var(--accent-ink); }
+.btn:hover:not(:disabled) { filter: brightness(1.08); }
 .btnGhost { background: var(--surface); border-color: var(--border-strong, var(--border)); color: var(--text); }
 .btnGhost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .btn:disabled, .btnGhost:disabled { opacity: 0.5; cursor: default; }
@@ -228,3 +228,5 @@
 .denseTable input[type="date"] { width: 132px; padding-inline: 6px; font-size: 12.5px; }
 .denseTable .select { max-width: 124px; }
 .denseTable .emailCell { max-width: 140px; }
+.cellGrid { row-gap: var(--space-4); }
+.cellGrid > .cell:nth-child(3n+1) { border-inline-start: none; padding-inline-start: 0; }

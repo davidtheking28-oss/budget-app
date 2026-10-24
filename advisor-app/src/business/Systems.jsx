@@ -5,6 +5,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
+import HeaderAction from './HeaderAction.jsx';
 import styles from './Business.module.css';
 
 const SYSTEM_DEPARTMENTS = [
@@ -40,6 +41,7 @@ export default function Systems({ advisorId }) {
 
   return (
     <div className={styles.stack}>
+      <HeaderAction targetId="biz-header-sub" fallback={false}><p className={styles.headSub}>{records.length} סיסטמים</p></HeaderAction>
       <section className={styles.card}>
         <div className={styles.grid3}>
           {SYSTEM_DEPARTMENTS.map(d => (

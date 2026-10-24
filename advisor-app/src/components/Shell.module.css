@@ -432,3 +432,5 @@
 .homeHead .clientDesc { margin-top: 2px; font-size: var(--text-sm); }
 
 .homeContent { font-size: 14px; }
+
+.homeHeadMobile { margin-bottom: var(--space-3); }

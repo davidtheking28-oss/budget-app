@@ -125,15 +125,16 @@ export default function Prospects({ advisorId, onConvert }) {
   return (
     <div className={styles.page}>
       <h1 className={styles.srOnly}>מתעניינים</h1>
+      <HeaderAction targetId="biz-header-sub" fallback={false}><p className={biz.headSub}>{prospects.length} לידים במערכת</p></HeaderAction>
       <HeaderAction><button type="button" className={biz.btn} onClick={() => { setForm(EMPTY); setEditingId(null); setModalOpen(true); }}>+ הוסף ליד</button></HeaderAction>
-      <div className={biz.grid3} role="group" aria-label="אחוזי המרה" style={{ marginBottom: 'var(--space-4)' }}>
-        <div className={biz.stat}><div className={biz.statLabel}>פגישות התאמה שנקבעו</div><div className={biz.statValue}>{meetingsSet}</div><div className={biz.statNote}>מתוך {funnel.total} לידים</div></div>
-        <div className={biz.stat}><div className={biz.statLabel}>אחוז הגעה לשיחות</div><div className={biz.statValue}>{percentLabel(funnel.showRate)}</div><div className={biz.statNote}>{funnel.showed} הגיעו מתוך {funnel.total} לידים</div></div>
-        <div className={biz.stat}><div className={biz.statLabel}>אחוז רלוונטיות</div><div className={biz.statValue}>{percentLabel(funnel.relevantRate)}</div><div className={biz.statNote}>{funnel.relevant} רלוונטיים מתוך {funnel.showed} שהגיעו</div></div>
-        <div className={biz.stat}><div className={biz.statLabel}>אחוז סגירה</div><div className={biz.statValue}>{percentLabel(funnel.closeRate)}</div><div className={biz.statNote}>{funnel.closed} נסגרו מתוך {funnel.relevant} רלוונטיים</div></div>
-        <div className={biz.stat}><div className={biz.statLabel}>אחוז סגירה מכל השיחות</div><div className={biz.statValue}>{percentLabel(funnel.closeOfShowedRate)}</div><div className={biz.statNote}>{funnel.closed} נסגרו מתוך {funnel.showed} שהגיעו</div></div>
-        <div className={biz.stat}><div className={biz.statLabel}>לחזור אליהם</div><div className={biz.statValue}>{dueNow}</div><div className={biz.statNote}>תאריך חזרה הגיע · {hot} לידים חמים · {thisMonth} פניות החודש</div></div>
-      </div>
+      <section className={biz.bigCard} style={{ marginBottom: 'var(--space-4)' }}><div className={biz.grid3 + ' ' + biz.cellGrid} role="group" aria-label="אחוזי המרה">
+        <div className={biz.cell}><div className={biz.statLabel}>פגישות התאמה שנקבעו</div><div className={biz.statValue}>{meetingsSet}</div><div className={biz.statNote}>מתוך {funnel.total} לידים</div></div>
+        <div className={biz.cell}><div className={biz.statLabel}>אחוז הגעה לשיחות</div><div className={biz.statValue}>{percentLabel(funnel.showRate)}</div><div className={biz.statNote}>{funnel.showed} הגיעו מתוך {funnel.total} לידים</div></div>
+        <div className={biz.cell}><div className={biz.statLabel}>אחוז רלוונטיות</div><div className={biz.statValue}>{percentLabel(funnel.relevantRate)}</div><div className={biz.statNote}>{funnel.relevant} רלוונטיים מתוך {funnel.showed} שהגיעו</div></div>
+        <div className={biz.cell}><div className={biz.statLabel}>אחוז סגירה</div><div className={biz.statValue}>{percentLabel(funnel.closeRate)}</div><div className={biz.statNote}>{funnel.closed} נסגרו מתוך {funnel.relevant} רלוונטיים</div></div>
+        <div className={biz.cell}><div className={biz.statLabel}>אחוז סגירה מכל השיחות</div><div className={biz.statValue}>{percentLabel(funnel.closeOfShowedRate)}</div><div className={biz.statNote}>{funnel.closed} נסגרו מתוך {funnel.showed} שהגיעו</div></div>
+        <div className={biz.cell}><div className={biz.statLabel}>לחזור אליהם</div><div className={biz.statValue}>{dueNow}</div><div className={biz.statNote}>תאריך חזרה הגיע · {hot} לידים חמים · {thisMonth} פניות החודש</div></div>
+      </div></section>
 
       <div className={biz.toolbar} style={{ marginBottom: 'var(--space-3)' }}>
         <input className={biz.input + ' ' + biz.inputGrow} type="search" placeholder="חיפוש ליד..." aria-label="חיפוש ליד" value={search} onChange={e => setSearch(e.target.value)} />

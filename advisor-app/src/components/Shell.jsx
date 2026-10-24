@@ -267,6 +267,12 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
           </div>
         </div>
         <main className={styles.content}>
+          {homeNav && title && (
+            <div className={styles.homeHeadMobile}>
+              <h1 className={styles.clientTitle}>{title}</h1>
+              {description ? <p className={styles.clientDesc}>{description}</p> : <div id="biz-header-sub" className={styles.clientDesc} />}
+            </div>
+          )}
           {children}
         </main>
       </div>

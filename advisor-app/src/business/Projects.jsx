@@ -6,6 +6,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
+import HeaderAction from './HeaderAction.jsx';
 import styles from './Business.module.css';
 
 function ProjectCard({ project, onUpdate, onRemove }) {
@@ -71,6 +72,7 @@ export default function Projects({ advisorId }) {
 
   return (
     <div className={styles.stack}>
+      <HeaderAction targetId="biz-header-sub" fallback={false}><p className={styles.headSub}>{records.length} פרויקטים</p></HeaderAction>
       <section className={styles.card}>
         <div className={styles.cardHead} style={{ marginBottom: 0 }}>
           <h3 className={styles.cardTitle}>הפרויקטים שלי</h3>

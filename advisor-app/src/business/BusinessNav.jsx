@@ -30,8 +30,8 @@ export const DEPARTMENTS = [
     items: [
       { key: 'tasks', label: 'לו״ז + משימות', icon: icons.calendarCheck, bare: true },
       { key: 'client-approvals', label: 'אישור לקוחות', icon: icons.users, bare: true, description: 'הזמנות פתוחות ולקוחות שמחכים לאישור.' },
-      { key: 'projects', label: 'פרויקטים', icon: icons.folder, bare: true, description: 'פרויקט הוא משהו גדול שמתחלק לשלבים ומשימות.' },
-      { key: 'systems', label: 'סיסטמים', icon: icons.nodes, bare: true, description: 'כל תהליך שחוזר על עצמו בעסק שווה סיסטם.' },
+      { key: 'projects', label: 'פרויקטים', icon: icons.folder, bare: true },
+      { key: 'systems', label: 'סיסטמים', icon: icons.nodes, bare: true },
       { key: 'site-settings', label: 'הגדרות אתר', icon: icons.gear, bare: true }
     ]
   },
