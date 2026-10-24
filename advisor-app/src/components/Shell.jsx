@@ -167,7 +167,7 @@ function AccountMenu({ email, advisorId, up }) {
   );
 }
 
-export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, clientName, clientSince, budgetMode, onBudgetModeChange, onBack, description, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, clientName, clientSince, budgetMode, onBudgetModeChange, onBack, description, homeNav, homeActive, onHomeNavChange, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   const desktop = useDesktop();
   useWorkspaceScroll(workspaceKey);
 
@@ -177,6 +177,28 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
       <AccountMenu email={email} advisorId={advisorId} />
     </>
   );
+
+  if (desktop && !nav && homeNav) {
+    const current = homeNav.find(n => n.key === homeActive);
+    return (
+      <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
+        <SideNav nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} />
+        <div className={styles.sideMain}>
+          <TopNav hideBrand theme={theme} onToggleTheme={onToggleTheme} end={topEnd} />
+          <main className={styles.contentTop}>
+            <div className={styles.clientHead}>
+              <div className={styles.titleBlock}>
+                <h1 className={styles.clientTitle}>{current?.label}</h1>
+                {current?.description && <p className={styles.clientDesc}>{current.description}</p>}
+              </div>
+              <div className={styles.clientHeadEnd}><DensityToggle /></div>
+            </div>
+            {children}
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   if (desktop && !nav) {
     return (

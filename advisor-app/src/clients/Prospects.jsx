@@ -11,6 +11,8 @@ import ErrorState from '../components/ErrorState.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import { useUrlParam } from '../useUrlParam.js';
 import styles from './Prospects.module.css';
+import biz from '../business/Business.module.css';
+import { funnelStats, percentLabel } from '../business/bizMath.js';
 
 const STATUSES = [
   { key: 'new', label: 'חדש', tone: 'info' },
@@ -29,7 +31,7 @@ const TEMPS = [
 const OPEN_STATUSES = ['new', 'contacted', 'followup', 'meeting'];
 const CONVERT_STATUSES = ['closed', 'converted'];
 const DATED_STATUSES = { followup: 'פולואפ', meeting: 'נקבע ל' };
-const SOURCES = ['המלצה', 'רשתות חברתיות', 'אתר', 'וואטסאפ', 'אחר'];
+const SOURCES = ['דף נחיתה', 'הודעות בפרטי', 'פה לאוזן · לקוח ישן', 'המלצה', 'רשתות חברתיות', 'אתר', 'וואטסאפ', 'אחר'];
 const EMPTY = { temperature: 'warm', name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', follow_up_at: '' };
 
 const tempInfo = key => TEMPS.find(t => t.key === key) || TEMPS[1];
@@ -39,6 +41,7 @@ export default function Prospects({ advisorId, onConvert }) {
   const { prospects, loading, error, reload, addProspect, updateProspect, deleteProspect } = useProspects(advisorId);
   const [filter, setFilter] = useUrlParam('pf', 'open');
   const [tempFilter, setTempFilter] = useUrlParam('pt', 'all');
+  const [sourceFilter, setSourceFilter] = useUrlParam('ps', 'all');
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -67,7 +70,10 @@ export default function Prospects({ advisorId, onConvert }) {
 
   const hot = open.filter(p => p.temperature === 'hot').length;
   const byStatus = filter === 'all' ? prospects : filter === 'open' ? open : prospects.filter(p => p.status === filter);
-  const visible = tempFilter === 'all' ? byStatus : byStatus.filter(p => (p.temperature || 'warm') === tempFilter);
+  const byTemp = tempFilter === 'all' ? byStatus : byStatus.filter(p => (p.temperature || 'warm') === tempFilter);
+  const visible = sourceFilter === 'all' ? byTemp : byTemp.filter(p => (p.source || '') === sourceFilter);
+  const funnel = funnelStats(prospects);
+  const usedSources = [...new Set(prospects.map(p => p.source).filter(Boolean))];
 
   function startEdit(p) {
     setEditingId(p.id);
@@ -119,6 +125,13 @@ export default function Prospects({ advisorId, onConvert }) {
         ]}
       />
 
+      <div className={biz.grid4} role="group" aria-label="אחוזי המרה" style={{ marginBottom: 'var(--space-4)' }}>
+        <div className={biz.stat}><div className={biz.statLabel}>לידים במערכת</div><div className={biz.statValue}>{funnel.total}</div><div className={biz.statNote}>כל הפניות</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>אחוז הגעה לשיחות</div><div className={biz.statValue}>{percentLabel(funnel.showRate)}</div><div className={biz.statNote}>{funnel.showed} הגיעו מתוך {funnel.total} לידים</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>אחוז רלוונטיות</div><div className={biz.statValue}>{percentLabel(funnel.relevantRate)}</div><div className={biz.statNote}>{funnel.relevant} רלוונטיים מתוך {funnel.showed} שהגיעו</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>אחוז סגירה</div><div className={biz.statValue}>{percentLabel(funnel.closeRate)}</div><div className={biz.statNote}>{funnel.closed} נסגרו מתוך {funnel.relevant} רלוונטיים</div></div>
+      </div>
+
       <CardGrid single>
         <Card title="מתעניינים">
           <AddForm label="הוסף מתעניין" open={editingId != null} closeSignal={closeSignal} onEscape={reset} className={styles.form}>
@@ -151,6 +164,10 @@ export default function Prospects({ advisorId, onConvert }) {
                 <button key={f.key} type="button" className={styles.filter + (filter === f.key ? ' ' + styles.filterOn : '')} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>{f.label}</button>
               ))}
             </div>
+            <select className={styles.tempSelect} aria-label="סינון לפי מקור" value={sourceFilter} onChange={e => setSourceFilter(e.target.value)}>
+              <option value="all">כל המקורות</option>
+              {usedSources.map(src => <option key={src} value={src}>{src}</option>)}
+            </select>
             <select className={styles.tempSelect} aria-label="סינון לפי חום" value={tempFilter} onChange={e => setTempFilter(e.target.value)}>
               <option value="all">כל הלידים</option>
               {TEMPS.map(t => <option key={t.key} value={t.key}>ליד {t.label}</option>)}
@@ -191,6 +208,11 @@ export default function Prospects({ advisorId, onConvert }) {
                     <Button variant="ghost" className={styles.convertBtn + (CONVERT_STATUSES.includes(p.status) ? ' ' + styles.convertBtnOn : '')} onClick={() => onConvert(p)} aria-label={`פתח כלקוח · ${p.name}`}>פתח כלקוח</Button>
                   )}
                   <span className={styles.icons}>
+                    {[['showed', 'הגיע'], ['relevant', 'רלוונטי'], ['closed', 'נסגר']].map(([key, label]) => (
+                      <label key={key} className={biz.toolbar} style={{ gap: 4, fontSize: 'var(--text-xs)', fontWeight: 700 }}>
+                        <input type="checkbox" className={biz.check} checked={!!p[key]} aria-label={label + ' · ' + p.name} onChange={e => updateProspect(p.id, { [key]: e.target.checked })} />{label}
+                      </label>
+                    ))}
                     <EditButton title={`ערוך · ${p.name}`} data-edit-prospect={p.id} onClick={() => startEdit(p)} />
                     <DeleteButton title={`מחק · ${p.name}`} onClick={() => deleteProspect(p.id)} />
                   </span>
