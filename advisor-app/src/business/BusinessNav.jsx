@@ -17,6 +17,8 @@ const icons = {
   trend: <svg {...svgProps}><path d="M4 20l5-6 4 3 7-9" /><path d="M16 8h4v4" /></svg>,
   pie: <svg {...svgProps}><path d="M12 3v9h9" /><circle cx="12" cy="12" r="9" /></svg>,
   calendar: <svg {...svgProps}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>,
+  eye: <svg {...svgProps}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>,
+  gear: <svg {...svgProps}><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" /></svg>,
   userPlus: <svg {...svgProps}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 3-5.8 6.5-5.8s6.5 2.2 6.5 5.8M19 8v6M16 11h6" /></svg>
 };
 
@@ -27,8 +29,10 @@ export const DEPARTMENTS = [
     icon: icons.briefcase,
     items: [
       { key: 'tasks', label: 'לו״ז + משימות', icon: icons.calendarCheck, bare: true },
+      { key: 'client-approvals', label: 'אישור לקוחות', icon: icons.users, bare: true, description: 'הזמנות פתוחות ולקוחות שמחכים לאישור.' },
       { key: 'projects', label: 'פרויקטים', icon: icons.folder, bare: true, description: 'פרויקט הוא משהו גדול שמתחלק לשלבים ומשימות.' },
-      { key: 'systems', label: 'סיסטמים', icon: icons.nodes, bare: true, description: 'כל תהליך שחוזר על עצמו בעסק שווה סיסטם.' }
+      { key: 'systems', label: 'סיסטמים', icon: icons.nodes, bare: true, description: 'כל תהליך שחוזר על עצמו בעסק שווה סיסטם.' },
+      { key: 'site-settings', label: 'הגדרות אתר', icon: icons.gear, bare: true }
     ]
   },
   {
@@ -37,9 +41,9 @@ export const DEPARTMENTS = [
     icon: icons.headset,
     items: [
       { key: 'clients', label: 'ניהול לקוחות', title: 'לקוחות', icon: icons.users, bare: true },
-      { key: 'client-deals', label: 'עסקאות לקוחות', icon: icons.coins, bare: true, description: 'מחיר, תשלום, קבלה ומקור הגעה לכל לקוח. נשמר אצלך בלבד.' },
       { key: 'client-service', label: 'שירות לקוחות', title: 'שירות', icon: icons.headset, bare: true, description: 'מי דורש טיפול, מתי הפגישה הבאה ואיפה כל לקוח בתהליך.' },
-      { key: 'client-tasks', label: 'משימות לקוחות', icon: icons.clipboard, bare: true, description: 'מה דורש טיפול אצל הלקוחות היום.' }
+      { key: 'client-tasks', label: 'משימות לקוחות', icon: icons.clipboard, bare: true, description: 'מה דורש טיפול אצל הלקוחות היום.' },
+      { key: 'client-view', label: 'תצוגת לקוח', icon: icons.eye, bare: true }
     ]
   },
   {
@@ -47,7 +51,7 @@ export const DEPARTMENTS = [
     label: 'שיווק',
     icon: icons.megaphone,
     items: [
-      { key: 'marketing', label: 'משימות שיווק', icon: icons.tasks },
+      { key: 'marketing', label: 'שיווק ראשי', icon: icons.tasks },
       { key: 'ideas', label: 'רעיונות לסרטונים', icon: icons.bulb },
       { key: 'marketing-month', label: 'מדדים חודשי', icon: icons.table },
       { key: 'marketing-year', label: 'מדדים שנתי', icon: icons.trend },

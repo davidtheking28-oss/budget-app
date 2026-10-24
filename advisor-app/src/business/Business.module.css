@@ -22,6 +22,9 @@
   border-radius: var(--radius-md);
   padding: 14px 16px;
   min-width: 0;
+  font-family: inherit;
+  text-align: start;
+  color: var(--text);
 }
 .statLabel { color: var(--text2); font-size: var(--text-sm); font-weight: 700; }
 .statValue { margin-top: 4px; font-size: 28px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.15; }
@@ -144,7 +147,7 @@
 .modal { width: min(520px, 100%); max-height: 90vh; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 22px; }
 .modalWide { width: min(720px, 100%); }
 .modalHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
-.iconBtn { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--text2); font-size: 20px; line-height: 1; cursor: pointer; }
+.iconBtn { display: inline-flex; align-items: center; justify-content: center; padding: 0; font-family: inherit; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--text2); font-size: 20px; line-height: 1; cursor: pointer; }
 .iconBtn:hover { color: var(--text); border-color: var(--accent); }
 .iconBtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .formGrid { display: grid; gap: 14px; }
@@ -176,3 +179,25 @@
 }
 
 .hintBox { padding: 12px 14px; border: 1px dashed rgba(var(--accent-rgb), 0.5); border-radius: var(--radius-md); background: rgba(var(--accent-rgb), 0.05); color: var(--accent); font-size: var(--text-sm); line-height: 1.5; }
+
+.tagOk { background: rgba(var(--accent-rgb), 0.14); color: var(--accent); }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sectionHeading { margin: 0; font-size: var(--text-lg, 18px); font-weight: 800; color: var(--text); margin-inline-end: auto; }
+.cellGrid { gap: 0; }
+.cell { padding: 0 var(--space-4); min-width: 0; }
+.cell + .cell { border-inline-start: 1px solid var(--border); }
+.cell:first-child { padding-inline-start: 0; }
+.cell:last-child { padding-inline-end: 0; }
+@media (max-width: 760px) {
+  .cell { padding: var(--space-3) 0; }
+  .cell + .cell { border-inline-start: none; border-top: 1px solid var(--border); }
+}
+.formStack { display: flex; flex-direction: column; gap: var(--space-4); max-width: 640px; }
+.logoPreviewBig { width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--border); }
+.colorInput { width: 44px; height: 36px; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; }
+.hiddenFile { display: none; }
+
+.denseTable th, .denseTable td { padding: 8px 8px; white-space: nowrap; }
+.denseTable .input, .denseTable .select { min-height: 34px; padding: 4px 8px; font-size: var(--text-sm); }
+.denseTable .emailCell { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
+.denseTable th:last-child, .denseTable td:last-child { position: sticky; inset-inline-end: 0; background: var(--surface); border-inline-start: 1px solid var(--border); }

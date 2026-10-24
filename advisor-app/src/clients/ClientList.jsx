@@ -6,64 +6,16 @@ import { usePipeline } from './usePipeline.js';
 import { useProspects } from './useProspects.js';
 import { Card, Row } from '../components/Rows.jsx';
 import PipelineModal from './PipelineModal.jsx';
-import { isStale } from './useClientFreshness.js';
-import { formatDate, formatDateTime, localISODate } from '../budget/monthUtils.js';
-import { useCountUp } from '../useCountUp.js';
-import { useUrlParam } from '../useUrlParam.js';
+import { formatDate, localISODate } from '../budget/monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
-import { initials } from '../clientIdentity.js';
 import styles from './ClientList.module.css';
 import biz from '../business/Business.module.css';
-import { fmt } from '../format.js';
-import DailyWorkQueue from './DailyWorkQueue.jsx';
-import ClientViews, { CLIENT_FILTERS, clientMatches } from './ClientViews.jsx';
-import { readWorkspace, writeWorkspace } from '../workspaceMemory.js';
-
-// Clients arrive in roster order, which buries the ones that need attention.
-// Rank by urgency, then by the weakest health score.
-function urgencyRank(c) {
-  return (c.hasOverage ? 4 : 0)
-    + (c.hasFailedUpload ? 4 : 0)
-    + (c.hasDeclinedMeeting ? 3 : 0)
-    + (c.openTasks > 0 ? 2 : 0)
-    + (c.updatedAt && isStale(c.updatedAt) ? 1 : 0);
-}
-
-function byUrgency(a, b) {
-  const diff = urgencyRank(b) - urgencyRank(a);
-  if (diff !== 0) return diff;
-  return (a.healthScore ?? 101) - (b.healthScore ?? 101);
-}
-
-function RemainingStat({ value }) {
-  const display = useCountUp(value ?? 0);
-  if (value === null) {
-    return (
-      <div className={styles.remainingStat + ' ' + styles.remainingStatEmpty}>
-        <div className={styles.remainingStatLabel}>אין עדיין נתונים</div>
-      </div>
-    );
-  }
-  const over = value < 0;
-  return (
-    <div className={styles.remainingStat + (over ? ' ' + styles.remainingStatOver : '')}>
-      <div className={styles.remainingStatValue}>{fmt(Math.abs(display))}</div>
-      <div className={styles.remainingStatLabel}>{over ? 'מעבר לתקציב' : 'נותר החודש'}</div>
-    </div>
-  );
-}
-
-const INVITE_ERROR_MESSAGES = {
-  self: 'לא ניתן להזמין את עצמך',
-  rate_limited: 'יותר מדי הזמנות, נסה שוב בעוד 10 דקות',
-  not_advisor: 'החשבון הזה לא מוגדר כחשבון יועץ',
-  invalid_email: 'כתובת אימייל לא תקינה',
-  already_linked: 'הלקוח כבר מחובר אליך',
-  already_invited: 'כבר קיימת הזמנה פתוחה לכתובת הזו'
-};
+import ClientsTable from '../business/ClientsTable.jsx';
+import { INVITE_ERROR_MESSAGES } from './inviteMessages.js';
+import { readWorkspace } from '../workspaceMemory.js';
 
 const OPEN_PROSPECT_STATUSES = ['new', 'contacted', 'followup', 'meeting'];
 const TEMP_LABELS = { hot: 'חם', warm: 'פושר', cold: 'קר' };
@@ -75,7 +27,7 @@ function overdueText(followUpAt, today) {
 }
 
 export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUsed, onOpenProspects }) {
-  const { clients, tasks, taskError, completeTask, loading, error, reload } = useClientList(advisorId);
+  const { clients, loading, error, reload } = useClientList(advisorId);
   const { invites: pendingInvites, reload: reloadInvites } = usePendingInvites(advisorId);
   const { leads, loading: leadsLoading, addLead, setStage: setLeadStage, deleteLead } = usePipeline(advisorId);
   const { prospects, loading: prospectsLoading, error: prospectsError, updateProspect } = useProspects(advisorId);
@@ -86,24 +38,9 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [invitingEmail, setInvitingEmail] = useState(false);
-  const [confirmingId, setConfirmingId] = useState(null);
-  const [actionsId, setActionsId] = useState(null);
   const [secondaryOpen, setSecondaryOpen] = useState(false);
   const [confirmingInviteId, setConfirmingInviteId] = useState(null);
-  const [remembered] = useState(() => readWorkspace(`advisor_views:${advisorId}`, {}));
-  const [query, setQuery] = useState(typeof remembered.query === 'string' ? remembered.query : '');
-  const [sort, setSort] = useState(['name', 'meeting'].includes(remembered.sort) ? remembered.sort : 'urgency');
-  const [savedViews, setSavedViews] = useState(Array.isArray(remembered.saved) ? remembered.saved : []);
   const [lastWorkspace] = useState(() => readWorkspace(`advisor_last:${advisorId}`, null));
-  const [listFilter, setListFilter] = useUrlParam('lf', null, CLIENT_FILTERS.some(([k]) => k === remembered.filter) ? remembered.filter : null); // null | 'overage' | 'tasks'
-  useEffect(() => {
-    writeWorkspace(`advisor_views:${advisorId}`, { filter: listFilter, query, sort, saved: savedViews });
-  }, [advisorId, listFilter, query, sort, savedViews]);
-  function changeView(settings) { setListFilter(settings.filter); setQuery(settings.query || ''); setSort(settings.sort || 'urgency'); }
-  function saveView(name) {
-    const view = { id: crypto.randomUUID(), name, settings: { filter: listFilter, query, sort } };
-    setSavedViews(prev => [...prev.filter(v => v.name !== name), view]);
-  }
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -160,7 +97,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
 
   async function removeClient(id) {
     const { error } = await supabase.from('advisor_clients').delete().eq('id', id).eq('advisor_id', advisorId);
-    setConfirmingId(null);
     if (error) { toast('שגיאה בניתוק הלקוח', 'error'); return; }
     toast('הלקוח נותק', 'success');
     reload();
@@ -180,24 +116,13 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
   }
 
   const resumeClient = clients.find(c => c.client_id === lastWorkspace?.id);
-  const overageCount = clients.filter(c => c.hasOverage).length;
-  const openTasksTotal = clients.reduce((s, c) => s + c.openTasks, 0);
   const todayISO = localISODate();
   const dueProspects = prospects
     .filter(p => OPEN_PROSPECT_STATUSES.includes(p.status) && p.follow_up_at && p.follow_up_at <= todayISO)
     .sort((a, b) => a.follow_up_at.localeCompare(b.follow_up_at));
 
-  const visibleClients = [...clients]
-                .filter(c => clientMatches(c, listFilter) && `${c.name || ''} ${c.client_email || ''}`.toLocaleLowerCase('he').includes(query.trim().toLocaleLowerCase('he')))
-                .sort(sort === 'name' ? (a, b) => (a.name || a.client_email).localeCompare(b.name || b.client_email, 'he') : sort === 'meeting' ? (a, b) => (a.nextMeetingAt || '9999').localeCompare(b.nextMeetingAt || '9999') : byUrgency);
-
   return (
     <div>
-      <div className={biz.grid3} role="group" aria-label="סיכום לקוחות" style={{ marginBottom: 'var(--space-4)' }}>
-        <div className={biz.stat}><div className={biz.statLabel}>לקוחות פעילים</div><div className={biz.statValue}>{clients.length}</div><div className={biz.statNote}>בתהליך ליווי כרגע</div></div>
-        <div className={biz.stat}><div className={biz.statLabel}>משימות פתוחות</div><div className={biz.statValue}>{openTasksTotal}</div><div className={biz.statNote}>אצל כל הלקוחות</div></div>
-        <div className={biz.stat}><div className={biz.statLabel}>חריגות תקציב</div><div className={biz.statValue + (overageCount ? ' ' + biz.statNeg : '')}>{overageCount}</div><div className={biz.statNote}>{overageCount ? 'לקוחות שחרגו החודש' : 'אין חריגות'}</div></div>
-      </div>
       {resumeClient && <div className={biz.toolbar} style={{ marginBottom: 'var(--space-3)' }}><Button variant="ghost" onClick={() => onSelect(resumeClient.client_id, resumeClient.client_email, lastWorkspace)}>המשך עבודה עם {resumeClient.name || resumeClient.client_email}</Button></div>}
       {!clients.length ? (
         <div className={styles.empty}>
@@ -212,90 +137,8 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
           <Button className={styles.emptyCta} onClick={() => { setAddOpen(true); emailInputRef.current?.focus(); }}>הזמן לקוח ראשון</Button>
         </div>
       ) : (
-        <>
-          <ClientViews current={{ filter: listFilter, query, sort }} onChange={changeView} saved={savedViews} onSave={saveView} onRemove={id => setSavedViews(prev => prev.filter(v => v.id !== id))} />
-          {listFilter && (
-            <div className={styles.filterBanner}>
-              מסונן לפי {CLIENT_FILTERS.find(([key]) => key === listFilter)?.[1] || listFilter}
-              <button type="button" className={styles.filterClear} onClick={() => setListFilter(null)}>נקה סינון</button>
-            </div>
-          )}
-        <div className={styles.tableWrap} role="region" aria-label="טבלת לקוחות, גלול לצפייה בכל העמודות" tabIndex={0}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>לקוח</th>
-                <th>סטטוס</th>
-                <th>יתרה החודש</th>
-                <th>פגישה הבאה</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {!visibleClients.length && <tr><td colSpan={5}><p className={styles.queueEmpty}>אין לקוחות שמתאימים לחיפוש ולסינון.</p><Button variant="ghost" onClick={() => changeView({ filter: null, query: '', sort: 'urgency' })}>הצג את כל הלקוחות</Button></td></tr>}
-              {visibleClients.map(c => {
-                const urgent = c.hasOverage || c.hasFailedUpload || c.hasDeclinedMeeting || c.overdueTasks > 0;
-                const confirming = confirmingId === c.id;
-                const flags = [
-                  c.hasOverage && { text: 'חריגת תקציב', cls: styles.overageChip },
-                  c.hasFailedUpload && { text: 'העלאה נכשלה', cls: styles.uploadErrorChip },
-                  c.hasDeclinedMeeting && { text: 'פגישה נדחתה', cls: styles.overageChip },
-                  c.overdueTasks > 0 && { text: `${c.overdueTasks} משימות באיחור`, cls: styles.taskChip }
-                ].filter(Boolean);
-                return (
-                  <tr
-                    key={c.id}
-                    className={styles.clientRow + (urgent ? ' ' + styles.rowUrgent : '')}
-                    onClick={e => { if (e.target.closest('button')) return; onSelect(c.client_id, c.client_email); }}
-                  >
-                    <td data-label="לקוח">
-                      <button type="button" className={styles.clientCellBtn} onClick={() => onSelect(c.client_id, c.client_email)}>
-                        <div className={styles.initial} aria-hidden="true">
-                          {initials(c.name?.trim() || c.client_email)}
-                        </div>
-                        <div className={styles.info}>
-                          <div className={styles.email}>
-                            <div className={styles.identity}>
-                              {c.name?.trim() ? <span className={styles.clientName} title={c.name}>{c.name}</span> : <span className={styles.emailText} title={c.client_email}>{c.client_email}</span>}
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    </td>
-                    <td data-label="סטטוס">
-                      <div className={styles.chips}>
-                        {flags.map(flag => <span key={flag.text} className={flag.cls}>{flag.text}</span>)}
-                        {!flags.length && <span className={styles.quietStatus}>אין התראות</span>}
-                      </div>
-                    </td>
-                    <td data-label="יתרה החודש" className={styles.remainingCell}>
-                      <RemainingStat value={c.remaining} />
-                    </td>
-                    <td data-label="פגישה הבאה">{c.nextMeetingAt ? formatDateTime(c.nextMeetingAt) : '—'}</td>
-                    <td data-label="" className={styles.actionsCell}>
-                      <div className={styles.rowActions}>
-                        <button type="button" className={styles.openCardBtn} onClick={e => { e.stopPropagation(); onSelect(c.client_id, c.client_email); }}>פתח כרטיס</button>
-                        <div className={styles.clientActions}>
-                          <button type="button" className={styles.moreActions} aria-label={`פעולות עבור ${c.name?.trim() || c.client_email}`} aria-expanded={actionsId === c.id} onClick={() => { setActionsId(v => v === c.id ? null : c.id); setConfirmingId(null); }}>⋯</button>
-                          {actionsId === c.id && <div className={styles.actionOptions}>
-                            {confirming ? <>
-                              <button type="button" className={styles.confirmRemoveBtn} onClick={() => removeClient(c.id)}>לאשר ניתוק?</button>
-                              <button type="button" className={styles.cancelRemoveBtn} onClick={() => { setConfirmingId(null); setActionsId(null); }}>ביטול</button>
-                            </> : <button type="button" className={styles.confirmRemoveBtn} onClick={() => setConfirmingId(c.id)}>נתק לקוח</button>}
-                          </div>}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        </>
+        <ClientsTable advisorId={advisorId} onAdd={() => { setAddOpen(true); setSecondaryOpen(true); setTimeout(() => emailInputRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50); }} onOpen={r => onSelect(r.client_id, r.client_email)} onRemove={removeClient} />
       )}
-
-      {clients.length > 0 && <DailyWorkQueue advisorId={advisorId} tasks={tasks} clients={clients} error={taskError} onRetry={reload} onToggle={completeTask} onSelect={onSelect} />}
 
       {pipelineOpen && (
         <PipelineModal

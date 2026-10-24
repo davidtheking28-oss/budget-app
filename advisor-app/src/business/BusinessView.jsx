@@ -7,13 +7,17 @@ import MetricsView from './MetricsView.jsx';
 import Finance from './Finance.jsx';
 import ClientTasks from './ClientTasks.jsx';
 import ClientService from './ClientService.jsx';
-import ClientDeals from './ClientDeals.jsx';
+import ClientView from './ClientView.jsx';
+import ClientApprovals from './ClientApprovals.jsx';
+import SiteSettings from './SiteSettings.jsx';
 
 export default function BusinessView({ view, advisorId, onNavigate, onSelectClient }) {
   if (view === 'tasks') return <BizTasks advisorId={advisorId} />;
   if (view === 'projects') return <Projects advisorId={advisorId} />;
   if (view === 'systems') return <Systems advisorId={advisorId} />;
-  if (view === 'client-deals') return <ClientDeals advisorId={advisorId} />;
+  if (view === 'client-approvals') return <ClientApprovals advisorId={advisorId} />;
+  if (view === 'site-settings') return <SiteSettings advisorId={advisorId} />;
+  if (view === 'client-view') return <ClientView advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'client-service') return <ClientService advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'client-tasks') return <ClientTasks advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'marketing') return <MarketingPlan advisorId={advisorId} onNavigate={onNavigate} />;
