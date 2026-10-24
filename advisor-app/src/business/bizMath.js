@@ -30,8 +30,10 @@ export function funnelStats(leads) {
   const showed = leads.filter(l => l.showed).length;
   const relevant = leads.filter(l => l.showed && l.relevant).length;
   const closed = leads.filter(l => l.showed && l.relevant && l.closed).length;
+  const meetings = leads.filter(l => l.meeting_date).length;
   return {
     total,
+    meetings,
     showed,
     relevant,
     closed,
@@ -181,4 +183,23 @@ export function expenseBreakdown(expenseEntries) {
   }
   const total = Object.values(totals).reduce((s, v) => s + v, 0);
   return Object.entries(totals).map(([category, value]) => ({ category, value, share: ratio(value, total) })).sort((a, b) => b.value - a.value);
+}
+
+export const shortLabel = period => period.slice(5) + '/' + period.slice(2, 4);
+
+export function periodsFor(scope, ym, records) {
+  if (scope === 'year') return Array.from({ length: 12 }, (_, i) => ymKey(ym.year, i));
+  if (scope === 'full') {
+    const now = new Date();
+    const first = records.map(r => r.period).sort()[0] || ymKey(now.getFullYear(), 0);
+    const out = [];
+    let [y, mo] = first.split('-').map(Number);
+    while (y < now.getFullYear() || (y === now.getFullYear() && mo <= now.getMonth() + 1)) {
+      out.push(y + '-' + String(mo).padStart(2, '0'));
+      mo += 1;
+      if (mo > 12) { mo = 1; y += 1; }
+    }
+    return out;
+  }
+  return Array.from({ length: 12 }, (_, i) => { const total = ym.year * 12 + ym.month - 11 + i; return ymKey(Math.floor(total / 12), ((total % 12) + 12) % 12); });
 }

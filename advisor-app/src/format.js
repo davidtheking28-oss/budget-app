@@ -1,4 +1,4 @@
-export const fmt = n => '₪' + Math.round(n).toLocaleString('he-IL');
+export const fmt = n => '₪' + (Math.round(n) + 0).toLocaleString('he-IL');
 
 // Live thousand-separator formatting for a text input mid-typing — preserves
 // a trailing decimal point/partial decimal digits, unlike toLocaleString alone.

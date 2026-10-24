@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useBizRecords } from './useBizRecords.js';
-import { marketingMetrics, planProgress, ymKey } from './bizMath.js';
+import { marketingMetrics, planProgress, ymKey, periodsFor, shortLabel } from './bizMath.js';
+import TrendChart from './TrendChart.jsx';
 import MonthPicker, { monthName } from './MonthPicker.jsx';
 import Modal from './Modal.jsx';
 import Skeleton from '../components/Skeleton.jsx';
@@ -64,10 +65,12 @@ const LEAD_FIELDS = [{ key: 'boosts', label: 'תקציב Boosts' }, { key: 'meet
 function MonthBody({ advisorId, period, onNavigate, header }) {
   const { records, loading, error, reload, add, update } = useBizRecords(advisorId, 'marketing_month', period);
   const ideas = useBizRecords(advisorId, 'video_idea');
+  const allMonths = useBizRecords(advisorId, 'marketing_month');
   const [modal, setModal] = useState(null);
+  const [growthRange, setGrowthRange] = useState('month');
 
   if (error) return <section className={styles.bigCard}>{header}<ErrorState onRetry={reload} /></section>;
-  if (loading || ideas.loading) return <section className={styles.bigCard}>{header}<Skeleton height="200px" radius="18px" /></section>;
+  if (loading || ideas.loading || allMonths.loading) return <section className={styles.bigCard}>{header}<Skeleton height="200px" radius="18px" /></section>;
 
   const record = records[0];
   const data = record?.data || {};
@@ -76,6 +79,16 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
   const progress = planProgress(tasks);
   const waiting = ideas.records.filter(r => r.data.status !== 'published').length;
   const published = ideas.records.length - waiting;
+  const [periodYear, periodMonth] = period.split('-').map(Number);
+  const growthPeriods = periodsFor(growthRange === 'month' ? 'month' : growthRange === 'year' ? 'year' : 'full', { year: periodYear, month: periodMonth - 1 }, allMonths.records);
+  const growthMonths = growthPeriods.map(p => marketingMetrics(p === period ? data : (allMonths.records.find(r => r.period === p)?.data || {})));
+  let runningTotal = 0;
+  const growthMetrics = [
+    { key: 'total', label: 'כל העוקבים', values: growthMonths.map(m => { runningTotal += m.followers; return runningTotal; }), format: String },
+    { key: 'costPerFollower', label: 'עלות לעוקב', values: growthMonths.map(m => Math.round(m.costPerFollower || 0)), format: fmt },
+    { key: 'costPerMeeting', label: 'עלות לפגישה', values: growthMonths.map(m => Math.round(m.costPerMeeting || 0)), format: fmt },
+    { key: 'costPerClient', label: 'עלות ללקוח', values: growthMonths.map(m => Math.round(m.costPerClient || 0)), format: fmt }
+  ];
 
   async function patch(change) {
     if (record) await update(record.id, change);
@@ -109,6 +122,12 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
           ))}
         </div>
       </section>
+
+      <TrendChart title="איך גדלתי" labels={growthPeriods.map(shortLabel)} metrics={growthMetrics} footnote={growthRange === 'month' ? '12 החודשים האחרונים' : growthRange === 'year' ? 'חודשי השנה' : 'כל התקופה'} controls={
+        <div className={styles.segment} role="group" aria-label="טווח הגרף">
+          {[['month', 'חודשי'], ['year', 'שנתי'], ['range', 'טווח']].map(([key, label]) => <button key={key} type="button" className={growthRange === key ? styles.segBtnOn : styles.segBtn} aria-pressed={growthRange === key} onClick={() => setGrowthRange(key)}>{label}</button>)}
+        </div>
+      } />
 
       <div className={styles.sectionLabel}>פרטי החודש</div>
       <div className={styles.tileGrid4}>
