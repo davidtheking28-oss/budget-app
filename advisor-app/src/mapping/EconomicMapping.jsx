@@ -451,6 +451,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     if (amount > 0) saveManual(manualItems.map(t => (t.id === id ? { ...t, amount } : t)));
   };
   const deleteManual = id => saveManual(manualItems.filter(t => t.id !== id));
+  const deleteManualMany = ids => saveManual(manualItems.filter(t => !ids.includes(t.id)));
   const CT = chartTheme();
   // Prints the amount directly above each bar (like the advisor's Excel reference)
   // instead of leaving it only in the tooltip — no need for readable y-axis numbers then.
@@ -582,10 +583,10 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       </section>
 
       <div className={layout.tables}>
-        <MappingTable title="הכנסות" rows={mappingRows.income} addLabel="מקור הכנסה" addCats={INCOME_CATS} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} />
-        <MappingTable title="חסכונות והשקעות" rows={savingsRows} addLabel="שורה" addCats={[SAVINGS_CATEGORY]} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} />
-        <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} addLabel="הוצאה קבועה" addCats={FIXED_CATS.filter(c => c !== SAVINGS_CATEGORY)} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} />
-        <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} addLabel="קטגוריה" addCats={MAPPING_EXPENSE_CATS.filter(c => !FIXED_CATS.includes(c))} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} />
+        <MappingTable title="הכנסות" rows={mappingRows.income} addLabel="מקור הכנסה" addCats={INCOME_CATS} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="חסכונות והשקעות" rows={savingsRows} addLabel="שורה" addCats={[SAVINGS_CATEGORY]} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} addLabel="הוצאה קבועה" addCats={FIXED_CATS.filter(c => c !== SAVINGS_CATEGORY)} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} addLabel="קטגוריה" addCats={MAPPING_EXPENSE_CATS.filter(c => !FIXED_CATS.includes(c))} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
       </div>
 
       <MappingCalculators categories={MAPPING_EXPENSE_CATS.filter(c => !FIXED_CATS.includes(c))} rows={variableRows} onAdd={addManual('expense')} />

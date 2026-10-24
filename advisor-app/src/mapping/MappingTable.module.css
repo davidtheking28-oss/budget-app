@@ -140,3 +140,6 @@
   .colHead, .row { grid-template-columns: 1fr 120px 32px; }
   .addForm { grid-template-columns: 1fr; }
 }
+
+.check { width: 18px; height: 18px; flex: none; accent-color: var(--accent); cursor: pointer; }
+.pillBtn:disabled { opacity: 0.5; cursor: not-allowed; }

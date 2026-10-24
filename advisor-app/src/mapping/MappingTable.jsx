@@ -3,13 +3,20 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { fmt } from '../format.js';
 import styles from './MappingTable.module.css';
 
-export default function MappingTable({ title, note, rows, addLabel, addCats, onAdd, onAmount, onDelete }) {
+export default function MappingTable({ title, note, rows, addLabel, addCats, onAdd, onAmount, onDelete, onDeleteMany }) {
   const [adding, setAdding] = useState(false);
+  const [selecting, setSelecting] = useState(false);
+  const [picked, setPicked] = useState([]);
   const [category, setCategory] = useState('');
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
   const total = rows.reduce((s, r) => s + r.amount, 0);
   const chosen = addCats.includes(category) ? category : addCats[0];
+
+  const manualCount = rows.filter(r => r.manual).length;
+  const togglePick = id => setPicked(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+  function stopSelecting() { setSelecting(false); setPicked([]); }
+  function deletePicked() { onDeleteMany(picked); stopSelecting(); }
 
   function submit(e) {
     e.preventDefault();
@@ -34,6 +41,7 @@ export default function MappingTable({ title, note, rows, addLabel, addCats, onA
         {rows.map(r => (
           <div key={r.key} className={styles.row}>
             <span className={styles.name}>
+              {selecting && r.manual && <input type="checkbox" className={styles.check} aria-label={'בחר שורה: ' + r.category} checked={picked.includes(r.id)} onChange={() => togglePick(r.id)} />}
               {r.category}{r.desc ? ' · ' + r.desc : ''}
               {!r.manual && <span className={styles.tag}>מדפי חשבון</span>}
             </span>
@@ -61,7 +69,17 @@ export default function MappingTable({ title, note, rows, addLabel, addCats, onA
         </form>
       ) : (
         <div className={styles.foot}>
-          <button type="button" className={styles.pillBtn + ' ' + styles.pillBtnOn} onClick={() => setAdding(true)}>+ {addLabel}</button>
+          {selecting ? (
+            <>
+              <button type="button" className={styles.pillBtn + ' ' + styles.pillBtnOn} disabled={picked.length === 0} onClick={deletePicked}>מחק נבחרות ({picked.length})</button>
+              <button type="button" className={styles.pillBtn} onClick={stopSelecting}>ביטול</button>
+            </>
+          ) : (
+            <>
+              <button type="button" className={styles.pillBtn + ' ' + styles.pillBtnOn} onClick={() => setAdding(true)}>+ {addLabel}</button>
+              {manualCount > 1 && <button type="button" className={styles.pillBtn} onClick={() => setSelecting(true)}>בחירה מרובה</button>}
+            </>
+          )}
         </div>
       )}
     </section>
