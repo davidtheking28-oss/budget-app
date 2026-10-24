@@ -406,3 +406,11 @@
   .contextName { font-size: 1.6rem; font-weight: 800; line-height: 1.15; color: var(--text); }
   .pageTitle { font-size: var(--text-md); font-weight: 700; color: var(--text2); }
 }
+
+.shellSide { min-height: 100vh; position: relative; z-index: var(--z-base); }
+.sideMain { margin-inline-start: var(--side-w); min-height: 100vh; display: flex; flex-direction: column; }
+
+.shellSide .accountTrigger { color: var(--workspace-text); border-color: var(--workspace-line); background: transparent; }
+.shellSide .accountTrigger:hover { color: var(--workspace-text); background: var(--workspace-glass); }
+.shellTop .accountTrigger { color: var(--workspace-text); border-color: var(--workspace-line); background: transparent; }
+.shellTop .accountTrigger:hover { color: var(--workspace-text); background: var(--workspace-glass); }

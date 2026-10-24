@@ -6,6 +6,7 @@ import { DEFAULT_BRAND } from '../brandColor.js';
 import IconRail from './IconRail.jsx';
 import TopNav from './TopNav.jsx';
 import SearchBar from './SearchBar.jsx';
+import SideNav from './SideNav.jsx';
 import styles from './Shell.module.css';
 import { useWorkspaceScroll } from '../useWorkspaceScroll.js';
 
@@ -190,25 +191,28 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
 
   if (desktop && nav) {
     return (
-      <div className={styles.shellTop} dir="rtl" inert={shellInert ? '' : undefined}>
-        <TopNav onBack={onBack} onPrint={onPrint} onPresent={onPresent} nav={nav} activeNav={activeNav} onNavChange={onNavChange} theme={theme} onToggleTheme={onToggleTheme} end={topEnd} />
-        <main className={styles.contentTop}>
-          <div className={styles.clientHead}>
-            <div className={styles.titleBlock}>
-              <h1 className={styles.clientTitle}>{clientName || 'טוען פרטי לקוח…'}</h1>
-              {clientSince && <div className={styles.clientSub}>לקוח מאז {clientSince}</div>}
-            </div>
-            <div className={styles.clientHeadEnd}>
-              <div className={styles.modeContext} role="group" aria-label="סוג התקציב">
-                <button type="button" aria-pressed={budgetMode !== 'business'} onClick={() => onBudgetModeChange('personal')}>פרטי</button>
-                <button type="button" aria-pressed={budgetMode === 'business'} onClick={() => onBudgetModeChange('business')}>עסקי</button>
+      <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
+        <SideNav clientName={clientName} clientSince={clientSince} nav={nav} activeNav={activeNav} onNavChange={onNavChange} />
+        <div className={styles.sideMain}>
+          <TopNav hideBrand onBack={onBack} onPrint={onPrint} onPresent={onPresent} theme={theme} onToggleTheme={onToggleTheme} end={topEnd} />
+          <main className={styles.contentTop}>
+            <div className={styles.clientHead}>
+              <div className={styles.titleBlock}>
+                <h1 className={styles.clientTitle}>{title || clientName || 'טוען פרטי לקוח…'}</h1>
+                {clientSince && <div className={styles.clientSub}>{clientName} · לקוח מאז {clientSince}</div>}
               </div>
-              {sidebarInfo}
-              <DensityToggle />
+              <div className={styles.clientHeadEnd}>
+                <div className={styles.modeContext} role="group" aria-label="סוג התקציב">
+                  <button type="button" aria-pressed={budgetMode !== 'business'} onClick={() => onBudgetModeChange('personal')}>פרטי</button>
+                  <button type="button" aria-pressed={budgetMode === 'business'} onClick={() => onBudgetModeChange('business')}>עסקי</button>
+                </div>
+                {sidebarInfo}
+                <DensityToggle />
+              </div>
             </div>
-          </div>
-          {children}
-        </main>
+            {children}
+          </main>
+        </div>
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown, computeMappingRows } from './mappingMath.js';
 
 describe('computeCategoryAverages', () => {
   it('averages a category over 3 full months', () => {
@@ -126,5 +126,43 @@ describe('computeExpenseTypeBreakdown', () => {
   it('handles mappings without savings and empty mappings', () => {
     expect(computeExpenseTypeBreakdown({ 'דיור': 100, 'שונות': 20 })).toEqual([{ name: 'קבועות', value: 100 }, { name: 'משתנות', value: 20 }]);
     expect(computeExpenseTypeBreakdown({})).toEqual([]);
+  });
+});
+
+describe('manual mapping lines', () => {
+  it('counts a manual amount as a monthly figure next to multi-month statements', () => {
+    const transactions = [
+      { type: 'expense', category: 'מזון לבית', amount: 1000, source_month: '2026-01' },
+      { type: 'expense', category: 'מזון לבית', amount: 1000, source_month: '2026-02' },
+      { manual: true, type: 'expense', category: 'שונות', amount: 300, source_month: 'manual' },
+      { manual: true, type: 'income', category: 'שכר', amount: 9000, source_month: 'manual' }
+    ];
+    const { averages, monthsCovered } = computeCategoryAverages(transactions);
+    expect(monthsCovered).toBe(2);
+    expect(averages['מזון לבית']).toBe(1000);
+    expect(averages['שונות']).toBe(300);
+    const cf = computeCashflowSummary(transactions);
+    expect(cf.income).toBe(9000);
+    expect(cf.expense).toBe(1300);
+  });
+
+  it('works with manual lines only', () => {
+    const transactions = [{ manual: true, type: 'income', category: 'שכר', amount: 8000, source_month: 'manual' }];
+    expect(computeCashflowSummary(transactions).income).toBe(8000);
+    expect(computeCashflowSummary(transactions).hasIncomeData).toBe(true);
+  });
+});
+
+describe('computeMappingRows', () => {
+  it('splits statement averages from editable manual rows', () => {
+    const rows = computeMappingRows([
+      { type: 'income', category: 'שכר', amount: 8000, source_month: '2026-01' },
+      { type: 'income', category: 'שכר', amount: 10000, source_month: '2026-02' },
+      { type: 'expense', category: 'מזון לבית', amount: 2000, source_month: '2026-01' },
+      { manual: true, id: 7, type: 'expense', category: 'חשמל', desc: '', amount: 350, source_month: 'manual' }
+    ]);
+    expect(rows.income).toEqual([{ key: 's:income:שכר', category: 'שכר', amount: 9000, manual: false }]);
+    expect(rows.expense.find(r => r.category === 'מזון לבית').amount).toBe(1000);
+    expect(rows.expense.find(r => r.manual)).toMatchObject({ id: 7, category: 'חשמל', amount: 350 });
   });
 });

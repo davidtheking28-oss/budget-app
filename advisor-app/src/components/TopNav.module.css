@@ -2,8 +2,8 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  background: var(--workspace-rail);
+  border-bottom: 1px solid var(--workspace-line);
 }
 
 .bar {
@@ -15,7 +15,7 @@
   padding: 12px var(--page-pad);
 }
 
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: var(--text-lg); color: var(--text); white-space: nowrap; flex-shrink: 0; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: var(--text-lg); color: var(--workspace-text); white-space: nowrap; flex-shrink: 0; }
 
 .links { display: flex; gap: 4px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .links::-webkit-scrollbar { display: none; }
@@ -25,32 +25,32 @@
   border: none;
   border-radius: var(--radius-full);
   background: transparent;
-  color: var(--text2);
+  color: var(--workspace-text);
   font-family: inherit;
   font-size: var(--text-md);
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
 }
-.pill:hover { background: var(--hover); color: var(--text); }
-.pillOn, .pillOn:hover { background: var(--primary); color: var(--primary-ink); }
+.pill:hover { background: var(--workspace-glass); }
+.pillOn, .pillOn:hover { background: var(--accent); color: var(--accent-ink); }
 
 .end { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
 
 .themeBtn {
   min-height: 36px;
   padding: 6px 14px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--workspace-line);
   border-radius: var(--radius-full);
   background: transparent;
-  color: var(--text2);
+  color: var(--workspace-text);
   font-family: inherit;
   font-size: var(--text-sm);
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
 }
-.themeBtn:hover { color: var(--text); border-color: var(--text3); }
+.themeBtn:hover { background: var(--workspace-glass); }
 
 .sub {
   display: flex;

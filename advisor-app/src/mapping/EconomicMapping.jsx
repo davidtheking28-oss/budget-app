@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
-import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown, computeMappingRows } from './mappingMath.js';
 import { categorizeByDictionary } from './categorizeDict.js';
 import { learnCategory, lookupLearnedCategory, normalizeDescription, syncLearnedFromAccount, pushLearnedToAccount } from './learnedCategories.js';
 import { resizeImageToJpeg } from './resizeImage.js';
@@ -10,6 +10,9 @@ import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, CHART_PALETTE, chartTheme } from
 import { useClientBudget } from '../budget/useClientBudget.js';
 import { addItem } from '../budget/itemHelpers.js';
 import MerchantRules from './MerchantRules.jsx';
+import MappingTable from './MappingTable.jsx';
+import MappingCalculators from './MappingCalculators.jsx';
+import layout from './MappingLayout.module.css';
 
 // The mapping's own savings-transfer category doesn't live in EXPENSE_CATS
 // (that's a personal-budget list) — it needs to stay selectable here so a
@@ -187,7 +190,7 @@ function addFiles(setQueue, fileList, defaultMonth, onDropped) {
 
 const monthsLabel = n => (n === 1 ? 'חודש אחד' : `${n} חודשים`);
 
-export default function EconomicMapping({ clientUserId, advisorId }) {
+export default function EconomicMapping({ clientUserId, advisorId, onNavigate }) {
   const { data, loading, error, save, reload, markUploadFailure } = useEconomicMapping(clientUserId, advisorId);
   const { data: budgetData, save: saveBudget } = useClientBudget(clientUserId, advisorId);
   const [queue, setQueue] = useState([]);
@@ -224,7 +227,9 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   }
 
   const isUnclassified = t => !t.category || t.category === 'שונות' || (t.type === 'income' && t.category === 'אחר');
-  const unclassifiedCount = (data?.transactions || []).filter(isUnclassified).length;
+  const manualItems = (data?.transactions || []).filter(t => t.manual);
+  const hasStatements = (data?.transactions || []).some(t => !t.manual);
+  const unclassifiedCount = (data?.transactions || []).filter(t => !t.manual && isUnclassified(t)).length;
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) {
@@ -261,7 +266,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     if (!queue.length || processing) return;
     if (!confirmed) {
       const reasons = [];
-      if (data?.transactions?.length) reasons.push('קיים כבר מיפוי שמור עבור לקוח זה, העלאה חדשה תחליף אותו.');
+      if (data?.transactions?.some(t => !t.manual)) reasons.push('קיים כבר מיפוי שמור עבור לקוח זה, העלאה חדשה תחליף אותו.');
       const taggedMonths = queue.map(x => x.monthTag).filter(m => m !== 'auto');
       const dupMonth = taggedMonths.find((m, i) => taggedMonths.indexOf(m) !== i);
       if (dupMonth) reasons.push(`יותר מקובץ אחד מסומן לאותו חודש (${dupMonth}).`);
@@ -270,8 +275,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     setConfirmText(null);
     setProcessing(true);
     await syncLearnedFromAccount(supabase);
-    const { allTx, finalItems } = await processQueue(queue, setQueue);
-    if (!allTx.length) {
+    const { allTx: statementTx, finalItems } = await processQueue(queue, setQueue);
+    if (!statementTx.length) {
       toast('לא זוהו תנועות בקבצים שהועלו', 'error');
       markUploadFailure(finalItems.filter(x => x.status === 'error').map(x => x.name));
       setProcessing(false);
@@ -279,15 +284,16 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     }
     // a file that finished without throwing but produced no transactions is more likely
     // a silent parse miss than a genuinely empty statement — flag it instead of saving quietly
+    const allTx = [...statementTx, ...manualItems];
     const emptyFiles = queue.filter(x =>
       x.status === 'done' && x.monthTag !== 'auto' && !allTx.some(t => t.source_month === x.monthTag)
     );
     if (emptyFiles.length) toast(`שים לב: לא זוהו תנועות בקובץ ${emptyFiles.map(x => x.name).join(', ')}`, 'error');
     const { averages, monthsCovered } = computeCategoryAverages(allTx);
-    const months = [...new Set(allTx.map(t => t.source_month))].sort();
+    const months = [...new Set(statementTx.map(t => t.source_month))].sort();
     // archive the mapping being replaced so the advisor can show the client how the
     // numbers moved between statement uploads, months later
-    const snapshots = data?.transactions?.length
+    const snapshots = data?.transactions?.some(t => !t.manual)
       ? [...(data.snapshots || []), {
           period_start: data.period_start,
           period_end: data.period_end,
@@ -315,6 +321,22 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       setQueue(failed);
       if (failed.length) toast(`${failed.length} קבצים לא עובדו בהצלחה — ניתן להסיר או להעלות מחדש`, 'error');
     }
+  }
+
+  async function saveManual(nextItems) {
+    const statementTx = (data?.transactions || []).filter(t => !t.manual);
+    const transactions = [...statementTx, ...nextItems];
+    const { averages, monthsCovered } = computeCategoryAverages(transactions);
+    const now = new Date();
+    const fallbackStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    await save({
+      ...(data || {}),
+      period_start: data?.period_start || fallbackStart,
+      period_end: data?.period_end || fallbackStart,
+      transactions,
+      category_averages: averages,
+      months_covered: monthsCovered
+    });
   }
 
   async function restoreSnapshot(index, confirmed) {
@@ -351,10 +373,10 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   async function reassignCategory(index, category) {
     const target = data.transactions[index];
     const merchant = normalizeDescription(target?.desc);
-    const sameMerchant = (t, i) => i === index || (target?.type !== 'income' && t.type !== 'income' && merchant.length >= 3 && normalizeDescription(t.desc) === merchant);
+    const sameMerchant = (t, i) => i === index || (!target?.manual && !t.manual && target?.type !== 'income' && t.type !== 'income' && merchant.length >= 3 && normalizeDescription(t.desc) === merchant);
     const transactions = data.transactions.map((t, i) => (sameMerchant(t, i) ? { ...t, category } : t));
     const changed = transactions.filter((t, i) => t !== data.transactions[i]).length;
-    if (target?.type !== 'income') {
+    if (target?.type !== 'income' && !target?.manual) {
       learnCategory(target?.desc, category);
       pushLearnedToAccount(supabase, target?.desc, category);
     }
@@ -418,7 +440,17 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const cardCharges = (data?.transactions || []).filter(looksLikeCardCharge);
   const cardChargesExcluded = cardCharges.length > 0 && cardCharges.every(t => t.excluded);
   const cardChargesTotal = cardCharges.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-  const cashflow = data?.transactions ? computeCashflowSummary(data.transactions) : null;
+  const cashflow = computeCashflowSummary(data?.transactions || []);
+  const mappingRows = computeMappingRows(data?.transactions || []);
+  const savingsRows = mappingRows.expense.filter(r => r.category === SAVINGS_CATEGORY);
+  const fixedRows = mappingRows.expense.filter(r => r.category !== SAVINGS_CATEGORY && FIXED_CATS.includes(r.category));
+  const variableRows = mappingRows.expense.filter(r => !FIXED_CATS.includes(r.category));
+  const addManual = type => (category, desc, amount) => saveManual([...manualItems, { id: Date.now() + Math.random(), manual: true, type, category, desc, amount, date: null, source_month: 'manual' }]);
+  const setManualAmount = (id, value) => {
+    const amount = parseFloat(value);
+    if (amount > 0) saveManual(manualItems.map(t => (t.id === id ? { ...t, amount } : t)));
+  };
+  const deleteManual = id => saveManual(manualItems.filter(t => t.id !== id));
   const CT = chartTheme();
   // Prints the amount directly above each bar (like the advisor's Excel reference)
   // instead of leaving it only in the tooltip — no need for readable y-axis numbers then.
@@ -443,7 +475,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     }
   };
   const donutItems = (() => {
-    if (!cashflow?.hasIncomeData) return [];
+    if (!categories.length) return [];
     if (donutView === 'type') {
       return computeExpenseTypeBreakdown(data.category_averages);
     }
@@ -493,21 +525,24 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   return (
     <div>
-      <nav className={styles.mappingNav} aria-label="עבודה עם המיפוי"><a href="#mapping-upload">העלאת מסמכים</a>{cashflow?.hasIncomeData && <a href="#mapping-results">סקירת התוצאות</a>}</nav>
-      <div className={styles.workflow} aria-label="שלבי המיפוי הכלכלי">
-        <div><strong>1 · העלאת מסמכים</strong><span>בחר דפי חשבון ושייך כל קובץ לחודש המתאים</span></div>
-        <div aria-live="polite"><strong>2 · עיבוד הנתונים</strong><span>{processing ? 'המסמכים בעיבוד…' : 'לאחר הבחירה, לחץ על עבד וחשב מיפוי'}</span></div>
-        <div><strong>3 · סקירת המיפוי</strong><span>בדוק את התוצאות לפני עדכון התקציב</span></div>
+      <nav className={styles.mappingNav} aria-label="עבודה עם המיפוי"><a href="#mapping-upload">העלאת מסמכים</a></nav>
+      <div className={layout.pills} role="group" aria-label="מסכי הלקוח">
+        <button type="button" className={layout.pill + ' ' + layout.pillOn} aria-pressed="true">תצוגה ראשית</button>
+        {onNavigate && [['credit', 'הלוואות ואשראי'], ['mortgage', 'משכנתא'], ['subs', 'מנויים וביטוחים'], ['assets', 'נכסים והתחייבויות']].map(([key, label]) => (
+          <button key={key} type="button" className={layout.pill} onClick={() => onNavigate(key)}>{label}</button>
+        ))}
       </div>
-      {cashflow?.hasIncomeData && (
-        <div id="mapping-results" className={styles.topGrid}>
-        <div className={styles.card + ' ' + styles.cardStandalone}>
-          <div className={styles.actualTitle}>ביצוע</div>
-          <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(cashflow.monthsCovered)} של דפי חשבון</div>
-          <div className={styles.actualChart} role="img" aria-label={`ביצוע: הכנסות ${fmt(cashflow.income * periodMul)}, הוצאות ${fmt(cashflow.expense * periodMul)}`}>
-            <Bar data={actualChartData} plugins={[barValueLabels]} options={actualChartOptions} />
+
+      <section id="mapping-results" className={styles.card + ' ' + styles.cardStandalone}>
+        <h2 className={styles.actualTitle}>המיפוי שלך</h2>
+        <div className={styles.actualSub}>{hasStatements ? `התמונה המלאה: ממוצע חודשי · ${monthsLabel(cashflow.monthsCovered)} של דפי חשבון` : 'התמונה המלאה: סכומים חודשיים שהוזנו ידנית'}</div>
+        <div className={layout.summaryGrid}>
+          <div className={layout.box}>
+            <div className={styles.actualChart} role="img" aria-label={`ביצוע: הכנסות ${fmt(cashflow.income * periodMul)}, הוצאות ${fmt(cashflow.expense * periodMul)}`}>
+              <Bar data={actualChartData} plugins={[barValueLabels]} options={actualChartOptions} />
+            </div>
           </div>
-          <div className={styles.flowBox}>
+          <div className={styles.flowBox + ' ' + layout.box}>
             <div className={styles.flowBoxHead}>
               <span className={styles.flowBoxTitle}>תזרים</span>
               <div className={styles.flowToggle} role="group" aria-label="תקופה">
@@ -524,33 +559,49 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               <span className={styles.cashflowRowValue + (cashflow.netExcludingSavings < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netExcludingSavings * periodMul)}</span>
             </div>
           </div>
-        </div>
-        <div className={styles.card + ' ' + styles.cardStandalone}>
-          <div className={styles.actualTitle}>לאן הולך הכסף</div>
-          <div className={styles.actualSub}>כך מתחלקת ההוצאה החודשית הממוצעת בין הקטגוריות</div>
-          <div className={styles.flowToggle} role="group" aria-label="חלוקה">
-            <button type="button" aria-pressed={donutView === 'cat'} className={donutView === 'cat' ? styles.flowToggleActive : ''} onClick={() => setDonutView('cat')}>לפי קטגוריה</button>
-            <button type="button" aria-pressed={donutView === 'type'} className={donutView === 'type' ? styles.flowToggleActive : ''} onClick={() => setDonutView('type')}>לפי סוג</button>
-          </div>
-          {donutItems.length > 0 && (
-            <p className={styles.donutInsight}>
-              {donutView === 'cat'
-                ? `הקטגוריה הגדולה ביותר היא ${donutItems[0].name}, עם ${Math.round(donutItems[0].value / donutTotal * 100)}% מההוצאות.${donutItems.length > 2 ? ` שלוש הקטגוריות הגדולות יחד הן ${Math.round(donutItems.slice(0, 3).reduce((sum, i) => sum + i.value, 0) / donutTotal * 100)}% מהכסף שיוצא.` : ''}`
-                : donutItems.map(i => `${i.name}: ${Math.round(i.value / donutTotal * 100)}%`).join(' · ')}
-            </p>
-          )}
+
+          <div className={layout.box}>
+            <div className={styles.actualTitle}>לאן הולך הכסף</div>
+            <div className={styles.actualSub}>כך מתחלקת ההוצאה החודשית הממוצעת בין הקטגוריות</div>
+            <div className={styles.flowToggle} role="group" aria-label="חלוקה">
+              <button type="button" aria-pressed={donutView === 'cat'} className={donutView === 'cat' ? styles.flowToggleActive : ''} onClick={() => setDonutView('cat')}>לפי קטגוריה</button>
+              <button type="button" aria-pressed={donutView === 'type'} className={donutView === 'type' ? styles.flowToggleActive : ''} onClick={() => setDonutView('type')}>לפי סוג</button>
+            </div>
+            {donutItems.length > 0 && (
+              <p className={styles.donutInsight}>
+                {donutView === 'cat'
+                  ? `הקטגוריה הגדולה ביותר היא ${donutItems[0].name}, עם ${Math.round(donutItems[0].value / donutTotal * 100)}% מההוצאות.${donutItems.length > 2 ? ` שלוש הקטגוריות הגדולות יחד הן ${Math.round(donutItems.slice(0, 3).reduce((sum, i) => sum + i.value, 0) / donutTotal * 100)}% מהכסף שיוצא.` : ''}`
+                  : donutItems.map(i => `${i.name}: ${Math.round(i.value / donutTotal * 100)}%`).join(' · ')}
+              </p>
+            )}
+              {donutItems.length === 0 && <p className={layout.boxEmpty}>עוד אין כאן הוצאות להציג.</p>}
           <div className={styles.donutWrap}>
-            <div className={styles.donut} role="img" aria-label="התפלגות ההוצאות">
-              <Doughnut data={donutData} options={donutOptions} />
-              <div className={styles.donutCenter}>
-                <span className={styles.donutCenterLabel}>סה״כ לחודש</span>
-                <span className={styles.donutCenterValue}>{fmt(donutTotal)}</span>
+              <div className={styles.donut} role="img" aria-label="התפלגות ההוצאות">
+                <Doughnut data={donutData} options={donutOptions} />
+                <div className={styles.donutCenter}>
+                  <span className={styles.donutCenterLabel}>סה״כ לחודש</span>
+                  <span className={styles.donutCenterValue}>{fmt(donutTotal)}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        </div>
-      )}
+      </section>
+
+      <div className={layout.tables}>
+        <MappingTable title="הכנסות" rows={mappingRows.income} addLabel="מקור הכנסה" addCats={INCOME_CATS} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} />
+        <MappingTable title="חסכונות והשקעות" rows={savingsRows} addLabel="שורה" addCats={[SAVINGS_CATEGORY]} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} />
+        <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} addLabel="הוצאה קבועה" addCats={FIXED_CATS.filter(c => c !== SAVINGS_CATEGORY)} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} />
+        <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} addLabel="קטגוריה" addCats={MAPPING_EXPENSE_CATS.filter(c => !FIXED_CATS.includes(c))} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} />
+      </div>
+
+      <MappingCalculators categories={MAPPING_EXPENSE_CATS.filter(c => !FIXED_CATS.includes(c))} rows={variableRows} onAdd={addManual('expense')} />
+
+      <div className={styles.workflow} aria-label="שלבי המיפוי הכלכלי">
+        <div><strong>1 · העלאת מסמכים</strong><span>בחר דפי חשבון ושייך כל קובץ לחודש המתאים</span></div>
+        <div aria-live="polite"><strong>2 · עיבוד הנתונים</strong><span>{processing ? 'המסמכים בעיבוד…' : 'לאחר הבחירה, לחץ על עבד וחשב מיפוי'}</span></div>
+        <div><strong>3 · סקירת המיפוי</strong><span>בדוק את התוצאות לפני עדכון התקציב</span></div>
+      </div>
 
       {categories.length > 0 && (
         <div className={styles.card + ' ' + styles.cardStandalone + ' ' + styles.breakdownCard}>

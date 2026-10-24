@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import Logo from './Logo.jsx';
 import styles from './TopNav.module.css';
 
-export default function TopNav({ homeLinks, onBack, homeActive, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, end }) {
+export default function TopNav({ homeLinks, onBack, homeActive, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, end, hideBrand }) {
   const globals = [
     onBack && { key: 'clients', label: 'הלקוחות שלי', onClick: onBack, active: homeActive },
     ...(homeLinks || []).map(l => ({ key: l.key, label: l.label, onClick: l.onClick, active: l.active })),
@@ -18,7 +18,7 @@ export default function TopNav({ homeLinks, onBack, homeActive, onPrint, onPrese
   return (
     <header className={styles.top}>
       <div className={styles.bar}>
-        <div className={styles.brand}><Logo size="sm" /><span>שקל שקל · יועץ</span></div>
+        {!hideBrand && <div className={styles.brand}><Logo size="sm" /><span>שקל שקל · יועץ</span></div>}
         <nav className={styles.links} aria-label="ניווט ראשי">
           {globals.map(g => (
             <button key={g.key} type="button" className={styles.pill + (g.active ? ' ' + styles.pillOn : '')} onClick={g.onClick} aria-current={g.active ? 'page' : undefined}>{g.label}</button>

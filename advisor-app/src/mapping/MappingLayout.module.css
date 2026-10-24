@@ -1,0 +1,51 @@
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 var(--space-4);
+}
+
+.pill {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-md);
+  font-weight: 700;
+  cursor: pointer;
+}
+.pill:hover { border-color: var(--text3); }
+.pillOn, .pillOn:hover { border-color: var(--primary); background: var(--primary); color: var(--primary-ink); cursor: default; }
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  align-items: stretch;
+}
+
+.box {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  min-width: 0;
+}
+
+.boxTitle { font-weight: 800; color: var(--text); }
+.boxEmpty { margin: var(--space-3) 0 0; color: var(--text2); font-size: var(--text-sm); }
+
+.tables {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .summaryGrid, .tables { grid-template-columns: 1fr; }
+}
