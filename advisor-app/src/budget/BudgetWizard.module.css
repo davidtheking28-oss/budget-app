@@ -551,3 +551,18 @@
 
 .changeHint { color: var(--text2); font-size: var(--text-sm); margin: 0; line-height: 1.5; }
 .wrap input[data-changed="true"] { outline: 2px dashed var(--accent); outline-offset: 2px; border-radius: var(--radius-xs); background: var(--accent-dim); }
+
+.viewPills { display: flex; gap: 8px; }
+.viewPill, .viewPillOn {
+  min-height: 40px;
+  padding: 0 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--text2);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.viewPillOn { background: var(--accent); border-color: var(--accent); color: var(--primary-ink, #fff); }
+.viewPill:focus-visible, .viewPillOn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

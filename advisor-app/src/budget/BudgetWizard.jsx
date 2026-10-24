@@ -35,6 +35,8 @@ const topLabels = {
   }
 };
 
+const isSavingsRow = r => r.savings || r.name === SAVINGS_CATEGORY;
+
 function trackRow(row) { return { ...row, _before: { name: row.name, amount: row.amount, day: row.day } }; }
 
 function sumAmounts(list) {
@@ -143,6 +145,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
 
   const totalIncome = useMemo(() => sumAmounts(incomes), [incomes]);
   const totalFixed = useMemo(() => sumAmounts(fixed), [fixed]);
+  const totalSavings = useMemo(() => sumAmounts(fixed.filter(isSavingsRow)), [fixed]);
   const totalVar = useMemo(() => sumAmounts(variable), [variable]);
   // goal contributions aren't something the advisor enters in this wizard (goal editing
   // lives in the separate יעדים screen) — don't silently deduct them from cash flow here
@@ -179,11 +182,11 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   });
   const periodMul = flowPeriod === 'year' ? 12 : 1;
   const summaryCards = [
-    { key: 'plan', title: 'תכנון', sub: 'מה תוכנן לחודש הזה', income: totalIncome, expenses: totalFixed + totalVar, flow: left, flowNoSavings: left + plannedSavings },
-    { key: 'actual', title: 'ביצוע', sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, flowNoSavings: actualFlow + actualSavings }
+    { key: 'plan', title: 'תכנון', sub: 'מה תוכנן לחודש הזה', income: totalIncome, expenses: totalFixed + totalVar, flow: left, flowNoSavings: left + plannedSavings, breakdown: breakdownOf(totalFixed, totalVar, left) },
+    { key: 'actual', title: 'ביצוע', sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, flowNoSavings: actualFlow + actualSavings, breakdown: breakdownOf(totalFixedActual, totalVarActual, actualFlow) }
   ];
 
-  function addRow(setter, name = '') { setter(prev => [...prev, { name, amount: '', _before: {} }]); }
+  function addRow(setter, name = '', extra = {}) { setter(prev => [...prev, { name, amount: '', _before: {}, ...extra }]); }
   function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...patch } : r)); }
   function removeRow(setter, i) { setter(prev => prev.filter((_, idx) => idx !== i)); }
 
@@ -246,14 +249,16 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     toast('התקציב נשמר ועבר לאפליקציה של הלקוח', 'success');
   }
 
-  const breakdown = [
-    { label: 'הוצאות קבועות', value: totalFixed, color: CHART_PALETTE[0] },
-    { label: 'תקציב משתנה', value: totalVar, color: CHART_PALETTE[1] },
-    { label: 'נותר פנוי', value: Math.max(0, left), color: CHART_PALETTE[5] }
-  ].filter(b => b.value > 0);
-  const breakdownTotal = breakdown.reduce((s, b) => s + b.value, 0) || 1;
+  function breakdownOf(fixedValue, varValue, freeValue) {
+    const items = [
+      { label: 'הוצאות קבועות', value: fixedValue, color: CHART_PALETTE[0] },
+      { label: 'תקציב משתנה', value: varValue, color: CHART_PALETTE[1] },
+      { label: 'נותר פנוי', value: Math.max(0, freeValue), color: CHART_PALETTE[5] }
+    ].filter(b => b.value > 0);
+    return { items, total: items.reduce((sum, b) => sum + b.value, 0) || 1 };
+  }
 
-  function tableList(list, setter, placeholder, actualOf, editableActual = false) {
+  function tableList(list, setter, placeholder, actualOf, editableActual = false, rowFilter = () => true, newRow = {}) {
     const total = sumAmounts(list);
     const pctOf = r => {
       const a = parseFloat(r.amount) || 0;
@@ -270,7 +275,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             <span>ביצוע</span>
             <span />
           </div>
-          {list.map((r, i) => {
+          {list.map((r, i) => rowFilter(r) && ((() => {
             const actual = actualEdits[r.name] ?? (actualOf(r.name, r.amount) || 0);
             const over = (parseFloat(actual) || 0) > (parseFloat(r.amount) || 0);
             return (
@@ -315,9 +320,9 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 <DeleteButton onClick={() => removeRow(setter, i)} />
               </div>
             );
-          })}
+          })()))}
         </div>
-        <Button variant="ghost" onClick={() => addRow(setter)}>+ הוסף שורה</Button>
+        <Button variant="ghost" onClick={() => addRow(setter, '', newRow)}>+ הוסף שורה</Button>
       </>
     );
   }
@@ -435,6 +440,10 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       {left < 0 && <div className={styles.warn}>ההקצאה חורגת מההכנסות ב-{fmt(Math.abs(left))} לחודש</div>}
 
       <div className={styles.body}>
+          <div className={styles.viewPills} role="group" aria-label="תצוגת תקופה">
+            <button type="button" aria-pressed={flowPeriod === 'month'} className={flowPeriod === 'month' ? styles.viewPillOn : styles.viewPill} onClick={() => setFlowPeriod('month')}>חודשי</button>
+            <button type="button" aria-pressed={flowPeriod === 'year'} className={flowPeriod === 'year' ? styles.viewPillOn : styles.viewPill} onClick={() => setFlowPeriod('year')}>שנתי</button>
+          </div>
           <div className={styles.card}>
             <div className={styles.sumGrid}>
               {summaryCards.map(c => (
@@ -461,49 +470,57 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                       <span className={c.flowNoSavings < 0 ? styles.negative : styles.positive}>{fmt(c.flowNoSavings * periodMul)}</span>
                     </div>
                   </div>
+                  {c.breakdown.items.length > 0 && (
+                    <div className={styles.breakdownBlock}>
+                      <div className={styles.groupTitle}>לאן הולך הכסף</div>
+                      <div className={styles.stackBar}>
+                        {c.breakdown.items.map(b => (
+                          <div key={b.label} className={styles.stackSeg} style={{ width: (b.value / c.breakdown.total * 100) + '%', background: b.color }} title={b.label} />
+                        ))}
+                      </div>
+                      <div className={styles.legend}>
+                        {c.breakdown.items.map(b => (
+                          <div className={styles.legendRow} key={b.label}>
+                            <span className={styles.legendDot} style={{ background: b.color }} />
+                            <span className={styles.legendLabel}>{b.label}</span>
+                            <span className={styles.legendValue}>{fmt(b.value * periodMul)}</span>
+                            <span className={styles.pctChip}>{Math.round(b.value / c.breakdown.total * 100)}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
 
-            {breakdown.length > 0 && (
-              <div className={styles.breakdownBlock}>
-                <div className={styles.groupTitle}>לאן הולך הכסף</div>
-                <div className={styles.stackBar}>
-                  {breakdown.map(b => (
-                    <div key={b.label} className={styles.stackSeg} style={{ width: (b.value / breakdownTotal * 100) + '%', background: b.color }} title={b.label} />
-                  ))}
-                </div>
-                <div className={styles.legend}>
-                  {breakdown.map(b => (
-                    <div className={styles.legendRow} key={b.label}>
-                      <span className={styles.legendDot} style={{ background: b.color }} />
-                      <span className={styles.legendLabel}>{b.label}</span>
-                      <span className={styles.legendValue}>{fmt(b.value)}</span>
-                      <span className={styles.pctChip}>{Math.round(b.value / breakdownTotal * 100)}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             <div className={styles.summaryNote}>השמירה תעדכן את התקציב, ההוצאות הקבועות, מקורות ההכנסה והיעדים באפליקציה של הלקוח.</div>
           </div>
 
-          <div className={styles.card}>
-            <div className={styles.cardTitleRow}>
-              <span className={styles.cardTitle}>מאיפה מגיע הכסף?</span>
-              <span className={styles.cardTotal}>{fmt(totalIncome)}</span>
+          <div className={styles.expGrid}>
+            <div className={styles.card}>
+              <div className={styles.cardTitleRow}>
+                <span className={styles.cardTitle}>מאיפה מגיע הכסף?</span>
+                <span className={styles.cardTotal}>{fmt(totalIncome)}</span>
+              </div>
+              {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, true)}
             </div>
-            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, true)}
+            <div className={styles.card}>
+              <div className={styles.cardTitleRow}>
+                <span className={styles.cardTitle}>חסכונות והשקעות</span>
+                <span className={styles.cardTotal}>{fmt(totalSavings)}</span>
+              </div>
+              {tableList(fixed, setFixed, 'שם החיסכון', name => fixedActual[name] || 0, false, isSavingsRow, { savings: true })}
+            </div>
           </div>
 
           <div className={styles.expGrid}>
             <div className={styles.card}>
               <div className={styles.cardTitleRow}>
                 <span className={styles.cardTitle}>הוצאות חודשיות קבועות</span>
-                <span className={styles.cardTotal}>{fmt(totalFixed)}</span>
+                <span className={styles.cardTotal}>{fmt(totalFixed - totalSavings)}</span>
               </div>
-              {tableList(fixed, setFixed, 'שם ההוצאה הקבועה', name => fixedActual[name] || 0)}
+              {tableList(fixed, setFixed, 'שם ההוצאה הקבועה', name => fixedActual[name] || 0, false, r => !isSavingsRow(r))}
             </div>
             <div className={styles.card}>
               <div className={styles.cardTitleRow}>
