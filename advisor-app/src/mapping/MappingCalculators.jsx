@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { fmt } from '../format.js';
+import { labelOf } from './mappingTemplates.js';
 import styles from './MappingCalculators.module.css';
 
 function Calculator({ category, total, count, onAdd }) {
@@ -16,13 +17,13 @@ function Calculator({ category, total, count, onAdd }) {
   return (
     <form className={styles.item} onSubmit={submit}>
       <div className={styles.itemHead}>
-        <span className={styles.name} title={category}>{category}</span>
+        <span className={styles.name} title={labelOf(category)}>{labelOf(category)}</span>
         <span className={styles.total}>{fmt(total)}</span>
         <span className={styles.count} title="מספר הסכומים שהוזנו ידנית">{count}</span>
       </div>
       <div className={styles.entry}>
-        <input className={styles.input} inputMode="decimal" placeholder="סכום" aria-label={'הוספת סכום: ' + category} value={value} onChange={e => setValue(e.target.value)} />
-        <button type="submit" className={styles.add} aria-label={'הוסף סכום: ' + category}>+</button>
+        <input className={styles.input} inputMode="decimal" placeholder="סכום" aria-label={'הוספת סכום: ' + labelOf(category)} value={value} onChange={e => setValue(e.target.value)} />
+        <button type="submit" className={styles.add} aria-label={'הוסף סכום: ' + labelOf(category)}>+</button>
       </div>
     </form>
   );

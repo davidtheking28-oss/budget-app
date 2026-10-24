@@ -12,15 +12,18 @@ import { addItem } from '../budget/itemHelpers.js';
 import MerchantRules from './MerchantRules.jsx';
 import MappingTable from './MappingTable.jsx';
 import MappingCalculators from './MappingCalculators.jsx';
+import { SAVINGS_CATEGORY, SAVINGS_KEYS, FIXED_KEYS, INCOME_TEMPLATE, SAVINGS_TEMPLATE, FIXED_TEMPLATE, VARIABLE_TEMPLATE } from './mappingTemplates.js';
 import layout from './MappingLayout.module.css';
 
 // The mapping's own savings-transfer category doesn't live in EXPENSE_CATS
 // (that's a personal-budget list) — it needs to stay selectable here so a
 // transaction the parser tagged this way doesn't fall off the dropdown.
-const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 const LOAN_CATEGORY = 'החזר הלוואות + חיוב קבוע';
 const FOREIGN_ORDERS_CATEGORY = 'הזמנות מחו״ל';
 const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS.slice(0, -1), FOREIGN_ORDERS_CATEGORY, ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c)), 'שונות'];
+const INCOME_ADD_CATS = [...INCOME_TEMPLATE.map(t => t.key), ...INCOME_CATS.filter(c => !INCOME_TEMPLATE.some(t => t.key === c))];
+const FIXED_ADD_CATS = [...FIXED_TEMPLATE.map(t => t.key), ...FIXED_KEYS.filter(c => !FIXED_TEMPLATE.some(t => t.key === c))];
+const VARIABLE_ADD_CATS = [...VARIABLE_TEMPLATE.map(t => t.key), ...MAPPING_EXPENSE_CATS.filter(c => !FIXED_KEYS.includes(c) && !SAVINGS_KEYS.includes(c) && !VARIABLE_TEMPLATE.some(t => t.key === c))];
 import { supabase, SUPA_URL } from '../supabaseClient.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -450,9 +453,9 @@ export default function EconomicMapping({ clientUserId, advisorId, onNavigate })
   const cardChargesTotal = cardCharges.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
   const cashflow = computeCashflowSummary(data?.transactions || []);
   const mappingRows = computeMappingRows(data?.transactions || []);
-  const savingsRows = mappingRows.expense.filter(r => r.category === SAVINGS_CATEGORY);
-  const fixedRows = mappingRows.expense.filter(r => r.category !== SAVINGS_CATEGORY && FIXED_CATS.includes(r.category));
-  const variableRows = mappingRows.expense.filter(r => !FIXED_CATS.includes(r.category));
+  const savingsRows = mappingRows.expense.filter(r => SAVINGS_KEYS.includes(r.category));
+  const fixedRows = mappingRows.expense.filter(r => FIXED_KEYS.includes(r.category));
+  const variableRows = mappingRows.expense.filter(r => !SAVINGS_KEYS.includes(r.category) && !FIXED_KEYS.includes(r.category));
   const addManual = type => (category, desc, amount) => saveManual([...manualItems, { id: Date.now() + Math.random(), manual: true, type, category, desc, amount, date: null, source_month: 'manual' }]);
   const setManualAmount = (id, value) => {
     const amount = parseFloat(value);
@@ -595,13 +598,13 @@ export default function EconomicMapping({ clientUserId, advisorId, onNavigate })
       </section>
 
       <div className={layout.tables}>
-        <MappingTable title="הכנסות" rows={mappingRows.income} addLabel="מקור הכנסה" addCats={INCOME_CATS} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable title="חסכונות והשקעות" rows={savingsRows} addLabel="שורה" addCats={[SAVINGS_CATEGORY]} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} addLabel="הוצאה קבועה" addCats={FIXED_CATS.filter(c => c !== SAVINGS_CATEGORY)} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} addLabel="קטגוריה" addCats={MAPPING_EXPENSE_CATS.filter(c => !FIXED_CATS.includes(c))} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הכנסות" rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} tag="הוראת קבע" addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
       </div>
 
-      <MappingCalculators categories={MAPPING_EXPENSE_CATS.filter(c => !FIXED_CATS.includes(c))} rows={variableRows} onAdd={addManual('expense')} />
+      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} rows={variableRows} onAdd={addManual('expense')} />
 
       <div className={styles.workflow} aria-label="שלבי המיפוי הכלכלי">
         <div><strong>1 · העלאת מסמכים</strong><span>בחר דפי חשבון ושייך כל קובץ לחודש המתאים</span></div>
