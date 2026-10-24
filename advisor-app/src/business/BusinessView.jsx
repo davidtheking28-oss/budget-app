@@ -6,11 +6,13 @@ import VideoIdeas from './VideoIdeas.jsx';
 import MetricsView from './MetricsView.jsx';
 import Finance from './Finance.jsx';
 import ClientTasks from './ClientTasks.jsx';
+import ClientService from './ClientService.jsx';
 
 export default function BusinessView({ view, advisorId, onNavigate, onSelectClient }) {
   if (view === 'tasks') return <BizTasks advisorId={advisorId} />;
   if (view === 'projects') return <Projects advisorId={advisorId} />;
   if (view === 'systems') return <Systems advisorId={advisorId} />;
+  if (view === 'client-service') return <ClientService advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'client-tasks') return <ClientTasks advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'marketing') return <MarketingPlan advisorId={advisorId} onNavigate={onNavigate} />;
   if (view === 'ideas') return <VideoIdeas advisorId={advisorId} />;

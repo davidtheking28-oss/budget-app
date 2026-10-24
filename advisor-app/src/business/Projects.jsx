@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useBizRecords } from './useBizRecords.js';
 import { projectProgress, percentLabel } from './bizMath.js';
+import Modal from './Modal.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -53,6 +54,7 @@ function ProjectCard({ project, onUpdate, onRemove }) {
 
 export default function Projects({ advisorId }) {
   const { records, loading, error, reload, add, update, remove } = useBizRecords(advisorId, 'project');
+  const [modal, setModal] = useState(false);
   const [name, setName] = useState('');
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -62,29 +64,46 @@ export default function Projects({ advisorId }) {
     e.preventDefault();
     if (!name.trim()) { toast('כתוב שם לפרויקט', 'error'); return; }
     const row = await add({ name: name.trim(), steps: [] });
-    if (row) setName('');
+    if (!row) return;
+    setName('');
+    setModal(false);
   }
 
   return (
     <div className={styles.stack}>
       <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <div>
-            <h3 className={styles.cardTitle}>הפרויקטים שלי</h3>
-            <p className={styles.cardSub}>{records.length ? `${records.length} פרויקטים` : 'עוד אין פרויקטים'}</p>
-          </div>
+        <div className={styles.cardHead} style={{ marginBottom: 0 }}>
+          <h3 className={styles.cardTitle}>הפרויקטים שלי</h3>
+          <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ פתח פרויקט</button>
         </div>
-        <form className={styles.toolbar} onSubmit={submit}>
-          <input className={styles.input + ' ' + styles.inputGrow} placeholder="שם הפרויקט" aria-label="שם הפרויקט" value={name} onChange={e => setName(e.target.value)} />
-          <button type="submit" className={styles.btn}>פתח פרויקט</button>
-        </form>
-        {records.length === 0 && <div className={styles.empty}>פרויקט הוא משהו גדול שמתחלק לשלבים ומשימות</div>}
       </section>
-      <div className={styles.grid2}>
-        {records.map(r => (
-          <ProjectCard key={r.id} project={{ id: r.id, ...r.data }} onUpdate={patch => update(r.id, patch)} onRemove={() => remove(r.id, 'הפרויקט נמחק')} />
-        ))}
-      </div>
+      {records.length === 0 ? (
+        <section className={styles.card}>
+          <div className={styles.emptyState}>
+            <span className={styles.iconTile} aria-hidden="true">◫</span>
+            <span>עוד אין פרויקטים</span>
+            <span className={styles.cardSub}>פרויקט הוא משהו גדול שמתחלק לשלבים ומשימות</span>
+            <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ פתח פרויקט</button>
+          </div>
+        </section>
+      ) : (
+        <div className={styles.grid2}>
+          {records.map(r => (
+            <ProjectCard key={r.id} project={{ id: r.id, ...r.data }} onUpdate={patch => update(r.id, patch)} onRemove={() => remove(r.id, 'הפרויקט נמחק')} />
+          ))}
+        </div>
+      )}
+      {modal && (
+        <Modal title="פרויקט חדש" onClose={() => setModal(false)}>
+          <form className={styles.formGrid} onSubmit={submit}>
+            <label className={styles.fieldLabel}>שם הפרויקט<input className={styles.input} value={name} onChange={e => setName(e.target.value)} /></label>
+            <div className={styles.toolbar}>
+              <button type="submit" className={styles.btn}>פתח פרויקט</button>
+              <button type="button" className={styles.btnGhost} onClick={() => setModal(false)}>ביטול</button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

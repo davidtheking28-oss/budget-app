@@ -942,9 +942,6 @@
 
 :root[data-density="compact"] .table td { padding-block: 10px; } :root[data-density="compact"] .card { padding: 16px; }
 
-.workspaceHeading { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
-.workspaceHeading span, .workspaceHeading p { color: var(--text2); font-size: var(--text-sm); line-height: 1.6; margin: 0; }
-.workspaceHeading h1 { font-size: 24px; margin: 0 0 6px; }
 .dailyQueue, .clientViews { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 22px; margin-block: 24px; }
 .queueHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
 .queueHeader h2 { font-size: var(--text-lg); margin: 0; }

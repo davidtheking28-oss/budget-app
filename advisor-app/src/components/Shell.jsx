@@ -35,7 +35,7 @@ function useDesktop() {
   return desktop;
 }
 
-function AccountMenu({ email, advisorId, up }) {
+function AccountMenu({ email, advisorId, up, block }) {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -106,7 +106,17 @@ function AccountMenu({ email, advisorId, up }) {
   }
 
   return (
-    <div className={styles.accountMenu + (up ? ' ' + styles.accountUp : '')}>
+    <div className={styles.accountMenu + (up ? ' ' + styles.accountUp : '') + (block ? ' ' + styles.accountBlockWrap : '')}>
+      {block ? (
+        <button ref={triggerRef} type="button" className={styles.accountBlock} onClick={() => setOpen(o => !o)} aria-expanded={open} aria-haspopup="true" aria-label={`חשבון: ${email}`}>
+          <span className={styles.accountAvatar} aria-hidden="true">{(profile?.display_name || email || '?').trim().charAt(0).toUpperCase()}</span>
+          <span className={styles.accountText}>
+            <span className={styles.accountName}>{profile?.display_name || (email || '').split('@')[0]}</span>
+            <span className={styles.accountRole}>יועץ</span>
+          </span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>
+        </button>
+      ) : (
       <button ref={triggerRef} type="button" className={styles.accountTrigger} onClick={() => setOpen(o => !o)} aria-expanded={open} aria-haspopup="true" aria-label={`חשבון: ${email}`}>
         <svg className={styles.accountIcon} viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" /></svg>
         <span className={styles.accountEmail}>{email}</span>
@@ -114,6 +124,7 @@ function AccountMenu({ email, advisorId, up }) {
           <path d="M6 9l6 6 6-6" />
         </svg>
       </button>
+      )}
       {open && (
         <div className={styles.accountPanel} ref={panelRef}>
           <div className={styles.accountPanelLabel}>שנה סיסמה</div>
@@ -179,7 +190,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
   );
 
   const sideEnd = onSearch ? <SearchBar onOpen={onSearch} /> : null;
-  const accountFooter = <AccountMenu email={email} advisorId={advisorId} up />;
+  const accountFooter = <AccountMenu email={email} advisorId={advisorId} up block />;
 
   if (desktop && !nav && homeNav) {
     return (
@@ -188,7 +199,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
         <div className={styles.sideMain}>
           <TopNav hideBrand tabs={homeTabs} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
           <main className={styles.contentTop}>
-            <div className={styles.clientHead}>
+            <div className={styles.clientHead + ' ' + styles.homeHead}>
               <div className={styles.titleBlock}>
                 <h1 className={styles.clientTitle}>{title}</h1>
                 {description && <p className={styles.clientDesc}>{description}</p>}

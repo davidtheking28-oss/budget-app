@@ -16,6 +16,7 @@ import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
 import { initials } from '../clientIdentity.js';
 import styles from './ClientList.module.css';
+import biz from '../business/Business.module.css';
 import { fmt } from '../format.js';
 import DailyWorkQueue from './DailyWorkQueue.jsx';
 import ClientViews, { CLIENT_FILTERS, clientMatches } from './ClientViews.jsx';
@@ -192,10 +193,12 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
 
   return (
     <div>
-      <header className={styles.workspaceHeading}>
-        <div><h1>סביבת העבודה שלי</h1><p>{clients.length} לקוחות · {openTasksTotal} משימות פתוחות{overageCount > 0 ? ` · ${overageCount} חריגות תקציב` : ''}</p></div>
-        {resumeClient && <Button variant="ghost" onClick={() => onSelect(resumeClient.client_id, resumeClient.client_email, lastWorkspace)}>המשך עבודה עם {resumeClient.name || resumeClient.client_email}</Button>}
-      </header>
+      <div className={biz.grid3} role="group" aria-label="סיכום לקוחות" style={{ marginBottom: 'var(--space-4)' }}>
+        <div className={biz.stat}><div className={biz.statLabel}>לקוחות פעילים</div><div className={biz.statValue}>{clients.length}</div><div className={biz.statNote}>בתהליך ליווי כרגע</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>משימות פתוחות</div><div className={biz.statValue}>{openTasksTotal}</div><div className={biz.statNote}>אצל כל הלקוחות</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>חריגות תקציב</div><div className={biz.statValue + (overageCount ? ' ' + biz.statNeg : '')}>{overageCount}</div><div className={biz.statNote}>{overageCount ? 'לקוחות שחרגו החודש' : 'אין חריגות'}</div></div>
+      </div>
+      {resumeClient && <div className={biz.toolbar} style={{ marginBottom: 'var(--space-3)' }}><Button variant="ghost" onClick={() => onSelect(resumeClient.client_id, resumeClient.client_email, lastWorkspace)}>המשך עבודה עם {resumeClient.name || resumeClient.client_email}</Button></div>}
       {!clients.length ? (
         <div className={styles.empty}>
           <div className={styles.emptyMark}>
