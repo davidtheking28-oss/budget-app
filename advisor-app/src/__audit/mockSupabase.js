@@ -81,7 +81,7 @@ function builder(table) {
     upsert(vals) {
       const arr = Array.isArray(vals) ? vals : [vals];
       arr.forEach(v => {
-        const key = v.user_id !== undefined ? 'user_id' : 'client_id';
+        const key = v.user_id !== undefined ? 'user_id' : v.link_id !== undefined ? 'link_id' : 'client_id';
         const existing = (db[table] || []).find(r => r[key] === v[key]);
         if (existing) Object.assign(existing, v);
         else db[table] = [...(db[table] || []), v];
