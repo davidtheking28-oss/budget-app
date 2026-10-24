@@ -288,7 +288,7 @@ export default function App() {
         {nav === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
         {nav === 'mortgage' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Mortgage clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'crm' && <Crm key={`${session.user.id}:${selectedClient.id}`} onDirtyChange={setCrmDirty} action={crmAction} advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={() => { refreshClientSummary(); reloadClientProfile(); }} />}
-        {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} onNavigate={key => { setBudgetCategory(null); setNav(key); }} /></Suspense>}
+        {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
       </Shell>
       </BudgetModeContext.Provider>
       <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />

@@ -199,7 +199,6 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
             <div className={styles.clientHead}>
               <div className={styles.titleBlock}>
                 <h1 className={styles.clientTitle}>{title || clientName || 'טוען פרטי לקוח…'}</h1>
-                {clientSince && <div className={styles.clientSub}>{clientName} · לקוח מאז {clientSince}</div>}
               </div>
               <div className={styles.clientHeadEnd}>
                 <div className={styles.modeContext} role="group" aria-label="סוג התקציב">
