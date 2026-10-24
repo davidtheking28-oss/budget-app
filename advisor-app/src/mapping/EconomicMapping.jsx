@@ -190,7 +190,15 @@ function addFiles(setQueue, fileList, defaultMonth, onDropped) {
 
 const monthsLabel = n => (n === 1 ? 'חודש אחד' : `${n} חודשים`);
 
-export default function EconomicMapping({ clientUserId, advisorId }) {
+const VIEW_PILLS = [
+  { label: 'כרטיסי אשראי', nav: 'credit' },
+  { label: 'חובות והלוואות', nav: 'credit' },
+  { label: 'משכנתא', nav: 'mortgage' },
+  { label: 'תשלומים', nav: 'credit' },
+  { label: 'ביטוחים · שנתיות · מנויים · חינוך', nav: 'subs' }
+];
+
+export default function EconomicMapping({ clientUserId, advisorId, onNavigate }) {
   const { data, loading, error, save, reload, markUploadFailure } = useEconomicMapping(clientUserId, advisorId);
   const { data: budgetData, save: saveBudget } = useClientBudget(clientUserId, advisorId);
   const [queue, setQueue] = useState([]);
@@ -526,7 +534,11 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   return (
     <div>
-      <nav className={styles.mappingNav} aria-label="עבודה עם המיפוי"><a href="#mapping-upload">העלאת מסמכים</a></nav>
+      <nav className={styles.viewPills} aria-label="תצוגות המיפוי">
+        <button type="button" className={styles.viewPillOn} aria-current="page">תצוגה ראשית</button>
+        {VIEW_PILLS.map(v => <button type="button" key={v.label} className={styles.viewPill} onClick={() => onNavigate?.(v.nav)}>{v.label}</button>)}
+        <a className={styles.viewPill} href="#mapping-upload">העלאת מסמכים</a>
+      </nav>
       <section id="mapping-results" className={styles.card + ' ' + styles.cardStandalone}>
         <h2 className={styles.actualTitle}>המיפוי שלך</h2>
         <div className={styles.actualSub}>{hasStatements ? `התמונה המלאה: ממוצע חודשי · ${monthsLabel(cashflow.monthsCovered)} של דפי חשבון` : 'התמונה המלאה: סכומים חודשיים שהוזנו ידנית'}</div>

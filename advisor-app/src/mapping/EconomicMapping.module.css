@@ -520,9 +520,6 @@
 .dropLabel { background: var(--surface2); border-color: var(--control-border); }
 @media (max-width: 860px) { .workflow { grid-template-columns: 1fr; } }
 
-.mappingNav { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
-.mappingNav a { padding: 10px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--accent); background: var(--surface); text-decoration: none; font-size: var(--text-base); font-weight: 700; }
-.mappingNav a:hover { border-color: var(--accent); }
 :global(#mapping-upload), :global(#mapping-results) { scroll-margin-top: 24px; }
 
 .donutInsight {
@@ -673,3 +670,22 @@
   .catIcon, .catBar { display: none; }
   .catTxRow { grid-template-columns: 70px minmax(0, 1fr) auto; }
 }
+
+.viewPills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--space-4); }
+.viewPill, .viewPillOn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.viewPill:hover { border-color: var(--accent); color: var(--accent); }
+.viewPillOn { background: rgba(var(--accent-rgb), 0.12); border-color: var(--accent); color: var(--accent); }
+.viewPill:focus-visible, .viewPillOn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
