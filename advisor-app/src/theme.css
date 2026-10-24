@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
-  --bg: #f6f0e8;
-  --bg-2: #f8f3ec;
+  --bg: #f5f7f7;
+  --bg-2: #f6f9f8;
   --workspace-rail: #14171a;
   --workspace-hero: #16191c;
   --workspace-text: #f4f6f5;
@@ -19,7 +19,7 @@
   --donut-4: #6c777e;
   --donut-5: #3d464c;
   --surface: #ffffff;
-  --surface2: #f3ece2;
+  --surface2: #f2f7f5;
   --accent: #0a7a62;
   --accent-rgb: 10, 122, 98;
   --accent-2: #066552;
@@ -36,14 +36,14 @@
   --gold-rgb: 143, 90, 8;
   --green-rgb: 4, 107, 77;
   --red-rgb: 176, 38, 49;
-  --text: #1f1a16;
-  --text2: #4f4640;
-  --text3: #675c54;
+  --text: #0f231e;
+  --text2: #455550;
+  --text3: #5b6f69;
   --page-max: 1720px;
   --page-pad: 32px;
   --rail-w: 220px;
-  --border: rgba(60, 40, 20, 0.1);
-  --border-strong: rgba(60, 40, 20, 0.18);
+  --border: rgba(15, 35, 30, 0.09);
+  --border-strong: rgba(15, 35, 30, 0.16);
   --control-border: #6f817b;
   --red: #b02631;
   --green: #046b4d;
@@ -55,7 +55,7 @@
   --yellow: #7c4a06;
   --yellow-rgb: 124, 74, 6;
   --hover: rgba(15, 35, 30, 0.04);
-  --input-bg: #f3ece2;
+  --input-bg: #f2f7f5;
   --track: rgba(15, 35, 30, 0.09);
   --scrim: rgba(10, 30, 25, 0.45);
   /* One family, hierarchy through weight and size. Assistant is also what the

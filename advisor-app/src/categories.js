@@ -13,7 +13,7 @@ export function budgetCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_
 // Category slices/bars. Kept to the brand's teal-slate family plus two muted
 // warm stops so a single large category (housing at 50%+ is typical) never
 // shouts over the rest of the dashboard the way the old orange did.
-export const CHART_PALETTE = ['#c2410c', '#e8935a', '#7a4a22', '#d6b27a', '#5f6b5a', '#a8501f', '#8c7a68', '#9a8f3e'];
+export const CHART_PALETTE = ['#0f766e', '#4fb3a1', '#2a5d8f', '#7aa7d9', '#8a7a4e', '#6b7a83', '#5e6bb3', '#9bb56a'];
 
 // Free-text keys (subscription names, custom asset labels) have no canonical
 // position, so they hash into a slot. Eight slots collided constantly — the four
