@@ -490,7 +490,10 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
           </div>
 
           <div className={styles.card}>
-            <div className={styles.cardTitle}>מאיפה מגיע הכסף?</div>
+            <div className={styles.cardTitleRow}>
+              <span className={styles.cardTitle}>מאיפה מגיע הכסף?</span>
+              <span className={styles.cardTotal}>{fmt(totalIncome)}</span>
+            </div>
             {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, true)}
           </div>
 

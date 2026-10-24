@@ -40,6 +40,18 @@ const svgProps = { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', st
 // `groupLabel` (set once, on a group's first item) is the text IconRail shows
 // there — not a data model, just enough to tell the advisor "overview, then
 // the financial detail tabs" at a glance in the sidebar.
+const NAV_DESC = {
+  dashboard: 'תמונת מצב עדכנית של הלקוח: הכנסות, הוצאות ויעדים.',
+  crm: 'פרטי הלקוח, פגישות ומשימות במקום אחד.',
+  mapping: 'מיפוי הכנסות והוצאות קבועות ומשתנות מדפי החשבון והאשראי.',
+  budget: 'תקציב חודשי: מה נכנס, מה יוצא ומה נשאר.',
+  analysis: 'השוואת חודשים והבנה לאן הכסף הולך.',
+  goals: 'יעדי חיסכון והתקדמות אליהם.',
+  subs: 'מנויים, ביטוחים והוצאות שנתיות, כולל תאריכי חידוש.',
+  credit: 'הלוואות, כרטיסי אשראי ועסקאות בתשלומים.',
+  assets: 'תמונה עדכנית של הנכסים וההתחייבויות, והמרחק ביניהם.',
+  mortgage: 'בניית תמהיל משכנתא וחישוב ההחזר החודשי.'
+};
 const NAV = [
   { key: 'dashboard', usesMonth: true, label: 'דשבורד', group: 'overview', groupLabel: 'סקירה', icon: <svg {...svgProps}><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="5" rx="1.5" /><rect x="13" y="12" width="8" height="9" rx="1.5" /><rect x="3" y="15" width="8" height="6" rx="1.5" /></svg> },
   { key: 'crm', label: 'לקוח', group: 'overview', icon: <svg {...svgProps}><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" /></svg> },
@@ -244,6 +256,7 @@ export default function App() {
       <BudgetModeContext.Provider value={budgetMode}>
       <Shell
         title={NAV.find(n => n.key === nav)?.label}
+        description={NAV_DESC[nav]}
         onBack={() => { if (canLeaveBudget()) { setBudgetDirty(false); setCrmDirty(false); setSelectedClient(null); } }}
         nav={NAV}
         activeNav={nav}

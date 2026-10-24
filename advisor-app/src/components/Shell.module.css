@@ -414,3 +414,4 @@
 .shellSide .accountTrigger:hover { color: var(--workspace-text); background: var(--workspace-glass); }
 .shellTop .accountTrigger { color: var(--workspace-text); border-color: var(--workspace-line); background: transparent; }
 .shellTop .accountTrigger:hover { color: var(--workspace-text); background: var(--workspace-glass); }
+.clientDesc { margin: 6px 0 0; color: var(--text2); font-size: var(--text-md); }

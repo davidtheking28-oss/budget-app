@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
-import Hero from '../components/Hero.jsx';
-import { Card, CardGrid } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -25,7 +23,8 @@ export default function Assets({ clientUserId, advisorId }) {
   const [loanName, setLoanName] = useState('');
   const [loanRemaining, setLoanRemaining] = useState('');
   const [loanMonthly, setLoanMonthly] = useState('');
-  const [expandedCategories, setExpandedCategories] = useState([]);
+  const [showAsset, setShowAsset] = useState(false);
+  const [showLoan, setShowLoan] = useState(false);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -42,11 +41,6 @@ export default function Assets({ clientUserId, advisorId }) {
   const totalAssets = assets.reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
   const totalLiabilities = loans.reduce((s, l) => s + (parseFloat(l.remaining) || 0), 0);
   const netWorth = totalAssets - totalLiabilities;
-  const assetGroups = Object.entries(assets.reduce((groups, asset) => {
-    const key = asset.category || 'אחר';
-    (groups[key] ||= []).push(asset);
-    return groups;
-  }, {})).sort((a, b) => b[1].reduce((sum, asset) => sum + (parseFloat(asset.amount) || 0), 0) - a[1].reduce((sum, asset) => sum + (parseFloat(asset.amount) || 0), 0));
 
   async function submit() {
     const amt = parseFloat(amount);
@@ -54,7 +48,6 @@ export default function Assets({ clientUserId, advisorId }) {
     const ok = await addItem(save, 'assets', { name: name.trim(), category, amount: amt });
     if (ok === false) return;
     toast('נכס נוסף', 'success');
-    setExpandedCategories(prev => prev.includes(category) ? prev : [...prev, category]);
     setName('');
     setAmount('');
   }
@@ -77,93 +70,108 @@ export default function Assets({ clientUserId, advisorId }) {
     setLoanMonthly('');
   }
 
+  const sortedAssets = [...assets].sort((a, b) => (b.amount || 0) - (a.amount || 0));
+  const sortedLoans = [...loans].sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
+  const barMax = Math.max(totalAssets, totalLiabilities, 1);
+
   return (
     <div>
-      <Hero
-        label="שווי נקי"
-        value={fmt(netWorth)}
-        tone={netWorth < 0 ? 'neg' : 'pos'}
-        note="נכסים פחות התחייבויות"
-        side={[
-          { label: 'נכסים', value: fmt(totalAssets) },
-          { label: 'התחייבויות', value: fmt(totalLiabilities), tone: 'expense' }
-        ]}
-      />
+      <section className={styles.hero}>
+        <div className={styles.heroLabel}>שווי נקי</div>
+        <div className={styles.heroValue + ' ' + (netWorth < 0 ? styles.kpiNeg : styles.kpiPos)}>{fmt(netWorth)}</div>
+        <div className={styles.heroSub}>
+          <span className={styles.kpiPos}>נכסים {fmt(totalAssets)}</span>
+          <span aria-hidden="true"> · </span>
+          <span className={styles.kpiNeg}>התחייבויות {fmt(totalLiabilities)}</span>
+        </div>
+        <div className={styles.bars}>
+          <div className={styles.barCol}>
+            <div className={styles.barTrack}><div className={styles.barFillPos} style={{ height: (totalAssets / barMax) * 100 + '%' }} /></div>
+            <div className={styles.barLabel}>נכסים</div>
+          </div>
+          <div className={styles.barCol}>
+            <div className={styles.barTrack}><div className={styles.barFillNeg} style={{ height: (totalLiabilities / barMax) * 100 + '%' }} /></div>
+            <div className={styles.barLabel}>התחייבויות</div>
+          </div>
+        </div>
+      </section>
 
-      <CardGrid single>
-        <Card title="נכסים">
-      <AddForm label="הוסף נכס" className={styles.form}>
-        <input className={styles.input} placeholder="שם הנכס" aria-label="שם הנכס" value={name} onChange={e => setName(e.target.value)} />
-        <select aria-label="סוג הנכס" className={styles.input} value={category} onChange={e => setCategory(e.target.value)}>
-          {ASSET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום הנכס" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} />
-        <Button onClick={submit}>הוסף</Button>
-      </AddForm>
-          {assets.length ? (
-            <div className={styles.tableWrap} role="region" aria-label="טבלת נכסים" tabIndex={0}>
-            <table className={styles.table}>
-              <thead>
-                <tr><th>נכס</th><th>שווי</th><th>חלק</th><th></th></tr>
-              </thead>
-              {assetGroups.map(([group, items]) => (
-                <tbody key={group}>
-                  <tr className={styles.groupRow}><th colSpan={4} scope="rowgroup">
-                    <button type="button" className={styles.groupToggle} aria-label={`${group} · ${items.length} נכסים בקבוצה`} aria-expanded={expandedCategories.includes(group)} onClick={() => setExpandedCategories(prev => prev.includes(group) ? prev.filter(c => c !== group) : [...prev, group])}>
-                      <span>{group} <small>{items.length === 1 ? 'נכס אחד' : `${items.length} נכסים`}</small></span>
-                      <span>{fmt(items.reduce((sum, a) => sum + (parseFloat(a.amount) || 0), 0))} <span aria-hidden="true">{expandedCategories.includes(group) ? '−' : '+'}</span></span>
-                    </button>
-                  </th></tr>
-                  {expandedCategories.includes(group) && [...items].sort((a, b) => (b.amount || 0) - (a.amount || 0)).map(a => (
-                    <tr key={a.id}>
-                      <td className={styles.assetName}>{a.name}</td>
-                      <td className={styles.num}>{fmt(a.amount)}</td>
-                      <td className={styles.num}>{totalAssets > 0 ? Math.round(((a.amount || 0) / totalAssets) * 100) + '%' : '—'}</td>
-                      <td><ActionMenu><DeleteButton onClick={() => removeItem(save, 'assets', a.id, `${a.name} נמחק`)} /></ActionMenu></td>
-                    </tr>
-                  ))}
-                </tbody>
+      <div className={styles.cols}>
+        <section className={styles.cardPos}>
+          <header className={styles.cardHead}>
+            <h3 className={styles.cardTitle}><span className={styles.dotPos} aria-hidden="true" />נכסים</h3>
+            <span className={styles.kpiPos + ' ' + styles.cardTotal}>{fmt(totalAssets)}</span>
+          </header>
+          {sortedAssets.length ? (
+            <ul className={styles.list}>
+              {sortedAssets.map(a => (
+                <li key={a.id} className={styles.row}>
+                  <div className={styles.rowMain}>
+                    <div className={styles.assetName}>{a.name}</div>
+                    <div className={styles.rowMeta}>{a.category || 'אחר'}{totalAssets > 0 ? ' · ' + Math.round(((a.amount || 0) / totalAssets) * 100) + '%' : ''}</div>
+                  </div>
+                  <span className={styles.num}>{fmt(a.amount)}</span>
+                  <ActionMenu><DeleteButton onClick={() => removeItem(save, 'assets', a.id, `${a.name} נמחק`)} /></ActionMenu>
+                </li>
               ))}
-            </table>
-            </div>
+            </ul>
           ) : (
-            <div className={styles.empty}>אין עדיין נכסים רשומים</div>
+            <div className={styles.empty}>עוד לא הוספת נכסים. לחץ להוספה.</div>
           )}
-        </Card>
-      </CardGrid>
+          <div className={styles.cardFoot}>
+            {showAsset ? (
+              <AddForm open className={styles.form} onEscape={() => setShowAsset(false)}>
+                <input className={styles.input} placeholder="שם הנכס" aria-label="שם הנכס" value={name} onChange={e => setName(e.target.value)} />
+                <select aria-label="סוג הנכס" className={styles.input} value={category} onChange={e => setCategory(e.target.value)}>
+                  {ASSET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום הנכס" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} />
+                <Button onClick={submit}>הוסף</Button>
+                <Button variant="ghost" onClick={() => setShowAsset(false)}>ביטול</Button>
+              </AddForm>
+            ) : (
+              <button type="button" className={styles.addBtn} onClick={() => setShowAsset(true)}>+ הוספת נכס</button>
+            )}
+          </div>
+        </section>
 
-      <CardGrid single>
-        <Card title="התחייבויות">
-          <AddForm label="הוסף התחייבות" className={styles.form}>
-            <input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} />
-            <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההתחייבות" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} />
-            <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להתחייבות" value={loanMonthly} onChange={e => setLoanMonthly(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitLoan()} />
-            <Button onClick={submitLoan}>הוסף</Button>
-          </AddForm>
-          {loans.length ? (
-            <div className={styles.tableWrap} role="region" aria-label="טבלת התחייבויות" tabIndex={0}>
-            <table className={styles.table}>
-              <thead>
-                <tr><th>התחייבות</th><th>החזר חודשי</th><th>יתרה</th><th></th></tr>
-              </thead>
-              <tbody>
-                {[...loans].sort((a, b) => (b.remaining || 0) - (a.remaining || 0)).map(l => (
-                  <tr key={l.id}>
-                    <td className={styles.assetName}>{l.name}</td>
-                    <td className={styles.num}>{l.monthly > 0 ? fmt(l.monthly) : '—'}</td>
-                    <td className={styles.num + ' ' + styles.kpiNeg}>{fmt(l.remaining)}</td>
-                    <td><ActionMenu><DeleteButton onClick={() => removeItem(save, 'loans', l.id, `${l.name} נמחקה`)} /></ActionMenu></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
+        <section className={styles.cardNeg}>
+          <header className={styles.cardHead}>
+            <h3 className={styles.cardTitle}><span className={styles.dotNeg} aria-hidden="true" />התחייבויות</h3>
+            <span className={styles.kpiNeg + ' ' + styles.cardTotal}>{fmt(totalLiabilities)}</span>
+          </header>
+          {sortedLoans.length ? (
+            <ul className={styles.list}>
+              {sortedLoans.map(l => (
+                <li key={l.id} className={styles.row}>
+                  <div className={styles.rowMain}>
+                    <div className={styles.assetName}>{l.name}</div>
+                    <div className={styles.rowMeta}>{l.monthly > 0 ? 'החזר חודשי ' + fmt(l.monthly) : 'ללא החזר חודשי'}</div>
+                  </div>
+                  <span className={styles.num + ' ' + styles.kpiNeg}>{fmt(l.remaining)}</span>
+                  <ActionMenu><DeleteButton onClick={() => removeItem(save, 'loans', l.id, `${l.name} נמחקה`)} /></ActionMenu>
+                </li>
+              ))}
+            </ul>
           ) : (
-            <div className={styles.empty}>אין עדיין התחייבויות רשומות</div>
+            <div className={styles.empty}>עוד לא הוספת התחייבויות. לחץ להוספה.</div>
           )}
+          <div className={styles.cardFoot}>
+            {showLoan ? (
+              <AddForm open className={styles.form} onEscape={() => setShowLoan(false)}>
+                <input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} />
+                <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההתחייבות" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} />
+                <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להתחייבות" value={loanMonthly} onChange={e => setLoanMonthly(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitLoan()} />
+                <Button onClick={submitLoan}>הוסף</Button>
+                <Button variant="ghost" onClick={() => setShowLoan(false)}>ביטול</Button>
+              </AddForm>
+            ) : (
+              <button type="button" className={styles.addBtn} onClick={() => setShowLoan(true)}>+ הוספת התחייבות</button>
+            )}
+          </div>
           <div className={styles.note}>הלוואות שנוספו כאן מופיעות גם בטאב «הלוואות ואשראי», שם אפשר להגדיר ריבית ומלווה.</div>
-        </Card>
-      </CardGrid>
+        </section>
+      </div>
     </div>
   );
 }
