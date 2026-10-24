@@ -187,7 +187,9 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
       </section>
 
       <div className={styles.sectionLabel}>פרטי החודש</div>
-      <div className={styles.tileGrid4}>
+      <div className={styles.grid2}>
+      <div className={styles.stack}>
+      <div className={styles.grid2}>
         <button type="button" className={styles.linkTile} onClick={() => setModal('income')}>
           <span className={styles.iconTile} aria-hidden="true">₪</span>
           <span className={styles.linkTileTitle}>הכנסות</span>
@@ -213,8 +215,6 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
           <span className={styles.rowMeta}>{m.variable.length} הוצאות</span>
         </button>
       </div>
-
-      <div className={styles.grid2}>
         <section className={styles.card}>
           <div className={styles.cardHead}><div><h3 className={styles.cardTitle}>פילוח הוצאות</h3><p className={styles.cardSub}>כמה הוצאתי ועל מה</p></div><span className={styles.statValue}>{money(m.expenses)}</span></div>
           {breakdown.length === 0 ? <div className={styles.empty}>עוד אין הוצאות בחודש הזה</div> : (
@@ -228,6 +228,7 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
             </ul>
           )}
         </section>
+      </div>
         <section className={styles.card}>
           <div className={styles.cardHead}><h3 className={styles.cardTitle}>סיכום החודש</h3></div>
           <ul className={styles.rowList}>
