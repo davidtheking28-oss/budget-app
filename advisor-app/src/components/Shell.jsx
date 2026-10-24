@@ -202,7 +202,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
             <div className={styles.clientHead + ' ' + styles.homeHead}>
               <div className={styles.titleBlock}>
                 <h1 className={styles.clientTitle}>{title}</h1>
-                {description && <p className={styles.clientDesc}>{description}</p>}
+                {description ? <p className={styles.clientDesc}>{description}</p> : <div id="biz-header-sub" className={styles.clientDesc} />}
               </div>
               <div className={styles.clientHeadEnd}><div id="biz-header-actions" className={styles.headerActions} /><DensityToggle /></div>
             </div>

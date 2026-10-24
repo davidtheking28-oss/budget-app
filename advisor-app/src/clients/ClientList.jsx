@@ -12,10 +12,8 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
 import styles from './ClientList.module.css';
-import biz from '../business/Business.module.css';
 import ClientsTable from '../business/ClientsTable.jsx';
 import { INVITE_ERROR_MESSAGES } from './inviteMessages.js';
-import { readWorkspace } from '../workspaceMemory.js';
 
 const OPEN_PROSPECT_STATUSES = ['new', 'contacted', 'followup', 'meeting'];
 const TEMP_LABELS = { hot: 'חם', warm: 'פושר', cold: 'קר' };
@@ -40,7 +38,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
   const [invitingEmail, setInvitingEmail] = useState(false);
   const [secondaryOpen, setSecondaryOpen] = useState(false);
   const [confirmingInviteId, setConfirmingInviteId] = useState(null);
-  const [lastWorkspace] = useState(() => readWorkspace(`advisor_last:${advisorId}`, null));
   const codeInputRef = useRef(null);
   const emailInputRef = useRef(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -115,7 +112,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
     );
   }
 
-  const resumeClient = clients.find(c => c.client_id === lastWorkspace?.id);
   const todayISO = localISODate();
   const dueProspects = prospects
     .filter(p => OPEN_PROSPECT_STATUSES.includes(p.status) && p.follow_up_at && p.follow_up_at <= todayISO)
@@ -123,7 +119,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
 
   return (
     <div>
-      {resumeClient && <div className={biz.toolbar} style={{ marginBottom: 'var(--space-3)' }}><Button variant="ghost" onClick={() => onSelect(resumeClient.client_id, resumeClient.client_email, lastWorkspace)}>המשך עבודה עם {resumeClient.name || resumeClient.client_email}</Button></div>}
       {!clients.length ? (
         <div className={styles.empty}>
           <div className={styles.emptyMark}>

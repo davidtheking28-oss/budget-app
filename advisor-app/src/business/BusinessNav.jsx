@@ -41,8 +41,8 @@ export const DEPARTMENTS = [
     icon: icons.headset,
     items: [
       { key: 'clients', label: 'ניהול לקוחות', title: 'לקוחות', icon: icons.users, bare: true },
-      { key: 'client-service', label: 'שירות לקוחות', title: 'שירות', icon: icons.headset, bare: true, description: 'מי דורש טיפול, מתי הפגישה הבאה ואיפה כל לקוח בתהליך.' },
-      { key: 'client-tasks', label: 'משימות לקוחות', icon: icons.clipboard, bare: true, description: 'מה דורש טיפול אצל הלקוחות היום.' },
+      { key: 'client-service', label: 'שירות לקוחות', title: 'שירות', icon: icons.headset, bare: true },
+      { key: 'client-tasks', label: 'משימות לקוחות', icon: icons.clipboard, bare: true, description: 'מסך מעקב בשבילך: כל המשימות של כל לקוח במקום אחד, לסמן ולעבור לבא בתור.' },
       { key: 'client-view', label: 'תצוגת לקוח', icon: icons.eye, bare: true }
     ]
   },
