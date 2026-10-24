@@ -97,9 +97,9 @@
   border-radius: var(--radius-full);
   background: transparent;
   color: var(--workspace-text);
-  font-family: inherit;
-  font-size: var(--text-md);
-  font-weight: 800;
+  font-family: Heebo, inherit;
+  font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
 }

@@ -56,14 +56,14 @@
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--workspace-text);
-  font-family: inherit;
-  font-size: var(--text-md);
-  font-weight: 600;
+  font-family: Heebo, inherit;
+  font-size: 14.5px;
+  font-weight: 700;
   text-align: start;
   cursor: pointer;
 }
 .item:hover { background: var(--workspace-glass); }
-.itemOn, .itemOn:hover { background: rgba(var(--accent-rgb), 0.22); color: var(--workspace-mint); font-weight: 800; }
+.itemOn, .itemOn:hover { background: rgba(var(--accent-rgb), 0.22); color: var(--workspace-mint); font-weight: 700; }
 .item:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
 
 .icon { display: inline-flex; flex: none; opacity: 0.9; }

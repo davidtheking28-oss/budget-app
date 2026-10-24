@@ -9,7 +9,7 @@
   min-width: 0;
 }
 .cardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: var(--space-3); }
-.cardTitle { margin: 0; font-size: var(--text-lg); font-weight: 800; color: var(--text); }
+.cardTitle { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
 .cardSub { margin: 2px 0 0; color: var(--text2); font-size: var(--text-sm); }
 
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
@@ -26,9 +26,9 @@
   text-align: start;
   color: var(--text);
 }
-.statLabel { color: var(--text2); font-size: var(--text-sm); font-weight: 700; }
+.statLabel { color: var(--text2); font-size: 13px; font-weight: 600; }
 .statValue { margin-top: 4px; font-size: 28px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.15; }
-.statNote { margin-top: 2px; color: var(--text3); font-size: var(--text-xs); }
+.statNote { margin-top: 2px; color: var(--text3); font-size: 11.5px; }
 .statPos { color: var(--green); }
 .statNeg { color: var(--red); }
 
@@ -132,7 +132,7 @@
 .rowItem { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .rowItem:last-child { border-bottom: none; }
 .rowMain { flex: 1; min-width: 0; }
-.rowTitle { font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+.rowTitle { font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
 .rowMeta { margin-top: 2px; color: var(--text3); font-size: var(--text-xs); }
 
 .linkBtn { border: none; background: none; padding: 0; color: var(--accent); font: inherit; font-weight: 700; cursor: pointer; }
@@ -156,7 +156,7 @@
 .fieldLabel .input, .fieldLabel .select { width: 100%; }
 .textarea { min-height: 84px; padding: 10px 12px; resize: vertical; font-family: inherit; }
 .segment { display: inline-flex; padding: 4px; gap: 2px; border: 1px solid var(--border); border-radius: var(--radius-full); background: var(--surface2); }
-.segBtn, .segBtnOn { min-height: 34px; padding: 0 14px; border: none; border-radius: var(--radius-full); background: transparent; color: var(--text2); font: inherit; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.segBtn, .segBtnOn { min-height: 34px; padding: 0 14px; border: none; border-radius: var(--radius-full); background: transparent; color: var(--text2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .segBtnOn { background: var(--surface); color: var(--accent); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
 .segBtn:focus-visible, .segBtnOn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .iconTile { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(var(--accent-rgb), 0.12); color: var(--accent); flex: none; }
@@ -166,9 +166,9 @@
 .linkTile { display: flex; flex-direction: column; gap: 6px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-card); text-align: start; font: inherit; color: var(--text); cursor: pointer; min-width: 0; }
 .linkTile:hover { border-color: var(--accent); }
 .linkTile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.linkTileTitle { font-weight: 800; }
+.linkTileTitle { font-size: 14px; font-weight: 700; }
 .linkTileValue { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.sectionLabel { margin: var(--space-4) 0 var(--space-2); color: var(--text2); font-size: var(--text-sm); font-weight: 700; }
+.sectionLabel { margin: var(--space-4) 0 var(--space-2); color: var(--text2); font-size: 13.5px; font-weight: 600; }
 .emptyState { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 0; color: var(--text2); font-weight: 700; }
 .chartBox { height: 220px; position: relative; }
 
