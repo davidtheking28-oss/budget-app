@@ -13,7 +13,6 @@ import { fmt } from '../format.js';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
 
-const STEPS = ['הכנסות', 'הוצאות', 'סיכום'];
 const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
@@ -51,7 +50,6 @@ function sameCategory(a, b) {
 }
 
 export default function BudgetWizard({ data, save, year, month, focusCategory, onDirtyChange }) {
-  const [step, setStep] = useState(focusCategory ? 1 : 0);
   const wizardRef = useRef(null);
   useEffect(() => {
     if (!focusCategory) return;
@@ -203,7 +201,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const cleanGoals = goals.filter(g => g.name.trim() && parseFloat(g.target) > 0)
       .map(g => ({ id: g.id, name: g.name.trim(), target: parseFloat(g.target), months: parseFloat(g.months) || 0, saved: g.saved || 0 }));
 
-    if (!cleanIncomes.length) { toast('צריך לפחות מקור הכנסה אחד', 'error'); setStep(0); return; }
+    if (!cleanIncomes.length) { toast('צריך לפחות מקור הכנסה אחד', 'error'); return; }
 
     const today = new Date();
     const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -433,62 +431,11 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
 
   return (
     <div ref={wizardRef} className={styles.wrap} onChangeCapture={() => { if (!saving) setSaveStatus('dirty'); }}>
-      <div className={styles.head}>
-        <div>
-          <div className={styles.title}>בניית תקציב עם הלקוח</div>
-          <div className={styles.subtitle}>{STEPS[step]} · שלב {step + 1} מתוך {STEPS.length}</div>
-        </div>
-      </div>
-
       <p className={styles.changeHint}>שדות ששונו מסומנים במסגרת מקווקוות עד לשמירה מוצלחת.</p>
-      <div className={styles.stepper}>
-        {STEPS.map((s, i) => (
-          <button
-            type="button"
-            key={s}
-            className={styles.stepDot + (i === step ? ' ' + styles.stepActive : '') + (i < step ? ' ' + styles.stepDone : '')}
-            onClick={() => setStep(i)}
-            aria-label={s}
-            aria-current={i === step ? 'step' : undefined}
-          >
-            <span>{s}</span>
-          </button>
-        ))}
-      </div>
-
       {left < 0 && <div className={styles.warn}>ההקצאה חורגת מההכנסות ב-{fmt(Math.abs(left))} לחודש</div>}
 
       <div className={styles.body}>
-        {step === 0 && (
           <div className={styles.card}>
-            <div className={styles.cardTitle}>מאיפה מגיע הכסף?</div>
-            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, true)}
-          </div>
-        )}
-
-        {step === 1 && (
-          <div className={styles.expGrid}>
-            <div className={styles.card}>
-              <div className={styles.cardTitleRow}>
-                <span className={styles.cardTitle}>הוצאות חודשיות קבועות</span>
-                <span className={styles.cardTotal}>{fmt(totalFixed)}</span>
-              </div>
-              {tableList(fixed, setFixed, 'שם ההוצאה הקבועה', name => fixedActual[name] || 0)}
-            </div>
-            <div className={styles.card}>
-              <div className={styles.cardTitleRow}>
-                <span className={styles.cardTitle}>הוצאות חודשיות משתנות</span>
-                <span className={styles.cardTotal}>{fmt(totalVar)}</span>
-              </div>
-              {tableList(variable, setVariable, 'שם הקטגוריה', name => variableActual[name] || 0, true)}
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className={styles.card}>
-            <div className={styles.cardTitle}>סיכום התקציב</div>
-
             <div className={styles.sumGrid}>
               {summaryCards.map(c => (
                 <div className={styles.sumCard} key={c.key}>
@@ -518,69 +465,6 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
               ))}
             </div>
 
-            <div className={styles.reviewCols}>
-              <div className={styles.reviewCol}>
-                <div className={styles.reviewColTitle}>הכנסות</div>
-                {(() => {
-                  const cleanIncomes = incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
-                  if (!cleanIncomes.length) return <div className={styles.reviewEmpty}>לא הוגדרו מקורות הכנסה</div>;
-                  return (
-                    <>
-                      <div className={styles.reviewItemHead}><span /><span>תכנון</span><span>בפועל</span></div>
-                      {cleanIncomes.map((r, i) => {
-                        const plan = parseFloat(r.amount);
-                        const actual = incomeActualFor(r.name, r.amount);
-                        return (
-                          <div className={styles.reviewItem} key={i}>
-                            <span className={styles.reviewName}>{r.name}</span>
-                            <span className={styles.reviewAmt}>{fmt(plan)}</span>
-                            <span className={styles.reviewAmt + ' ' + (actual < plan ? styles.negative : styles.positive)}>{fmt(actual)}</span>
-                          </div>
-                        );
-                      })}
-                    </>
-                  );
-                })()}
-              </div>
-              <div className={styles.reviewCol}>
-                <div className={styles.reviewColTitle}>הוצאות</div>
-                {(() => {
-                  const cleanFixed = fixed.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
-                  const cleanVar = variable.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
-                  if (!cleanFixed.length && !cleanVar.length) return <div className={styles.reviewEmpty}>לא הוגדרו הוצאות</div>;
-                  const expenseRow = (r, key, actualOf) => {
-                    const plan = parseFloat(r.amount);
-                    const actual = actualOf(r.name) || 0;
-                    return (
-                      <div className={styles.reviewItem} key={key}>
-                        <span className={styles.reviewName}>{r.name}</span>
-                        <span className={styles.reviewAmt}>{fmt(plan)}</span>
-                        <span className={styles.reviewAmt + ' ' + (actual > plan ? styles.negative : styles.positive)}>{fmt(actual)}</span>
-                      </div>
-                    );
-                  };
-                  const subtotalRow = (label, plan, actual) => (
-                    <div className={styles.subtotalRow} key={label}>
-                      <span className={styles.reviewName}>{label}</span>
-                      <span className={styles.reviewAmt}>{fmt(plan)}</span>
-                      <span className={styles.reviewAmt + ' ' + (actual > plan ? styles.negative : styles.positive)}>{fmt(actual)}</span>
-                    </div>
-                  );
-                  return (
-                    <>
-                      <div className={styles.reviewItemHead}><span /><span>תכנון</span><span>בפועל</span></div>
-                      {cleanFixed.length > 0 && <div className={styles.groupTitle}>הוצאות קבועות</div>}
-                      {cleanFixed.map((r, i) => expenseRow(r, 'f' + i, name => fixedActual[name]))}
-                      {cleanFixed.length > 0 && subtotalRow('סה"כ הוצאות קבועות', totalFixed, totalFixedActual)}
-                      {cleanVar.length > 0 && <div className={styles.groupTitle}>הוצאות משתנות</div>}
-                      {cleanVar.map((r, i) => expenseRow(r, 'v' + i, name => variableActual[name]))}
-                      {cleanVar.length > 0 && subtotalRow('סה"כ הוצאות משתנות', totalVar, totalVarActual)}
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
-
             {breakdown.length > 0 && (
               <div className={styles.breakdownBlock}>
                 <div className={styles.groupTitle}>לאן הולך הכסף</div>
@@ -604,17 +488,35 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
 
             <div className={styles.summaryNote}>השמירה תעדכן את התקציב, ההוצאות הקבועות, מקורות ההכנסה והיעדים באפליקציה של הלקוח.</div>
           </div>
-        )}
+
+          <div className={styles.card}>
+            <div className={styles.cardTitle}>מאיפה מגיע הכסף?</div>
+            {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, true)}
+          </div>
+
+          <div className={styles.expGrid}>
+            <div className={styles.card}>
+              <div className={styles.cardTitleRow}>
+                <span className={styles.cardTitle}>הוצאות חודשיות קבועות</span>
+                <span className={styles.cardTotal}>{fmt(totalFixed)}</span>
+              </div>
+              {tableList(fixed, setFixed, 'שם ההוצאה הקבועה', name => fixedActual[name] || 0)}
+            </div>
+            <div className={styles.card}>
+              <div className={styles.cardTitleRow}>
+                <span className={styles.cardTitle}>הוצאות חודשיות משתנות</span>
+                <span className={styles.cardTotal}>{fmt(totalVar)}</span>
+              </div>
+              {tableList(variable, setVariable, 'שם הקטגוריה', name => variableActual[name] || 0, true)}
+            </div>
+          </div>
       </div>
 
       <div className={styles.saveStatus} data-status={saveStatus} role="status" aria-live="polite" aria-atomic="true" hidden={saveStatus === 'idle'}>
         {{dirty: 'יש שינויים שטרם נשמרו', saving: 'שומר את התקציב…', saved: 'התקציב נשמר בהצלחה', error: 'התקציב לא נשמר. השינויים עדיין בטופס — נסה לשמור שוב.'}[saveStatus]}
       </div>
       <div className={styles.footer}>
-        <Button variant="ghost" onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0}>הקודם</Button>
-        {step < STEPS.length - 1
-          ? <Button onClick={() => setStep(s => Math.min(STEPS.length - 1, s + 1))}>הבא</Button>
-          : <Button onClick={finish} disabled={saving}>{saving ? 'שומר…' : 'שמור ושלח ללקוח'}</Button>}
+        <Button onClick={finish} disabled={saving}>{saving ? 'שומר…' : 'שמור ושלח ללקוח'}</Button>
       </div>
     </div>
   );

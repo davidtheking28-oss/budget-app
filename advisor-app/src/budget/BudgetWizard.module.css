@@ -279,67 +279,6 @@
 .legendLabel { color: var(--text2); }
 .legendValue { margin-inline-start: auto; color: var(--text); font-variant-numeric: tabular-nums; font-weight: 600; }
 
-.reviewCols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-
-.reviewCol {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.reviewColTitle {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--text);
-  padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--border);
-}
-
-.reviewItem {
-  display: grid;
-  grid-template-columns: 1fr 62px 62px;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  padding: var(--space-2) 0;
-}
-
-.subtotalRow {
-  display: grid;
-  grid-template-columns: 1fr 62px 62px;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  padding: var(--space-2) 0;
-  border-top: 1px solid var(--border);
-  margin-top: var(--space-1);
-}
-
-.subtotalRow .reviewName { color: var(--text); font-weight: 700; }
-.subtotalRow .reviewAmt { font-weight: 800; }
-
-.reviewItemHead {
-  display: grid;
-  grid-template-columns: 1fr 62px 62px;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text3);
-  padding-bottom: var(--space-1);
-}
-
-.reviewItemHead span:not(:first-child) { text-align: center; }
-
-.reviewName { color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.reviewAmt { font-variant-numeric: tabular-nums; font-weight: 600; text-align: center; direction: ltr; unicode-bidi: isolate; }
-.reviewEmpty { font-size: var(--text-xs); color: var(--text3); padding: var(--space-3) 0; }
-
 .summaryChart {
   height: 220px;
   min-width: 0;
@@ -400,9 +339,6 @@
   padding-top: var(--space-4);
 }
 
-@media (max-width: 720px) {
-  .reviewCols { grid-template-columns: 1fr; }
-}
 
 .cardTitleRow {
   display: flex;
