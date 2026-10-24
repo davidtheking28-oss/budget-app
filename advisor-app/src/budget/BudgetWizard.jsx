@@ -120,7 +120,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   });
   const [fixed, setFixed] = useState(() => {
     const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
-    return FIXED_CATS.map(name => trackRow({ name, amount: existing[name] ?? '' }));
+    const extra = (data?.fixed_expenses || []).filter(f => !FIXED_CATS.includes(f.id));
+    return [...FIXED_CATS.map(name => trackRow({ name, amount: existing[name] ?? '' })), ...extra.map(f => trackRow({ name: f.id, amount: f.amount ?? '', ...(f.savings ? { savings: true } : {}) }))];
   });
   const [variable, setVariable] = useState(() => {
     const existing = data?.budgets || {};
@@ -199,7 +200,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const cleanIncomes = incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
       .map(r => ({ name: r.name.trim(), amount: parseFloat(r.amount), day: parseInt(r.day, 10) || undefined }));
     const cleanFixed = fixed.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
-      .map(r => ({ id: r.name.trim(), amount: parseFloat(r.amount) }));
+      .map(r => ({ id: r.name.trim(), amount: parseFloat(r.amount), ...(r.savings ? { savings: true } : {}) }));
     const cleanVar = variable.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
     const cleanGoals = goals.filter(g => g.name.trim() && parseFloat(g.target) > 0)
       .map(g => ({ id: g.id, name: g.name.trim(), target: parseFloat(g.target), months: parseFloat(g.months) || 0, saved: g.saved || 0 }));
