@@ -167,7 +167,7 @@ function AccountMenu({ email, advisorId, up }) {
   );
 }
 
-export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, clientName, clientSince, budgetMode, onBudgetModeChange, onBack, description, homeNav, homeActive, onHomeNavChange, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, clientName, clientSince, budgetMode, onBudgetModeChange, onBack, description, homeNav, homeActive, onHomeNavChange, homeTabs, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   const desktop = useDesktop();
   useWorkspaceScroll(workspaceKey);
 
@@ -178,20 +178,22 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
     </>
   );
 
+  const sideEnd = onSearch ? <SearchBar onOpen={onSearch} /> : null;
+  const accountFooter = <AccountMenu email={email} advisorId={advisorId} up />;
+
   if (desktop && !nav && homeNav) {
-    const current = homeNav.find(n => n.key === homeActive);
     return (
       <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
-        <SideNav nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} />
+        <SideNav nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} footer={accountFooter} />
         <div className={styles.sideMain}>
-          <TopNav hideBrand theme={theme} onToggleTheme={onToggleTheme} end={topEnd} />
+          <TopNav hideBrand tabs={homeTabs} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
           <main className={styles.contentTop}>
             <div className={styles.clientHead}>
               <div className={styles.titleBlock}>
-                <h1 className={styles.clientTitle}>{current?.label}</h1>
-                {current?.description && <p className={styles.clientDesc}>{current.description}</p>}
+                <h1 className={styles.clientTitle}>{title}</h1>
+                {description && <p className={styles.clientDesc}>{description}</p>}
               </div>
-              <div className={styles.clientHeadEnd}><DensityToggle /></div>
+              <div className={styles.clientHeadEnd}><div id="biz-header-actions" className={styles.headerActions} /><DensityToggle /></div>
             </div>
             {children}
           </main>
@@ -214,9 +216,9 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
   if (desktop && nav) {
     return (
       <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
-        <SideNav clientName={clientName} clientSince={clientSince} nav={nav} activeNav={activeNav} onNavChange={onNavChange} />
+        <SideNav clientName={clientName} clientSince={clientSince} nav={nav} activeNav={activeNav} onNavChange={onNavChange} footer={accountFooter} />
         <div className={styles.sideMain}>
-          <TopNav hideBrand onBack={onBack} onPrint={onPrint} onPresent={onPresent} theme={theme} onToggleTheme={onToggleTheme} end={topEnd} />
+          <TopNav hideBrand onBack={onBack} onPrint={onPrint} onPresent={onPresent} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
           <main className={styles.contentTop}>
             <div className={styles.clientHead}>
               <div className={styles.titleBlock}>

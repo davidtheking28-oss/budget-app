@@ -27,7 +27,7 @@ import { useTheme } from './useTheme.js';
 import { useUrlParam } from './useUrlParam.js';
 import Prospects from './clients/Prospects.jsx';
 import BusinessView from './business/BusinessView.jsx';
-import { BUSINESS_NAV, BUSINESS_KEYS } from './business/BusinessNav.jsx';
+import { BUSINESS_NAV, BUSINESS_KEYS, DEPARTMENTS, deptOf, pageTitle } from './business/BusinessNav.jsx';
 
 const Dashboard = lazy(() => import('./budget/Dashboard.jsx'));
 const Analysis = lazy(() => import('./budget/Analysis.jsx'));
@@ -203,6 +203,8 @@ export default function App() {
   };
 
   const activeHome = BUSINESS_KEYS.includes(homeView) ? homeView : 'clients';
+  const activeDept = deptOf(activeHome);
+  const homeItem = BUSINESS_NAV.find(n => n.key === activeHome);
 
   if (!selectedClient) {
     return (
@@ -216,15 +218,18 @@ export default function App() {
           onToggleTheme={toggleTheme}
           inert={searchOpen}
           onHomeClients={() => setHomeView('clients')}
-          homeNav={BUSINESS_NAV}
+          homeNav={BUSINESS_NAV.filter(n => n.dept === activeDept.key)}
           homeActive={activeHome}
           onHomeNavChange={setHomeView}
+          homeTabs={DEPARTMENTS.map(d => ({ key: d.key, label: d.label, icon: d.icon, active: d.key === activeDept.key, onClick: () => setHomeView(d.items[0].key) }))}
+          title={pageTitle(homeItem)}
+          description={activeHome === 'tasks' ? new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : homeItem?.description}
           homeLinks={BUSINESS_NAV.filter(n => n.key !== 'clients').map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => setHomeView(n.key), icon: n.icon }))}
         >
           {activeHome === 'prospects'
             ? <Prospects advisorId={session.user.id} onConvert={p => { setInviteDraft({ prospectId: p.id, email: p.email || '' }); setHomeView('clients'); }} />
             : activeHome !== 'clients'
-            ? <BusinessView view={activeHome} advisorId={session.user.id} />
+            ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={switchClient} />
             : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={switchClient} inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} onOpenProspects={() => setHomeView('prospects')} />}
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />

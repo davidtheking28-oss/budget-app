@@ -75,12 +75,17 @@ function MarketingBody({ advisorId, ym, scope }) {
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="18px" />;
   const byPeriod = Object.fromEntries(records.map(r => [r.period, r.data]));
-  const rows = Array.from({ length: 12 }, (_, i) => ({ label: monthName(i), m: marketingMetrics(byPeriod[ymKey(ym.year, i)] || {}) }));
-  const stats = scope === 'month' ? marketingMetrics(byPeriod[ymKey(ym.year, ym.month)] || {}) : sumMarketing(Array.from({ length: 12 }, (_, i) => byPeriod[ymKey(ym.year, i)] || {}));
+  const years = scope === 'full' ? [...new Set(records.map(r => r.period.slice(0, 4)))].sort().reverse() : [String(ym.year)];
+  const rows = scope === 'full'
+    ? years.map(y => ({ label: y, m: sumMarketing(Array.from({ length: 12 }, (_, i) => byPeriod[ymKey(Number(y), i)] || {})) }))
+    : Array.from({ length: 12 }, (_, i) => ({ label: monthName(i), m: marketingMetrics(byPeriod[ymKey(ym.year, i)] || {}) }));
+  const stats = scope === 'month'
+    ? marketingMetrics(byPeriod[ymKey(ym.year, ym.month)] || {})
+    : sumMarketing(records.filter(r => years.includes(r.period.slice(0, 4))).map(r => r.data));
   return (
     <>
-      <MarketingStats m={stats} title={scope === 'month' ? 'נתוני החודש' : 'נתוני השנה'} />
-      <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>מגמות לאורך השנה</h3></div><MarketingTable rows={rows} /></section>
+      <MarketingStats m={stats} title="מדדי שיווק" />
+      <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>מגמות לאורך הזמן</h3></div><MarketingTable rows={rows} /></section>
     </>
   );
 }
@@ -89,31 +94,28 @@ function SalesBody({ advisorId, ym, scope }) {
   const { prospects, loading, error, reload } = useProspects(advisorId);
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="18px" />;
-  const inYear = prospects.filter(p => leadMonthKey(p).startsWith(String(ym.year)));
-  const rows = Array.from({ length: 12 }, (_, i) => ({ label: monthName(i), s: funnelStats(inYear.filter(p => leadMonthKey(p) === ymKey(ym.year, i))) }));
-  const stats = scope === 'month' ? funnelStats(inYear.filter(p => leadMonthKey(p) === ymKey(ym.year, ym.month))) : funnelStats(inYear);
+  const rows = Array.from({ length: 12 }, (_, i) => ({ label: monthName(i), s: funnelStats(prospects.filter(p => leadMonthKey(p) === ymKey(ym.year, i))) }));
+  const stats = scope === 'month' ? funnelStats(prospects.filter(p => leadMonthKey(p) === ymKey(ym.year, ym.month))) : funnelStats(prospects.filter(p => leadMonthKey(p).startsWith(String(ym.year))));
   return (
     <>
-      <FunnelStats s={stats} title={scope === 'month' ? 'נתוני החודש' : 'נתוני השנה'} />
+      <FunnelStats s={stats} title="מדדי מכירות" />
       <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>מגמות לאורך השנה</h3></div><FunnelTable rows={rows} /></section>
     </>
   );
 }
 
-export default function MetricsView({ advisorId, kind }) {
+export default function MetricsView({ advisorId, kind, scope }) {
   const now = new Date();
-  const [scope, setScope] = useState('month');
   const [ym, setYm] = useState({ year: now.getFullYear(), month: now.getMonth() });
+  const subject = kind === 'marketing' ? 'שיווק' : 'מכירות';
+  const heading = scope === 'month' ? `${subject}: ${monthName(ym.month)} ${ym.year}` : scope === 'year' ? `${subject}: ${ym.year}` : `${subject}: כל התקופה`;
   return (
     <div className={styles.stack}>
-      <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <div className={styles.pills} role="group" aria-label="טווח">
-            <button type="button" className={scope === 'month' ? styles.pillOn : styles.pill} aria-pressed={scope === 'month'} onClick={() => setScope('month')}>חודשי</button>
-            <button type="button" className={scope === 'year' ? styles.pillOn : styles.pill} aria-pressed={scope === 'year'} onClick={() => setScope('year')}>שנתי</button>
-          </div>
+      <section className={styles.bigCard}>
+        <div className={styles.cardHead} style={{ marginBottom: 0 }}>
+          <h3 className={styles.cardTitle}>{heading}</h3>
+          {scope !== 'full' && <MonthPicker year={ym.year} month={ym.month} withMonth={scope === 'month'} onChange={(year, month) => setYm({ year, month })} />}
         </div>
-        <MonthPicker year={ym.year} month={scope === 'month' ? ym.month : null} onChange={(year, month) => setYm(prev => ({ year, month: month ?? prev.month }))} />
       </section>
       {kind === 'marketing' ? <MarketingBody advisorId={advisorId} ym={ym} scope={scope} /> : <SalesBody advisorId={advisorId} ym={ym} scope={scope} />}
     </div>

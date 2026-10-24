@@ -1,7 +1,7 @@
 import Logo from './Logo.jsx';
 import styles from './SideNav.module.css';
 
-export default function SideNav({ clientName, clientSince, nav, activeNav, onNavChange }) {
+export default function SideNav({ clientName, clientSince, nav, activeNav, onNavChange, footer }) {
   return (
     <aside className={styles.side}>
       <div className={styles.brand}><Logo size="sm" /><span>שקל שקל · יועץ</span></div>
@@ -25,6 +25,7 @@ export default function SideNav({ clientName, clientSince, nav, activeNav, onNav
           </div>
         ))}
       </nav>
+      {footer && <div className={styles.footer}>{footer}</div>}
     </aside>
   );
 }

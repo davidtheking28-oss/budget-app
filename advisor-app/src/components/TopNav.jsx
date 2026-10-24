@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import Logo from './Logo.jsx';
 import styles from './TopNav.module.css';
 
-export default function TopNav({ homeLinks, onBack, homeActive, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, end, hideBrand }) {
+export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, end, hideBrand }) {
   const globals = [
     onBack && { key: 'clients', label: 'הלקוחות שלי', onClick: onBack, active: homeActive },
     ...(homeLinks || []).map(l => ({ key: l.key, label: l.label, onClick: l.onClick, active: l.active })),
@@ -20,7 +20,12 @@ export default function TopNav({ homeLinks, onBack, homeActive, onPrint, onPrese
       <div className={styles.bar}>
         {!hideBrand && <div className={styles.brand}><Logo size="sm" /><span>שקל שקל · יועץ</span></div>}
         <nav className={styles.links} aria-label="ניווט ראשי">
-          {globals.map(g => (
+          {tabs && tabs.map(t => (
+            <button key={t.key} type="button" className={styles.deptTab + (t.active ? ' ' + styles.deptTabOn : '')} onClick={t.onClick} aria-current={t.active ? 'page' : undefined}>
+              <span className={styles.deptIcon} aria-hidden="true">{t.icon}</span>{t.label}
+            </button>
+          ))}
+          {!tabs && globals.map(g => (
             <button key={g.key} type="button" className={styles.pill + (g.active ? ' ' + styles.pillOn : '')} onClick={g.onClick} aria-current={g.active ? 'page' : undefined}>{g.label}</button>
           ))}
         </nav>

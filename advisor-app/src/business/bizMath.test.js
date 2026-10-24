@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { funnelStats, marketingMetrics, sumMarketing, financeSummary, bucketTasks, projectProgress, percentLabel, ymKey, leadMonthKey } from './bizMath.js';
+import { funnelStats, marketingMetrics, sumMarketing, bucketTasks, projectProgress, percentLabel, ymKey, leadMonthKey } from './bizMath.js';
 
 describe('funnelStats', () => {
   it('computes each conversion step from the previous one', () => {
@@ -58,24 +58,6 @@ describe('marketingMetrics', () => {
   });
 });
 
-describe('financeSummary', () => {
-  it('computes net, margin and missing receipts on expenses only', () => {
-    const s = financeSummary([
-      { type: 'income', amount: 10000 },
-      { type: 'expense', amount: 2000, receipt: true },
-      { type: 'expense', amount: 1000, receipt: false },
-      { type: 'income', amount: '0', receipt: false }
-    ]);
-    expect(s.net).toBe(7000);
-    expect(s.margin).toBeCloseTo(0.7);
-    expect(s.missingReceipts).toBe(1);
-  });
-
-  it('has no margin without income', () => {
-    expect(financeSummary([{ type: 'expense', amount: 50, receipt: true }]).margin).toBeNull();
-  });
-});
-
 describe('bucketTasks', () => {
   const tasks = [
     { id: 1, dueDate: '2026-10-24' },
@@ -101,5 +83,65 @@ describe('helpers', () => {
   it('ymKey pads the month and leadMonthKey reads the contact date', () => {
     expect(ymKey(2026, 0)).toBe('2026-01');
     expect(leadMonthKey({ contacted_at: '2026-10-05' })).toBe('2026-10');
+  });
+});
+
+import { fixedActiveIn, previousPeriod, monthPeriods, financeMonth, financeRange, expenseBreakdown } from './bizMath.js';
+
+describe('finance periods', () => {
+  it('walks months across a year boundary', () => {
+    expect(monthPeriods('2025-11', '2026-02')).toEqual(['2025-11', '2025-12', '2026-01', '2026-02']);
+    expect(previousPeriod('2026-01')).toBe('2025-12');
+  });
+
+  it('keeps a fixed expense active until its end month', () => {
+    const e = { fixed: true, startPeriod: '2026-03', endPeriod: '2026-05' };
+    expect(fixedActiveIn(e, '2026-02')).toBe(false);
+    expect(fixedActiveIn(e, '2026-03')).toBe(true);
+    expect(fixedActiveIn(e, '2026-05')).toBe(true);
+    expect(fixedActiveIn(e, '2026-06')).toBe(false);
+    expect(fixedActiveIn({ fixed: true, startPeriod: '2026-03' }, '2030-01')).toBe(true);
+  });
+});
+
+describe('financeMonth', () => {
+  const entries = [
+    { type: 'income', period: '2026-10', amount: 11800, clearing: 0, receipt: true },
+    { type: 'expense', fixed: true, startPeriod: '2026-09', amount: 1000, category: 'שיווק' },
+    { type: 'expense', period: '2026-10', amount: 500, receipt: false, category: 'שירות' }
+  ];
+
+  it('removes VAT only for a licensed dealer', () => {
+    const licensed = financeMonth(entries, '2026-10', 'עוסק מורשה');
+    expect(licensed.afterVat).toBeCloseTo(10000);
+    expect(licensed.vat).toBeCloseTo(1800);
+    const exempt = financeMonth(entries, '2026-10', 'עוסק פטור');
+    expect(exempt.vat).toBe(0);
+    expect(exempt.afterVat).toBe(11800);
+  });
+
+  it('carries fixed expenses forward and taxes only a positive operating profit', () => {
+    const m = financeMonth(entries, '2026-10', 'עוסק מורשה');
+    expect(m.fixedTotal).toBe(1000);
+    expect(m.variableTotal).toBe(500);
+    expect(m.operating).toBeCloseTo(8500);
+    expect(m.incomeTax).toBeCloseTo(850);
+    expect(m.nationalInsurance).toBeCloseTo(1020);
+    expect(m.net).toBeCloseTo(6630);
+    expect(m.missingReceipts).toBe(1);
+    expect(financeMonth([{ type: 'expense', period: '2026-10', amount: 100, receipt: true }], '2026-10', 'עוסק פטור').incomeTax).toBe(0);
+  });
+
+  it('does not count a fixed expense before its start month', () => {
+    expect(financeMonth(entries, '2026-08', 'עוסק פטור').fixedTotal).toBe(0);
+  });
+
+  it('sums a range and breaks expenses down by category', () => {
+    const r = financeRange(entries, '2026-09', '2026-10', 'עוסק מורשה');
+    expect(r.rows).toHaveLength(2);
+    expect(r.expenses).toBe(2500);
+    const b = expenseBreakdown(entries.filter(e => e.type === 'expense'));
+    expect(b[0]).toMatchObject({ category: 'שיווק', value: 1000 });
+    expect(b[0].share).toBeCloseTo(2 / 3);
   });
 });

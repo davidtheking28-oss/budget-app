@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useProspects } from './useProspects.js';
 import { formatDate, localISODate } from '../budget/monthUtils.js';
-import Hero from '../components/Hero.jsx';
 import { CardGrid, Card } from '../components/Rows.jsx';
-import AddForm from '../components/AddForm.jsx';
+import HeaderAction from '../business/HeaderAction.jsx';
+import Modal from '../business/Modal.jsx';
 import Button from '../components/Button.jsx';
 import EditButton from '../components/EditButton.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -32,7 +32,7 @@ const OPEN_STATUSES = ['new', 'contacted', 'followup', 'meeting'];
 const CONVERT_STATUSES = ['closed', 'converted'];
 const DATED_STATUSES = { followup: 'פולואפ', meeting: 'נקבע ל' };
 const SOURCES = ['דף נחיתה', 'הודעות בפרטי', 'פה לאוזן · לקוח ישן', 'המלצה', 'רשתות חברתיות', 'אתר', 'וואטסאפ', 'אחר'];
-const EMPTY = { temperature: 'warm', name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', follow_up_at: '' };
+const EMPTY = { temperature: 'warm', status: 'new', name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', follow_up_at: '', meeting_date: '', meeting_time: '', attempts: 0, attendance_confirmed: false, showed: false, relevant: false, closed: false };
 
 const tempInfo = key => TEMPS.find(t => t.key === key) || TEMPS[1];
 const statusInfo = key => STATUSES.find(s => s.key === key) || STATUSES[0];
@@ -45,7 +45,8 @@ export default function Prospects({ advisorId, onConvert }) {
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [closeSignal, setCloseSignal] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const nameRef = useRef(null);
   const statusFiltersRef = useRef(null);
   const restoreId = useRef(null);
@@ -66,25 +67,27 @@ export default function Prospects({ advisorId, onConvert }) {
   const open = prospects.filter(p => OPEN_STATUSES.includes(p.status));
   const dueNow = open.filter(p => p.follow_up_at && p.follow_up_at <= today).length;
   const thisMonth = prospects.filter(p => (p.contacted_at || '').startsWith(today.slice(0, 7))).length;
-  const converted = prospects.filter(p => p.status === 'converted' || p.status === 'closed').length;
 
   const hot = open.filter(p => p.temperature === 'hot').length;
   const byStatus = filter === 'all' ? prospects : filter === 'open' ? open : prospects.filter(p => p.status === filter);
   const byTemp = tempFilter === 'all' ? byStatus : byStatus.filter(p => (p.temperature || 'warm') === tempFilter);
-  const visible = sourceFilter === 'all' ? byTemp : byTemp.filter(p => (p.source || '') === sourceFilter);
+  const bySource = sourceFilter === 'all' ? byTemp : byTemp.filter(p => (p.source || '') === sourceFilter);
+  const visible = search.trim() ? bySource.filter(p => [p.name, p.phone, p.email].some(v => (v || '').includes(search.trim()))) : bySource;
+  const meetingsSet = prospects.filter(p => p.meeting_date).length;
   const funnel = funnelStats(prospects);
   const usedSources = [...new Set(prospects.map(p => p.source).filter(Boolean))];
 
   function startEdit(p) {
     setEditingId(p.id);
-    setForm({ temperature: p.temperature || 'warm', name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', follow_up_at: p.follow_up_at || '' });
+    setModalOpen(true);
+    setForm({ temperature: p.temperature || 'warm', status: p.status || 'new', name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', follow_up_at: p.follow_up_at || '', meeting_date: p.meeting_date || '', meeting_time: p.meeting_time || '', attempts: p.attempts || 0, attendance_confirmed: !!p.attendance_confirmed, showed: !!p.showed, relevant: !!p.relevant, closed: !!p.closed });
   }
 
   function reset() {
     restoreId.current = editingId;
     setEditingId(null);
     setForm(EMPTY);
-    setCloseSignal(n => n + 1);
+    setModalOpen(false);
   }
 
   async function changeStatus(id, status) {
@@ -104,9 +107,17 @@ export default function Prospects({ advisorId, onConvert }) {
       source: form.source.trim() || null,
       notes: form.notes.trim() || null,
       contacted_at: form.contacted_at || today,
-      follow_up_at: form.follow_up_at || null
+      follow_up_at: form.follow_up_at || null,
+      meeting_date: form.meeting_date || null,
+      meeting_time: form.meeting_time || null,
+      attempts: form.attempts,
+      attendance_confirmed: form.attendance_confirmed,
+      showed: form.showed,
+      relevant: form.relevant,
+      closed: form.closed,
+      status: form.status
     };
-    const ok = editingId != null ? await updateProspect(editingId, row) : await addProspect({ ...row, status: 'new' });
+    const ok = editingId != null ? await updateProspect(editingId, row) : await addProspect(row);
     setSaving(false);
     if (ok) reset();
   }
@@ -114,50 +125,22 @@ export default function Prospects({ advisorId, onConvert }) {
   return (
     <div className={styles.page}>
       <h1 className={styles.srOnly}>מתעניינים</h1>
-      <Hero
-        label="מתעניינים פתוחים"
-        value={String(open.length)}
-        note={`${prospects.length} פניות בסך הכול · ${converted} הפכו ללקוחות`}
-        side={[
-          { label: 'לחזור אליהם', value: String(dueNow), meta: 'תאריך חזרה הגיע' },
-          { label: 'לידים חמים', value: String(hot) },
-          { label: 'פניות החודש', value: String(thisMonth) }
-        ]}
-      />
-
-      <div className={biz.grid4} role="group" aria-label="אחוזי המרה" style={{ marginBottom: 'var(--space-4)' }}>
-        <div className={biz.stat}><div className={biz.statLabel}>לידים במערכת</div><div className={biz.statValue}>{funnel.total}</div><div className={biz.statNote}>כל הפניות</div></div>
+      <HeaderAction><button type="button" className={biz.btn} onClick={() => { setForm(EMPTY); setEditingId(null); setModalOpen(true); }}>+ הוסף ליד</button></HeaderAction>
+      <div className={biz.grid3} role="group" aria-label="אחוזי המרה" style={{ marginBottom: 'var(--space-4)' }}>
+        <div className={biz.stat}><div className={biz.statLabel}>פגישות התאמה שנקבעו</div><div className={biz.statValue}>{meetingsSet}</div><div className={biz.statNote}>מתוך {funnel.total} לידים</div></div>
         <div className={biz.stat}><div className={biz.statLabel}>אחוז הגעה לשיחות</div><div className={biz.statValue}>{percentLabel(funnel.showRate)}</div><div className={biz.statNote}>{funnel.showed} הגיעו מתוך {funnel.total} לידים</div></div>
         <div className={biz.stat}><div className={biz.statLabel}>אחוז רלוונטיות</div><div className={biz.statValue}>{percentLabel(funnel.relevantRate)}</div><div className={biz.statNote}>{funnel.relevant} רלוונטיים מתוך {funnel.showed} שהגיעו</div></div>
         <div className={biz.stat}><div className={biz.statLabel}>אחוז סגירה</div><div className={biz.statValue}>{percentLabel(funnel.closeRate)}</div><div className={biz.statNote}>{funnel.closed} נסגרו מתוך {funnel.relevant} רלוונטיים</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>אחוז סגירה מכל השיחות</div><div className={biz.statValue}>{percentLabel(funnel.closeOfShowedRate)}</div><div className={biz.statNote}>{funnel.closed} נסגרו מתוך {funnel.showed} שהגיעו</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>לחזור אליהם</div><div className={biz.statValue}>{dueNow}</div><div className={biz.statNote}>תאריך חזרה הגיע · {hot} לידים חמים · {thisMonth} פניות החודש</div></div>
+      </div>
+
+      <div className={biz.toolbar} style={{ marginBottom: 'var(--space-3)' }}>
+        <input className={biz.input + ' ' + biz.inputGrow} type="search" placeholder="חיפוש ליד..." aria-label="חיפוש ליד" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       <CardGrid single>
         <Card title="מתעניינים">
-          <AddForm label="הוסף מתעניין" open={editingId != null} closeSignal={closeSignal} onEscape={reset} className={styles.form}>
-            <input ref={nameRef} className={styles.input} placeholder="שם" aria-label="שם המתעניין" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-            <input className={styles.input} placeholder="טלפון" aria-label="טלפון" dir="ltr" inputMode="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-            <input className={styles.input} placeholder="אימייל" aria-label="אימייל" dir="ltr" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-            <input className={styles.input} placeholder="מקור ההגעה" aria-label="מקור ההגעה" list="prospect-sources" value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} />
-            <select className={styles.input} aria-label="חום הליד" value={form.temperature} onChange={e => setForm({ ...form, temperature: e.target.value })}>
-              {TEMPS.map(t => <option key={t.key} value={t.key}>ליד {t.label}</option>)}
-            </select>
-            <datalist id="prospect-sources">{SOURCES.map(s => <option key={s} value={s} />)}</datalist>
-            <label className={styles.field}>
-              <span>תאריך פנייה</span>
-              <input className={styles.input} type="date" value={form.contacted_at} onChange={e => setForm({ ...form, contacted_at: e.target.value })} />
-            </label>
-            <label className={styles.field}>
-              <span>תאריך חזרה</span>
-              <input className={styles.input} type="date" value={form.follow_up_at} onChange={e => setForm({ ...form, follow_up_at: e.target.value })} />
-            </label>
-            <textarea className={styles.textarea} placeholder="הערות ומה ביקש" aria-label="הערות ומה ביקש" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
-            <div className={styles.actions}>
-              <Button onClick={submit} disabled={saving || !form.name.trim()}>{editingId != null ? 'שמור' : 'הוסף מתעניין'}</Button>
-              <Button variant="ghost" onClick={reset}>ביטול</Button>
-            </div>
-          </AddForm>
-
           <div className={styles.filterBar}>
             <div ref={statusFiltersRef} className={styles.filters} role="group" aria-label="סינון לפי סטטוס">
               {[{ key: 'open', label: 'פתוחים' }, ...STATUSES, { key: 'all', label: 'הכול' }].map(f => (
@@ -222,6 +205,50 @@ export default function Prospects({ advisorId, onConvert }) {
           })}
         </Card>
       </CardGrid>
+      {modalOpen && (
+        <Modal title={editingId != null ? 'עריכת ליד' : 'ליד חדש'} onClose={reset} wide>
+          <form className={biz.formGrid} onSubmit={e => { e.preventDefault(); submit(); }}>
+            <label className={biz.fieldLabel}>שם מלא<input ref={nameRef} className={biz.input} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label>
+            <div className={biz.formRow}>
+              <label className={biz.fieldLabel}>טלפון<input className={biz.input} dir="ltr" inputMode="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></label>
+              <label className={biz.fieldLabel}>אימייל<input className={biz.input} dir="ltr" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></label>
+            </div>
+            <div className={biz.formRow}>
+              <label className={biz.fieldLabel}>מקור הגעה<input className={biz.input} list="prospect-sources" value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} /></label>
+              <label className={biz.fieldLabel}>חום הליד<select className={biz.select} value={form.temperature} onChange={e => setForm({ ...form, temperature: e.target.value })}>{TEMPS.map(t => <option key={t.key} value={t.key}>ליד {t.label}</option>)}</select></label>
+            </div>
+            <datalist id="prospect-sources">{SOURCES.map(src => <option key={src} value={src} />)}</datalist>
+            <div className={biz.formRow}>
+              <label className={biz.fieldLabel}>תאריך כניסת ליד<input className={biz.input} type="date" value={form.contacted_at} onChange={e => setForm({ ...form, contacted_at: e.target.value })} /></label>
+              <label className={biz.fieldLabel}>תאריך חזרה<input className={biz.input} type="date" value={form.follow_up_at} onChange={e => setForm({ ...form, follow_up_at: e.target.value })} /></label>
+            </div>
+            <div className={biz.formRow}>
+              <label className={biz.fieldLabel}>תאריך פגישת התאמה<input className={biz.input} type="date" value={form.meeting_date} onChange={e => setForm({ ...form, meeting_date: e.target.value })} /></label>
+              <label className={biz.fieldLabel}>שעת הפגישה<input className={biz.input} type="time" value={form.meeting_time} onChange={e => setForm({ ...form, meeting_time: e.target.value })} /></label>
+            </div>
+            <div className={biz.formRow}>
+              <label className={biz.fieldLabel}>שלב<select className={biz.select} value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>{STATUSES.map(st => <option key={st.key} value={st.key}>{st.label}</option>)}</select></label>
+              <div className={biz.fieldLabel}>ניסיונות מענה
+                <div className={biz.toolbar}>
+                  <button type="button" className={biz.iconBtn} aria-label="הורדה" onClick={() => setForm({ ...form, attempts: Math.max(0, form.attempts - 1) })}>−</button>
+                  <strong className={biz.num} aria-live="polite">{form.attempts}</strong>
+                  <button type="button" className={biz.btnGhost} onClick={() => setForm({ ...form, attempts: Math.min(50, form.attempts + 1) })}>עוד ניסיון</button>
+                </div>
+              </div>
+            </div>
+            <div className={biz.formRow}>
+              {[['attendance_confirmed', 'וידא הגעה לפגישת ההתאמה'], ['showed', 'הגיע לשיחה'], ['relevant', 'רלוונטי'], ['closed', 'נסגר']].map(([key, label]) => (
+                <label key={key} className={biz.toolbar}><input type="checkbox" className={biz.check} checked={form[key]} onChange={e => setForm({ ...form, [key]: e.target.checked })} />{label}</label>
+              ))}
+            </div>
+            <label className={biz.fieldLabel}>פירוט שיחה<textarea className={biz.input + ' ' + biz.textarea} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></label>
+            <div className={biz.toolbar}>
+              <button type="submit" className={biz.btn} disabled={saving || !form.name.trim()}>{editingId != null ? 'שמור' : 'הוספת ליד'}</button>
+              <button type="button" className={biz.btnGhost} onClick={reset}>ביטול</button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

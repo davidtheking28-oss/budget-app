@@ -82,19 +82,6 @@ export function planProgress(tasks) {
   return { done, total: tasks.length, rate: ratio(done, tasks.length) };
 }
 
-export function financeSummary(entries) {
-  const income = entries.filter(e => e.type === 'income').reduce((s, e) => s + num(e.amount), 0);
-  const expense = entries.filter(e => e.type === 'expense').reduce((s, e) => s + num(e.amount), 0);
-  const net = income - expense;
-  return {
-    income,
-    expense,
-    net,
-    margin: ratio(net, income),
-    missingReceipts: entries.filter(e => e.type === 'expense' && !e.receipt).length
-  };
-}
-
 export function bucketTasks(tasks, today) {
   const open = tasks.filter(t => !t.done);
   return {
@@ -107,4 +94,91 @@ export function bucketTasks(tasks, today) {
 
 export function projectProgress(project) {
   return planProgress(project.steps || []);
+}
+
+export const EXPENSE_CATEGORIES = ['שירות', 'שיווק', 'מכירות', 'פיננסים', 'ייעוץ עסקי', 'מנטלי', 'העשרה', 'ללא קטגוריה'];
+export const VAT_RATE = 0.18;
+export const INCOME_TAX_RATE = 0.1;
+export const NATIONAL_INSURANCE_RATE = 0.12;
+
+export function comparePeriods(a, b) {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+export function fixedActiveIn(entry, period) {
+  return entry.fixed && comparePeriods(entry.startPeriod, period) <= 0 && (!entry.endPeriod || comparePeriods(period, entry.endPeriod) <= 0);
+}
+
+export function previousPeriod(period) {
+  const [y, m] = period.split('-').map(Number);
+  return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`;
+}
+
+export function monthPeriods(from, to) {
+  const out = [];
+  let [y, m] = from.split('-').map(Number);
+  const [ty, tm] = to.split('-').map(Number);
+  while (y < ty || (y === ty && m <= tm)) {
+    out.push(`${y}-${String(m).padStart(2, '0')}`);
+    m += 1;
+    if (m > 12) { m = 1; y += 1; }
+  }
+  return out;
+}
+
+export function financeMonth(entries, period, businessType) {
+  const incomes = entries.filter(e => e.type === 'income' && e.period === period);
+  const fixed = entries.filter(e => e.type === 'expense' && fixedActiveIn(e, period));
+  const variable = entries.filter(e => e.type === 'expense' && !e.fixed && e.period === period);
+  const income = incomes.reduce((s, e) => s + num(e.amount), 0);
+  const clearing = incomes.reduce((s, e) => s + num(e.clearing), 0);
+  const afterClearing = income - clearing;
+  const vatRate = businessType === 'עוסק מורשה' ? VAT_RATE : 0;
+  const afterVat = afterClearing / (1 + vatRate);
+  const vat = afterClearing - afterVat;
+  const fixedTotal = fixed.reduce((s, e) => s + num(e.amount), 0);
+  const variableTotal = variable.reduce((s, e) => s + num(e.amount), 0);
+  const expenses = fixedTotal + variableTotal;
+  const operating = afterVat - expenses;
+  const incomeTax = Math.max(0, operating) * INCOME_TAX_RATE;
+  const nationalInsurance = Math.max(0, operating) * NATIONAL_INSURANCE_RATE;
+  const net = operating - incomeTax - nationalInsurance;
+  return {
+    incomes,
+    fixed,
+    variable,
+    income,
+    clearing,
+    afterClearing,
+    afterVat,
+    vat,
+    fixedTotal,
+    variableTotal,
+    expenses,
+    operating,
+    incomeTax,
+    nationalInsurance,
+    taxes: vat + incomeTax + nationalInsurance,
+    net,
+    margin: ratio(net, income),
+    missingReceipts: [...incomes, ...variable].filter(e => !e.receipt).length
+  };
+}
+
+export function financeRange(entries, from, to, businessType) {
+  const rows = monthPeriods(from, to).map(period => ({ period, ...financeMonth(entries, period, businessType) }));
+  const income = rows.reduce((s, r) => s + r.income, 0);
+  const expenses = rows.reduce((s, r) => s + r.expenses, 0);
+  const net = rows.reduce((s, r) => s + r.net, 0);
+  return { rows, income, expenses, net, margin: ratio(net, income), missingReceipts: rows.reduce((s, r) => s + r.missingReceipts, 0) };
+}
+
+export function expenseBreakdown(expenseEntries) {
+  const totals = {};
+  for (const e of expenseEntries) {
+    const key = e.category || 'ללא קטגוריה';
+    totals[key] = (totals[key] || 0) + num(e.amount);
+  }
+  const total = Object.values(totals).reduce((s, v) => s + v, 0);
+  return Object.entries(totals).map(([category, value]) => ({ category, value, share: ratio(value, total) })).sort((a, b) => b.value - a.value);
 }
