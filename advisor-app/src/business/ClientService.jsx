@@ -33,12 +33,12 @@ export default function ClientService({ advisorId, onSelect }) {
         <div className={styles.grid2}>
           <div>
             <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true">◎</span><span className={styles.statLabel}>לקוחות פעילים</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 36 }}>{clients.length}</div>
+            <div className={styles.bigNumber} style={{ fontSize: 28 }}>{clients.length}</div>
             <div className={styles.statNote}>בתהליך ליווי כרגע</div>
           </div>
           <div>
             <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true">✓</span><span className={styles.statLabel}>סיימו את כל התהליך</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 36 }}>{finished.length}</div>
+            <div className={styles.bigNumber} style={{ fontSize: 28 }}>{finished.length}</div>
             <div className={styles.statNote}>אין להם משימות פתוחות</div>
           </div>
         </div>

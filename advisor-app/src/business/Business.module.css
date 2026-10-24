@@ -27,7 +27,7 @@
   color: var(--text);
 }
 .statLabel { color: var(--text2); font-size: 13px; font-weight: 600; }
-.statValue { margin-top: 4px; font-size: 28px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.statValue { margin-top: 4px; font-size: 24px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.15; }
 .statNote { margin-top: 2px; color: var(--text3); font-size: 11.5px; }
 .statPos { color: var(--green); }
 .statNeg { color: var(--red); }
@@ -161,13 +161,13 @@
 .segBtn:focus-visible, .segBtnOn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .iconTile { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(var(--accent-rgb), 0.12); color: var(--accent); flex: none; }
 .bigCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 22px 24px; }
-.bigNumber { font-size: 56px; font-weight: 800; line-height: 1.1; color: var(--text); font-variant-numeric: tabular-nums; }
+.bigNumber { font-size: 44px; font-weight: 700; line-height: 1.1; color: var(--text); font-variant-numeric: tabular-nums; }
 .tileGrid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); }
 .linkTile { display: flex; flex-direction: column; gap: 6px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-card); text-align: start; font: inherit; color: var(--text); cursor: pointer; min-width: 0; }
 .linkTile:hover { border-color: var(--accent); }
 .linkTile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .linkTileTitle { font-size: 14px; font-weight: 700; }
-.linkTileValue { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.linkTileValue { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .sectionLabel { margin: var(--space-4) 0 var(--space-2); color: var(--text2); font-size: 13.5px; font-weight: 600; }
 .emptyState { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 0; color: var(--text2); font-weight: 700; }
 .chartBox { height: 220px; position: relative; }

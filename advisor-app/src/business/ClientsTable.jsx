@@ -48,17 +48,17 @@ export default function ClientsTable({ advisorId, onAdd, onOpen, onRemove }) {
         <div className={styles.grid3 + ' ' + styles.cellGrid}>
           <div className={styles.cell}>
             <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true"><svg {...svgProps}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 3-5.8 6.5-5.8s6.5 2.2 6.5 5.8M16 5a3.5 3.5 0 0 1 0 6.5M21.5 20c0-2.8-1.6-4.7-4-5.4" /></svg></span><span className={styles.statLabel}>לקוחות פעילים</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 36 }}>{activeCount}</div>
+            <div className={styles.bigNumber} style={{ fontSize: 28 }}>{activeCount}</div>
             <div className={styles.statNote}>בתהליך ליווי כרגע</div>
           </div>
           <div className={styles.cell}>
             <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true"><svg {...svgProps}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 3-5.8 6.5-5.8s6.5 2.2 6.5 5.8M19 8v6M16 11h6" /></svg></span><span className={styles.statLabel}>לקוחות חדשים החודש</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 36 }}>{newThisMonth}</div>
+            <div className={styles.bigNumber} style={{ fontSize: 28 }}>{newThisMonth}</div>
             <div className={styles.statNote}>לפי תאריך הצטרפות</div>
           </div>
           <div className={styles.cell}>
             <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true"><svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-6" /></svg></span><span className={styles.statLabel}>לקוחות שסיימו</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 36 }}>{endedCount}</div>
+            <div className={styles.bigNumber} style={{ fontSize: 28 }}>{endedCount}</div>
             <div className={styles.statNote}>סיימו את התהליך</div>
           </div>
         </div>

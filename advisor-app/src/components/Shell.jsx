@@ -198,7 +198,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
         <SideNav nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} footer={accountFooter} />
         <div className={styles.sideMain}>
           <TopNav hideBrand tabs={homeTabs} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
-          <main className={styles.contentTop}>
+          <main className={styles.contentTop + " " + styles.homeContent}>
             <div className={styles.clientHead + ' ' + styles.homeHead}>
               <div className={styles.titleBlock}>
                 <h1 className={styles.clientTitle}>{title}</h1>
