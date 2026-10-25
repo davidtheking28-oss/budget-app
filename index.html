@@ -3248,7 +3248,7 @@ window.addEventListener('storage',event=>{if(event.key==='budget_local_owner')lo
 let _localAccountReady=true;
 (function(){
   try{
-    const key=Object.keys(localStorage).find(k=>k.startsWith('sb-')&&k.endsWith('-auth-token'));
+    const key=Object.keys(localStorage).find(k=>k.startsWith('sb-')&&k.endsWith('-auth-token')&&k!=='sb-advisor-auth-token');
     const user=key?JSON.parse(localStorage.getItem(key))?.user:null;
     if(!localStorage.getItem('budget_local_owner')&&user?.id&&!localStorage.getItem('budget_account_transition'))localStorage.setItem('budget_local_owner',user.id);
     _switchLocalAccount(user?.id||'guest');
