@@ -368,8 +368,6 @@
   .mobileClient { display: block; }
 }
 
-.densityToggle { min-height: 36px; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text2); font-family: inherit; font-size: var(--text-sm); cursor: pointer; white-space: nowrap; }
-.densityToggle[aria-pressed="true"] { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 .topbarEnd { flex-wrap: wrap; }
 
 .accountUp .accountTrigger { color: var(--workspace-muted); }

@@ -10,19 +10,6 @@ import SideNav from './SideNav.jsx';
 import styles from './Shell.module.css';
 import { useWorkspaceScroll } from '../useWorkspaceScroll.js';
 
-function DensityToggle() {
-  const [compact, setCompact] = useState(() => localStorage.getItem('advisor_density') === 'compact');
-  useEffect(() => {
-    document.documentElement.dataset.density = compact ? 'compact' : 'comfortable';
-  }, [compact]);
-  function toggle() {
-    const next = !compact;
-    setCompact(next);
-    localStorage.setItem('advisor_density', next ? 'compact' : 'comfortable');
-  }
-  return <button type="button" className={styles.densityToggle} aria-label="תצוגה קומפקטית" aria-pressed={compact} onClick={toggle}>תצוגה: {compact ? 'קומפקטית' : 'מרווחת'}</button>;
-}
-
 function useDesktop() {
   const query = '(min-width: 861px)';
   const [desktop, setDesktop] = useState(() => window.matchMedia(query).matches);
@@ -204,7 +191,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
                 <h1 className={styles.clientTitle}>{title}</h1>
                 {description ? <p className={styles.clientDesc}>{description}</p> : <div id="biz-header-sub" className={styles.clientDesc} />}
               </div>
-              <div className={styles.clientHeadEnd}><div id="biz-header-actions" className={styles.headerActions} /><DensityToggle /></div>
+              <div className={styles.clientHeadEnd}><div id="biz-header-actions" className={styles.headerActions} /></div>
             </div>
             {children}
           </main>
@@ -242,7 +229,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
                   <button type="button" aria-pressed={budgetMode === 'business'} onClick={() => onBudgetModeChange('business')}>עסקי</button>
                 </div>
                 {sidebarInfo}
-                <DensityToggle />
+                
               </div>
             </div>
             {children}
@@ -260,7 +247,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
           <div className={styles.topbar}>
             <div className={styles.logo}>שקל שקל · יועץ</div>
             <div className={styles.topbarEnd}>
-              <DensityToggle />
+              
               {onSearch && <SearchBar onOpen={onSearch} />}
               <AccountMenu email={email} advisorId={advisorId} />
             </div>
@@ -310,7 +297,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
             </div>
           </div>
           <div className={styles.topbarEnd}>
-              <DensityToggle />
+              
             {sidebarInfo}
             {!desktop && <AccountMenu email={email} advisorId={advisorId} />}
           </div>
