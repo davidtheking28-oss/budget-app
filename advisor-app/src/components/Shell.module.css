@@ -395,7 +395,7 @@
 .shellTop { min-height: 100vh; display: flex; flex-direction: column; position: relative; z-index: var(--z-base); }
 .contentTop { padding: var(--space-5) var(--page-pad) var(--space-8); max-width: calc(var(--page-max) + var(--page-pad) * 2); width: 100%; margin: 0 auto; animation: tabIn var(--motion) var(--ease-out-expo) both; }
 .clientHead { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-5); }
-.clientTitle { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 2.4rem; line-height: 1.1; letter-spacing: -0.01em; color: var(--text); overflow-wrap: anywhere; max-width: 28ch; }
+.clientTitle { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 1.625rem; line-height: 1.15; letter-spacing: -0.01em; color: var(--text); overflow-wrap: anywhere; max-width: 28ch; }
 .clientSub { margin-top: 6px; color: var(--text2); font-size: var(--text-md); }
 .clientHeadEnd { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .modeContext button[aria-pressed="true"] { background: var(--primary); color: var(--primary-ink); }
@@ -414,7 +414,7 @@
 .shellSide .accountTrigger:hover { color: var(--workspace-text); background: var(--workspace-glass); }
 .shellTop .accountTrigger { color: var(--workspace-text); border-color: var(--workspace-line); background: transparent; }
 .shellTop .accountTrigger:hover { color: var(--workspace-text); background: var(--workspace-glass); }
-.clientDesc { margin: 6px 0 0; color: var(--text2); font-size: var(--text-md); }
+.clientDesc { margin: 6px 0 0; color: var(--text2); font-size: var(--text-sm); }
 
 .headerActions { display: inline-flex; align-items: center; gap: 8px; }
 .headerActions:empty { display: none; }

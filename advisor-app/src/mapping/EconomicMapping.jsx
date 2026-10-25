@@ -35,8 +35,6 @@ ChartJS.register(BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Le
 import { toast } from '../toast.js';
 import styles from './EconomicMapping.module.css';
 import { fmt } from '../format.js';
-import { formatDate } from '../budget/monthUtils.js';
-import { getCategoryIcon } from '../categoryIcons.jsx';
 
 const MAX_DIM = 1500;
 const CONCURRENCY = 3;
@@ -214,7 +212,6 @@ export default function EconomicMapping({ clientUserId, advisorId, onNavigate })
   const [linking, setLinking] = useState(false);
   const [flowPeriod, setFlowPeriod] = useState('month');
   const [donutView, setDonutView] = useState('cat');
-  const [openCat, setOpenCat] = useState(null);
   const [reviewOnly, setReviewOnly] = useState(false);
   const fileInputRef = useRef(null);
   const opts = monthOptions();
@@ -440,10 +437,6 @@ export default function EconomicMapping({ clientUserId, advisorId, onNavigate })
   const categories = data?.category_averages
     ? Object.keys(data.category_averages).sort((a, b) => data.category_averages[b] - data.category_averages[a])
     : [];
-  const fixedCats = categories.filter(c => FIXED_CATS.includes(c));
-  const variableCats = categories.filter(c => !FIXED_CATS.includes(c));
-  const fixedTotal = fixedCats.reduce((s, c) => s + data.category_averages[c], 0);
-  const variableTotal = variableCats.reduce((s, c) => s + data.category_averages[c], 0);
 
   // Only meaningful once the advisor has uploaded full bank-account statements
   // (income lines included), not a credit-card-only mapping — those never
@@ -605,74 +598,6 @@ export default function EconomicMapping({ clientUserId, advisorId, onNavigate })
       </div>
 
       <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} rows={variableRows} onAdd={addManual('expense')} />
-
-      <div className={styles.workflow} aria-label="שלבי המיפוי הכלכלי">
-        <div><strong>1 · העלאת מסמכים</strong><span>בחר דפי חשבון ושייך כל קובץ לחודש המתאים</span></div>
-        <div aria-live="polite"><strong>2 · עיבוד הנתונים</strong><span>{processing ? 'המסמכים בעיבוד…' : 'לאחר הבחירה, לחץ על עבד וחשב מיפוי'}</span></div>
-        <div><strong>3 · סקירת המיפוי</strong><span>בדוק את התוצאות לפני עדכון התקציב</span></div>
-      </div>
-
-      {categories.length > 0 && (
-        <div className={styles.card + ' ' + styles.cardStandalone + ' ' + styles.breakdownCard}>
-          <div className={styles.breakdownHead}>
-            <div>
-              <h2 className={styles.actualTitle}>פירוט ההוצאות לפי קטגוריה</h2>
-              <div className={styles.actualSub}>ממוצע חודשי · {monthsLabel(data.months_covered)} של דפי חשבון · לחיצה על קטגוריה מציגה את העסקאות שלה</div>
-            </div>
-            <div className={styles.breakdownTotal}>
-              <span>סה״כ הוצאות לחודש</span>
-              <strong>{fmt(fixedTotal + variableTotal)}</strong>
-            </div>
-          </div>
-          {[['הוצאות קבועות', fixedCats, fixedTotal], ['הוצאות משתנות', variableCats, variableTotal]].filter(([, list]) => list.length > 0).map(([groupTitle, list, groupTotal]) => {
-            const grand = fixedTotal + variableTotal || 1;
-            const maxAvg = Math.max(...list.map(c => data.category_averages[c]), 1);
-            return (
-              <section className={styles.catGroup} key={groupTitle}>
-                <div className={styles.catGroupHead}>
-                  <h3>{groupTitle}</h3>
-                  <span>{fmt(groupTotal)} · {Math.round(groupTotal / grand * 100)}% מההוצאות</span>
-                </div>
-                <ul className={styles.catList}>
-                  {list.map(c => {
-                    const avg = data.category_averages[c];
-                    const idx = categories.indexOf(c);
-                    const color = idx < CHART_PALETTE.length ? CHART_PALETTE[idx] : 'var(--text3)';
-                    const isOpen = openCat === c;
-                    const txs = isOpen
-                      ? (data.transactions || []).filter(t => t.type !== 'income' && !t.excluded && t.category === c).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
-                      : [];
-                    return (
-                      <li key={c}>
-                        <button type="button" className={styles.catRow} aria-expanded={isOpen} onClick={() => setOpenCat(isOpen ? null : c)}>
-                          <span className={styles.catDot} style={{ background: color }} aria-hidden="true" />
-                          <span className={styles.catIcon} aria-hidden="true">{getCategoryIcon(c)}</span>
-                          <span className={styles.catName}>{c}</span>
-                          <span className={styles.catBar} aria-hidden="true"><span style={{ width: (avg / maxAvg * 100) + '%', background: color }} /></span>
-                          <span className={styles.catPct}>{Math.round(avg / grand * 100)}%</span>
-                          <span className={styles.catAmt}>{fmt(avg)}</span>
-                          <span className={styles.catChev + (isOpen ? ' ' + styles.catChevOpen : '')} aria-hidden="true">‹</span>
-                        </button>
-                        {isOpen && (
-                          <div className={styles.catTx}>
-                            {txs.length === 0 ? <div className={styles.catTxEmpty}>אין עסקאות להצגה</div> : txs.map((t, i) => (
-                              <div className={styles.catTxRow} key={i}>
-                                <span className={styles.catTxDate}>{t.date ? formatDate(t.date) : '—'}</span>
-                                <span className={styles.catTxDesc}>{t.desc || '—'}</span>
-                                <span className={styles.catTxAmt}>{fmt(Number(t.amount) || 0)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            );
-          })}
-        </div>
-      )}
 
       <div className={styles.card}>
         <h2 id="mapping-upload" className={styles.cardTitle}>העלאת דפי חשבון</h2>

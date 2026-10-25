@@ -512,13 +512,8 @@
   margin: 0 auto;
 }
 
- .workflow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 20px 24px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
-.workflow > div { min-width: 0; }
-.workflow strong { display: block; color: var(--accent); font-size: var(--text-base); margin-bottom: 6px; }
-.workflow span { display: block; color: var(--text2); font-size: var(--text-sm); line-height: 1.6; }
-.cardTitle, .actualTitle { font-size: var(--text-lg); }
+.cardTitle, .actualTitle { font-size: 16px; }
 .dropLabel { background: var(--surface2); border-color: var(--control-border); }
-@media (max-width: 860px) { .workflow { grid-template-columns: 1fr; } }
 
 :global(#mapping-upload), :global(#mapping-results) { scroll-margin-top: 24px; }
 
@@ -675,13 +670,14 @@
 .viewPill, .viewPillOn {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
-  padding: 0 18px;
+  min-height: 36px;
+  padding: 0 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   background: var(--surface);
   color: var(--text);
   font: inherit;
+  font-size: 13px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
