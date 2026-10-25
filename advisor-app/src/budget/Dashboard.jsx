@@ -7,7 +7,6 @@ import Skeleton from '../components/Skeleton.jsx';
 import Button from '../components/Button.jsx';
 import ActionMenu from '../components/ActionMenu.jsx';
 import Hero from '../components/Hero.jsx';
-import Donut, { donutSlices } from '../components/Donut.jsx';
 import { Card, CardGrid, Row } from '../components/Rows.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import styles from './Dashboard.module.css';
@@ -46,7 +45,6 @@ export default function Dashboard({ clientUserId, year, month, onOpenCategory, n
   const catLabels = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]);
   const catTotal = catLabels.reduce((s, l) => s + byCat[l], 0);
   const flagged = attention.filter(i => i.kind === 'danger' || i.kind === 'warn');
-  const flaggedCats = [...new Set(flagged.map(i => i.category).filter(Boolean))];
   return (
     <div className={styles.page}>
       <Hero
@@ -59,20 +57,18 @@ export default function Dashboard({ clientUserId, year, month, onOpenCategory, n
               <span className={styles.statusDot} aria-hidden="true" />{financialStatus.label}
             </span>
           )}
-          {summary.income > 0 && <span>{savingsRate.toFixed(1)}% מההכנסה · יעד חיסכון {SAVINGS_TARGET}%</span>}
         </>}
         side={[
           { label: 'הכנסות', value: fmt(summary.income), tone: 'income' },
           { label: 'הוצאות', value: fmt(summary.expense), tone: 'expense' }
         ]}
-        visual={catLabels.length ? <Donut title="הוצאות לפי קטגוריה" items={donutSlices(byCat)} /> : null}
       />
 
       <section className={styles.tiles} aria-label="סיכום וניהול הלקוח">
         <div className={styles.tile + (flagged.length ? ' ' + styles.tileAlert : '')}>
           <span className={styles.tileKey}>דורש בדיקה</span>
           <strong className={styles.tileValue}>{flagged.length ? `${flagged.length} חריגות` : 'הכול תקין'}</strong>
-          <span className={styles.tileSub}>{flaggedCats.length ? flaggedCats.slice(0, 3).join(', ') : 'אין חריגות החודש'}</span>
+          <span className={styles.tileSub}>{flagged.length ? 'הפירוט בתובנות לחודש' : 'אין חריגות החודש'}</span>
         </div>
         <div className={styles.tile}>
           <span className={styles.tileKey}>חיסכון החודש</span>
