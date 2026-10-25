@@ -70,7 +70,6 @@ export default function Systems({ advisorId }) {
             <span className={styles.iconTile} aria-hidden="true">▢</span>
             <span>אין סיסטמים כאן עדיין</span>
             <span className={styles.cardSub}>כל תהליך שחוזר על עצמו בעסק שווה סיסטם</span>
-            <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ הוסף סיסטם</button>
           </div>
         ) : (
           <ul className={styles.rowList}>

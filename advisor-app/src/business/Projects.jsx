@@ -85,7 +85,6 @@ export default function Projects({ advisorId }) {
             <span className={styles.iconTile} aria-hidden="true">◫</span>
             <span>עוד אין פרויקטים</span>
             <span className={styles.cardSub}>פרויקט הוא משהו גדול שמתחלק לשלבים ומשימות</span>
-            <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ פתח פרויקט</button>
           </div>
         </section>
       ) : (
