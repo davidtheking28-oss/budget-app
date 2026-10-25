@@ -1,11 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from '../supabaseClient.js';
+import { toast } from '../toast.js';
 import { ONBOARDING, MEETINGS, readJourney, journeyProgress, cashflow, currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
 import { fmt } from '../format.js';
+import { localISODate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
 
-export default function ClientJourney({ row, saveDeal, onBack, onOpenClient }) {
+export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpenClient }) {
   const [journey, setJourney] = useState(() => readJourney(row.deal?.journey));
+  const [initial] = useState(journey);
   const [taskDraft, setTaskDraft] = useState({});
+  useEffect(() => {
+    const taskIds = MEETINGS.flatMap(m => initial.meetings[m.key].tasks.map(t => t.id).filter(Boolean));
+    const meetingIds = MEETINGS.map(m => initial.meetings[m.key].meetingId).filter(Boolean);
+    if (!taskIds.length && !meetingIds.length) return;
+    let alive = true;
+    Promise.all([
+      taskIds.length ? supabase.from('advisor_tasks').select('id, done').in('id', taskIds) : { data: [] },
+      meetingIds.length ? supabase.from('advisor_meetings').select('id, scheduled_at').in('id', meetingIds) : { data: [] }
+    ]).then(([tasksRes, meetingsRes]) => {
+      if (!alive) return;
+      const doneById = Object.fromEntries((tasksRes.data || []).map(t => [t.id, t.done]));
+      const dateById = Object.fromEntries((meetingsRes.data || []).map(m => [m.id, m.scheduled_at]));
+      setJourney(prev => ({
+        ...prev,
+        meetings: Object.fromEntries(MEETINGS.map(m => {
+          const cur = prev.meetings[m.key];
+          const at = cur.meetingId && dateById[cur.meetingId];
+          return [m.key, { ...cur, date: at ? localISODate(new Date(at)) : cur.date, tasks: cur.tasks.map(t => t.id && t.id in doneById ? { ...t, done: doneById[t.id] } : t) }];
+        }))
+      }));
+    });
+    return () => { alive = false; };
+  }, [initial]);
+
   const progress = journeyProgress(journey);
   const percent = Math.round(progress.rate * 100);
   const upcoming = nextMeeting(journey);
@@ -20,11 +48,64 @@ export default function ClientJourney({ row, saveDeal, onBack, onOpenClient }) {
     if (persist) commit(next); else edit(next);
   };
 
-  function addTask(key) {
+  const clientId = row.client_id;
+  const needClient = () => { if (clientId) return false; toast('הלקוח עוד לא מחובר, אי אפשר לשתף איתו', 'error'); return true; };
+
+  async function setDate(key, date) {
+    if (needClient()) return;
+    let meetingId = journey.meetings[key].meetingId || null;
+    if (!date) {
+      if (meetingId) {
+        const { error } = await supabase.from('advisor_meetings').delete().eq('id', meetingId).eq('advisor_id', advisorId);
+        if (error) { toast('שגיאה בעדכון הפגישה', 'error'); return; }
+        meetingId = null;
+      }
+    } else {
+      const scheduledAt = new Date(date + 'T10:00:00').toISOString();
+      const title = MEETINGS.find(m => m.key === key).title;
+      if (meetingId) {
+        const { error } = await supabase.from('advisor_meetings').update({ scheduled_at: scheduledAt, notes: title }).eq('id', meetingId).eq('advisor_id', advisorId);
+        if (error) { toast('שגיאה בעדכון הפגישה', 'error'); return; }
+      } else {
+        const { data, error } = await supabase.from('advisor_meetings').insert({ advisor_id: advisorId, client_id: clientId, scheduled_at: scheduledAt, notes: title, for_client: true }).select().single();
+        if (error) { toast('שגיאה בקביעת הפגישה', 'error'); return; }
+        meetingId = data.id;
+      }
+    }
+    setMeeting(key, { date, meetingId });
+  }
+
+  async function saveSummary(key) {
+    const m = journey.meetings[key];
+    save();
+    if (m.meetingId) await supabase.from('advisor_meetings').update({ summary: m.summary || null }).eq('id', m.meetingId).eq('advisor_id', advisorId);
+  }
+
+  async function addTask(key) {
     const text = (taskDraft[key] || '').trim();
-    if (!text) return;
-    setMeeting(key, { tasks: [...journey.meetings[key].tasks, { text, done: false }] });
+    if (!text || needClient()) return;
+    const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: text, for_client: true, responsible: 'advisor', meeting_id: journey.meetings[key].meetingId || null }).select().single();
+    if (error) { toast('שגיאה בהוספת המשימה', 'error'); return; }
+    setMeeting(key, { tasks: [...journey.meetings[key].tasks, { id: data.id, text, done: false }] });
     setTaskDraft(prev => ({ ...prev, [key]: '' }));
+  }
+
+  async function toggleTask(key, index, done) {
+    const task = journey.meetings[key].tasks[index];
+    if (task.id) {
+      const { error } = await supabase.from('advisor_tasks').update({ done }).eq('id', task.id).eq('advisor_id', advisorId);
+      if (error) { toast('שגיאה בעדכון המשימה', 'error'); return; }
+    }
+    setMeeting(key, { tasks: journey.meetings[key].tasks.map((x, i) => i === index ? { ...x, done } : x) });
+  }
+
+  async function removeTask(key, index) {
+    const task = journey.meetings[key].tasks[index];
+    if (task.id) {
+      const { error } = await supabase.from('advisor_tasks').delete().eq('id', task.id).eq('advisor_id', advisorId);
+      if (error) { toast('שגיאה במחיקה', 'error'); return; }
+    }
+    setMeeting(key, { tasks: journey.meetings[key].tasks.filter((_, i) => i !== index) });
   }
 
   const first = journey.meetings.m1;
@@ -51,7 +132,7 @@ export default function ClientJourney({ row, saveDeal, onBack, onOpenClient }) {
             <div className={styles.statValue} style={{ fontSize: 18 }}>{upcoming ? upcoming.title : 'הושלמו כל הפגישות'}</div>
             {upcoming && (
               <label className={styles.fieldLabel}>מועד ביומן
-                <input className={styles.input} type="date" value={upcoming.date} onChange={e => { const k = MEETINGS.find(m => m.title === upcoming.title).key; setMeeting(k, { date: e.target.value }); }} />
+                <input className={styles.input} type="date" value={upcoming.date} onChange={e => { const k = MEETINGS.find(m => m.title === upcoming.title).key; setDate(k, e.target.value); }} />
               </label>
             )}
           </div>
@@ -101,7 +182,7 @@ export default function ClientJourney({ row, saveDeal, onBack, onOpenClient }) {
             )}
 
             <label className={styles.fieldLabel}>סיכום פגישה
-              <textarea className={styles.input} rows={3} value={data.summary} onChange={e => setMeeting(m.key, { summary: e.target.value }, false)} onBlur={save} />
+              <textarea className={styles.input} rows={3} value={data.summary} onChange={e => setMeeting(m.key, { summary: e.target.value }, false)} onBlur={() => saveSummary(m.key)} />
             </label>
 
             <div className={styles.sectionLabel}>{m.balance}</div>
@@ -128,9 +209,9 @@ export default function ClientJourney({ row, saveDeal, onBack, onOpenClient }) {
               <ul className={styles.rowList}>
                 {data.tasks.map((t, ti) => (
                   <li key={ti} className={styles.rowItem}>
-                    <input type="checkbox" className={styles.check} checked={!!t.done} aria-label={t.text} onChange={e => setMeeting(m.key, { tasks: data.tasks.map((x, i) => i === ti ? { ...x, done: e.target.checked } : x) })} />
+                    <input type="checkbox" className={styles.check} checked={!!t.done} aria-label={t.text} onChange={e => toggleTask(m.key, ti, e.target.checked)} />
                     <div className={styles.rowMain}><div className={styles.rowTitle} style={t.done ? { textDecoration: 'line-through', opacity: 0.6 } : undefined}>{t.text}</div></div>
-                    <button type="button" className={styles.iconBtn} aria-label={'מחק משימה: ' + t.text} onClick={() => setMeeting(m.key, { tasks: data.tasks.filter((_, i) => i !== ti) })}>×</button>
+                    <button type="button" className={styles.iconBtn} aria-label={'מחק משימה: ' + t.text} onClick={() => removeTask(m.key, ti)}>×</button>
                   </li>
                 ))}
               </ul>

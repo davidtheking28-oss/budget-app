@@ -40,7 +40,7 @@ export default function ClientService({ advisorId, onSelect }) {
 
   const dealByLink = Object.fromEntries(deals.rows.map(r => [r.id, r]));
   const opened = openId && dealByLink[openId];
-  if (opened) return <ClientJourney key={openId} row={opened} saveDeal={deals.saveDeal} onBack={() => setOpenId(null)} onOpenClient={r => onSelect(r.client_id, r.client_email, { nav: 'crm' })} />;
+  if (opened) return <ClientJourney key={openId} advisorId={advisorId} row={opened} saveDeal={deals.saveDeal} onBack={() => setOpenId(null)} onOpenClient={r => onSelect(r.client_id, r.client_email, { nav: 'crm' })} />;
   const journeyOf = c => dealByLink[c.id]?.deal?.journey;
   const allAttention = c => [...attentionOf(c), ...journeyAttention(journeyOf(c))];
   const statusOf = c => dealByLink[c.id]?.deal?.service_status || 'active';
