@@ -267,7 +267,7 @@
   .consolCheckLabel { min-height: 44px; }
 }
 
-.loanTableWrap { overflow-x: auto; }
+.loanTableWrap { position: relative; overflow-x: auto; }
 
 .loanTable {
   width: 100%;

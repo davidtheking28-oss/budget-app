@@ -23,7 +23,7 @@
   margin: 0 0 12px;
   color: var(--text);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .row {
@@ -94,7 +94,7 @@
 
 @media (min-width: 861px) {
   .card { padding: 24px; }
-  .title { font-size: var(--text-lg); margin-bottom: 18px; }
+  .title { font-size: 16px; margin-bottom: 18px; }
   .row { padding-block: 13px; }
   .sub { font-size: var(--text-sm); line-height: 1.5; margin-top: 3px; }
   .amount { font-size: var(--text-md); }

@@ -118,7 +118,7 @@
   padding: 16px 22px;
   border-bottom: 1px solid var(--border);
 }
-.cardTitle { display: flex; align-items: center; gap: 10px; margin: 0; font-size: var(--text-lg); font-weight: 800; color: var(--text); }
+.cardTitle { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 16px; font-weight: 800; color: var(--text); }
 .cardTotal { font-size: var(--text-lg); font-weight: 800; font-variant-numeric: tabular-nums; }
 .dotPos, .dotNeg { width: 9px; height: 9px; border-radius: 50%; }
 .dotPos { background: var(--green); }

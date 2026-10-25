@@ -12,7 +12,7 @@
 .cardTitle {
   font-family: var(--font-display);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
   margin-bottom: 12px;
 }
@@ -406,7 +406,7 @@
   color: var(--text);
   font-family: var(--font-display);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .actualSub {

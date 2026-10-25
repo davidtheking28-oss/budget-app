@@ -7,7 +7,7 @@
   padding: 20px 22px;
 }
 
-.title { margin: 0; font-size: var(--text-lg); font-weight: 800; color: var(--text); }
+.title { margin: 0; font-size: 16px; font-weight: 800; color: var(--text); }
 .note { margin: 4px 0 var(--space-4); color: var(--text2); font-size: var(--text-sm); }
 
 .grid {

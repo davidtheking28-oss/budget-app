@@ -85,7 +85,7 @@
 .cardTitle {
   font-family: var(--font-display);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
 }
 
@@ -540,7 +540,7 @@
 .itemAmountBox { border-color: var(--control-border); }
 .itemAmountBoxLabel { color: var(--text2); margin-bottom: 4px; }
 .itemAmountInput, .itemActualValue { font-size: var(--text-lg); }
-.cardTitle { font-size: var(--text-lg); }
+.cardTitle { font-size: 16px; }
 }
 
 .saveStatus { padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: var(--text-sm); line-height: 1.5; }
