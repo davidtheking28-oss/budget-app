@@ -1,0 +1,1 @@
+revoke all on public.advisor_access_requests, public.advisor_clients, public.advisor_invite_attempts, public.advisor_leads, public.advisor_meetings, public.advisor_notes, public.advisor_prospects, public.advisor_tasks, public.advisors, public.economic_mappings, public.report_shares from anon;
