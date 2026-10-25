@@ -5,6 +5,7 @@ import HeaderAction from './HeaderAction.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { localISODate } from '../budget/monthUtils.js';
+import { toast } from '../toast.js';
 import styles from './Business.module.css';
 
 const PAYMENT_STATUSES = [
@@ -25,6 +26,18 @@ function formatDay(iso) {
   if (!iso) return '—';
   const [y, m, d] = iso.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
+}
+
+const CLIENT_APP_URL = 'https://davidtheking28-oss.github.io/budget-app/';
+const SIGNUP_MESSAGE = 'היי, הנה הקישור להרשמה לפלטפורמה שלנו: ' + CLIENT_APP_URL + ' . אחרי ההרשמה אזמין אותך מהמערכת שלי.';
+
+async function copySignupLink() {
+  try {
+    await navigator.clipboard.writeText(SIGNUP_MESSAGE);
+    toast('הקישור הועתק, אפשר להדביק ללקוח', 'success');
+  } catch {
+    window.prompt('העתק את ההודעה ושלח ללקוח:', SIGNUP_MESSAGE);
+  }
 }
 
 export default function ClientsTable({ advisorId, onAdd, onOpen, onRemove }) {
@@ -99,6 +112,7 @@ export default function ClientsTable({ advisorId, onAdd, onOpen, onRemove }) {
           <option value="">כל הסטטוסים</option>
           {SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
         </select>
+        <button type="button" className={styles.btnGhost} onClick={copySignupLink}>שלח קישור הרשמה</button>
         <button type="button" className={styles.btn} onClick={onAdd}>הוסף לקוח +</button>
       </div>
       <p className={styles.note} style={{ margin: 0 }}>אפשר לשנות כל פרט ישירות בטבלה. פרטי העסקה נשמרים אצלך בלבד והלקוח לא רואה אותם.</p>
