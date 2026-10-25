@@ -62,7 +62,7 @@ export default function ClientTasks({ advisorId, onSelect }) {
     setPending(prev => [...prev, task.id]);
     try { await completeTask(task); } finally { setPending(prev => prev.filter(id => id !== task.id)); }
   }
-  const open = t => onSelect(t.client_id, current?.client_email, { nav: 'crm', action: 'tasks' });
+  const open = t => onSelect(t.client_id, current?.client_email, { nav: 'tasks' });
 
   return (
     <div className={styles.stack}>

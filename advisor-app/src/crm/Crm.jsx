@@ -46,7 +46,7 @@ function downloadIcs(meeting) {
   URL.revokeObjectURL(url);
 }
 
-export default function Crm({ action, advisorId, clientId, email, onChange, onDirtyChange }) {
+export default function Crm({ view = 'client', action, advisorId, clientId, email, onChange, onDirtyChange }) {
   const { tasks, meetings, loading, error, reload, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId, onChange);
   const { profile, save: saveProfile } = useClientProfile(advisorId, clientId);
   const [nameDraft, setNameDraft] = useState('');
@@ -177,7 +177,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
 
   return (
     <div>
-      <MeetingPrep advisorId={advisorId} clientId={clientId} tasks={tasks} meetings={meetings} openSignal={action?.type === 'prep' ? action.id : 0} />
+      {view === 'client' && <MeetingPrep advisorId={advisorId} clientId={clientId} tasks={tasks} meetings={meetings} openSignal={action?.type === 'prep' ? action.id : 0} />}
       {(overdueTasks > 0 || soonMeetings > 0) && (
         <div className={styles.reminderBar}>
           {overdueTasks > 0 && (
@@ -193,6 +193,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
         </div>
       )}
       <div className={styles.sectionsGrid}>
+      {view === 'client' && <>
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>
           פרטי קשר ורקע
@@ -303,9 +304,12 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
         </div>
       </div>
 
+      </>}
+
+      {view === 'tasks' && (
       <div id="client-tasks" className={styles.section}>
         <h2 className={styles.sectionTitle}>
-          משימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}
+          רשימת המשימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}
         </h2>
         <div>
         <div className={styles.sectionBodyInner}>
@@ -358,6 +362,7 @@ export default function Crm({ action, advisorId, clientId, email, onChange, onDi
         </div>
         </div>
       </div>
+      )}
 
       </div>
     </div>

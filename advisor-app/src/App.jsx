@@ -49,6 +49,7 @@ const NAV_DESC = {
   goals: 'יעדי חיסכון והתקדמות אליהם.',
   subs: 'מנויים, ביטוחים והוצאות שנתיות, כולל תאריכי חידוש.',
   credit: 'הלוואות, כרטיסי אשראי ועסקאות בתשלומים.',
+  tasks: 'המשימות של הלקוח: מה הוגדר לו בתהליך ומה הוא הוסיף לעצמו.',
   assets: 'תמונה עדכנית של הנכסים וההתחייבויות, והמרחק ביניהם.',
   mortgage: 'בניית תמהיל משכנתא וחישוב ההחזר החודשי.'
 };
@@ -61,6 +62,7 @@ const NAV = [
   { key: 'subs', label: 'מנויים וביטוחים', hint: 'חידושים והתראות', group: 'money', icon: <svg {...svgProps}><rect x="2.5" y="5" width="19" height="14" rx="2" /><path d="M2.5 10h19" /></svg> },
   { key: 'credit', label: 'הלוואות ואשראי', hint: 'יתרות ותשלומים', group: 'money', icon: <svg {...svgProps}><circle cx="7" cy="7" r="2.3" /><circle cx="17" cy="17" r="2.3" /><path d="M18 6 6 18" /></svg> },
   { key: 'assets', label: 'נכסים והתחייבויות', hint: 'שווי נקי', group: 'money', icon: <svg {...svgProps}><path d="M3 21h18" /><path d="M5 21V9l7-5 7 5v12" /><path d="M10 21v-6h4v6" /></svg> },
+  { key: 'tasks', label: 'משימות', hint: 'מהתהליך', group: 'money', icon: <svg {...svgProps}><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg> },
   { key: 'mortgage', usesMonth: true, label: 'אפיון נדלני', hint: 'תמהיל משכנתא', group: 'money', icon: <svg {...svgProps}><rect x="4" y="2.5" width="16" height="19" rx="2" /><path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01" /></svg> }
 ];
 
@@ -173,7 +175,7 @@ export default function App() {
   }
 
   function canLeaveBudget() {
-    if (nav === 'crm' && crmDirty) return window.confirm('יש שינויים בפרטי הלקוח או בפגישה שטרם נשמרו. להמשיך בלי לשמור?');
+    if ((nav === 'crm' || nav === 'tasks') && crmDirty) return window.confirm('יש שינויים בפרטי הלקוח או בפגישה שטרם נשמרו. להמשיך בלי לשמור?');
     return nav !== 'budget' || !budgetDirty || window.confirm('יש שינויים בתקציב שטרם נשמרו. להמשיך בלי לשמור?');
   }
 
@@ -310,6 +312,7 @@ export default function App() {
         {nav === 'credit' && <Credit clientUserId={selectedClient.id} advisorId={session.user.id} />}
         {nav === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets clientUserId={selectedClient.id} advisorId={session.user.id} /></Suspense>}
         {nav === 'mortgage' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Mortgage clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
+        {nav === 'tasks' && <Crm view="tasks" key={`${session.user.id}:${selectedClient.id}:tasks`} onDirtyChange={setCrmDirty} action={crmAction} advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={() => { refreshClientSummary(); reloadClientProfile(); }} />}
         {nav === 'crm' && <Crm key={`${session.user.id}:${selectedClient.id}`} onDirtyChange={setCrmDirty} action={crmAction} advisorId={session.user.id} clientId={selectedClient.id} email={selectedClient.email} onChange={() => { refreshClientSummary(); reloadClientProfile(); }} />}
         {nav === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping clientUserId={selectedClient.id} advisorId={session.user.id} onNavigate={setNav} /></Suspense>}
       </Shell>
