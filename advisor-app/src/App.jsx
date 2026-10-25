@@ -29,7 +29,6 @@ import Prospects from './clients/Prospects.jsx';
 import BusinessView from './business/BusinessView.jsx';
 import { BUSINESS_NAV, BUSINESS_KEYS, DEPARTMENTS, deptOf, pageTitle } from './business/BusinessNav.jsx';
 
-const Dashboard = lazy(() => import('./budget/Dashboard.jsx'));
 const Analysis = lazy(() => import('./budget/Analysis.jsx'));
 const Assets = lazy(() => import('./budget/Assets.jsx'));
 const Mortgage = lazy(() => import('./budget/Mortgage.jsx'));
@@ -43,7 +42,6 @@ const svgProps = { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', st
 // there — not a data model, just enough to tell the advisor "overview, then
 // the financial detail tabs" at a glance in the sidebar.
 const NAV_DESC = {
-  dashboard: 'תמונת מצב עדכנית של הלקוח: הכנסות, הוצאות ויעדים.',
   crm: 'פרטי הלקוח, פגישות ומשימות במקום אחד.',
   mapping: 'מיפוי הכנסות והוצאות קבועות ומשתנות מדפי החשבון והאשראי.',
   budget: 'תקציב חודשי: מה נכנס, מה יוצא ומה נשאר.',
@@ -55,9 +53,8 @@ const NAV_DESC = {
   mortgage: 'בניית תמהיל משכנתא וחישוב ההחזר החודשי.'
 };
 const NAV = [
-  { key: 'dashboard', usesMonth: true, label: 'דשבורד', hint: 'תמונת מצב כללית', group: 'overview', groupLabel: 'סקירה', icon: <svg {...svgProps}><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="5" rx="1.5" /><rect x="13" y="12" width="8" height="9" rx="1.5" /><rect x="3" y="15" width="8" height="6" rx="1.5" /></svg> },
+  { key: 'mapping', label: 'מיפוי כלכלי', hint: 'הכנסות והוצאות מדפי חשבון', group: 'overview', groupLabel: 'סקירה', icon: <svg {...svgProps}><path d="M4 4h16v16H4z" /><path d="M4 9h16M9 9v11" /></svg> },
   { key: 'crm', label: 'לקוח', hint: 'פרטים, פגישות ומשימות', group: 'overview', icon: <svg {...svgProps}><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.5-6.5 8-6.5s8 2.5 8 6.5" /></svg> },
-  { key: 'mapping', label: 'מיפוי כלכלי', hint: 'הכנסות והוצאות מדפי חשבון', group: 'overview', icon: <svg {...svgProps}><path d="M4 4h16v16H4z" /><path d="M4 9h16M9 9v11" /></svg> },
   { key: 'budget', usesMonth: true, label: 'תקציב', hint: 'תכנון מול ביצוע', group: 'money', groupLabel: 'כספים', icon: <svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 3.5" /></svg> },
   { key: 'analysis', usesMonth: true, label: 'ניתוח', hint: 'השוואת חודשים', group: 'money', icon: <svg {...svgProps}><path d="M4 20V10M12 20V4M20 20v-7" /></svg> },
   { key: 'goals', label: 'יעדים', hint: 'חיסכון והתקדמות', group: 'money', icon: <svg {...svgProps}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></svg> },
@@ -306,7 +303,6 @@ export default function App() {
             budgetMode={budgetMode}
           />
         )}
-        {nav === 'dashboard' && <Suspense fallback={<Skeleton height="140px" radius="18px" />}><Dashboard nextMeeting={nextMeeting} openTasks={openTasks} onAction={type => { setCrmAction({ type, id: Date.now() }); setNav('crm'); }} onOpenMapping={() => setNav('mapping')} key={`${selectedClient.id}:${ym.year}:${ym.month}:${budgetMode}`} onOpenCategory={category => { setBudgetCategory(category); setNav('budget'); }} clientUserId={selectedClient.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'budget' && <Budget key={`${session.user.id}:${selectedClient.id}:${budgetMode}:${ym.year}:${ym.month}`} onDirtyChange={setBudgetDirty} focusCategory={budgetCategory} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} />}
         {nav === 'analysis' && <Suspense fallback={<Skeleton height="260px" radius="16px" />}><Analysis onPreviousMonth={() => changeMonth(-1)} onOpenBudget={() => setNav('budget')} clientUserId={selectedClient.id} advisorId={session.user.id} year={ym.year} month={ym.month} /></Suspense>}
         {nav === 'goals' && <Goals clientUserId={selectedClient.id} advisorId={session.user.id} />}
