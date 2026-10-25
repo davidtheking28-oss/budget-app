@@ -59,7 +59,8 @@ function TasksModal({ tasks, onChange, onClose }) {
   );
 }
 
-const FOLLOWER_FIELDS = [{ key: 'followers', label: 'עוקבים חדשים בחודש' }, { key: 'followersBudget', label: 'תקציב לעוקבים' }];
+const FOLLOWER_FIELDS = [{ key: 'followers', label: 'עוקבים חדשים בחודש' }, { key: 'followersBudget', label: 'תקציב לעוקבים' }, { key: 'baseFollowers', label: 'עוקבים בתחילת הדרך' }];
+const BASELINE_FIELDS = [{ key: 'baseFollowers', label: 'כמה עוקבים יש לך היום' }];
 const LEAD_FIELDS = [{ key: 'boosts', label: 'תקציב Boosts' }, { key: 'meetings', label: 'פגישות התאמה' }, { key: 'closings', label: 'סגירות' }];
 
 function MonthBody({ advisorId, period, onNavigate, header }) {
@@ -82,7 +83,10 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
   const [periodYear, periodMonth] = period.split('-').map(Number);
   const growthPeriods = periodsFor(growthRange === 'month' ? 'month' : growthRange === 'year' ? 'year' : 'full', { year: periodYear, month: periodMonth - 1 }, allMonths.records);
   const growthMonths = growthPeriods.map(p => marketingMetrics(p === period ? data : (allMonths.records.find(r => r.period === p)?.data || {})));
-  let runningTotal = 0;
+  const hasBase = v => v != null && String(v).trim() !== '' && Number.isFinite(Number(v));
+  const otherBase = allMonths.records.find(r => hasBase(r.data?.baseFollowers))?.data.baseFollowers;
+  const baseline = hasBase(data.baseFollowers) ? Number(data.baseFollowers) : hasBase(otherBase) ? Number(otherBase) : null;
+  let runningTotal = baseline || 0;
   const growthMetrics = [
     { key: 'total', label: 'כל העוקבים', values: growthMonths.map(m => { runningTotal += m.followers; return runningTotal; }), format: String },
     { key: 'costPerFollower', label: 'עלות לעוקב', values: growthMonths.map(m => Math.round(m.costPerFollower || 0)), format: fmt },
@@ -104,6 +108,13 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
 
   return (
     <div className={styles.stack}>
+      {baseline == null && (
+        <section className={styles.bigCard}>
+          <div className={styles.sectionLabel}>בואו נתחיל</div>
+          <p className={styles.cardSub}>כדי שהגרף "איך גדלתי" יתחיל מהמספר האמיתי, הזן כמה עוקבים יש לך כרגע.</p>
+          <div><button type="button" className={styles.btn} onClick={() => setModal('baseline')}>הזנת עוקבים התחלתיים</button></div>
+        </section>
+      )}
       <section className={styles.bigCard}>
         {header}
         <div className={styles.sectionLabel}>התקדמות תוכנית השיווק</div>
@@ -160,6 +171,7 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
 
       {modal === 'tasks' && <TasksModal tasks={tasks} onChange={next => patch({ tasks: next })} onClose={() => setModal(null)} />}
       {modal === 'followers' && <Modal title="נתוני עוקבים" onClose={() => setModal(null)}><NumberFields fields={FOLLOWER_FIELDS} data={data} onSave={patch} onClose={() => setModal(null)} /></Modal>}
+      {modal === 'baseline' && <Modal title="עוקבים בתחילת הדרך" onClose={() => setModal(null)}><NumberFields fields={BASELINE_FIELDS} data={data} onSave={patch} onClose={() => setModal(null)} /></Modal>}
       {modal === 'leads' && <Modal title="לידים משיווק" onClose={() => setModal(null)}><NumberFields fields={LEAD_FIELDS} data={data} onSave={patch} onClose={() => setModal(null)} /></Modal>}
     </div>
   );
