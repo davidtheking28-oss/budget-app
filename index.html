@@ -1890,7 +1890,7 @@
           <div class="wiz2-label">קטגוריה</div>
           <div class="wiz2-card wiz2-cat-row" role="button" tabindex="0" onclick="wizBack()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();wizBack();}">
             <div class="wiz-cat-badge" id="wizCatBadge" style="display:flex;flex:1;margin:0;border:none;padding:0;background:none;gap:8px;font-size:0.95rem;font-weight:700;"></div>
-            <span class="wiz2-cat-arrow">‹</span>
+            <span class="wiz2-cat-arrow">›</span>
           </div>
         </div>
         <div>
@@ -4006,7 +4006,7 @@ function checkRecurring(){
   if(!pending.length){localStorage.setItem(storKey,'1');return;}
   if(_recurRefused.has(monthKey)||localStorage.getItem(_modeKey('budget_ra_refused_'+monthKey))){
     alertEl._pending=pending;
-    document.getElementById('recurringAlertBody').innerHTML=pending.map(t=>'<div style="font-size:0.82rem;color:var(--text);padding:3px 0">'+catIcon(t.cat)+' '+esc(t.desc)+' → '+fmt(t.amount)+'</div>').join('');
+    document.getElementById('recurringAlertBody').innerHTML=pending.map(t=>'<div style="font-size:0.82rem;color:var(--text);padding:3px 0">'+catIcon(t.cat)+' '+esc(t.desc)+' ← '+fmt(t.amount)+'</div>').join('');
     alertEl.classList.add('show');
     return;
   }
@@ -4146,7 +4146,7 @@ function renderUpcoming(){
   el.innerHTML=items.slice(0,4).map(item=>{
     const days=Math.round((item.date-today)/86400000);
     const dayLabel=days===0?'היום':days===1?'מחר':MONTHS[item.date.getMonth()];
-    const dayNum=days<=1?(days===0?'★':'→'):item.date.getDate();
+    const dayNum=days<=1?(days===0?'★':'←'):item.date.getDate();
     const soonTag='';
     const amtColor=item.type==='income'?'var(--green)':'var(--red)';
     const amtSign=item.type==='income'?'+':'';
@@ -7511,7 +7511,7 @@ function loanPayoffHtml(l){
   const chips=[100,250,500].map(x=>{
     const n2=_loanMonths(l.remaining,l.monthly+x,l.rate);
     const saved=(n2&&n2!==Infinity)?n-n2:0;
-    return saved>0?`<button onclick="event.stopPropagation();showToast('💡 תוספת של ${fmt(x)}/חודש ל${attrArg(l.name)} תקצר ב-${saved} חודשים')" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 12px;min-height:44px;display:inline-flex;align-items:center;font-size:0.72rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;">+${fmt(x)} → ${saved} חוד' פחות</button>`:'';
+    return saved>0?`<button onclick="event.stopPropagation();showToast('💡 תוספת של ${fmt(x)}/חודש ל${attrArg(l.name)} תקצר ב-${saved} חודשים')" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 12px;min-height:44px;display:inline-flex;align-items:center;font-size:0.72rem;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;">+${fmt(x)} ← ${saved} חוד' פחות</button>`:'';
   }).filter(Boolean).join('');
   return '<div style="font-size:0.78rem;color:var(--text2);margin-top:8px;font-weight:600;">'+line+'</div>'
     +(chips?'<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">'+chips+'</div>':'');
@@ -8215,7 +8215,7 @@ function generateInsights(){
       const p=prevMap[k];
       if(p>0&&curMap[k].amt>p*1.05&&curMap[k].amt-p>=10&&curMap[k].amt-p>hikeD){hikeK=k;hikeD=curMap[k].amt-p;}
     }
-    if(hikeK) insights.push({icon:'💸',type:'warn',text:'<span class="insight-highlight">'+esc(curMap[hikeK].desc)+'</span> התייקר ב-'+fmt(hikeD)+' לעומת החודש שעבר ('+fmt(prevMap[hikeK])+' → '+fmt(curMap[hikeK].amt)+')'});
+    if(hikeK) insights.push({icon:'💸',type:'warn',text:'<span class="insight-highlight">'+esc(curMap[hikeK].desc)+'</span> התייקר ב-'+fmt(hikeD)+' לעומת החודש שעבר ('+fmt(prevMap[hikeK])+' ← '+fmt(curMap[hikeK].amt)+')'});
   }catch(e){}
   // ── שני מנויים באותה קטגוריה — חשד לכפילות ──
   try{
