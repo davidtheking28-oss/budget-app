@@ -108,15 +108,17 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
 
   return (
     <div className={styles.stack}>
-      {baseline == null && (
-        <section className={styles.bigCard}>
-          <div className={styles.sectionLabel}>בואו נתחיל</div>
-          <p className={styles.cardSub}>כדי שהגרף "איך גדלתי" יתחיל מהמספר האמיתי, הזן כמה עוקבים יש לך כרגע.</p>
-          <div><button type="button" className={styles.btn} onClick={() => setModal('baseline')}>הזנת עוקבים התחלתיים</button></div>
-        </section>
-      )}
       <section className={styles.bigCard}>
         {header}
+        {baseline == null && (
+          <div className={styles.toolbar} style={{ background: 'var(--surface2,rgba(255,255,255,0.04))', borderRadius: 10, padding: '12px 14px', marginBottom: 4 }}>
+            <div style={{ flex: 1 }}>
+              <div className={styles.rowTitle}>בואו נתחיל</div>
+              <div className={styles.cardSub}>הזן כמה עוקבים יש לך כרגע כדי שהגרף יתחיל מהמספר האמיתי.</div>
+            </div>
+            <button type="button" className={styles.btn} onClick={() => setModal('baseline')}>הזנת עוקבים התחלתיים</button>
+          </div>
+        )}
         <div className={styles.sectionLabel}>התקדמות תוכנית השיווק</div>
         <div className={styles.bigNumber}>{Math.round((progress.rate || 0) * 100)}%</div>
         <p className={styles.cardSub}>{progress.done} מתוך {progress.total} משימות בוצעו</p>

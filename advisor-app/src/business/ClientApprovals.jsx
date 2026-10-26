@@ -52,18 +52,20 @@ export default function ClientApprovals({ advisorId }) {
       </div>
 
       <section className={styles.card}>
+        <div className={styles.cardHead}>
+          <h2 className={styles.cardTitle}>הזמן לקוח חדש</h2>
+        </div>
         <div className={styles.toolbar}>
-          <input className={styles.input + ' ' + styles.inputGrow} type="email" dir="ltr" placeholder="הזמן לקוח באימייל" aria-label="הזמן לקוח באימייל" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && invite()} />
+          <input className={styles.input + ' ' + styles.inputGrow} type="email" dir="ltr" placeholder="כתובת אימייל של הלקוח" aria-label="הזמן לקוח באימייל" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && invite()} />
           <button type="button" className={styles.btn} onClick={invite} disabled={sending}>שלח הזמנה</button>
         </div>
       </section>
 
-      <div className={styles.toolbar}>
-        <h2 className={styles.sectionHeading}>הזמנות פתוחות</h2>
-        <input className={styles.input + ' ' + styles.inputGrow} type="search" placeholder="חיפוש לפי מייל..." aria-label="חיפוש הזמנה" value={search} onChange={e => setSearch(e.target.value)} />
-      </div>
-
       <section className={styles.card}>
+        <div className={styles.cardHead}>
+          <h2 className={styles.cardTitle}>הזמנות פתוחות</h2>
+          <input className={styles.input} type="search" placeholder="חיפוש לפי מייל..." aria-label="חיפוש הזמנה" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
         {visible.length === 0 ? <div className={styles.emptyState}><span>אין הזמנות פתוחות</span></div> : (
           <div className={styles.tableWrap}>
             <table className={styles.table}>
