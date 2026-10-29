@@ -1,4 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { supabase } from '../supabaseClient.js';
+import { toast } from '../toast.js';
+
+const KIND = 'content_plan_progress';
 
 const DIRECT = { '--bg': 'bg', '--card': 'surface', '--fg': 'text', '--mute': 'text2', '--line': 'border-strong', '--accent': 'accent', '--on-accent': 'accent-ink', '--tint': 'accent-dim', '--value': 'green', '--on-value': 'accent-ink', '--warn': 'gold', '--font-d': 'font-body', '--font-b': 'font-body', '--t-xs': 'text-xs', '--t-sm': 'text-sm', '--t-base': 'text-base', '--t-md': 'text-md', '--t-lg': 'text-lg', '--t-xl': 'text-xl', '--r-sm': 'radius-sm', '--r-md': 'radius-md' };
 
@@ -13,11 +17,56 @@ body{padding-inline:0!important}
 .sheet{scrollbar-width:thin}`;
 }
 
-export default function ContentPlan() {
+export default function ContentPlan({ advisorId }) {
   const frameRef = useRef(null);
   const detach = useRef(null);
+  const recordId = useRef(null);
+  const saveTimer = useRef(null);
+  const saveChain = useRef(Promise.resolve());
+  const [ready, setReady] = useState(false);
+  const [stored, setStored] = useState(undefined);
 
   useEffect(() => () => detach.current?.(), []);
+
+  useEffect(() => {
+    if (!advisorId) return;
+    let cancelled = false;
+    supabase.from('advisor_biz_records').select('id,data').eq('advisor_id', advisorId).eq('kind', KIND).order('created_at', { ascending: true }).limit(1)
+      .then(({ data }) => {
+        if (cancelled) return;
+        recordId.current = data?.[0]?.id || null;
+        setStored(data?.[0]?.data?.done || null);
+      });
+    return () => { cancelled = true; };
+  }, [advisorId]);
+
+  useEffect(() => {
+    if (!ready || !stored) return;
+    frameRef.current?.contentWindow?.postMessage({ type: 'content-plan:state', done: stored }, window.location.origin);
+  }, [ready, stored]);
+
+  useEffect(() => {
+    const persist = async done => {
+      if (recordId.current) {
+        const { error } = await supabase.from('advisor_biz_records').update({ data: { done }, updated_at: new Date().toISOString() }).eq('id', recordId.current).eq('advisor_id', advisorId);
+        if (error) toast('שגיאה בשמירה', 'error');
+        return;
+      }
+      const { data, error } = await supabase.from('advisor_biz_records').insert({ advisor_id: advisorId, kind: KIND, period: null, data: { done } }).select().single();
+      if (error) { toast('שגיאה בשמירה', 'error'); return; }
+      recordId.current = data.id;
+    };
+    const onMessage = e => {
+      if (e.source !== frameRef.current?.contentWindow || e.origin !== window.location.origin) return;
+      if (e.data?.type === 'content-plan:ready') setReady(true);
+      if (e.data?.type === 'content-plan:done') {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(() => { saveChain.current = saveChain.current.then(() => persist(e.data.done)); }, 400);
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [advisorId]);
 
   function attach() {
     detach.current?.();

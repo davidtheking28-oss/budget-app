@@ -761,8 +761,11 @@ out+='</div></div>';
 });
 document.getElementById('weeks').innerHTML=out;
 function count(){var all=document.querySelectorAll('.c input'),n=0;all.forEach(function(c){if(c.checked)n++});document.getElementById('pcount').textContent=n+' מתוך '+all.length+' הועלו';document.getElementById('pbar').style.width=(100*n/all.length)+'%'}
-document.querySelectorAll('.c').forEach(function(r){var c=r.querySelector('input');c.addEventListener('change',function(){r.classList.toggle('done',c.checked);saved[r.getAttribute('data-id')]=c.checked;try{localStorage.setItem('plan-done',JSON.stringify(saved))}catch(e){}count()})});
+document.querySelectorAll('.c').forEach(function(r){var c=r.querySelector('input');c.addEventListener('change',function(){r.classList.toggle('done',c.checked);saved[r.getAttribute('data-id')]=c.checked;try{localStorage.setItem('plan-done',JSON.stringify(saved))}catch(e){}count();notify()})});
 count();
+function notify(){try{if(window.parent!==window)window.parent.postMessage({type:'content-plan:done',done:saved},location.origin)}catch(e){}}
+window.addEventListener('message',function(e){if(e.origin!==location.origin||!e.data||e.data.type!=='content-plan:state')return;saved=e.data.done||{};try{localStorage.setItem('plan-done',JSON.stringify(saved))}catch(x){}document.querySelectorAll('.c').forEach(function(r){var on=!!saved[r.getAttribute('data-id')];r.classList.toggle('done',on);r.querySelector('input').checked=on});count()});
+try{if(window.parent!==window)window.parent.postMessage({type:'content-plan:ready'},location.origin)}catch(e){}
 var filt='top';
 function drawBank(){
 document.getElementById('bankList').innerHTML=BANK.map(function(g,gi){
