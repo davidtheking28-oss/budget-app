@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const DIRECT = { '--bg': 'bg', '--card': 'surface', '--fg': 'text', '--mute': 'text2', '--line': 'border-strong', '--accent': 'accent', '--on-accent': 'accent-ink', '--tint': 'accent-dim', '--value': 'green', '--on-value': 'accent-ink', '--warn': 'gold', '--font-d': 'font-body', '--font-b': 'font-body' };
+const DIRECT = { '--bg': 'bg', '--card': 'surface', '--fg': 'text', '--mute': 'text2', '--line': 'border-strong', '--accent': 'accent', '--on-accent': 'accent-ink', '--tint': 'accent-dim', '--value': 'green', '--on-value': 'accent-ink', '--warn': 'gold', '--font-d': 'font-body', '--font-b': 'font-body', '--t-xs': 'text-xs', '--t-sm': 'text-sm', '--t-base': 'text-base', '--t-md': 'text-md', '--t-lg': 'text-lg', '--t-xl': 'text-xl', '--r-sm': 'radius-sm', '--r-md': 'radius-md' };
 
 function themeCss(theme) {
   const cs = getComputedStyle(document.documentElement);
