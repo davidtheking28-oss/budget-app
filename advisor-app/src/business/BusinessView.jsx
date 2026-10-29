@@ -3,6 +3,7 @@ import Projects from './Projects.jsx';
 import Systems from './Systems.jsx';
 import MarketingPlan from './MarketingPlan.jsx';
 import VideoIdeas from './VideoIdeas.jsx';
+import ContentPlan from './ContentPlan.jsx';
 import MetricsView from './MetricsView.jsx';
 import Finance from './Finance.jsx';
 import ClientTasks from './ClientTasks.jsx';
@@ -22,6 +23,7 @@ export default function BusinessView({ view, advisorId, onNavigate, onSelectClie
   if (view === 'client-tasks') return <ClientTasks advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'marketing') return <MarketingPlan advisorId={advisorId} onNavigate={onNavigate} />;
   if (view === 'ideas') return <VideoIdeas advisorId={advisorId} />;
+  if (view === 'content-plan') return <ContentPlan />;
   if (view.startsWith('marketing-')) return <MetricsView advisorId={advisorId} kind="marketing" scope={view.slice(10)} onNavigate={onNavigate} />;
   if (view.startsWith('sales-')) return <MetricsView advisorId={advisorId} kind="sales" scope={view.slice(6)} />;
   if (view.startsWith('fin-')) return <Finance advisorId={advisorId} scope={view.slice(4)} />;

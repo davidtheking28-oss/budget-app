@@ -53,6 +53,7 @@ export const DEPARTMENTS = [
     items: [
       { key: 'marketing', label: 'שיווק ראשי', icon: icons.tasks },
       { key: 'ideas', label: 'רעיונות לסרטונים', icon: icons.bulb },
+      { key: 'content-plan', label: 'לוח תוכן', icon: icons.calendar },
       { key: 'marketing-month', label: 'מדדים חודשי', icon: icons.table },
       { key: 'marketing-year', label: 'מדדים שנתי', icon: icons.trend },
       { key: 'marketing-full', label: 'מדדים מלא', icon: icons.pie }
