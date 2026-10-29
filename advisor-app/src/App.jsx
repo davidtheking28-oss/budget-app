@@ -88,6 +88,7 @@ export default function App() {
   const initial = readUrlState();
   const [selectedClient, setSelectedClient] = useState(initial.selectedClient);
   const [homeView, setHomeView] = useUrlParam('view', 'clients');
+  const [viewClientId, setViewClientId] = useState(null);
   const [inviteDraft, setInviteDraft] = useState(null);
   const [nav, setNav] = useState(initial.nav);
   const [budgetCategory, setBudgetCategory] = useState(null);
@@ -228,8 +229,8 @@ export default function App() {
           {activeHome === 'prospects'
             ? <Prospects advisorId={session.user.id} onConvert={p => { setInviteDraft({ prospectId: p.id, email: p.email || '' }); setHomeView('clients'); }} />
             : activeHome !== 'clients'
-            ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={switchClient} />
-            : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={switchClient} inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} onOpenProspects={() => setHomeView('prospects')} />}
+            ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={switchClient} viewClientId={viewClientId} onViewClient={setViewClientId} />
+            : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => { setViewClientId(clientId); setHomeView('client-view'); }}inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} onOpenProspects={() => setHomeView('prospects')} />}
         </Shell>
         <QuickSwitcher advisorId={session.user.id} onSelect={switchClient} open={searchOpen} onOpenChange={setSearchOpen} />
         <Toaster />
