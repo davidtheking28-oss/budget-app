@@ -118,14 +118,38 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
         </div>
         </div>
       )}
-      {client && tab === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping key={client.client_id} clientUserId={client.client_id} advisorId={advisorId} onNavigate={goTo} /></Suspense>}
+      {client && tab === 'mapping' && (
+        <div className={styles.stack}>
+          <div>
+          <h2 className={styles.viewHeading}>מיפוי</h2>
+          <p className={styles.cardSub}>מיפוי: התמונה המלאה של ההוצאות וההכנסות, עם מחשבונים לכל קטגוריה משתנה.</p>
+        </div>
+          <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping key={client.client_id} clientUserId={client.client_id} advisorId={advisorId} onNavigate={goTo} /></Suspense>
+        </div>
+      )}
       {client && tab === 'budget' && (
         <BudgetModeContext.Provider value={mode}>
           <Budget key={`${client.client_id}:${mode}:${ym.year}:${ym.month}`} period={period} onPeriodChange={setPeriod} onDirtyChange={setDirty} focusCategory={null} clientUserId={client.client_id} advisorId={advisorId} year={ym.year} month={ym.month} />
         </BudgetModeContext.Provider>
       )}
-      {client && tab === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets key={client.client_id} clientUserId={client.client_id} advisorId={advisorId} /></Suspense>}
-      {client && tab === 'tasks' && <Crm view="tasks" key={`${client.client_id}:tasks`} onDirtyChange={setDirty} action={null} advisorId={advisorId} clientId={client.client_id} email={client.client_email} />}
+      {client && tab === 'assets' && (
+        <div className={styles.stack}>
+          <div>
+          <h2 className={styles.viewHeading}>שווי נקי</h2>
+          <p className={styles.cardSub}>תמונה עדכנית של הנכסים וההתחייבויות שלך, והמרחק ביניהם.</p>
+        </div>
+          <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets key={client.client_id} clientUserId={client.client_id} advisorId={advisorId} /></Suspense>
+        </div>
+      )}
+      {client && tab === 'tasks' && (
+        <div className={styles.stack}>
+          <div>
+          <h2 className={styles.viewHeading}>משימות</h2>
+          <p className={styles.cardSub}>המשימות של הלקוח: מה הוגדר לו בתהליך ומה הוא הוסיף לעצמו.</p>
+        </div>
+          <Crm view="tasks" key={`${client.client_id}:tasks`} onDirtyChange={setDirty} action={null} advisorId={advisorId} clientId={client.client_id} email={client.client_email} />
+        </div>
+      )}
     </div>
   );
 }
