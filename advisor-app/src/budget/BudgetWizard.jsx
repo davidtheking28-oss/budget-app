@@ -188,7 +188,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   ];
 
   function addRow(setter, name = '', extra = {}) { setter(prev => [...prev, { name, amount: '', _before: {}, ...extra }]); }
-  function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...patch } : r)); }
+  function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...(patch.name !== undefined && isSavingsRow(r) ? { savings: true } : {}), ...patch } : r)); }
   function removeRow(setter, i) { setter(prev => prev.filter((_, idx) => idx !== i)); }
 
   function pickSuggestion(setter, list, name) {
