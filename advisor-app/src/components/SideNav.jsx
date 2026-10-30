@@ -1,4 +1,5 @@
 import Logo from './Logo.jsx';
+import AccessibilityButton from './AccessibilityButton.jsx';
 import LegalLinks from './LegalLinks.jsx';
 import styles from './SideNav.module.css';
 
@@ -25,6 +26,7 @@ export default function SideNav({ clientName, clientSince, nav, activeNav, onNav
       </nav>
       {footer && <div className={styles.footer}>{footer}</div>}
       <LegalLinks />
+      <AccessibilityButton />
     </aside>
   );
 }

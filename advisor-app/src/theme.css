@@ -264,3 +264,5 @@ h1, h2, h3 {
     background: var(--surface2);
   }
 }
+
+html.a11y-contrast { filter: contrast(1.25); }
