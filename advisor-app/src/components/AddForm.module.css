@@ -7,14 +7,15 @@
   width: fit-content;
   padding: 8px 14px;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--text);
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: 600;
   cursor: pointer;
   transition: background .18s ease, border-color .18s ease;
+  min-height: 36px;
 }
 
 .trigger:hover {
@@ -26,7 +27,6 @@
   .trigger { min-height: 44px; }
 }
 
-.trigger { min-height: 40px; }
 
 .form[class] { padding: 16px 0; border: none; border-block: 1px solid var(--border); border-radius: 0; background: transparent; }
 .form > button:first-of-type { margin-inline-start: auto; }
