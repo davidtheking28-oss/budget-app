@@ -95,7 +95,7 @@ export default function ClientService({ advisorId, onSelect }) {
                   const svc = SERVICE_STATUSES.find(s => s.key === statusOf(c));
                   return (
                     <tr key={c.id}>
-                      <td className={styles.nameCell}><button type="button" className={styles.sortBtn} title="פתח מסע שירות" onClick={() => setOpenId(c.id)}>{c.name || c.client_email}</button></td>
+                      <td className={styles.nameCell} style={{ maxWidth: 200 }}><button type="button" className={styles.sortBtn} style={{ maxWidth: "100%" }} title={c.name || c.client_email} aria-label={"פתח מסע שירות: " + (c.name || c.client_email)} onClick={() => setOpenId(c.id)}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", unicodeBidi: "plaintext" }}>{c.name || c.client_email}</span></button></td>
                       <td><span className={styles.rowMeta}>{currentStage(journeyOf(c))}</span></td>
                       <td>{meetingDate ? <span className={styles.pillBtn + ' ' + styles.pillGood} style={{ cursor: 'default' }}>{formatDate(meetingDate)}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title : 'לא נקבעה'}</span>}</td>
                       <td style={{ minWidth: 170 }}>
@@ -104,7 +104,7 @@ export default function ClientService({ advisorId, onSelect }) {
                           <span className={styles.num}>{percentLabel(progress.rate)}</span>
                         </div>
                       </td>
-                      <td><div className={styles.pills}>{attention.length ? attention.map(a => <span key={a} className={styles.pillBtn + ' ' + styles.pillWarn} style={{ cursor: 'default' }}>{a}</span>) : <span className={styles.rowMeta}>הכול תקין</span>}</div></td>
+                      <td style={{ minWidth: 300 }}><div className={styles.pills}>{attention.length ? attention.map(a => <span key={a} className={styles.pillBtn + ' ' + styles.pillWarn} style={{ cursor: 'default' }}>{a}</span>) : <span className={styles.rowMeta}>הכול תקין</span>}</div></td>
                       <td>
                         <select className={styles.pillSelect + (svc.tone ? ' ' + styles[svc.tone] : '')} aria-label={'סטטוס לקוח: ' + (c.name || c.client_email)} value={svc.key} onChange={e => deals.saveDeal(dealByLink[c.id], { service_status: e.target.value })}>
                           {SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
