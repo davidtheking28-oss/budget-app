@@ -35,7 +35,7 @@
 }
 .clientSince { margin-top: 2px; color: var(--workspace-muted); font-size: var(--text-xs); }
 
-.nav { display: flex; flex-direction: column; gap: 2px; padding-top: var(--space-2); }
+.nav { display: flex; flex-direction: column; gap: 4px; padding-top: var(--space-2); }
 
 .group {
   margin: 18px 10px 6px;
@@ -48,17 +48,17 @@
 .item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
   width: 100%;
-  min-height: 52px;
-  padding: 6px 14px;
+  min-height: 41px;
+  padding: 11px 14px;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--workspace-text);
   font-family: Heebo, inherit;
   font-size: 14.5px;
-  font-weight: 700;
+  font-weight: 500;
   text-align: start;
   cursor: pointer;
 }
@@ -67,10 +67,6 @@
 .item:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
 
 .icon { display: inline-flex; flex: none; opacity: 0.9; }
-
-.itemText { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
-.itemHint { margin-top: 2px; color: var(--workspace-muted); font-size: var(--text-xs); font-weight: 700; }
-.itemOn .itemHint { color: var(--workspace-mint); opacity: 0.75; }
 
 .footer { margin-top: auto; padding: 14px 4px 0; border-top: 1px solid var(--workspace-line); }
 .footer > div { width: 100%; }
