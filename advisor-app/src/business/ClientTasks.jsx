@@ -90,7 +90,7 @@ export default function ClientTasks({ advisorId, onSelect }) {
         <div className={styles.stat}><div className={styles.statLabel}>פתוחות אצל הלקוחות</div><div className={styles.statValue}>{openEverywhere}</div></div>
       </div>
 
-      <TaskList title="המשימות שלך" hint="כל מה שהוגדר לו במסע השירות ובמשימות שלך. סימון כאן מתעדכן גם בשירות." empty="עוד לא הוגדרו לו משימות במנה." tasks={advisorTasks} pending={pending} onToggle={toggle} onOpen={open} />
+      <TaskList title="המשימות שלך" hint="כל מה שהוגדר לו במסע השירות ובמשימות שלך. סימון כאן מתעדכן גם בשירות." empty="אין משימות פתוחות במנה." tasks={advisorTasks} pending={pending} onToggle={toggle} onOpen={open} />
       <TaskList title="משימות שהלקוח הוסיף לעצמו" hint="מה שהוא כתב לעצמו באזור האישי, כדי שתדע מה עוד על הראש שלו." empty="הלקוח עוד לא הוסיף לעצמו משימות באזור האישי." tasks={clientTasks} pending={pending} onToggle={toggle} onOpen={open} />
     </div>
   );
