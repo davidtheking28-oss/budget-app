@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './Business.module.css';
 
 export default function Modal({ title, onClose, children, wide = false }) {
@@ -10,8 +11,8 @@ export default function Modal({ title, onClose, children, wide = false }) {
     document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('keydown', onKey); previous?.focus?.(); };
   }, [onClose]);
-  return (
-    <div className={styles.overlay} onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+  return createPortal(
+    <div className={styles.overlay} dir="rtl" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className={styles.modal + (wide ? ' ' + styles.modalWide : '')} role="dialog" aria-modal="true" aria-label={title} ref={ref}>
         <div className={styles.modalHead}>
           <h3 className={styles.cardTitle}>{title}</h3>
@@ -19,6 +20,7 @@ export default function Modal({ title, onClose, children, wide = false }) {
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
