@@ -3,17 +3,11 @@ import AccessibilityButton from './AccessibilityButton.jsx';
 import LegalLinks from './LegalLinks.jsx';
 import styles from './SideNav.module.css';
 
-export default function SideNav({ clientName, clientSince, nav, activeNav, onNavChange, footer }) {
+export default function SideNav({ nav, activeNav, onNavChange, footer }) {
   return (
     <aside className={styles.side}>
       <div className={styles.brand}><Logo size="sm" /><span>שקל שקל · יועץ</span></div>
-      {clientName && (
-        <div className={styles.client}>
-          <div className={styles.clientName} title={clientName}>{clientName}</div>
-          {clientSince && <div className={styles.clientSince}>לקוח מאז {clientSince}</div>}
-        </div>
-      )}
-      <nav className={styles.nav} aria-label="ניווט לקוח">
+      <nav className={styles.nav} aria-label="ניווט מחלקה">
         {nav.map((n, i) => (
           <div key={n.key}>
             {n.groupLabel && <div className={styles.group + (i === 0 ? ' ' + styles.groupFirst : '')}>{n.groupLabel}</div>}

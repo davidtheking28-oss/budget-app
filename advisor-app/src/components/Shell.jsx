@@ -165,7 +165,7 @@ function AccountMenu({ email, advisorId, up, block }) {
   );
 }
 
-export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, clientName, clientSince, budgetMode, onBudgetModeChange, onBack, description, homeNav, homeActive, onHomeNavChange, homeTabs, nav, activeNav, onNavChange, sidebarInfo, onPrint, onPresent, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, description, homeNav, homeActive, onHomeNavChange, homeTabs, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   const desktop = useDesktop();
   useWorkspaceScroll(workspaceKey);
 
@@ -179,7 +179,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
   const sideEnd = onSearch ? <SearchBar onOpen={onSearch} /> : null;
   const accountFooter = <AccountMenu email={email} advisorId={advisorId} up block />;
 
-  if (desktop && !nav && homeNav) {
+  if (desktop && homeNav) {
     return (
       <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
         <SideNav nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} footer={accountFooter} />
@@ -202,7 +202,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
     );
   }
 
-  if (desktop && !nav) {
+  if (desktop) {
     return (
       <div className={styles.shellTop} dir="rtl" inert={shellInert ? '' : undefined}>
         <TopNav homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} theme={theme} onToggleTheme={onToggleTheme} end={topEnd} />
@@ -213,101 +213,29 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
     );
   }
 
-  if (desktop && nav) {
-    return (
-      <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
-        <SideNav clientName={clientName} clientSince={clientSince} nav={nav} activeNav={activeNav} onNavChange={onNavChange} footer={accountFooter} />
-        <div className={styles.sideMain}>
-          <TopNav hideBrand onBack={onBack} onPrint={onPrint} onPresent={onPresent} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
-          <main className={styles.contentTop}>
-            <div className={styles.clientHead}>
-              <div className={styles.titleBlock}>
-                <h1 className={styles.clientTitle}>{title || clientName || 'טוען פרטי לקוח…'}</h1>
-                {description && <p className={styles.clientDesc}>{description}</p>}
-              </div>
-              <div className={styles.clientHeadEnd}>
-                <div className={styles.modeContext} role="group" aria-label="סוג התקציב">
-                  <button type="button" aria-pressed={budgetMode !== 'business'} onClick={() => onBudgetModeChange('personal')}>פרטי</button>
-                  <button type="button" aria-pressed={budgetMode === 'business'} onClick={() => onBudgetModeChange('business')}>עסקי</button>
-                </div>
-                {sidebarInfo}
-                
-              </div>
-            </div>
-            {children}
-          </main>
-        </div>
-      </div>
-    );
-  }
-
-  if (!nav) {
-    return (
-      <div className={styles.shell} dir="rtl" inert={shellInert ? '' : undefined}>
-        <IconRail homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
-        <div className={styles.topbarBleed}>
-          <div className={styles.topbar}>
-            <div className={styles.logo}>שקל שקל · יועץ</div>
-            <div className={styles.topbarEnd}>
-              
-              {onSearch && <SearchBar onOpen={onSearch} />}
-              <AccountMenu email={email} advisorId={advisorId} />
-            </div>
-          </div>
-        </div>
-        <main className={styles.content}>
-          {homeNav && title && (
-            <div className={styles.homeHeadMobile}>
-              <h1 className={styles.clientTitle}>{title}</h1>
-              {description ? <p className={styles.clientDesc}>{description}</p> : <div id="biz-header-sub" className={styles.clientDesc} />}
-            </div>
-          )}
-          {children}
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div className={styles.shellTabs} dir="rtl" inert={shellInert ? '' : undefined}>
-      <IconRail
-        clientName={clientName}
-        clientSince={clientSince}
-        onBack={onBack}
-        onSearch={onSearch}
-        onPrint={onPrint}
-        onPresent={onPresent}
-        nav={nav}
-        activeNav={activeNav}
-        onNavChange={onNavChange}
-        theme={theme}
-        onToggleTheme={onToggleTheme}
-        footer={desktop ? <AccountMenu email={email} advisorId={advisorId} up /> : null}
-      />
+    <div className={styles.shell} dir="rtl" inert={shellInert ? '' : undefined}>
+      <IconRail homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
       <div className={styles.topbarBleed}>
         <div className={styles.topbar}>
-          <div className={styles.topbarStart}>
-            <div className={styles.titleBlock}>
-              {title && <h1 className={styles.pageTitle}>{title}</h1>}
-              <div className={styles.clientContext}>
-                <span className={styles.contextName}>{clientName || 'טוען פרטי לקוח…'}</span>
-                <div className={styles.modeContext} role="group" aria-label="סוג התקציב">
-                  <button type="button" aria-pressed={budgetMode !== 'business'} onClick={() => onBudgetModeChange('personal')}>פרטי</button>
-                  <button type="button" aria-pressed={budgetMode === 'business'} onClick={() => onBudgetModeChange('business')}>עסקי</button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <div className={styles.logo}>שקל שקל · יועץ</div>
           <div className={styles.topbarEnd}>
-              
-            {sidebarInfo}
-            {!desktop && <AccountMenu email={email} advisorId={advisorId} />}
+            
+            {onSearch && <SearchBar onOpen={onSearch} />}
+            <AccountMenu email={email} advisorId={advisorId} />
           </div>
         </div>
       </div>
-      <main className={styles.contentTabs}>
+      <main className={styles.content}>
+        {homeNav && title && (
+          <div className={styles.homeHeadMobile}>
+            <h1 className={styles.clientTitle}>{title}</h1>
+            {description ? <p className={styles.clientDesc}>{description}</p> : <div id="biz-header-sub" className={styles.clientDesc} />}
+          </div>
+        )}
         {children}
       </main>
     </div>
   );
+ 
 }
