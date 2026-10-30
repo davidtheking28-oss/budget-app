@@ -291,7 +291,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
                           <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><path d="M12 14v4M10 16h4" />
                         </svg>
                       </button>
-                      <DeleteButton onClick={() => removeMeeting(m.id)} />
+                      <DeleteButton title="מחק פגישה" onClick={() => removeMeeting(m.id)} />
                     </ActionMenu></div>
                   </div>
                   <MeetingSummary key={m.id} meeting={m} tasks={tasks.filter(t => t.meeting_id === m.id)} onSave={setMeetingSummary} onAddTasks={addTasks} onDirtyChange={markMeetingDirty} onChange={notify} />

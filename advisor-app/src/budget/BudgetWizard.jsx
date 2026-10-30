@@ -338,7 +338,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 ) : (
                   <div className={styles.tblValue + (over ? ' ' + styles.tblOverText : '')}>{fmt(actual)}</div>
                 )}
-                <DeleteButton onClick={() => removeRow(setter, i)} />
+                <DeleteButton title={`מחק · ${r.name || 'שורה'}`} onClick={() => removeRow(setter, i)} />
               </div>
             );
           })()))}
@@ -429,7 +429,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     value={r.name}
                   onChange={e => updateRow(setter, i, { name: e.target.value })}
                 />
-                <DeleteButton onClick={() => removeRow(setter, i)} />
+                <DeleteButton title={`מחק · ${r.name || 'שורה'}`} onClick={() => removeRow(setter, i)} />
               </div>
               <div className={styles.itemCardAmounts}>{dayBox(r, i)}{amounts(r, i)}</div>
             </div>
@@ -446,7 +446,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
               />
               {dayBox(r, i)}
               {amounts(r, i)}
-              <DeleteButton onClick={() => removeRow(setter, i)} />
+              <DeleteButton title={`מחק · ${r.name || 'שורה'}`} onClick={() => removeRow(setter, i)} />
             </div>
           ))}
         </div>
