@@ -111,7 +111,7 @@ export default function Assets({ clientUserId, advisorId }) {
                     <div className={styles.rowMeta}>{a.category || 'אחר'}{totalAssets > 0 ? ' · ' + Math.round(((a.amount || 0) / totalAssets) * 100) + '%' : ''}</div>
                   </div>
                   <span className={styles.num}>{fmt(a.amount)}</span>
-                  <ActionMenu><DeleteButton onClick={() => removeItem(save, 'assets', a.id, `${a.name} נמחק`)} /></ActionMenu>
+                  <ActionMenu><DeleteButton title={`מחק · ${a.name}`} onClick={() => removeItem(save, 'assets', a.id, `${a.name} נמחק`)} /></ActionMenu>
                 </li>
               ))}
             </ul>
@@ -149,7 +149,7 @@ export default function Assets({ clientUserId, advisorId }) {
                     <div className={styles.rowMeta}>{l.monthly > 0 ? 'החזר חודשי ' + fmt(l.monthly) : 'ללא החזר חודשי'}</div>
                   </div>
                   <span className={styles.num + ' ' + styles.kpiNeg}>{fmt(l.remaining)}</span>
-                  <ActionMenu><DeleteButton onClick={() => removeItem(save, 'loans', l.id, `${l.name} נמחקה`)} /></ActionMenu>
+                  <ActionMenu><DeleteButton title={`מחק · ${l.name}`} onClick={() => removeItem(save, 'loans', l.id, `${l.name} נמחקה`)} /></ActionMenu>
                 </li>
               ))}
             </ul>

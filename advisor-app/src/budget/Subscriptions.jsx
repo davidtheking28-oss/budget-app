@@ -246,7 +246,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                     </div>
                     <div className={styles.amount}>{fmt(s.amount || 0)}<span className={styles.amountSuffix}>{CYCLE_AMOUNT_SUFFIX[s.cycle] || ''}</span></div>
                   </div>
-                  <ActionMenu><EditButton title={`ערוך · ${s.name}`} onClick={() => startEditSub(s)} /><DeleteButton onClick={() => removeItem(save, 'subscriptions', s.id, `${s.name} נמחק`)} /></ActionMenu>
+                  <ActionMenu><EditButton title={`ערוך · ${s.name}`} onClick={() => startEditSub(s)} /><DeleteButton title={`מחק · ${s.name}`} onClick={() => removeItem(save, 'subscriptions', s.id, `${s.name} נמחק`)} /></ActionMenu>
                 </div>
               );
             })}
@@ -278,7 +278,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                   </div>
                   <div className={styles.amount}>{fmt(x.monthly || 0)}</div>
                 </div>
-                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditInsurance(x)} /><DeleteButton onClick={() => removeItem(save, 'insurances', x.id, `${x.name} נמחק`)} /></ActionMenu>
+                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditInsurance(x)} /><DeleteButton title={`מחק · ${x.name}`} onClick={() => removeItem(save, 'insurances', x.id, `${x.name} נמחק`)} /></ActionMenu>
               </div>
             ))}
           </div>
@@ -303,7 +303,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                   <div className={styles.name}>{x.name}</div>
                   <div className={styles.amount}>{fmt(x.monthly || 0)}</div>
                 </div>
-                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditGroom(x)} /><DeleteButton onClick={() => removeItem(save, 'grooming', x.id, `${x.name} נמחק`)} /></ActionMenu>
+                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditGroom(x)} /><DeleteButton title={`מחק · ${x.name}`} onClick={() => removeItem(save, 'grooming', x.id, `${x.name} נמחק`)} /></ActionMenu>
               </div>
             ))}
           </div>
@@ -328,7 +328,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                   <div className={styles.name}>{x.name}</div>
                   <div className={styles.amount}>{fmt(x.annual || 0)}</div>
                 </div>
-                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditEvent(x)} /><DeleteButton onClick={() => removeItem(save, 'events', x.id, `${x.name} נמחק`)} /></ActionMenu>
+                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditEvent(x)} /><DeleteButton title={`מחק · ${x.name}`} onClick={() => removeItem(save, 'events', x.id, `${x.name} נמחק`)} /></ActionMenu>
               </div>
             ))}
           </div>
@@ -353,7 +353,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                   <div className={styles.name}>{x.name}</div>
                   <div className={styles.amount}>{fmt(x.monthly || 0)}</div>
                 </div>
-                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditEdu(x)} /><DeleteButton onClick={() => removeItem(save, 'education', x.id, `${x.name} נמחק`)} /></ActionMenu>
+                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditEdu(x)} /><DeleteButton title={`מחק · ${x.name}`} onClick={() => removeItem(save, 'education', x.id, `${x.name} נמחק`)} /></ActionMenu>
               </div>
             ))}
           </div>
@@ -378,7 +378,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
                   <div className={styles.name}>{x.name}</div>
                   <div className={styles.amount}>{fmt(x.annual || 0)}</div>
                 </div>
-                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditAnnualExp(x)} /><DeleteButton onClick={() => removeItem(save, 'annualExpenses', x.id, `${x.name} נמחק`)} /></ActionMenu>
+                <ActionMenu><EditButton title={`ערוך · ${x.name}`} onClick={() => startEditAnnualExp(x)} /><DeleteButton title={`מחק · ${x.name}`} onClick={() => removeItem(save, 'annualExpenses', x.id, `${x.name} נמחק`)} /></ActionMenu>
               </div>
             ))}
           </div>
