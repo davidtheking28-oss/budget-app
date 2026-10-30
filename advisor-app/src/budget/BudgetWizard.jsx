@@ -184,10 +184,28 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     datasets: [{ data: [income, expenses], backgroundColor: [CT.green, CT.red], hoverBackgroundColor: [CT.greenHover, CT.redHover], borderRadius: 6, barPercentage: 0.45, categoryPercentage: 0.9 }]
   });
   const periodMul = flowPeriod === 'year' ? 12 : 1;
+  const avg = useMemo(() => {
+    const all = (data?.transactions || []).filter(t => t.date);
+    const months = new Set(all.map(t => t.date.slice(0, 7))).size;
+    if (!months) return null;
+    const sum = list => list.reduce((s, t) => s + t.amount, 0) / months;
+    const expenses = all.filter(t => t.type === 'expense');
+    return {
+      months,
+      income: sum(all.filter(t => t.type === 'income')) || totalIncome,
+      fixed: sum(expenses.filter(t => FIXED_CATS.includes(t.cat))),
+      variable: sum(expenses.filter(t => !FIXED_CATS.includes(t.cat))),
+      savings: sum(expenses.filter(t => t.cat === SAVINGS_CATEGORY))
+    };
+  }, [data, totalIncome]);
+  const actualCard = flowPeriod === 'avg' && avg
+    ? { sub: `ממוצע חודשי על פני ${avg.months === 1 ? 'חודש אחד' : `${avg.months} חודשים`}`, income: avg.income, expenses: avg.fixed + avg.variable, flow: avg.income - avg.fixed - avg.variable, savings: avg.savings, fixed: avg.fixed, variable: avg.variable }
+    : { sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, savings: actualSavings, fixed: totalFixedActual, variable: totalVarActual };
   const summaryCards = [
     { key: 'plan', title: 'תכנון', sub: 'מה תוכנן לחודש הזה', income: totalIncome, expenses: totalFixed + totalVar, flow: left, flowNoSavings: left + plannedSavings, breakdown: breakdownOf(totalFixed, totalVar, left) },
-    { key: 'actual', title: 'ביצוע', sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, flowNoSavings: actualFlow + actualSavings, breakdown: breakdownOf(totalFixedActual, totalVarActual, actualFlow) }
+    { key: 'actual', title: 'ביצוע', sub: actualCard.sub, income: actualCard.income, expenses: actualCard.expenses, flow: actualCard.flow, flowNoSavings: actualCard.flow + actualCard.savings, breakdown: breakdownOf(actualCard.fixed, actualCard.variable, actualCard.flow) }
   ];
+  const [years, setYears] = useState(5);
 
   function addRow(setter, name = '', extra = {}) { setter(prev => [...prev, { name, amount: '', _before: {}, ...extra }]); }
   function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...(patch.name !== undefined && isSavingsRow(r) ? { savings: true } : {}), ...patch } : r)); }
@@ -447,7 +465,22 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             <button type="button" aria-pressed={flowPeriod === 'month'} className={flowPeriod === 'month' ? styles.viewPillOn : styles.viewPill} onClick={() => setFlowPeriod('month')}>חודשי</button>
             <button type="button" aria-pressed={flowPeriod === 'year'} className={flowPeriod === 'year' ? styles.viewPillOn : styles.viewPill} onClick={() => setFlowPeriod('year')}>שנתי</button>
           </div>}
-          <div className={styles.card}>
+          {flowPeriod === 'long' && (
+            <div className={styles.card}>
+              <div className={styles.cardTitleRow}>
+                <span className={styles.cardTitle}>תכנון ארוך טווח</span>
+                <div className={styles.flowToggle} role="group" aria-label="מספר שנים">
+                  {[1, 3, 5, 10].map(y => <button key={y} type="button" aria-pressed={years === y} className={years === y ? styles.flowToggleActive : ''} onClick={() => setYears(y)}>{y === 1 ? 'שנה' : `${y} שנים`}</button>)}
+                </div>
+              </div>
+              <div className={styles.flowLine}><span>הכנסות מצטברות</span><span>{fmt(totalIncome * 12 * years)}</span></div>
+              <div className={styles.flowLine}><span>הוצאות מצטברות</span><span>{fmt((totalFixed + totalVar) * 12 * years)}</span></div>
+              <div className={styles.flowLine}><span>נותר בחשבון</span><span className={left < 0 ? styles.negative : styles.positive}>{fmt(left * 12 * years)}</span></div>
+              <div className={styles.flowLine}><span>חיסכון שנצבר</span><span className={styles.positive}>{fmt(plannedSavings * 12 * years)}</span></div>
+              <div className={styles.summaryNote}>הקרנה לפי התכנון החודשי הנוכחי, ללא ריבית ושינויים לאורך זמן.</div>
+            </div>
+          )}
+          <div className={styles.card} style={flowPeriod === 'long' ? { display: 'none' } : undefined}>
             <div className={styles.sumGrid}>
               {summaryCards.map(c => (
                 <div className={styles.sumCard} key={c.key}>

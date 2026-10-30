@@ -121,6 +121,8 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
           <div className={styles.pills} role="group" aria-label="תצוגת תקופה">
             <button type="button" className={period === 'month' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'month'} onClick={() => setPeriod('month')}>חודשי</button>
             <button type="button" className={period === 'year' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'year'} onClick={() => setPeriod('year')}>שנתי</button>
+            <button type="button" className={period === 'avg' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'avg'} onClick={() => setPeriod('avg')}>חודש ממוצע</button>
+            <button type="button" className={period === 'long' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'long'} onClick={() => setPeriod('long')}>תכנון ארוך טווח</button>
           </div>
           <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />
           <div className={styles.segment} role="group" aria-label="סוג תקציב">
