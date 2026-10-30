@@ -27,13 +27,13 @@
   background: transparent;
   color: var(--workspace-text);
   font-family: inherit;
-  font-size: var(--text-md);
-  font-weight: 700;
+  font-size: 14.5px;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
 }
 .pill:hover { background: var(--workspace-glass); }
-.pillOn, .pillOn:hover { background: var(--accent); color: var(--accent-ink); }
+.pillOn, .pillOn:hover { background: var(--accent); color: var(--accent-ink); font-weight: 800; }
 
 .end { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
 
@@ -96,14 +96,14 @@
   border: none;
   border-radius: var(--radius-full);
   background: transparent;
-  color: var(--workspace-text);
+  color: color-mix(in srgb, var(--workspace-text) 62%, transparent);
   font-family: Heebo, inherit;
-  font-size: var(--text-base);
-  font-weight: 700;
+  font-size: 14.5px;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
 }
 .deptTab:hover { background: var(--workspace-glass); }
-.deptTabOn, .deptTabOn:hover { background: var(--accent); color: var(--accent-ink); }
+.deptTabOn, .deptTabOn:hover { background: var(--accent); color: var(--accent-ink); font-weight: 800; }
 .deptTab:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
 .deptIcon { display: inline-flex; }
