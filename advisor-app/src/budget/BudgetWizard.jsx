@@ -343,7 +343,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             );
           })()))}
         </div>
-        <Button variant="ghost" onClick={() => addRow(setter, '', newRow)}>+ הוסף שורה</Button>
+        <Button variant="ghost" onClick={() => addRow(setter, '', newRow)}>{editableActual ? '+ קטגוריה' : '+ הוסף שורה'}</Button>
       </>
     );
   }
