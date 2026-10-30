@@ -1,0 +1,7 @@
+.links { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 12px 14px 0; }
+.link { padding: 0; border: none; background: none; color: var(--workspace-muted); font: inherit; font-size: var(--text-xs); cursor: pointer; }
+.link:hover { color: var(--workspace-text); text-decoration: underline; }
+.link:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
+.body { display: flex; flex-direction: column; gap: 14px; color: var(--text); line-height: 1.6; }
+.body h4 { margin: 0 0 2px; font-size: var(--text-base); font-weight: 700; }
+.body p { margin: 0; color: var(--text2); font-size: var(--text-base); }
