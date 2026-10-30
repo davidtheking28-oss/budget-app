@@ -181,7 +181,7 @@ export default function Goals({ clientUserId, advisorId }) {
                       className={styles.txInput}
                       type="number"
                       inputMode="decimal"
-                      placeholder="סכום" aria-label="סכום להפקדה ליעד"
+                      placeholder="סכום" aria-label={txCard.dir === 'withdraw' ? 'סכום למשיכה מהיעד' : 'סכום להפקדה ליעד'}
                       value={amount}
                       onChange={e => setAmount(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && confirmTx()}
