@@ -15,7 +15,7 @@
 
 .label {
   color: var(--text2);
-  font-size: 14px;
+  font-size: var(--text-base);
 }
 
 .value {
@@ -36,7 +36,7 @@
   gap: var(--space-3);
   margin-top: 4px;
   color: var(--text3);
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 
 .side {
@@ -50,7 +50,7 @@
 
 .sideValue {
   font-variant-numeric: tabular-nums;
-  font-size: 19px;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--text);
   overflow-wrap: anywhere;
@@ -92,7 +92,7 @@
   .note { font-size: var(--text-sm); margin-top: 10px; }
   .side { gap: 24px 32px; }
   .sideItem { padding-inline-start: 24px; border-inline-start: 1px solid var(--border); }
-  .sideValue { font-size: 23px; }
+  .sideValue { font-size: var(--text-stat); }
   .sideMeta { margin-top: 6px; }
 }
 
@@ -108,7 +108,7 @@
 .hero .expense, .hero .neg { color: var(--workspace-red); }
 .hero .note { line-height: 1.6; }
 .hero .sideItem { border: none; border-inline-start: 1px solid var(--workspace-line); background: transparent; border-radius: 0; padding: 8px 20px; }
-@media (min-width: 861px) { .hero { display: grid; grid-template-columns: 1.1fr 1fr; padding: 32px; gap: 24px; } .hero .value { font-size: 72px; line-height: 1.05; } .hero .valueCompact { font-size: 30px; } .hero .side { margin: 0; display: flex; justify-content: flex-end; } .hero .sideValue { font-size: 25px; } .hero .sideValueSecondary { font-size: var(--text-base); } }
+@media (min-width: 861px) { .hero { display: grid; grid-template-columns: 1.1fr 1fr; padding: 32px; gap: 24px; } .hero .value { font-size: 72px; line-height: 1.05; } .hero .valueCompact { font-size: 30px; } .hero .side { margin: 0; display: flex; justify-content: flex-end; } .hero .sideValue { font-size: var(--text-stat); } .hero .sideValueSecondary { font-size: var(--text-base); } }
 
 .leftCol { min-width: 0; }
 .visual { min-width: 0; display: flex; align-items: center; justify-content: center; }

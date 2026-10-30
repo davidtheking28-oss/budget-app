@@ -775,7 +775,7 @@
   margin-inline-start: 8px;
   padding: 1px 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 700;
   vertical-align: middle;
 }
@@ -790,7 +790,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px 14px;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 
 .followPhone {
@@ -812,7 +812,7 @@
   margin-top: 10px;
   min-height: 32px;
   padding: 4px 12px;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 
 .srOnly {

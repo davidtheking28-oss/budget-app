@@ -9,7 +9,7 @@
   min-width: 0;
 }
 .cardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: var(--space-3); }
-.cardTitle { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
+.cardTitle { margin: 0; font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
 .cardSub { margin: 2px 0 0; color: var(--text2); font-size: var(--text-sm); }
 
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
@@ -26,9 +26,9 @@
   text-align: start;
   color: var(--text);
 }
-.statLabel { color: var(--text2); font-size: 13px; font-weight: 600; }
-.statValue { margin-top: 4px; font-size: 24px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.15; }
-.statNote { margin-top: 2px; color: var(--text3); font-size: 11.5px; }
+.statLabel { color: var(--text2); font-size: var(--text-sm); font-weight: 600; }
+.statValue { margin-top: 4px; font-size: var(--text-stat); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.statNote { margin-top: 2px; color: var(--text3); font-size: var(--text-xs); }
 .statPos { color: var(--green); }
 .statNeg { color: var(--red); }
 
@@ -147,7 +147,7 @@
 .modal { width: min(520px, 100%); max-height: 90vh; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 22px; }
 .modalWide { width: min(720px, 100%); }
 .modalHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
-.iconBtn { display: inline-flex; align-items: center; justify-content: center; padding: 0; font-family: inherit; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--text2); font-size: 20px; line-height: 1; cursor: pointer; }
+.iconBtn { display: inline-flex; align-items: center; justify-content: center; padding: 0; font-family: inherit; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--text2); font-size: var(--text-xl); line-height: 1; cursor: pointer; }
 .iconBtn:hover { color: var(--text); border-color: var(--accent); }
 .iconBtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .formGrid { display: grid; gap: 14px; }
@@ -156,7 +156,7 @@
 .fieldLabel .input, .fieldLabel .select { width: 100%; }
 .textarea { min-height: 84px; padding: 10px 12px; resize: vertical; font-family: inherit; }
 .segment { display: inline-flex; padding: 4px; gap: 2px; border: 1px solid var(--border); border-radius: var(--radius-full); background: var(--surface2); }
-.segBtn, .segBtnOn { min-height: 34px; padding: 0 14px; border: none; border-radius: var(--radius-full); background: transparent; color: var(--text2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.segBtn, .segBtnOn { min-height: 34px; padding: 0 14px; border: none; border-radius: var(--radius-full); background: transparent; color: var(--text2); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; white-space: nowrap; }
 .segBtnOn { background: var(--surface); color: var(--accent); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
 .segBtn:focus-visible, .segBtnOn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .iconTile { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(var(--accent-rgb), 0.12); color: var(--accent); flex: none; }
@@ -166,8 +166,8 @@
 .linkTile { display: flex; flex-direction: column; gap: 6px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-card); text-align: start; font: inherit; color: var(--text); cursor: pointer; min-width: 0; }
 .linkTile:hover { border-color: var(--accent); }
 .linkTile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.linkTileTitle { font-size: 14px; font-weight: 700; }
-.linkTileValue { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.linkTileTitle { font-size: var(--text-base); font-weight: 700; }
+.linkTileValue { font-size: var(--text-stat); font-weight: 700; font-variant-numeric: tabular-nums; }
 .sectionLabel { margin: var(--space-4) 0 var(--space-2); color: var(--text2); font-size: 13.5px; font-weight: 600; }
 .emptyState { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 0; color: var(--text2); font-weight: 700; }
 .chartBox { height: 220px; position: relative; }
@@ -205,7 +205,7 @@
 .ghostField { border-color: transparent; background: transparent; }
 .denseTable .ghostField:hover { border-color: var(--border); }
 .denseTable .ghostField:focus-visible { border-color: var(--accent); background: var(--surface); }
-.pillBtn { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 2px 12px; border: 1px solid transparent; border-radius: var(--radius-full); font: inherit; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; background: var(--surface2); color: var(--text2); }
+.pillBtn { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 2px 12px; border: 1px solid transparent; border-radius: var(--radius-full); font: inherit; font-size: var(--text-xs); font-weight: 700; white-space: nowrap; cursor: pointer; background: var(--surface2); color: var(--text2); }
 .pillGood { background: rgba(var(--green-rgb), 0.14); color: var(--green); }
 .pillWarn { background: rgba(var(--yellow-rgb), 0.14); color: var(--yellow); }
 .pillBad { background: rgba(var(--red-rgb), 0.12); color: var(--red); }
@@ -215,11 +215,11 @@
 .sortBtn { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: none; background: transparent; color: inherit; font: inherit; font-weight: inherit; cursor: pointer; }
 .sortBtn:hover { color: var(--text); }
 .sortBtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.sortMark { font-size: 10px; opacity: 0.6; }
-.headSub { margin: 2px 0 0; color: var(--text2); font-size: 12.5px; }
+.sortMark { font-size: var(--text-xs); opacity: 0.6; }
+.headSub { margin: 2px 0 0; color: var(--text2); font-size: var(--text-sm); }
 .nameCell { font-weight: 700; color: var(--text); }
 
-.linkNote { display: block; padding: 0; margin-top: 2px; border: none; background: transparent; color: var(--accent); font: inherit; font-size: 11.5px; cursor: pointer; text-align: start; }
+.linkNote { display: block; padding: 0; margin-top: 2px; border: none; background: transparent; color: var(--accent); font: inherit; font-size: var(--text-xs); cursor: pointer; text-align: start; }
 .linkNote:hover { text-decoration: underline; }
 .linkNote:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .pillSelect.pillGood, .pillBtn.pillGood { background: rgba(var(--green-rgb), 0.14); color: var(--green); }

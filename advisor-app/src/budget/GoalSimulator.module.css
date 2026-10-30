@@ -7,7 +7,7 @@
   min-width: 0;
 }
 
-.title { margin: 0 0 var(--space-3); font-size: 16px; font-weight: 800; color: var(--text); }
+.title { margin: 0 0 var(--space-3); font-size: var(--text-lg); font-weight: 800; color: var(--text); }
 
 .inputs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: var(--space-3); }
 
@@ -31,7 +31,7 @@
 
 .verdict { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-bottom: var(--space-2); }
 .verdict > div { display: grid; gap: 2px; }
-.verdict b { font-size: 20px; font-variant-numeric: tabular-nums; color: var(--text); }
+.verdict b { font-size: var(--text-xl); font-variant-numeric: tabular-nums; color: var(--text); }
 .k { font-size: var(--text-sm); color: var(--text2); }
 .verdict b.good { color: var(--accent); }
 
@@ -41,7 +41,7 @@
 .targetLine { stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 4; }
 .lineNow { stroke: var(--text3); stroke-width: 2; }
 .lineNext { stroke: var(--accent); stroke-width: 2.5; }
-.axis { fill: var(--text3); font-size: 11px; font-family: var(--font-body); }
+.axis { fill: var(--text3); font-size: var(--text-xs); font-family: var(--font-body); }
 
 .legend { display: flex; gap: 18px; margin-top: var(--space-2); font-size: var(--text-sm); color: var(--text2); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }

@@ -11,7 +11,7 @@
 
 .cardTitle {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--text-lg);
   font-weight: 800;
   color: var(--text);
   margin-bottom: 12px;
@@ -335,13 +335,13 @@
 .linkRow:first-child { border-top: none; }
 
 .linkDesc {
-  font-size: 15px;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--text);
 }
 
 .linkMeta {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--text3);
   margin-top: 2px;
 }
@@ -405,7 +405,7 @@
 .actualTitle {
   color: var(--text);
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--text-lg);
   font-weight: 800;
 }
 
@@ -512,7 +512,7 @@
   margin: 0 auto;
 }
 
-.cardTitle, .actualTitle { font-size: 16px; }
+.cardTitle, .actualTitle { font-size: var(--text-lg); }
 .dropLabel { background: var(--surface2); border-color: var(--control-border); }
 
 :global(#mapping-upload), :global(#mapping-results) { scroll-margin-top: 24px; }
@@ -539,7 +539,7 @@
 
 .donutCenterValue {
   color: var(--text);
-  font-size: 22px;
+  font-size: var(--text-stat);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -571,7 +571,7 @@
 
 .breakdownTotal strong {
   color: var(--text);
-  font-size: 24px;
+  font-size: var(--text-stat);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -677,7 +677,7 @@
   background: var(--surface);
   color: var(--text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
