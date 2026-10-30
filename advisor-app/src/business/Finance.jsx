@@ -197,6 +197,7 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
           <span className={styles.iconTile} aria-hidden="true">{icons.coins}</span>
           <span className={styles.linkTileTitle}>הכנסות</span>
           <span className={styles.linkTileValue}>{money(m.income)}</span>
+          <IncomeBar value={m.afterClearing} />
           <span className={styles.rowMeta}>סליקה {money(m.clearing)} · אחרי ניכיון {money(m.afterClearing)}</span>
         </button>
         <button type="button" className={styles.linkTile} onClick={() => setModal('fixed')}>
