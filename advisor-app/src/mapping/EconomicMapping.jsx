@@ -476,6 +476,7 @@ export default function EconomicMapping({ clientUserId, advisorId, onNavigate })
   const setManualAmount = (id, value) => {
     const amount = parseFloat(value);
     if (amount > 0) saveManual(manualItems.map(t => (t.id === id ? { ...t, amount } : t)));
+    else if (String(value).trim() === '' || amount === 0) saveManual(manualItems.filter(t => t.id !== id));
   };
   const deleteManual = id => saveManual(manualItems.filter(t => t.id !== id));
   const deleteManualMany = ids => saveManual(manualItems.filter(t => !ids.includes(t.id)));
