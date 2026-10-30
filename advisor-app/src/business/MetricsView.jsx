@@ -96,7 +96,7 @@ function MarketingBody({ advisorId, ym, scope, onNavigate }) {
   const months = periods.map(p => marketingMetrics(byPeriod[p] || {}));
   const stats = scope === 'month' ? months[months.length - 1] : sumMarketing(periods.map(p => byPeriod[p] || {}));
   const yearLeads = prospects.filter(p => leadMonthKey(p).startsWith(String(ym.year)));
-  const rows = periods.map((p, i) => ({ label: scope === 'full' ? monthName(Number(p.slice(5)) - 1) + ' ' + p.slice(0, 4) : monthName(i), m: months[i] }));
+  const rows = periods.map((p, i) => ({ label: scope === 'year' ? monthName(i) : monthName(Number(p.slice(5)) - 1) + ' ' + p.slice(0, 4), m: months[i] }));
   const chartMetrics = [
     { key: 'followers', label: 'כמות עוקבים', values: months.map(m => m.followers), format: plain },
     { key: 'costPerFollower', label: 'עלות לעוקב', values: months.map(m => Math.round(m.costPerFollower || 0)), format: money },
@@ -127,7 +127,7 @@ function MarketingBody({ advisorId, ym, scope, onNavigate }) {
         </>
       )}
       <TrendChart labels={periods.map(shortLabel)} metrics={chartMetrics} footnote={footnoteOf(scope, stats.followers)} />
-      {scope !== 'month' && <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : 'חודשי התקופה'}</h3></div><MarketingTable rows={rows} /></section>}
+      <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : scope === 'month' ? '12 החודשים האחרונים' : 'חודשי התקופה'}</h3></div><MarketingTable rows={rows} /></section>
     </>
   );
 }
@@ -148,12 +148,12 @@ function SalesBody({ advisorId, ym, scope }) {
     { key: 'relevantRate', label: 'אחוז רלוונטיות', values: months.map(s => pct(s.relevantRate)), format: percent },
     { key: 'closeRate', label: 'אחוז סגירה', values: months.map(s => pct(s.closeRate)), format: percent }
   ];
-  const rows = periods.map((p, i) => ({ label: monthName(i), s: months[i] }));
+  const rows = periods.map((p, i) => ({ label: scope === 'year' ? monthName(i) : monthName(Number(p.slice(5)) - 1) + ' ' + p.slice(0, 4), s: months[i] }));
   return (
     <>
       <FunnelStats s={stats} title="מדדי מכירות" />
       <TrendChart labels={periods.map(shortLabel)} metrics={chartMetrics} footnote={footnoteOf(scope, stats.total)} />
-      {scope === 'year' && <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>חודשי השנה</h3></div><FunnelTable rows={rows} /></section>}
+      <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : scope === 'month' ? '12 החודשים האחרונים' : 'חודשי התקופה'}</h3></div><FunnelTable rows={rows} /></section>
     </>
   );
 }
