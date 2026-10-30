@@ -3,11 +3,9 @@ import { useClientList } from '../clients/useClientList.js';
 import { BudgetModeContext } from '../budget/useClientBudget.js';
 import { addMonths } from '../budget/monthUtils.js';
 import Budget from '../budget/Budget.jsx';
-import Goals from '../budget/Goals.jsx';
 import Credit from '../budget/Credit.jsx';
 import Subscriptions from '../budget/Subscriptions.jsx';
 import Crm from '../crm/Crm.jsx';
-import ClientCardTab from './ClientCardTab.jsx';
 import MonthNav from '../components/MonthNav.jsx';
 import Button from '../components/Button.jsx';
 import Skeleton from '../components/Skeleton.jsx';
@@ -15,7 +13,6 @@ import ErrorState from '../components/ErrorState.jsx';
 import styles from './Business.module.css';
 
 const Assets = lazy(() => import('../budget/Assets.jsx'));
-const Analysis = lazy(() => import('../budget/Analysis.jsx'));
 const Mortgage = lazy(() => import('../budget/Mortgage.jsx'));
 const EconomicMapping = lazy(() => import('../mapping/EconomicMapping.jsx'));
 
@@ -23,10 +20,7 @@ const TABS = [
   { key: 'mapping', label: 'מיפוי' },
   { key: 'budget', label: 'תקציב' },
   { key: 'assets', label: 'שווי נקי' },
-  { key: 'tasks', label: 'משימות' },
-  { key: 'crm', label: 'לקוח' },
-  { key: 'analysis', label: 'ניתוח' },
-  { key: 'goals', label: 'יעדים' }
+  { key: 'tasks', label: 'משימות' }
 ];
 
 const CHIPS = [
@@ -203,25 +197,6 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
             <div className={styles.stack}>
               <Heading title="משימות" text="המשימות של הלקוח: מה הוגדר לו בתהליך ומה הוא הוסיף לעצמו." />
               <Crm view="tasks" key={`${clientIdOrNull}:tasks`} onDirtyChange={setDirty} action={null} advisorId={advisorId} clientId={clientIdOrNull} email={client.client_email} />
-            </div>
-          )}
-          {view === 'crm' && (
-            <div className={styles.stack}>
-              <Heading title="לקוח" text="פרטי הלקוח, פגישות ומשימות במקום אחד." />
-              <ClientCardTab key={clientIdOrNull} advisorId={advisorId} clientId={clientIdOrNull} email={client.client_email} mode={mode} onDirtyChange={setDirty} />
-            </div>
-          )}
-          {view === 'analysis' && (
-            <div className={styles.stack}>
-              <Heading title="ניתוח" text="השוואת חודשים והבנה לאן הכסף הולך." />
-              {monthModeBar}
-              {suspense(<Analysis onPreviousMonth={() => changeMonth(-1)} onOpenBudget={() => changeTab('budget')} clientUserId={clientIdOrNull} advisorId={advisorId} year={ym.year} month={ym.month} />)}
-            </div>
-          )}
-          {view === 'goals' && (
-            <div className={styles.stack}>
-              <Heading title="יעדים" text="יעדי חיסכון והתקדמות אליהם." />
-              <Goals clientUserId={clientIdOrNull} advisorId={advisorId} />
             </div>
           )}
           {view === 'credit' && <Credit key={chip} focus={CHIPS.find(c => c.key === chip)?.focus} clientUserId={clientIdOrNull} advisorId={advisorId} />}

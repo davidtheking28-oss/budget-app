@@ -40,7 +40,7 @@ export default function ClientService({ advisorId, onSelect }) {
 
   const dealByLink = Object.fromEntries(deals.rows.map(r => [r.id, r]));
   const opened = openId && dealByLink[openId];
-  if (opened) return <ClientJourney key={openId} advisorId={advisorId} row={opened} saveDeal={deals.saveDeal} onBack={() => setOpenId(null)} onOpenClient={r => onSelect(r.client_id, r.client_email, { nav: 'crm' })} />;
+  if (opened) return <ClientJourney key={openId} advisorId={advisorId} row={opened} saveDeal={deals.saveDeal} onBack={() => setOpenId(null)} onOpenClient={r => onSelect(r.client_id, r.client_email)} />;
   const journeyOf = c => dealByLink[c.id]?.deal?.journey;
   const allAttention = c => [...attentionOf(c), ...journeyAttention(journeyOf(c))];
   const statusOf = c => dealByLink[c.id]?.deal?.service_status || 'active';
@@ -110,7 +110,7 @@ export default function ClientService({ advisorId, onSelect }) {
                           {SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
                       </td>
-                      <td><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M5 12h14M13 6l6 6-6 6" /></svg></button><button type="button" className={styles.iconBtn} aria-label={'פתח לקוח: ' + (c.name || c.client_email)} title="פתח לקוח" onClick={() => onSelect(c.client_id, c.client_email, { nav: 'crm' })}><svg {...svgProps}><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5" /></svg></button></td>
+                      <td><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M5 12h14M13 6l6 6-6 6" /></svg></button><button type="button" className={styles.iconBtn} aria-label={'פתח לקוח: ' + (c.name || c.client_email)} title="פתח לקוח" onClick={() => onSelect(c.client_id, c.client_email)}><svg {...svgProps}><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5" /></svg></button></td>
                     </tr>
                   );
                 })}
