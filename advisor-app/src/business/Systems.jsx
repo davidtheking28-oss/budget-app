@@ -6,14 +6,15 @@ import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import HeaderAction from './HeaderAction.jsx';
+import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 
 const SYSTEM_DEPARTMENTS = [
-  { key: 'שירות', icon: '◎' },
-  { key: 'שיווק', icon: '◁' },
-  { key: 'מכירות', icon: '↗' },
-  { key: 'פיננסים', icon: '₪' },
-  { key: 'ניהול', icon: '▤' }
+  { key: 'שירות', icon: icons.headset },
+  { key: 'שיווק', icon: icons.megaphone },
+  { key: 'מכירות', icon: icons.chart },
+  { key: 'פיננסים', icon: icons.coins },
+  { key: 'ניהול', icon: icons.briefcase }
 ];
 
 export default function Systems({ advisorId }) {
@@ -67,7 +68,7 @@ export default function Systems({ advisorId }) {
       <section className={styles.card}>
         {visible.length === 0 ? (
           <div className={styles.emptyState}>
-            <span className={styles.iconTile} aria-hidden="true">▢</span>
+            <span className={styles.iconTile} aria-hidden="true">{icons.nodes}</span>
             <span>אין סיסטמים כאן עדיין</span>
             <span className={styles.cardSub}>כל תהליך שחוזר על עצמו בעסק שווה סיסטם</span>
           </div>

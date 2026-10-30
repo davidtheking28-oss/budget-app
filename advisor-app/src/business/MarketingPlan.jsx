@@ -8,6 +8,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { fmt } from '../format.js';
+import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 
 const cost = value => (value === null ? 'אין' : fmt(value));
@@ -145,25 +146,25 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
       <div className={styles.sectionLabel}>פרטי החודש</div>
       <div className={styles.tileGrid4}>
         <button type="button" className={styles.linkTile} onClick={() => setModal('tasks')}>
-          <span className={styles.iconTile} aria-hidden="true">✓</span>
+          <span className={styles.iconTile} aria-hidden="true">{icons.tasks}</span>
           <span className={styles.linkTileTitle}>משימות החודש</span>
           <span className={styles.linkTileValue}>{progress.done}/{progress.total}</span>
           <span className={styles.rowMeta}>לחיצה לסימון ועריכה</span>
         </button>
         <button type="button" className={styles.linkTile} onClick={() => setModal('followers')}>
-          <span className={styles.iconTile} aria-hidden="true">◎</span>
+          <span className={styles.iconTile} aria-hidden="true">{icons.users}</span>
           <span className={styles.linkTileTitle}>נתוני עוקבים</span>
           <span className={styles.linkTileValue}>{metrics.followers}</span>
           <span className={styles.rowMeta}>{metrics.followers} החודש</span>
         </button>
         <button type="button" className={styles.linkTile} onClick={() => setModal('leads')}>
-          <span className={styles.iconTile} aria-hidden="true">↗</span>
+          <span className={styles.iconTile} aria-hidden="true">{icons.trend}</span>
           <span className={styles.linkTileTitle}>לידים משיווק</span>
           <span className={styles.linkTileValue}>{metrics.meetings} פגישות</span>
           <span className={styles.rowMeta}>{metrics.closings} סגירות</span>
         </button>
         <button type="button" className={styles.linkTile} onClick={() => onNavigate?.('ideas')}>
-          <span className={styles.iconTile} aria-hidden="true">▣</span>
+          <span className={styles.iconTile} aria-hidden="true">{icons.bulb}</span>
           <span className={styles.linkTileTitle}>רעיונות לסרטונים</span>
           <span className={styles.linkTileValue}>{waiting} מחכים</span>
           <span className={styles.rowMeta}>{published} פורסמו</span>
