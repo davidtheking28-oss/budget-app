@@ -7,6 +7,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import HeaderAction from './HeaderAction.jsx';
+import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 
 function ProjectCard({ project, onUpdate, onRemove }) {
@@ -82,7 +83,7 @@ export default function Projects({ advisorId }) {
       {records.length === 0 ? (
         <section className={styles.card}>
           <div className={styles.emptyState}>
-            <span className={styles.iconTile} aria-hidden="true">◫</span>
+            <span className={styles.iconTile} aria-hidden="true">{icons.folder}</span>
             <span>עוד אין פרויקטים</span>
             <span className={styles.cardSub}>פרויקט הוא משהו גדול שמתחלק לשלבים ומשימות</span>
           </div>

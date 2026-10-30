@@ -11,6 +11,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { fmt } from '../format.js';
 import { toast } from '../toast.js';
+import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -191,25 +192,25 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
       <div className={styles.stack}>
       <div className={styles.grid2}>
         <button type="button" className={styles.linkTile} onClick={() => setModal('income')}>
-          <span className={styles.iconTile} aria-hidden="true">₪</span>
+          <span className={styles.iconTile} aria-hidden="true">{icons.coins}</span>
           <span className={styles.linkTileTitle}>הכנסות</span>
           <span className={styles.linkTileValue}>{money(m.income)}</span>
           <span className={styles.rowMeta}>סליקה {money(m.clearing)} · אחרי ניכיון {money(m.afterClearing)}</span>
         </button>
         <button type="button" className={styles.linkTile} onClick={() => setModal('fixed')}>
-          <span className={styles.iconTile} aria-hidden="true">▤</span>
+          <span className={styles.iconTile} aria-hidden="true">{icons.table}</span>
           <span className={styles.linkTileTitle}>הוצאות קבועות</span>
           <span className={styles.linkTileValue}>{money(m.fixedTotal)}</span>
           <span className={styles.rowMeta}>{m.fixed.length} הוצאות</span>
         </button>
         <div className={styles.linkTile} style={{ cursor: 'default' }}>
-          <span className={styles.iconTile} aria-hidden="true">%</span>
+          <span className={styles.iconTile} aria-hidden="true">{icons.percent}</span>
           <span className={styles.linkTileTitle}>מיסים</span>
           <span className={styles.linkTileValue}>{money(m.taxes)}</span>
           <span className={styles.rowMeta}>מע״מ {VAT_RATE * 100}% · מס {INCOME_TAX_RATE * 100}% · ב״ל {NATIONAL_INSURANCE_RATE * 100}%</span>
         </div>
         <button type="button" className={styles.linkTile} onClick={() => setModal('variable')}>
-          <span className={styles.iconTile} aria-hidden="true">▤</span>
+          <span className={styles.iconTile} aria-hidden="true">{icons.table}</span>
           <span className={styles.linkTileTitle}>הוצאות משתנות</span>
           <span className={styles.linkTileValue}>{money(m.variableTotal)}</span>
           <span className={styles.rowMeta}>{m.variable.length} הוצאות</span>

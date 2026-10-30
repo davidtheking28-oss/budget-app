@@ -6,6 +6,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
+import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 
 const RECURRENCES = ['חד פעמית', 'יומית', 'שבועית', 'חודשית'];
@@ -140,21 +141,23 @@ export default function BizTasks({ advisorId }) {
 
   return (
     <div className={styles.stack}>
-      <section className={styles.card}>
+      <section className={styles.bigCard}>
         <div className={styles.cardHead}>
           <div className={styles.toolbar}>
-            <span className={styles.iconTile} aria-hidden="true">✦</span>
+            <span className={styles.iconTile} aria-hidden="true">{icons.calendarCheck}</span>
             <div><h3 className={styles.cardTitle}>היום שלי</h3><p className={styles.cardSub}>{hebrewDate(today)}</p></div>
           </div>
           <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ משימה חדשה</button>
         </div>
-        <div className={styles.grid2}>
-          <div className={styles.stat}>
-            <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true">✓</span><div className={styles.statLabel}>משימות היום</div><span className={styles.spacer} /><div className={styles.statValue}>{buckets.today.length}</div></div>
+        <div className={styles.grid2 + ' ' + styles.cellGrid}>
+          <div className={styles.cell}>
+            <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true">{icons.tasks}</span><span className={styles.statLabel}>משימות היום</span></div>
+            <div className={styles.bigNumber} style={{ fontSize: 'var(--text-stat)' }}>{buckets.today.length}</div>
             <div className={styles.statNote}>{buckets.today.length ? 'מה שמתוכנן להיום' : 'אין משימות להיום'}</div>
           </div>
-          <div className={styles.stat}>
-            <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true">!</span><div className={styles.statLabel}>משימות באיחור</div><span className={styles.spacer} /><div className={styles.statValue + (buckets.overdue.length ? ' ' + styles.statNeg : '')}>{buckets.overdue.length}</div></div>
+          <div className={styles.cell}>
+            <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true">{icons.alert}</span><span className={styles.statLabel}>משימות באיחור</span></div>
+            <div className={styles.bigNumber + (buckets.overdue.length ? ' ' + styles.statNeg : '')} style={{ fontSize: 'var(--text-stat)' }}>{buckets.overdue.length}</div>
             <div className={styles.statNote}>{buckets.overdue.length ? 'עברו את מועד הביצוע' : 'אין משימות באיחור'}</div>
           </div>
         </div>
@@ -184,7 +187,7 @@ export default function BizTasks({ advisorId }) {
       <section className={styles.card}>
         {visible.length === 0 ? (
           <div className={styles.emptyState}>
-            <span className={styles.iconTile} aria-hidden="true">✓</span>
+            <span className={styles.iconTile} aria-hidden="true">{icons.tasks}</span>
             <span>אין משימות בתצוגה הזו</span>
             <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ הוסף משימה</button>
           </div>

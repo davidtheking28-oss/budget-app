@@ -7,6 +7,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
+import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 
 const STATUSES = [
@@ -96,7 +97,7 @@ export default function VideoIdeas({ advisorId }) {
       <section className={styles.card}>
         <div className={styles.cardHead}>
           <div className={styles.toolbar}>
-            <span className={styles.iconTile} aria-hidden="true">✦</span>
+            <span className={styles.iconTile} aria-hidden="true">{icons.bulb}</span>
             <div><h3 className={styles.cardTitle}>מאגר השראה</h3><p className={styles.cardSub}>{available.length} רעיונות מוכנים לסרטונים, לפי נושא. לוחצים על "להוסיף" והרעיון עובר ללוח שלך.</p></div>
           </div>
           <button type="button" className={styles.iconBtn} aria-expanded={poolOpen} aria-label={poolOpen ? 'כווץ את המאגר' : 'הרחב את המאגר'} onClick={() => setPoolOpen(o => !o)}>{poolOpen ? '⌃' : '⌄'}</button>
