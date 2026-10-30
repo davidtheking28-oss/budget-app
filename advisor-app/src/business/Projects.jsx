@@ -14,6 +14,7 @@ function ProjectCard({ project, onUpdate, onRemove }) {
   const [step, setStep] = useState('');
   const steps = project.steps || [];
   const progress = projectProgress(project);
+  const meta = [project.importance ? 'חשיבות ' + project.importance + '/10' : '', project.deadline ? 'דדליין ' + new Date(project.deadline).toLocaleDateString('he-IL') : '', project.investment ? 'נדרשת השקעה' : ''].filter(Boolean);
 
   function addStep(e) {
     e.preventDefault();
@@ -30,6 +31,8 @@ function ProjectCard({ project, onUpdate, onRemove }) {
       <div className={styles.cardHead}>
         <div>
           <h3 className={styles.cardTitle}>{project.name}</h3>
+          {meta.length ? <p className={styles.cardSub}>{meta.join(' · ')}</p> : null}
+          {project.description ? <p className={styles.cardSub}>{project.description}</p> : null}
           <p className={styles.cardSub}>{progress.total ? `${progress.done} מתוך ${progress.total} שלבים · ${percentLabel(progress.rate)}` : 'עוד אין שלבים'}</p>
         </div>
         <DeleteButton title={'מחק פרויקט: ' + project.name} onClick={onRemove} />
@@ -58,6 +61,10 @@ export default function Projects({ advisorId }) {
   const { records, loading, error, reload, add, update, remove } = useBizRecords(advisorId, 'project');
   const [modal, setModal] = useState(false);
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [importance, setImportance] = useState('');
+  const [investment, setInvestment] = useState(false);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="200px" radius="18px" />;
@@ -65,9 +72,15 @@ export default function Projects({ advisorId }) {
   async function submit(e) {
     e.preventDefault();
     if (!name.trim()) { toast('כתוב שם לפרויקט', 'error'); return; }
-    const row = await add({ name: name.trim(), steps: [] });
+    const rank = Number(importance);
+    if (importance !== '' && !(rank >= 1 && rank <= 10)) { toast('דירוג החשיבות הוא מספר בין 1 ל-10', 'error'); return; }
+    const row = await add({ name: name.trim(), steps: [], description: description.trim(), deadline, importance: importance === '' ? null : rank, investment });
     if (!row) return;
     setName('');
+    setDescription('');
+    setDeadline('');
+    setImportance('');
+    setInvestment(false);
     setModal(false);
   }
 
@@ -99,6 +112,17 @@ export default function Projects({ advisorId }) {
         <Modal title="פרויקט חדש" onClose={() => setModal(false)}>
           <form className={styles.formGrid} onSubmit={submit}>
             <label className={styles.fieldLabel}>שם הפרויקט<input className={styles.input} value={name} onChange={e => setName(e.target.value)} /></label>
+            <label className={styles.fieldLabel}>תיאור<textarea className={styles.input + ' ' + styles.textarea} value={description} onChange={e => setDescription(e.target.value)} placeholder="פרטים נוספים (לא חובה)" /></label>
+            <div className={styles.formRow}>
+              <label className={styles.fieldLabel}>דדליין הפרויקט<input className={styles.input} type="date" value={deadline} onChange={e => setDeadline(e.target.value)} /></label>
+              <label className={styles.fieldLabel}>דירוג חשיבות (1 עד 10)<input className={styles.input} type="number" min="1" max="10" value={importance} onChange={e => setImportance(e.target.value)} /></label>
+            </div>
+            <label className={styles.fieldLabel}>נדרשת השקעה כספית?
+              <div className={styles.segment} role="group" aria-label="נדרשת השקעה כספית">
+                <button type="button" className={!investment ? styles.segBtnOn : styles.segBtn} aria-pressed={!investment} onClick={() => setInvestment(false)}>לא נדרשת</button>
+                <button type="button" className={investment ? styles.segBtnOn : styles.segBtn} aria-pressed={investment} onClick={() => setInvestment(true)}>נדרשת</button>
+              </div>
+            </label>
             <div className={styles.toolbar}>
               <button type="submit" className={styles.btn}>פתח פרויקט</button>
               <button type="button" className={styles.btnGhost} onClick={() => setModal(false)}>ביטול</button>
