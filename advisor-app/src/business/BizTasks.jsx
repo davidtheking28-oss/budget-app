@@ -53,7 +53,11 @@ function TaskModal({ today, onClose, onSave }) {
         <label className={styles.fieldLabel}>שם המשימה<input className={styles.input} value={form.name} onChange={set('name')} /></label>
         <label className={styles.fieldLabel}>תיאור<textarea className={styles.input + ' ' + styles.textarea} value={form.description} onChange={set('description')} /></label>
         <div className={styles.formRow}>
-          <label className={styles.fieldLabel}>מחלקה<select className={styles.select} value={form.dept} onChange={set('dept')}>{DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}</select></label>
+          <div className={styles.fieldLabel} style={{ gridColumn: "1 / -1" }} role="group" aria-label="מחלקה">מחלקה
+            <div className={styles.pills}>
+              {DEPARTMENTS.map(d => <button key={d} type="button" className={form.dept === d ? styles.pillOn : styles.pill} aria-pressed={form.dept === d} onClick={() => setForm(prev => ({ ...prev, dept: d }))}>{d}</button>)}
+            </div>
+          </div>
           <label className={styles.fieldLabel}>עדיפות<select className={styles.select} value={form.priority} onChange={set('priority')}>{PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}</select></label>
         </div>
         <div className={styles.fieldLabel}>מועד ביצוע
