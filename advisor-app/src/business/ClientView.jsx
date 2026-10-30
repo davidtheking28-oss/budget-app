@@ -31,7 +31,7 @@ const TABS = [
 
 const CHIPS = [
   { key: 'main', label: 'תצוגה ראשית' },
-  { key: 'cards', label: 'כרטיסי אשראי', view: 'credit', focus: 'all' },
+  { key: 'cards', label: 'כרטיסי אשראי', view: 'credit', focus: 'cards' },
   { key: 'loans', label: 'חובות והלוואות', view: 'credit', focus: 'loans' },
   { key: 'mortgage', label: 'משכנתא', view: 'mortgage' },
   { key: 'installments', label: 'תשלומים', view: 'credit', focus: 'payments' },

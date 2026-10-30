@@ -12,6 +12,7 @@ import { toast } from '../toast.js';
 import { addItem, updateItem, removeItem } from './itemHelpers.js';
 import PaymentsTimeline from './PaymentsTimeline.jsx';
 import { MONTH_NAMES as MONTHS_HE } from './monthUtils.js';
+import CreditCards from './CreditCards.jsx';
 import CollapsibleSection from '../components/CollapsibleSection.jsx';
 import styles from './Credit.module.css';
 import { fmt } from '../format.js';
@@ -296,7 +297,8 @@ export default function Credit({ clientUserId, advisorId, focus = 'all' }) {
           ].filter(Boolean)}
         />
       )}
-      {focus !== 'payments' && <div className={styles.section}>
+      {(focus === 'all' || focus === 'cards') && <CreditCards settings={data.settings} save={save} />}
+      {focus !== 'payments' && focus !== 'cards' && <div className={styles.section}>
         <CollapsibleSection title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
         <AddForm label="הוסף הלוואה" open={editingLoanId != null} openSignal={loanFormSignal} className={styles.form}>
@@ -363,7 +365,7 @@ export default function Credit({ clientUserId, advisorId, focus = 'all' }) {
         ) : null)}
       </CollapsibleSection>
       </div>}
-      {focus !== 'loans' && <div className={styles.section}>
+      {focus !== 'loans' && focus !== 'cards' && <div className={styles.section}>
         <CollapsibleSection title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         <PaymentsTimeline payments={payments} />
@@ -444,7 +446,7 @@ export default function Credit({ clientUserId, advisorId, focus = 'all' }) {
         </div>
       )}
 
-      {focus !== 'payments' && <div className={styles.sectionsGrid}>
+      {focus !== 'payments' && focus !== 'cards' && <div className={styles.sectionsGrid}>
       <div className={styles.section}>
         <CollapsibleSection title={<>מחשבון שפיצר</>}>
         <div className={styles.form}>
