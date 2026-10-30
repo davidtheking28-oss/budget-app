@@ -98,7 +98,7 @@
   background: transparent;
   color: var(--workspace-text);
   font-family: Heebo, inherit;
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;

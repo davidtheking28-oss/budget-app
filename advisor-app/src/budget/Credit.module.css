@@ -82,7 +82,7 @@
 
 .sectionEmpty {
   color: var(--text3);
-  font-size: 14px;
+  font-size: var(--text-base);
 }
 
 .grid {
@@ -169,12 +169,12 @@
 
 .name {
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--text-md);
 }
 
 .meta {
   color: var(--text3);
-  font-size: 13px;
+  font-size: var(--text-sm);
   margin-top: 2px;
 }
 
@@ -184,7 +184,7 @@
   font-weight: 700;
   direction: ltr;
   unicode-bidi: isolate;
-  font-size: 15px;
+  font-size: var(--text-md);
 }
 
 .rowDone {

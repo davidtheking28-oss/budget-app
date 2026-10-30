@@ -58,12 +58,12 @@ export default function ClientService({ advisorId, onSelect }) {
         <div className={styles.grid2 + ' ' + styles.cellGrid}>
           <div className={styles.cell}>
             <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true"><svg {...svgProps}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3.5" /></svg></span><span className={styles.statLabel}>לקוחות פעילים</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 28 }}>{activeCount}</div>
+            <div className={styles.bigNumber} style={{ fontSize: 'var(--text-stat)' }}>{activeCount}</div>
             <div className={styles.statNote}>בתהליך ליווי כרגע</div>
           </div>
           <div className={styles.cell}>
             <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true"><svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-6" /></svg></span><span className={styles.statLabel}>סיימו את כל התהליך</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 28 }}>{endedCount}</div>
+            <div className={styles.bigNumber} style={{ fontSize: 'var(--text-stat)' }}>{endedCount}</div>
             <button type="button" className={styles.linkNote} onClick={() => { setStatus('ended'); setView('all'); }}>עברו לרשימת הלקוחות שסיימו</button>
           </div>
         </div>

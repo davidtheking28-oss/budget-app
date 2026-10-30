@@ -22,7 +22,7 @@
 .title {
   margin: 0 0 12px;
   color: var(--text);
-  font-size: 16px;
+  font-size: var(--text-lg);
   font-weight: 800;
 }
 
@@ -44,20 +44,20 @@
 
 .name {
   color: var(--text);
-  font-size: 15px;
+  font-size: var(--text-md);
   font-weight: 600;
 }
 
 .sub {
   color: var(--text3);
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 
 .amount {
   flex-shrink: 0;
   min-width: 5.5em;
   color: var(--text);
-  font-size: 15px;
+  font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -94,7 +94,7 @@
 
 @media (min-width: 861px) {
   .card { padding: 24px; }
-  .title { font-size: 16px; margin-bottom: 18px; }
+  .title { font-size: var(--text-lg); margin-bottom: 18px; }
   .row { padding-block: 13px; }
   .sub { font-size: var(--text-sm); line-height: 1.5; margin-top: 3px; }
   .amount { font-size: var(--text-md); }

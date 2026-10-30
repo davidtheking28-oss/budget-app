@@ -32,7 +32,7 @@
   padding: 0;
   color: var(--text);
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--text-lg);
   font-weight: 800;
   margin: 0;
   text-align: start;
@@ -236,7 +236,7 @@
 
 .name {
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--text-md);
 }
 
 .taskNum {
@@ -261,7 +261,7 @@
 
 .meta {
   color: var(--text3);
-  font-size: 13px;
+  font-size: var(--text-sm);
   margin-top: 3px;
 }
 
@@ -443,7 +443,7 @@
 .taskCompleted { background: var(--surface2); }
 .completedBadge { display: inline-block; margin-inline-start: 8px; padding: 2px 8px; border-radius: var(--radius-sm); background: rgba(var(--green-rgb), 0.1); color: var(--green); font-size: var(--text-xs); text-decoration: none; }
 .meetingUpcoming { background: var(--accent-dim); border-inline-start: 3px solid var(--accent); }
-.sectionTitle { font-size: 16px; }
+.sectionTitle { font-size: var(--text-lg); }
 .section { box-shadow: var(--shadow-card); }
 
 :root[data-density="compact"] .taskRow, :root[data-density="compact"] .meetingRow { padding-block: 8px; }
@@ -456,7 +456,7 @@
 .followup summary, .summaryBlock > summary { cursor: pointer; color: var(--text); font-weight: 700; padding-block: 8px; }
 .prep { padding: 22px; margin-bottom: 20px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius-md); }
 .prepHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.prepHeader h2 { font-size: 16px; font-weight: 800; margin: 0 0 6px; }
+.prepHeader h2 { font-size: var(--text-lg); font-weight: 800; margin: 0 0 6px; }
 .prepHeader p, .prepGrid p, .prepGrid li { color: var(--text2); font-size: var(--text-sm); line-height: 1.7; }
 .prepGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding-top: 20px; }
 .prepGrid h3 { font-size: var(--text-base); margin-bottom: 10px; }

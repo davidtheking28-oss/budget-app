@@ -129,7 +129,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
         <div className={styles.grid2 + ' ' + styles.cellGrid} style={{ marginTop: 18 }}>
           <div className={styles.cell}>
             <div className={styles.statLabel}>הפגישה הבאה בתהליך</div>
-            <div className={styles.statValue} style={{ fontSize: 18 }}>{upcoming ? upcoming.title : 'הושלמו כל הפגישות'}</div>
+            <div className={styles.statValue} style={{ fontSize: 'var(--text-lg)' }}>{upcoming ? upcoming.title : 'הושלמו כל הפגישות'}</div>
             {upcoming && (
               <label className={styles.fieldLabel}>מועד ביומן
                 <input className={styles.input} type="date" value={upcoming.date} onChange={e => { const k = MEETINGS.find(m => m.title === upcoming.title).key; setDate(k, e.target.value); }} />

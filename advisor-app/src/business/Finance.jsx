@@ -31,7 +31,7 @@ function BusinessTypeBar({ value, onChange }) {
       <div className={styles.segment} role="group" aria-label="סוג העסק">
         {BUSINESS_TYPES.map(t => <button key={t} type="button" className={value === t ? styles.segBtnOn : styles.segBtn} aria-pressed={value === t} onClick={() => onChange(t)}>{t}</button>)}
       </div>
-      <span className={styles.iconBtn} role="img" aria-label={`מע״מ ${VAT_RATE * 100}% לעוסק מורשה בלבד, מס הכנסה ${INCOME_TAX_RATE * 100}% וביטוח לאומי ${NATIONAL_INSURANCE_RATE * 100}% מהרווח התפעולי`} title={`מע״מ ${VAT_RATE * 100}% לעוסק מורשה בלבד · מס ${INCOME_TAX_RATE * 100}% · ב״ל ${NATIONAL_INSURANCE_RATE * 100}% מהרווח התפעולי`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>i</span>
+      <span className={styles.iconBtn} role="img" aria-label={`מע״מ ${VAT_RATE * 100}% לעוסק מורשה בלבד, מס הכנסה ${INCOME_TAX_RATE * 100}% וביטוח לאומי ${NATIONAL_INSURANCE_RATE * 100}% מהרווח התפעולי`} title={`מע״מ ${VAT_RATE * 100}% לעוסק מורשה בלבד · מס ${INCOME_TAX_RATE * 100}% · ב״ל ${NATIONAL_INSURANCE_RATE * 100}% מהרווח התפעולי`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-base)' }}>i</span>
     </div>
   );
 }

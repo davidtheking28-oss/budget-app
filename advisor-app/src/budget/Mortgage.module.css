@@ -42,7 +42,7 @@
 
 .cardTitle {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--text-lg);
   font-weight: 800;
   color: var(--text);
   margin-bottom: 12px;
@@ -129,8 +129,8 @@
 
 .resultRow:first-child { border-top: none; }
 
-.resultLabel { font-size: 13px; color: var(--text3); }
-.resultValue { font-size: 15px; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
+.resultLabel { font-size: var(--text-sm); color: var(--text3); }
+.resultValue { font-size: var(--text-md); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
 .resultGood { color: var(--green); }
 .resultBad { color: var(--red); }
 
@@ -142,7 +142,7 @@
 }
 
 .empty {
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--text3);
   padding: var(--space-5) 0;
   text-align: center;

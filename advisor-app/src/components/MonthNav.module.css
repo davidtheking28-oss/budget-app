@@ -53,7 +53,7 @@
 
 .label {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 400;
   color: var(--text2);
   cursor: pointer;

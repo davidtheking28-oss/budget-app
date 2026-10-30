@@ -139,7 +139,7 @@
   background: none;
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;

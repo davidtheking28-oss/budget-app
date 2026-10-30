@@ -84,7 +84,7 @@
 
 .cardTitle {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--text-lg);
   font-weight: 800;
   color: var(--text);
 }
@@ -349,7 +349,7 @@
 
 .cardTotal {
   color: var(--text2);
-  font-size: 16px;
+  font-size: var(--text-lg);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -481,7 +481,7 @@
 .sumTitle {
   color: var(--text);
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--text-lg);
   font-weight: 700;
 }
 
@@ -525,7 +525,7 @@
 }
 
 .flowLine span:last-child {
-  font-size: 16px;
+  font-size: var(--text-lg);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   direction: ltr;
@@ -540,7 +540,7 @@
 .itemAmountBox { border-color: var(--control-border); }
 .itemAmountBoxLabel { color: var(--text2); margin-bottom: 4px; }
 .itemAmountInput, .itemActualValue { font-size: var(--text-lg); }
-.cardTitle { font-size: 16px; }
+.cardTitle { font-size: var(--text-lg); }
 }
 
 .saveStatus { padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: var(--text-sm); line-height: 1.5; }
