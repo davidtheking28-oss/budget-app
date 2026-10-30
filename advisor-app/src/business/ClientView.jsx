@@ -29,6 +29,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
   const [ym, setYm] = useState({ year: now.getFullYear(), month: now.getMonth() });
   const [mode, setMode] = useState('personal');
   const [dirty, setDirty] = useState(false);
+  const [period, setPeriod] = useState('month');
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="18px" />;
@@ -105,6 +106,10 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
           <p className={styles.cardSub}>חודשי: תכנון בתחילת החודש מול ביצוע בסופו.</p>
         </div>
         <div className={styles.toolbar}>
+          <div className={styles.pills} role="group" aria-label="תצוגת תקופה">
+            <button type="button" className={period === 'month' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'month'} onClick={() => setPeriod('month')}>חודשי</button>
+            <button type="button" className={period === 'year' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'year'} onClick={() => setPeriod('year')}>שנתי</button>
+          </div>
           <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />
           <div className={styles.segment} role="group" aria-label="סוג תקציב">
             <button type="button" className={mode === 'personal' ? styles.segBtnOn : styles.segBtn} aria-pressed={mode === 'personal'} onClick={() => changeMode('personal')}>פרטי</button>
@@ -116,7 +121,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
       {client && tab === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping key={client.client_id} clientUserId={client.client_id} advisorId={advisorId} onNavigate={goTo} /></Suspense>}
       {client && tab === 'budget' && (
         <BudgetModeContext.Provider value={mode}>
-          <Budget key={`${client.client_id}:${mode}:${ym.year}:${ym.month}`} onDirtyChange={setDirty} focusCategory={null} clientUserId={client.client_id} advisorId={advisorId} year={ym.year} month={ym.month} />
+          <Budget key={`${client.client_id}:${mode}:${ym.year}:${ym.month}`} period={period} onPeriodChange={setPeriod} onDirtyChange={setDirty} focusCategory={null} clientUserId={client.client_id} advisorId={advisorId} year={ym.year} month={ym.month} />
         </BudgetModeContext.Provider>
       )}
       {client && tab === 'assets' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><Assets key={client.client_id} clientUserId={client.client_id} advisorId={advisorId} /></Suspense>}

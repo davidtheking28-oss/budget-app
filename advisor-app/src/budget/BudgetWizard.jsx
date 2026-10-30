@@ -51,7 +51,7 @@ function sameCategory(a, b) {
   return words(a).some(wa => words(b).some(wb => wa.slice(0, 4) === wb.slice(0, 4)));
 }
 
-export default function BudgetWizard({ data, save, year, month, focusCategory, onDirtyChange }) {
+export default function BudgetWizard({ data, save, year, month, focusCategory, onDirtyChange, period, onPeriodChange }) {
   const wizardRef = useRef(null);
   useEffect(() => {
     if (!focusCategory) return;
@@ -64,7 +64,9 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   }, [focusCategory]);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle');
-  const [flowPeriod, setFlowPeriod] = useState('month');
+  const [localPeriod, setLocalPeriod] = useState('month');
+  const flowPeriod = period ?? localPeriod;
+  const setFlowPeriod = onPeriodChange ?? setLocalPeriod;
 
   // Income sources and fixed expenses aren't month-scoped in storage — they're the
   // recurring plan and already apply to every month by default. What's missing is
@@ -441,10 +443,10 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       {left < 0 && <div className={styles.warn}>ההקצאה חורגת מההכנסות ב-{fmt(Math.abs(left))} לחודש</div>}
 
       <div className={styles.body}>
-          <div className={styles.viewPills} role="group" aria-label="תצוגת תקופה">
+          {period == null && <div className={styles.viewPills} role="group" aria-label="תצוגת תקופה">
             <button type="button" aria-pressed={flowPeriod === 'month'} className={flowPeriod === 'month' ? styles.viewPillOn : styles.viewPill} onClick={() => setFlowPeriod('month')}>חודשי</button>
             <button type="button" aria-pressed={flowPeriod === 'year'} className={flowPeriod === 'year' ? styles.viewPillOn : styles.viewPill} onClick={() => setFlowPeriod('year')}>שנתי</button>
-          </div>
+          </div>}
           <div className={styles.card}>
             <div className={styles.sumGrid}>
               {summaryCards.map(c => (

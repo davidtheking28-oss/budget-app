@@ -3,7 +3,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import BudgetWizard from './BudgetWizard.jsx';
 
-export default function Budget({ clientUserId, advisorId, year, month, focusCategory, onDirtyChange }) {
+export default function Budget({ clientUserId, advisorId, year, month, focusCategory, onDirtyChange, period, onPeriodChange }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -18,7 +18,7 @@ export default function Budget({ clientUserId, advisorId, year, month, focusCate
 
   return (
     <div>
-      <BudgetWizard onDirtyChange={onDirtyChange} focusCategory={focusCategory} data={data} save={save} year={year} month={month} />
+      <BudgetWizard period={period} onPeriodChange={onPeriodChange} onDirtyChange={onDirtyChange} focusCategory={focusCategory} data={data} save={save} year={year} month={month} />
     </div>
   );
 }
