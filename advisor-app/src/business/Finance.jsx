@@ -158,6 +158,8 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
   const period = ymKey(ym.year, ym.month);
   const m = financeMonth(entries, period, businessType);
   const breakdown = expenseBreakdown([...m.fixed, ...m.variable]);
+  const shareOfIncome = v => (m.income > 0 ? Math.min(1, Math.max(0, v / m.income)) : 0);
+  const IncomeBar = ({ value }) => <span className={styles.progress}><span className={styles.progressFill} style={{ width: shareOfIncome(value) * 100 + '%' }} /></span>;
 
   async function endFixed(e) {
     if (e.startPeriod === period) await ops.remove(e.id, 'ההוצאה הוסרה');
@@ -201,19 +203,22 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
           <span className={styles.iconTile} aria-hidden="true">{icons.table}</span>
           <span className={styles.linkTileTitle}>הוצאות קבועות</span>
           <span className={styles.linkTileValue}>{money(m.fixedTotal)}</span>
-          <span className={styles.rowMeta}>{m.fixed.length} הוצאות</span>
+          <IncomeBar value={m.fixedTotal} />
+          <span className={styles.rowMeta}>{m.fixed.length} הוצאות · {percentLabel(shareOfIncome(m.fixedTotal))} מההכנסות</span>
         </button>
         <div className={styles.linkTile} style={{ cursor: 'default' }}>
           <span className={styles.iconTile} aria-hidden="true">{icons.percent}</span>
           <span className={styles.linkTileTitle}>מיסים</span>
           <span className={styles.linkTileValue}>{money(m.taxes)}</span>
+          <IncomeBar value={m.taxes} />
           <span className={styles.rowMeta}>מע״מ {VAT_RATE * 100}% · מס {INCOME_TAX_RATE * 100}% · ב״ל {NATIONAL_INSURANCE_RATE * 100}%</span>
         </div>
         <button type="button" className={styles.linkTile} onClick={() => setModal('variable')}>
           <span className={styles.iconTile} aria-hidden="true">{icons.table}</span>
           <span className={styles.linkTileTitle}>הוצאות משתנות</span>
           <span className={styles.linkTileValue}>{money(m.variableTotal)}</span>
-          <span className={styles.rowMeta}>{m.variable.length} הוצאות</span>
+          <IncomeBar value={m.variableTotal} />
+          <span className={styles.rowMeta}>{m.variable.length} הוצאות · {percentLabel(shareOfIncome(m.variableTotal))} מההכנסות</span>
         </button>
       </div>
         <section className={styles.card}>
