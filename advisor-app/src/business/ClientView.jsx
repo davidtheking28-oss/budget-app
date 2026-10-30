@@ -77,7 +77,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
       <div className={styles.toolbar}>
         <label className={styles.toolbar}>
           <span className={styles.statLabel}>לקוח:</span>
-          <select className={styles.select} value={clientId || ''} aria-label="בחירת לקוח" onChange={e => changeClient(e.target.value)}>
+          <select className={styles.select} style={{ width: 240, maxWidth: "100%" }} value={clientId || ''} aria-label="בחירת לקוח" onChange={e => changeClient(e.target.value)}>
             <option value="">בחירת לקוח</option>
             {clients.map(c => <option key={c.id} value={c.client_id}>{c.name || c.client_email}</option>)}
           </select>
