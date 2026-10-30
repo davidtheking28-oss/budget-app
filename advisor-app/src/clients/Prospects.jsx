@@ -138,6 +138,10 @@ export default function Prospects({ advisorId, onConvert }) {
 
       <div className={biz.toolbar} style={{ marginBottom: 'var(--space-3)' }}>
         <input className={biz.input + ' ' + biz.inputGrow} type="search" placeholder="חיפוש ליד..." aria-label="חיפוש ליד" value={search} onChange={e => setSearch(e.target.value)} />
+        <select className={styles.tempSelect} aria-label="סינון לפי מקור" value={sourceFilter} onChange={e => setSourceFilter(e.target.value)}>
+          <option value="all">כל המקורות</option>
+          {usedSources.map(src => <option key={src} value={src}>{src}</option>)}
+        </select>
       </div>
 
       <CardGrid single>
@@ -148,10 +152,6 @@ export default function Prospects({ advisorId, onConvert }) {
                 <button key={f.key} type="button" className={styles.filter + (filter === f.key ? ' ' + styles.filterOn : '')} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>{f.label}</button>
               ))}
             </div>
-            <select className={styles.tempSelect} aria-label="סינון לפי מקור" value={sourceFilter} onChange={e => setSourceFilter(e.target.value)}>
-              <option value="all">כל המקורות</option>
-              {usedSources.map(src => <option key={src} value={src}>{src}</option>)}
-            </select>
             <select className={styles.tempSelect} aria-label="סינון לפי חום" value={tempFilter} onChange={e => setTempFilter(e.target.value)}>
               <option value="all">כל הלידים</option>
               {TEMPS.map(t => <option key={t.key} value={t.key}>ליד {t.label}</option>)}
