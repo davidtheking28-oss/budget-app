@@ -87,7 +87,7 @@ export default function App() {
   const { session, loading, isRecovery, clearRecovery } = useSession();
   const initial = readUrlState();
   const [selectedClient, setSelectedClient] = useState(initial.selectedClient);
-  const [homeView, setHomeView] = useUrlParam('view', 'clients');
+  const [homeView, setHomeView] = useUrlParam('view', 'clients', 'clients', { history: true });
   const [viewClientId, setViewClientId] = useState(null);
   const [viewTab, setViewTab] = useState(null);
   const [inviteDraft, setInviteDraft] = useState(null);
