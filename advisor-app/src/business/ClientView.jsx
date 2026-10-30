@@ -20,6 +20,14 @@ const TABS = [
   { key: 'tasks', label: 'משימות' }
 ];
 
+const BUDGET_LINKS = [
+  { label: 'כרטיסי אשראי', nav: 'credit' },
+  { label: 'חובות והלוואות', nav: 'credit' },
+  { label: 'משכנתא', nav: 'mortgage' },
+  { label: 'תשלומים', nav: 'credit' },
+  { label: 'ביטוחים · שנתיות · מנויים · חינוך', nav: 'subs' }
+];
+
 const UNSAVED = 'יש שינויים שטרם נשמרו. להמשיך בלי לשמור?';
 
 export default function ClientView({ advisorId, clientId, initialTab, onClientChange, onOpenFull }) {
@@ -104,6 +112,10 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
         <div>
           <h2 className={styles.viewHeading}>תקציב</h2>
           <p className={styles.cardSub}>חודשי: תכנון בתחילת החודש מול ביצוע בסופו.</p>
+        </div>
+        <div className={styles.pills} role="group" aria-label="תצוגות נוספות">
+          <button type="button" className={styles.pillOn} aria-pressed="true">תצוגה ראשית</button>
+          {BUDGET_LINKS.map(l => <button key={l.label} type="button" className={styles.pill} onClick={() => goTo(l.nav)}>{l.label}</button>)}
         </div>
         <div className={styles.toolbar}>
           <div className={styles.pills} role="group" aria-label="תצוגת תקופה">
