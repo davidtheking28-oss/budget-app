@@ -75,7 +75,7 @@
 .spacer { flex: 1; }
 
 .input, .select {
-  min-height: 42px;
+  min-height: 40px;
   min-width: 0;
   border: 1px solid var(--control-border);
   border-radius: var(--radius-sm);
