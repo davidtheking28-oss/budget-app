@@ -22,10 +22,10 @@ const TABS = [
 
 const UNSAVED = 'יש שינויים שטרם נשמרו. להמשיך בלי לשמור?';
 
-export default function ClientView({ advisorId, clientId, onClientChange, onOpenFull }) {
+export default function ClientView({ advisorId, clientId, initialTab, onClientChange, onOpenFull }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
   const now = new Date();
-  const [tab, setTab] = useState('mapping');
+  const [tab, setTab] = useState(TABS.some(t => t.key === initialTab) ? initialTab : 'mapping');
   const [ym, setYm] = useState({ year: now.getFullYear(), month: now.getMonth() });
   const [mode, setMode] = useState('personal');
   const [dirty, setDirty] = useState(false);

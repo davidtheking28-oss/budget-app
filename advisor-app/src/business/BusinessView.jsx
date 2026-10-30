@@ -12,13 +12,13 @@ import ClientView from './ClientView.jsx';
 import ClientApprovals from './ClientApprovals.jsx';
 import SiteSettings from './SiteSettings.jsx';
 
-export default function BusinessView({ view, advisorId, onNavigate, onSelectClient, viewClientId, onViewClient }) {
+export default function BusinessView({ view, advisorId, onNavigate, onSelectClient, onOpenFull, viewClientId, viewTab, onViewClient }) {
   if (view === 'tasks') return <BizTasks advisorId={advisorId} />;
   if (view === 'projects') return <Projects advisorId={advisorId} />;
   if (view === 'systems') return <Systems advisorId={advisorId} />;
   if (view === 'client-approvals') return <ClientApprovals advisorId={advisorId} />;
   if (view === 'site-settings') return <SiteSettings advisorId={advisorId} />;
-  if (view === 'client-view') return <ClientView advisorId={advisorId} clientId={viewClientId} onClientChange={onViewClient} onOpenFull={onSelectClient} />;
+  if (view === 'client-view') return <ClientView advisorId={advisorId} clientId={viewClientId} initialTab={viewTab} onClientChange={onViewClient} onOpenFull={onOpenFull} />;
   if (view === 'client-service') return <ClientService advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'client-tasks') return <ClientTasks advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'marketing') return <MarketingPlan advisorId={advisorId} onNavigate={onNavigate} />;
