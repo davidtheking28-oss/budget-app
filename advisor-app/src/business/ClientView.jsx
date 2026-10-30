@@ -15,7 +15,7 @@ const EconomicMapping = lazy(() => import('../mapping/EconomicMapping.jsx'));
 
 const TABS = [
   { key: 'mapping', label: 'מיפוי' },
-  { key: 'budget', label: 'תקצוב' },
+  { key: 'budget', label: 'תקציב' },
   { key: 'assets', label: 'שווי נקי' },
   { key: 'tasks', label: 'משימות' }
 ];
@@ -74,10 +74,11 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
 
   return (
     <div className={styles.stack}>
-      <div className={styles.toolbar}>
+      <div className={styles.viewHead}>
+        <h1 className={styles.viewTitle}>תצוגת לקוח</h1>
         <label className={styles.toolbar}>
           <span className={styles.statLabel}>לקוח:</span>
-          <select className={styles.select} style={{ width: 240, maxWidth: "100%" }} value={clientId || ''} aria-label="בחירת לקוח" onChange={e => changeClient(e.target.value)}>
+          <select className={styles.select} style={{ width: 280, maxWidth: '100%' }} value={clientId || ''} aria-label="בחירת לקוח" onChange={e => changeClient(e.target.value)}>
             <option value="">בחירת לקוח</option>
             {clients.map(c => <option key={c.id} value={c.client_id}>{c.name || c.client_email}</option>)}
           </select>
@@ -87,7 +88,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
       <div className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
         <div className={styles.pills} role="group" aria-label="אזור בכרטיס הלקוח">
           {TABS.map(t => (
-            <button key={t.key} type="button" className={tab === t.key ? styles.pillOn : styles.pill} aria-pressed={tab === t.key} onClick={() => changeTab(t.key)}>{t.label}</button>
+            <button key={t.key} type="button" className={tab === t.key ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === t.key} onClick={() => changeTab(t.key)}>{t.label}</button>
           ))}
         </div>
         {client && <Button variant="ghost" onClick={() => onOpenFull(client.client_id, client.client_email, { nav: 'crm' })}>כרטיס לקוח מלא</Button>}
@@ -98,12 +99,18 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
         </section>
       )}
       {client && tab === 'budget' && (
+        <div className={styles.stack}>
+        <div>
+          <h2 className={styles.viewHeading}>תקציב</h2>
+          <p className={styles.cardSub}>חודשי: תכנון בתחילת החודש מול ביצוע בסופו.</p>
+        </div>
         <div className={styles.toolbar}>
           <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />
           <div className={styles.segment} role="group" aria-label="סוג תקציב">
             <button type="button" className={mode === 'personal' ? styles.segBtnOn : styles.segBtn} aria-pressed={mode === 'personal'} onClick={() => changeMode('personal')}>פרטי</button>
             <button type="button" className={mode === 'business' ? styles.segBtnOn : styles.segBtn} aria-pressed={mode === 'business'} onClick={() => changeMode('business')}>עסקי</button>
           </div>
+        </div>
         </div>
       )}
       {client && tab === 'mapping' && <Suspense fallback={<Skeleton height="220px" radius="18px" />}><EconomicMapping key={client.client_id} clientUserId={client.client_id} advisorId={advisorId} onNavigate={goTo} /></Suspense>}

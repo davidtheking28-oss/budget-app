@@ -229,7 +229,7 @@ export default function App() {
           homeActive={activeHome}
           onHomeNavChange={setHomeView}
           homeTabs={DEPARTMENTS.map(d => ({ key: d.key, label: d.label, icon: d.icon, active: d.key === activeDept.key, onClick: () => setHomeView(d.items[0].key) }))}
-          title={pageTitle(homeItem)}
+          title={activeHome === 'client-view' ? '' : pageTitle(homeItem)}
           description={activeHome === 'tasks' ? new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : homeItem?.description}
           homeLinks={BUSINESS_NAV.filter(n => n.key !== 'clients').map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => setHomeView(n.key), icon: n.icon }))}
         >

@@ -186,13 +186,15 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, c
         <div className={styles.sideMain}>
           <TopNav hideBrand tabs={homeTabs} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
           <main className={styles.contentTop + " " + styles.homeContent}>
-            <div className={styles.clientHead + ' ' + styles.homeHead}>
-              <div className={styles.titleBlock}>
-                <h1 className={styles.clientTitle}>{title}</h1>
-                {description ? <p className={styles.clientDesc}>{description}</p> : <div id="biz-header-sub" className={styles.clientDesc} />}
+            {title ? (
+              <div className={styles.clientHead + ' ' + styles.homeHead}>
+                <div className={styles.titleBlock}>
+                  <h1 className={styles.clientTitle}>{title}</h1>
+                  {description ? <p className={styles.clientDesc}>{description}</p> : <div id="biz-header-sub" className={styles.clientDesc} />}
+                </div>
+                <div className={styles.clientHeadEnd}><div id="biz-header-actions" className={styles.headerActions} /></div>
               </div>
-              <div className={styles.clientHeadEnd}><div id="biz-header-actions" className={styles.headerActions} /></div>
-            </div>
+            ) : null}
             {children}
           </main>
         </div>
