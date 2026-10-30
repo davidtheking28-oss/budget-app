@@ -63,7 +63,7 @@ export function spitzerPrincipalFromPmt(pmt, annualRate, months) {
   return pmt * (1 - Math.pow(1 + r, -months)) / r;
 }
 
-export default function Credit({ clientUserId, advisorId }) {
+export default function Credit({ clientUserId, advisorId, focus = 'all' }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
   const [loanForm, setLoanForm] = useState({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' });
@@ -296,7 +296,7 @@ export default function Credit({ clientUserId, advisorId }) {
           ].filter(Boolean)}
         />
       )}
-      <div className={styles.section}>
+      {focus !== 'payments' && <div className={styles.section}>
         <CollapsibleSection title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
         {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
         <AddForm label="הוסף הלוואה" open={editingLoanId != null} openSignal={loanFormSignal} className={styles.form}>
@@ -362,8 +362,8 @@ export default function Credit({ clientUserId, advisorId }) {
           </div>
         ) : null)}
       </CollapsibleSection>
-      </div>
-      <div className={styles.section}>
+      </div>}
+      {focus !== 'loans' && <div className={styles.section}>
         <CollapsibleSection title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
         {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
         <PaymentsTimeline payments={payments} />
@@ -410,7 +410,7 @@ export default function Credit({ clientUserId, advisorId }) {
           </div>
         ) : null}
       </CollapsibleSection>
-      </div>
+      </div>}
 
       {(closedLoans.length > 0 || closedPayments.length > 0) && (
         <div className={styles.section}>
@@ -444,7 +444,7 @@ export default function Credit({ clientUserId, advisorId }) {
         </div>
       )}
 
-      <div className={styles.sectionsGrid}>
+      {focus !== 'payments' && <div className={styles.sectionsGrid}>
       <div className={styles.section}>
         <CollapsibleSection title={<>מחשבון שפיצר</>}>
         <div className={styles.form}>
@@ -573,7 +573,7 @@ export default function Credit({ clientUserId, advisorId }) {
       </CollapsibleSection>
       </div>
 
-      </div>
+      </div>}
 
     </div>
   );

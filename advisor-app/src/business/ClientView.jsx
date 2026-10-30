@@ -31,10 +31,10 @@ const TABS = [
 
 const CHIPS = [
   { key: 'main', label: 'תצוגה ראשית' },
-  { key: 'cards', label: 'כרטיסי אשראי', view: 'credit' },
-  { key: 'loans', label: 'חובות והלוואות', view: 'credit' },
+  { key: 'cards', label: 'כרטיסי אשראי', view: 'credit', focus: 'all' },
+  { key: 'loans', label: 'חובות והלוואות', view: 'credit', focus: 'loans' },
   { key: 'mortgage', label: 'משכנתא', view: 'mortgage' },
-  { key: 'installments', label: 'תשלומים', view: 'credit' },
+  { key: 'installments', label: 'תשלומים', view: 'credit', focus: 'payments' },
   { key: 'subs', label: 'ביטוחים · שנתיות · מנויים · חינוך', view: 'subs' }
 ];
 
@@ -224,7 +224,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
               <Goals clientUserId={clientIdOrNull} advisorId={advisorId} />
             </div>
           )}
-          {view === 'credit' && <Credit clientUserId={clientIdOrNull} advisorId={advisorId} />}
+          {view === 'credit' && <Credit key={chip} focus={CHIPS.find(c => c.key === chip)?.focus} clientUserId={clientIdOrNull} advisorId={advisorId} />}
           {view === 'subs' && <Subscriptions clientUserId={clientIdOrNull} advisorId={advisorId} />}
           {view === 'mortgage' && (
             <div className={styles.stack}>
