@@ -158,6 +158,7 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
   const period = ymKey(ym.year, ym.month);
   const m = financeMonth(entries, period, businessType);
   const breakdown = expenseBreakdown([...m.fixed, ...m.variable]);
+  const vatPercent = businessType === 'עוסק מורשה' ? VAT_RATE * 100 : 0;
   const shareOfIncome = v => (m.income > 0 ? Math.min(1, Math.max(0, v / m.income)) : 0);
   const IncomeBar = ({ value }) => <span className={styles.progress}><span className={styles.progressFill} style={{ width: shareOfIncome(value) * 100 + '%' }} /></span>;
 
@@ -212,7 +213,7 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
           <span className={styles.linkTileTitle}>מיסים</span>
           <span className={styles.linkTileValue}>{money(m.taxes)}</span>
           <IncomeBar value={m.taxes} />
-          <span className={styles.rowMeta}>מע״מ {VAT_RATE * 100}% · מס {INCOME_TAX_RATE * 100}% · ב״ל {NATIONAL_INSURANCE_RATE * 100}%</span>
+          <span className={styles.rowMeta}>מע״מ {vatPercent}% · מס {INCOME_TAX_RATE * 100}% · ב״ל {NATIONAL_INSURANCE_RATE * 100}%</span>
         </div>
         <button type="button" className={styles.linkTile} onClick={() => setModal('variable')}>
           <span className={styles.iconTile} aria-hidden="true">{icons.table}</span>
@@ -241,7 +242,7 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
           <ul className={styles.rowList}>
             {[
               ['הכנסות', m.income], ['עלות ניכיון / סליקה', -m.clearing], ['הכנסות אחרי ניכיון', m.afterClearing],
-              [`מע״מ (${VAT_RATE * 100}%)`, -m.vat], ['הכנסות אחרי מע״מ', m.afterVat],
+              [`מע״מ (${vatPercent}%)`, -m.vat], ['הכנסות אחרי מע״מ', m.afterVat],
               ['הוצאות קבועות', -m.fixedTotal], ['הוצאות משתנות', -m.variableTotal], ['סך ההוצאות', -m.expenses],
               ['רווח תפעולי', m.operating], ['מס הכנסה משוער', -m.incomeTax], ['ביטוח לאומי משוער', -m.nationalInsurance]
             ].map(([label, value]) => (
