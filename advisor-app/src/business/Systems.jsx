@@ -93,11 +93,11 @@ export default function Systems({ advisorId }) {
         <Modal title="סיסטם חדש" onClose={() => setModal(false)}>
           <form className={styles.formGrid} onSubmit={submit}>
             <label className={styles.fieldLabel}>שם הסיסטם<input className={styles.input} value={form.name} onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))} /></label>
-            <label className={styles.fieldLabel}>מחלקה<select className={styles.select} value={form.dept} onChange={e => setForm(prev => ({ ...prev, dept: e.target.value }))}>{SYSTEM_DEPARTMENTS.map(d => <option key={d.key} value={d.key}>{d.key}</option>)}</select></label>
-            <label className={styles.fieldLabel}>תיאור קצר<input className={styles.input} placeholder="במשפט אחד: על מה הסיסטם הזה" value={form.summary} onChange={e => setForm(prev => ({ ...prev, summary: e.target.value }))} /></label>
-            <label className={styles.fieldLabel}>איך זה עובד, צעד אחר צעד<textarea className={styles.input + ' ' + styles.textarea} value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} /></label>
+            <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} value={form.dept} onChange={e => setForm(prev => ({ ...prev, dept: e.target.value }))}>{SYSTEM_DEPARTMENTS.map(d => <option key={d.key} value={d.key}>{d.key}</option>)}</select></label>
+            <label className={styles.fieldLabel}>תיאור קצר<input className={styles.input} placeholder="במשפט אחד: על מה הסיסטם הזה" value={form.summary} onChange={e => setForm(prev => ({ ...prev, summary: e.target.value }))} /><span className={styles.cardSub}>את התוכן כותבים בשלבים, אחרי יצירת הסיסטם.</span></label>
+            <label className={styles.fieldLabel}>הערות<textarea className={styles.input + ' ' + styles.textarea} value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} /></label>
             <div className={styles.toolbar}>
-              <button type="submit" className={styles.btn}>שמור</button>
+              <button type="submit" className={styles.btn}>הוספה</button>
               <button type="button" className={styles.btnGhost} onClick={() => setModal(false)}>ביטול</button>
             </div>
           </form>

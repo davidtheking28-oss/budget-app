@@ -14,6 +14,9 @@ const SORTS = [
   { key: 'dueDate', label: 'מועד ביצוע' },
   { key: 'deadline', label: 'דדליין' },
   { key: 'priority', label: 'עדיפות' },
+  { key: 'difficulty', label: 'רמת קושי' },
+  { key: 'dept', label: 'מחלקה' },
+  { key: 'status', label: 'סטטוס' },
   { key: 'name', label: 'שם המשימה (א׳-ב׳)' }
 ];
 const PRIORITY_ORDER = { 'גבוהה': 0, 'בינונית': 1, 'נמוכה': 2 };
@@ -36,8 +39,10 @@ function priorityClass(p) {
   return styles.tagLow;
 }
 
-function TaskModal({ today, onClose, onSave }) {
+function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave }) {
   const [form, setForm] = useState(EMPTY);
+  const [editingDepts, setEditingDepts] = useState(false);
+  const [newDept, setNewDept] = useState('');
   const set = key => e => setForm(prev => ({ ...prev, [key]: e.target.value }));
 
   function submit(e) {
@@ -47,16 +52,32 @@ function TaskModal({ today, onClose, onSave }) {
     onSave({ name: form.name.trim(), description: form.description.trim(), dept: form.dept, priority: form.priority, dueDate, deadline: form.deadline, difficulty: form.difficulty, recurrence: form.recurrence, done: false });
   }
 
+  function addDept() {
+    const name = newDept.trim();
+    if (!name || departments.includes(name)) return;
+    onDepartmentsChange([...departments, name]);
+    setNewDept('');
+  }
+
   return (
     <Modal title="משימה חדשה" onClose={onClose}>
       <form className={styles.formGrid} onSubmit={submit}>
         <label className={styles.fieldLabel}>שם המשימה<input className={styles.input} value={form.name} onChange={set('name')} /></label>
         <label className={styles.fieldLabel}>תיאור<textarea className={styles.input + ' ' + styles.textarea} value={form.description} onChange={set('description')} /></label>
         <div className={styles.formRow}>
-          <div className={styles.fieldLabel} style={{ gridColumn: "1 / -1" }} role="group" aria-label="מחלקה">מחלקה
+          <div className={styles.fieldLabel} style={{ gridColumn: "1 / -1" }} role="group" aria-label="מחלקה">
+            <span style={{ display: 'flex', justifyContent: 'space-between' }}>מחלקה<button type="button" className={styles.linkBtn} aria-pressed={editingDepts} onClick={() => setEditingDepts(v => !v)}>הוספה / הסרה</button></span>
             <div className={styles.pills}>
-              {DEPARTMENTS.map(d => <button key={d} type="button" className={form.dept === d ? styles.pillOn : styles.pill} aria-pressed={form.dept === d} onClick={() => setForm(prev => ({ ...prev, dept: d }))}>{d}</button>)}
+              {departments.map(d => editingDepts
+                ? <span key={d} className={styles.pill}>{d}{departments.length > 1 && <button type="button" className={styles.linkBtn} aria-label={'הסר מחלקה ' + d} onClick={() => { onDepartmentsChange(departments.filter(x => x !== d)); if (form.dept === d) setForm(prev => ({ ...prev, dept: departments.find(x => x !== d) })); }}>×</button>}</span>
+                : <button key={d} type="button" className={form.dept === d ? styles.pillOn : styles.pill} aria-pressed={form.dept === d} onClick={() => setForm(prev => ({ ...prev, dept: d }))}>{d}</button>)}
             </div>
+            {editingDepts && (
+              <div className={styles.toolbar}>
+                <input className={styles.input} placeholder="שם מחלקה חדשה" aria-label="שם מחלקה חדשה" value={newDept} onChange={e => setNewDept(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDept(); } }} />
+                <button type="button" className={styles.btnGhost} onClick={addDept}>הוסף</button>
+              </div>
+            )}
           </div>
           <label className={styles.fieldLabel}>עדיפות<select className={styles.select} value={form.priority} onChange={set('priority')}>{PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}</select></label>
         </div>
@@ -69,7 +90,7 @@ function TaskModal({ today, onClose, onSave }) {
           {form.dueKind === 'other' && <input className={styles.input} type="date" aria-label="תאריך ביצוע" value={form.dueDate} onChange={set('dueDate')} />}
           <span className={styles.note}>קובע אם המשימה מופיעה בהיום / מחר / השבוע</span>
         </div>
-        <label className={styles.fieldLabel}>דדליין<input className={styles.input} type="date" value={form.deadline} onChange={set('deadline')} /></label>
+        <label className={styles.fieldLabel}>דדליין<input className={styles.input} type="date" value={form.deadline} onChange={set('deadline')} />{!form.deadline && <span className={styles.note}>אין דדליין למשימה הזו</span>}</label>
         <label className={styles.fieldLabel}>רמת קושי
           <select className={styles.select} value={form.difficulty} onChange={set('difficulty')}>
             <option value="לא הוגדרה">לא הוגדרה</option>
@@ -94,6 +115,14 @@ function TaskModal({ today, onClose, onSave }) {
 
 export default function BizTasks({ advisorId }) {
   const { records, loading, error, reload, add, update, remove } = useBizRecords(advisorId, 'task');
+  const deptStore = useBizRecords(advisorId, 'task_departments');
+  const deptRecord = deptStore.records[0];
+  const departments = deptRecord?.data?.list || DEPARTMENTS;
+
+  function saveDepartments(list) {
+    if (deptRecord) deptStore.update(deptRecord.id, { list });
+    else deptStore.add({ list });
+  }
   const [modal, setModal] = useState(false);
   const [filter, setFilter] = useState('today');
   const [search, setSearch] = useState('');
@@ -119,7 +148,7 @@ export default function BizTasks({ advisorId }) {
     { key: 'done', label: 'הושלמו' }
   ];
 
-  const sortValue = t => (sort === 'priority' ? (PRIORITY_ORDER[t.priority] ?? 9) : sort === 'name' ? t.name : (t[sort] || '9999'));
+  const sortValue = t => (sort === 'priority' ? (PRIORITY_ORDER[t.priority] ?? 9) : sort === 'difficulty' ? (DIFFICULTIES.indexOf(t.difficulty) + 1 || 9) : sort === 'status' ? (t.done ? 1 : 0) : sort === 'name' || sort === 'dept' ? (t[sort] || '') : (t[sort] || '9999'));
   const visible = tasks
     .filter(t => !dept || t.dept === dept)
     .filter(t => !priority || t.priority === priority)
@@ -176,7 +205,7 @@ export default function BizTasks({ advisorId }) {
         <input className={styles.input + ' ' + styles.inputGrow} type="search" placeholder="חיפוש משימה..." aria-label="חיפוש משימה" value={search} onChange={e => setSearch(e.target.value)} />
         <select className={styles.select} aria-label="מחלקה" value={dept} onChange={e => setDept(e.target.value)}>
           <option value="">כל המחלקות</option>
-          {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+          {departments.map(d => <option key={d} value={d}>{d}</option>)}
         </select>
         <select className={styles.select} aria-label="עדיפות" value={priority} onChange={e => setPriority(e.target.value)}>
           <option value="">כל העדיפויות</option>
@@ -220,7 +249,7 @@ export default function BizTasks({ advisorId }) {
           </div>
         )}
       </section>
-      {modal && <TaskModal today={today} onClose={() => setModal(false)} onSave={save} />}
+      {modal && <TaskModal today={today} departments={departments} onDepartmentsChange={saveDepartments} onClose={() => setModal(false)} onSave={save} />}
     </div>
   );
 }
