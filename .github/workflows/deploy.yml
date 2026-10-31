@@ -70,7 +70,7 @@ jobs:
         env:
           VITE_SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm run test
           npm run build
 

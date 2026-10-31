@@ -33,7 +33,7 @@ function downloadIcs(meeting) {
     `UID:${meeting.id}@budget-advisor`,
     `DTSTAMP:${stamp}`,
     `DTSTART:${stamp}`,
-    `SUMMARY:פגישת ייעוץ${meeting.notes ? ' - ' + meeting.notes.replace(/\n/g, ' ') : ''}`,
+    `SUMMARY:פגישת ייעוץ${meeting.notes ? ' - ' + meeting.notes.replace(/[\r\n]+/g, ' ').replace(/([\\;,])/g, '\\$1') : ''}`,
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n');
