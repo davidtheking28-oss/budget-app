@@ -332,3 +332,8 @@
 }
 
 :root[data-density="compact"] .loanTable td { padding-block: 10px; }
+
+.summaryLine { margin: 0 0 var(--space-2); font-weight: 700; color: var(--text); }
+.statusBtn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--accent); cursor: pointer; }
+.statusBtn[aria-pressed="false"] { color: var(--text3); }
+.rowHidden td { opacity: 0.55; }

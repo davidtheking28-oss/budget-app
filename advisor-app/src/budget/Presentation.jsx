@@ -63,7 +63,7 @@ export default function Presentation({ clientUserId, advisorId, year, month, ema
 
   const fixed = data.fixed_expenses || [];
 
-  const loans = (data.loans || []).filter(l => !l.closed);
+  const loans = (data.loans || []).filter(l => !l.closed && !l.hidden);
   const loansFinishingSoon = isCurrentMonth ? loans.filter(l => {
     const n = loanPayoffMonths(l.remaining, l.monthly, l.rate);
     return n !== null && n !== Infinity && n <= 1;

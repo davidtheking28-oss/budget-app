@@ -169,7 +169,6 @@ export default function Assets({ clientUserId, advisorId }) {
               <button type="button" className={styles.addBtn} onClick={() => setShowLoan(true)}>+ הוספת התחייבות</button>
             )}
           </div>
-          <div className={styles.note}>הלוואות שנוספו כאן מופיעות גם בטאב «הלוואות ואשראי», שם אפשר להגדיר ריבית ומלווה.</div>
         </section>
       </div>
     </div>

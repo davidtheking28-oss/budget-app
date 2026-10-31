@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
-import Hero from '../components/Hero.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -10,8 +9,7 @@ import ActionMenu from '../components/ActionMenu.jsx';
 import EditButton from '../components/EditButton.jsx';
 import { toast } from '../toast.js';
 import { addItem, updateItem, removeItem } from './itemHelpers.js';
-import PaymentsTimeline from './PaymentsTimeline.jsx';
-import { MONTH_NAMES as MONTHS_HE } from './monthUtils.js';
+import { localISODate, formatDate } from './monthUtils.js';
 import CreditCards from './CreditCards.jsx';
 import CollapsibleSection from '../components/CollapsibleSection.jsx';
 import styles from './Credit.module.css';
@@ -40,17 +38,6 @@ export function loanPayoffMonths(remaining, monthly, annualRate) {
   return Math.ceil(Math.log(monthly / (monthly - remaining * r)) / Math.log(1 + r));
 }
 
-function loanPayoffLabel(l) {
-  const n = loanPayoffMonths(l.remaining, l.monthly, l.rate);
-  if (n === null) return null;
-  if (n === Infinity) return { text: 'ההחזר לא מכסה את הריבית, היתרה תגדל', danger: true };
-  const d = new Date();
-  d.setMonth(d.getMonth() + n);
-  const interest = Math.max(0, n * l.monthly - l.remaining);
-  const interestText = interest > 1 ? ` · ריבית כוללת ≈ ${fmt(interest)}` : '';
-  return { text: `סילוק משוער: ${MONTHS_HE[d.getMonth()]} ${d.getFullYear()}${interestText}`, danger: false };
-}
-
 export function pmtSpitzer(P, annualRate, months) {
   if (!P || P <= 0 || !months || months <= 0) return 0;
   const r = (annualRate || 0) / 1200;
@@ -64,192 +51,60 @@ export function spitzerPrincipalFromPmt(pmt, annualRate, months) {
   return pmt * (1 - Math.pow(1 + r, -months)) / r;
 }
 
-export default function Credit({ clientUserId, advisorId, focus = 'all' }) {
+const EMPTY_LOAN = { name: '', monthly: '', remaining: '', original: '', rate: '', asOf: '' };
+const EMPTY_PAYMENT = { card: '', name: '', total: '', current: '', amount: '' };
+
+function StatusToggle({ hidden, name, onToggle }) {
+  return (
+    <button type="button" className={styles.statusBtn} aria-pressed={!hidden} aria-label={(hidden ? 'הצג בחישוב · ' : 'הסתר מהחישוב · ') + name} title={hidden ? 'מוסתר מהחישוב' : 'נכלל בחישוב'} onClick={e => { e.stopPropagation(); onToggle(); }}>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" />
+        {hidden && <path d="M3 3l18 18" />}
+      </svg>
+    </button>
+  );
+}
+
+export default function Credit({ clientUserId, advisorId, focus }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
-
-  const [loanForm, setLoanForm] = useState({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' });
+  const [loanForm, setLoanForm] = useState(EMPTY_LOAN);
   const [editingLoanId, setEditingLoanId] = useState(null);
-  const [loanFormSignal, setLoanFormSignal] = useState(0);
-  const [paymentForm, setPaymentForm] = useState({ name: '', total: '', current: '', amount: '' });
+  const [paymentForm, setPaymentForm] = useState(EMPTY_PAYMENT);
   const [editingPaymentId, setEditingPaymentId] = useState(null);
-  const [spForm, setSpForm] = useState({ principal: '', rate: '', months: '' });
-  const [spResult, setSpResult] = useState(null);
-  const [consolChecked, setConsolChecked] = useState({});
-  const [consolPaymentsChecked, setConsolPaymentsChecked] = useState({});
-  const [consolOverdraftChecked, setConsolOverdraftChecked] = useState(false);
-  const [consolForm, setConsolForm] = useState({ name: '', rate: '', months: '' });
-  const [consolResult, setConsolResult] = useState(null);
-  const [overdraftDraft, setOverdraftDraft] = useState('');
-  const [overdraftRateDraft, setOverdraftRateDraft] = useState('');
-  const [editingOverdraft, setEditingOverdraft] = useState(false);
-  const [committing, setCommitting] = useState(false);
 
-  function resetLoanForm() { setLoanForm({ name: '', lender: '', monthly: '', remaining: '', original: '', rate: '' }); setEditingLoanId(null); }
+  function resetLoanForm() { setLoanForm(EMPTY_LOAN); setEditingLoanId(null); }
   async function submitLoan() {
     const monthly = parseFloat(loanForm.monthly) || 0;
-    if (!loanForm.name.trim() || !monthly) { toast('נדרשים שם הלוואה וסכום חודשי', 'error'); return; }
+    if (!loanForm.name.trim() || !monthly) { toast('נדרשים שם החוב והחזר חודשי', 'error'); return; }
     const patch = {
       name: loanForm.name.trim(),
-      lender: loanForm.lender.trim(),
       monthly,
       remaining: parseFloat(loanForm.remaining) || 0,
       original: parseFloat(loanForm.original) || 0,
-      rate: parseFloat(loanForm.rate) || 0
+      rate: parseFloat(loanForm.rate) || 0,
+      asOf: loanForm.asOf || localISODate()
     };
     const ok = editingLoanId != null ? await updateItem(save, 'loans', editingLoanId, patch) : await addItem(save, 'loans', patch);
     if (!ok) return;
     toast(editingLoanId != null ? 'ההלוואה עודכנה' : 'הלוואה נוספה', 'success');
     resetLoanForm();
   }
-  function startEditLoan(l) { setEditingLoanId(l.id); setLoanForm({ name: l.name || '', lender: l.lender || '', monthly: l.monthly || '', remaining: l.remaining || '', original: l.original || '', rate: l.rate || '' }); }
+  function startEditLoan(l) { setEditingLoanId(l.id); setLoanForm({ name: l.name || '', monthly: l.monthly || '', remaining: l.remaining || '', original: l.original || '', rate: l.rate || '', asOf: l.asOf || '' }); }
 
-  function calcSpitzer() {
-    const P = parseFloat(spForm.principal) || 0;
-    const rate = parseFloat(spForm.rate) || 0;
-    const months = parseInt(spForm.months) || 0;
-    if (!P || !months) { toast('נדרשים סכום ותקופה', 'error'); return; }
-    const pmt = pmtSpitzer(P, rate, months);
-    setSpResult({ pmt, totalInterest: Math.max(0, pmt * months - P), P, rate, months });
-  }
-  function spitzerToLoan() {
-    if (!spResult) return;
-    setLoanForm({ name: 'הלוואה (משפיצר)', lender: '', monthly: String(Math.round(spResult.pmt * 100) / 100), remaining: String(spResult.P), original: String(spResult.P), rate: String(spResult.rate) });
-    setLoanFormSignal(n => n + 1);
-  }
-  function toggleConsol(id) { setConsolChecked(c => ({ ...c, [id]: !c[id] })); }
-  function toggleConsolPayment(id) { setConsolPaymentsChecked(c => ({ ...c, [id]: !c[id] })); }
-  function paymentRemainingValue(p) {
-    const total = parseFloat(p.total) || 0;
-    const left = Math.max(0, total - currentInstallments(p, total));
-    return { left, value: left * (parseFloat(p.amount) || 0) };
-  }
-  // Total remaining cost under the CURRENT terms — each loan keeps its own payoff
-  // horizon (loanPayoffMonths), so a lower monthly payment that stretches the term
-  // can still cost more overall; this is what "עלות כוללת" compares against.
-  function loanRemainingCost(l) {
-    const term = loanPayoffMonths(l.remaining, l.monthly, l.rate);
-    if (term && term !== Infinity) return (l.monthly || 0) * term;
-    return l.remaining || 0;
-  }
-  function consolSelection(loans, payments, od = overdraft) {
-    const loanIds = Object.keys(consolChecked).filter(id => consolChecked[id]);
-    const paymentIds = Object.keys(consolPaymentsChecked).filter(id => consolPaymentsChecked[id]);
-    const includeOverdraft = consolOverdraftChecked && (od.balance || 0) > 0;
-    const pickedLoans = loans.filter(l => loanIds.includes(String(l.id)));
-    const pickedPayments = payments.filter(p => paymentIds.includes(String(p.id)));
-    const loanMonthly = pickedLoans.reduce((s, l) => s + (l.monthly || 0), 0);
-    const loanRemaining = pickedLoans.reduce((s, l) => s + (l.remaining || 0), 0);
-    const loanTotalCost = pickedLoans.reduce((s, l) => s + loanRemainingCost(l), 0);
-    const paymentMonthly = pickedPayments.reduce((s, p) => s + (paymentRemainingValue(p).left > 0 ? (parseFloat(p.amount) || 0) : 0), 0);
-    const paymentRemaining = pickedPayments.reduce((s, p) => s + paymentRemainingValue(p).value, 0);
-    const overdraftAmount = includeOverdraft ? (od.balance || 0) : 0;
-    // The overdraft has no fixed payoff term — it just accrues interest — so its
-    // "cost" is a monthly interest charge, not an amortizing payment.
-    const overdraftMonthlyCost = includeOverdraft ? overdraftAmount * ((od.rate || 0) / 1200) : 0;
-    return {
-      loanIds, paymentIds, includeOverdraft, overdraftMonthlyCost,
-      currentMonthly: loanMonthly + paymentMonthly + overdraftMonthlyCost,
-      currentRemaining: loanRemaining + paymentRemaining + overdraftAmount,
-      // payments carry no separate interest already tracked, so their remaining
-      // value IS their remaining cost — only loans need the payoff-term math
-      currentTotalCost: loanTotalCost + paymentRemaining + overdraftAmount,
-      itemCount: loanIds.length + paymentIds.length + (includeOverdraft ? 1 : 0)
-    };
-  }
-  function calcConsolidation(loans, payments) {
-    const sel = consolSelection(loans, payments);
-    if (sel.itemCount < 1) { toast('בחר לפחות פריט אחד למחזור', 'error'); return; }
-    const rate = parseFloat(consolForm.rate) || 0;
-    const months = parseInt(consolForm.months) || 0;
-    if (!months) { toast('נדרשת תקופה מוצעת', 'error'); return; }
-    const newMonthly = pmtSpitzer(sel.currentRemaining, rate, months);
-    const newTotalCost = newMonthly * months;
-    // project the overdraft's ongoing interest over the same horizon for a fair total-cost comparison
-    const currentTotalCost = sel.currentTotalCost + sel.overdraftMonthlyCost * months;
-    setConsolResult({
-      currentMonthly: sel.currentMonthly, currentRemaining: sel.currentRemaining, newMonthly,
-      diff: sel.currentMonthly - newMonthly,
-      currentTotalCost, newTotalCost, totalDiff: currentTotalCost - newTotalCost
-    });
-  }
-  async function commitConsolidation(loans, payments) {
-    const sel = consolSelection(loans, payments);
-    if (sel.itemCount < 1) { toast('בחר לפחות פריט אחד למחזור', 'error'); return; }
-    const rate = parseFloat(consolForm.rate) || 0;
-    const months = parseInt(consolForm.months) || 0;
-    if (!months) { toast('נדרשת תקופה מוצעת', 'error'); return; }
-    if (committing) return;
-    setCommitting(true);
-    const { loanIds, paymentIds, includeOverdraft } = sel;
-    const newLoanId = Date.now() + Math.random();
-    const previousOverdraftBalance = overdraft.balance || 0;
-    const closedAt = new Date().toISOString();
-    const ok = await save(cur => {
-      const curLoans = cur.loans || [];
-      const curPayments = cur.payments || [];
-      const s = consolSelection(curLoans.filter(l => !l.closed), curPayments.filter(p => !p.closed), cur.overdraft || { balance: 0 });
-      const newMonthly = pmtSpitzer(s.currentRemaining, rate, months);
-      const newLoan = {
-        id: newLoanId,
-        name: consolForm.name.trim() || 'הלוואה מאוחדת',
-        lender: '',
-        monthly: Math.round(newMonthly * 100) / 100,
-        remaining: s.currentRemaining,
-        original: s.currentRemaining,
-        rate,
-        previousMonthly: s.currentMonthly,
-        previousRemaining: s.currentRemaining,
-        consolidatedAt: closedAt
-      };
-      const patch = {
-        loans: [...curLoans.map(l => loanIds.includes(String(l.id)) && !l.closed ? { ...l, closed: true, closedAt } : l), newLoan],
-        payments: curPayments.map(p => paymentIds.includes(String(p.id)) && !p.closed ? { ...p, closed: true, closedAt } : p)
-      };
-      if (includeOverdraft) patch.overdraft = { ...(cur.overdraft || {}), balance: 0 };
-      return patch;
-    });
-    setCommitting(false);
-    if (!ok) return;
-    setConsolChecked({});
-    setConsolPaymentsChecked({});
-    setConsolOverdraftChecked(false);
-    setConsolResult(null);
-    setConsolForm({ name: '', rate: '', months: '' });
-    toast('המחזור בוצע — נוצרה הלוואה מאוחדת', 'success', {
-      label: 'בטל',
-      onClick: () => undoConsolidation(newLoanId, loanIds, paymentIds, includeOverdraft, previousOverdraftBalance)
-    });
-  }
-  async function undoConsolidation(newLoanId, loanIds, paymentIds, includeOverdraft, previousOverdraftBalance) {
-    const ok = await save(cur => {
-      const patch = {
-        loans: (cur.loans || []).filter(l => l.id !== newLoanId).map(l => loanIds.includes(String(l.id)) ? { ...l, closed: false, closedAt: undefined } : l),
-        payments: (cur.payments || []).map(p => paymentIds.includes(String(p.id)) ? { ...p, closed: false, closedAt: undefined } : p)
-      };
-      if (includeOverdraft && !(cur.overdraft?.balance > 0)) patch.overdraft = { ...(cur.overdraft || {}), balance: previousOverdraftBalance };
-      return patch;
-    });
-    if (ok) toast('המחזור בוטל', 'success');
-  }
-  async function saveOverdraft() {
-    const balance = parseFloat(overdraftDraft) || 0;
-    const rate = parseFloat(overdraftRateDraft) || 0;
-    const ok = await save({ overdraft: { balance, rate } });
-    if (ok) { setEditingOverdraft(false); toast('יתרת המינוס נשמרה', 'success'); }
-  }
-  function resetPaymentForm() { setPaymentForm({ name: '', total: '', current: '', amount: '' }); setEditingPaymentId(null); }
+  function resetPaymentForm() { setPaymentForm(EMPTY_PAYMENT); setEditingPaymentId(null); }
   async function submitPayment() {
     const total = parseFloat(paymentForm.total) || 0;
     const amount = parseFloat(paymentForm.amount) || 0;
-    if (!paymentForm.name.trim() || !total || !amount) { toast('נדרשים שם, מספר תשלומים וסכום', 'error'); return; }
-    const remaining = paymentForm.current === '' ? total : Math.max(0, Math.min(total, parseFloat(paymentForm.current) || 0));
-    const patch = { name: paymentForm.name.trim(), total, current: total - remaining, amount, currentAnchor: monthKey(new Date().getFullYear(), new Date().getMonth()) };
+    if (!paymentForm.name.trim() || !total || !amount) { toast('נדרשים שם העסק, מספר תשלומים וסכום', 'error'); return; }
+    const current = paymentForm.current === '' ? 0 : Math.max(0, Math.min(total, parseFloat(paymentForm.current) || 0));
+    const now = new Date();
+    const patch = { card: paymentForm.card, name: paymentForm.name.trim(), total, current, amount, currentAnchor: monthKey(now.getFullYear(), now.getMonth()) };
     const ok = editingPaymentId != null ? await updateItem(save, 'payments', editingPaymentId, patch) : await addItem(save, 'payments', patch);
     if (!ok) return;
-    toast(editingPaymentId != null ? 'התשלום עודכן' : 'התשלום נוסף', 'success');
+    toast(editingPaymentId != null ? 'העסקה עודכנה' : 'העסקה נוספה', 'success');
     resetPaymentForm();
   }
-  function startEditPayment(p) { const total = parseFloat(p.total) || 0; setEditingPaymentId(p.id); setPaymentForm({ name: p.name || '', total: p.total || '', current: Math.max(0, total - currentInstallments(p, total)), amount: p.amount || '' }); }
+  function startEditPayment(p) { const total = parseFloat(p.total) || 0; setEditingPaymentId(p.id); setPaymentForm({ card: p.card || '', name: p.name || '', total: p.total || '', current: currentInstallments(p, total), amount: p.amount || '' }); }
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -261,322 +116,112 @@ export default function Credit({ clientUserId, advisorId, focus = 'all' }) {
     );
   }
 
-  const loans = [...(data.loans || [])].filter(l => !l.closed).sort((a, b) => (b.remaining || 0) - (a.remaining || 0));
-  const closedLoans = [...(data.loans || [])].filter(l => l.closed).sort((a, b) => new Date(b.closedAt || 0) - new Date(a.closedAt || 0));
-  const closedPayments = [...(data.payments || [])].filter(p => p.closed);
-  const overdraft = data.overdraft || { balance: 0 };
-  const loanMonthsLeft = l => loanPayoffMonths(l.remaining, l.monthly, l.rate);
-  const longTermLoans = loans.filter(l => { const n = loanMonthsLeft(l); return n === Infinity || n >= 18; });
-  const shortTermLoans = loans.filter(l => { const n = loanMonthsLeft(l); return n !== null && n !== Infinity && n < 18; });
-  const unclassifiedLoans = loans.filter(l => loanMonthsLeft(l) === null);
-  const payments = [...(data.payments || [])].filter(p => !p.closed).sort((a, b) => {
-    const totalA = parseFloat(a.total) || 0;
-    const totalB = parseFloat(b.total) || 0;
-    const leftA = Math.max(0, totalA - currentInstallments(a, totalA)) * (parseFloat(a.amount) || 0);
-    const leftB = Math.max(0, totalB - currentInstallments(b, totalB)) * (parseFloat(b.amount) || 0);
-    return leftB - leftA;
-  });
-  const loansBalance = loans.reduce((s, l) => s + (l.remaining || 0), 0);
-  const loansMonthly = loans.reduce((s, l) => s + (l.monthly || 0), 0);
-  const activePayments = payments.filter(p => { const t = parseFloat(p.total) || 0; return !(t > 0 && t - currentInstallments(p, t) <= 0); });
+  if (focus === 'cards') return <CreditCards settings={data.settings} save={save} />;
+
+  const cards = data.settings?.creditCards || [];
+  const loans = (data.loans || []).filter(l => !l.closed);
+  const activeLoans = loans.filter(l => !l.hidden);
+  const loansMonthly = activeLoans.reduce((s, l) => s + (l.monthly || 0), 0);
+  const loansBalance = activeLoans.reduce((s, l) => s + (l.remaining || 0), 0);
+  const loansLeft = activeLoans.reduce((s, l) => { const n = loanPayoffMonths(l.remaining, l.monthly, l.rate); return s + (n && n !== Infinity ? n * l.monthly : l.remaining || 0); }, 0);
+
+  const payments = (data.payments || []).filter(p => !p.closed).filter(p => { const t = parseFloat(p.total) || 0; return !(t > 0 && t - currentInstallments(p, t) <= 0); });
+  const activePayments = payments.filter(p => !p.hidden);
   const paymentsMonthly = activePayments.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
-  const paymentsLeft = payments.reduce((s, p) => { const total = parseFloat(p.total) || 0; return s + Math.max(0, total - currentInstallments(p, total)) * (parseFloat(p.amount) || 0); }, 0);
+  const paymentsLeft = activePayments.reduce((s, p) => { const t = parseFloat(p.total) || 0; return s + Math.max(0, t - currentInstallments(p, t)) * (parseFloat(p.amount) || 0); }, 0);
+
+  if (focus === 'payments') {
+    return (
+      <div className={styles.section}>
+        <CollapsibleSection title={<>עסקאות בתשלומים<span className={styles.countBadge}>{payments.length}</span></>}>
+          <p className={styles.summaryLine}>החזר חודשי {fmt(paymentsMonthly)} · נותר לשלם {fmt(paymentsLeft)}</p>
+          <p className={styles.sectionEmpty} style={{ textAlign: 'right' }}>"תשלום נוכחי" מתקדם לבד חודש-חודש, והעסקה נעלמת כשהיא נגמרת.</p>
+          {payments.length > 0 && (
+            <div className={styles.loanTableWrap} role="region" aria-label="טבלת עסקאות בתשלומים, גלול לצפייה בכל השורות" tabIndex={0}>
+              <table className={styles.loanTable}>
+                <thead><tr><th>מספר כרטיס</th><th>שם העסק</th><th>מס׳ תשלומים</th><th>תשלום נוכחי</th><th>נכון לתאריך</th><th>סכום תשלום</th><th>מצב</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
+                <tbody>
+                  {payments.map(p => {
+                    const total = parseFloat(p.total) || 0;
+                    return (
+                      <tr key={p.id} className={styles.loanTr + (p.hidden ? ' ' + styles.rowHidden : '')} onClick={() => startEditPayment(p)}>
+                        <td>{p.card ? `•••• ${p.card}` : '—'}</td>
+                        <td><div className={styles.name}>{p.name || 'עסקה'}</div></td>
+                        <td>{total || '—'}</td>
+                        <td>{total ? currentInstallments(p, total) : '—'}</td>
+                        <td>{formatDate(localISODate())}</td>
+                        <td className={styles.loanMonthly}>{fmt(parseFloat(p.amount) || 0)}</td>
+                        <td><StatusToggle hidden={!!p.hidden} name={p.name || 'עסקה'} onToggle={() => updateItem(save, 'payments', p.id, { hidden: !p.hidden })} /></td>
+                        <td className={styles.loanActions}>
+                          <ActionMenu><EditButton title={`ערוך · ${p.name || 'העסקה'}`} onClick={e => { e.stopPropagation(); startEditPayment(p); }} /><DeleteButton title={`מחק · ${p.name || 'העסקה'}`} onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'העסקה'} נמחקה`); }} /></ActionMenu>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <AddForm label="הוספת עסקה" open={editingPaymentId != null} className={styles.form}>
+            <select className={styles.input} aria-label="מספר כרטיס" value={paymentForm.card} onChange={e => setPaymentForm({ ...paymentForm, card: e.target.value })}>
+              <option value="">מספר כרטיס</option>
+              {[...new Set([...cards.map(c => c.last4).filter(Boolean), paymentForm.card].filter(Boolean))].map(n => <option key={n} value={n}>•••• {n}</option>)}
+            </select>
+            <input className={styles.input} placeholder="שם העסק" aria-label="שם העסק" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
+            <input className={styles.input} type="number" inputMode="numeric" placeholder="מס׳ תשלומים" aria-label="מספר תשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
+            <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלום נוכחי" aria-label="תשלום נוכחי" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
+            <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום תשלום" aria-label="סכום תשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
+            <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוספת עסקה'}</Button>
+            {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
+          </AddForm>
+        </CollapsibleSection>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {(loans.length > 0 || payments.length > 0 || overdraft.balance > 0) && (
-        <Hero
-        tone="neutral"
-          label="החזר חודשי"
-          value={fmt(loansMonthly + paymentsMonthly)}
-          note={[loans.length > 0 && `${loans.length} הלוואות`, activePayments.length > 0 && `${activePayments.length} עסקאות בתשלומים`].filter(Boolean).join(' · ')}
-          side={[
-            loans.length > 0 && { label: 'יתרת הלוואות', value: fmt(loansBalance) },
-            payments.length > 0 && { label: 'יתרת תשלומים', value: fmt(paymentsLeft) },
-            overdraft.balance > 0 && { label: 'מינוס בבנק', value: fmt(overdraft.balance), tone: 'expense', meta: overdraft.rate ? `ריבית ${overdraft.rate}%` : null }
-          ].filter(Boolean)}
-        />
-      )}
-      {(focus === 'all' || focus === 'cards') && <CreditCards settings={data.settings} save={save} />}
-      {focus !== 'payments' && focus !== 'cards' && <div className={styles.section}>
-        <CollapsibleSection title={<>הלוואות<span className={styles.countBadge}>{loans.length}</span>{loansMonthly > 0 ? ` · ${fmt(loansMonthly)} לחודש` : ''}</>}>
-        {!loans.length && <div className={styles.sectionEmpty}>אין הלוואות רשומות</div>}
-        <AddForm label="הוסף הלוואה" open={editingLoanId != null} openSignal={loanFormSignal} className={styles.form}>
-          <input className={styles.input} placeholder="שם ההלוואה" aria-label="שם ההלוואה" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
-          <input className={styles.input} placeholder="גורם מלווה" aria-label="גורם מלווה" value={loanForm.lender} onChange={e => setLoanForm({ ...loanForm, lender: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להלוואה" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההלוואה" value={loanForm.remaining} onChange={e => setLoanForm({ ...loanForm, remaining: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום מקורי" aria-label="סכום ההלוואה המקורי" value={loanForm.original} onChange={e => setLoanForm({ ...loanForm, original: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} />
-          <Button onClick={submitLoan}>{editingLoanId != null ? 'שמור' : 'הוסף הלוואה'}</Button>
+    <div className={styles.section}>
+      <CollapsibleSection title={<>חובות והלוואות<span className={styles.countBadge}>{loans.length}</span></>}>
+        <p className={styles.summaryLine}>החזר חודשי {fmt(loansMonthly)} · יתרת קרן {fmt(loansBalance)} · נותר לשלם {fmt(loansLeft)}</p>
+        <p className={styles.sectionEmpty} style={{ textAlign: 'right' }}>ההחזר של ההלוואות הפעילות נכלל בחישוב, והעין מסתירה הלוואה מהחישוב.</p>
+        {loans.length > 0 && (
+          <div className={styles.loanTableWrap} role="region" aria-label="טבלת הלוואות, גלול לצפייה בכל השורות" tabIndex={0}>
+            <table className={styles.loanTable}>
+              <thead><tr><th>שם החוב</th><th>סכום מקורי</th><th>יתרת קרן</th><th>נכון לתאריך</th><th>ריבית %</th><th>תשלומים שנותרו</th><th>החזר חודשי</th><th>מצב</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
+              <tbody>
+                {loans.map(l => {
+                  const left = loanPayoffMonths(l.remaining, l.monthly, l.rate);
+                  return (
+                    <tr key={l.id} className={styles.loanTr + (l.hidden ? ' ' + styles.rowHidden : '')} onClick={() => startEditLoan(l)}>
+                      <td><div className={styles.name}>{l.name || 'הלוואה'}</div>{l.lender && <div className={styles.meta}>{l.lender}</div>}</td>
+                      <td>{l.original ? fmt(l.original) : '—'}</td>
+                      <td>{l.remaining ? fmt(l.remaining) : '—'}</td>
+                      <td>{l.asOf ? formatDate(l.asOf) : '—'}</td>
+                      <td>{l.rate || '—'}</td>
+                      <td>{left === null ? '—' : left === Infinity ? '∞' : left}</td>
+                      <td className={styles.loanMonthly}>{fmt(l.monthly || 0)}</td>
+                      <td><StatusToggle hidden={!!l.hidden} name={l.name || 'הלוואה'} onToggle={() => updateItem(save, 'loans', l.id, { hidden: !l.hidden })} /></td>
+                      <td className={styles.loanActions}>
+                        <ActionMenu><EditButton title={`ערוך · ${l.name || 'ההלוואה'}`} onClick={e => { e.stopPropagation(); startEditLoan(l); }} /><DeleteButton title={`מחק · ${l.name || 'ההלוואה'}`} onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id, `${l.name || 'ההלוואה'} נמחקה`); }} /></ActionMenu>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <AddForm label="הוספת הלוואה" open={editingLoanId != null} className={styles.form}>
+          <input className={styles.input} placeholder="שם החוב" aria-label="שם החוב" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום מקורי" aria-label="סכום מקורי" value={loanForm.original} onChange={e => setLoanForm({ ...loanForm, original: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרת קרן" aria-label="יתרת קרן" value={loanForm.remaining} onChange={e => setLoanForm({ ...loanForm, remaining: e.target.value })} />
+          <input className={styles.input} type="date" aria-label="נכון לתאריך" value={loanForm.asOf} onChange={e => setLoanForm({ ...loanForm, asOf: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} />
+          <input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} />
+          <Button onClick={submitLoan}>{editingLoanId != null ? 'שמור' : 'הוספת הלוואה'}</Button>
           {editingLoanId != null && <Button variant="ghost" onClick={resetLoanForm}>ביטול</Button>}
         </AddForm>
-        {[['הלוואות ארוכות טווח (18+ חודשים לסיום)', longTermLoans], ['הלוואות קצרות טווח (מתחת ל-18 חודשים לסיום)', shortTermLoans], ['לא ניתן לסווג (חסרה יתרה/ריבית)', unclassifiedLoans]].map(([groupLabel, groupLoans]) => groupLoans.length ? (
-          <div key={groupLabel}>
-            <div className={styles.sectionEmpty} style={{ fontWeight: 700, color: 'var(--text)', textAlign: 'right', padding: '10px 2px 4px' }}>{groupLabel}</div>
-            <div className={styles.loanTableWrap} role="region" aria-label="טבלת הלוואות, גלול לצפייה בכל השורות" tabIndex={0}>
-              <table className={styles.loanTable}>
-                <thead>
-                  <tr>
-                    <th>שם החוב</th>
-                    <th>סכום מקורי</th>
-                    <th>יתרת קרן</th>
-                    <th>ריבית %</th>
-                    <th>תשלומים שנותרו</th>
-                    <th>החזר חודשי</th>
-                    <th>נפרע</th>
-                    <th><span className={styles.srOnly}>פעולות</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {groupLoans.map(l => {
-                    const pct = l.original ? Math.min(100, Math.max(0, Math.round(((l.original - (l.remaining || 0)) / l.original) * 100))) : null;
-                    const payoff = loanPayoffLabel(l);
-                    const monthsLeft = loanMonthsLeft(l);
-                    return (
-                      <tr key={l.id} className={styles.loanTr + (payoff?.danger ? ' ' + styles.loanTrDanger : '')} onClick={() => startEditLoan(l)}>
-                        <td>
-                          <div className={styles.name}>{l.name || 'הלוואה'}</div>
-                          {l.lender && <div className={styles.meta}>{l.lender}</div>}
-                          {payoff && <div className={payoff.danger ? styles.payoffDanger : styles.payoffLabel}>{payoff.text}</div>}
-                          {l.previousMonthly != null && (
-                            <div className={styles.payoffLabel} style={{ color: 'var(--green)' }}>
-                              מחזור: היה {fmt(l.previousMonthly)}/חודש ← עכשיו {fmt(l.monthly || 0)}/חודש
-                              {l.previousMonthly > (l.monthly || 0) ? ` (חיסכון ${fmt(l.previousMonthly - (l.monthly || 0))})` : ''}
-                            </div>
-                          )}
-                        </td>
-                        <td>{l.original ? fmt(l.original) : '—'}</td>
-                        <td>{l.remaining !== undefined ? fmt(l.remaining) : '—'}</td>
-                        <td>{l.rate ? l.rate : '—'}</td>
-                        <td>{monthsLeft === null ? '—' : monthsLeft === Infinity ? '∞' : Math.ceil(monthsLeft)}</td>
-                        <td className={styles.loanMonthly}>{fmt(l.monthly || 0)}</td>
-                        <td>{pct !== null ? pct + '%' : '—'}</td>
-                        <td className={styles.loanActions}>
-                          <ActionMenu><EditButton title={`ערוך · ${l.name || 'ההלוואה'}`} onClick={e => { e.stopPropagation(); startEditLoan(l); }} /><DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'loans', l.id, `${l.name || 'ההלוואה'} נמחקה`); }} /></ActionMenu>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : null)}
       </CollapsibleSection>
-      </div>}
-      {focus !== 'loans' && focus !== 'cards' && <div className={styles.section}>
-        <CollapsibleSection title={<>תשלומים בכרטיס אשראי<span className={styles.countBadge}>{payments.length}</span>{paymentsLeft > 0 ? ` · ${fmt(paymentsLeft)} נותרו` : ''}</>}>
-        {!payments.length && <div className={styles.sectionEmpty}>אין תשלומים בכרטיס אשראי</div>}
-        <PaymentsTimeline payments={payments} />
-        <AddForm label="הוסף תשלומים" open={editingPaymentId != null} className={styles.form}>
-          <input className={styles.input} placeholder="שם העסקה" aria-label="שם העסקה" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="סה״כ תשלומים" aria-label="סך כל התשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלומים שנותרו" aria-label="תשלומים שנותרו" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום לתשלום" aria-label="סכום לתשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
-          <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוסף תשלום'}</Button>
-          {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
-        </AddForm>
-        {payments.length ? (
-          <div className={styles.grid}>
-            {payments.map((p, i) => {
-              const total = parseFloat(p.total) || 0;
-              const cur = currentInstallments(p, total);
-              const left = Math.max(0, total - cur);
-              const done = total > 0 && left <= 0;
-              const paidPct = total > 0 ? Math.min(100, Math.max(0, Math.round((cur / total) * 100))) : null;
-              const showBar = paidPct !== null && !done;
-              return (
-                <div key={p.id} className={`${styles.row} ${styles.rowCard}${showBar ? ' ' + styles.rowStacked : ''}${done ? ' ' + styles.rowDone : ''}`} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }} role="button" tabIndex={0} onClick={() => startEditPayment(p)} onKeyDown={e => e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditPayment(p))}>
-                  <div className={styles.rowMain}>
-                    <div>
-                      <div className={styles.name}>{p.name || 'תשלום'}{done && <span className={styles.doneBadge}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5" /></svg> הושלם</span>}</div>
-                      <div className={styles.meta}>{total ? `נותרו ${left} מתוך ${total} תשלומים` : ''}</div>
-                    </div>
-                    <div className={styles.rowActions}>
-                      <div className={styles.amount}>{fmt(left * (parseFloat(p.amount) || 0))}</div>
-                      <ActionMenu><EditButton title={`ערוך · ${p.name || 'התשלום'}`} onClick={e => { e.stopPropagation(); startEditPayment(p); }} /><DeleteButton onClick={e => { e.stopPropagation(); removeItem(save, 'payments', p.id, `${p.name || 'התשלום'} נמחק`); }} /></ActionMenu>
-                    </div>
-                  </div>
-                  {showBar && (
-                    <div className={styles.loanBarRow}>
-                      <div className={styles.loanBar} role="progressbar" aria-label="אחוז ששולם" aria-valuenow={paidPct} aria-valuemin={0} aria-valuemax={100}>
-                        <div className={styles.loanBarFill} style={{ transform: `scaleX(${paidPct / 100})` }} />
-                      </div>
-                      <div className={styles.loanBarPct}>{paidPct}%</div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-      </CollapsibleSection>
-      </div>}
-
-      {(closedLoans.length > 0 || closedPayments.length > 0) && (
-        <div className={styles.section}>
-          <CollapsibleSection title={<>היסטוריית מחזורים<span className={styles.countBadge}>{closedLoans.length + closedPayments.length}</span></>}>
-            <div className={styles.grid}>
-              {closedLoans.map(l => (
-                <div key={l.id} className={`${styles.row} ${styles.rowCard}`} style={{ opacity: 0.7 }}>
-                  <div className={styles.rowMain}>
-                    <div>
-                      <div className={styles.name}>{l.name || 'הלוואה'}</div>
-                      <div className={styles.meta}>
-                        {l.closedAt ? `נסגרה במחזור · ${new Date(l.closedAt).toLocaleDateString('he-IL')}` : 'נסגרה במחזור'}
-                        {l.monthly ? ` · היה ${fmt(l.monthly)}/חודש` : ''}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {closedPayments.map(p => (
-                <div key={p.id} className={`${styles.row} ${styles.rowCard}`} style={{ opacity: 0.7 }}>
-                  <div className={styles.rowMain}>
-                    <div>
-                      <div className={styles.name}>{p.name || 'תשלום'}</div>
-                      <div className={styles.meta}>נסגר במחזור</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CollapsibleSection>
-        </div>
-      )}
-
-      {focus !== 'payments' && focus !== 'cards' && <div className={styles.sectionsGrid}>
-      <div className={styles.section}>
-        <CollapsibleSection title={<>מחשבון שפיצר</>}>
-        <div className={styles.form}>
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום הלוואה" aria-label="סכום הלוואה" value={spForm.principal} onChange={e => setSpForm({ ...spForm, principal: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית" value={spForm.rate} onChange={e => setSpForm({ ...spForm, rate: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה בחודשים" aria-label="תקופה בחודשים" value={spForm.months} onChange={e => setSpForm({ ...spForm, months: e.target.value })} />
-          <Button onClick={calcSpitzer}>חשב</Button>
-        </div>
-        {spResult && (
-          <div className={styles.row} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
-            <div>החזר חודשי: <b>{fmt(spResult.pmt)}</b> · ריבית כוללת: <b>{fmt(spResult.totalInterest)}</b></div>
-            <Button variant="ghost" onClick={spitzerToLoan}>+ הוסף כהלוואה</Button>
-          </div>
-        )}
-      </CollapsibleSection>
-      </div>
-
-      <div className={styles.section}>
-        <CollapsibleSection title={<>סימולציית מחזור / איחוד</>}>
-        {!loans.length && !payments.length && !(overdraft.balance > 0) && <div className={styles.sectionEmpty}>אין הלוואות, תשלומים או מינוס למחזור</div>}
-        {(loans.length > 0 || payments.length > 0 || overdraft.balance > 0) && (
-          <>
-            <div className={styles.form}>
-              <input className={styles.input} placeholder="שם ההלוואה החדשה" aria-label="שם ההלוואה החדשה" value={consolForm.name} onChange={e => setConsolForm({ ...consolForm, name: e.target.value })} />
-              <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית מוצעת %" aria-label="ריבית מוצעת" value={consolForm.rate} onChange={e => setConsolForm({ ...consolForm, rate: e.target.value })} />
-              <input className={styles.input} type="number" inputMode="numeric" placeholder="תקופה מוצעת (חודשים)" aria-label="תקופה מוצעת" value={consolForm.months} onChange={e => setConsolForm({ ...consolForm, months: e.target.value })} />
-              <Button onClick={() => calcConsolidation(loans, payments)}>חשב חיסכון</Button>
-            </div>
-            <div className={styles.consolTableWrap}>
-              <table className={styles.consolTable}>
-                <thead>
-                  <tr><th>שם</th><th>סכום</th><th>החזר חודשי</th></tr>
-                </thead>
-                <tbody>
-                  <tr className={styles.consolGroupRow}><td colSpan={3}>הלוואה חדשה</td></tr>
-                  <tr>
-                    <td>{consolForm.name.trim() || 'הלוואה מאוחדת'}</td>
-                    <td>{consolResult ? fmt(consolResult.currentRemaining) : '—'}</td>
-                    <td>{consolResult ? fmt(consolResult.newMonthly) : '—'}</td>
-                  </tr>
-                  {loans.length > 0 && <tr className={styles.consolGroupRow}><td colSpan={3}>הלוואות קיימות</td></tr>}
-                  {loans.map(l => (
-                    <tr key={l.id}>
-                      <td>
-                        <label className={styles.consolCheckLabel}>
-                          <input type="checkbox" checked={!!consolChecked[l.id]} onChange={() => toggleConsol(l.id)} />
-                          {l.name}
-                        </label>
-                      </td>
-                      <td>{fmt(l.remaining || 0)}</td>
-                      <td>{fmt(l.monthly || 0)}</td>
-                    </tr>
-                  ))}
-                  {payments.length > 0 && <tr className={styles.consolGroupRow}><td colSpan={3}>תשלומים בכרטיס אשראי</td></tr>}
-                  {payments.map(p => {
-                    const { left, value } = paymentRemainingValue(p);
-                    if (left <= 0) return null;
-                    return (
-                      <tr key={p.id}>
-                        <td>
-                          <label className={styles.consolCheckLabel}>
-                            <input type="checkbox" checked={!!consolPaymentsChecked[p.id]} onChange={() => toggleConsolPayment(p.id)} />
-                            {p.name || 'תשלום'}
-                          </label>
-                        </td>
-                        <td>{fmt(value)}</td>
-                        <td>{fmt(p.amount || 0)}</td>
-                      </tr>
-                    );
-                  })}
-                  {overdraft.balance > 0 && (
-                    <>
-                      <tr className={styles.consolGroupRow}><td colSpan={3}>מינוס בבנק</td></tr>
-                      <tr>
-                        <td>
-                          <label className={styles.consolCheckLabel}>
-                            <input type="checkbox" checked={consolOverdraftChecked} onChange={() => setConsolOverdraftChecked(v => !v)} />
-                            יתרת מינוס
-                          </label>
-                        </td>
-                        <td>{fmt(overdraft.balance)}</td>
-                        <td>{overdraft.rate ? fmt(overdraft.balance * (overdraft.rate / 1200)) + ' ריבית' : '—'}</td>
-                      </tr>
-                    </>
-                  )}
-                </tbody>
-                {consolResult && (
-                  <tfoot>
-                    <tr>
-                      <td>יתרה מההלוואה</td>
-                      {/* the consolidated loan is sized to exactly cover the selected remaining balances, so this is always 0 */}
-                      <td colSpan={2}>{fmt(0)}</td>
-                    </tr>
-                    <tr>
-                      <td>{consolResult.diff >= 0 ? 'חיסכון בהחזר חודשי' : 'עלות נוספת בהחזר חודשי'}</td>
-                      <td colSpan={2} style={{ color: consolResult.diff >= 0 ? 'var(--green)' : 'var(--red)' }}>{fmt(Math.abs(consolResult.diff))}</td>
-                    </tr>
-                    <tr title="עלות כוללת עד סוף התקופה: לפי טווח הסילוק הנוכחי של כל פריט, מול ההלוואה המאוחדת החדשה">
-                      <td>{consolResult.totalDiff >= 0 ? 'חיסכון כולל עד סוף התקופה' : 'עלות נוספת כוללת עד סוף התקופה'}</td>
-                      <td colSpan={2} style={{ color: consolResult.totalDiff >= 0 ? 'var(--green)' : 'var(--red)' }}>{fmt(Math.abs(consolResult.totalDiff))}</td>
-                    </tr>
-                  </tfoot>
-                )}
-              </table>
-            </div>
-            {consolResult && (
-              <div style={{ marginTop: 'var(--space-3)' }}>
-                <Button onClick={() => commitConsolidation(loans, payments)} disabled={committing}>{committing ? 'מבצע…' : 'בצע מחזור'}</Button>
-              </div>
-            )}
-          </>
-        )}
-        <div className={styles.form} style={{ marginTop: 'var(--space-4)' }}>
-          {editingOverdraft ? (
-            <>
-              <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרת מינוס בבנק" aria-label="יתרת מינוס בבנק" value={overdraftDraft} onChange={e => setOverdraftDraft(e.target.value)} />
-              <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית שנתית %" aria-label="ריבית שנתית על המינוס" value={overdraftRateDraft} onChange={e => setOverdraftRateDraft(e.target.value)} />
-              <Button onClick={saveOverdraft}>שמור</Button>
-            </>
-          ) : (
-            <Button variant="ghost" onClick={() => { setOverdraftDraft(String(overdraft.balance || '')); setOverdraftRateDraft(String(overdraft.rate || '')); setEditingOverdraft(true); }}>
-              {overdraft.balance > 0 ? `עדכן יתרת מינוס (${fmt(overdraft.balance)}${overdraft.rate ? ' · ' + overdraft.rate + '%' : ''})` : '+ הוסף יתרת מינוס בבנק'}
-            </Button>
-          )}
-        </div>
-      </CollapsibleSection>
-      </div>
-
-      </div>}
-
     </div>
   );
 }
