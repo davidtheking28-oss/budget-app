@@ -775,7 +775,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
       {data?.snapshots?.length > 0 && (
         <div className={styles.card + ' ' + styles.cardStandalone}>
-          <CollapsibleSection title="היסטוריית מיפויים">
+          <CollapsibleSection title="מיפויים קודמים">
           <div className={styles.list}>
             {data.snapshots.map((s, i) => (
               <div key={i} className={styles.txRow}>
