@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { useClientDeals } from './useClientDeals.js';
 import { num } from './bizMath.js';
 import HeaderAction from './HeaderAction.jsx';
+import ClientCard from './ClientCard.jsx';
+import ClientJourney from './ClientJourney.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { localISODate } from '../budget/monthUtils.js';
@@ -33,10 +35,17 @@ export default function ClientsTable({ advisorId, onAdd, onOpen, onRemove }) {
   const [status, setStatus] = useState('');
   const [sort, setSort] = useState({ key: null, dir: 1 });
   const [confirmingId, setConfirmingId] = useState(null);
+  const [cardId, setCardId] = useState(null);
+  const [journeyId, setJourneyId] = useState(null);
   const tableRef = useRef(null);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="18px" />;
+
+  const journeyRow = rows.find(r => r.id === journeyId);
+  if (journeyRow) return <ClientJourney key={journeyRow.id} advisorId={advisorId} row={journeyRow} saveDeal={saveDeal} onBack={() => setJourneyId(null)} onOpenClient={r => onOpen(r)} />;
+  const cardRow = rows.find(r => r.id === cardId);
+  if (cardRow) return <ClientCard key={cardRow.id} row={cardRow} statuses={SERVICE_STATUSES} payments={PAYMENT_STATUSES} saveDeal={saveDeal} onBack={() => setCardId(null)} onEdit={() => { setCardId(null); setTimeout(() => document.querySelector(`input[data-name-of="${cardRow.id}"]`)?.focus(), 0); }} onRemove={() => { setCardId(null); onRemove(cardRow.id).then(reload); }} onOpenClient={() => onOpen(cardRow)} onOpenJourney={() => setJourneyId(cardRow.id)} />;
 
   const monthPrefix = localISODate().slice(0, 7);
   const statusOf = r => r.deal?.service_status || 'active';
@@ -171,7 +180,7 @@ export default function ClientsTable({ advisorId, onAdd, onOpen, onRemove }) {
                             <>
                               <button type="button" className={styles.iconBtn} aria-label={'נתק לקוח: ' + label(r)} title="נתק לקוח" onClick={() => setConfirmingId(r.id)}><svg {...svgProps}><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg></button>
                               <button type="button" className={styles.iconBtn} aria-label={'עריכת פרטים: ' + label(r)} title="עריכה" onClick={() => focusName(r.id)}><svg {...svgProps}><path d="M4 20h4L19 9l-4-4L4 16z" /></svg></button>
-                              <button type="button" className={styles.iconBtn} aria-label={'פתח כרטיס לקוח: ' + label(r)} title="פתח כרטיס" onClick={() => onOpen(r)}><svg {...svgProps}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg></button>
+                              <button type="button" className={styles.iconBtn} aria-label={'פתח כרטיס לקוח: ' + label(r)} title="כרטיס לקוח" onClick={() => setCardId(r.id)}><svg {...svgProps}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg></button>
                             </>
                           )}
                         </div>
