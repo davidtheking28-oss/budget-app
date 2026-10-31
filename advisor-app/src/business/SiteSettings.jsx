@@ -3,10 +3,8 @@ import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
 import { DEFAULT_BRAND } from '../brandColor.js';
 import { toast } from '../toast.js';
 import Skeleton from '../components/Skeleton.jsx';
-import { CLIENT_APP_URL } from './clientApp.js';
+import { signupMessage } from './clientApp.js';
 import styles from './Business.module.css';
-
-const signupMessage = advisorId => 'היי, הנה הקישור להרשמה לפלטפורמה שלנו: ' + CLIENT_APP_URL + '?advisor=' + advisorId + ' . אחרי ההרשמה אאשר אותך מהמערכת שלי.';
 
 async function copySignupLink(advisorId) {
   const message = signupMessage(advisorId);

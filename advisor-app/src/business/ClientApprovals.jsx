@@ -4,7 +4,7 @@ import { useClientApprovals, TRASH_DAYS } from './useClientApprovals.js';
 import { INVITE_ERROR_MESSAGES } from '../clients/inviteMessages.js';
 import { toast } from '../toast.js';
 import Families from './Families.jsx';
-import { CLIENT_APP_URL } from './clientApp.js';
+import { CLIENT_APP_URL, signupMessage } from './clientApp.js';
 import Skeleton from '../components/Skeleton.jsx';
 import { formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
@@ -101,6 +101,16 @@ export default function ClientApprovals({ advisorId }) {
 
   const inviteMessage = 'היי, הזמנתי אותך להתחבר אליי באפליקציית התקציב: ' + CLIENT_APP_URL + ' . היכנס עם הכתובת ' + invitedEmail + ' ותאשר את ההזמנה שמחכה לך.';
 
+  async function copySignupLink() {
+    const message = signupMessage(advisorId);
+    try {
+      await navigator.clipboard.writeText(message);
+      toast('הקישור הועתק, אפשר להדביק ללקוח', 'success');
+    } catch {
+      window.prompt('העתק את ההודעה ושלח ללקוח:', message);
+    }
+  }
+
   async function copyInvite() {
     try {
       await navigator.clipboard.writeText(inviteMessage);
@@ -129,6 +139,12 @@ export default function ClientApprovals({ advisorId }) {
         <div className={styles.cardHead}>
           <h2 className={styles.cardTitle}>הזמן לקוח חדש</h2>
         </div>
+        <p className={styles.note} style={{ margin: 0 }}>שלח ללקוח קישור. הוא נרשם בעצמו, והבקשה שלו מופיעה כאן לאישורך.</p>
+        <div className={styles.toolbar}>
+          <button type="button" className={styles.btn} onClick={copySignupLink}>העתק קישור הזמנה</button>
+          <a className={styles.btnGhost} style={{ textDecoration: 'none' }} href={'https://wa.me/?text=' + encodeURIComponent(signupMessage(advisorId))} target="_blank" rel="noopener noreferrer">שלח בוואטסאפ</a>
+        </div>
+        <p className={styles.note} style={{ margin: 0 }}>או הזמן לקוח לפי כתובת מייל:</p>
         <div className={styles.toolbar}>
           <input className={styles.input + ' ' + styles.inputGrow} type="email" dir="ltr" placeholder="כתובת אימייל של הלקוח" aria-label="הזמן לקוח באימייל" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && invite()} />
           <button type="button" className={styles.btn} onClick={invite} disabled={sending}>שלח הזמנה</button>
