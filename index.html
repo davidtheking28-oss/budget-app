@@ -47,6 +47,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <style id="frameGuard">html{display:none!important}</style>
   <script>try{if(self===top){document.getElementById("frameGuard").remove()}else{top.location=self.location}}catch(e){}</script>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com data:; connect-src https://fnklrqxwyeibfptaxewf.supabase.co wss://fnklrqxwyeibfptaxewf.supabase.co https://fonts.googleapis.com; img-src 'self' data: blob: https://cdn.simpleicons.org; object-src 'none'; base-uri 'self'; form-action 'self';">
@@ -2900,13 +2901,15 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">🔒 מדיניות פרטיות<button onclick="closeSheet('privacySheet')" aria-label="סגור" class="sheet-close-x">✕</button></div>
     <div style="font-size:0.84rem;color:var(--text2);line-height:1.8;overflow-y:auto;max-height:68vh;display:flex;flex-direction:column;gap:16px;padding-bottom:8px;">
-      <div style="background:rgba(5,150,105,0.07);border-radius:10px;padding:10px 14px;font-size:0.8rem;color:var(--green);">הנתונים הפיננסיים שלך שמורים אצלך בלבד. אנחנו לא רואים אותם ולא מוכרים אותם.</div>
+      <div style="background:rgba(5,150,105,0.07);border-radius:10px;padding:10px 14px;font-size:0.8rem;color:var(--green);">הנתונים הפיננסיים שלך שייכים לך. איננו מוכרים אותם ואיננו משתמשים בהם לפרסום. הגישה אליהם שמורה לך ולמי שתאשר בעצמך, כמו יועץ פיננסי או בן משפחה.</div>
       <div>
         <strong style="color:var(--text);display:block;margin-bottom:5px">1. מה אנחנו אוספים? (סעיף 11 לחוק הגנת הפרטיות)</strong>
         <ul style="margin:0;padding-right:18px;display:flex;flex-direction:column;gap:6px;">
           <li><strong>כתובת מייל</strong> — אם נרשמת לחשבון ענן, מאוחסנת ב-Supabase לצורך אימות בלבד.</li>
           <li><strong>נתונים פיננסיים</strong> — עסקאות, תקציב, מנויים, הלוואות, יעדים. נשמרים בדפדפן שלך ובענן תחת חשבונך בלבד.</li>
-          <li><strong>נתוני שימוש ב-AI</strong> — ספירת בקשות בלבד (ללא תוכן) לצורך הגבלת קצב.</li>
+          <li><strong>נתוני שימוש ב-AI</strong> — ספירת בקשות בלבד (ללא תוכן) לצורך הגבלת קצב. נמחקים אחרי 90 יום.</li>
+          <li><strong>נתונים טכניים</strong> — דיווחי שגיאות (סוג הדפדפן, כתובת העמוד והודעת השגיאה) והודעות שתשלח דרך "צור קשר". דיווחי שגיאות נמחקים אחרי 60 יום.</li>
+          <li><strong>נתוני שיתוף</strong> — אם תאשר יועץ פיננסי או תצרף בן משפחה, הם יראו את התקציב שלך כפי שמפורט בסעיף 4.</li>
         </ul>
       </div>
       <div>
@@ -2915,13 +2918,16 @@
       </div>
       <div>
         <strong style="color:var(--text);display:block;margin-bottom:5px">3. האם מסירת המידע היא חובה?</strong>
-        לא. האפליקציה פועלת במלואה ללא חשבון. רישום אופציונלי בלבד, ומאפשר גיבוי בין מכשירים.
+        לא. האפליקציה פועלת ללא חשבון, והנתונים נשמרים אז במכשיר שלך. חשבון ענן נדרש לסנכרון בין מכשירים, לשיתוף עם בן משפחה ולחיבור ליועץ פיננסי.
       </div>
       <div>
         <strong style="color:var(--text);display:block;margin-bottom:5px">4. שיתוף עם צדדים שלישיים</strong>
         <ul style="margin:0;padding-right:18px;display:flex;flex-direction:column;gap:6px;">
-          <li><strong>Supabase</strong> — ספק תשתית האחסון והאימות (ארה"ב). כפוף ל-GDPR.</li>
-          <li><strong>Anthropic (Claude)</strong> — טקסט עסקה בלבד לצורך קטגוריזציה אוטומטית, ללא שמירה.</li>
+          <li><strong>Supabase</strong> — ספק תשתית האחסון והאימות. הנתונים עשויים להיות מאוחסנים ומעובדים מחוץ לישראל.</li>
+          <li><strong>ספק בינה מלאכותית חיצוני (Groq, ארה"ב)</strong> — כשאתה סורק קבלה, מעלה דף חשבון או מזין הוצאה בטקסט חופשי, התמונה או הטקסט נשלחים לספק לצורך חילוץ ההוצאה. מומלץ לא להעלות מסמכים שאינך רוצה לשלוח. איננו שומרים את התוכן ששלחת, מלבד ההוצאה שאישרת. לספק יש מדיניות פרטיות משלו.</li>
+          <li><strong>יועץ פיננסי</strong> — רק אם בחרת לחבר יועץ ואישרת אותו. הוא יכול לצפות בתקציב שלך ולערוך אותו, ואתה יכול לנתק אותו בכל עת מההגדרות.</li>
+          <li><strong>בן משפחה</strong> — רק אם הזמנת אותו למשק הבית. הוא יכול לצפות ולערוך.</li>
+          <li><strong>שירותי התראות, גופנים וספריות</strong> — שירותי ההתראות של הדפדפן שלך, Google Fonts ו-CDN של ספריות (cdnjs, jsDelivr) מקבלים את כתובת ה-IP שלך כחלק מהטעינה.</li>
           <li>לא נמכור, נשכיר, או נשתף נתונים עם כל גורם אחר.</li>
         </ul>
       </div>
@@ -2931,19 +2937,19 @@
           <li><strong>עיון</strong> — כל נתוניך גלויים לך בממשק האפליקציה.</li>
           <li><strong>תיקון</strong> — ניתן לערוך כל עסקה ישירות.</li>
           <li><strong>מחיקה</strong> — "מחיקת חשבון לצמיתות" בהגדרות מוחק את כל נתוניך מהענן ומהמכשיר וסוגר את החשבון, מיידית וללא צורך בפנייה. "איפוס כל הנתונים" מוחק את הנתונים ומשאיר את החשבון פתוח.</li>
-          <li><strong>ניידות</strong> — "ייצוא גיבוי מלא (JSON)" בהגדרות מייצא את כל נתוניך בקובץ אחד.</li>
+          <li><strong>ניידות</strong> — "ייצוא גיבוי (JSON)" בהגדרות מייצא את נתוני התקציב שבאפליקציה בקובץ אחד. לקבלת עותק מלא של כל המידע שנשמר עליך, כולל רשומות שיועץ כתב, פנה אלינו.</li>
           <li><strong>פנייה אלינו</strong> — "צור קשר" בהגדרות, בכל נושא הקשור לנתונים שלך.</li>
         </ul>
       </div>
       <div>
         <strong style="color:var(--text);display:block;margin-bottom:5px">6. אבטחה</strong>
-        כל התקשורת מוצפנת ב-HTTPS/TLS. גישה לנתוני הענן מוגנת עם Row Level Security: רק אתה יכול לראות את הנתונים שלך, גם לנו אין גישה ישירה.
+        כל התקשורת מוצפנת ב-HTTPS/TLS. גישה לנתוני הענן מוגבלת בשרת בהרשאות לפי משתמש: רק אתה, ומי שאישרת, יכולים לראות את הנתונים שלך. מנהל המערכת הטכני יכול לגשת למסד הנתונים לצורכי תפעול ואבטחה בלבד. הנתונים נשמרים במכשיר שלך גם אחרי התנתקות, ולכן במכשיר משותף מומלץ למחוק אותם מההגדרות.
       </div>
       <div>
         <strong style="color:var(--text);display:block;margin-bottom:5px">7. יצירת קשר</strong>
         לכל פנייה בנושא פרטיות: <span style="color:var(--accent)">davidtheking27@gmail.com</span>
       </div>
-      <div style="color:var(--text3);font-size:0.78rem;padding-top:4px;border-top:1px solid var(--border)">עודכן לאחרונה: יוני 2026 · בהתאם לחוק הגנת הפרטיות, תשמ"א-1981</div>
+      <div style="color:var(--text3);font-size:0.78rem;padding-top:4px;border-top:1px solid var(--border)">עודכן לאחרונה: נובמבר 2026 · בהתאם לחוק הגנת הפרטיות, תשמ"א-1981</div>
     </div>
   </div>
 </div>
@@ -5015,6 +5021,39 @@ async function createAdvisorInvite(){
   _advisorLink=data;
   renderAdvisorLinkSection();
 }
+const LEGAL_VERSION='2026-10-12';
+let _legalCheckedFor=null;
+async function _ensureLegalConsent(){
+  if(!_cloudUser||!_sb||_legalCheckedFor===_cloudUser.id||document.getElementById('legalGate'))return;
+  const uid=_cloudUser.id;
+  const {data,error}=await _sb.from('legal_acceptances').select('id').eq('user_id',uid).eq('terms_version',LEGAL_VERSION).eq('privacy_version',LEGAL_VERSION).limit(1);
+  if(error)return;
+  if(data&&data.length){_legalCheckedFor=uid;return;}
+  const gate=document.createElement('div');
+  gate.id='legalGate';
+  gate.setAttribute('role','dialog');
+  gate.setAttribute('aria-modal','true');
+  gate.style.cssText='position:fixed;inset:0;z-index:250;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
+  gate.innerHTML='<div style="max-width:420px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:14px">'
+    +'<div style="font-size:1.1rem;font-weight:800;color:var(--text)">לפני שממשיכים</div>'
+    +'<div style="font-size:0.88rem;line-height:1.7;color:var(--text2)">השימוש בחשבון ענן כולל שמירת נתונים פיננסיים בשרת, ויכול לכלול שיתוף עם יועץ פיננסי שתאשר. כדי להמשיך יש לאשר את התנאים והמדיניות.</div>'
+    +'<div style="display:flex;gap:16px;flex-wrap:wrap"><button type="button" class="btn btn-sm" onclick="openSheet(\'termsSheet\')">תנאי שימוש</button><button type="button" class="btn btn-sm" onclick="openSheet(\'privacySheet\')">מדיניות פרטיות</button></div>'
+    +'<label style="display:flex;gap:10px;align-items:flex-start;font-size:0.86rem;line-height:1.6;color:var(--text);cursor:pointer"><input type="checkbox" id="legalGateCheck" style="margin-top:4px;width:18px;height:18px;flex:none"><span>קראתי ואני מסכים/ה לתנאי השימוש ולמדיניות הפרטיות, ואני בן/בת 18 ומעלה.</span></label>'
+    +'<button type="button" id="legalGateOk" class="btn btn-primary btn-full" disabled>המשך</button>'
+    +'<button type="button" id="legalGateOut" class="btn btn-full">אני לא מסכים/ה, התנתקות</button>'
+    +'</div>';
+  document.body.appendChild(gate);
+  const chk=gate.querySelector('#legalGateCheck'),ok=gate.querySelector('#legalGateOk');
+  chk.onchange=()=>{ok.disabled=!chk.checked;};
+  gate.querySelector('#legalGateOut').onclick=async()=>{gate.remove();try{await _sb.auth.signOut();}catch(e){}};
+  ok.onclick=async()=>{
+    ok.disabled=true;
+    const {error:e}=await _sb.rpc('accept_legal_documents',{p_terms_version:LEGAL_VERSION,p_privacy_version:LEGAL_VERSION,p_age_18:true});
+    if(e){ok.disabled=false;showToast('שגיאה בשמירת ההסכמה, נסה שוב');return;}
+    _legalCheckedFor=uid;
+    gate.remove();
+  };
+}
 let _pendingAdvisorCall=null;
 function _requestPendingAdvisor(){
   if(!_pendingAdvisorCall)_pendingAdvisorCall=_doRequestPendingAdvisor().finally(()=>{_pendingAdvisorCall=null;});
@@ -5251,6 +5290,7 @@ document.addEventListener('DOMContentLoaded',function(){
       renderCloudSection();
       renderAdvisorLinkSection();
       if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')){
+        _ensureLegalConsent();
         _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
         _requestPendingAdvisor().then(()=>_loadAdvisorLink()).then(()=>{
           renderAdvisorLinkSection();
@@ -5266,6 +5306,7 @@ document.addEventListener('DOMContentLoaded',function(){
       if(_switchLocalAccount(next)){location.reload();return;}
       _cloudUser=session?.user||null;
       if(_cloudUser)_loadMeetingAlerts();
+      if(_cloudUser)_ensureLegalConsent();
       if(_cloudUser){
         // _loadAdvisorStatus, the household→budget-data chain, and _loadAdvisorLink
         // hit independent tables — run them concurrently instead of one round-trip

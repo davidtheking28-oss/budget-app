@@ -167,6 +167,10 @@ export const supabase = {
       }];
       return { data: 'ok', error: null };
     }
+    if (fn === 'accept_legal_documents') {
+      db.legal_acceptances = [...(db.legal_acceptances || []), { id: Date.now(), user_id: session.user.id, terms_version: params.p_terms_version, privacy_version: params.p_privacy_version, age_18_confirmed: true, accepted_at: new Date().toISOString() }];
+      return { data: new Date().toISOString(), error: null };
+    }
     if (fn === 'approve_advisor_client') {
       const row = (db.advisor_clients || []).find(r => r.id === params.p_link && r.requested_by_client);
       if (!row) return { data: 'not_found', error: null };

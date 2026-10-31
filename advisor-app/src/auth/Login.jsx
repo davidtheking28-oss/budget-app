@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import Button from '../components/Button.jsx';
 import Logo from '../components/Logo.jsx';
+import LegalLinks from '../components/LegalLinks.jsx';
 import styles from './Login.module.css';
 
 export default function Login({ recovery, onRecoveryDone }) {
@@ -177,6 +178,7 @@ export default function Login({ recovery, onRecoveryDone }) {
             )}
           </>
         )}
+        <LegalLinks />
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useSession } from './auth/useSession.js';
 import Login from './auth/Login.jsx';
 import NotAdvisor from './auth/NotAdvisor.jsx';
+import LegalGate from './auth/LegalGate.jsx';
+import { useLegalConsent } from './auth/useLegalConsent.js';
 import { useIsAdvisor } from './auth/useIsAdvisor.js';
 import { useAdvisorRequest } from './auth/useAdvisorRequest.js';
 import Shell from './components/Shell.jsx';
@@ -29,6 +31,7 @@ export default function App() {
   const [viewClientId, setViewClientId] = useState(legacyClient);
   const [viewTab, setViewTab] = useState(legacyTab);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [legalAccepted, markLegalAccepted] = useLegalConsent(session?.user?.id);
   const isAdvisor = useIsAdvisor(session?.user?.id);
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const { theme, toggle: toggleTheme } = useTheme();
@@ -44,6 +47,8 @@ export default function App() {
   if (loading) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
   if (isRecovery) return (<><Login recovery onRecoveryDone={clearRecovery} /><Toaster /></>);
   if (!session) return (<><Login /><Toaster /></>);
+  if (legalAccepted === null) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
+  if (!legalAccepted) return (<><LegalGate onAccepted={markLegalAccepted} /><Toaster /></>);
   if (isAdvisor === null) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
   if (!isAdvisor) {
     if (advisorRequestStatus === null) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;

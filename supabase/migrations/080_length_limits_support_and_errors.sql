@@ -1,0 +1,2 @@
+alter table public.support_messages add constraint support_messages_len_chk check (char_length(body) <= 4000 and char_length(coalesce(email,'')) <= 320 and char_length(coalesce(topic,'')) <= 200 and char_length(coalesce(ua,'')) <= 500) not valid;
+alter table public.client_errors add constraint client_errors_len_chk check (char_length(coalesce(message,'')) <= 2000 and char_length(coalesce(stack,'')) <= 8000 and char_length(coalesce(source,'')) <= 1000 and char_length(coalesce(ua,'')) <= 500) not valid;
