@@ -48,14 +48,14 @@ export default function ClientApprovals({ advisorId }) {
 
   const rows = [
     ...links.map(l => ({
-      key: 'l' + l.id, id: l.id, email: l.client_email || l.invited_email || l.name, createdAt: l.created_at,
+      key: 'l' + l.id, id: l.id, name: l.name, email: l.client_email || l.invited_email || '', createdAt: l.created_at,
       kind: l.status === 'active' ? 'active' : l.status === 'manual' ? 'manual' : l.requested_by_client ? 'requested' : l.client_id ? 'waitApproval' : 'waitSignup'
     })),
     ...archive.map(a => ({ key: 'a' + a.id, id: a.id, email: a.client_email, createdAt: a.created_at, kind: a.state === 'blocked' ? 'blocked' : 'trashed' }))
   ];
   const count = kind => rows.filter(r => r.kind === kind).length;
   const needle = search.trim().toLowerCase();
-  const visible = rows.filter(r => (filter === 'all' || r.kind === filter) && (!needle || (r.email || '').toLowerCase().includes(needle)));
+  const visible = rows.filter(r => (filter === 'all' || r.kind === filter) && (!needle || (r.email + ' ' + (r.name || '')).toLowerCase().includes(needle)));
 
   async function run(row, action) {
     setConfirming(null);
@@ -134,7 +134,7 @@ export default function ClientApprovals({ advisorId }) {
               <tbody>
                 {visible.map(r => (
                   <tr key={r.key}>
-                    <td dir="ltr" className={styles.rowMeta}>{r.email}</td>
+                    <td className={styles.rowMeta}>{r.name && <div><strong>{r.name}</strong></div>}<div dir="ltr" style={{ textAlign: 'start' }}>{r.email}</div></td>
                     <td className={styles.num}>{formatDate(r.createdAt.slice(0, 10))}</td>
                     <td><span className={styles.tag}>{STATUS_LABEL[r.kind]}</span></td>
                     <td>
