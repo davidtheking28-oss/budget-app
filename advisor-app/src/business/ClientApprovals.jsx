@@ -10,6 +10,7 @@ import styles from './Business.module.css';
 
 const STATUS_LABEL = {
   active: 'פעיל',
+  manual: 'לקוח ידני',
   requested: 'ממתין לאישורך',
   waitApproval: 'ממתין לאישור הלקוח',
   waitSignup: 'ממתין להרשמה לאפליקציה',
@@ -28,6 +29,7 @@ const ACTIONS = {
 
 const ROW_ACTIONS = {
   active: ['end', 'block', 'trash'],
+  manual: ['end', 'block', 'trash'],
   requested: ['approve', 'reject', 'block'],
   waitApproval: ['cancel', 'block'],
   waitSignup: ['cancel', 'block'],
@@ -48,7 +50,7 @@ export default function ClientApprovals({ advisorId }) {
   const rows = [
     ...links.map(l => ({
       key: 'l' + l.id, id: l.id, email: l.client_email || l.invited_email, createdAt: l.created_at,
-      kind: l.status === 'active' ? 'active' : l.requested_by_client ? 'requested' : l.client_id ? 'waitApproval' : 'waitSignup'
+      kind: l.status === 'active' ? 'active' : l.status === 'manual' ? 'manual' : l.requested_by_client ? 'requested' : l.client_id ? 'waitApproval' : 'waitSignup'
     })),
     ...archive.map(a => ({ key: 'a' + a.id, id: a.id, email: a.client_email, createdAt: a.created_at, kind: a.state === 'blocked' ? 'blocked' : 'trashed' }))
   ];
