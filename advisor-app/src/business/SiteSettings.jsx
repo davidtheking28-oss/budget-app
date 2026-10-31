@@ -5,6 +5,18 @@ import { toast } from '../toast.js';
 import Skeleton from '../components/Skeleton.jsx';
 import styles from './Business.module.css';
 
+const CLIENT_APP_URL = 'https://davidtheking28-oss.github.io/budget-app/';
+const SIGNUP_MESSAGE = 'היי, הנה הקישור להרשמה לפלטפורמה שלנו: ' + CLIENT_APP_URL + ' . אחרי ההרשמה אזמין אותך מהמערכת שלי.';
+
+async function copySignupLink() {
+  try {
+    await navigator.clipboard.writeText(SIGNUP_MESSAGE);
+    toast('הקישור הועתק, אפשר להדביק ללקוח', 'success');
+  } catch {
+    window.prompt('העתק את ההודעה ושלח ללקוח:', SIGNUP_MESSAGE);
+  }
+}
+
 export default function SiteSettings({ advisorId }) {
   const { profile, saveName, saveLogo, removeLogo, saveBrandColor } = useAdvisorProfile(advisorId);
   const [name, setName] = useState('');
@@ -45,6 +57,15 @@ export default function SiteSettings({ advisorId }) {
   return (
     <div className={styles.stack}>
       <p className={styles.note} style={{ margin: 0 }}>כל מה שמעצב את הדוחות שהלקוחות מקבלים ממך.</p>
+      <section className={styles.card} style={{ padding: 'var(--space-4)' }}>
+        <div className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
+          <div>
+            <h2 className={styles.sectionHeading}>העתק קישור אתר</h2>
+            <p className={styles.cardSub}>הקישור שהלקוחות נרשמים דרכו. אחרי ההרשמה מזמינים אותם מהמערכת.</p>
+          </div>
+          <button type="button" className={styles.btn} onClick={copySignupLink}>העתק קישור</button>
+        </div>
+      </section>
       <section className={styles.card} style={{ padding: 'var(--space-4)' }}>
         <div className={styles.formStack}>
           <h2 className={styles.sectionHeading}>מיתוג</h2>
