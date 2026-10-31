@@ -1,0 +1,1 @@
+alter table public.push_subscriptions add constraint push_endpoint_known_service check (endpoint ~ '^https://(fcm\.googleapis\.com|updates\.push\.services\.mozilla\.com|web\.push\.apple\.com|[a-z0-9-]+\.push\.apple\.com|[a-z0-9.-]+\.notify\.windows\.com)/');

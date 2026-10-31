@@ -7,9 +7,9 @@ const CORS = {
 
 // Budget owns these. Everything else in this project belongs to the trading
 // journal and must not be touched from here.
-const BY_USER = ['budget_data', 'push_subscriptions', 'push_log', 'ai_requests', 'support_messages', 'client_errors']
-const BY_CLIENT = ['advisor_clients', 'advisor_meetings', 'advisor_notes', 'advisor_tasks', 'economic_mappings']
-const BY_ADVISOR = ['advisor_clients', 'advisor_meetings', 'advisor_notes', 'advisor_tasks', 'economic_mappings']
+const BY_USER = ['budget_data', 'push_subscriptions', 'push_log', 'ai_requests', 'support_messages', 'client_errors', 'advisor_access_requests']
+const BY_CLIENT = ['advisor_clients', 'advisor_meetings', 'advisor_notes', 'advisor_tasks', 'economic_mappings', 'report_shares', 'advisor_client_archive']
+const BY_ADVISOR = ['advisor_client_deals', 'advisor_families', 'advisor_clients', 'advisor_meetings', 'advisor_notes', 'advisor_tasks', 'economic_mappings', 'report_shares', 'advisor_client_archive', 'advisor_prospects', 'advisor_leads', 'advisor_biz_records', 'advisor_merchant_rules']
 
 // The Supabase project is shared with the trading-journal app, which means
 // auth.users is shared too. Deleting the auth row for someone who also uses that
@@ -64,7 +64,12 @@ Deno.serve(async (req) => {
     await del('households', 'member_id')
     await del('households', 'owner_id')
     for (const t of BY_USER) await del(t, 'user_id')
-    if (advisorRow) await del('advisors', 'user_id')
+    if (advisorRow) {
+      const logos = admin.storage.from('advisor-logos')
+      const { data: files } = await logos.list(uid)
+      if (files?.length) await logos.remove(files.map((f) => `${uid}/${f.name}`))
+      await del('advisors', 'user_id')
+    }
 
     if (failed.length) {
       console.error('delete-account partial failure', uid, failed)

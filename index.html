@@ -3378,7 +3378,8 @@ function saveDataDebounced(){
   _saveDataDebounceTimer=setTimeout(_flushLocalSave,400);
 }
 
-function fmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';const str=Math.round(Math.abs(n)).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});return sym+str.replace(/[-−]/g,'');}
+function _safeSym(s){return typeof s==='string'&&/^[^<>&"'`\\]{1,4}$/.test(s)?s:'₪';}
+function fmt(n){const sym=_safeSym(typeof userSettings!=='undefined'&&userSettings.currency);const str=Math.round(Math.abs(n)).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});return sym+str.replace(/[-−]/g,'');}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 // ערך בטוח כמחרוזת JS בגרשיים בודדים בתוך מאפיין HTML בגרשיים כפולים
 function attrArg(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -3616,7 +3617,7 @@ function doSearch(q){
     items.push('<div class="sr-item" onclick="closeSearch();showPage(\'transactions\',document.getElementById(\'nav-transactions\'))"><div class="sr-icon">'+catIconSvg(t.cat)+'</div><div class="sr-info"><div class="sr-name">'+esc(t.desc)+'</div><div class="sr-detail">'+heDate(t.date)+' · '+esc(t.cat)+'</div></div><div class="sr-amount" style="color:'+(t.type==='income'?'var(--green)':'var(--red)')+'">'+fmt(t.amount)+'</div></div>');
   });
   subscriptions.filter(s=>s.name.toLowerCase().includes(q)).slice(0,3).forEach(s=>{
-    items.push('<div class="sr-item" onclick="closeSearch();showPage(\'subscriptions\',document.getElementById(\'nav-subscriptions\'))"><div class="sr-icon">'+s.emoji+'</div><div class="sr-info"><div class="sr-name">'+esc(s.name)+'</div><div class="sr-detail">'+cycleName(s.cycle)+' · '+esc(s.category)+'</div></div><div class="sr-amount" style="color:var(--purple)">'+fmt(s.amount)+'</div></div>');
+    items.push('<div class="sr-item" onclick="closeSearch();showPage(\'subscriptions\',document.getElementById(\'nav-subscriptions\'))"><div class="sr-icon">'+esc(s.emoji)+'</div><div class="sr-info"><div class="sr-name">'+esc(s.name)+'</div><div class="sr-detail">'+cycleName(s.cycle)+' · '+esc(s.category)+'</div></div><div class="sr-amount" style="color:var(--purple)">'+fmt(s.amount)+'</div></div>');
   });
   goals.filter(g=>g.name.toLowerCase().includes(q)).slice(0,2).forEach(g=>{
     items.push('<div class="sr-item" onclick="closeSearch();showPage(\'goals\',document.getElementById(\'nav-goals\'))"><div class="sr-icon">🎯</div><div class="sr-info"><div class="sr-name">'+esc(g.name)+'</div><div class="sr-detail">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="sr-amount" style="color:var(--yellow)">'+Math.round(g.saved/g.target*100)+'%</div></div>');
@@ -4546,13 +4547,15 @@ function _mergeMeta(a,b){
 }
 function _mergeArrays(local,cloud,del){
   const m=new Map();
-  (cloud||[]).forEach(it=>{if(it&&it.id!=null)m.set(String(it.id),it);});
+  const cap=Date.now()+864e5;
+  const U=it=>{const v=+it.u;return Number.isFinite(v)&&v<=cap?v:0;};
+  (Array.isArray(cloud)?cloud:[]).forEach(it=>{if(it&&typeof it==='object'&&it.id!=null)m.set(String(it.id),it);});
   (local||[]).forEach(it=>{
     if(!it||it.id==null)return;
     const id=String(it.id),ex=m.get(id);
-    if(!ex||(it.u||0)>=(ex.u||0))m.set(id,it);
+    if(!ex||U(it)>=U(ex))m.set(id,it);
   });
-  del&&Object.entries(del).forEach(([id,ts])=>{const it=m.get(id);if(it&&(it.u||0)<=ts)m.delete(id);});
+  del&&Object.entries(del).forEach(([id,ts])=>{const it=m.get(id);if(it&&U(it)<=ts)m.delete(id);});
   return [...m.values()];
 }
 function _mergeBudgets(local,cloud,localBu,cloudBu,delMeta,mergedBu){
@@ -4583,7 +4586,12 @@ function _buildMerged(bundle,localBu,cloudBu){
 }
 function _sanitizeIds(m){
   ['transactions','goals','subscriptions','loans','payments','fixed_expenses','insurances'].forEach(k=>{
-    (m[k]||[]).forEach(r=>{
+    if(!Array.isArray(m[k])){if(m[k]!==undefined)m[k]=[];return;}
+    for(let i=m[k].length-1;i>=0;i--){
+      const r=m[k][i];
+      if(!r||typeof r!=='object'||Array.isArray(r)||(k==='transactions'&&(typeof r.date!=='string'||!Number.isFinite(Number(r.amount)))))m[k].splice(i,1);
+    }
+    m[k].forEach(r=>{
       const ok=typeof r.id==='number'?Number.isFinite(r.id):(typeof r.id==='string'&&/^[\w.|-]{1,80}$/.test(r.id));
       if(!ok)r.id=Date.now()+Math.random();
     });
@@ -4969,7 +4977,7 @@ async function leaveHousehold(){
   if(_cloudHousehold.role==='owner'){
     await _sb.from('households').delete().eq('owner_id',_cloudUser.id);
   } else {
-    await _sb.from('households').update({member_id:null,member_email:null}).eq('owner_id',_cloudHousehold.owner_id);
+    await _sb.rpc('leave_household');
     _householdOwner=null;
   }
   _cloudHousehold=null;
@@ -5382,7 +5390,7 @@ function exportCSV(){
   if(toDate)mTx=mTx.filter(t=>t.date<=toDate);
   const rows = [['תאריך','תיאור','קטגוריה','סוג','סכום','חוזר','קבוע/משתנה']];
   [...mTx].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
-    rows.push([t.date, csvSafe(t.desc), csvSafe(t.cat), t.type==='income'?'הכנסה':'הוצאה', t.amount, t.recurring?'כן':'לא', isFixed(t)?'קבוע':'משתנה']);
+    rows.push([csvSafe(t.date), csvSafe(t.desc), csvSafe(t.cat), t.type==='income'?'הכנסה':'הוצאה', Number.isFinite(Number(t.amount))?Number(t.amount):csvSafe(t.amount), t.recurring?'כן':'לא', isFixed(t)?'קבוע':'משתנה']);
   });
   const csv = '﻿' + rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a = document.createElement('a');
@@ -6727,7 +6735,7 @@ function confirmAddToGoal(){
   closeSheet('addToGoalSheet');renderGoals();refreshAll();
 }
 // ── תשלומים ───────────────────────────────────────────────────────
-function _payFmt(n){const sym=(typeof userSettings!=='undefined'&&userSettings.currency)||'₪';return sym+Math.ceil(n||0).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function _payFmt(n){const sym=_safeSym(typeof userSettings!=='undefined'&&userSettings.currency);return sym+Math.ceil(n||0).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});}
 function _monthsElapsed(fromKey,toKey){
   const[fy,fm]=fromKey.split('-').map(Number),[ty,tm]=toKey.split('-').map(Number);
   return (ty-fy)*12+(tm-fm);
@@ -7014,7 +7022,7 @@ function renderGoals(){
 }
 
 function subME(s){if(!s.active)return 0;return {monthly:s.amount,annual:s.amount/12,weekly:s.amount*4.33}[s.cycle]||s.amount;}
-function cycleName(c){return{monthly:'חודשי',annual:'שנתי',weekly:'שבועי'}[c]||c;}
+function cycleName(c){return{monthly:'חודשי',annual:'שנתי',weekly:'שבועי'}[c]||esc(String(c==null?'':c));}
 
 const SUB_CATALOG={
   // סטרימינג
@@ -7403,7 +7411,7 @@ function renderSubscriptions(){
     const barCls=progState(pct,[[90,'danger'],[70,'warn'],[0,'']]);
     const cycleBar=s.active&&s.nextDate?progBarHTML(pct,{wrapClass:'sub-cycle-bar',fillClass:'sub-cycle-fill',stateClass:barCls}):'';
     const stillUsedBtn=(soon||over)&&s.active?'<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();toggleSub('+s.id+')" aria-label="השהה את '+esc(s.name)+'">עדיין בשימוש?</button>':'';
-    return '<div class="sub-card'+(s.active?'':' paused')+(soon||over?' soon':'')+'" onclick="editSub('+s.id+')" style="cursor:pointer">'+( soon?'<span class="soon-tag">קרוב!</span>':'')+(over?'<span class="overdue-tag">באיחור</span>':'')+'<div class="sub-row1"><div class="sub-identity"><div class="sub-emoji-big" style="display:none">'+s.emoji+'</div>'+subLogo(s.name)+'<div><div class="sub-name-text">'+esc(s.name)+'</div><span class="sub-cat-chip">'+esc(s.category)+'</span></div></div><div class="sub-price"><div class="sub-price-amount">'+fmt(s.amount)+'</div><div class="sub-price-cycle">'+cycleName(s.cycle)+'</div>'+(s.cycle!=='monthly'?'<div class="sub-price-cycle">≈'+fmt(subME(s))+'/חודש</div>':'')+'</div></div>'+cycleBar+'<div class="sub-row2"><div class="sub-next-label'+(soon||over?' soon-txt':'')+'">'+nl+'</div><div class="sub-btns">'+stillUsedBtn+'<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteSub('+s.id+',this)" aria-label="מחק מנוי">✕</button></div></div></div>';
+    return '<div class="sub-card'+(s.active?'':' paused')+(soon||over?' soon':'')+'" onclick="editSub('+s.id+')" style="cursor:pointer">'+( soon?'<span class="soon-tag">קרוב!</span>':'')+(over?'<span class="overdue-tag">באיחור</span>':'')+'<div class="sub-row1"><div class="sub-identity"><div class="sub-emoji-big" style="display:none">'+esc(s.emoji)+'</div>'+subLogo(s.name)+'<div><div class="sub-name-text">'+esc(s.name)+'</div><span class="sub-cat-chip">'+esc(s.category)+'</span></div></div><div class="sub-price"><div class="sub-price-amount">'+fmt(s.amount)+'</div><div class="sub-price-cycle">'+cycleName(s.cycle)+'</div>'+(s.cycle!=='monthly'?'<div class="sub-price-cycle">≈'+fmt(subME(s))+'/חודש</div>':'')+'</div></div>'+cycleBar+'<div class="sub-row2"><div class="sub-next-label'+(soon||over?' soon-txt':'')+'">'+nl+'</div><div class="sub-btns">'+stillUsedBtn+'<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteSub('+s.id+',this)" aria-label="מחק מנוי">✕</button></div></div></div>';
   }).join('');
 }
 
@@ -7991,7 +7999,7 @@ function renderOnboardStep(){
     renderObFixed();
   } else {
     const totalIncome=obIncomes.reduce((s,inc)=>s+(parseFloat(inc.amount)||0),0);
-    const name = userSettings.name ? ', '+userSettings.name : '';
+    const name = userSettings.name ? ', '+esc(String(userSettings.name)) : '';
     el.innerHTML='<div style="text-align:center;padding:20px 0 10px;"><div style="font-size:3rem;margin-bottom:16px;">🎉</div><div class="onboard-title">הכל מוכן'+(name?name+'!':' !')+'</div><div class="onboard-sub">האפליקציה שלך מוכנה לשימוש.'+(totalIncome>0?' הכנסה חודשית: <strong>'+fmt(totalIncome)+'</strong>':'')+'</div></div><div style="background:var(--surface);border-radius:16px;padding:18px 16px;box-shadow:0 2px 14px rgba(0,0,0,0.08);"><div style="font-weight:700;margin-bottom:12px;">כדי להתחיל:</div><div style="display:flex;flex-direction:column;gap:12px;font-size:0.9rem;color:var(--text2);"><div style="display:flex;align-items:center;gap:10px;"><span style="width:26px;height:26px;background:var(--accent);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.8rem;">1</span><span>לחץ על <strong style="color:var(--text);">+</strong> כדי לרשום הוצאה</span></div><div style="display:flex;align-items:center;gap:10px;"><span style="width:26px;height:26px;background:var(--accent);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.8rem;">2</span><span>בחר <strong style="color:var(--text);">קטגוריה</strong> ורשום סכום</span></div></div></div>';
   }
 }
