@@ -82,7 +82,7 @@ export default function App() {
           ? <Prospects advisorId={session.user.id} onConvert={p => { setInviteDraft({ prospectId: p.id, email: p.email || '' }); setHomeView('clients'); }} />
           : activeHome !== 'clients'
           ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} />
-          : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => openInView(clientId)} inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} onOpenProspects={() => setHomeView('prospects')} />}
+          : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => openInView(clientId)} inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} />}
       </Shell>
       <QuickSwitcher advisorId={session.user.id} onSelect={openInView} open={searchOpen} onOpenChange={setSearchOpen} />
       <Toaster />

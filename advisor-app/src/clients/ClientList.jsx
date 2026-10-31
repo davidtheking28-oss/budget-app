@@ -4,9 +4,7 @@ import { useClientList } from './useClientList.js';
 import { usePendingInvites } from './usePendingInvites.js';
 import { usePipeline } from './usePipeline.js';
 import { useProspects } from './useProspects.js';
-import { Card, Row } from '../components/Rows.jsx';
 import PipelineModal from './PipelineModal.jsx';
-import { formatDate, localISODate } from '../budget/monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
@@ -15,20 +13,11 @@ import styles from './ClientList.module.css';
 import ClientsTable from '../business/ClientsTable.jsx';
 import { INVITE_ERROR_MESSAGES } from './inviteMessages.js';
 
-const OPEN_PROSPECT_STATUSES = ['new', 'contacted', 'followup', 'meeting'];
-const TEMP_LABELS = { hot: 'חם', warm: 'פושר', cold: 'קר' };
-
-function overdueText(followUpAt, today) {
-  const days = Math.round((Date.parse(today) - Date.parse(followUpAt)) / 86400000);
-  if (days <= 0) return 'להיום';
-  return days === 1 ? 'באיחור של יום' : `באיחור של ${days} ימים`;
-}
-
-export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUsed, onOpenProspects }) {
+export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUsed }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
   const { invites: pendingInvites, reload: reloadInvites } = usePendingInvites(advisorId);
   const { leads, loading: leadsLoading, addLead, setStage: setLeadStage, deleteLead } = usePipeline(advisorId);
-  const { prospects, loading: prospectsLoading, error: prospectsError, updateProspect } = useProspects(advisorId);
+  const { loading: prospectsLoading, error: prospectsError, updateProspect } = useProspects(advisorId);
   const [linkedProspectId, setLinkedProspectId] = useState(null);
   const draftHandled = useRef(null);
   const [pipelineOpen, setPipelineOpen] = useState(false);
@@ -81,7 +70,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
     toast('ההזמנה נשלחה', 'success');
     reloadInvites();
     setEmail('');
-    if (linkedProspectId != null) { updateProspect(linkedProspectId, { status: 'converted' }); setLinkedProspectId(null); }
+    if (linkedProspectId != null) { updateProspect(linkedProspectId, { status: 'closed' }); setLinkedProspectId(null); }
   }
 
   async function removeInvite(id) {
@@ -111,11 +100,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
       </div>
     );
   }
-
-  const todayISO = localISODate();
-  const dueProspects = prospects
-    .filter(p => OPEN_PROSPECT_STATUSES.includes(p.status) && p.follow_up_at && p.follow_up_at <= todayISO)
-    .sort((a, b) => a.follow_up_at.localeCompare(b.follow_up_at));
 
   return (
     <div>
@@ -148,31 +132,10 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
 
       <section className={styles.secondarySection} inert={pipelineOpen ? '' : undefined}>
       <button type="button" className={styles.secondaryToggle} aria-expanded={secondaryOpen} aria-controls="client-secondary" onClick={() => setSecondaryOpen(v => !v)}>
-        <span>הזמנות ומעקב</span><span>{pendingInvites.length} הזמנות ממתינות · {dueProspects.length} מעקבים להיום <span aria-hidden="true">{secondaryOpen ? '−' : '+'}</span></span>
+        <span>הזמנות</span><span>{pendingInvites.length} הזמנות ממתינות <span aria-hidden="true">{secondaryOpen ? '−' : '+'}</span></span>
       </button>
       <div id="client-secondary" hidden={!secondaryOpen}>
       {leads.length > 0 && <Button variant="ghost" onClick={() => setPipelineOpen(true)}>לקוחות חדשים בטיפול ({leads.length})</Button>}
-      {dueProspects.length > 0 && (
-        <div className={styles.followCard}>
-          <Card title="פולואפים להיום">
-            {dueProspects.map(p => (
-              <div key={p.id} className={styles.followRow}>
-                <button type="button" className={styles.followRowBtn} onClick={onOpenProspects} aria-label={`${p.name} - פתח בדף המתעניינים`} />
-                <Row
-                  name={<>{p.name}<span className={styles.followTemp + ' ' + styles[p.temperature || 'warm']}>{TEMP_LABELS[p.temperature] || TEMP_LABELS.warm}</span></>}
-                  sub={[p.source, p.contacted_at && `פנה ב-${formatDate(p.contacted_at)}`].filter(Boolean).join(' · ')}
-                >
-                  <div className={styles.followSide}>
-                    {p.phone && <a className={styles.followPhone} href={`tel:${p.phone}`} dir="ltr">{p.phone}</a>}
-                    <span className={styles.followLate}>{overdueText(p.follow_up_at, todayISO)}</span>
-                  </div>
-                </Row>
-              </div>
-            ))}
-            <Button variant="ghost" className={styles.followLink} onClick={onOpenProspects}>לדף המתעניינים</Button>
-          </Card>
-        </div>
-      )}
       <div className={styles.sectionHead}>
         <div className={styles.sectionTitleGroup}>
           <h2 className={styles.sectionTitle}>חיבור לקוחות והזמנות {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
