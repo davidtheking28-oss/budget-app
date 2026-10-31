@@ -4998,7 +4998,12 @@ async function createAdvisorInvite(){
   _advisorLink=data;
   renderAdvisorLinkSection();
 }
-async function _requestPendingAdvisor(){
+let _pendingAdvisorCall=null;
+function _requestPendingAdvisor(){
+  if(!_pendingAdvisorCall)_pendingAdvisorCall=_doRequestPendingAdvisor().finally(()=>{_pendingAdvisorCall=null;});
+  return _pendingAdvisorCall;
+}
+async function _doRequestPendingAdvisor(){
   let ref=null;
   try{ref=localStorage.getItem('budget_pending_advisor');}catch(e){}
   if(!ref||!_cloudUser||!_sb)return;
