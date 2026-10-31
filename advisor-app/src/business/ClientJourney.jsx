@@ -99,7 +99,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
     <div className={styles.stack}>
       <div className={styles.toolbar}>
         <button type="button" className={styles.btnGhost} onClick={onBack}>חזרה לשירות</button>
-        <button type="button" className={styles.btnGhost} onClick={() => onOpenClient(row)}>כרטיס הלקוח</button>
+        {row.client_id && <button type="button" className={styles.btnGhost} onClick={() => onOpenClient(row)}>כרטיס הלקוח</button>}
       </div>
 
       <section className={styles.bigCard}>

@@ -3,6 +3,7 @@ import { useClientDeals } from './useClientDeals.js';
 import { num } from './bizMath.js';
 import HeaderAction from './HeaderAction.jsx';
 import ClientCard from './ClientCard.jsx';
+import AddClientModal from './AddClientModal.jsx';
 import ClientJourney from './ClientJourney.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -29,8 +30,9 @@ function formatDay(iso) {
   return `${d}/${m}/${y}`;
 }
 
-export default function ClientsTable({ advisorId, onAdd, onOpen, onRemove }) {
-  const { rows, loading, error, reload, saveDeal, saveContact } = useClientDeals(advisorId);
+export default function ClientsTable({ advisorId, onOpen, onRemove }) {
+  const { rows, loading, error, reload, saveDeal, saveContact, addManual } = useClientDeals(advisorId);
+  const [adding, setAdding] = useState(false);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [sort, setSort] = useState({ key: null, dir: 1 });
@@ -108,7 +110,7 @@ export default function ClientsTable({ advisorId, onAdd, onOpen, onRemove }) {
           <option value="">כל הסטטוסים</option>
           {SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
         </select>
-        <button type="button" className={styles.btn} onClick={onAdd}>הוסף לקוח +</button>
+        <button type="button" className={styles.btn} onClick={() => setAdding(true)}>הוסף לקוח +</button>
       </div>
       <p className={styles.note} style={{ margin: 0 }}>אפשר לשנות כל פרט ישירות בטבלה. פרטי העסקה נשמרים אצלך בלבד והלקוח לא רואה אותם.</p>
 
@@ -140,7 +142,7 @@ export default function ClientsTable({ advisorId, onAdd, onOpen, onRemove }) {
                     <tr key={r.id}>
                       <td><input className={styles.input + ' ' + styles.ghostField + ' ' + styles.nameCell} style={{ minWidth: 130 }} data-name-of={r.id} aria-label={'שם: ' + label(r)} defaultValue={r.name || ''} onBlur={e => { if (e.target.value.trim() !== (r.name || '')) saveContact(r, { name: e.target.value.trim() || null }); }} /></td>
                       <td><input className={styles.input + ' ' + styles.ghostField} dir="ltr" style={{ width: 118 }} aria-label={'טלפון: ' + label(r)} defaultValue={r.phone || ''} onBlur={e => { if (e.target.value.trim() !== (r.phone || '')) saveContact(r, { phone: e.target.value.trim() || null }); }} /></td>
-                      <td dir="ltr" className={styles.rowMeta + ' ' + styles.emailCell} title={r.client_email}>{r.client_email}</td>
+                      <td dir="ltr" className={styles.rowMeta + ' ' + styles.emailCell} title={r.client_email}>{r.client_email || '—'}</td>
                       <td className={styles.num}>{formatDay(r.created_at)}</td>
                       <td><input className={styles.input + ' ' + styles.ghostField} type="date" aria-label={'תאריך סיום: ' + label(r)} value={r.deal?.ends_at || ''} onChange={e => saveDeal(r, { ends_at: e.target.value || null })} /></td>
                       <td><input className={styles.input + ' ' + styles.ghostField + ' ' + styles.numInput} style={{ width: 96 }} inputMode="decimal" placeholder="₪" aria-label={'מחיר העסקה: ' + label(r)} defaultValue={r.deal?.price ?? ''} onBlur={e => { const v = e.target.value.trim(); if (v !== String(r.deal?.price ?? '')) saveDeal(r, { price: v === '' ? null : Math.max(0, num(v)) }); }} /></td>
@@ -193,6 +195,7 @@ export default function ClientsTable({ advisorId, onAdd, onOpen, onRemove }) {
           </div>
         )}
       </section>
+      {adding && <AddClientModal methods={PAYMENT_METHODS} sources={SOURCES} onSave={addManual} onClose={() => setAdding(false)} />}
     </div>
   );
 }

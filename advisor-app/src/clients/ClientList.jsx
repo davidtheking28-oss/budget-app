@@ -116,7 +116,7 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
           <Button className={styles.emptyCta} onClick={() => { setAddOpen(true); emailInputRef.current?.focus(); }}>הזמן לקוח ראשון</Button>
         </div>
       ) : (
-        <ClientsTable advisorId={advisorId} onAdd={() => { setAddOpen(true); setSecondaryOpen(true); setTimeout(() => emailInputRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50); }} onOpen={r => onSelect(r.client_id, r.client_email)} onRemove={removeClient} />
+        <ClientsTable advisorId={advisorId} onOpen={r => onSelect(r.client_id, r.client_email)} onRemove={removeClient} />
       )}
 
       {pipelineOpen && (

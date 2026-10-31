@@ -14,7 +14,7 @@ export function useClientDeals(advisorId) {
       .from('advisor_clients')
       .select('id, client_id, client_email, name, phone, created_at')
       .eq('advisor_id', advisorId)
-      .eq('status', 'active')
+      .in('status', ['active', 'manual'])
       .order('created_at', { ascending: false });
     if (linkError) { setError(linkError); setLoading(false); return; }
     const { data: deals, error: dealError } = await supabase.from('advisor_client_deals').select('*').eq('advisor_id', advisorId);
@@ -36,6 +36,26 @@ export function useClientDeals(advisorId) {
     return true;
   }
 
+  async function addManual(form) {
+    const { data: id, error: err } = await supabase.rpc('add_manual_client', { p_name: form.name, p_phone: form.phone, p_email: form.email });
+    if (err || !id) { toast('שגיאה בהוספת הלקוח', 'error'); return false; }
+    const price = parseFloat(form.price);
+    const { error: dealErr } = await supabase.from('advisor_client_deals').upsert({
+      link_id: id, advisor_id: advisorId,
+      price: Number.isFinite(price) ? Math.max(0, price) : null,
+      payment_method: form.payment_method || null,
+      source: form.source || null,
+      payment_status: form.paid ? 'paid' : 'unpaid',
+      receipt_issued: form.receipt,
+      call_summary: form.call_summary.trim() || null,
+      updated_at: new Date().toISOString()
+    });
+    if (dealErr) toast('הלקוח נוצר, אך פרטי העסקה לא נשמרו', 'error');
+    else toast('הלקוח נוסף', 'success');
+    await reload();
+    return true;
+  }
+
   async function saveContact(link, patch) {
     const before = rows;
     setRows(prev => prev.map(r => r.id === link.id ? { ...r, ...patch } : r));
@@ -44,5 +64,5 @@ export function useClientDeals(advisorId) {
     return true;
   }
 
-  return { rows, loading, error, reload, saveDeal, saveContact };
+  return { rows, loading, error, reload, saveDeal, saveContact, addManual };
 }

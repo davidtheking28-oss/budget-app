@@ -173,6 +173,11 @@ export const supabase = {
       row.status = 'active';
       return { data: 'ok', error: null };
     }
+    if (fn === 'add_manual_client') {
+      const id = 'man' + Date.now();
+      db.advisor_clients = [...(db.advisor_clients || []), { id, advisor_id: session.user.id, client_id: null, name: params.p_name, phone: params.p_phone || null, client_email: params.p_email || null, status: 'manual', created_at: new Date().toISOString() }];
+      return { data: id, error: null };
+    }
     if (fn === 'archive_advisor_client') {
       const row = (db.advisor_clients || []).find(r => r.id === params.p_link);
       if (!row) return { data: 'not_found', error: null };
