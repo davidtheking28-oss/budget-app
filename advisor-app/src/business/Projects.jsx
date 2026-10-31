@@ -141,6 +141,7 @@ export default function Projects({ advisorId }) {
   const { records, loading, error, reload, add, update, remove } = useBizRecords(advisorId, 'project');
   const [modal, setModal] = useState(false);
   const [openId, setOpenId] = useState(null);
+  const [dragId, setDragId] = useState(null);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="200px" radius="18px" />;
@@ -155,8 +156,21 @@ export default function Projects({ advisorId }) {
     );
   }
 
+  const ordered = records.map((r, i) => ({ r, i })).sort((a, b) => (a.r.data.order ?? a.i) - (b.r.data.order ?? b.i)).map(x => x.r);
+
+  async function dropOn(targetId) {
+    const from = ordered.findIndex(r => r.id === dragId);
+    const to = ordered.findIndex(r => r.id === targetId);
+    setDragId(null);
+    if (from < 0 || to < 0 || from === to) return;
+    const next = [...ordered];
+    next.splice(to, 0, next.splice(from, 1)[0]);
+    await Promise.all(next.map((r, i) => (r.data.order === i ? null : update(r.id, { order: i }))));
+    toast('הסדר נשמר', 'success');
+  }
+
   async function create(fields) {
-    const row = await add({ ...fields, steps: [] });
+    const row = await add({ ...fields, steps: [], order: records.length });
     if (row) setModal(false);
   }
 
@@ -180,11 +194,11 @@ export default function Projects({ advisorId }) {
         </section>
       ) : (
         <div className={styles.grid2}>
-          {records.map((r, i) => {
+          {ordered.map((r, i) => {
             const project = { id: r.id, ...r.data };
             const progress = projectProgress({ steps: normalizeSteps(project) });
             return (
-              <button key={r.id} type="button" className={styles.card} style={{ cursor: 'pointer', textAlign: 'start' }} onClick={() => setOpenId(r.id)} aria-label={'פתח פרויקט: ' + project.name}>
+              <button key={r.id} type="button" className={styles.card} style={{ cursor: 'grab', textAlign: 'start', opacity: dragId === r.id ? 0.5 : 1 }} draggable onDragStart={() => setDragId(r.id)} onDragEnd={() => setDragId(null)} onDragOver={e => e.preventDefault()} onDrop={() => dropOn(r.id)} onClick={() => setOpenId(r.id)} aria-label={'פתח פרויקט: ' + project.name}>
                 <div className={styles.toolbar}>
                   <span className={styles.tag}>{i + 1}</span>
                   <h3 className={styles.cardTitle}>{project.name}</h3>
@@ -199,6 +213,7 @@ export default function Projects({ advisorId }) {
           })}
         </div>
       )}
+      {records.length > 1 && <p className={styles.note}>גרור פרויקט כדי לשנות את סדר העדיפות. הסדר נשמר.</p>}
       {modal && <ProjectForm title="פרויקט חדש" initial={EMPTY_FORM} submitLabel="פתח פרויקט" onSubmit={create} onClose={() => setModal(false)} />}
     </div>
   );
