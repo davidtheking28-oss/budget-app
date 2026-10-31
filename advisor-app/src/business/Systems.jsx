@@ -17,12 +17,98 @@ const SYSTEM_DEPARTMENTS = [
   { key: 'ניהול', icon: icons.briefcase }
 ];
 
+function SystemForm({ initial, title, submitLabel, onSubmit, onClose }) {
+  const [form, setForm] = useState(initial);
+  const set = patch => setForm(prev => ({ ...prev, ...patch }));
+
+  function submit(e) {
+    e.preventDefault();
+    if (!form.name.trim()) { toast('כתוב שם לסיסטם', 'error'); return; }
+    onSubmit({ name: form.name.trim(), dept: form.dept, summary: form.summary.trim(), notes: form.notes.trim() });
+  }
+
+  return (
+    <Modal title={title} onClose={onClose}>
+      <form className={styles.formGrid} onSubmit={submit}>
+        <label className={styles.fieldLabel}>שם הסיסטם<input className={styles.input} value={form.name} onChange={e => set({ name: e.target.value })} /></label>
+        <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} value={form.dept} onChange={e => set({ dept: e.target.value })}>{SYSTEM_DEPARTMENTS.map(d => <option key={d.key} value={d.key}>{d.key}</option>)}</select></label>
+        <label className={styles.fieldLabel}>תיאור קצר<input className={styles.input} placeholder="במשפט אחד: על מה הסיסטם הזה" value={form.summary} onChange={e => set({ summary: e.target.value })} /><span className={styles.cardSub}>את התוכן כותבים בשלבים, אחרי יצירת הסיסטם.</span></label>
+        <label className={styles.fieldLabel}>הערות<textarea className={styles.input + ' ' + styles.textarea} value={form.notes} onChange={e => set({ notes: e.target.value })} /></label>
+        <div className={styles.toolbar}>
+          <button type="submit" className={styles.btn}>{submitLabel}</button>
+          <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function SystemStep({ step, index, onChange, onRemove }) {
+  const [closed, setClosed] = useState(false);
+  return (
+    <section className={styles.card}>
+      <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
+        <span className={styles.tag}>{index + 1}</span>
+        <button type="button" className={styles.pillBtn + ' ' + (step.done ? styles.pillGood : styles.pillBad)} aria-pressed={step.done} onClick={() => onChange({ done: !step.done })}>{step.done ? 'בוצע' : 'לא בוצע'}</button>
+        <input className={styles.input + ' ' + styles.inputGrow} placeholder={'שלב ' + (index + 1)} aria-label={'שם שלב ' + (index + 1)} defaultValue={step.title} onBlur={e => { if (e.target.value.trim() !== step.title) onChange({ title: e.target.value.trim() }); }} />
+        <button type="button" className={styles.btnGhost} aria-expanded={!closed} onClick={() => setClosed(!closed)}>{closed ? 'פתח' : 'סגור'}</button>
+        <DeleteButton title={'מחק שלב ' + (index + 1)} onClick={onRemove} />
+      </div>
+      {!closed && <textarea className={styles.input + ' ' + styles.textarea} style={{ width: '100%', marginTop: 8 }} placeholder="מה עושים בשלב הזה..." aria-label={'תוכן שלב ' + (index + 1)} defaultValue={step.text} onBlur={e => { if (e.target.value !== step.text) onChange({ text: e.target.value }); }} />}
+    </section>
+  );
+}
+
+function SystemDetail({ system, onBack, onUpdate, onRemove }) {
+  const [editing, setEditing] = useState(false);
+  const steps = (system.steps || []).map(s => ({ id: s.id, title: s.title || '', text: s.text || '', done: !!s.done }));
+  const doneCount = steps.filter(s => s.done).length;
+  const patchStep = (id, patch) => onUpdate({ steps: steps.map(s => s.id === id ? { ...s, ...patch } : s) });
+
+  return (
+    <div className={styles.stack}>
+      <div className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
+        <button type="button" className={styles.btnGhost} onClick={onBack}>חזרה לסיסטמים</button>
+        <div className={styles.toolbar}>
+          <button type="button" className={styles.btnGhost} onClick={() => setEditing(true)}>עריכה</button>
+          <DeleteButton title={'מחק סיסטם: ' + system.name} onClick={onRemove} />
+        </div>
+      </div>
+      <section className={styles.bigCard}>
+        <h2 className={styles.viewHeading} style={{ fontSize: 'var(--text-xl)' }}>{system.name}</h2>
+        <div className={styles.pills}><span className={styles.tag}>{system.dept}</span></div>
+        {system.summary ? <p className={styles.cardSub}>{system.summary}</p> : null}
+      </section>
+      <div className={styles.cardHead} style={{ marginBottom: 0 }}>
+        <h3 className={styles.cardTitle}>שלבי התהליך</h3>
+        {steps.length > 0 && <span className={styles.tag}>{doneCount}/{steps.length}</span>}
+      </div>
+      {steps.length === 0 && <p className={styles.cardSub}>עוד לא הוגדרו שלבים. התהליך מתחיל בשלב 1.</p>}
+      {steps.map((s, i) => <SystemStep key={s.id} step={s} index={i} onChange={patch => patchStep(s.id, patch)} onRemove={() => onUpdate({ steps: steps.filter(x => x.id !== s.id) })} />)}
+      <button type="button" className={styles.btnGhost} onClick={() => onUpdate({ steps: [...steps, { id: 's' + Date.now(), title: '', text: '', done: false }] })}>+ הוסף שלב {steps.length + 1}</button>
+      <section className={styles.card}>
+        <h3 className={styles.cardTitle}>הערות</h3>
+        <textarea className={styles.input + ' ' + styles.textarea} style={{ width: '100%' }} placeholder="הערות לעצמי..." aria-label={'הערות: ' + system.name} defaultValue={system.notes} onBlur={e => { if (e.target.value !== (system.notes || '')) onUpdate({ notes: e.target.value }); }} />
+      </section>
+      {editing && (
+        <SystemForm
+          title={'עריכת סיסטם: ' + system.name}
+          initial={{ name: system.name, dept: system.dept, summary: system.summary || '', notes: system.notes || '' }}
+          submitLabel="שמירה"
+          onSubmit={patch => { onUpdate(patch); setEditing(false); }}
+          onClose={() => setEditing(false)}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function Systems({ advisorId }) {
   const { records, loading, error, reload, add, update, remove } = useBizRecords(advisorId, 'system');
   const [dept, setDept] = useState('');
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({ name: '', dept: SYSTEM_DEPARTMENTS[0].key, summary: '', notes: '' });
+  const [openId, setOpenId] = useState(null);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="200px" radius="18px" />;
@@ -31,13 +117,19 @@ export default function Systems({ advisorId }) {
   const countOf = d => systems.filter(s => s.dept === d).length;
   const visible = systems.filter(s => !dept || s.dept === dept).filter(s => !search.trim() || s.name.includes(search.trim()));
 
-  async function submit(e) {
-    e.preventDefault();
-    if (!form.name.trim()) { toast('כתוב שם לסיסטם', 'error'); return; }
-    const row = await add({ name: form.name.trim(), dept: form.dept, summary: form.summary.trim(), notes: form.notes.trim() });
-    if (!row) return;
-    setForm({ name: '', dept: form.dept, summary: '', notes: '' });
-    setModal(false);
+  async function create(fields) {
+    const row = await add({ ...fields, steps: [] });
+    if (row) setModal(false);
+  }
+
+  const open = records.find(r => r.id === openId);
+  if (open) {
+    return (
+      <>
+        <HeaderAction targetId="biz-header-sub" fallback={false}><p className={styles.headSub}>{records.length} סיסטמים</p></HeaderAction>
+        <SystemDetail system={{ id: open.id, ...open.data }} onBack={() => setOpenId(null)} onUpdate={patch => update(open.id, patch)} onRemove={async () => { await remove(open.id, 'הסיסטם נמחק'); setOpenId(null); }} />
+      </>
+    );
   }
 
   return (
@@ -77,32 +169,18 @@ export default function Systems({ advisorId }) {
           <ul className={styles.rowList}>
             {visible.map(s => (
               <li key={s.id} className={styles.rowItem}>
-                <div className={styles.rowMain}>
+                <button type="button" className={styles.rowMain} style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: 'inherit', textAlign: 'start', cursor: 'pointer' }} aria-label={'פתח סיסטם: ' + s.name} onClick={() => setOpenId(s.id)}>
                   <div className={styles.rowTitle}>{s.name} <span className={styles.tag}>{s.dept}</span></div>
                   {s.summary ? <div className={styles.cardSub}>{s.summary}</div> : null}
-                  <textarea className={styles.input + ' ' + styles.textarea} style={{ width: '100%', marginTop: 8 }} aria-label={'תיאור: ' + s.name} defaultValue={s.notes} onBlur={e => { if (e.target.value !== (s.notes || '')) update(s.id, { notes: e.target.value }); }} />
-                </div>
-                <DeleteButton title={'מחק סיסטם: ' + s.name} onClick={() => remove(s.id, 'הסיסטם נמחק')} />
+                  <div className={styles.cardSub}>{(s.steps || []).length ? (s.steps || []).filter(x => x.done).length + '/' + (s.steps || []).length + ' שלבים' : 'אין שלבים'}</div>
+                </button>
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      {modal && (
-        <Modal title="סיסטם חדש" onClose={() => setModal(false)}>
-          <form className={styles.formGrid} onSubmit={submit}>
-            <label className={styles.fieldLabel}>שם הסיסטם<input className={styles.input} value={form.name} onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))} /></label>
-            <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} value={form.dept} onChange={e => setForm(prev => ({ ...prev, dept: e.target.value }))}>{SYSTEM_DEPARTMENTS.map(d => <option key={d.key} value={d.key}>{d.key}</option>)}</select></label>
-            <label className={styles.fieldLabel}>תיאור קצר<input className={styles.input} placeholder="במשפט אחד: על מה הסיסטם הזה" value={form.summary} onChange={e => setForm(prev => ({ ...prev, summary: e.target.value }))} /><span className={styles.cardSub}>את התוכן כותבים בשלבים, אחרי יצירת הסיסטם.</span></label>
-            <label className={styles.fieldLabel}>הערות<textarea className={styles.input + ' ' + styles.textarea} value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} /></label>
-            <div className={styles.toolbar}>
-              <button type="submit" className={styles.btn}>הוספה</button>
-              <button type="button" className={styles.btnGhost} onClick={() => setModal(false)}>ביטול</button>
-            </div>
-          </form>
-        </Modal>
-      )}
+      {modal && <SystemForm title="סיסטם חדש" initial={{ name: '', dept: SYSTEM_DEPARTMENTS[0].key, summary: '', notes: '' }} submitLabel="הוספה" onSubmit={create} onClose={() => setModal(false)} />}
     </div>
   );
 }
