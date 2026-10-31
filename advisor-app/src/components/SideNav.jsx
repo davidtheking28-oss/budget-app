@@ -8,7 +8,7 @@ export default function SideNav({ nav, activeNav, onNavChange, footer }) {
     <aside className={styles.side}>
       <div className={styles.brand}><Logo size="sm" /><span>שקל שקל · יועץ</span></div>
       <div className={styles.modes}>
-        <span className={styles.mode + " " + styles.modeOn} aria-current="page">המוח</span>
+        <span className={styles.mode + " " + styles.modeOn} aria-current="page">יועץ</span>
         <a className={styles.mode} href={import.meta.env.BASE_URL + "../"}>אישי</a>
       </div>
       <nav className={styles.nav} aria-label="ניווט מחלקה">
