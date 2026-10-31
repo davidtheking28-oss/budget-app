@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient.js';
 import { useClientApprovals, TRASH_DAYS } from './useClientApprovals.js';
 import { INVITE_ERROR_MESSAGES } from '../clients/inviteMessages.js';
 import { toast } from '../toast.js';
+import Families from './Families.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import { formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
@@ -162,6 +163,8 @@ export default function ClientApprovals({ advisorId }) {
           </div>
         )}
       </section>
+
+      <Families advisorId={advisorId} links={links} />
     </div>
   );
 }
