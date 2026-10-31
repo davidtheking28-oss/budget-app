@@ -5012,6 +5012,14 @@ async function _doRequestPendingAdvisor(){
   try{localStorage.removeItem('budget_pending_advisor');}catch(e){}
   if(data==='ok')showToast('✓ הבקשה נשלחה ליועץ, ממתין לאישורו');
 }
+async function _promptAdvisorInvite(){
+  const l=_advisorLink;
+  if(!l||l.status!=='pending'||!l.advisor_id||l.requested_by_client)return;
+  const key='budget_invite_prompt_'+l.id;
+  try{if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1');}catch(e){}
+  const ok=await confirmSheet({title:'הזמנה מהיועץ הפיננסי שלך',message:'היועץ הפיננסי שלך הזמין אותך להתחבר לתקציב. אישור ייתן לו גישה לצפייה ועריכה של התקציב.',icon:'💬',confirmText:'אישור והתחברות',cancelText:'אחר כך'});
+  if(ok)respondAdvisorInvite(true);
+}
 async function copyAdvisorCode(){
   if(!_advisorLink?.invite_code)return;
   try{
@@ -5031,7 +5039,7 @@ async function removeAdvisorLink(){
 }
 async function respondAdvisorInvite(accept){
   if(!_advisorLink||!_sb)return;
-  const btns=(typeof event!=='undefined'&&event)?event.target.parentElement.querySelectorAll('button'):[];
+  const btns=(typeof event!=='undefined'&&event&&event.target?.closest?.('#advisorLinkSection'))?event.target.parentElement.querySelectorAll('button'):[];
   btns.forEach(b=>b.disabled=true);
   const {data,error}=await _sb.rpc('respond_advisor_invite',{p_id:_advisorLink.id,p_accept:accept});
   if(error||data!=='ok'){showToast('❌ הפעולה נכשלה, נסה שוב');btns.forEach(b=>b.disabled=false);return;}
@@ -5227,6 +5235,7 @@ document.addEventListener('DOMContentLoaded',function(){
         _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
         _requestPendingAdvisor().then(()=>_loadAdvisorLink()).then(()=>{
           renderAdvisorLinkSection();
+          _promptAdvisorInvite();
           if(document.getElementById('page-analytics')?.classList.contains('active'))_loadAdvisorTasks().then(renderTasksPage);
         });
         _loadMeetingAlerts();
@@ -5247,7 +5256,7 @@ document.addEventListener('DOMContentLoaded',function(){
         await Promise.all([
           _loadAdvisorStatus().then(_applyAdvisorGate),
           _loadHousehold().then(()=>_loadFromCloud(true)).then(_subscribeHousehold),
-          _loadAdvisorLink().then(renderAdvisorLinkSection)
+          _loadAdvisorLink().then(()=>{renderAdvisorLinkSection();_promptAdvisorInvite();})
         ]);
         if(!_gateShown) refreshAll();
       } else {

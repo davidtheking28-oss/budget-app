@@ -4,6 +4,7 @@ import { useClientApprovals, TRASH_DAYS } from './useClientApprovals.js';
 import { INVITE_ERROR_MESSAGES } from '../clients/inviteMessages.js';
 import { toast } from '../toast.js';
 import Families from './Families.jsx';
+import { CLIENT_APP_URL } from './clientApp.js';
 import Skeleton from '../components/Skeleton.jsx';
 import { formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
@@ -45,6 +46,7 @@ export default function ClientApprovals({ advisorId }) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [confirming, setConfirming] = useState(null);
+  const [invitedEmail, setInvitedEmail] = useState('');
 
   if (loading) return <Skeleton height="220px" radius="18px" />;
 
@@ -67,7 +69,8 @@ export default function ClientApprovals({ advisorId }) {
     setSending(false);
     if (error) { toast('שגיאה בשליחת ההזמנה, נסה שוב', 'error'); return; }
     if (data !== 'ok') { toast(INVITE_ERROR_MESSAGES[data] || 'שגיאה בשליחת ההזמנה', 'error'); return; }
-    toast('ההזמנה נשלחה', 'success');
+    toast('ההזמנה נשמרה. עכשיו שלח ללקוח את ההודעה והקישור', 'success');
+    setInvitedEmail(trimmed);
     setEmail('');
     reload();
   }
@@ -96,6 +99,17 @@ export default function ClientApprovals({ advisorId }) {
     reload();
   }
 
+  const inviteMessage = 'היי, הזמנתי אותך להתחבר אליי באפליקציית התקציב: ' + CLIENT_APP_URL + ' . היכנס עם הכתובת ' + invitedEmail + ' ותאשר את ההזמנה שמחכה לך.';
+
+  async function copyInvite() {
+    try {
+      await navigator.clipboard.writeText(inviteMessage);
+      toast('ההודעה הועתקה, אפשר להדביק ללקוח', 'success');
+    } catch {
+      window.prompt('העתק את ההודעה ושלח ללקוח:', inviteMessage);
+    }
+  }
+
   const tiles = [
     { kinds: ['requested'], label: 'ממתינים לאישור', note: 'נרשמו דרך הקישור שלך' },
     { kinds: ['waitApproval', 'waitSignup'], label: 'הזמנות שנשלחו', note: 'ממתינות להרשמה או לאישור הלקוח' },
@@ -119,6 +133,16 @@ export default function ClientApprovals({ advisorId }) {
           <input className={styles.input + ' ' + styles.inputGrow} type="email" dir="ltr" placeholder="כתובת אימייל של הלקוח" aria-label="הזמן לקוח באימייל" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && invite()} />
           <button type="button" className={styles.btn} onClick={invite} disabled={sending}>שלח הזמנה</button>
         </div>
+        {invitedEmail && (
+          <div className={styles.stack} role="status">
+            <p className={styles.note} style={{ margin: 0 }}>ההזמנה ל-{invitedEmail} נשמרה. הלקוח לא מקבל מייל, ולכן שלח לו את ההודעה הזו:</p>
+            <p className={styles.cardSub} style={{ margin: 0 }}>{inviteMessage}</p>
+            <div className={styles.toolbar}>
+              <button type="button" className={styles.btn} onClick={copyInvite}>העתק הודעה</button>
+              <a className={styles.btnGhost} style={{ textDecoration: 'none' }} href={'https://wa.me/?text=' + encodeURIComponent(inviteMessage)} target="_blank" rel="noopener noreferrer">שלח בוואטסאפ</a>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className={styles.card}>
