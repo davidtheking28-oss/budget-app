@@ -201,11 +201,14 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const actualCard = flowPeriod === 'avg' && avg
     ? { sub: `ממוצע חודשי על פני ${avg.months === 1 ? 'חודש אחד' : `${avg.months} חודשים`}`, income: avg.income, expenses: avg.fixed + avg.variable, flow: avg.income - avg.fixed - avg.variable, savings: avg.savings, fixed: avg.fixed, variable: avg.variable }
     : { sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, savings: actualSavings, fixed: totalFixedActual, variable: totalVarActual };
+  const planCategories = [...fixed.filter(r => !isSavingsRow(r)), ...variable].map(r => ({ label: r.name, value: parseFloat(r.amount) || 0 }));
+  const actualCategories = [...Object.entries(fixedActual), ...Object.entries(variableActual)].map(([label, value]) => ({ label, value }));
   const summaryCards = [
-    { key: 'plan', title: 'תכנון', sub: 'מה תוכנן לחודש הזה', income: totalIncome, expenses: totalFixed + totalVar, flow: left, flowNoSavings: left + plannedSavings, breakdown: breakdownOf(totalFixed, totalVar, left) },
-    { key: 'actual', title: 'ביצוע', sub: actualCard.sub, income: actualCard.income, expenses: actualCard.expenses, flow: actualCard.flow, flowNoSavings: actualCard.flow + actualCard.savings, breakdown: breakdownOf(actualCard.fixed, actualCard.variable, actualCard.flow) }
+    { key: 'plan', title: 'תכנון', sub: 'מה תוכנן לחודש הזה', income: totalIncome, expenses: totalFixed + totalVar, flow: left, flowNoSavings: left + plannedSavings, breakdown: breakdownOf(totalFixed, totalVar, left), categories: planCategories },
+    { key: 'actual', title: 'ביצוע', sub: actualCard.sub, income: actualCard.income, expenses: actualCard.expenses, flow: actualCard.flow, flowNoSavings: actualCard.flow + actualCard.savings, breakdown: breakdownOf(actualCard.fixed, actualCard.variable, actualCard.flow), categories: flowPeriod === 'avg' ? null : actualCategories }
   ];
   const [years, setYears] = useState(5);
+  const [breakdownBy, setBreakdownBy] = useState('type');
 
   function addRow(setter, name = '', extra = {}) { setter(prev => [...prev, { name, amount: '', _before: {}, ...extra }]); }
   function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...(patch.name !== undefined && isSavingsRow(r) ? { savings: true } : {}), ...patch } : r)); }
@@ -276,6 +279,18 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       { label: 'תקציב משתנה', value: varValue, color: CHART_PALETTE[1] },
       { label: 'נותר פנוי', value: Math.max(0, freeValue), color: CHART_PALETTE[5] }
     ].filter(b => b.value > 0);
+    return { items, total: items.reduce((sum, b) => sum + b.value, 0) || 1 };
+  }
+
+  function categoryBreakdown(categories, freeValue) {
+    const sorted = categories.filter(c => c.value > 0).sort((a, b) => b.value - a.value);
+    const top = sorted.slice(0, 6);
+    const rest = sorted.slice(6).reduce((sum, c) => sum + c.value, 0);
+    const items = [
+      ...top.map((c, i) => ({ label: c.label, value: c.value, color: CHART_PALETTE[i % CHART_PALETTE.length] })),
+      ...(rest > 0 ? [{ label: 'אחר', value: rest, color: CHART_PALETTE[6 % CHART_PALETTE.length] }] : []),
+      ...(freeValue > 0 ? [{ label: 'נותר פנוי', value: freeValue, color: CHART_PALETTE[5] }] : [])
+    ];
     return { items, total: items.reduce((sum, b) => sum + b.value, 0) || 1 };
   }
 
@@ -506,26 +521,37 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                       <span className={c.flowNoSavings < 0 ? styles.negative : styles.positive}>{fmt(c.flowNoSavings * periodMul)}</span>
                     </div>
                   </div>
-                  {c.breakdown.items.length > 0 && (
+                  {c.breakdown.items.length > 0 && (() => {
+                    const shown = breakdownBy === 'category' && c.categories ? categoryBreakdown(c.categories, c.flow) : c.breakdown;
+                    return (
                     <div className={styles.breakdownBlock}>
-                      <div className={styles.groupTitle}>לאן הולך הכסף</div>
+                      <div className={styles.flowBoxHead}>
+                        <div className={styles.groupTitle}>לאן הולך הכסף</div>
+                        {c.categories && (
+                          <div className={styles.flowToggle} role="group" aria-label={`חלוקה · ${c.title}`}>
+                            <button type="button" aria-pressed={breakdownBy === 'type'} className={breakdownBy === 'type' ? styles.flowToggleActive : ''} onClick={() => setBreakdownBy('type')}>לפי סוג</button>
+                            <button type="button" aria-pressed={breakdownBy === 'category'} className={breakdownBy === 'category' ? styles.flowToggleActive : ''} onClick={() => setBreakdownBy('category')}>לפי קטגוריה</button>
+                          </div>
+                        )}
+                      </div>
                       <div className={styles.stackBar}>
-                        {c.breakdown.items.map(b => (
-                          <div key={b.label} className={styles.stackSeg} style={{ width: (b.value / c.breakdown.total * 100) + '%', background: b.color }} title={b.label} />
+                        {shown.items.map(b => (
+                          <div key={b.label} className={styles.stackSeg} style={{ width: (b.value / shown.total * 100) + '%', background: b.color }} title={b.label} />
                         ))}
                       </div>
                       <div className={styles.legend}>
-                        {c.breakdown.items.map(b => (
+                        {shown.items.map(b => (
                           <div className={styles.legendRow} key={b.label}>
                             <span className={styles.legendDot} style={{ background: b.color }} />
                             <span className={styles.legendLabel}>{b.label}</span>
                             <span className={styles.legendValue}>{fmt(b.value * periodMul)}</span>
-                            <span className={styles.pctChip}>{Math.round(b.value / c.breakdown.total * 100)}%</span>
+                            <span className={styles.pctChip}>{Math.round(b.value / shown.total * 100)}%</span>
                           </div>
                         ))}
                       </div>
                     </div>
-                  )}
+                    );
+                  })()}
                 </div>
               ))}
             </div>
