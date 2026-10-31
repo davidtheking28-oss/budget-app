@@ -4,7 +4,7 @@ import { BudgetModeContext } from '../budget/useClientBudget.js';
 import { addMonths } from '../budget/monthUtils.js';
 import Budget from '../budget/Budget.jsx';
 import Credit from '../budget/Credit.jsx';
-import Subscriptions from '../budget/Subscriptions.jsx';
+import ObligationTiles from '../budget/ObligationTiles.jsx';
 import Crm from '../crm/Crm.jsx';
 import MonthNav from '../components/MonthNav.jsx';
 import Button from '../components/Button.jsx';
@@ -120,7 +120,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
   const chipBar = (
     <div className={styles.pills} role="group" aria-label="תצוגות נוספות">
       {CHIPS.map(c => (
-        <button key={c.key} type="button" className={chip === c.key ? styles.pillOn : styles.pill} aria-pressed={chip === c.key} onClick={() => changeChip(c.key)}>{c.label}</button>
+        <button key={c.key} type="button" className={chip === c.key ? styles.pillOn : styles.pill} aria-pressed={chip === c.key} onClick={() => changeChip(c.key)}>{c.key === 'subs' && tab === 'budget' ? 'ביטוחים · מנויים · חינוך · קוסמטיקה · מתנות' : c.label}</button>
       ))}
     </div>
   );
@@ -192,7 +192,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
             </div>
           )}
           {view === 'credit' && <Credit key={chip} focus={CHIPS.find(c => c.key === chip)?.focus} clientUserId={clientIdOrNull} advisorId={advisorId} />}
-          {view === 'subs' && <Subscriptions clientUserId={clientIdOrNull} advisorId={advisorId} />}
+          {view === 'subs' && <ObligationTiles clientUserId={clientIdOrNull} advisorId={advisorId} keys={tab === 'budget' ? ['insurances', 'subs', 'education', 'grooming', 'events', 'annual'] : ['insurances', 'annual', 'subs', 'education']} />}
           {view === 'mortgage' && (
             <div className={styles.stack}>
               {monthModeBar}

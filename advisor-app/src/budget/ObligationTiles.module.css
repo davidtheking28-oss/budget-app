@@ -1,0 +1,8 @@
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--space-3); }
+.tile { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--text); font: inherit; text-align: start; cursor: pointer; transition: border-color 0.15s ease; }
+.tile:hover { border-color: var(--accent); }
+.tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.title { font-size: var(--text-md); font-weight: 700; }
+.value { font-size: var(--text-xl); font-weight: 800; font-variant-numeric: tabular-nums; }
+.meta { font-size: var(--text-xs); color: var(--text2); }
+.hint { margin: var(--space-3) 0 0; color: var(--text2); font-size: var(--text-sm); }

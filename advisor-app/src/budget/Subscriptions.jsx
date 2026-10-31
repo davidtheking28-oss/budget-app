@@ -31,7 +31,7 @@ function daysUntil(dateStr) {
   return Math.ceil(diff / 86400000);
 }
 
-export default function Subscriptions({ clientUserId, advisorId }) {
+export default function Subscriptions({ clientUserId, advisorId, only }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
 
   const [subForm, setSubForm] = useState({ name: '', category: SUB_CATEGORIES[0], amount: '', cycle: 'monthly', nextDate: '' });
@@ -168,7 +168,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
 
   return (
     <div>
-      <Hero
+      {!only && <Hero
         tone="neutral"
         label="הוצאות קבועות בחודש"
         value={fmt(totalMonthlyCommitments)}
@@ -177,17 +177,17 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           { label: 'מנויים פעילים', value: String(activeSubsCount), meta: monthlySubsCost > 0 ? `${fmt(monthlySubsCost)} בחודש` : null },
           { label: 'ביטוחים', value: fmt(insurancesMonthly) }
         ]}
-      />
+      />}
 
-      {tips.length > 0 && (
+      {!only && tips.length > 0 && (
         <CardGrid single>
           <Card title="הצעות לחיסכון ותשומת לב">
             {tips.map((t, i) => <Row key={i} name={t.name} sub={t.sub} />)}
           </Card>
         </CardGrid>
       )}
-      <div className={styles.sectionsGrid}>
-      <div className={styles.section + (subs.length ? '' : ' ' + styles.sectionEmptyCard)}>
+      <div className={only ? undefined : styles.sectionsGrid}>
+      {(!only || only === 'subs') && <div className={styles.section + (subs.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<>מנויים<span className={styles.countBadge}>{subs.length}</span>{monthlySubsCost > 0 ? ` · ${fmt(monthlySubsCost)} לחודש` : ''}</>}>
         {!subs.length && <div className={styles.sectionEmpty}>אין מנויים רשומים</div>}
         <AddForm label="הוסף מנוי" open={editingSubId != null} className={styles.form}>
@@ -253,9 +253,9 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           </div>
         ) : null}
       </CollapsibleSection>
-      </div>
+      </div>}
 
-      <div className={styles.section + (insurances.length ? '' : ' ' + styles.sectionEmptyCard)}>
+      {(!only || only === 'insurances') && <div className={styles.section + (insurances.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<>ביטוחים<span className={styles.countBadge}>{insurances.length}</span>{insurancesMonthly > 0 ? ` · ${fmt(insurancesMonthly)} לחודש` : ''}</>}>
         {!insurances.length && <div className={styles.sectionEmpty}>אין ביטוחים רשומים</div>}
         <AddForm label="הוסף ביטוח" open={editingInsId != null} className={styles.form}>
@@ -284,9 +284,9 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           </div>
         ) : null}
       </CollapsibleSection>
-      </div>
+      </div>}
 
-      <div className={styles.section + (grooming.length ? '' : ' ' + styles.sectionEmptyCard)}>
+      {(!only || only === 'grooming') && <div className={styles.section + (grooming.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<>טיפוח וקוסמטיקה<span className={styles.countBadge}>{grooming.length}</span>{groomingMonthly > 0 ? ` · ${fmt(groomingMonthly)} לחודש` : ''}</>}>
         {!grooming.length && <div className={styles.sectionEmpty}>אין פריטים רשומים</div>}
         <AddForm label="הוסף פריט" open={editingGroomId != null} className={styles.form}>
@@ -309,9 +309,9 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           </div>
         ) : null}
       </CollapsibleSection>
-      </div>
+      </div>}
 
-      <div className={styles.section + (events.length ? '' : ' ' + styles.sectionEmptyCard)}>
+      {(!only || only === 'events') && <div className={styles.section + (events.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<>אירועים ומתנות<span className={styles.countBadge}>{events.length}</span>{eventsMonthly > 0 ? ` · ${fmt(eventsMonthly)} לחודש` : ''}</>}>
         {!events.length && <div className={styles.sectionEmpty}>אין אירועים רשומים</div>}
         <AddForm label="הוסף אירוע" open={editingEventId != null} className={styles.form}>
@@ -334,9 +334,9 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           </div>
         ) : null}
       </CollapsibleSection>
-      </div>
+      </div>}
 
-      <div className={styles.section + (education.length ? '' : ' ' + styles.sectionEmptyCard)}>
+      {(!only || only === 'education') && <div className={styles.section + (education.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<>חינוך וחוגים<span className={styles.countBadge}>{education.length}</span>{educationMonthly > 0 ? ` · ${fmt(educationMonthly)} לחודש` : ''}</>}>
         {!education.length && <div className={styles.sectionEmpty}>אין פריטים רשומים</div>}
         <AddForm label="הוסף פריט" open={editingEduId != null} className={styles.form}>
@@ -359,9 +359,9 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           </div>
         ) : null}
       </CollapsibleSection>
-      </div>
+      </div>}
 
-      <div className={styles.section + (annualExpenses.length ? '' : ' ' + styles.sectionEmptyCard)}>
+      {(!only || only === 'annual') && <div className={styles.section + (annualExpenses.length ? '' : ' ' + styles.sectionEmptyCard)}>
         <CollapsibleSection title={<>הוצאות שנתיות<span className={styles.countBadge}>{annualExpenses.length}</span>{annualExpensesMonthly > 0 ? ` · ${fmt(annualExpensesMonthly)} לחודש` : ''}</>}>
         {!annualExpenses.length && <div className={styles.sectionEmpty}>אין הוצאות רשומות</div>}
         <AddForm label="הוסף הוצאה" open={editingAnnualExpId != null} className={styles.form}>
@@ -384,7 +384,7 @@ export default function Subscriptions({ clientUserId, advisorId }) {
           </div>
         ) : null}
       </CollapsibleSection>
-      </div>
+      </div>}
       </div>
     </div>
   );
