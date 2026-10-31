@@ -83,14 +83,6 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     });
     return map;
   }, [monthTx]);
-  // Matches the client app's own definition of "income for the month" (monthlyIncomeFor
-  // in index.html): a standing source the client never bothered to log a transaction for
-  // still counts at its planned amount, so a salary nobody manually posts isn't shown as 0.
-  const incomeActualFor = (name, plannedAmount) => {
-    const posted = incomeActual[(name || '').trim().toLowerCase()];
-    if (posted) return posted;
-    return parseFloat(plannedAmount) || 0;
-  };
   const fixedActual = useMemo(() => {
     const map = {};
     monthTx.filter(t => t.type === 'expense' && FIXED_CATS.includes(t.cat)).forEach(t => {
@@ -385,7 +377,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const amounts = (r, i) => (
       <>
         <div className={styles.itemAmountBox}>
-          <div className={styles.itemAmountBoxLabel}>תכנון</div>
+          <div className={styles.itemAmountBoxLabel}>{actualOf ? 'תכנון' : 'סכום'}</div>
           <input
             className={styles.itemAmountInput}
             type="number"
@@ -565,7 +557,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 <span className={styles.cardTitle}>מאיפה מגיע הכסף?</span>
                 <span className={styles.cardTotal}>{fmt(totalIncome)}</span>
               </div>
-              {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, incomeActualFor, true)}
+              {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, null, true)}
             </div>
             <div className={styles.card}>
               <div className={styles.cardTitleRow}>
