@@ -38,19 +38,6 @@ export function loanPayoffMonths(remaining, monthly, annualRate) {
   return Math.ceil(Math.log(monthly / (monthly - remaining * r)) / Math.log(1 + r));
 }
 
-export function pmtSpitzer(P, annualRate, months) {
-  if (!P || P <= 0 || !months || months <= 0) return 0;
-  const r = (annualRate || 0) / 1200;
-  if (r <= 0) return P / months;
-  return P * r / (1 - Math.pow(1 + r, -months));
-}
-export function spitzerPrincipalFromPmt(pmt, annualRate, months) {
-  if (!pmt || pmt <= 0 || !months || months <= 0) return 0;
-  const r = (annualRate || 0) / 1200;
-  if (r <= 0) return pmt * months;
-  return pmt * (1 - Math.pow(1 + r, -months)) / r;
-}
-
 const EMPTY_LOAN = { name: '', monthly: '', remaining: '', original: '', rate: '', asOf: '' };
 const EMPTY_PAYMENT = { card: '', name: '', total: '', current: '', amount: '' };
 
