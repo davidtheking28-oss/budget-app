@@ -14,7 +14,7 @@ const EMPTY_FORM = { name: '', description: '', deadline: '', importance: '', in
 
 const normalizeSteps = project => (project.steps || []).map(s => ({ id: s.id, title: s.title ?? s.text ?? '', deadline: s.deadline || '', done: !!s.done, tasks: s.tasks || [] }));
 
-const metaOf = project => [project.importance ? 'חשיבות ' + project.importance + '/10' : '', project.deadline ? 'דדליין ' + new Date(project.deadline).toLocaleDateString('he-IL') : 'אין דדליין', project.investment ? 'נדרשת השקעה' : 'לא נדרשת השקעה'];
+const metaOf = project => [project.importance ? 'חשיבות ' + project.importance + '/10' : '', project.deadline ? 'דדליין ' + new Date(project.deadline).toLocaleDateString('he-IL') : 'אין דדליין', project.investment ? 'נדרשת השקעה' : 'לא נדרשת השקעה'].filter(Boolean);
 
 function ProjectForm({ title, initial, submitLabel, onSubmit, onClose }) {
   const [form, setForm] = useState(initial);
