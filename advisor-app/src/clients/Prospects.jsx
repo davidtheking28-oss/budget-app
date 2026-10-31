@@ -19,7 +19,7 @@ const STATUSES = [
   { key: 'not_relevant', label: 'לא רלוונטי ולא נסגר', color: 'var(--red)' }
 ];
 const SOURCES = ['דף נחיתה', 'הודעות בפרטי', 'פה לאוזן · לקוח ישן', 'המלצה', 'אחר'];
-const EMPTY = { status: 'new', name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', meeting_date: '', meeting_time: '', attempts: 0, attendance_confirmed: false, showed: false, relevant: false, closed: false };
+const EMPTY = { status: 'new', name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', meeting_date: '', meeting_time: '', attempts: 0, attendance_confirmed: false, showed: false, relevant: false, closed: false, closed_at: '' };
 const AUTOSAVE_MS = 500;
 
 const toRow = (form, today) => ({
@@ -36,6 +36,7 @@ const toRow = (form, today) => ({
   showed: form.showed,
   relevant: form.relevant,
   closed: form.closed,
+  closed_at: form.closed ? (form.closed_at || today) : null,
   status: form.status
 });
 
@@ -74,7 +75,7 @@ export default function Prospects({ advisorId, onConvert }) {
   function startEdit(p) {
     setEditingId(p.id);
     setModalOpen(true);
-    setForm({ status: p.status || 'new', name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', meeting_date: p.meeting_date || '', meeting_time: p.meeting_time || '', attempts: p.attempts || 0, attendance_confirmed: !!p.attendance_confirmed, showed: !!p.showed, relevant: !!p.relevant, closed: !!p.closed });
+    setForm({ status: p.status || 'new', name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', meeting_date: p.meeting_date || '', meeting_time: p.meeting_time || '', attempts: p.attempts || 0, attendance_confirmed: !!p.attendance_confirmed, showed: !!p.showed, relevant: !!p.relevant, closed: !!p.closed, closed_at: p.closed_at || '' });
   }
 
   function flush() {
@@ -96,6 +97,7 @@ export default function Prospects({ advisorId, onConvert }) {
 
   function patchForm(patch) {
     const next = { ...form, ...patch };
+    if ('closed' in patch) next.closed_at = patch.closed ? (form.closed_at || today) : '';
     setForm(next);
     if (editingId != null && next.name.trim()) {
       pending.current = { id: editingId, next };

@@ -44,6 +44,31 @@ export function funnelStats(leads) {
   };
 }
 
+const dayMonth = value => (value || '').slice(0, 7);
+
+export function monthFunnel(leads, key) {
+  const met = leads.filter(l => dayMonth(l.meeting_date) === key);
+  const showed = met.filter(l => l.showed);
+  const relevant = showed.filter(l => l.relevant);
+  const closed = leads.filter(l => l.closed && dayMonth(l.closed_at || l.meeting_date || l.contacted_at || l.created_at) === key);
+  return buildFunnel(leads.filter(l => leadMonthKey(l) === key).length, met.length, showed.length, relevant.length, closed.length);
+}
+
+export function sumFunnel(rows) {
+  const sum = field => rows.reduce((n, r) => n + r[field], 0);
+  return buildFunnel(sum('total'), sum('meetings'), sum('showed'), sum('relevant'), sum('closed'));
+}
+
+function buildFunnel(total, meetings, showed, relevant, closed) {
+  return {
+    total, meetings, showed, relevant, closed,
+    showRate: ratio(showed, total),
+    relevantRate: ratio(relevant, showed),
+    closeRate: ratio(closed, relevant),
+    closeOfShowedRate: ratio(closed, showed)
+  };
+}
+
 export function leadMonthKey(lead) {
   return (lead.contacted_at || lead.created_at || '').slice(0, 7);
 }

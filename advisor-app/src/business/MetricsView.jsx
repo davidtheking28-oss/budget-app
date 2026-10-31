@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useBizRecords } from './useBizRecords.js';
 import { useProspects } from '../clients/useProspects.js';
-import { marketingMetrics, sumMarketing, funnelStats, leadMonthKey, percentLabel, periodsFor, shortLabel } from './bizMath.js';
+import { marketingMetrics, sumMarketing, funnelStats, monthFunnel, sumFunnel, leadMonthKey, percentLabel, periodsFor, shortLabel } from './bizMath.js';
 import MonthPicker, { monthName } from './MonthPicker.jsx';
 import TrendChart from './TrendChart.jsx';
 import Skeleton from '../components/Skeleton.jsx';
@@ -58,7 +58,7 @@ function FunnelStats({ s, title }) {
   );
 }
 
-const funnelCount = (s, value) => (s.total === 0 ? 'אין' : value);
+const funnelCount = (s, value) => (s.total + s.meetings + s.showed + s.relevant + s.closed === 0 ? 'אין' : value);
 
 function FunnelTable({ rows, total }) {
   return (
@@ -103,7 +103,7 @@ function MarketingBody({ advisorId, ym, scope, onNavigate }) {
   const months = periods.map(p => marketingMetrics(byPeriod[p] || {}));
   const stats = scope === 'month' ? months[months.length - 1] : sumMarketing(periods.map(p => byPeriod[p] || {}));
   const yearLeads = prospects.filter(p => leadMonthKey(p).startsWith(String(ym.year)));
-  const rows = periods.map((p, i) => ({ label: scope === 'year' ? monthName(i) : monthName(Number(p.slice(5)) - 1) + ' ' + p.slice(0, 4), m: months[i], f: funnelStats(prospects.filter(l => leadMonthKey(l) === p)) }));
+  const rows = periods.map((p, i) => ({ label: scope === 'year' ? monthName(i) : monthName(Number(p.slice(5)) - 1) + ' ' + p.slice(0, 4), m: months[i], f: monthFunnel(prospects, p) }));
   const chartMetrics = [
     { key: 'followers', label: 'כמות עוקבים', values: months.map(m => m.followers), format: plain },
     { key: 'costPerFollower', label: 'עלות לעוקב', values: months.map(m => Math.round(m.costPerFollower || 0)), format: money },
@@ -144,7 +144,7 @@ function SalesBody({ advisorId, ym, scope }) {
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="18px" />;
   const periods = periodsFor(scope, ym, []);
-  const months = periods.map(p => funnelStats(prospects.filter(l => leadMonthKey(l) === p)));
+  const months = periods.map(p => monthFunnel(prospects, p));
   const stats = scope === 'month' ? months[months.length - 1] : funnelStats(prospects.filter(p => leadMonthKey(p).startsWith(String(ym.year))));
   const chartMetrics = [
     { key: 'total', label: 'לידים', values: months.map(s => s.total), format: plain },
@@ -159,9 +159,9 @@ function SalesBody({ advisorId, ym, scope }) {
   const rows = periods.map((p, i) => ({ label: scope === 'year' ? monthName(i) : monthName(Number(p.slice(5)) - 1) + ' ' + p.slice(0, 4), s: months[i] }));
   return (
     <>
-      <FunnelStats s={stats} title="מדדי מכירות" />
+      <FunnelStats s={stats} title="מדדי מכירות" /><p className={styles.note}>שורת המדדים נמדדת על הלידים שנכנסו בתקופה הנבחרת. הגרף והטבלה נספרים לפי חודש האירוע.</p>
       <TrendChart labels={periods.map(shortLabel)} metrics={chartMetrics} footnote={footnoteOf(scope, stats.total)} />
-      <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : scope === 'month' ? '12 החודשים האחרונים' : 'חודשי התקופה'}</h3></div><FunnelTable rows={rows} total={funnelStats(prospects.filter(l => periods.includes(leadMonthKey(l))))} /><p className={styles.note}>הכול נספר לפי חודש כניסת הליד. שורת הסיכום מחשבת כל אחוז מתוך הסכומים של כל התקופה, ולא כממוצע של האחוזים החודשיים.</p></section>
+      <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : scope === 'month' ? '12 החודשים האחרונים' : 'חודשי התקופה'}</h3></div><FunnelTable rows={rows} total={sumFunnel(months)} /><p className={styles.note}>לידים נספרים לפי חודש הכניסה. פגישות, הגיעו ופגישות רלוונטיות נספרות לפי חודש הפגישה. סגירות נספרות לפי חודש הסגירה. שורת הסיכום מחשבת כל אחוז מתוך הסכומים של כל התקופה, ולא כממוצע של האחוזים החודשיים.</p></section>
     </>
   );
 }

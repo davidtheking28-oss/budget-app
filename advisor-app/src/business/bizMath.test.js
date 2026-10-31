@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { funnelStats, marketingMetrics, sumMarketing, bucketTasks, projectProgress, percentLabel, ymKey, leadMonthKey } from './bizMath.js';
+import { monthFunnel, sumFunnel, funnelStats, marketingMetrics, sumMarketing, bucketTasks, projectProgress, percentLabel, ymKey, leadMonthKey } from './bizMath.js';
 
 describe('funnelStats', () => {
   it('computes each conversion step from the previous one', () => {
@@ -143,5 +143,23 @@ describe('financeMonth', () => {
     const b = expenseBreakdown(entries.filter(e => e.type === 'expense'));
     expect(b[0]).toMatchObject({ category: 'שיווק', value: 1000 });
     expect(b[0].share).toBeCloseTo(2 / 3);
+  });
+});
+
+describe('monthFunnel', () => {
+  const leads = [
+    { contacted_at: '2026-09-28', meeting_date: '2026-10-03', showed: true, relevant: true, closed: true, closed_at: '2026-10-20' },
+    { contacted_at: '2026-10-02', meeting_date: '2026-10-05', showed: true, relevant: false, closed: false },
+    { contacted_at: '2026-10-09' }
+  ];
+  it('counts leads by entry month and meetings by meeting month', () => {
+    const oct = monthFunnel(leads, '2026-10');
+    expect(oct).toMatchObject({ total: 2, meetings: 2, showed: 2, relevant: 1, closed: 1 });
+    expect(monthFunnel(leads, '2026-09')).toMatchObject({ total: 1, meetings: 0, closed: 0 });
+  });
+  it('sums rows and recomputes rates from the totals', () => {
+    const sum = sumFunnel([monthFunnel(leads, '2026-09'), monthFunnel(leads, '2026-10')]);
+    expect(sum).toMatchObject({ total: 3, showed: 2, relevant: 1, closed: 1 });
+    expect(sum.showRate).toBeCloseTo(2 / 3);
   });
 });
