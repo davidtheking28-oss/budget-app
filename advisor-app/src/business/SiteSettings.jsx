@@ -6,14 +6,15 @@ import Skeleton from '../components/Skeleton.jsx';
 import styles from './Business.module.css';
 
 const CLIENT_APP_URL = 'https://davidtheking28-oss.github.io/budget-app/';
-const SIGNUP_MESSAGE = 'היי, הנה הקישור להרשמה לפלטפורמה שלנו: ' + CLIENT_APP_URL + ' . אחרי ההרשמה אזמין אותך מהמערכת שלי.';
+const signupMessage = advisorId => 'היי, הנה הקישור להרשמה לפלטפורמה שלנו: ' + CLIENT_APP_URL + '?advisor=' + advisorId + ' . אחרי ההרשמה אאשר אותך מהמערכת שלי.';
 
-async function copySignupLink() {
+async function copySignupLink(advisorId) {
+  const message = signupMessage(advisorId);
   try {
-    await navigator.clipboard.writeText(SIGNUP_MESSAGE);
+    await navigator.clipboard.writeText(message);
     toast('הקישור הועתק, אפשר להדביק ללקוח', 'success');
   } catch {
-    window.prompt('העתק את ההודעה ושלח ללקוח:', SIGNUP_MESSAGE);
+    window.prompt('העתק את ההודעה ושלח ללקוח:', message);
   }
 }
 
@@ -63,7 +64,7 @@ export default function SiteSettings({ advisorId }) {
             <h2 className={styles.sectionHeading}>העתק קישור אתר</h2>
             <p className={styles.cardSub}>הקישור שהלקוחות נרשמים דרכו. אחרי ההרשמה מזמינים אותם מהמערכת.</p>
           </div>
-          <button type="button" className={styles.btn} onClick={copySignupLink}>העתק קישור</button>
+          <button type="button" className={styles.btn} onClick={() => copySignupLink(advisorId)}>העתק קישור</button>
         </div>
       </section>
       <section className={styles.card} style={{ padding: 'var(--space-4)' }}>

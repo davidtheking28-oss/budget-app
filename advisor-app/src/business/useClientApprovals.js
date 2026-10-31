@@ -12,7 +12,7 @@ export function useClientApprovals(advisorId) {
     if (!advisorId) return;
     setLoading(true);
     const [{ data: linkRows }, { data: archiveRows }] = await Promise.all([
-      supabase.from('advisor_clients').select('id, client_id, client_email, invited_email, status, created_at').eq('advisor_id', advisorId).order('created_at', { ascending: false }),
+      supabase.from('advisor_clients').select('id, client_id, client_email, invited_email, status, requested_by_client, created_at').eq('advisor_id', advisorId).order('created_at', { ascending: false }),
       supabase.from('advisor_client_archive').select('id, client_email, state, created_at').eq('advisor_id', advisorId).order('created_at', { ascending: false })
     ]);
     const cutoff = Date.now() - TRASH_DAYS * 86400000;

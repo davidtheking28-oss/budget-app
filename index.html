@@ -4998,6 +4998,15 @@ async function createAdvisorInvite(){
   _advisorLink=data;
   renderAdvisorLinkSection();
 }
+async function _requestPendingAdvisor(){
+  let ref=null;
+  try{ref=localStorage.getItem('budget_pending_advisor');}catch(e){}
+  if(!ref||!_cloudUser||!_sb)return;
+  const {data,error}=await _sb.rpc('request_advisor_link',{p_advisor:ref});
+  if(error)return;
+  try{localStorage.removeItem('budget_pending_advisor');}catch(e){}
+  if(data==='ok')showToast('✓ הבקשה נשלחה ליועץ, ממתין לאישורו');
+}
 async function copyAdvisorCode(){
   if(!_advisorLink?.invite_code)return;
   try{
@@ -5036,6 +5045,14 @@ function renderAdvisorLinkSection(){
   if(!_advisorLink){
     el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">חבר יועץ פיננסי כדי שיוכל לצפות ולערוך את התקציב שלך</div>'
       +'<button class="btn btn-outline btn-full" onclick="createAdvisorInvite()">+ צור קוד ליועץ</button>';
+    return;
+  }
+  if(_advisorLink.status==='pending'&&_advisorLink.requested_by_client){
+    el.innerHTML='<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:center">'
+      +'<div style="font-size:1.4rem;margin-bottom:4px">⏳</div>'
+      +'<div style="font-size:0.86rem;font-weight:700">הבקשה נשלחה ליועץ הפיננסי</div>'
+      +'<div style="font-size:0.72rem;color:var(--text3);margin-top:4px">אחרי שיאשר, הוא יוכל לצפות ולערוך את התקציב שלך</div></div>'
+      +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">בטל בקשה</button>';
     return;
   }
   if(_advisorLink.status==='pending'&&_advisorLink.advisor_id){
@@ -5179,6 +5196,10 @@ function _errSend(rec){
 }
 let _gateShown=false;
 document.addEventListener('DOMContentLoaded',function(){
+  try{
+    const ref=new URLSearchParams(location.search).get('advisor');
+    if(ref&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ref))localStorage.setItem('budget_pending_advisor',ref);
+  }catch(e){}
   _sb=window.supabase?.createClient?.(SUPA_URL,SUPA_ANON,{auth:{persistSession:true,autoRefreshToken:true}})||null;
   _errSetSender&&_errSetSender(_errSend);
   if(_sb){
@@ -5199,7 +5220,7 @@ document.addEventListener('DOMContentLoaded',function(){
       renderAdvisorLinkSection();
       if(_cloudUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED')){
         _loadHousehold().then(()=>{_loadFromCloud();_subscribeHousehold();});
-        _loadAdvisorLink().then(()=>{
+        _requestPendingAdvisor().then(()=>_loadAdvisorLink()).then(()=>{
           renderAdvisorLinkSection();
           if(document.getElementById('page-analytics')?.classList.contains('active'))_loadAdvisorTasks().then(renderTasksPage);
         });
@@ -5217,6 +5238,7 @@ document.addEventListener('DOMContentLoaded',function(){
         // hit independent tables — run them concurrently instead of one round-trip
         // at a time. Only _loadFromCloud genuinely depends on _loadHousehold first
         // (it reads _householdOwner via _getDataUserId()).
+        await _requestPendingAdvisor();
         await Promise.all([
           _loadAdvisorStatus().then(_applyAdvisorGate),
           _loadHousehold().then(()=>_loadFromCloud(true)).then(_subscribeHousehold),

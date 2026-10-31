@@ -167,6 +167,12 @@ export const supabase = {
       }];
       return { data: 'ok', error: null };
     }
+    if (fn === 'approve_advisor_client') {
+      const row = (db.advisor_clients || []).find(r => r.id === params.p_link && r.requested_by_client);
+      if (!row) return { data: 'not_found', error: null };
+      row.status = 'active';
+      return { data: 'ok', error: null };
+    }
     if (fn === 'archive_advisor_client') {
       const row = (db.advisor_clients || []).find(r => r.id === params.p_link);
       if (!row) return { data: 'not_found', error: null };

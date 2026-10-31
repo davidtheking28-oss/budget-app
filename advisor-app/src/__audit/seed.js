@@ -217,6 +217,7 @@ export function makeDb(mode) {
       { id: 'r3', advisor_id: ADVISOR, client_id: CLIENT_C, client_email: 'a-very-long-client-email-address@some-long-domain-name.com', status: 'active', created_at: iso(30) },
       { id: 'r4', advisor_id: ADVISOR, client_id: CLIENT_EMPTY, client_email: 'new.client@gmail.com', status: 'active', created_at: iso(1) },
       { id: 'r5', advisor_id: ADVISOR, client_id: 'awaiting-accept-user', client_email: 'dana.cohen@gmail.com', invited_email: null, status: 'pending', created_at: iso(2) },
+      { id: 'r7', advisor_id: ADVISOR, client_id: 'self-signup-user', client_email: 'ron.levi@gmail.com', status: 'pending', requested_by_client: true, created_at: iso(0) },
       { id: 'r6', advisor_id: ADVISOR, client_id: null, client_email: 'not.signed.up.yet@gmail.com', invited_email: 'not.signed.up.yet@gmail.com', status: 'pending', created_at: iso(1) }
     ],
     budget_data: empty ? [] : [full, thin, overspent],

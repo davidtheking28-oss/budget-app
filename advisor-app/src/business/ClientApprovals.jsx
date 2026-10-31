@@ -9,6 +9,7 @@ import styles from './Business.module.css';
 
 const STATUS_LABEL = {
   active: 'פעיל',
+  requested: 'ממתין לאישורך',
   waitApproval: 'ממתין לאישור הלקוח',
   waitSignup: 'ממתין להרשמה לאפליקציה',
   blocked: 'חסום',
@@ -16,14 +17,17 @@ const STATUS_LABEL = {
 };
 
 const ACTIONS = {
+  approve: { label: 'אישור' },
   end: { label: 'סיום ליווי', confirm: 'לסיים ליווי? החשבון והנתונים של הלקוח נשארים' },
   block: { label: 'חסימה', confirm: 'לחסום? הלקוח יוסר מהרשימה ולא ניתן יהיה להזמין אותו' },
   trash: { label: 'העברה לפח', confirm: 'להעביר לפח? אפשר לשחזר עד ' + TRASH_DAYS + ' יום' },
-  cancel: { label: 'ביטול הזמנה', confirm: 'לבטל את ההזמנה?' }
+  cancel: { label: 'ביטול הזמנה', confirm: 'לבטל את ההזמנה?' },
+  reject: { label: 'דחייה', confirm: 'לדחות את הבקשה?' }
 };
 
 const ROW_ACTIONS = {
   active: ['end', 'block', 'trash'],
+  requested: ['approve', 'reject', 'block'],
   waitApproval: ['cancel', 'block'],
   waitSignup: ['cancel', 'block'],
   blocked: [],
@@ -43,7 +47,7 @@ export default function ClientApprovals({ advisorId }) {
   const rows = [
     ...links.map(l => ({
       key: 'l' + l.id, id: l.id, email: l.client_email || l.invited_email, createdAt: l.created_at,
-      kind: l.status === 'active' ? 'active' : l.client_id ? 'waitApproval' : 'waitSignup'
+      kind: l.status === 'active' ? 'active' : l.requested_by_client ? 'requested' : l.client_id ? 'waitApproval' : 'waitSignup'
     })),
     ...archive.map(a => ({ key: 'a' + a.id, id: a.id, email: a.client_email, createdAt: a.created_at, kind: a.state === 'blocked' ? 'blocked' : 'trashed' }))
   ];
@@ -67,14 +71,17 @@ export default function ClientApprovals({ advisorId }) {
   async function run(row, action) {
     setConfirming(null);
     let error;
-    if (action === 'end' || action === 'cancel') {
+    if (action === 'approve') {
+      const res = await supabase.rpc('approve_advisor_client', { p_link: row.id });
+      error = res.error || (res.data !== 'ok' ? { message: res.data } : null);
+    } else if (action === 'end' || action === 'cancel' || action === 'reject') {
       ({ error } = await supabase.from('advisor_clients').delete().eq('id', row.id).eq('advisor_id', advisorId));
     } else {
       const res = await supabase.rpc('archive_advisor_client', { p_link: row.id, p_state: action === 'block' ? 'blocked' : 'trashed' });
       error = res.error || (res.data !== 'ok' ? { message: res.data } : null);
     }
     if (error) { toast('הפעולה נכשלה, נסה שוב', 'error'); return; }
-    toast(action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
+    toast(action === 'approve' ? 'הלקוח אושר' : action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
     reload();
   }
 
@@ -86,17 +93,17 @@ export default function ClientApprovals({ advisorId }) {
   }
 
   const tiles = [
-    { kind: 'waitApproval', label: 'ממתינים לאישור', note: 'נרשמו ולא אישרו את ההזמנה' },
-    { kind: 'waitSignup', label: 'ממתינים להרשמה', note: 'הוזמנו ועוד לא נרשמו' },
-    { kind: 'active', label: 'לקוחות פעילים', note: 'מחוברים אליך כרגע' },
-    { kind: 'blocked', label: 'חסומים', note: 'לא ניתן להזמין אותם' }
+    { kinds: ['requested'], label: 'ממתינים לאישור', note: 'נרשמו דרך הקישור שלך' },
+    { kinds: ['waitApproval', 'waitSignup'], label: 'הזמנות שנשלחו', note: 'ממתינות להרשמה או לאישור הלקוח' },
+    { kinds: ['active'], label: 'לקוחות פעילים', note: 'מחוברים אליך כרגע' },
+    { kinds: ['blocked'], label: 'חסומים', note: 'לא ניתן להזמין אותם' }
   ];
 
   return (
     <div className={styles.stack}>
       <div className={styles.grid4}>
         {tiles.map(t => (
-          <div key={t.kind} className={styles.stat}><div className={styles.statLabel}>{t.label}</div><div className={styles.statValue}>{count(t.kind)}</div><div className={styles.statNote}>{t.note}</div></div>
+          <div key={t.label} className={styles.stat}><div className={styles.statLabel}>{t.label}</div><div className={styles.statValue}>{t.kinds.reduce((n, k) => n + count(k), 0)}</div><div className={styles.statNote}>{t.note}</div></div>
         ))}
       </div>
 
@@ -140,7 +147,7 @@ export default function ClientApprovals({ advisorId }) {
                       ) : (
                         <div className={styles.toolbar}>
                           {ROW_ACTIONS[r.kind].map(a => (
-                            <button key={a} type="button" className={styles.btnGhost} aria-label={ACTIONS[a].label + ': ' + r.email} onClick={() => setConfirming({ key: r.key, action: a })}>{ACTIONS[a].label}</button>
+                            <button key={a} type="button" className={styles.btnGhost} aria-label={ACTIONS[a].label + ': ' + r.email} onClick={() => (a === 'approve' ? run(r, a) : setConfirming({ key: r.key, action: a }))}>{ACTIONS[a].label}</button>
                           ))}
                           {(r.kind === 'blocked' || r.kind === 'trashed') && (
                             <button type="button" className={styles.btnGhost} aria-label={(r.kind === 'blocked' ? 'ביטול חסימה: ' : 'שחזור: ') + r.email} onClick={() => restore(r)}>{r.kind === 'blocked' ? 'ביטול חסימה' : 'שחזור'}</button>
