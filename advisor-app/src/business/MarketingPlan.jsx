@@ -60,11 +60,52 @@ function TasksModal({ tasks, onChange, onClose }) {
   );
 }
 
-const FOLLOWER_FIELDS = [{ key: 'followers', label: 'עוקבים חדשים בחודש' }, { key: 'followersBudget', label: 'תקציב לעוקבים' }, { key: 'baseFollowers', label: 'עוקבים בתחילת הדרך' }];
-const BASELINE_FIELDS = [{ key: 'baseFollowers', label: 'כמה עוקבים יש לך היום' }];
-const LEAD_FIELDS = [{ key: 'boosts', label: 'תקציב Boosts' }, { key: 'meetings', label: 'פגישות התאמה' }, { key: 'closings', label: 'סגירות' }];
+const LEAD_FIELDS = [{ key: 'meetings', label: 'פגישות התאמה' }, { key: 'closings', label: 'סגירות' }];
+const NETWORKS = ['אינסטגרם', 'טיקטוק', 'יוטיוב', 'פייסבוק', 'טוויטר (X)', 'לינקדאין'];
 
-function MonthBody({ advisorId, period, onNavigate, header }) {
+function NetworksModal({ networks, boosts, monthLabel, onSave, onClose }) {
+  const [counts, setCounts] = useState(() => Object.fromEntries([...new Set([...NETWORKS, ...Object.keys(networks)])].map(n => [n, networks[n] ?? ''])));
+  const [extra, setExtra] = useState('');
+  const [boostValue, setBoostValue] = useState(boosts ?? '');
+  function addNetwork() {
+    const name = extra.trim();
+    if (!name || name in counts) return;
+    setCounts(prev => ({ ...prev, [name]: '' }));
+    setExtra('');
+  }
+  function submit(e) {
+    e.preventDefault();
+    const filled = Object.fromEntries(Object.entries(counts).filter(([, v]) => String(v).trim() !== ''));
+    onSave(filled, boostValue);
+    onClose();
+  }
+  return (
+    <Modal title="בואו נתחיל" onClose={onClose}>
+      <form className={styles.formGrid} onSubmit={submit}>
+        <p className={styles.cardSub}>כמה עוקבים יש לך היום? רשת שאין לך משאירים ריקה. מכאן נחשב לבד כמה גדלת כל חודש.</p>
+        {Object.keys(counts).map(n => (
+          <label key={n} className={styles.fieldLabel}>{n}
+            <input className={styles.input} inputMode="numeric" placeholder="0" value={counts[n]} onChange={e => setCounts(prev => ({ ...prev, [n]: e.target.value }))} />
+          </label>
+        ))}
+        <div className={styles.toolbar}>
+          <input className={styles.input + ' ' + styles.inputGrow} placeholder="שם הרשת" aria-label="שם רשת אחרת" value={extra} onChange={e => setExtra(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addNetwork(); } }} />
+          <button type="button" className={styles.btnGhost} onClick={addNetwork}>+ רשת אחרת</button>
+        </div>
+        <label className={styles.fieldLabel}>בוסטים
+          <input className={styles.input} inputMode="decimal" placeholder="₪" value={boostValue} onChange={e => setBoostValue(e.target.value)} />
+          <span className={styles.note}>תקציב הבוסטים באינסטגרם ל{monthLabel}</span>
+        </label>
+        <div className={styles.toolbar}>
+          <button type="submit" className={styles.btn}>שמירה</button>
+          <button type="button" className={styles.btnGhost} onClick={onClose}>אחר כך</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
   const { records, loading, error, reload, add, update } = useBizRecords(advisorId, 'marketing_month', period);
   const ideas = useBizRecords(advisorId, 'video_idea');
   const allMonths = useBizRecords(advisorId, 'marketing_month');
@@ -100,41 +141,51 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
     else await add({ tasks: [], ...change });
   }
 
+  const totalFollowers = growthMetrics[0].values[growthPeriods.indexOf(period)] ?? (baseline || 0) + metrics.followers;
+  const priorFollowers = (baseline || 0) + allMonths.records.filter(r => r.period < period).reduce((sum, r) => sum + marketingMetrics(r.data || {}).followers, 0);
+  const lastNetworks = data.networks || [...allMonths.records].filter(r => r.period <= period && r.data?.networks).sort((a, b) => b.period.localeCompare(a.period))[0]?.data.networks || {};
+
+  function saveNetworks(networks, boosts) {
+    const total = Object.values(networks).reduce((sum, v) => sum + (Number(v) || 0), 0);
+    const change = { networks, boosts };
+    if (baseline == null) change.baseFollowers = total;
+    else change.followers = Math.max(0, total - priorFollowers);
+    patch(change);
+  }
+
   const tiles = [
-    { key: 'followers', label: 'עוקבים חדשים', value: String(metrics.followers), note: `סה״כ ${metrics.followers}`, formula: 'מספר העוקבים החדשים שנוספו בחודש' },
-    { key: 'meeting', label: 'עלות לפגישה', value: cost(metrics.costPerMeeting), note: `${metrics.meetings} פגישות התאמה`, formula: 'Boosts / פגישות התאמה' },
-    { key: 'client', label: 'עלות ללקוח', value: cost(metrics.costPerClient), note: `${metrics.closings} סגירות`, formula: 'Boosts / סגירות' },
-    { key: 'budget', label: 'תקציב החודש', value: fmt(metrics.budget), note: metrics.budget ? 'עוקבים ו-Boosts' : 'עוד לא הוזן', formula: 'תקציב לעוקבים + תקציב Boosts' }
+    { key: 'followers', label: 'עוקבים חדשים', value: String(metrics.followers), note: `סה״כ ${totalFollowers}` },
+    { key: 'follower', label: 'עלות לעוקב', value: cost(metrics.followers > 0 && metrics.boosts > 0 ? metrics.boosts / metrics.followers : null), note: 'בוסטים חלקי עוקבים חדשים' },
+    { key: 'meeting', label: 'עלות לפגישת התאמה', value: cost(metrics.costPerMeeting), note: `${metrics.meetings} פגישות התאמה` },
+    { key: 'client', label: 'עלות ללקוח', value: cost(metrics.costPerClient), note: `${metrics.closings} לקוחות נסגרו` }
   ];
 
   return (
     <div className={styles.stack}>
       <section className={styles.bigCard}>
         {header}
-        {baseline == null && (
-          <div className={styles.toolbar} style={{ background: 'var(--surface2,rgba(255,255,255,0.04))', borderRadius: 10, padding: '12px 14px', marginBottom: 4 }}>
-            <div style={{ flex: 1 }}>
-              <div className={styles.rowTitle}>בואו נתחיל</div>
-              <div className={styles.cardSub}>הזן כמה עוקבים יש לך כרגע כדי שהגרף יתחיל מהמספר האמיתי.</div>
-            </div>
-            <button type="button" className={styles.btn} onClick={() => setModal('baseline')}>הזנת עוקבים התחלתיים</button>
-          </div>
-        )}
-        <div className={styles.sectionLabel}>התקדמות תוכנית השיווק</div>
-        <div className={styles.bigNumber}>{Math.round((progress.rate || 0) * 100)}%</div>
-        <p className={styles.cardSub}>{progress.done} מתוך {progress.total} משימות בוצעו</p>
-        <div className={styles.progress} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((progress.rate || 0) * 100)} aria-label="התקדמות תוכנית השיווק">
-          <div className={styles.progressFill} style={{ width: (progress.rate || 0) * 100 + '%' }} />
+        <div className={styles.cardHead}>
+          <div className={styles.sectionLabel}>החודש במספרים</div>
+          <span className={styles.toolbar}><span className={styles.rowMeta}>בוסטים: {fmt(metrics.boosts)}</span>{baseline != null && <button type="button" className={styles.btnGhost} onClick={() => setModal('networks')}>עדכון עוקבים</button>}</span>
         </div>
-        <div className={styles.tileGrid4} style={{ marginTop: 18 }}>
+        <div className={styles.tileGrid4}>
           {tiles.map(t => (
-            <div key={t.key} className={styles.stat} title={t.formula}>
+            <div key={t.key} className={styles.stat}>
               <div className={styles.statLabel}>{t.label}</div>
               <div className={styles.statValue}>{t.value}</div>
               <div className={styles.statNote}>{t.note}</div>
             </div>
           ))}
         </div>
+        {baseline == null && (
+          <div className={styles.toolbar} style={{ background: 'var(--surface2,rgba(255,255,255,0.04))', borderRadius: 10, padding: '12px 14px', marginTop: 14 }}>
+            <div style={{ flex: 1 }}>
+              <div className={styles.rowTitle}>בואו נתחיל</div>
+              <div className={styles.cardSub}>כמה עוקבים יש לך היום בכל רשת? מכאן נחשב לבד כמה גדלת כל חודש, ואת העלות לעוקב, לפגישה וללקוח.</div>
+            </div>
+            <button type="button" className={styles.btn} onClick={() => setModal('networks')}>להתחיל</button>
+          </div>
+        )}
       </section>
 
       <TrendChart title="איך גדלתי" labels={growthPeriods.map(shortLabel)} metrics={growthMetrics} footnote={growthRange === 'month' ? '12 החודשים האחרונים' : growthRange === 'year' ? 'חודשי השנה' : 'כל התקופה'} controls={
@@ -143,19 +194,12 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
         </div>
       } />
 
-      <div className={styles.sectionLabel}>פרטי החודש</div>
-      <div className={styles.tileGrid4}>
+      <div className={styles.grid3}>
         <button type="button" className={styles.linkTile} onClick={() => setModal('tasks')}>
           <span className={styles.iconTile} aria-hidden="true">{icons.tasks}</span>
-          <span className={styles.linkTileTitle}>משימות החודש</span>
+          <span className={styles.linkTileTitle}>משימות שיווק</span>
           <span className={styles.linkTileValue}>{progress.done}/{progress.total}</span>
-          <span className={styles.rowMeta}>לחיצה לסימון ועריכה</span>
-        </button>
-        <button type="button" className={styles.linkTile} onClick={() => setModal('followers')}>
-          <span className={styles.iconTile} aria-hidden="true">{icons.users}</span>
-          <span className={styles.linkTileTitle}>נתוני עוקבים</span>
-          <span className={styles.linkTileValue}>{metrics.followers}</span>
-          <span className={styles.rowMeta}>{metrics.followers} החודש</span>
+          <span className={styles.rowMeta}>למי שרוצה: סימון ועריכה</span>
         </button>
         <button type="button" className={styles.linkTile} onClick={() => setModal('leads')}>
           <span className={styles.iconTile} aria-hidden="true">{icons.trend}</span>
@@ -167,14 +211,12 @@ function MonthBody({ advisorId, period, onNavigate, header }) {
           <span className={styles.iconTile} aria-hidden="true">{icons.bulb}</span>
           <span className={styles.linkTileTitle}>רעיונות לסרטונים</span>
           <span className={styles.linkTileValue}>{waiting} מחכים</span>
-          <span className={styles.rowMeta}>{published} פורסמו</span>
+          <span className={styles.rowMeta}>{published} בוצעו</span>
         </button>
       </div>
-      <p className={styles.note}>אלה משימות תוכנית השיווק של החודש. הכמויות ניתנות לעריכה ונשמרות לכל חודש בנפרד, וכל סימון מופיע גם במסך "מדדים חודשי".</p>
 
       {modal === 'tasks' && <TasksModal tasks={tasks} onChange={next => patch({ tasks: next })} onClose={() => setModal(null)} />}
-      {modal === 'followers' && <Modal title="נתוני עוקבים" onClose={() => setModal(null)}><NumberFields fields={FOLLOWER_FIELDS} data={data} onSave={patch} onClose={() => setModal(null)} /></Modal>}
-      {modal === 'baseline' && <Modal title="עוקבים בתחילת הדרך" onClose={() => setModal(null)}><NumberFields fields={BASELINE_FIELDS} data={data} onSave={patch} onClose={() => setModal(null)} /></Modal>}
+      {modal === 'networks' && <NetworksModal networks={lastNetworks} boosts={data.boosts} monthLabel={monthLabel} onSave={saveNetworks} onClose={() => setModal(null)} />}
       {modal === 'leads' && <Modal title="לידים משיווק" onClose={() => setModal(null)}><NumberFields fields={LEAD_FIELDS} data={data} onSave={patch} onClose={() => setModal(null)} /></Modal>}
     </div>
   );
@@ -187,10 +229,11 @@ export default function MarketingPlan({ advisorId, onNavigate }) {
     <MonthBody
       advisorId={advisorId}
       period={ymKey(ym.year, ym.month)}
+      monthLabel={`${monthName(ym.month)} ${ym.year}`}
       onNavigate={onNavigate}
       header={(
         <div className={styles.cardHead}>
-          <h3 className={styles.cardTitle}>משימות שיווק: {monthName(ym.month)} {ym.year}</h3>
+          <h3 className={styles.cardTitle}>שיווק: {monthName(ym.month)} {ym.year}</h3>
           <MonthPicker year={ym.year} month={ym.month} onChange={(year, month) => setYm({ year, month })} />
         </div>
       )}
