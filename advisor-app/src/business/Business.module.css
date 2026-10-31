@@ -75,7 +75,7 @@
 .spacer { flex: 1; }
 
 .input, .select {
-  min-height: 40px;
+  min-height: var(--control-h);
   min-width: 0;
   border: 1px solid var(--control-border);
   border-radius: var(--radius-sm);
@@ -240,8 +240,8 @@
 }
 
 .viewHead { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); }
-.viewTitle { margin: 0; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.01em; }
-.viewHeading { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.01em; }
+.viewTitle { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+.viewHeading { margin: 0; font-size: 1.625rem; font-weight: 800; letter-spacing: -0.01em; }
 .bigPill, .bigPillOn { min-height: 40px; padding: 0 20px; border: 1px solid var(--border); border-radius: var(--radius-full); background: var(--surface); color: var(--text); font: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
 .bigPill:hover { border-color: var(--accent); color: var(--accent); }
 .bigPillOn { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }

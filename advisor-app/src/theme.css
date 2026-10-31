@@ -77,11 +77,12 @@
   --text-sm: 0.8rem;
   --text-base: 0.86rem;
   --text-md: 0.94rem;
-  --text-lg: 1.125rem;
+  --text-lg: 0.97rem;
   --text-xl: 1.3rem;
   --text-display-sm: 1.7rem;
   --text-display-md: 2rem;
   --text-stat: 1.5rem;
+  --control-h: 36px;
 
   /* spacing scale */
   --space-1: 4px;

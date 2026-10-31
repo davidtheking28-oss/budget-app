@@ -20,7 +20,7 @@
 }
 
 .select {
-  min-height: 40px;
+  min-height: var(--control-h);
   max-width: 180px;
   border: 1px solid var(--border);
   border-radius: 8px;

@@ -54,7 +54,7 @@
 .input {
   flex: 1;
   min-width: 140px;
-  min-height: 40px;
+  min-height: var(--control-h);
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--control-border);
