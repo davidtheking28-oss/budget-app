@@ -47,29 +47,35 @@ function FunnelStats({ s, title }) {
   return (
     <div className={styles.grid4} role="group" aria-label={title}>
       <div className={styles.stat}><div className={styles.statLabel}>לידים</div><div className={styles.statValue}>{s.total}</div><div className={styles.statNote}>נכנסו בתקופה</div></div>
-      <div className={styles.stat}><div className={styles.statLabel}>פגישות</div><div className={styles.statValue}>{s.meetings}</div><div className={styles.statNote}>לידים שנקבעה להם פגישה</div></div>
-      <div className={styles.stat}><div className={styles.statLabel}>הגיעו</div><div className={styles.statValue}>{s.showed}</div><div className={styles.statNote}>הגיעו לפגישה</div></div>
-      <div className={styles.stat}><div className={styles.statLabel}>פגישות רלוונטיות</div><div className={styles.statValue}>{s.relevant}</div><div className={styles.statNote}>מתוך שהגיעו</div></div>
-      <div className={styles.stat}><div className={styles.statLabel}>נסגרו</div><div className={styles.statValue}>{s.closed}</div><div className={styles.statNote}>לקוחות שנסגרו</div></div>
-      <div className={styles.stat}><div className={styles.statLabel}>אחוז הגעה</div><div className={styles.statValue}>{percentLabel(s.showRate)}</div><div className={styles.statNote}>{s.showed} הגיעו מתוך {s.total} לידים</div></div>
-      <div className={styles.stat}><div className={styles.statLabel}>אחוז רלוונטיות</div><div className={styles.statValue}>{percentLabel(s.relevantRate)}</div><div className={styles.statNote}>{s.relevant} רלוונטיים מתוך {s.showed} שהגיעו</div></div>
-      <div className={styles.stat}><div className={styles.statLabel}>אחוז סגירה</div><div className={styles.statValue}>{percentLabel(s.closeRate)}</div><div className={styles.statNote}>{s.closed} נסגרו מתוך {s.relevant} רלוונטיים</div></div>
+      <div className={styles.stat}><div className={styles.statLabel}>פגישות שנקבעו</div><div className={styles.statValue}>{s.meetings}</div><div className={styles.statNote}>מתוך {s.total} לידים</div></div>
+      <div className={styles.stat}><div className={styles.statLabel}>הגיעו לפגישה</div><div className={styles.statValue}>{s.showed}</div><div className={styles.statNote}>מתוך {s.total} לידים</div></div>
+      <div className={styles.stat}><div className={styles.statLabel}>פגישות רלוונטיות</div><div className={styles.statValue}>{s.relevant}</div><div className={styles.statNote}>מתוך {s.showed} שהגיעו</div></div>
+      <div className={styles.stat}><div className={styles.statLabel}>נסגרו</div><div className={styles.statValue}>{s.closed}</div><div className={styles.statNote}>מתוך {s.relevant} רלוונטיים</div></div>
+      <div className={styles.stat}><div className={styles.statLabel}>אחוז הגעה</div><div className={styles.statValue}>{percentLabel(s.showRate)}</div><div className={styles.statNote}>הגיעו / לידים</div></div>
+      <div className={styles.stat}><div className={styles.statLabel}>אחוז רלוונטיות</div><div className={styles.statValue}>{percentLabel(s.relevantRate)}</div><div className={styles.statNote}>רלוונטיים / הגיעו</div></div>
+      <div className={styles.stat}><div className={styles.statLabel}>אחוז סגירה</div><div className={styles.statValue}>{percentLabel(s.closeRate)}</div><div className={styles.statNote}>נסגרו / רלוונטיים</div></div>
     </div>
   );
 }
 
-function FunnelTable({ rows }) {
+const funnelCount = (s, value) => (s.total === 0 ? 'אין' : value);
+
+function FunnelTable({ rows, total }) {
   return (
     <div className={styles.tableWrap}>
       <table className={styles.table}>
-        <thead><tr><th>חודש</th><th>לידים</th><th>הגיעו</th><th>רלוונטיים</th><th>נסגרו</th><th>אחוז הגעה</th><th>אחוז רלוונטיות</th><th>אחוז סגירה</th></tr></thead>
+        <thead><tr><th>חודש</th><th>לידים</th><th>פגישות</th><th>הגיעו</th><th>פגישות רלוונטיות</th><th>נסגרו</th><th>אחוז הגעה</th><th>אחוז רלוונטיות</th><th>אחוז סגירה</th></tr></thead>
         <tbody>
           {rows.map(r => (
             <tr key={r.label}>
-              <td>{r.label}</td><td className={styles.num}>{count(r.s.total)}</td><td className={styles.num}>{count(r.s.showed)}</td><td className={styles.num}>{count(r.s.relevant)}</td><td className={styles.num}>{count(r.s.closed)}</td>
+              <td>{r.label}</td><td className={styles.num}>{funnelCount(r.s, r.s.total)}</td><td className={styles.num}>{funnelCount(r.s, r.s.meetings)}</td><td className={styles.num}>{funnelCount(r.s, r.s.showed)}</td><td className={styles.num}>{funnelCount(r.s, r.s.relevant)}</td><td className={styles.num}>{funnelCount(r.s, r.s.closed)}</td>
               <td className={styles.num}>{percentLabel(r.s.showRate)}</td><td className={styles.num}>{percentLabel(r.s.relevantRate)}</td><td className={styles.num}>{percentLabel(r.s.closeRate)}</td>
             </tr>
           ))}
+          <tr>
+            <td><strong>סה״כ לתקופה</strong></td><td className={styles.num}>{funnelCount(total, total.total)}</td><td className={styles.num}>{funnelCount(total, total.meetings)}</td><td className={styles.num}>{funnelCount(total, total.showed)}</td><td className={styles.num}>{funnelCount(total, total.relevant)}</td><td className={styles.num}>{funnelCount(total, total.closed)}</td>
+            <td className={styles.num}>{percentLabel(total.showRate)}</td><td className={styles.num}>{percentLabel(total.relevantRate)}</td><td className={styles.num}>{percentLabel(total.closeRate)}</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -144,6 +150,7 @@ function SalesBody({ advisorId, ym, scope }) {
     { key: 'total', label: 'לידים', values: months.map(s => s.total), format: plain },
     { key: 'meetings', label: 'פגישות', values: months.map(s => s.meetings), format: plain },
     { key: 'showed', label: 'הגיעו', values: months.map(s => s.showed), format: plain },
+    { key: 'relevant', label: 'פגישות רלוונטיות', values: months.map(s => s.relevant), format: plain },
     { key: 'closed', label: 'נסגרו', values: months.map(s => s.closed), format: plain },
     { key: 'showRate', label: 'אחוז הגעה', values: months.map(s => pct(s.showRate)), format: percent },
     { key: 'relevantRate', label: 'אחוז רלוונטיות', values: months.map(s => pct(s.relevantRate)), format: percent },
@@ -154,7 +161,7 @@ function SalesBody({ advisorId, ym, scope }) {
     <>
       <FunnelStats s={stats} title="מדדי מכירות" />
       <TrendChart labels={periods.map(shortLabel)} metrics={chartMetrics} footnote={footnoteOf(scope, stats.total)} />
-      <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : scope === 'month' ? '12 החודשים האחרונים' : 'חודשי התקופה'}</h3></div><FunnelTable rows={rows} /></section>
+      <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : scope === 'month' ? '12 החודשים האחרונים' : 'חודשי התקופה'}</h3></div><FunnelTable rows={rows} total={funnelStats(prospects.filter(l => periods.includes(leadMonthKey(l))))} /><p className={styles.note}>הכול נספר לפי חודש כניסת הליד. שורת הסיכום מחשבת כל אחוז מתוך הסכומים של כל התקופה, ולא כממוצע של האחוזים החודשיים.</p></section>
     </>
   );
 }

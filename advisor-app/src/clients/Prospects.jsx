@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useProspects } from './useProspects.js';
+import { funnelStats, percentLabel } from '../business/bizMath.js';
 import { formatDate, localISODate } from '../budget/monthUtils.js';
-import { CardGrid, Card } from '../components/Rows.jsx';
 import HeaderAction from '../business/HeaderAction.jsx';
 import Modal from '../business/Modal.jsx';
-import Button from '../components/Button.jsx';
-import EditButton from '../components/EditButton.jsx';
-import DeleteButton from '../components/DeleteButton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import { useUrlParam } from '../useUrlParam.js';
@@ -14,22 +11,36 @@ import styles from './Prospects.module.css';
 import biz from '../business/Business.module.css';
 
 const STATUSES = [
-  { key: 'new', label: 'חדש', tone: 'info' },
-  { key: 'no_answer', label: 'אין מענה', tone: 'warn' },
-  { key: 'followup', label: 'פולואפ', tone: 'warn' },
-  { key: 'closed', label: 'נסגר', tone: 'done' },
-  { key: 'relevant_not_closed', label: 'רלוונטי ולא נסגר', tone: 'muted' },
-  { key: 'not_relevant', label: 'לא רלוונטי ולא נסגר', tone: 'muted' }
+  { key: 'new', label: 'חדש', color: 'var(--accent)' },
+  { key: 'no_answer', label: 'אין מענה', color: 'var(--yellow)' },
+  { key: 'followup', label: 'פולואפ', color: 'var(--purple, #8b5cf6)' },
+  { key: 'closed', label: 'נסגר', color: 'var(--green)' },
+  { key: 'relevant_not_closed', label: 'רלוונטי ולא נסגר', color: 'var(--orange, #c27c0e)' },
+  { key: 'not_relevant', label: 'לא רלוונטי ולא נסגר', color: 'var(--red)' }
 ];
-const OPEN_STATUSES = ['new', 'no_answer', 'followup'];
 const SOURCES = ['דף נחיתה', 'הודעות בפרטי', 'פה לאוזן · לקוח ישן', 'המלצה', 'אחר'];
 const EMPTY = { status: 'new', name: '', phone: '', email: '', source: '', notes: '', contacted_at: '', meeting_date: '', meeting_time: '', attempts: 0, attendance_confirmed: false, showed: false, relevant: false, closed: false };
+const AUTOSAVE_MS = 500;
 
-const statusInfo = key => STATUSES.find(s => s.key === key) || STATUSES[0];
+const toRow = (form, today) => ({
+  name: form.name.trim(),
+  phone: form.phone.trim() || null,
+  email: form.email.trim() || null,
+  source: form.source.trim() || null,
+  notes: form.notes.trim() || null,
+  contacted_at: form.contacted_at || today,
+  meeting_date: form.meeting_date || null,
+  meeting_time: form.meeting_time || null,
+  attempts: form.attempts,
+  attendance_confirmed: form.attendance_confirmed,
+  showed: form.showed,
+  relevant: form.relevant,
+  closed: form.closed,
+  status: form.status
+});
 
 export default function Prospects({ advisorId, onConvert }) {
   const { prospects, loading, error, reload, addProspect, updateProspect, deleteProspect } = useProspects(advisorId);
-  const [filter, setFilter] = useUrlParam('pf', 'open');
   const [sourceFilter, setSourceFilter] = useUrlParam('ps', 'all');
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState(null);
@@ -37,14 +48,15 @@ export default function Prospects({ advisorId, onConvert }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const nameRef = useRef(null);
-  const statusFiltersRef = useRef(null);
   const restoreId = useRef(null);
+  const saveTimer = useRef(null);
+  const pending = useRef(null);
 
   useEffect(() => {
     if (editingId != null) {
       nameRef.current?.focus();
     } else if (restoreId.current != null) {
-      document.querySelector(`[data-edit-prospect="${restoreId.current}"]`)?.focus();
+      document.querySelector(`[data-open-prospect="${restoreId.current}"]`)?.focus();
       restoreId.current = null;
     }
   }, [editingId]);
@@ -53,11 +65,11 @@ export default function Prospects({ advisorId, onConvert }) {
   if (loading) return <Skeleton height="220px" radius="16px" />;
 
   const today = localISODate();
-  const open = prospects.filter(p => OPEN_STATUSES.includes(p.status));
-  const byStatus = filter === 'all' ? prospects : filter === 'open' ? open : prospects.filter(p => p.status === filter);
-  const bySource = sourceFilter === 'all' ? byStatus : byStatus.filter(p => (p.source || '') === sourceFilter);
+  const bySource = sourceFilter === 'all' ? prospects : prospects.filter(p => (p.source || '') === sourceFilter);
   const visible = search.trim() ? bySource.filter(p => [p.name, p.phone, p.email].some(v => (v || '').includes(search.trim()))) : bySource;
   const usedSources = [...new Set(prospects.map(p => p.source).filter(Boolean))];
+  const stats = funnelStats(prospects);
+  const closeOfAll = stats.showed > 0 ? stats.closed / stats.showed : null;
 
   function startEdit(p) {
     setEditingId(p.id);
@@ -65,48 +77,66 @@ export default function Prospects({ advisorId, onConvert }) {
     setForm({ status: p.status || 'new', name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', meeting_date: p.meeting_date || '', meeting_time: p.meeting_time || '', attempts: p.attempts || 0, attendance_confirmed: !!p.attendance_confirmed, showed: !!p.showed, relevant: !!p.relevant, closed: !!p.closed });
   }
 
+  function flush() {
+    clearTimeout(saveTimer.current);
+    if (pending.current) {
+      const { id, next } = pending.current;
+      pending.current = null;
+      updateProspect(id, toRow(next, today));
+    }
+  }
+
   function reset() {
+    flush();
     restoreId.current = editingId;
     setEditingId(null);
     setForm(EMPTY);
     setModalOpen(false);
   }
 
-  async function changeStatus(id, status) {
-    const stillShown = filter === 'all' || (filter === 'open' ? OPEN_STATUSES.includes(status) : status === filter);
-    await updateProspect(id, { status });
-    if (!stillShown) statusFiltersRef.current?.querySelector('[aria-pressed="true"]')?.focus();
+  function patchForm(patch) {
+    const next = { ...form, ...patch };
+    setForm(next);
+    if (editingId != null && next.name.trim()) {
+      pending.current = { id: editingId, next };
+      clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(flush, AUTOSAVE_MS);
+    }
   }
 
   async function submit() {
     if (!form.name.trim()) return;
     setSaving(true);
-    const row = {
-      name: form.name.trim(),
-      phone: form.phone.trim() || null,
-      email: form.email.trim() || null,
-      source: form.source.trim() || null,
-      notes: form.notes.trim() || null,
-      contacted_at: form.contacted_at || today,
-      meeting_date: form.meeting_date || null,
-      meeting_time: form.meeting_time || null,
-      attempts: form.attempts,
-      attendance_confirmed: form.attendance_confirmed,
-      showed: form.showed,
-      relevant: form.relevant,
-      closed: form.closed,
-      status: form.status
-    };
-    const ok = editingId != null ? await updateProspect(editingId, row) : await addProspect(row);
+    const ok = await addProspect(toRow(form, today));
     setSaving(false);
     if (ok) reset();
   }
+
+  async function remove() {
+    clearTimeout(saveTimer.current);
+    pending.current = null;
+    const id = editingId;
+    reset();
+    await deleteProspect(id);
+  }
+
+  const editing = editingId != null;
+  const editedProspect = editing ? prospects.find(p => p.id === editingId) : null;
 
   return (
     <div className={styles.page}>
       <h1 className={styles.srOnly}>מתעניינים</h1>
       <HeaderAction targetId="biz-header-sub" fallback={false}><p className={biz.headSub}>{prospects.length} לידים במערכת</p></HeaderAction>
       <HeaderAction><button type="button" className={biz.btn} onClick={() => { setForm(EMPTY); setEditingId(null); setModalOpen(true); }}>+ הוסף ליד</button></HeaderAction>
+
+      <div className={biz.grid4} role="group" aria-label="מדדי מכירות" style={{ marginBottom: 'var(--space-3)' }}>
+        <div className={biz.stat}><div className={biz.statLabel}>פגישות התאמה שנקבעו</div><div className={biz.statValue}>{stats.meetings}</div><div className={biz.statNote}>מתוך {stats.total} לידים</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>אחוז הגעה לשיחות</div><div className={biz.statValue}>{percentLabel(stats.showRate)}</div><div className={biz.statNote}>{stats.showed} הגיעו מתוך {stats.total} לידים</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>אחוז רלוונטיות</div><div className={biz.statValue}>{percentLabel(stats.relevantRate)}</div><div className={biz.statNote}>{stats.relevant} רלוונטיים מתוך {stats.showed}</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>אחוז סגירה</div><div className={biz.statValue}>{percentLabel(stats.closeRate)}</div><div className={biz.statNote}>{stats.closed} נסגרו מתוך {stats.relevant} רלוונטיים</div></div>
+        <div className={biz.stat}><div className={biz.statLabel}>אחוז סגירה מכל השיחות</div><div className={biz.statValue}>{percentLabel(closeOfAll)}</div><div className={biz.statNote}>{stats.closed} נסגרו מתוך {stats.showed} שהגיעו</div></div>
+      </div>
+
       <div className={biz.toolbar} style={{ marginBottom: 'var(--space-3)' }}>
         <input className={biz.input + ' ' + biz.inputGrow} type="search" placeholder="חיפוש ליד..." aria-label="חיפוש ליד" value={search} onChange={e => setSearch(e.target.value)} />
         <select className={styles.tempSelect} aria-label="סינון לפי מקור" value={sourceFilter} onChange={e => setSourceFilter(e.target.value)}>
@@ -115,92 +145,72 @@ export default function Prospects({ advisorId, onConvert }) {
         </select>
       </div>
 
-      <CardGrid single>
-        <Card title="מתעניינים">
-          <div className={styles.filterBar}>
-            <div ref={statusFiltersRef} className={styles.filters} role="group" aria-label="סינון לפי סטטוס">
-              {[{ key: 'open', label: 'פתוחים' }, ...STATUSES, { key: 'all', label: 'הכול' }].map(f => (
-                <button key={f.key} type="button" className={styles.filter + (filter === f.key ? ' ' + styles.filterOn : '')} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>{f.label}</button>
-              ))}
-            </div>
-          </div>
-
-          {visible.length === 0 ? (
-            <div className={styles.empty}>{prospects.length === 0 ? 'עוד לא נרשמו מתעניינים' : 'אין מתעניינים בסינון הזה'}</div>
-          ) : visible.map(p => {
-            return (
-              <div key={p.id} className={styles.row}>
-                <div className={styles.main}>
-                  <div className={styles.name}>{p.name}</div>
-                  <div className={styles.sub}>
-                    {[p.source, p.contacted_at && `פנה ב-${formatDate(p.contacted_at)}`].filter(Boolean).join(' · ')}
-                  </div>
-                  {(p.phone || p.email) && (
-                    <div className={styles.contact}>
-                      {p.phone && <a href={`tel:${p.phone}`} dir="ltr">{p.phone}</a>}
-                      {p.email && <a href={`mailto:${p.email}`} dir="ltr">{p.email}</a>}
-                    </div>
-                  )}
-                  {p.notes && <div className={styles.notes}>{p.notes}</div>}
-                </div>
-                <div className={styles.side}>
-                  <select className={styles.status + ' ' + styles[statusInfo(p.status).tone]} aria-label={`סטטוס · ${p.name}`} value={p.status} onChange={e => changeStatus(p.id, e.target.value)}>
-                    {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
-                  </select>
-                  {p.status !== 'not_relevant' && (
-                    <Button variant="ghost" className={styles.convertBtn + (p.status === 'closed' ? ' ' + styles.convertBtnOn : '')} onClick={() => onConvert(p)} aria-label={`פתח כלקוח · ${p.name}`}>פתח כלקוח</Button>
-                  )}
-                  <span className={styles.icons}>
-                    {[['showed', 'הגיע'], ['relevant', 'רלוונטי'], ['closed', 'נסגר']].map(([key, label]) => (
-                      <label key={key} className={biz.toolbar} style={{ gap: 4, fontSize: 'var(--text-xs)', fontWeight: 700 }}>
-                        <input type="checkbox" className={biz.check} checked={!!p[key]} aria-label={label + ' · ' + p.name} onChange={e => updateProspect(p.id, { [key]: e.target.checked })} />{label}
-                      </label>
-                    ))}
-                    <EditButton title={`ערוך · ${p.name}`} data-edit-prospect={p.id} onClick={() => startEdit(p)} />
-                    <DeleteButton title={`מחק · ${p.name}`} onClick={() => deleteProspect(p.id)} />
-                  </span>
-                </div>
+      <div className={styles.board}>
+        {STATUSES.map(s => {
+          const cards = visible.filter(p => (p.status || 'new') === s.key);
+          return (
+            <section key={s.key} className={styles.column} aria-label={s.label}>
+              <div className={styles.columnHead}>
+                <span className={styles.columnTitle}><span className={styles.dot} style={{ background: s.color }} aria-hidden="true" />{s.label}</span>
+                <span className={styles.columnCount}>{cards.length}</span>
               </div>
-            );
-          })}
-        </Card>
-      </CardGrid>
+              {cards.length === 0 ? <div className={styles.columnEmpty}>אין</div> : cards.map(p => (
+                <button key={p.id} type="button" className={styles.leadCard} data-open-prospect={p.id} onClick={() => startEdit(p)} aria-label={'פתח ליד: ' + p.name}>
+                  <span className={styles.leadName}>{p.name}</span>
+                  <span className={styles.leadMeta}>{p.contacted_at ? 'נכנס ' + formatDate(p.contacted_at) : ''}</span>
+                </button>
+              ))}
+            </section>
+          );
+        })}
+      </div>
+      <p className={biz.note}>כל המדדים למעלה מתעדכנים אוטומטית מטבלת הלידים.</p>
+
       {modalOpen && (
-        <Modal title={editingId != null ? 'עריכת ליד' : 'ליד חדש'} onClose={reset} wide>
-          <form className={biz.formGrid} onSubmit={e => { e.preventDefault(); submit(); }}>
-            <label className={biz.fieldLabel}>שם מלא<input ref={nameRef} className={biz.input} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label>
+        <Modal title={editing ? 'עריכת ליד: ' + form.name : 'ליד חדש'} onClose={reset} wide>
+          <form className={biz.formGrid} onSubmit={e => { e.preventDefault(); if (!editing) submit(); }}>
+            <label className={biz.fieldLabel}>שם מלא<input ref={nameRef} className={biz.input} value={form.name} onChange={e => patchForm({ name: e.target.value })} /></label>
             <div className={biz.formRow}>
-              <label className={biz.fieldLabel}>טלפון<input className={biz.input} dir="ltr" inputMode="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></label>
-              <label className={biz.fieldLabel}>אימייל<input className={biz.input} dir="ltr" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></label>
+              <label className={biz.fieldLabel}>טלפון<input className={biz.input} dir="ltr" inputMode="tel" value={form.phone} onChange={e => patchForm({ phone: e.target.value })} /></label>
+              <label className={biz.fieldLabel}>אימייל<input className={biz.input} dir="ltr" type="email" value={form.email} onChange={e => patchForm({ email: e.target.value })} /></label>
             </div>
             <div className={biz.formRow}>
-              <label className={biz.fieldLabel}>מקור הגעה<select className={biz.select} value={form.source} onChange={e => setForm({ ...form, source: e.target.value })}><option value="">בחר מקור</option>{[...new Set([...SOURCES, form.source].filter(Boolean))].map(src => <option key={src} value={src}>{src}</option>)}</select></label>
-              <label className={biz.fieldLabel}>תאריך כניסת ליד<input className={biz.input} type="date" value={form.contacted_at} onChange={e => setForm({ ...form, contacted_at: e.target.value })} /></label>
+              <label className={biz.fieldLabel}>מקור הגעה<select className={biz.select} value={form.source} onChange={e => patchForm({ source: e.target.value })}><option value="">בחר מקור</option>{[...new Set([...SOURCES, form.source].filter(Boolean))].map(src => <option key={src} value={src}>{src}</option>)}</select></label>
+              <label className={biz.fieldLabel}>תאריך כניסת ליד<input className={biz.input} type="date" value={form.contacted_at} onChange={e => patchForm({ contacted_at: e.target.value })} /></label>
             </div>
             <div className={biz.formRow}>
-              <label className={biz.fieldLabel}>תאריך פגישת התאמה<input className={biz.input} type="date" value={form.meeting_date} onChange={e => setForm({ ...form, meeting_date: e.target.value })} /></label>
-              <label className={biz.fieldLabel}>שעת הפגישה<input className={biz.input} type="time" value={form.meeting_time} onChange={e => setForm({ ...form, meeting_time: e.target.value })} /></label>
+              <label className={biz.fieldLabel}>תאריך פגישת התאמה<input className={biz.input} type="date" value={form.meeting_date} onChange={e => patchForm({ meeting_date: e.target.value })} /></label>
+              <label className={biz.fieldLabel}>שעת הפגישה<input className={biz.input} type="time" value={form.meeting_time} onChange={e => patchForm({ meeting_time: e.target.value })} /></label>
             </div>
             <div className={biz.formRow}>
-              <label className={biz.fieldLabel}>שלב<select className={biz.select} value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>{STATUSES.map(st => <option key={st.key} value={st.key}>{st.label}</option>)}</select></label>
+              <label className={biz.fieldLabel}>שלב<select className={biz.select} value={form.status} onChange={e => patchForm({ status: e.target.value })}>{STATUSES.map(st => <option key={st.key} value={st.key}>{st.label}</option>)}</select></label>
               <div className={biz.fieldLabel}>ניסיונות מענה
                 <div className={biz.toolbar}>
-                  <button type="button" className={biz.iconBtn} aria-label="הורדה" onClick={() => setForm({ ...form, attempts: Math.max(0, form.attempts - 1) })}>−</button>
+                  <button type="button" className={biz.iconBtn} aria-label="הורדה" onClick={() => patchForm({ attempts: Math.max(0, form.attempts - 1) })}>−</button>
                   <strong className={biz.num} aria-live="polite">{form.attempts}</strong>
-                  <button type="button" className={biz.btnGhost} onClick={() => setForm({ ...form, attempts: Math.min(50, form.attempts + 1) })}>עוד ניסיון</button>
+                  <button type="button" className={biz.btnGhost} onClick={() => patchForm({ attempts: Math.min(50, form.attempts + 1) })}>עוד ניסיון</button>
                 </div>
               </div>
             </div>
             <div className={biz.formRow}>
               {[['attendance_confirmed', 'וידא הגעה לפגישת ההתאמה'], ['showed', 'הגיע לשיחה'], ['relevant', 'רלוונטי'], ['closed', 'נסגר']].map(([key, label]) => (
-                <label key={key} className={biz.toolbar}><input type="checkbox" className={biz.check} checked={form[key]} onChange={e => setForm({ ...form, [key]: e.target.checked })} />{label}</label>
+                <label key={key} className={biz.toolbar}><input type="checkbox" className={biz.check} checked={form[key]} onChange={e => patchForm({ [key]: e.target.checked })} />{label}</label>
               ))}
             </div>
-            <label className={biz.fieldLabel}>פירוט שיחה<textarea className={biz.input + ' ' + biz.textarea} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></label>
-            <div className={biz.toolbar}>
-              <button type="submit" className={biz.btn} disabled={saving || !form.name.trim()}>{editingId != null ? 'שמור' : 'הוספת ליד'}</button>
-              <button type="button" className={biz.btnGhost} onClick={reset}>ביטול</button>
-            </div>
+            <label className={biz.fieldLabel}>פירוט שיחה<textarea className={biz.input + ' ' + biz.textarea} placeholder="מצב נוכחי, כאב מרכזי, מטרות, התנגדויות, מה סוכם..." value={form.notes} onChange={e => patchForm({ notes: e.target.value })} /></label>
+            {editing ? (
+              <div className={biz.toolbar}>
+                <button type="button" className={biz.btn} onClick={reset}>סגירה</button>
+                {editedProspect && editedProspect.status !== 'not_relevant' && <button type="button" className={biz.btnGhost} onClick={() => onConvert(editedProspect)}>פתח כלקוח</button>}
+                <button type="button" className={biz.btnGhost} onClick={remove}>מחיקה</button>
+                <span className={biz.rowMeta}>כל שינוי נשמר לבד</span>
+              </div>
+            ) : (
+              <div className={biz.toolbar}>
+                <button type="submit" className={biz.btn} disabled={saving || !form.name.trim()}>הוספת ליד</button>
+                <button type="button" className={biz.btnGhost} onClick={reset}>ביטול</button>
+              </div>
+            )}
           </form>
         </Modal>
       )}

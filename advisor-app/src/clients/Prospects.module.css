@@ -297,3 +297,16 @@
   .dateInput { min-height: 44px; }
   .filter { min-height: 36px; }
 }
+
+.board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+.column { display: flex; flex-direction: column; gap: var(--space-2); min-height: 150px; padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.columnHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.columnTitle { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: var(--text-md); }
+.columnCount { color: var(--text2); font-weight: 700; font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.columnEmpty { margin: auto; color: var(--text3); }
+.leadCard { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface2); color: var(--text); font: inherit; text-align: start; cursor: pointer; }
+.leadCard:hover { border-color: var(--accent); }
+.leadCard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.leadName { font-weight: 700; }
+.leadMeta { color: var(--text2); font-size: var(--text-xs); }
