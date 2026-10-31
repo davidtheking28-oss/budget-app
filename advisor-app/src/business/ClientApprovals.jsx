@@ -1,26 +1,55 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient.js';
-import { usePendingInvites } from '../clients/usePendingInvites.js';
-import { useClientList } from '../clients/useClientList.js';
+import { useClientApprovals, TRASH_DAYS } from './useClientApprovals.js';
 import { INVITE_ERROR_MESSAGES } from '../clients/inviteMessages.js';
 import { toast } from '../toast.js';
 import Skeleton from '../components/Skeleton.jsx';
 import { formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
 
+const STATUS_LABEL = {
+  active: 'פעיל',
+  waitApproval: 'ממתין לאישור הלקוח',
+  waitSignup: 'ממתין להרשמה לאפליקציה',
+  blocked: 'חסום',
+  trashed: 'בפח'
+};
+
+const ACTIONS = {
+  end: { label: 'סיום ליווי', confirm: 'לסיים ליווי? החשבון והנתונים של הלקוח נשארים' },
+  block: { label: 'חסימה', confirm: 'לחסום? הלקוח יוסר מהרשימה ולא ניתן יהיה להזמין אותו' },
+  trash: { label: 'העברה לפח', confirm: 'להעביר לפח? אפשר לשחזר עד ' + TRASH_DAYS + ' יום' },
+  cancel: { label: 'ביטול הזמנה', confirm: 'לבטל את ההזמנה?' }
+};
+
+const ROW_ACTIONS = {
+  active: ['end', 'block', 'trash'],
+  waitApproval: ['cancel', 'block'],
+  waitSignup: ['cancel', 'block'],
+  blocked: [],
+  trashed: []
+};
+
 export default function ClientApprovals({ advisorId }) {
-  const { invites, loading, reload } = usePendingInvites(advisorId);
-  const { clients, loading: clientsLoading } = useClientList(advisorId);
+  const { links, archive, loading, reload } = useClientApprovals(advisorId);
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState('');
-  const [confirmingId, setConfirmingId] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const [confirming, setConfirming] = useState(null);
 
-  if (loading || clientsLoading) return <Skeleton height="220px" radius="18px" />;
+  if (loading) return <Skeleton height="220px" radius="18px" />;
 
-  const waitingApproval = invites.filter(i => i.client_id);
-  const waitingSignup = invites.filter(i => !i.client_id);
-  const visible = invites.filter(i => !search.trim() || (i.client_email || '').toLowerCase().includes(search.trim().toLowerCase()));
+  const rows = [
+    ...links.map(l => ({
+      key: 'l' + l.id, id: l.id, email: l.client_email || l.invited_email, createdAt: l.created_at,
+      kind: l.status === 'active' ? 'active' : l.client_id ? 'waitApproval' : 'waitSignup'
+    })),
+    ...archive.map(a => ({ key: 'a' + a.id, id: a.id, email: a.client_email, createdAt: a.created_at, kind: a.state === 'blocked' ? 'blocked' : 'trashed' }))
+  ];
+  const count = kind => rows.filter(r => r.kind === kind).length;
+  const needle = search.trim().toLowerCase();
+  const visible = rows.filter(r => (filter === 'all' || r.kind === filter) && (!needle || (r.email || '').toLowerCase().includes(needle)));
 
   async function invite() {
     const trimmed = email.trim();
@@ -35,20 +64,40 @@ export default function ClientApprovals({ advisorId }) {
     reload();
   }
 
-  async function cancel(id) {
-    setConfirmingId(null);
-    const { error } = await supabase.from('advisor_clients').delete().eq('id', id).eq('advisor_id', advisorId);
-    if (error) { toast('שגיאה בביטול ההזמנה', 'error'); return; }
-    toast('ההזמנה בוטלה', 'success');
+  async function run(row, action) {
+    setConfirming(null);
+    let error;
+    if (action === 'end' || action === 'cancel') {
+      ({ error } = await supabase.from('advisor_clients').delete().eq('id', row.id).eq('advisor_id', advisorId));
+    } else {
+      const res = await supabase.rpc('archive_advisor_client', { p_link: row.id, p_state: action === 'block' ? 'blocked' : 'trashed' });
+      error = res.error || (res.data !== 'ok' ? { message: res.data } : null);
+    }
+    if (error) { toast('הפעולה נכשלה, נסה שוב', 'error'); return; }
+    toast(action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
     reload();
   }
 
+  async function restore(row) {
+    const { data, error } = await supabase.rpc('restore_advisor_client', { p_archive: row.id });
+    if (error || data !== 'ok') { toast('הפעולה נכשלה, נסה שוב', 'error'); return; }
+    toast(row.kind === 'blocked' ? 'החסימה בוטלה' : 'שוחזר, נשלחה הזמנה חדשה ללקוח', 'success');
+    reload();
+  }
+
+  const tiles = [
+    { kind: 'waitApproval', label: 'ממתינים לאישור', note: 'נרשמו ולא אישרו את ההזמנה' },
+    { kind: 'waitSignup', label: 'ממתינים להרשמה', note: 'הוזמנו ועוד לא נרשמו' },
+    { kind: 'active', label: 'לקוחות פעילים', note: 'מחוברים אליך כרגע' },
+    { kind: 'blocked', label: 'חסומים', note: 'לא ניתן להזמין אותם' }
+  ];
+
   return (
     <div className={styles.stack}>
-      <div className={styles.grid3}>
-        <div className={styles.stat}><div className={styles.statLabel}>ממתינים לאישור</div><div className={styles.statValue}>{waitingApproval.length}</div><div className={styles.statNote}>נרשמו ולא אישרו את ההזמנה</div></div>
-        <div className={styles.stat}><div className={styles.statLabel}>ממתינים להרשמה</div><div className={styles.statValue}>{waitingSignup.length}</div><div className={styles.statNote}>הוזמנו ועוד לא נרשמו</div></div>
-        <div className={styles.stat}><div className={styles.statLabel}>לקוחות פעילים</div><div className={styles.statValue}>{clients.length}</div><div className={styles.statNote}>מחוברים אליך כרגע</div></div>
+      <div className={styles.grid4}>
+        {tiles.map(t => (
+          <div key={t.kind} className={styles.stat}><div className={styles.statLabel}>{t.label}</div><div className={styles.statValue}>{count(t.kind)}</div><div className={styles.statNote}>{t.note}</div></div>
+        ))}
       </div>
 
       <section className={styles.card}>
@@ -63,26 +112,41 @@ export default function ClientApprovals({ advisorId }) {
 
       <section className={styles.card}>
         <div className={styles.cardHead}>
-          <h2 className={styles.cardTitle}>הזמנות פתוחות</h2>
-          <input className={styles.input} type="search" placeholder="חיפוש לפי מייל..." aria-label="חיפוש הזמנה" value={search} onChange={e => setSearch(e.target.value)} />
+          <h2 className={styles.cardTitle}>ניהול משתמשים</h2>
+          <div className={styles.toolbar}>
+            <select className={styles.input} aria-label="סינון לפי סטטוס" value={filter} onChange={e => setFilter(e.target.value)}>
+              <option value="all">כל הסטטוסים</option>
+              {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            <input className={styles.input} type="search" placeholder="חיפוש לפי מייל..." aria-label="חיפוש משתמש" value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
         </div>
-        {visible.length === 0 ? <div className={styles.emptyState}><span>אין הזמנות פתוחות</span></div> : (
+        {visible.length === 0 ? <div className={styles.emptyState}><span>אין משתמשים להצגה</span></div> : (
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead><tr><th>אימייל</th><th>נשלח</th><th>סטטוס</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
               <tbody>
-                {visible.map(i => (
-                  <tr key={i.id}>
-                    <td dir="ltr" className={styles.rowMeta}>{i.client_email}</td>
-                    <td className={styles.num}>{formatDate(i.created_at.slice(0, 10))}</td>
-                    <td><span className={styles.tag}>{i.client_id ? 'ממתין לאישור הלקוח' : 'ממתין להרשמה לאפליקציה'}</span></td>
+                {visible.map(r => (
+                  <tr key={r.key}>
+                    <td dir="ltr" className={styles.rowMeta}>{r.email}</td>
+                    <td className={styles.num}>{formatDate(r.createdAt.slice(0, 10))}</td>
+                    <td><span className={styles.tag}>{STATUS_LABEL[r.kind]}</span></td>
                     <td>
-                      {confirmingId === i.id ? (
+                      {confirming?.key === r.key ? (
                         <div className={styles.toolbar}>
-                          <button type="button" className={styles.btnGhost} onClick={() => cancel(i.id)}>לאשר ביטול?</button>
-                          <button type="button" className={styles.btnGhost} onClick={() => setConfirmingId(null)}>חזרה</button>
+                          <button type="button" className={styles.btnGhost} onClick={() => run(r, confirming.action)}>{ACTIONS[confirming.action].confirm}</button>
+                          <button type="button" className={styles.btnGhost} onClick={() => setConfirming(null)}>חזרה</button>
                         </div>
-                      ) : <button type="button" className={styles.btnGhost} aria-label={'בטל הזמנה: ' + i.client_email} onClick={() => setConfirmingId(i.id)}>בטל הזמנה</button>}
+                      ) : (
+                        <div className={styles.toolbar}>
+                          {ROW_ACTIONS[r.kind].map(a => (
+                            <button key={a} type="button" className={styles.btnGhost} aria-label={ACTIONS[a].label + ': ' + r.email} onClick={() => setConfirming({ key: r.key, action: a })}>{ACTIONS[a].label}</button>
+                          ))}
+                          {(r.kind === 'blocked' || r.kind === 'trashed') && (
+                            <button type="button" className={styles.btnGhost} aria-label={(r.kind === 'blocked' ? 'ביטול חסימה: ' : 'שחזור: ') + r.email} onClick={() => restore(r)}>{r.kind === 'blocked' ? 'ביטול חסימה' : 'שחזור'}</button>
+                          )}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

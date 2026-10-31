@@ -167,6 +167,20 @@ export const supabase = {
       }];
       return { data: 'ok', error: null };
     }
+    if (fn === 'archive_advisor_client') {
+      const row = (db.advisor_clients || []).find(r => r.id === params.p_link);
+      if (!row) return { data: 'not_found', error: null };
+      db.advisor_client_archive = [...(db.advisor_client_archive || []), { id: 'arc' + Date.now(), advisor_id: row.advisor_id, client_id: row.client_id, client_email: row.client_email, state: params.p_state, created_at: new Date().toISOString() }];
+      db.advisor_clients = db.advisor_clients.filter(r => r !== row);
+      return { data: 'ok', error: null };
+    }
+    if (fn === 'restore_advisor_client') {
+      const row = (db.advisor_client_archive || []).find(r => r.id === params.p_archive);
+      if (!row) return { data: 'not_found', error: null };
+      if (row.state === 'trashed') db.advisor_clients = [...(db.advisor_clients || []), { id: 'inv' + Date.now(), advisor_id: row.advisor_id, client_id: row.client_id, client_email: row.client_email, invited_email: null, status: 'pending', created_at: new Date().toISOString() }];
+      db.advisor_client_archive = db.advisor_client_archive.filter(r => r !== row);
+      return { data: 'ok', error: null };
+    }
     return { data: null, error: { message: 'mock' } };
   },
   channel: () => { const chan = { on: () => chan, subscribe: () => chan }; return chan; },
