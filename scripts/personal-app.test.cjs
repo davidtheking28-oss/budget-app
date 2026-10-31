@@ -247,7 +247,7 @@ test('cloud normalization stamps legacy deletions and writes the normalized payl
  const ctx=insuranceContext();Object.assign(ctx,{goals:[],subscriptions:[],loans:[],payments:[],_syncShadow:{},_modeKey:k=>k,_fixRefinedCats:()=>false,scheduleCloudSave:()=>{ctx.queued=true;}});
  ctx._syncMeta={del:Object.fromEntries(['tx','goals','subs','loans','payments','fixed','insurances','budgets'].map(k=>[k,{}])),bu:{}};
  const start=html.indexOf('function _itemSig('),end=html.indexOf('_rebuildShadow();',start)+'_rebuildShadow();'.length;vm.runInContext(html.slice(start,end),ctx);
- ctx._migrateCats=()=>ctx._migrateInsuranceCats();vm.runInContext(html.match(/function _applyMerged\([^]*?\n\}/)[0],ctx);
+ ctx._migrateCats=()=>ctx._migrateInsuranceCats();vm.runInContext(html.match(/function _sanitizeIds\([^]*?\n\}/)[0],ctx);vm.runInContext(html.match(/function _applyMerged\([^]*?\n\}/)[0],ctx);
  const m={transactions:[],goals:[],subscriptions:[],loans:[],payments:[],fixed_expenses:[{id:'ביטוח בריאות',amount:120}],insurances:[],budgets:{}};
  assert.equal(ctx._applyMerged(m),true);assert.equal(m.fixed_expenses.length,0);assert.equal(m.insurances.length,1);assert.ok(m.insurances[0].u);assert.ok(ctx._syncMeta.del.fixed['ביטוח בריאות']);assert.equal(ctx.queued,true);
  assert.equal(JSON.parse(ctx.localStorage.getItem('budget_insurances'))[0].monthly,120);
@@ -255,7 +255,7 @@ test('cloud normalization stamps legacy deletions and writes the normalized payl
 });
 
 function backupContext(data){
- const ctx=functions(['importBackup'],{transactions:[{id:'keep',amount:10}],goals:[],subscriptions:[],budgets:{},loans:[],payments:[],fixedExpenses:[],insurances:[],userSettings:{name:'keep'},confirmSheet:async()=>true,saveData:()=>{},saveSettingsData:()=>{},refreshAll:()=>{},showPage:()=>{},document:{getElementById:()=>null},showToast:t=>{ctx.toast=t;},FileReader:class{readAsText(){this.done=this.onload({target:{result:JSON.stringify(data)}});ctx.done=this.done;}}});return ctx;
+ const ctx=functions(['importBackup','_sanitizeIds'],{transactions:[{id:'keep',amount:10}],goals:[],subscriptions:[],budgets:{},loans:[],payments:[],fixedExpenses:[],insurances:[],userSettings:{name:'keep'},confirmSheet:async()=>true,saveData:()=>{},saveSettingsData:()=>{},refreshAll:()=>{},showPage:()=>{},document:{getElementById:()=>null},showToast:t=>{ctx.toast=t;},FileReader:class{readAsText(){this.done=this.onload({target:{result:JSON.stringify(data)}});ctx.done=this.done;}}});return ctx;
 }
 test('malformed imported collections leave existing data untouched',async()=>{
  const ctx=backupContext({transactions:{bad:true},goals:[]});ctx.importBackup({files:[{}]});await ctx.done;assert.equal(ctx.transactions[0].id,'keep');assert.match(ctx.toast,/❌/);

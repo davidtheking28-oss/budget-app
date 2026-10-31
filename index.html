@@ -4595,10 +4595,10 @@ function _sanitizeIds(m){
     if(!Array.isArray(m[k])){if(m[k]!==undefined)m[k]=[];return;}
     for(let i=m[k].length-1;i>=0;i--){
       const r=m[k][i];
-      if(!r||typeof r!=='object'||Array.isArray(r)||(k==='transactions'&&(typeof r.date!=='string'||!Number.isFinite(Number(r.amount)))))m[k].splice(i,1);
+      if(!r||typeof r!=='object'||Array.isArray(r)||(k==='transactions'&&((r.date!==undefined&&typeof r.date!=='string')||(r.amount!==undefined&&!Number.isFinite(Number(r.amount))))))m[k].splice(i,1);
     }
     m[k].forEach(r=>{
-      const ok=typeof r.id==='number'?Number.isFinite(r.id):(typeof r.id==='string'&&/^[\w.|-]{1,80}$/.test(r.id));
+      const ok=typeof r.id==='number'?Number.isFinite(r.id):(typeof r.id==='string'&&/^[\p{L}\p{N} _.|:-]{1,80}$/u.test(r.id));
       if(!ok)r.id=Date.now()+Math.random();
     });
   });
