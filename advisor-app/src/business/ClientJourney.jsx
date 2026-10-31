@@ -4,6 +4,7 @@ import { toast } from '../toast.js';
 import { ONBOARDING, MEETINGS, readJourney, journeyProgress, cashflow, currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
 import { fmt } from '../format.js';
 import { localISODate } from '../budget/monthUtils.js';
+import { scheduleJourneyMeeting } from './journeyMeetings.js';
 import styles from './Business.module.css';
 
 export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpenClient }) {
@@ -53,26 +54,8 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
 
   async function setDate(key, date) {
     if (needClient()) return;
-    let meetingId = journey.meetings[key].meetingId || null;
-    if (!date) {
-      if (meetingId) {
-        const { error } = await supabase.from('advisor_meetings').delete().eq('id', meetingId).eq('advisor_id', advisorId);
-        if (error) { toast('שגיאה בעדכון הפגישה', 'error'); return; }
-        meetingId = null;
-      }
-    } else {
-      const scheduledAt = new Date(date + 'T10:00:00').toISOString();
-      const title = MEETINGS.find(m => m.key === key).title;
-      if (meetingId) {
-        const { error } = await supabase.from('advisor_meetings').update({ scheduled_at: scheduledAt, notes: title }).eq('id', meetingId).eq('advisor_id', advisorId);
-        if (error) { toast('שגיאה בעדכון הפגישה', 'error'); return; }
-      } else {
-        const { data, error } = await supabase.from('advisor_meetings').insert({ advisor_id: advisorId, client_id: clientId, scheduled_at: scheduledAt, notes: title, for_client: true }).select().single();
-        if (error) { toast('שגיאה בקביעת הפגישה', 'error'); return; }
-        meetingId = data.id;
-      }
-    }
-    setMeeting(key, { date, meetingId });
+    const next = await scheduleJourneyMeeting(advisorId, clientId, journey, key, date);
+    if (next) commit(next);
   }
 
   async function saveSummary(key) {

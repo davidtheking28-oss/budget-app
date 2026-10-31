@@ -3,7 +3,9 @@ import { useClientList } from '../clients/useClientList.js';
 import { useClientDeals } from './useClientDeals.js';
 import { percentLabel } from './bizMath.js';
 import ClientJourney from './ClientJourney.jsx';
-import { journeyProgress, currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
+import { MEETINGS, readJourney, journeyProgress, currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
+import { scheduleJourneyMeeting } from './journeyMeetings.js';
+import { toast } from '../toast.js';
 import HeaderAction from './HeaderAction.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -33,6 +35,7 @@ export default function ClientService({ advisorId, onSelect }) {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('active');
   const [openId, setOpenId] = useState(null);
+  const [meetingDraft, setMeetingDraft] = useState(null);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (deals.error) return <ErrorState onRetry={deals.reload} />;
@@ -42,6 +45,15 @@ export default function ClientService({ advisorId, onSelect }) {
   const opened = openId && dealByLink[openId];
   if (opened) return <ClientJourney key={openId} advisorId={advisorId} row={opened} saveDeal={deals.saveDeal} onBack={() => setOpenId(null)} onOpenClient={r => onSelect(r.client_id, r.client_email)} />;
   const journeyOf = c => dealByLink[c.id]?.deal?.journey;
+
+  async function registerMeeting(c) {
+    if (!c.client_id) { toast('הלקוח עוד לא מחובר, אי אפשר לשתף איתו', 'error'); return; }
+    const journey = readJourney(journeyOf(c));
+    const key = MEETINGS.find(m => m.title === nextMeeting(journey).title).key;
+    const next = await scheduleJourneyMeeting(advisorId, c.client_id, journey, key, meetingDraft.date);
+    if (!next) return;
+    if (await deals.saveDeal(dealByLink[c.id], { journey: next })) { setMeetingDraft(null); toast('הפגישה נרשמה', 'success'); }
+  }
   const allAttention = c => [...attentionOf(c), ...journeyAttention(journeyOf(c))];
   const statusOf = c => dealByLink[c.id]?.deal?.service_status || 'active';
   const needing = clients.filter(c => allAttention(c).length > 0);
@@ -85,7 +97,7 @@ export default function ClientService({ advisorId, onSelect }) {
         {visible.length === 0 ? <div className={styles.emptyState}><span>אין לקוחות בתצוגה הזו</span></div> : (
           <div className={styles.tableWrap}>
             <table className={styles.table + ' ' + styles.denseTable}>
-              <thead><tr><th>לקוח</th><th>שלב בתהליך</th><th>הפגישה הבאה</th><th>אחוז התקדמות</th><th>דברים שדורשים טיפול</th><th>סטטוס</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
+              <thead><tr><th>לקוח</th><th>הפגישה הבאה</th><th>אחוז התקדמות</th><th>דברים שדורשים טיפול</th><th>סטטוס</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
               <tbody>
                 {visible.map(c => {
                   const progress = journeyProgress(journeyOf(c));
@@ -95,9 +107,16 @@ export default function ClientService({ advisorId, onSelect }) {
                   const svc = SERVICE_STATUSES.find(s => s.key === statusOf(c));
                   return (
                     <tr key={c.id}>
-                      <td className={styles.nameCell} style={{ maxWidth: 200 }}><button type="button" className={styles.sortBtn} style={{ maxWidth: "100%" }} title={c.name || c.client_email} aria-label={"פתח מסע שירות: " + (c.name || c.client_email)} onClick={() => setOpenId(c.id)}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", unicodeBidi: "plaintext" }}>{c.name || c.client_email}</span></button></td>
-                      <td><span className={styles.rowMeta}>{currentStage(journeyOf(c))}</span></td>
-                      <td>{meetingDate ? <span className={styles.pillBtn + ' ' + styles.pillGood} style={{ cursor: 'default' }}>{formatDate(meetingDate)}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title : 'לא נקבעה'}</span>}</td>
+                      <td className={styles.nameCell} style={{ maxWidth: 200 }}><button type="button" className={styles.sortBtn} style={{ maxWidth: "100%" }} title={c.name || c.client_email} aria-label={"פתח מסע שירות: " + (c.name || c.client_email)} onClick={() => setOpenId(c.id)}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", unicodeBidi: "plaintext" }}>{c.name || c.client_email}</span></button><div className={styles.rowMeta}>{currentStage(journeyOf(c))}</div></td>
+                      <td>
+                        {meetingDraft?.id === c.id ? (
+                          <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
+                            <input className={styles.input} type="date" aria-label={'מועד הפגישה הבאה: ' + (c.name || c.client_email)} value={meetingDraft.date} onChange={e => setMeetingDraft({ ...meetingDraft, date: e.target.value })} />
+                            <button type="button" className={styles.btn} onClick={() => registerMeeting(c)}>שמירה</button>
+                            <button type="button" className={styles.btnGhost} onClick={() => setMeetingDraft(null)}>ביטול</button>
+                          </div>
+                        ) : meetingDate ? <span className={styles.pillBtn + ' ' + styles.pillGood} style={{ cursor: 'default' }}>{formatDate(meetingDate)}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title + ' · לא נקבעה' : 'הושלמו כל הפגישות'}</span>}
+                      </td>
                       <td style={{ minWidth: 170 }}>
                         <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
                           <div className={styles.progress} style={{ flex: 1 }}><div className={styles.progressFill} style={{ width: progress.rate * 100 + '%' }} /></div>
@@ -110,7 +129,7 @@ export default function ClientService({ advisorId, onSelect }) {
                           {SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
                       </td>
-                      <td><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M5 12h14M13 6l6 6-6 6" /></svg></button><button type="button" className={styles.iconBtn} aria-label={'פתח לקוח: ' + (c.name || c.client_email)} title="פתח לקוח" onClick={() => onSelect(c.client_id, c.client_email)}><svg {...svgProps}><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5" /></svg></button></td>
+                      <td><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>{upcoming && <button type="button" className={styles.iconBtn} aria-label={'רישום הפגישה הבאה של ' + (c.name || c.client_email)} title="רישום הפגישה הבאה" onClick={() => setMeetingDraft({ id: c.id, date: meetingDate })}><svg {...svgProps}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></svg></button>}</td>
                     </tr>
                   );
                 })}
