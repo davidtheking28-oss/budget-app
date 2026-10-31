@@ -27,13 +27,14 @@ function MarketingTable({ rows }) {
   return (
     <div className={styles.tableWrap}>
       <table className={styles.table}>
-        <thead><tr><th>חודש</th><th>עוקבים</th><th>עלות לעוקב</th><th>פגישות</th><th>עלות לפגישה</th><th>סגירות</th><th>עלות ללקוח</th><th>אחוז סגירה</th></tr></thead>
+        <thead><tr><th>חודש</th><th>פגישות רלוונטיות שהתקיימו</th><th>פגישות</th><th>לידים</th><th>עוקבים שנוספו</th><th>תקציב שיווק</th><th>עלות לעוקב</th><th>עלות לפגישה</th><th>עלות לפגישה רלוונטית</th><th>עלות ללקוח</th></tr></thead>
         <tbody>
           {rows.map(r => (
             <tr key={r.label}>
-              <td>{r.label}</td><td className={styles.num}>{count(r.m.followers)}</td><td className={styles.num}>{cost(r.m.costPerFollower)}</td>
-              <td className={styles.num}>{count(r.m.meetings)}</td><td className={styles.num}>{cost(r.m.costPerMeeting)}</td>
-              <td className={styles.num}>{count(r.m.closings)}</td><td className={styles.num}>{cost(r.m.costPerClient)}</td><td className={styles.num}>{percentLabel(r.m.closeRate)}</td>
+              <td>{r.label}</td><td className={styles.num}>{count(r.f.relevant)}</td><td className={styles.num}>{count(r.m.meetings)}</td>
+              <td className={styles.num}>{count(r.f.total)}</td><td className={styles.num}>{count(r.m.followers)}</td><td className={styles.num}>{fmt(r.m.budget)}</td>
+              <td className={styles.num}>{cost(r.m.costPerFollower)}</td><td className={styles.num}>{cost(r.m.costPerMeeting)}</td>
+              <td className={styles.num}>{cost(r.f.relevant > 0 ? r.m.boosts / r.f.relevant : null)}</td><td className={styles.num}>{cost(r.m.costPerClient)}</td>
             </tr>
           ))}
         </tbody>
@@ -96,7 +97,7 @@ function MarketingBody({ advisorId, ym, scope, onNavigate }) {
   const months = periods.map(p => marketingMetrics(byPeriod[p] || {}));
   const stats = scope === 'month' ? months[months.length - 1] : sumMarketing(periods.map(p => byPeriod[p] || {}));
   const yearLeads = prospects.filter(p => leadMonthKey(p).startsWith(String(ym.year)));
-  const rows = periods.map((p, i) => ({ label: scope === 'year' ? monthName(i) : monthName(Number(p.slice(5)) - 1) + ' ' + p.slice(0, 4), m: months[i] }));
+  const rows = periods.map((p, i) => ({ label: scope === 'year' ? monthName(i) : monthName(Number(p.slice(5)) - 1) + ' ' + p.slice(0, 4), m: months[i], f: funnelStats(prospects.filter(l => leadMonthKey(l) === p)) }));
   const chartMetrics = [
     { key: 'followers', label: 'כמות עוקבים', values: months.map(m => m.followers), format: plain },
     { key: 'costPerFollower', label: 'עלות לעוקב', values: months.map(m => Math.round(m.costPerFollower || 0)), format: money },
@@ -127,7 +128,7 @@ function MarketingBody({ advisorId, ym, scope, onNavigate }) {
         </>
       )}
       <TrendChart labels={periods.map(shortLabel)} metrics={chartMetrics} footnote={footnoteOf(scope, stats.followers)} />
-      <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : scope === 'month' ? '12 החודשים האחרונים' : 'חודשי התקופה'}</h3></div><MarketingTable rows={rows} /></section>
+      {scope !== 'month' && <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : 'חודשי התקופה'}</h3></div><MarketingTable rows={rows} /></section>}
     </>
   );
 }
