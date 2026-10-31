@@ -9,6 +9,8 @@ import Toaster from './components/Toaster.jsx';
 import QuickSwitcher from './components/QuickSwitcher.jsx';
 import Skeleton from './components/Skeleton.jsx';
 import ClientList from './clients/ClientList.jsx';
+import { signupMessage } from './business/clientApp.js';
+import { toast } from './toast.js';
 import { useTheme } from './useTheme.js';
 import { useUrlParam } from './useUrlParam.js';
 import Prospects from './clients/Prospects.jsx';
@@ -26,7 +28,6 @@ export default function App() {
   const [homeView, setHomeView] = useUrlParam('view', 'clients', legacyClient ? 'client-view' : 'clients', { history: true });
   const [viewClientId, setViewClientId] = useState(legacyClient);
   const [viewTab, setViewTab] = useState(legacyTab);
-  const [inviteDraft, setInviteDraft] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const isAdvisor = useIsAdvisor(session?.user?.id);
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
@@ -79,10 +80,10 @@ export default function App() {
         homeLinks={BUSINESS_NAV.filter(n => n.key !== 'clients').map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => setHomeView(n.key), icon: n.icon }))}
       >
         {activeHome === 'prospects'
-          ? <Prospects advisorId={session.user.id} onConvert={p => { setInviteDraft({ prospectId: p.id, email: p.email || '' }); setHomeView('clients'); }} />
+          ? <Prospects advisorId={session.user.id} onConvert={async () => { try { await navigator.clipboard.writeText(signupMessage(session.user.id)); toast('קישור ההרשמה הועתק, שלח אותו ללקוח', 'success'); } catch { toast('אפשר להעתיק את הקישור ממסך אישור לקוחות', 'info'); } setHomeView('client-approvals'); }} />
           : activeHome !== 'clients'
           ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} />
-          : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => openInView(clientId)} inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} />}
+          : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => openInView(clientId)} />}
       </Shell>
       <QuickSwitcher advisorId={session.user.id} onSelect={openInView} open={searchOpen} onOpenChange={setSearchOpen} />
       <Toaster />

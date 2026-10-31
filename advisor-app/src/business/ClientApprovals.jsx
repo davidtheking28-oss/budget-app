@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientApprovals, TRASH_DAYS } from './useClientApprovals.js';
-import { INVITE_ERROR_MESSAGES } from '../clients/inviteMessages.js';
 import { toast } from '../toast.js';
 import Families from './Families.jsx';
-import { CLIENT_APP_URL, signupMessage } from './clientApp.js';
+import { signupMessage } from './clientApp.js';
 import Skeleton from '../components/Skeleton.jsx';
 import { formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
@@ -41,12 +40,9 @@ const ROW_ACTIONS = {
 
 export default function ClientApprovals({ advisorId }) {
   const { links, archive, loading, reload } = useClientApprovals(advisorId);
-  const [email, setEmail] = useState('');
-  const [sending, setSending] = useState(false);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [confirming, setConfirming] = useState(null);
-  const [invitedEmail, setInvitedEmail] = useState('');
 
   if (loading) return <Skeleton height="220px" radius="18px" />;
 
@@ -60,20 +56,6 @@ export default function ClientApprovals({ advisorId }) {
   const count = kind => rows.filter(r => r.kind === kind).length;
   const needle = search.trim().toLowerCase();
   const visible = rows.filter(r => (filter === 'all' || r.kind === filter) && (!needle || (r.email || '').toLowerCase().includes(needle)));
-
-  async function invite() {
-    const trimmed = email.trim();
-    if (!trimmed) { toast('הזן כתובת אימייל', 'error'); return; }
-    setSending(true);
-    const { data, error } = await supabase.rpc('invite_client_by_email', { p_email: trimmed });
-    setSending(false);
-    if (error) { toast('שגיאה בשליחת ההזמנה, נסה שוב', 'error'); return; }
-    if (data !== 'ok') { toast(INVITE_ERROR_MESSAGES[data] || 'שגיאה בשליחת ההזמנה', 'error'); return; }
-    toast('ההזמנה נשמרה. עכשיו שלח ללקוח את ההודעה והקישור', 'success');
-    setInvitedEmail(trimmed);
-    setEmail('');
-    reload();
-  }
 
   async function run(row, action) {
     setConfirming(null);
@@ -99,8 +81,6 @@ export default function ClientApprovals({ advisorId }) {
     reload();
   }
 
-  const inviteMessage = 'היי, הזמנתי אותך להתחבר אליי באפליקציית התקציב: ' + CLIENT_APP_URL + ' . היכנס עם הכתובת ' + invitedEmail + ' ותאשר את ההזמנה שמחכה לך.';
-
   async function copySignupLink() {
     const message = signupMessage(advisorId);
     try {
@@ -111,20 +91,10 @@ export default function ClientApprovals({ advisorId }) {
     }
   }
 
-  async function copyInvite() {
-    try {
-      await navigator.clipboard.writeText(inviteMessage);
-      toast('ההודעה הועתקה, אפשר להדביק ללקוח', 'success');
-    } catch {
-      window.prompt('העתק את ההודעה ושלח ללקוח:', inviteMessage);
-    }
-  }
-
   const tiles = [
     { kinds: ['requested'], label: 'ממתינים לאישור', note: 'נרשמו דרך הקישור שלך' },
-    { kinds: ['waitApproval', 'waitSignup'], label: 'הזמנות שנשלחו', note: 'ממתינות להרשמה או לאישור הלקוח' },
     { kinds: ['active'], label: 'לקוחות פעילים', note: 'מחוברים אליך כרגע' },
-    { kinds: ['blocked'], label: 'חסומים', note: 'לא ניתן להזמין אותם' }
+    { kinds: ['blocked'], label: 'חסומים', note: 'לא יכולים להירשם דרך הקישור' }
   ];
 
   return (
@@ -144,21 +114,6 @@ export default function ClientApprovals({ advisorId }) {
           <button type="button" className={styles.btn} onClick={copySignupLink}>העתק קישור הזמנה</button>
           <a className={styles.btnGhost} style={{ textDecoration: 'none' }} href={'https://wa.me/?text=' + encodeURIComponent(signupMessage(advisorId))} target="_blank" rel="noopener noreferrer">שלח בוואטסאפ</a>
         </div>
-        <p className={styles.note} style={{ margin: 0 }}>או הזמן לקוח לפי כתובת מייל:</p>
-        <div className={styles.toolbar}>
-          <input className={styles.input + ' ' + styles.inputGrow} type="email" dir="ltr" placeholder="כתובת אימייל של הלקוח" aria-label="הזמן לקוח באימייל" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && invite()} />
-          <button type="button" className={styles.btn} onClick={invite} disabled={sending}>שלח הזמנה</button>
-        </div>
-        {invitedEmail && (
-          <div className={styles.stack} role="status">
-            <p className={styles.note} style={{ margin: 0 }}>ההזמנה ל-{invitedEmail} נשמרה. הלקוח לא מקבל מייל, ולכן שלח לו את ההודעה הזו:</p>
-            <p className={styles.cardSub} style={{ margin: 0 }}>{inviteMessage}</p>
-            <div className={styles.toolbar}>
-              <button type="button" className={styles.btn} onClick={copyInvite}>העתק הודעה</button>
-              <a className={styles.btnGhost} style={{ textDecoration: 'none' }} href={'https://wa.me/?text=' + encodeURIComponent(inviteMessage)} target="_blank" rel="noopener noreferrer">שלח בוואטסאפ</a>
-            </div>
-          </div>
-        )}
       </section>
 
       <section className={styles.card}>

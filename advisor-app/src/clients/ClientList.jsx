@@ -11,37 +11,21 @@ import Button from '../components/Button.jsx';
 import { toast } from '../toast.js';
 import styles from './ClientList.module.css';
 import ClientsTable from '../business/ClientsTable.jsx';
-import { INVITE_ERROR_MESSAGES } from './inviteMessages.js';
 
-export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUsed }) {
+export default function ClientList({ advisorId, onSelect }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
   const { invites: pendingInvites, reload: reloadInvites } = usePendingInvites(advisorId);
   const { leads, loading: leadsLoading, addLead, setStage: setLeadStage, deleteLead } = usePipeline(advisorId);
-  const { loading: prospectsLoading, error: prospectsError, updateProspect } = useProspects(advisorId);
-  const [linkedProspectId, setLinkedProspectId] = useState(null);
-  const draftHandled = useRef(null);
+  const { loading: prospectsLoading, error: prospectsError } = useProspects(advisorId);
   const [pipelineOpen, setPipelineOpen] = useState(false);
   const [code, setCode] = useState('');
-  const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [invitingEmail, setInvitingEmail] = useState(false);
   const [secondaryOpen, setSecondaryOpen] = useState(false);
   const [confirmingInviteId, setConfirmingInviteId] = useState(null);
   const codeInputRef = useRef(null);
-  const emailInputRef = useRef(null);
   const [addOpen, setAddOpen] = useState(false);
   useEffect(() => { if (addOpen) setSecondaryOpen(true); }, [addOpen]);
-  useEffect(() => { if (addOpen && secondaryOpen) emailInputRef.current?.focus(); }, [addOpen, secondaryOpen, loading]);
-
-  useEffect(() => {
-    if (!inviteDraft || draftHandled.current === inviteDraft) return;
-    draftHandled.current = inviteDraft;
-    setAddOpen(true);
-    setEmail(inviteDraft.email);
-    setLinkedProspectId(inviteDraft.prospectId);
-    if (!inviteDraft.email) toast('לפרט אימייל כדי להזמין את הלקוח', 'info');
-    onDraftUsed();
-  }, [inviteDraft, onDraftUsed]);
+  useEffect(() => { if (addOpen && secondaryOpen) codeInputRef.current?.focus(); }, [addOpen, secondaryOpen, loading]);
 
   async function claimCode() {
     const trimmed = code.trim().toUpperCase();
@@ -57,20 +41,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
     toast('הלקוח חובר בהצלחה', 'success');
     reload();
     setCode('');
-  }
-
-  async function inviteByEmail() {
-    const trimmed = email.trim();
-    if (!trimmed) { toast('הזן כתובת אימייל', 'error'); return; }
-    setInvitingEmail(true);
-    const { data, error } = await supabase.rpc('invite_client_by_email', { p_email: trimmed });
-    setInvitingEmail(false);
-    if (error) { console.error('invite_client_by_email', error); toast('שגיאה בשליחת ההזמנה, נסה שוב', 'error'); return; }
-    if (data !== 'ok') { toast(INVITE_ERROR_MESSAGES[data] || 'שגיאה בשליחת ההזמנה', 'error'); return; }
-    toast('ההזמנה נשלחה', 'success');
-    reloadInvites();
-    setEmail('');
-    if (linkedProspectId != null) { updateProspect(linkedProspectId, { status: 'closed' }); setLinkedProspectId(null); }
   }
 
   async function removeInvite(id) {
@@ -112,8 +82,8 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
             </svg>
           </div>
           <div className={styles.emptyTitle}>אין עדיין לקוחות מחוברים</div>
-          <div className={styles.emptyText}>שלח הזמנה לכתובת האימייל של הלקוח, או בקש ממנו ליצור קוד הזמנה בהגדרות האפליקציה שלו והדבק אותו כאן</div>
-          <Button className={styles.emptyCta} onClick={() => { setAddOpen(true); emailInputRef.current?.focus(); }}>הזמן לקוח ראשון</Button>
+          <div className={styles.emptyText}>שלח ללקוח קישור הרשמה ממסך "אישור לקוחות", או בקש ממנו ליצור קוד הזמנה בהגדרות האפליקציה שלו והדבק אותו כאן</div>
+          <Button className={styles.emptyCta} onClick={() => { setAddOpen(true); codeInputRef.current?.focus(); }}>חבר לקוח עם קוד</Button>
         </div>
       ) : (
         <ClientsTable advisorId={advisorId} onOpen={r => onSelect(r.client_id, r.client_email)} onRemove={removeClient} />
@@ -155,19 +125,6 @@ export default function ClientList({ advisorId, onSelect, inviteDraft, onDraftUs
             onKeyDown={e => e.key === 'Enter' && claimCode()}
           />
           <Button variant="ghost" onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
-          <input
-            ref={emailInputRef}
-            className={styles.addInput + ' ' + styles.addInputEmail}
-            type="email"
-            name="invite-email"
-            autoComplete="off"
-            aria-label="הזמן לקוח באימייל"
-            placeholder="הזמן לקוח באימייל"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && inviteByEmail()}
-          />
-          <Button onClick={inviteByEmail} disabled={invitingEmail}>הזמן</Button>
         </div>}
       </div>
 
