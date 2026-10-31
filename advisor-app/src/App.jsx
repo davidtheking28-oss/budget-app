@@ -9,9 +9,6 @@ import Toaster from './components/Toaster.jsx';
 import QuickSwitcher from './components/QuickSwitcher.jsx';
 import Skeleton from './components/Skeleton.jsx';
 import ClientList from './clients/ClientList.jsx';
-import Report from './budget/Report.jsx';
-import Presentation from './budget/Presentation.jsx';
-import { BudgetModeContext } from './budget/useClientBudget.js';
 import { useTheme } from './useTheme.js';
 import { useUrlParam } from './useUrlParam.js';
 import Prospects from './clients/Prospects.jsx';
@@ -30,7 +27,6 @@ export default function App() {
   const [viewClientId, setViewClientId] = useState(legacyClient);
   const [viewTab, setViewTab] = useState(legacyTab);
   const [inviteDraft, setInviteDraft] = useState(null);
-  const [fullscreen, setFullscreen] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const isAdvisor = useIsAdvisor(session?.user?.id);
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
@@ -59,27 +55,9 @@ export default function App() {
     setHomeView('client-view');
   };
 
-  const openFullscreen = type => ({ clientId, email, year, month, mode, tab }) => {
-    setViewClientId(clientId);
-    setViewTab(tab);
-    setFullscreen({ type, clientId, email, year, month, mode });
-  };
-
   const activeHome = BUSINESS_KEYS.includes(homeView) ? homeView : 'clients';
   const activeDept = deptOf(activeHome);
   const homeItem = BUSINESS_NAV.find(n => n.key === activeHome);
-
-  if (fullscreen) {
-    const Screen = fullscreen.type === 'report' ? Report : Presentation;
-    return (
-      <>
-        <BudgetModeContext.Provider value={fullscreen.mode}>
-          <Screen clientUserId={fullscreen.clientId} advisorId={session.user.id} year={fullscreen.year} month={fullscreen.month} email={fullscreen.email} onClose={() => setFullscreen(null)} />
-        </BudgetModeContext.Provider>
-        <Toaster />
-      </>
-    );
-  }
 
   return (
     <>
@@ -103,7 +81,7 @@ export default function App() {
         {activeHome === 'prospects'
           ? <Prospects advisorId={session.user.id} onConvert={p => { setInviteDraft({ prospectId: p.id, email: p.email || '' }); setHomeView('clients'); }} />
           : activeHome !== 'clients'
-          ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} onReport={openFullscreen('report')} onPresent={openFullscreen('present')} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} />
+          ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} />
           : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => openInView(clientId)} inviteDraft={inviteDraft} onDraftUsed={() => setInviteDraft(null)} onOpenProspects={() => setHomeView('prospects')} />}
       </Shell>
       <QuickSwitcher advisorId={session.user.id} onSelect={openInView} open={searchOpen} onOpenChange={setSearchOpen} />

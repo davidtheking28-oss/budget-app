@@ -45,7 +45,7 @@ function Heading({ title, text }) {
   );
 }
 
-export default function ClientView({ advisorId, clientId, initialTab, onClientChange, onReport, onPresent }) {
+export default function ClientView({ advisorId, clientId, initialTab, onClientChange }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
   const now = new Date();
   const [tab, setTab] = useState(TABS.some(t => t.key === initialTab) ? initialTab : 'mapping');
@@ -103,10 +103,8 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
     setMode(next);
   }
 
-  function openFullscreen(handler) {
-    if (!client || !leave()) return;
-    setDirty(false);
-    handler({ clientId: client.client_id, email: client.client_email, year: ym.year, month: ym.month, mode, tab });
+  function openInNewWindow() {
+    window.open(`${window.location.pathname}?view=client-view&client=${client.client_id}&nav=${tab}`, '_blank', 'noopener');
   }
 
   const monthModeBar = (
@@ -124,7 +122,6 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
       {CHIPS.map(c => (
         <button key={c.key} type="button" className={chip === c.key ? styles.pillOn : styles.pill} aria-pressed={chip === c.key} onClick={() => changeChip(c.key)}>{c.label}</button>
       ))}
-      {tab === 'mapping' && chip === 'main' && <a className={styles.pill} href="#mapping-upload">העלאת מסמכים</a>}
     </div>
   );
 
@@ -149,12 +146,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
             <button key={t.key} type="button" className={tab === t.key ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === t.key} onClick={() => changeTab(t.key)}>{t.label}</button>
           ))}
         </div>
-        {client && (
-          <div className={styles.toolbar}>
-            <Button variant="ghost" onClick={() => openFullscreen(onReport)}>דוח חודשי</Button>
-            <Button variant="ghost" onClick={() => openFullscreen(onPresent)}>תמונת מצב ללקוח</Button>
-          </div>
-        )}
+        {client && <Button variant="ghost" onClick={openInNewWindow}>פתיחה בחלון חדש</Button>}
       </div>
       {!client && (
         <section className={styles.card}>
