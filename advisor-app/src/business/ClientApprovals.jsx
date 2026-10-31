@@ -23,13 +23,14 @@ const ACTIONS = {
   end: { label: 'סיום ליווי', confirm: 'לסיים ליווי? החשבון והנתונים של הלקוח נשארים' },
   block: { label: 'חסימה', confirm: 'לחסום? הלקוח יוסר מהרשימה ולא ניתן יהיה להזמין אותו' },
   trash: { label: 'העברה לפח', confirm: 'להעביר לפח? אפשר לשחזר עד ' + TRASH_DAYS + ' יום' },
+  remove: { label: 'מחיקה', confirm: 'למחוק את הלקוח? פרטי העסקה שלו יימחקו' },
   cancel: { label: 'ביטול הזמנה', confirm: 'לבטל את ההזמנה?' },
   reject: { label: 'דחייה', confirm: 'לדחות את הבקשה?' }
 };
 
 const ROW_ACTIONS = {
   active: ['end', 'block', 'trash'],
-  manual: ['end', 'block', 'trash'],
+  manual: ['remove'],
   requested: ['approve', 'reject', 'block'],
   waitApproval: ['cancel', 'block'],
   waitSignup: ['cancel', 'block'],
@@ -49,7 +50,7 @@ export default function ClientApprovals({ advisorId }) {
 
   const rows = [
     ...links.map(l => ({
-      key: 'l' + l.id, id: l.id, email: l.client_email || l.invited_email, createdAt: l.created_at,
+      key: 'l' + l.id, id: l.id, email: l.client_email || l.invited_email || l.name, createdAt: l.created_at,
       kind: l.status === 'active' ? 'active' : l.status === 'manual' ? 'manual' : l.requested_by_client ? 'requested' : l.client_id ? 'waitApproval' : 'waitSignup'
     })),
     ...archive.map(a => ({ key: 'a' + a.id, id: a.id, email: a.client_email, createdAt: a.created_at, kind: a.state === 'blocked' ? 'blocked' : 'trashed' }))
@@ -77,14 +78,14 @@ export default function ClientApprovals({ advisorId }) {
     if (action === 'approve') {
       const res = await supabase.rpc('approve_advisor_client', { p_link: row.id });
       error = res.error || (res.data !== 'ok' ? { message: res.data } : null);
-    } else if (action === 'end' || action === 'cancel' || action === 'reject') {
+    } else if (action === 'end' || action === 'remove' || action === 'cancel' || action === 'reject') {
       ({ error } = await supabase.from('advisor_clients').delete().eq('id', row.id).eq('advisor_id', advisorId));
     } else {
       const res = await supabase.rpc('archive_advisor_client', { p_link: row.id, p_state: action === 'block' ? 'blocked' : 'trashed' });
       error = res.error || (res.data !== 'ok' ? { message: res.data } : null);
     }
     if (error) { toast('הפעולה נכשלה, נסה שוב', 'error'); return; }
-    toast(action === 'approve' ? 'הלקוח אושר' : action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
+    toast(action === 'approve' ? 'הלקוח אושר' : action === 'remove' ? 'הלקוח נמחק' : action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
     reload();
   }
 
