@@ -210,6 +210,13 @@ export const supabase = {
     getSession: async () => ({ data: { session } }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     signOut: async () => ({ error: null }),
+    mfa: {
+      getAuthenticatorAssuranceLevel: async () => ({ data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null }),
+      listFactors: async () => ({ data: { totp: [], all: [] }, error: null }),
+      enroll: async () => ({ data: { id: 'mock-factor', totp: { qr_code: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>', secret: 'MOCKSECRET' } }, error: null }),
+      challengeAndVerify: async () => ({ data: {}, error: null }),
+      unenroll: async () => ({ data: {}, error: null })
+    },
     signInWithPassword: async () => ({ error: null }),
     signInWithOtp: async () => ({ error: null }),
     updateUser: async () => ({ error: null }),

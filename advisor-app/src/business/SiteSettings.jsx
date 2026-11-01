@@ -3,6 +3,7 @@ import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
 import { DEFAULT_BRAND } from '../brandColor.js';
 import { toast } from '../toast.js';
 import Skeleton from '../components/Skeleton.jsx';
+import MfaSettings from './MfaSettings.jsx';
 import { signupMessage } from './clientApp.js';
 import styles from './Business.module.css';
 
@@ -87,6 +88,7 @@ export default function SiteSettings({ advisorId }) {
           </div>
         </div>
       </section>
+      <MfaSettings />
     </div>
   );
 }

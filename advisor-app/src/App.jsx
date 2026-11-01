@@ -4,6 +4,8 @@ import Login from './auth/Login.jsx';
 import NotAdvisor from './auth/NotAdvisor.jsx';
 import LegalGate from './auth/LegalGate.jsx';
 import { useLegalConsent } from './auth/useLegalConsent.js';
+import MfaChallenge from './auth/MfaChallenge.jsx';
+import { useMfaGate } from './auth/useMfaGate.js';
 import { useIsAdvisor } from './auth/useIsAdvisor.js';
 import { useAdvisorRequest } from './auth/useAdvisorRequest.js';
 import Shell from './components/Shell.jsx';
@@ -33,6 +35,7 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [legalAccepted, markLegalAccepted] = useLegalConsent(session?.user?.id);
   const isAdvisor = useIsAdvisor(session?.user?.id);
+  const mfa = useMfaGate(session?.user?.id);
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const { theme, toggle: toggleTheme } = useTheme();
 
@@ -54,6 +57,9 @@ export default function App() {
     if (advisorRequestStatus === null) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
     return (<><NotAdvisor email={session.user.email} userId={session.user.id} requestStatus={advisorRequestStatus} onSubmitRequest={submitAdvisorRequest} /><Toaster /></>);
   }
+
+  if (mfa.status === 'loading') return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
+  if (mfa.status === 'challenge') return (<><MfaChallenge factorId={mfa.factorId} onVerified={mfa.refresh} /><Toaster /></>);
 
   const openInView = (clientId, clientEmail, destination) => {
     setViewClientId(clientId);
