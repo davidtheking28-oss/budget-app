@@ -6,25 +6,25 @@
   --workspace-hero: #16191c;
   --workspace-text: #f4f6f5;
   --workspace-muted: #9aa5ab;
-  --workspace-mint: #7db2ee;
+  --workspace-mint: #4da3fb;
   --workspace-red: #ff9a8d;
   --workspace-line: rgba(255, 255, 255, 0.12);
   --workspace-glass: rgba(255, 255, 255, 0.08);
   --primary: #14171a;
   --primary-ink: #ffffff;
   --primary-hover: #2c3237;
-  --donut-1: #6aa5ea;
-  --donut-2: #3f78c6;
-  --donut-3: #2a5a9a;
+  --donut-1: #0078f8;
+  --donut-2: #4da3fb;
+  --donut-3: #99c9fc;
   --donut-4: #6c777e;
   --donut-5: #3d464c;
   --surface: #ffffff;
   --surface2: #f0f4fa;
-  --accent: #0b1b30;
-  --accent-rgb: 11, 27, 48;
-  --accent-2: #06111f;
+  --accent: #0078f8;
+  --accent-rgb: 0, 120, 248;
+  --accent-2: #0063cc;
   --accent-ink: #ffffff;
-  --accent-dim: rgba(11, 27, 48, 0.09);
+  --accent-dim: rgba(0, 120, 248, 0.09);
   /* Was #7c4a06 — contrast ratio 1.12 against --red (#b02631), functionally the
      same color to a fast glance or anyone color-blind. #c2760a (the value after
      that fix) separated cleanly from red but only cleared 3:1 against white —
@@ -113,14 +113,14 @@
   --bg-2: #0f1620;
   --surface: #131b27;
   --surface2: #1b2536;
-  --accent: #6aa5ea;
-  --accent-rgb: 106, 165, 234;
-  --accent-2: #4f8fd6;
-  --accent-ink: #07182e;
-  --accent-dim: rgba(106, 165, 234, 0.13);
-  --primary: #6aa5ea;
-  --primary-ink: #07182e;
-  --primary-hover: #4f8fd6;
+  --accent: #0078f8;
+  --accent-rgb: 0, 120, 248;
+  --accent-2: #0063cc;
+  --accent-ink: #ffffff;
+  --accent-dim: rgba(0, 120, 248, 0.13);
+  --primary: #0078f8;
+  --primary-ink: #ffffff;
+  --primary-hover: #0063cc;
   /* Status colors are deliberately desaturated relative to their light-mode
      counterparts: the earlier neon values (#3ddba8 / #f28b91 / #f3ca3f) glowed
      against the near-black surfaces. All keep >6:1 on --surface for text. */
