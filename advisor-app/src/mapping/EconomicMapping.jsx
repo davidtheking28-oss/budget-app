@@ -632,7 +632,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         </section>
       )}
 
-      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} hidden={hiddenCats} extra={extraCats} onAdd={addManual('expense')} onAddBox={addBox} onRemoveBox={hideCategory} />
+      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} hidden={hiddenCats} extra={extraCats} onAdd={addManual('expense')} onDelete={deleteManual} onAddBox={addBox} onRemoveBox={hideCategory} />
 
       <div className={styles.card}>
         <h2 id="mapping-upload" className={styles.cardTitle}>העלאת דפי חשבון</h2>
