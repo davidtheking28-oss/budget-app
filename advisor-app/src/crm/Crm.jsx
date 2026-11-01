@@ -274,7 +274,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
           )}
         </div>
       )}
-      <div className={styles.sectionsGrid}>
+      <div className={styles.sectionsGrid + (view === 'tasks' ? ' ' + styles.sectionsGridSingle : '')}>
       {view === 'client' && <>
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>

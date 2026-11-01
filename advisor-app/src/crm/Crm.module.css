@@ -15,6 +15,9 @@
 .sectionsGrid > :nth-child(1) { order: 2; }
 .sectionsGrid > :nth-child(2) { order: 3; grid-column: 1 / -1; }
 
+.sectionsGrid.sectionsGridSingle { grid-template-columns: minmax(0, 1fr); }
+.sectionsGridSingle > :nth-child(n) { order: 0; grid-column: auto; }
+
 .section {
   background: var(--surface);
   border: 1px solid var(--border);
