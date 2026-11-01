@@ -86,11 +86,20 @@ export function marketingMetrics(month) {
     meetings,
     closings,
     budget: followersBudget + boosts,
-    costPerFollower: followers > 0 ? followersBudget / followers : null,
+    costPerFollower: followers > 0 ? boosts / followers : null,
     costPerMeeting: meetings > 0 ? boosts / meetings : null,
     costPerClient: closings > 0 ? boosts / closings : null,
     closeRate: ratio(closings, meetings)
   };
+}
+
+export function followerTimeline(records, periods, baseline = 0) {
+  if (!periods.length) return [];
+  const byPeriod = new Map();
+  for (const record of records) if (!byPeriod.has(record.period)) byPeriod.set(record.period, num(record.data?.followers));
+  let total = num(baseline);
+  for (const [period, growth] of byPeriod) if (period < periods[0]) total += growth;
+  return periods.map(period => { total += byPeriod.get(period) || 0; return total; });
 }
 
 export function sumMarketing(months) {

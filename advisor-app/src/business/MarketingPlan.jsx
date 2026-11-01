@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useBizRecords } from './useBizRecords.js';
-import { marketingMetrics, planProgress, ymKey, periodsFor, shortLabel } from './bizMath.js';
+import { marketingMetrics, planProgress, ymKey, periodsFor, shortLabel, followerTimeline } from './bizMath.js';
 import TrendChart from './TrendChart.jsx';
 import MonthPicker, { monthName } from './MonthPicker.jsx';
 import Modal from './Modal.jsx';
@@ -15,7 +15,7 @@ const cost = value => (value === null ? 'אין' : fmt(value));
 
 function NumberFields({ fields, data, onSave, onClose }) {
   const [values, setValues] = useState(() => Object.fromEntries(fields.map(f => [f.key, data[f.key] ?? ''])));
-  function submit(e) { e.preventDefault(); onSave(values); onClose(); }
+  async function submit(e) { e.preventDefault(); if (await onSave(values) === false) return; onClose(); }
   return (
     <form className={styles.formGrid} onSubmit={submit}>
       {fields.map(f => (
@@ -73,10 +73,10 @@ function NetworksModal({ networks, boosts, monthLabel, onSave, onClose }) {
     setCounts(prev => ({ ...prev, [name]: '' }));
     setExtra('');
   }
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
     const filled = Object.fromEntries(Object.entries(counts).filter(([, v]) => String(v).trim() !== ''));
-    onSave(filled, boostValue);
+    if (await onSave(filled, boostValue) === false) return;
     onClose();
   }
   return (
@@ -128,17 +128,19 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
   const hasBase = v => v != null && String(v).trim() !== '' && Number.isFinite(Number(v));
   const otherBase = allMonths.records.find(r => hasBase(r.data?.baseFollowers))?.data.baseFollowers;
   const baseline = hasBase(data.baseFollowers) ? Number(data.baseFollowers) : hasBase(otherBase) ? Number(otherBase) : null;
-  let runningTotal = baseline || 0;
+  const followerTotals = followerTimeline([{ period, data }, ...allMonths.records.filter(r => r.period !== period)], growthPeriods, baseline);
   const growthMetrics = [
-    { key: 'total', label: 'כל העוקבים', values: growthMonths.map(m => { runningTotal += m.followers; return runningTotal; }), format: String },
+    { key: 'total', label: 'כל העוקבים', values: followerTotals, format: String },
     { key: 'costPerFollower', label: 'עלות לעוקב', values: growthMonths.map(m => Math.round(m.costPerFollower || 0)), format: fmt },
     { key: 'costPerMeeting', label: 'עלות לפגישה', values: growthMonths.map(m => Math.round(m.costPerMeeting || 0)), format: fmt },
     { key: 'costPerClient', label: 'עלות ללקוח', values: growthMonths.map(m => Math.round(m.costPerClient || 0)), format: fmt }
   ];
 
   async function patch(change) {
-    if (record) await update(record.id, change);
-    else await add({ tasks: [], ...change });
+    const saved = record ? await update(record.id, change) : await add({ tasks: [], ...change });
+    if (!saved) return false;
+    await allMonths.reload();
+    return true;
   }
 
   const totalFollowers = growthMetrics[0].values[growthPeriods.indexOf(period)] ?? (baseline || 0) + metrics.followers;
@@ -150,12 +152,12 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
     const change = { networks, boosts };
     if (baseline == null) change.baseFollowers = total;
     else change.followers = Math.max(0, total - priorFollowers);
-    patch(change);
+    return patch(change);
   }
 
   const tiles = [
     { key: 'followers', modal: 'networks', label: 'עוקבים חדשים', value: String(metrics.followers), note: `סה״כ ${totalFollowers}` },
-    { key: 'follower', modal: 'networks', label: 'עלות לעוקב', value: cost(metrics.followers > 0 && metrics.boosts > 0 ? metrics.boosts / metrics.followers : null), note: 'בוסטים חלקי עוקבים חדשים' },
+    { key: 'follower', modal: 'networks', label: 'עלות לעוקב', value: cost(metrics.costPerFollower), note: 'בוסטים חלקי עוקבים חדשים' },
     { key: 'meeting', modal: 'leads', label: 'עלות לפגישת התאמה', value: cost(metrics.costPerMeeting), note: `${metrics.meetings} פגישות התאמה` },
     { key: 'client', modal: 'leads', label: 'עלות ללקוח', value: cost(metrics.costPerClient), note: `${metrics.closings} לקוחות נסגרו` }
   ];

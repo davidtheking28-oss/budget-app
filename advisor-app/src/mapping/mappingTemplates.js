@@ -26,6 +26,7 @@ export const SAVINGS_TEMPLATE = [
 
 export const FIXED_TEMPLATE = [
   entry('דיור', 'שכר דירה'),
+  entry('משכנתא'),
   entry('ועד בית'),
   entry('גז'),
   entry('ארנונה'),
@@ -62,7 +63,7 @@ export const VARIABLE_TEMPLATE = [
 ];
 
 export const SAVINGS_KEYS = SAVINGS_TEMPLATE.map(t => t.key);
-export const FIXED_KEYS = [...new Set([...FIXED_CATS.filter(c => c !== SAVINGS_CATEGORY), ANNUAL_CATEGORY])];
+export const FIXED_KEYS = [...new Set([...FIXED_CATS.filter(c => c !== SAVINGS_CATEGORY), ANNUAL_CATEGORY, 'משכנתא'])];
 
 const LABELS = Object.fromEntries([...INCOME_TEMPLATE, ...SAVINGS_TEMPLATE, ...FIXED_TEMPLATE, ...VARIABLE_TEMPLATE].map(t => [t.key, t.label]));
 

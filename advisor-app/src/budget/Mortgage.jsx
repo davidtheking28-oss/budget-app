@@ -63,7 +63,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
   const elapsed = monthsBetween(scenario.asOf, year, month);
   const principal = num(scenario.principal);
   const monthly = num(scenario.monthly);
-  const principalNow = principal > 0 ? Math.max(0, principal - monthly * elapsed) : null;
+  const principalNow = principal > 0 ? principal : null;
   const monthsNow = scenario.monthsLeft !== undefined && scenario.monthsLeft !== '' ? Math.max(0, num(scenario.monthsLeft) - elapsed) : null;
   const propertyValue = num(scenario.propertyValue);
   const ltv = principalNow !== null && propertyValue > 0 ? (principalNow / propertyValue) * 100 : null;
@@ -84,7 +84,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
       </div>
       <div className={styles.notes}>
         {empty && <p className={styles.noteStrong}>עוד לא מילאת משכנתא.</p>}
-        <p className={styles.note}>ההחזר החודשי נשלף לשורת המשכנתא בהוצאות הקבועות. "יתרת קרן" ו"חודשים שנותרו" הם המצב בחודש שאתה מסתכל עליו, והם יורדים לבד מחודש לחודש לפי ההחזר החודשי.</p>
+        <p className={styles.note}>ההחזר החודשי משתקף במיפוי ההוצאות הקבועות. יתרת הקרן נשארת כפי שדווחה מהבנק, נכון לתאריך שהוזן, עד לעדכון הבא. מספר החודשים שנותרו מתעדכן לפי החודש הנבחר.</p>
       </div>
 
       <div className={styles.group}>
@@ -113,7 +113,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
       <div className={styles.group}>
         <h3 className={styles.groupTitle}>המצב החודש</h3>
         <div className={styles.checks}>
-          <Check title="יתרת קרן" value={principalNow === null ? 'חסר' : fmt(principalNow)} note="הקרן שנותרה בחודש הזה, אחרי ההחזרים שכבר ירדו" />
+          <Check title="יתרת קרן" value={principalNow === null ? 'חסר' : fmt(principalNow)} note="היתרה שדווחה מהבנק, נכון לתאריך שהוזן" />
           <Check title="חודשים שנותרו" value={monthsNow === null ? 'חסר' : monthsNow} note={monthsNow === null ? 'מלאו "חודשים שנותרו" כדי לראות' : undefined} />
           <Check title="אחוז מימון" value={ltv === null ? 'חסר' : ltv.toFixed(1) + '%'} note="ירוק עד 50% · כתום עד 70%" tone={ltv === null ? undefined : ltvTone(ltv)} />
           <Check title="השלמה ל-50% מימון" value={gapTo(50) === null ? 'חסר' : fmt(gapTo(50))} note="כמה הון עצמי חסר כדי להגיע ל-50%" />

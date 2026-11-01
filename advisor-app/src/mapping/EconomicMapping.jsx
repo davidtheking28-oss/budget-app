@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
-import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown, computeMappingRows } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown, computeMappingRows, mortgageMappingAmount } from './mappingMath.js';
 import { categorizeByDictionary } from './categorizeDict.js';
 import { learnCategory, lookupLearnedCategory, normalizeDescription, syncLearnedFromAccount, pushLearnedToAccount } from './learnedCategories.js';
 import { resizeImageToJpeg } from './resizeImage.js';
@@ -22,7 +22,7 @@ import layout from './MappingLayout.module.css';
 const LOAN_CATEGORY = 'החזר הלוואות + חיוב קבוע';
 const INSURANCE_MOVE_CATS = ['ביטוח חובה', 'ביטוח מקיף'];
 const FOREIGN_ORDERS_CATEGORY = 'הזמנות מחו״ל';
-const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS.slice(0, -1), FOREIGN_ORDERS_CATEGORY, ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c)), 'שונות'];
+const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS.slice(0, -1), FOREIGN_ORDERS_CATEGORY, ...FIXED_KEYS.filter(c => !EXPENSE_CATS.includes(c)), 'שונות'];
 const INCOME_ADD_CATS = [...INCOME_TEMPLATE.map(t => t.key), ...INCOME_CATS.filter(c => !INCOME_TEMPLATE.some(t => t.key === c))];
 const FIXED_ADD_CATS = [...FIXED_TEMPLATE.map(t => t.key), ...FIXED_KEYS.filter(c => !FIXED_TEMPLATE.some(t => t.key === c))];
 const VARIABLE_ADD_CATS = [...VARIABLE_TEMPLATE.map(t => t.key), ...MAPPING_EXPENSE_CATS.filter(c => !FIXED_KEYS.includes(c) && !SAVINGS_KEYS.includes(c) && !VARIABLE_TEMPLATE.some(t => t.key === c))];
@@ -457,6 +457,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const cardChargesTotal = cardCharges.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
   const monthlyOf = (list, key) => (list || []).reduce((s, x) => s + (Number(x[key]) || 0), 0);
   const autoFixedAmounts = budgetData ? {
+    'משכנתא': mortgageMappingAmount(budgetData, data?.transactions || []),
     'ביטוחים': monthlyOf((budgetData.insurances || []).filter(x => !x.closed), 'monthly'),
     'מנויים ושירותים': (budgetData.subscriptions || []).reduce((s, x) => s + (x.active ? monthlyEquivalent(x.cycle, x.amount || 0) : 0), 0),
     'חינוך, חוגים וקייטנות': monthlyOf(budgetData.education, 'monthly'),

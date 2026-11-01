@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { monthFunnel, sumFunnel, funnelStats, marketingMetrics, sumMarketing, bucketTasks, projectProgress, percentLabel, ymKey, leadMonthKey } from './bizMath.js';
+import { monthFunnel, sumFunnel, funnelStats, marketingMetrics, sumMarketing, bucketTasks, projectProgress, percentLabel, ymKey, leadMonthKey, followerTimeline } from './bizMath.js';
 
 describe('funnelStats', () => {
   it('computes each conversion step from the previous one', () => {
@@ -33,7 +33,7 @@ describe('funnelStats', () => {
 describe('marketingMetrics', () => {
   it('derives costs per follower, meeting and client', () => {
     const m = marketingMetrics({ followers: 100, followersBudget: 500, boosts: 600, meetings: 6, closings: 2 });
-    expect(m.costPerFollower).toBe(5);
+    expect(m.costPerFollower).toBe(6);
     expect(m.costPerMeeting).toBe(100);
     expect(m.costPerClient).toBe(300);
     expect(m.closeRate).toBeCloseTo(1 / 3);
@@ -52,7 +52,7 @@ describe('marketingMetrics', () => {
       { followers: 10, followersBudget: 100, boosts: 100, meetings: 1, closings: 0 },
       { followers: 30, followersBudget: 100, boosts: 300, meetings: 3, closings: 1 }
     ]);
-    expect(y.costPerFollower).toBe(5);
+    expect(y.costPerFollower).toBe(10);
     expect(y.costPerMeeting).toBe(100);
     expect(y.costPerClient).toBe(400);
   });
@@ -161,5 +161,27 @@ describe('monthFunnel', () => {
     const sum = sumFunnel([monthFunnel(leads, '2026-09'), monthFunnel(leads, '2026-10')]);
     expect(sum).toMatchObject({ total: 3, showed: 2, relevant: 1, closed: 1 });
     expect(sum.showRate).toBeCloseTo(2 / 3);
+  });
+});
+
+describe('cross-period consistency', () => {
+  it('includes growth before the displayed chart window', () => {
+    const records = [{ period: '2024-01', data: { followers: 30 } }, { period: '2026-10', data: { followers: 10 } }, { period: '2026-11', data: { followers: 20 } }];
+    expect(followerTimeline(records, ['2026-10', '2026-11'], 100)).toEqual([140, 160]);
+    expect(followerTimeline(records, ['2026-11'], 100)).toEqual([160]);
+  });
+  it('uses the same finance totals in monthly, yearly and custom ranges', () => {
+    const entries = [{ type: 'income', period: '2026-01', amount: '11800', clearing: '118' }, { type: 'income', period: '2026-02', amount: 2360 }, { type: 'expense', fixed: true, startPeriod: '2025-12', endPeriod: '2026-02', amount: 400 }, { type: 'expense', period: '2026-02', amount: 200, category: 'שיווק' }];
+    for (const type of ['עוסק מורשה', 'עוסק פטור', 'עוסק זעיר']) {
+      const range = financeRange(entries, '2026-01', '2026-12', type);
+      expect(range.income).toBe(14160);
+      expect(range.expenses).toBe(1000);
+      expect(range.net).toBeCloseTo(range.rows.reduce((sum, r) => sum + r.net, 0));
+      expect(financeRange(entries, '2026-01', '2026-02', type).net).toBeCloseTo(range.net);
+      for (const row of range.rows) {
+        expect(row.income - row.clearing - row.vat - row.expenses - row.incomeTax - row.nationalInsurance).toBeCloseTo(row.net);
+        expect(expenseBreakdown([...row.fixed, ...row.variable]).reduce((sum, c) => sum + c.value, 0)).toBeCloseTo(row.expenses);
+      }
+    }
   });
 });

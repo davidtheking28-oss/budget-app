@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown, computeMappingRows } from './mappingMath.js';
+import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, computeExpenseTypeBreakdown, computeMappingRows, mortgageMappingAmount } from './mappingMath.js';
 
 describe('computeCategoryAverages', () => {
   it('averages a category over 3 full months', () => {
@@ -164,5 +164,23 @@ describe('computeMappingRows', () => {
     expect(rows.income).toEqual([{ key: 's:income:שכר', category: 'שכר', amount: 9000, manual: false }]);
     expect(rows.expense.find(r => r.category === 'מזון לבית').amount).toBe(1000);
     expect(rows.expense.find(r => r.manual)).toMatchObject({ id: 7, category: 'חשמל', amount: 350 });
+  });
+});
+
+describe('mortgage and card synchronization', () => {
+  it('uses the recorded monthly mortgage unless hidden', () => {
+    expect(mortgageMappingAmount({ mortgage_scenario: { monthly: '4500' } }, [])).toBe(4500);
+    expect(mortgageMappingAmount({ mortgage_scenario: { monthly: 4500, hidden: true } }, [])).toBe(0);
+  });
+  it('does not duplicate an existing mortgage payment', () => {
+    const data = { mortgage_scenario: { monthly: 4500 } };
+    expect(mortgageMappingAmount(data, [{ type: 'expense', category: 'משכנתא', amount: 4500 }])).toBe(0);
+    expect(mortgageMappingAmount(data, [{ type: 'expense', category: 'שונות', desc: 'תשלום משכנתא', amount: 4500 }])).toBe(0);
+    expect(mortgageMappingAmount(data, [{ type: 'expense', category: 'ביטוחים', desc: 'ביטוח משכנתא', amount: 100 }])).toBe(4500);
+    expect(mortgageMappingAmount(data, [{ type: 'expense', category: 'משכנתא', excluded: true }])).toBe(4500);
+  });
+  it('recognizes spaced card charges that must not be counted as purchases twice', () => {
+    expect(looksLikeCardCharge({ type: 'expense', desc: 'חיוב ויזה' })).toBe(true);
+    expect(looksLikeCardCharge({ type: 'expense', desc: 'חיוב כאל' })).toBe(true);
   });
 });

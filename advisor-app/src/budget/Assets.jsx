@@ -37,7 +37,9 @@ export default function Assets({ clientUserId, advisorId }) {
   }
 
   const assets = data.assets || [];
-  const loans = (data.loans || []).filter(l => !l.closed);
+  const mortgage = data.mortgage_scenario;
+  const mortgageBalance = !mortgage?.hidden ? Math.max(0, parseFloat(mortgage?.principal) || 0) : 0;
+  const loans = [...(data.loans || []).filter(l => !l.closed), ...(mortgageBalance > 0 ? [{ id: 'mortgage-scenario', fromMortgage: true, name: 'משכנתא', remaining: mortgageBalance, monthly: parseFloat(mortgage.monthly) || 0 }] : [])];
   const totalAssets = assets.reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
   const totalLiabilities = loans.reduce((s, l) => s + (parseFloat(l.remaining) || 0), 0);
   const netWorth = totalAssets - totalLiabilities;
@@ -149,7 +151,7 @@ export default function Assets({ clientUserId, advisorId }) {
                     <div className={styles.rowMeta}>{l.monthly > 0 ? 'החזר חודשי ' + fmt(l.monthly) : 'ללא החזר חודשי'}</div>
                   </div>
                   <span className={styles.num + ' ' + styles.kpiNeg}>{fmt(l.remaining)}</span>
-                  <ActionMenu><DeleteButton title={`מחק · ${l.name}`} onClick={() => removeItem(save, 'loans', l.id, `${l.name} נמחקה`)} /></ActionMenu>
+                  {l.fromMortgage ? <span className={styles.rowMeta}>ממסך המשכנתא</span> : <ActionMenu><DeleteButton title={`מחק · ${l.name}`} onClick={() => removeItem(save, 'loans', l.id, `${l.name} נמחקה`)} /></ActionMenu>}
                 </li>
               ))}
             </ul>

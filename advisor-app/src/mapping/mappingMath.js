@@ -1,8 +1,8 @@
-import { FIXED_CATS } from '../categories.js';
+import { FIXED_KEYS } from './mappingTemplates.js';
 
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
-const CARD_CHARGE = /כרטיס אשראי|ישראכרט|לאומי קארד|דיינרס|אמריקן אקספרס|חיובs+(ויזה|כאל|מקס)|visa cal|isracard|max it/i;
+const CARD_CHARGE = /כרטיס אשראי|ישראכרט|לאומי קארד|דיינרס|אמריקן אקספרס|חיוב\s+(ויזה|כאל|מקס)|visa cal|isracard|max it/i;
 
 export function looksLikeCardCharge(t) {
   return t.type !== 'income' && CARD_CHARGE.test(String(t.desc || ''));
@@ -59,7 +59,7 @@ export function computeExpenseTypeBreakdown(averages) {
   let savings = 0;
   for (const [category, value] of Object.entries(averages)) {
     if (category === SAVINGS_CATEGORY) savings += value;
-    else if (FIXED_CATS.includes(category)) fixed += value;
+    else if (FIXED_KEYS.includes(category)) fixed += value;
     else variable += value;
   }
   return [{ name: 'קבועות', value: fixed }, { name: 'משתנות', value: variable }, { name: 'חיסכון', value: savings }].filter(part => part.value !== 0);
@@ -85,4 +85,11 @@ export function computeMappingRows(allTransactions) {
     rows[t.type === 'income' ? 'income' : 'expense'].push({ key: 'm:' + t.id, id: t.id, category: t.category, desc: t.desc, amount: Number(t.amount) || 0, manual: true, auto: !!t.auto });
   }
   return rows;
+}
+
+export function mortgageMappingAmount(data, transactions) {
+  const scenario = data?.mortgage_scenario;
+  if (!scenario || scenario.hidden) return 0;
+  const recorded = transactions.some(t => !t.excluded && t.type !== 'income' && (t.category === 'משכנתא' || (/משכנת[אה]/.test(t.desc || '') && !/ביטוח/.test(t.desc || ''))));
+  return recorded ? 0 : Math.max(0, Number(scenario.monthly) || 0);
 }
