@@ -21,6 +21,20 @@ async function notifyMeetingInstant(meetingId) {
   } catch { return null; }
 }
 
+async function notifyTasksInstant(taskIds) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return null;
+    const res = await fetch(SUPA_URL + '/functions/v1/budget-push?action=notify-task', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+      body: JSON.stringify({ taskIds })
+    });
+    const body = await res.json().catch(() => null);
+    return body?.sent ?? null;
+  } catch { return null; }
+}
+
 // Best-effort: turns a saved meeting summary into suggested client tasks via the
 // summarize-meeting edge function. Never throws — callers treat null as "no suggestion".
 export async function suggestTasksFromSummary(summary) {
@@ -74,6 +88,7 @@ export function useClientCrm(advisorId, clientId, onRestore) {
     if (error) { toast('שגיאה בהוספת המשימה', 'error'); return false; }
     toast('משימה נוספה', 'success');
     setTasks(prev => [data, ...prev].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
+    if (data.for_client) notifyTasksInstant([data.id]);
     return true;
   }
 
@@ -87,6 +102,8 @@ export function useClientCrm(advisorId, clientId, onRestore) {
     if (error) { toast('שגיאה בהוספת המשימות', 'error'); return false; }
     toast(titles.length > 1 ? `${titles.length} משימות נוספו` : 'משימה נוספה', 'success');
     setTasks(prev => [...data, ...prev].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
+    const forClientIds = data.filter(t => t.for_client).map(t => t.id);
+    if (forClientIds.length) notifyTasksInstant(forClientIds);
     return true;
   }
 

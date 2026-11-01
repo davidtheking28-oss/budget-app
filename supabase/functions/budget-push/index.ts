@@ -105,6 +105,58 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ sent }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
   }
 
+  if (url.searchParams.get('action') === 'notify-task' && req.method === 'POST') {
+    const authHeader = req.headers.get('Authorization') || ''
+    if (!authHeader) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
+    const body = await req.json().catch(() => ({}))
+    const taskIds = Array.isArray(body?.taskIds) ? body.taskIds.slice(0, 20) : []
+    if (!taskIds.length) return new Response(JSON.stringify({ error: 'taskIds required' }), { status: 400, headers: CORS })
+
+    const userClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authHeader } },
+    })
+    const { data: tasks } = await userClient.from('advisor_tasks')
+      .select('id,client_id,title,for_client').in('id', taskIds).eq('for_client', true)
+    if (!tasks?.length) return new Response(JSON.stringify({ sent: 0 }), { headers: CORS })
+
+    const clientId = tasks[0].client_id
+    const { data: subs } = await admin.from('push_subscriptions').select('*').eq('user_id', clientId)
+    if (!subs?.length) return new Response(JSON.stringify({ sent: 0 }), { headers: CORS })
+
+    const fresh = []
+    for (const t of tasks.filter((x) => x.client_id === clientId)) {
+      const { data: logged } = await admin.from('push_log')
+        .insert({ user_id: clientId, kind: 'advisor_task', key: t.id })
+        .select().maybeSingle()
+      if (logged) fresh.push(t)
+    }
+    if (!fresh.length) return new Response(JSON.stringify({ sent: 0, duplicate: true }), { headers: CORS })
+
+    const appServer = await webpush.ApplicationServer.new({
+      contactInformation: 'mailto:davidtheking27@gmail.com',
+      vapidKeys,
+    })
+    const payload = JSON.stringify({
+      title: 'משימה חדשה מהיועץ 📋',
+      body: fresh.length === 1 ? fresh[0].title : `${fresh.length} משימות חדשות מהיועץ`,
+      url: './',
+    })
+    let sent = 0
+    for (const sub of subs) {
+      try {
+        const subscriber = appServer.subscribe({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } })
+        await subscriber.pushTextMessage(payload, {})
+        sent++
+      } catch (err) {
+        const status = (err as { response?: Response })?.response?.status
+        if (status === 404 || status === 410) {
+          await admin.from('push_subscriptions').delete().eq('endpoint', sub.endpoint)
+        }
+      }
+    }
+    return new Response(JSON.stringify({ sent }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
+  }
+
   const { data: secretRow } = await admin.from('app_secrets').select('value').eq('key', 'push_cron_secret').maybeSingle()
   if (!secretRow || req.headers.get('x-cron-secret') !== secretRow.value) {
     return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: CORS })
