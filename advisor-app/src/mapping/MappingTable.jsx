@@ -15,15 +15,33 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   const chosen = addCats.includes(category) ? category : addCats[0];
 
   const templateKeys = template.map(t => t.key);
+  const group = cat => {
+    const rs = rows.filter(r => r.category === cat);
+    const manualRows = rs.filter(r => r.manual);
+    const single = rs.length === 1 && rs[0].manual;
+    return {
+      line: 'cat:' + cat,
+      category: cat,
+      amount: rs.reduce((s, r) => s + r.amount, 0),
+      manual: single,
+      id: single ? rs[0].id : undefined,
+      desc: single ? rs[0].desc : '',
+      manualIds: manualRows.map(r => r.id)
+    };
+  };
+  const extraKeys = [...new Set(rows.filter(r => !templateKeys.includes(r.category)).map(r => r.category))];
   const lines = [
     ...template.flatMap(t => {
-      const mine = rows.filter(r => r.category === t.key);
-      if (mine.length) return mine.map(r => ({ ...r, line: r.key }));
-      return hidden.includes(t.key) ? [] : [{ placeholder: true, category: t.key, line: 'tpl:' + t.key }];
+      if (rows.some(r => r.category === t.key)) return [group(t.key)];
+      return hidden.includes(t.key) ? [] : [{ placeholder: true, category: t.key, line: 'tpl:' + t.key, manualIds: [] }];
     }),
-    ...rows.filter(r => !templateKeys.includes(r.category)).map(r => ({ ...r, line: r.key }))
+    ...extraKeys.map(group)
   ];
-  const togglePick = id => setPicked(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+  const togglePick = ids => setPicked(prev => (ids.every(id => prev.includes(id)) ? prev.filter(x => !ids.includes(x)) : [...new Set([...prev, ...ids])]));
+  function deleteGroup(ids) {
+    if (ids.length > 1 && !window.confirm('למחוק את כל ' + ids.length + ' הסכומים שהוזנו בקטגוריה?')) return;
+    onDeleteMany(ids);
+  }
   function stopSelecting() { setSelecting(false); setPicked([]); }
   function deletePicked() { onDeleteMany(picked); stopSelecting(); }
 
@@ -50,8 +68,8 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
         {lines.map(r => (
           <div key={r.line} className={styles.row}>
             <span className={styles.name}>
-              {selecting && r.manual && <input type="checkbox" className={styles.check} aria-label={'בחר שורה: ' + labelFor(r.category)} checked={picked.includes(r.id)} onChange={() => togglePick(r.id)} />}
-              {labelFor(r.category)}{r.desc ? ' · ' + r.desc : ''}
+              {selecting && r.manualIds.length > 0 && <input type="checkbox" className={styles.check} aria-label={'בחר שורה: ' + labelFor(r.category)} checked={r.manualIds.every(id => picked.includes(id))} onChange={() => togglePick(r.manualIds)} />}
+              {labelFor(r.category)}{r.desc ? ' · ' + r.desc : r.manualIds.length > 1 ? ' · ' + r.manualIds.length + ' סכומים' : ''}
               {tag && templateKeys.includes(r.category) && <span className={styles.tag}>{tag}</span>}
             </span>
             {r.placeholder ? (
@@ -67,7 +85,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             ) : (
               <span className={styles.readonly}>{fmt(r.amount)}</span>
             )}
-            {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelFor(r.category)} onClick={() => onHide(r.category)} /> : r.manual ? <DeleteButton title={'מחק שורה: ' + labelFor(r.category)} onClick={() => onDelete(r.id)} /> : <span aria-hidden="true" />}
+            {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelFor(r.category)} onClick={() => onHide(r.category)} /> : r.manualIds.length > 0 ? <DeleteButton title={'מחק שורה: ' + labelFor(r.category)} onClick={() => (r.manual ? onDelete(r.id) : deleteGroup(r.manualIds))} /> : <span aria-hidden="true" />}
           </div>
         ))}
       </div>
