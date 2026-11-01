@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
+import { saveBusinessPatch, loadBusinessRecords } from './bizSync.js';
 
 export function useBizRecords(advisorId, kind, period = null) {
   const [records, setRecords] = useState([]);
@@ -11,9 +12,7 @@ export function useBizRecords(advisorId, kind, period = null) {
   const reload = useCallback(async () => {
     if (!advisorId) return;
     setLoading(true);
-    let query = supabase.from('advisor_biz_records').select('*').eq('advisor_id', advisorId).eq('kind', kind);
-    if (period) query = query.eq('period', period);
-    const { data, error: err } = await query.order('created_at', { ascending: false });
+    const { data, error: err } = await loadBusinessRecords(supabase, advisorId, kind, period);
     if (err) { setError(err); setLoading(false); return; }
     setError(null);
     setRecords(data || []);
@@ -44,12 +43,12 @@ export function useBizRecords(advisorId, kind, period = null) {
     } : r));
     refresh();
     const run = async () => {
-      const next = { ...entry.confirmed, ...patch };
+
       let failed = false;
       try {
-        const { error: err } = await supabase.from('advisor_biz_records').update({ data: next, updated_at: new Date().toISOString() }).eq('id', id).eq('advisor_id', advisorId);
+        const { data, error: err } = await saveBusinessPatch(supabase, advisorId, id, patch);
         failed = !!err;
-        if (!failed) entry.confirmed = next;
+        if (!failed) entry.confirmed = data;
       } catch { failed = true; }
       entry.changes = entry.changes.filter(pending => pending !== change);
       refresh();

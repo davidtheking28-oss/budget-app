@@ -22,6 +22,7 @@ function builder(table) {
   let rows = () => clone(db[table] || []);
   let order = null;
   let limit = null;
+  let range = null;
   let single = null;
   let pendingWrite = null;
   let head = false;
@@ -43,6 +44,7 @@ function builder(table) {
       });
     }
     const count = out.length;
+    if (range) out = out.slice(range[0], range[1] + 1);
     if (limit != null) out = out.slice(0, limit);
     if (head) return { data: null, error: null, count };
     if (columns) out = out.map(row => Object.fromEntries(columns.filter(key => key in row).map(key => [key, row[key]])));
@@ -116,12 +118,13 @@ function builder(table) {
     gt(col, val) { filters.push(r => r[col] > val); return api; },
     gte(col, val) { filters.push(r => r[col] >= val); return api; },
     lte(col, val) { filters.push(r => r[col] <= val); return api; },
-    is(col, val) { filters.push(r => r[col] === val); return api; },
+    is(col, val) { filters.push(r => val === null ? r[col] == null : r[col] === val); return api; },
     not(col, op, val) {
       if (op === 'is' && val === null) filters.push(r => r[col] !== null && r[col] !== undefined);
       return api;
     },
     order(col, opts) { order = { col, asc: opts?.ascending !== false }; return api; },
+    range(from, to) { range = [from, to]; return api; },
     limit(n) { limit = n; return api; },
     maybeSingle() { single = 'maybe'; return api; },
     single() { single = 'one'; return api; },

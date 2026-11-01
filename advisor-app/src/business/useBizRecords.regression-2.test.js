@@ -27,10 +27,24 @@ vi.mock('../supabaseClient.js', () => ({
   } }) }
 }));
 vi.mock('../toast.js', () => ({ toast: vi.fn() }));
+vi.mock('./bizSync.js', () => ({
+  saveBusinessPatch: (_db, _advisor, id, patch) => {
+    harness.payloads?.push({ data: { ...harness.saved[id], ...patch } });
+    return new Promise((resolve, reject) => {
+      const finish = result => {
+        if (result.error) { resolve(result); return; }
+        harness.saved[id] = { ...harness.saved[id], ...patch };
+        resolve({ data: harness.saved[id], error: null });
+      };
+      harness.pending.push({ done: finish, fail: reject });
+    });
+  }
+}));
 
 import { useBizRecords } from './useBizRecords.js';
 
 beforeEach(() => {
+  harness.saved = { first: { amount: 100, receipt: false }, second: { amount: 200, receipt: false } };
   harness.cursor = 0;
   harness.pending = [];
   harness.payloads = [];
