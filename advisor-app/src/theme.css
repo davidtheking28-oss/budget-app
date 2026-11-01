@@ -20,11 +20,11 @@
   --donut-5: #3d464c;
   --surface: #ffffff;
   --surface2: #f0f4fa;
-  --accent: #0078f8;
-  --accent-rgb: 0, 120, 248;
+  --accent: #0063cc;
+  --accent-rgb: 0, 99, 204;
   --accent-2: #0063cc;
   --accent-ink: #ffffff;
-  --accent-dim: rgba(0, 120, 248, 0.09);
+  --accent-dim: rgba(0, 99, 204, 0.09);
   /* Was #7c4a06 — contrast ratio 1.12 against --red (#b02631), functionally the
      same color to a fast glance or anyone color-blind. #c2760a (the value after
      that fix) separated cleanly from red but only cleared 3:1 against white —
@@ -113,14 +113,14 @@
   --bg-2: #0f1620;
   --surface: #131b27;
   --surface2: #1b2536;
-  --accent: #0078f8;
-  --accent-rgb: 0, 120, 248;
-  --accent-2: #0063cc;
-  --accent-ink: #ffffff;
-  --accent-dim: rgba(0, 120, 248, 0.13);
-  --primary: #0078f8;
-  --primary-ink: #ffffff;
-  --primary-hover: #0063cc;
+  --accent: #4da3fb;
+  --accent-rgb: 77, 163, 251;
+  --accent-2: #78b9ff;
+  --accent-ink: #0b1018;
+  --accent-dim: rgba(77, 163, 251, 0.13);
+  --primary: var(--accent);
+  --primary-ink: var(--accent-ink);
+  --primary-hover: #78b9ff;
   /* Status colors are deliberately desaturated relative to their light-mode
      counterparts: the earlier neon values (#3ddba8 / #f28b91 / #f3ca3f) glowed
      against the near-black surfaces. All keep >6:1 on --surface for text. */

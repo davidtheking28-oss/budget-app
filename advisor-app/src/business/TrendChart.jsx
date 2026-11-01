@@ -29,7 +29,7 @@ export default function TrendChart({ title = 'מגמות לאורך הזמן', l
       <div className={styles.segment} role="group" aria-label="מדד להצגה בגרף" style={{ marginBottom: 'var(--space-3)', flexWrap: 'wrap' }}>
         {metrics.map(m => <button key={m.key} type="button" className={m.key === metric.key ? styles.segBtnOn : styles.segBtn} aria-pressed={m.key === metric.key} onClick={() => setActive(m.key)}>{m.label}</button>)}
       </div>
-      <div className={styles.chartBox}><Line data={data} options={options} /></div>
+      <div className={styles.chartBox}><Line aria-label={`${title} · ${metric.label}: ${labels.map((label, i) => `${label}: ${metric.format(metric.values[i])}`).join(' · ')}`} data={data} options={options} /></div>
       {footnote && <p className={styles.note}>{footnote}</p>}
     </section>
   );

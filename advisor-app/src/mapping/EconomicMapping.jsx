@@ -616,7 +616,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         <div className={layout.summaryGrid}>
           <div className={layout.box}>
             <div className={styles.actualChart} role="img" aria-label={`ביצוע: הכנסות ${fmt(cashflow.income * periodMul)}, הוצאות ${fmt(cashflow.expense * periodMul)}`}>
-              <Bar data={actualChartData} plugins={[barValueLabels]} options={actualChartOptions} />
+              <Bar aria-hidden="true" data={actualChartData} plugins={[barValueLabels]} options={actualChartOptions} />
             </div>
           </div>
           <div className={styles.flowBox + ' ' + layout.box}>
@@ -653,8 +653,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
             )}
               {donutItems.length === 0 && <p className={layout.boxEmpty}>עוד אין כאן הוצאות להציג.</p>}
           <div className={styles.donutWrap}>
-              <div className={styles.donut} role="img" aria-label="התפלגות ההוצאות">
-                <Doughnut data={donutData} options={donutOptions} />
+              <div className={styles.donut} role="img" aria-label={`התפלגות ההוצאות: ${donutItems.map(item => `${item.name}: ${fmt(item.value)}`).join(' · ')}`}>
+                <Doughnut aria-hidden="true" data={donutData} options={donutOptions} />
                 <div className={styles.donutCenter}>
                   <span className={styles.donutCenterLabel}>סה״כ לחודש</span>
                   <span className={styles.donutCenterValue}>{fmt(donutTotal)}</span>
@@ -867,6 +867,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
           <div className={styles.cashflowChart}>
             <Bar
+              aria-label={`השוואת תזרים: ${comparisonChartData.datasets.map(series => `${series.label}: ${series.data.map(fmt).join(' לעומת ')}`).join(' · ')}`}
               data={comparisonChartData}
               plugins={[barValueLabels]}
               options={{

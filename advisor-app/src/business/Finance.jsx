@@ -342,7 +342,7 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
 
       <section className={styles.card}>
         <div className={styles.cardHead}><div><h3 className={styles.cardTitle}>הכנסות מול רווח נטו</h3><p className={styles.cardSub}>{periodLabel(from)} ועד {periodLabel(to)}</p></div></div>
-        {empty ? <div className={styles.empty}>אין עדיין נתונים להצגה</div> : <div className={styles.chartBox}><Bar data={chartData} options={chartOptions} /></div>}
+        {empty ? <div className={styles.empty}>אין עדיין נתונים להצגה</div> : <div className={styles.chartBox}><Bar aria-label={`סיכום כספי: ${chartData.datasets.map(series => `${series.label}: ${series.data.map(money).join(' · ')}`).join(' · ')}`} data={chartData} options={chartOptions} /></div>}
       </section>
 
       <section className={styles.card}>
