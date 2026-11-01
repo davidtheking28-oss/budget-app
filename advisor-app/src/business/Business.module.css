@@ -9,7 +9,7 @@
   min-width: 0;
 }
 .cardHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: var(--space-3); }
-.cardTitle { margin: 0; font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
+.cardTitle { margin: 0; font-size: var(--text-lg); font-weight: 800; letter-spacing: -0.01em; color: var(--text); }
 .cardSub { margin: 2px 0 0; color: var(--text2); font-size: var(--text-sm); }
 
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); align-items: start; }
