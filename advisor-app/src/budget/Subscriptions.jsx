@@ -23,7 +23,7 @@ export function monthlyEquivalent(cycle, amount) {
   return { monthly: amount, annual: amount / 12, weekly: amount * 4.33 }[cycle] ?? amount;
 }
 const SUB_CATEGORIES = ['סטרימינג', 'מוזיקה', 'פודקאסטים', 'תוכנה', 'כלי AI', 'אחסון ענן', 'כושר', 'משחקי וידאו', 'עיתונות', 'חינוך', 'אחר'];
-const INSURANCE_TYPES = ['בריאות', 'חיים', 'רכוש', 'תאונות אישיות'];
+const INSURANCE_TYPES = ['בריאות', 'חיים', 'רכוש', 'ביטוח חובה', 'ביטוח מקיף', 'תאונות אישיות'];
 
 function daysUntil(dateStr) {
   if (!dateStr) return null;
