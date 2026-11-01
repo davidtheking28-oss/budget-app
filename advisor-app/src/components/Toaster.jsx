@@ -31,7 +31,7 @@ export default function Toaster() {
   useEffect(() => {
     const timers = timersRef.current;
     const unsubscribe = subscribeToast(item => {
-      setItems(prev => [...prev, item]);
+      setItems(prev => (!item.action && prev.some(p => !p.action && p.message === item.message && p.kind === item.kind) ? prev : [...prev, item]));
       // A toast carrying an action (e.g. "undo") must stay until the user
       // dismisses it, not disappear on a timer — otherwise the undo window
       // closes silently while they're still deciding.

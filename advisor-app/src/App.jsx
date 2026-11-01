@@ -84,13 +84,13 @@ export default function App() {
         email={session.user.email}
         advisorId={session.user.id}
         workspaceKey={personal ? `${session.user.id}:personal:${activePersonal}` : `${session.user.id}:home:${homeView}`}
-        onSearch={() => setSearchOpen(true)}
+        onSearch={personal ? undefined : () => setSearchOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
         inert={searchOpen}
         onHomeClients={personal ? () => setWorkspace('advisor') : () => setHomeView('clients')}
         workspace={workspace}
-        onWorkspaceChange={setWorkspace}
+        onWorkspaceChange={next => { setWorkspace(next); if (next === 'advisor') setPersonalView('personal-expenses'); }}
         homeNav={personal ? PERSONAL_NAV : BUSINESS_NAV.filter(n => n.dept === activeDept.key)}
         homeActive={personal ? activePersonal : activeHome}
         onHomeNavChange={personal ? setPersonalView : setHomeView}
