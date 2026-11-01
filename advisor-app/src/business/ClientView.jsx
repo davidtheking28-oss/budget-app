@@ -161,21 +161,23 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
                 title={tab === 'budget' ? 'תקציב' : 'מיפוי'}
                 text={tab === 'budget' ? 'חודשי: תכנון בתחילת החודש מול ביצוע בסופו.' : 'מיפוי: התמונה המלאה של ההוצאות וההכנסות, עם מחשבונים לכל קטגוריה משתנה.'}
               />
+              {view === 'budget' && (
+                <div className={styles.toolbar}>
+                  <div className={styles.pills} role="group" aria-label="תצוגת תקופה">
+                    <button type="button" className={period === 'month' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'month'} onClick={() => setPeriod('month')}>חודשי</button>
+                    <button type="button" className={period === 'year' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'year'} onClick={() => setPeriod('year')}>שנתי</button>
+                    <button type="button" className={period === 'avg' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'avg'} onClick={() => setPeriod('avg')}>חודש ממוצע</button>
+                    <button type="button" className={period === 'long' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'long'} onClick={() => setPeriod('long')}>תכנון ארוך טווח</button>
+                  </div>
+                  {monthModeBar}
+                </div>
+              )}
               {chipBar}
             </div>
           )}
           {view === 'mapping' && suspense(<EconomicMapping key={clientIdOrNull} clientUserId={clientIdOrNull} advisorId={advisorId} />)}
           {view === 'budget' && (
             <>
-              <div className={styles.toolbar}>
-                <div className={styles.pills} role="group" aria-label="תצוגת תקופה">
-                  <button type="button" className={period === 'month' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'month'} onClick={() => setPeriod('month')}>חודשי</button>
-                  <button type="button" className={period === 'year' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'year'} onClick={() => setPeriod('year')}>שנתי</button>
-                  <button type="button" className={period === 'avg' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'avg'} onClick={() => setPeriod('avg')}>חודש ממוצע</button>
-                  <button type="button" className={period === 'long' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'long'} onClick={() => setPeriod('long')}>תכנון ארוך טווח</button>
-                </div>
-                {monthModeBar}
-              </div>
               <Budget key={`${clientIdOrNull}:${mode}:${ym.year}:${ym.month}`} period={period} onPeriodChange={setPeriod} onDirtyChange={setDirty} focusCategory={null} clientUserId={clientIdOrNull} advisorId={advisorId} year={ym.year} month={ym.month} />
             </>
           )}

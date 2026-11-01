@@ -58,6 +58,16 @@ export default function PersonalBudget({ userId }) {
           <button type="button" className={tab === 'mapping' ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === 'mapping'} onClick={() => changeTab('mapping')}>מיפוי</button>
           <button type="button" className={tab === 'budget' ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === 'budget'} onClick={() => changeTab('budget')}>תזרים</button>
         </div>
+        {view === 'budget' && (
+        <div className={styles.toolbar}>
+          <div className={styles.pills} role="group" aria-label="תצוגת תקופה">
+            {PERIODS.map(p => (
+              <button key={p.key} type="button" className={period === p.key ? styles.bigPillOn : styles.bigPill} aria-pressed={period === p.key} onClick={() => setPeriod(p.key)}>{p.label}</button>
+            ))}
+          </div>
+          {monthBar}
+        </div>
+        )}
         <div className={styles.stack}>
           <div className={styles.pills} role="group" aria-label="תצוגות נוספות">
             {CHIPS.map(c => (
@@ -68,14 +78,6 @@ export default function PersonalBudget({ userId }) {
         {view === 'mapping' && suspense(<EconomicMapping key={userId} clientUserId={userId} advisorId={userId} />)}
         {view === 'budget' && (
           <>
-            <div className={styles.toolbar}>
-              <div className={styles.pills} role="group" aria-label="תצוגת תקופה">
-                {PERIODS.map(p => (
-                  <button key={p.key} type="button" className={period === p.key ? styles.bigPillOn : styles.bigPill} aria-pressed={period === p.key} onClick={() => setPeriod(p.key)}>{p.label}</button>
-                ))}
-              </div>
-              {monthBar}
-            </div>
             <Budget key={`${userId}:${ym.year}:${ym.month}`} period={period} onPeriodChange={setPeriod} onDirtyChange={setDirty} focusCategory={null} clientUserId={userId} advisorId={userId} year={ym.year} month={ym.month} />
           </>
         )}
