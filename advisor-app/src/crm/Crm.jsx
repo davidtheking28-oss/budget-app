@@ -175,6 +175,88 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
     );
   }
 
+  const meetingsSection = (
+    <div className={styles.section}>
+      <h2 className={styles.sectionTitle}>
+        פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}
+      </h2>
+      <div>
+      <div className={styles.sectionBodyInner}>
+      <AddForm label="קבע פגישה" openSignal={signal('meeting')} className={styles.form}>
+        <input className={styles.input} disabled={savingMeeting} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
+        <input className={styles.input} type="datetime-local" step="1800" disabled={savingMeeting} aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
+        <label className={styles.forClientLabel}>
+          <input type="checkbox" className={styles.checkbox} disabled={savingMeeting} checked={meetingForClient} onChange={e => setMeetingForClient(e.target.checked)} />
+          גלוי ללקוח
+        </label>
+        <Button disabled={!meetingAt || savingMeeting} onClick={submitMeeting}>קבע פגישה</Button>
+      </AddForm>
+      {meetings.length ? (
+        <div className={styles.list}>
+          {meetings.map((m, i) => editingMeeting === m.id ? (
+            <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
+              <div className={styles.form} style={{ margin: 0, flex: 1 }}>
+                <input className={styles.input} disabled={savingMeeting} aria-label="נושא הפגישה" value={editMeetingNotes} onChange={e => setEditMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditMeeting(m.id)} />
+                <input className={styles.input} type="datetime-local" step="1800" disabled={savingMeeting} aria-label="תאריך ושעת הפגישה" value={editMeetingAt} onChange={e => setEditMeetingAt(e.target.value)} />
+                <label className={styles.forClientLabel}>
+                  <input type="checkbox" className={styles.checkbox} disabled={savingMeeting} checked={editMeetingForClient} onChange={e => setEditMeetingForClient(e.target.checked)} />
+                  גלוי ללקוח
+                </label>
+                <Button disabled={savingMeeting} onClick={() => saveEditMeeting(m.id)}>שמור</Button>
+                <Button variant="ghost" disabled={savingMeeting} onClick={() => setEditingMeeting(null)}>ביטול</Button>
+              </div>
+            </div>
+          ) : (() => {
+            const days = daysUntil(m.scheduled_at);
+            const soon = m.status !== 'declined' && days !== null && days >= 0 && days <= 3;
+            const past = days !== null && days < 0;
+            return (
+              <div key={m.id} className={styles.row + ' ' + styles.meetingRow + (soon ? ' ' + styles.meetingUpcoming : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
+                <div className={styles.rowMain}>
+                  <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditMeeting(m)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditMeeting(m))}>
+                    <div className={styles.name}>
+                      {formatDateTime(m.scheduled_at)}
+                      {soon && <span className={styles.soonBadge}>{days === 0 ? 'היום' : days === 1 ? 'מחר' : `בעוד ${days} ימים`}</span>}
+                      {past && <span className={styles.pastBadge}>עברה</span>}
+                      {!m.for_client && <span className={styles.clientBadge}>פרטי</span>}
+                      {m.for_client && m.status === 'confirmed' && <span className={styles.statusConfirmed}>אושרה ע"י הלקוח</span>}
+                      {m.for_client && m.status === 'declined' && <span className={styles.statusDeclined}>נדחתה ע"י הלקוח</span>}
+                      {m.for_client && m.status === 'pending' && !past && <span className={styles.statusPending}>ממתינה לאישור</span>}
+                    </div>
+                    {m.notes && <div className={styles.meta}>{m.notes}</div>}
+                    {m.status === 'declined' && m.decline_note && <div className={styles.meta}>הערת הלקוח: {m.decline_note}</div>}
+                  </div>
+                  <div className={styles.rowActions}><ActionMenu>
+                    {m.for_client && m.status === 'pending' && !past && (
+                      <>
+                        <button type="button" className={styles.icsButton} title="סמן כמאושרת (למשל אם הלקוח אישר בטלפון)" aria-label="סמן פגישה כמאושרת" onClick={async () => { if (await respondMeeting(m.id, 'confirmed')) notify(); }}>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                        </button>
+                        <button type="button" className={styles.icsButton} title="סמן כנדחתה" aria-label="סמן פגישה כנדחתה" onClick={async () => { if (await respondMeeting(m.id, 'declined')) notify(); }}>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        </button>
+                      </>
+                    )}
+<EditButton title="ערוך פגישה" onClick={() => startEditMeeting(m)} />
+                    <button type="button" className={styles.icsButton} title="הורד ליומן" aria-label="הורד ליומן" onClick={() => downloadIcs(m)}>
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><path d="M12 14v4M10 16h4" />
+                      </svg>
+                    </button>
+                    <DeleteButton title="מחק פגישה" onClick={() => removeMeeting(m.id)} />
+                  </ActionMenu></div>
+                </div>
+                <MeetingSummary key={m.id} meeting={m} tasks={tasks.filter(t => t.meeting_id === m.id)} onSave={setMeetingSummary} onAddTasks={addTasks} onDirtyChange={markMeetingDirty} onChange={notify} />
+              </div>
+            );
+          })())}
+        </div>
+      ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.meetings}</span>אין פגישות מתוזמנות</div>}
+      </div>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       {view === 'client' && <MeetingPrep advisorId={advisorId} clientId={clientId} tasks={tasks} meetings={meetings} openSignal={action?.type === 'prep' ? action.id : 0} />}
@@ -224,85 +306,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
           </div>
         </div>
       </div>
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          פגישות{meetings.length > 0 && <span className={styles.countBadge}>{meetings.length}</span>}
-        </h2>
-        <div>
-        <div className={styles.sectionBodyInner}>
-        <AddForm label="קבע פגישה" openSignal={signal('meeting')} className={styles.form}>
-          <input className={styles.input} disabled={savingMeeting} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
-          <input className={styles.input} type="datetime-local" step="1800" disabled={savingMeeting} aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
-          <label className={styles.forClientLabel}>
-            <input type="checkbox" className={styles.checkbox} disabled={savingMeeting} checked={meetingForClient} onChange={e => setMeetingForClient(e.target.checked)} />
-            גלוי ללקוח
-          </label>
-          <Button disabled={!meetingAt || savingMeeting} onClick={submitMeeting}>קבע פגישה</Button>
-        </AddForm>
-        {meetings.length ? (
-          <div className={styles.list}>
-            {meetings.map((m, i) => editingMeeting === m.id ? (
-              <div key={m.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
-                <div className={styles.form} style={{ margin: 0, flex: 1 }}>
-                  <input className={styles.input} disabled={savingMeeting} aria-label="נושא הפגישה" value={editMeetingNotes} onChange={e => setEditMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditMeeting(m.id)} />
-                  <input className={styles.input} type="datetime-local" step="1800" disabled={savingMeeting} aria-label="תאריך ושעת הפגישה" value={editMeetingAt} onChange={e => setEditMeetingAt(e.target.value)} />
-                  <label className={styles.forClientLabel}>
-                    <input type="checkbox" className={styles.checkbox} disabled={savingMeeting} checked={editMeetingForClient} onChange={e => setEditMeetingForClient(e.target.checked)} />
-                    גלוי ללקוח
-                  </label>
-                  <Button disabled={savingMeeting} onClick={() => saveEditMeeting(m.id)}>שמור</Button>
-                  <Button variant="ghost" disabled={savingMeeting} onClick={() => setEditingMeeting(null)}>ביטול</Button>
-                </div>
-              </div>
-            ) : (() => {
-              const days = daysUntil(m.scheduled_at);
-              const soon = m.status !== 'declined' && days !== null && days >= 0 && days <= 3;
-              const past = days !== null && days < 0;
-              return (
-                <div key={m.id} className={styles.row + ' ' + styles.meetingRow + (soon ? ' ' + styles.meetingUpcoming : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
-                  <div className={styles.rowMain}>
-                    <div role="button" tabIndex={0} className={styles.rowBody} onClick={() => startEditMeeting(m)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditMeeting(m))}>
-                      <div className={styles.name}>
-                        {formatDateTime(m.scheduled_at)}
-                        {soon && <span className={styles.soonBadge}>{days === 0 ? 'היום' : days === 1 ? 'מחר' : `בעוד ${days} ימים`}</span>}
-                        {past && <span className={styles.pastBadge}>עברה</span>}
-                        {!m.for_client && <span className={styles.clientBadge}>פרטי</span>}
-                        {m.for_client && m.status === 'confirmed' && <span className={styles.statusConfirmed}>אושרה ע"י הלקוח</span>}
-                        {m.for_client && m.status === 'declined' && <span className={styles.statusDeclined}>נדחתה ע"י הלקוח</span>}
-                        {m.for_client && m.status === 'pending' && !past && <span className={styles.statusPending}>ממתינה לאישור</span>}
-                      </div>
-                      {m.notes && <div className={styles.meta}>{m.notes}</div>}
-                      {m.status === 'declined' && m.decline_note && <div className={styles.meta}>הערת הלקוח: {m.decline_note}</div>}
-                    </div>
-                    <div className={styles.rowActions}><ActionMenu>
-                      {m.for_client && m.status === 'pending' && !past && (
-                        <>
-                          <button type="button" className={styles.icsButton} title="סמן כמאושרת (למשל אם הלקוח אישר בטלפון)" aria-label="סמן פגישה כמאושרת" onClick={async () => { if (await respondMeeting(m.id, 'confirmed')) notify(); }}>
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
-                          </button>
-                          <button type="button" className={styles.icsButton} title="סמן כנדחתה" aria-label="סמן פגישה כנדחתה" onClick={async () => { if (await respondMeeting(m.id, 'declined')) notify(); }}>
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                          </button>
-                        </>
-                      )}
-<EditButton title="ערוך פגישה" onClick={() => startEditMeeting(m)} />
-                      <button type="button" className={styles.icsButton} title="הורד ליומן" aria-label="הורד ליומן" onClick={() => downloadIcs(m)}>
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /><path d="M12 14v4M10 16h4" />
-                        </svg>
-                      </button>
-                      <DeleteButton title="מחק פגישה" onClick={() => removeMeeting(m.id)} />
-                    </ActionMenu></div>
-                  </div>
-                  <MeetingSummary key={m.id} meeting={m} tasks={tasks.filter(t => t.meeting_id === m.id)} onSave={setMeetingSummary} onAddTasks={addTasks} onDirtyChange={markMeetingDirty} onChange={notify} />
-                </div>
-              );
-            })())}
-          </div>
-        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.meetings}</span>אין פגישות מתוזמנות</div>}
-        </div>
-        </div>
-      </div>
+      {meetingsSection}
 
       </>}
 
@@ -363,6 +367,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
         </div>
       </div>
       )}
+      {view === 'tasks' && meetingsSection}
 
       </div>
     </div>
