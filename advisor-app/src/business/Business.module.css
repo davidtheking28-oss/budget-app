@@ -380,3 +380,5 @@
 @media (max-width: 760px) { .brandingLayout { grid-template-columns: minmax(0, 1fr); } }
 
 .pillOn .pillCount { opacity: 1; }
+
+.saveFailure { align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 12px; border: 1px solid rgba(var(--red-rgb), .4); background: rgba(var(--red-rgb), .08); color: var(--red); }

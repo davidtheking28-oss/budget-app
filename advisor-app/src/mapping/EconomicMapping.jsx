@@ -164,7 +164,11 @@ async function processQueue(queue, setQueue) {
       finalItems.push({ ...item, status: 'done' });
     } catch (err) {
       const raw = String(err?.message || err);
-      const message = raw === 'Failed to fetch' || raw.includes('NetworkError') ? 'שגיאת תקשורת, נסה שוב' : raw;
+      let message = raw;
+      if (raw === 'Failed to fetch' || raw.includes('NetworkError')) message = 'שגיאת תקשורת, נסה שוב';
+      else if (err?.name === 'PasswordException') message = 'המסמך מוגן בסיסמה. העלה עותק שאינו מוגן בסיסמה.';
+      else if (err?.name === 'InvalidPDFException' || err?.name === 'MissingPDFException') message = 'קובץ המסמך פגום או אינו תקין. נסה להוריד אותו מחדש מהבנק ולהעלות שוב.';
+      else if (!/[\u0590-\u05ff]/.test(raw)) message = 'לא ניתן לעבד את הקובץ. בדוק שהוא נפתח במכשיר ונסה להעלות אותו שוב.';
       setQueue(q => q.map(x => (x.id === item.id ? { ...x, status: 'error', error: message } : x)));
       finalItems.push({ ...item, status: 'error', error: message });
     }
@@ -718,7 +722,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
             {queue.map(item => (
               <div key={item.id} className={styles.queueRow}>
                 <span className={styles.queueName} title={item.name}>{item.name}</span>
-                <select className={styles.monthSelect} value={item.monthTag} onChange={e => setMonthTag(item.id, e.target.value)} disabled={processing}>
+                <select className={styles.monthSelect} aria-label={'חודש המסמך: ' + item.name} value={item.monthTag} onChange={e => setMonthTag(item.id, e.target.value)} disabled={processing}>
                   {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
                 <span

@@ -188,7 +188,10 @@ export default function Prospects({ advisorId, onConvert }) {
       {modalOpen && (
         <Modal title={editing ? 'עריכת ליד: ' + form.name : 'ליד חדש'} onClose={reset} wide>
           <form className={biz.formGrid} onSubmit={e => { e.preventDefault(); if (!editing) submit(); }}>
-            {editing && <p className={biz.saveStatus} role="status">{saveState === 'saving' ? 'שומר שינויים…' : saveState === 'pending' ? 'יש שינויים לשמירה' : saveState === 'invalid' ? 'יש להזין שם כדי לשמור' : saveState === 'error' ? 'השמירה נכשלה — ערוך שוב כדי לנסות מחדש' : 'כל השינויים נשמרו'}</p>}
+            {editing && <div className={biz.saveStatus + (saveState === 'error' || saveState === 'invalid' ? ' ' + biz.saveFailure : '')} role={saveState === 'error' || saveState === 'invalid' ? 'alert' : 'status'}>
+              <span>{saveState === 'saving' ? 'שומר שינויים…' : saveState === 'pending' ? 'יש שינויים לשמירה' : saveState === 'invalid' ? 'יש להזין שם כדי לשמור' : saveState === 'error' ? 'השמירה נכשלה. השינויים שלך עדיין בטופס.' : 'כל השינויים נשמרו'}</span>
+              {saveState === 'error' && <button type="button" className={biz.btnGhost} onClick={() => { saveVersion.current += 1; pending.current = { id: editingId, next: form }; flush(); }}>נסה שוב</button>}
+            </div>}
             <h3 className={biz.formSection}>פרטי קשר</h3>
             <label className={biz.fieldLabel}>שם מלא · חובה<input ref={nameRef} className={biz.input} value={form.name} onChange={e => patchForm({ name: e.target.value })} /></label>
             <div className={biz.formRow}>
