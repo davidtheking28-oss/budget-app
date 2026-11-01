@@ -661,3 +661,15 @@ test('without an invite the sign-in redirect stays plain and no signup metadata 
   assert.equal(ctx._authRedirectUrl(),'https://davidtheking28-oss.github.io/budget-app/');
   assert.equal(JSON.stringify(ctx._authSignupData()),'{}');
 });
+
+test('the tasks badge counts only unseen, open advisor items and upcoming meetings',()=>{
+  const future=new Date(Date.now()+86400000).toISOString();
+  const past=new Date(Date.now()-86400000).toISOString();
+  const localStorage=storage({budget_advisor_seen:JSON.stringify(['t2','m2'])});
+  const ctx=functions(['_advisorSeenSet','_upcomingAdvisorMeetings','_unseenAdvisorCount'],{
+    localStorage,
+    _advisorTasks:[{id:'t1',done:false},{id:'t2',done:false},{id:'t3',done:true}],
+    _advisorMeetings:[{id:'m1',scheduled_at:future,status:'pending'},{id:'m2',scheduled_at:future,status:'pending'},{id:'m3',scheduled_at:past,status:'pending'},{id:'m4',scheduled_at:future,status:'declined'}]
+  });
+  assert.equal(ctx._unseenAdvisorCount(),2);
+});

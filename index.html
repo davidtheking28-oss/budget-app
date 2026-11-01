@@ -233,6 +233,10 @@
     @media (prefers-reduced-transparency:reduce){.bottom-nav{background:var(--surface)!important;backdrop-filter:none;-webkit-backdrop-filter:none;}}
     .nav-item{flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;background:none;padding:0;height:100%;transition:opacity 0.18s;-webkit-tap-highlight-color:transparent;font-family:inherit;}
     .nav-item .nav-icon{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;transition:background 0.18s,transform 0.12s cubic-bezier(0.22,1,0.36,1);}
+    .nav-item .nav-icon{position:relative;}
+    .nav-badge{position:absolute;top:-2px;right:-3px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:0.66rem;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--surface);animation:navBadgePop .35s cubic-bezier(.22,1,.36,1);}
+    .nav-badge[hidden]{display:none;}
+    @keyframes navBadgePop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
     .nav-item .nav-icon svg{width:20px;height:20px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.18s;}
     .nav-item .nav-label{display:none;}
     .nav-item:active .nav-icon{transform:scale(0.88);}
@@ -2820,6 +2824,7 @@
 <button class="nav-item" onclick="showPage('analytics',this)" id="nav-analytics" aria-label="משימות">
     <div class="nav-icon">
       <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="nav-badge" id="navTasksBadge" hidden aria-hidden="true"></span>
     </div>
     <span class="nav-label">משימות</span>
   </button>
@@ -5004,6 +5009,7 @@ async function _loadAdvisorLink(){
   const {data}=await _sb.from('advisor_clients').select('*').eq('client_id',_cloudUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
   _advisorLink=data||null;
   _applyApprovalLock();
+  _pollAdvisorItems();
 }
 function _approvalLocked(l){return !!(l&&l.status==='pending'&&l.requested_by_client);}
 let _approvalTimer=null;
@@ -5208,6 +5214,41 @@ async function _loadAdvisorTasks(){
     _advisorMeetings=meetingsRes.data||[];
   }catch(e){_advisorTasksError=true;}
 }
+function _advisorSeenSet(){
+  try{return new Set(JSON.parse(localStorage.getItem('budget_advisor_seen')||'[]'));}catch(e){return new Set();}
+}
+function _upcomingAdvisorMeetings(){
+  const now=Date.now();
+  return _advisorMeetings.filter(m=>m.status!=='declined'&&new Date(m.scheduled_at).getTime()>=now);
+}
+function _unseenAdvisorCount(){
+  const seen=_advisorSeenSet();
+  return _advisorTasks.filter(t=>!t.done&&!seen.has(t.id)).length+_upcomingAdvisorMeetings().filter(m=>!seen.has(m.id)).length;
+}
+function _updateTasksBadge(){
+  const b=document.getElementById('navTasksBadge');
+  const nav=document.getElementById('nav-analytics');
+  if(!b)return;
+  const n=_advisorLink?.status==='active'?_unseenAdvisorCount():0;
+  b.hidden=!n;
+  b.textContent=n>9?'9+':String(n);
+  if(nav)nav.setAttribute('aria-label',n?'משימות, '+n+' עדכונים חדשים מהיועץ':'משימות');
+}
+function _markAdvisorItemsSeen(){
+  const seen=_advisorSeenSet();
+  _advisorTasks.filter(t=>!t.done).forEach(t=>seen.add(t.id));
+  _upcomingAdvisorMeetings().forEach(m=>seen.add(m.id));
+  try{localStorage.setItem('budget_advisor_seen',JSON.stringify([...seen].slice(-500)));}catch(e){}
+  _updateTasksBadge();
+}
+async function _pollAdvisorItems(){
+  if(!_cloudUser||_advisorLink?.status!=='active'){_updateTasksBadge();return;}
+  await _loadAdvisorTasks();
+  const onPage=document.getElementById('page-analytics')?.classList.contains('active');
+  if(onPage){renderTasksPage();_markAdvisorItemsSeen();}else _updateTasksBadge();
+}
+setInterval(()=>{if(!document.hidden)_pollAdvisorItems();},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)_pollAdvisorItems();});
 function _heDateTime(iso){
   const d=new Date(iso);
   return d.getDate()+' ב'+HE_MONTHS_LONG[d.getMonth()]+', '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
@@ -5231,6 +5272,7 @@ function renderTasksPage(){
     return;
   }
   noAdvisor.style.display='none';content.style.display='';
+  if(document.getElementById('page-analytics')?.classList.contains('active'))_markAdvisorItemsSeen();else _updateTasksBadge();
   const meetingsList=document.getElementById('meetingsList');
   // A meeting with no summary was never followed up on — once its date has passed
   // it's just clutter, not a record of anything. Keep past meetings only when the
