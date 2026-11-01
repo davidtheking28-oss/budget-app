@@ -166,6 +166,7 @@ function AccountMenu({ email, advisorId, up, block }) {
 }
 
 export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, description, homeNav, homeActive, onHomeNavChange, homeTabs, workspace, onWorkspaceChange, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+  const { profile } = useAdvisorProfile(advisorId);
   const desktop = useDesktop();
   useWorkspaceScroll(workspaceKey);
 
