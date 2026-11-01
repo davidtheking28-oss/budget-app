@@ -4,6 +4,11 @@ const harness = vi.hoisted(() => ({ state: [], cursor: 0, pending: [] }));
 vi.mock('react', () => ({
   useCallback: fn => fn,
   useEffect: () => {},
+  useRef: initial => {
+    const index = harness.cursor++;
+    if (!(index in harness.state)) harness.state[index] = { current: initial };
+    return harness.state[index];
+  },
   useState: initial => {
     const index = harness.cursor++;
     if (!(index in harness.state)) harness.state[index] = initial;
@@ -36,7 +41,7 @@ describe('business record rollback during concurrent saves', () => {
     const { update } = useBizRecords('advisor', 'finance_entry');
     const first = update('first', { receipt: true });
     const second = update('second', { receipt: true });
-    await Promise.resolve();
+    await vi.waitFor(() => expect(harness.pending).toHaveLength(2));
     harness.pending[1]({ error: null });
     expect(await second).toBe(true);
     harness.pending[0]({ error: { message: 'failed' } });
@@ -51,11 +56,13 @@ describe('business record rollback during concurrent saves', () => {
     const { update } = useBizRecords('advisor', 'finance_entry');
     const first = update('first', { amount: 300 });
     const second = update('first', { amount: 400 });
-    await Promise.resolve();
-    harness.pending[1]({ error: null });
-    expect(await second).toBe(true);
+    await vi.waitFor(() => expect(harness.pending).toHaveLength(1));
     harness.pending[0]({ error: { message: 'failed' } });
     expect(await first).toBe(false);
+    expect(harness.state[0][0].data.amount).toBe(400);
+    await vi.waitFor(() => expect(harness.pending).toHaveLength(2));
+    harness.pending[1]({ error: null });
+    expect(await second).toBe(true);
     expect(harness.state[0][0].data.amount).toBe(400);
   });
 });

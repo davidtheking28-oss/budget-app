@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 
@@ -6,6 +6,7 @@ export function useBizRecords(advisorId, kind, period = null) {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const updates = useRef(new Map());
 
   const reload = useCallback(async () => {
     if (!advisorId) return;
@@ -28,14 +29,37 @@ export function useBizRecords(advisorId, kind, period = null) {
     return row;
   }
 
-  async function update(id, patch) {
+  function update(id, patch) {
     const current = records.find(r => r.id === id);
-    if (!current) return false;
-    const next = { ...current.data, ...patch };
-    setRecords(prev => prev.map(r => r.id === id ? { ...r, data: next } : r));
-    const { error: err } = await supabase.from('advisor_biz_records').update({ data: next, updated_at: new Date().toISOString() }).eq('id', id).eq('advisor_id', advisorId);
-    if (err) { toast('שגיאה בשמירה', 'error'); setRecords(prev => prev.map(r => r.id === id && r.data === next ? current : r)); return false; }
-    return true;
+    if (!current) return Promise.resolve(false);
+    let entry = updates.current.get(id);
+    if (!entry) {
+      entry = { confirmed: current.data, changes: [], running: Promise.resolve() };
+      updates.current.set(id, entry);
+    }
+    const change = { patch };
+    entry.changes.push(change);
+    const refresh = () => setRecords(prev => prev.map(r => r.id === id ? {
+      ...r, data: entry.changes.reduce((data, pending) => ({ ...data, ...pending.patch }), entry.confirmed)
+    } : r));
+    refresh();
+    const run = async () => {
+      const next = { ...entry.confirmed, ...patch };
+      let failed = false;
+      try {
+        const { error: err } = await supabase.from('advisor_biz_records').update({ data: next, updated_at: new Date().toISOString() }).eq('id', id).eq('advisor_id', advisorId);
+        failed = !!err;
+        if (!failed) entry.confirmed = next;
+      } catch { failed = true; }
+      entry.changes = entry.changes.filter(pending => pending !== change);
+      refresh();
+      if (!entry.changes.length) updates.current.delete(id);
+      if (failed) toast('שגיאה בשמירה', 'error');
+      return !failed;
+    };
+    const saved = entry.running.then(run, run);
+    entry.running = saved;
+    return saved;
   }
 
   async function remove(id, message = 'הרשומה נמחקה') {
