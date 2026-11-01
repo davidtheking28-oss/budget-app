@@ -43,7 +43,8 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
     e.preventDefault();
     if (!(num(form.amount) > 0)) { toast('הזן סכום תקין', 'error'); return; }
     if (!form.date.startsWith(period)) { toast('התאריך חייב להיות בחודש שנבחר', 'error'); return; }
-    await onAdd({ type: 'income', amount: num(form.amount), clearing: num(form.clearing), desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
+    const saved = await onAdd({ type: 'income', amount: num(form.amount), clearing: num(form.clearing), desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
+    if (!saved) return;
     setForm(prev => ({ ...prev, amount: '', clearing: '', desc: '' }));
   }
   return (
@@ -77,7 +78,8 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
   async function submit(e) {
     e.preventDefault();
     if (!(num(form.amount) > 0)) { toast('הזן סכום תקין', 'error'); return; }
-    await onAdd({ type: 'expense', fixed: true, amount: num(form.amount), category: form.category, desc: form.desc.trim(), startPeriod: period }, period);
+    const saved = await onAdd({ type: 'expense', fixed: true, amount: num(form.amount), category: form.category, desc: form.desc.trim(), startPeriod: period }, period);
+    if (!saved) return;
     setForm(prev => ({ ...prev, amount: '', desc: '' }));
   }
   return (
@@ -110,7 +112,8 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
     e.preventDefault();
     if (!(num(form.amount) > 0)) { toast('הזן סכום תקין', 'error'); return; }
     if (!form.date.startsWith(period)) { toast('התאריך חייב להיות בחודש שנבחר', 'error'); return; }
-    await onAdd({ type: 'expense', amount: num(form.amount), category: form.category, desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
+    const saved = await onAdd({ type: 'expense', amount: num(form.amount), category: form.category, desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
+    if (!saved) return;
     setForm(prev => ({ ...prev, amount: '', desc: '' }));
   }
   return (
