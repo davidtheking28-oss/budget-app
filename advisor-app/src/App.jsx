@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useSession } from './auth/useSession.js';
 import Login from './auth/Login.jsx';
 import NotAdvisor from './auth/NotAdvisor.jsx';
@@ -18,10 +18,11 @@ import { toast } from './toast.js';
 import { useTheme } from './useTheme.js';
 import { useUrlParam } from './useUrlParam.js';
 import Prospects from './clients/Prospects.jsx';
-import BusinessView from './business/BusinessView.jsx';
-import PersonalView from './business/PersonalView.jsx';
 import { PERSONAL_NAV, PERSONAL_KEYS } from './business/PersonalNav.jsx';
 import { BUSINESS_NAV, BUSINESS_KEYS, DEPARTMENTS, deptOf, pageTitle } from './business/BusinessNav.jsx';
+
+const BusinessView = lazy(() => import('./business/BusinessView.jsx'));
+const PersonalView = lazy(() => import('./business/PersonalView.jsx'));
 
 // Older links opened a standalone client screen (?client=<id>&nav=<tab>); that
 // screen now lives inside the department's "תצוגת לקוח".
@@ -99,13 +100,15 @@ export default function App() {
         description={personal ? personalItem?.description : activeHome === 'tasks' ? new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : homeItem?.description}
         homeLinks={personal ? PERSONAL_NAV.map(n => ({ key: n.key, label: n.label, active: activePersonal === n.key, onClick: () => setPersonalView(n.key), icon: n.icon })) : BUSINESS_NAV.filter(n => n.key !== 'clients').map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => setHomeView(n.key), icon: n.icon }))}
       >
-        {personal
-          ? <PersonalView view={activePersonal} userId={session.user.id} email={session.user.email} />
-          : activeHome === 'prospects'
-          ? <Prospects advisorId={session.user.id} onConvert={async () => { try { await navigator.clipboard.writeText(signupMessage(session.user.id)); toast('קישור ההרשמה הועתק, שלח אותו ללקוח', 'success'); } catch { toast('אפשר להעתיק את הקישור ממסך אישור לקוחות', 'info'); } setHomeView('client-approvals'); }} />
-          : activeHome !== 'clients'
-          ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} />
-          : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => openInView(clientId)} />}
+        <Suspense fallback={<Skeleton height="260px" radius="18px" />}>
+          {personal
+            ? <PersonalView view={activePersonal} userId={session.user.id} email={session.user.email} />
+            : activeHome === 'prospects'
+            ? <Prospects advisorId={session.user.id} onConvert={async () => { try { await navigator.clipboard.writeText(signupMessage(session.user.id)); toast('קישור ההרשמה הועתק, שלח אותו ללקוח', 'success'); } catch { toast('אפשר להעתיק את הקישור ממסך אישור לקוחות', 'info'); } setHomeView('client-approvals'); }} />
+            : activeHome !== 'clients'
+            ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} />
+            : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => openInView(clientId)} />}
+        </Suspense>
       </Shell>
       <QuickSwitcher advisorId={session.user.id} onSelect={openInView} open={searchOpen} onOpenChange={setSearchOpen} />
       <Toaster />

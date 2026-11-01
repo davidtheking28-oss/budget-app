@@ -1,18 +1,21 @@
-import BizTasks from './BizTasks.jsx';
-import Projects from './Projects.jsx';
-import Systems from './Systems.jsx';
-import MarketingPlan from './MarketingPlan.jsx';
-import VideoIdeas from './VideoIdeas.jsx';
-import ContentPlan from './ContentPlan.jsx';
-import MetricsView from './MetricsView.jsx';
-import Finance from './Finance.jsx';
-import ClientTasks from './ClientTasks.jsx';
-import ClientService from './ClientService.jsx';
-import ClientView from './ClientView.jsx';
-import ClientApprovals from './ClientApprovals.jsx';
-import SiteSettings from './SiteSettings.jsx';
+import { lazy, Suspense } from 'react';
+import Skeleton from '../components/Skeleton.jsx';
 
-export default function BusinessView({ view, advisorId, onNavigate, onSelectClient, viewClientId, viewTab, onViewClient }) {
+const BizTasks = lazy(() => import('./BizTasks.jsx'));
+const Projects = lazy(() => import('./Projects.jsx'));
+const Systems = lazy(() => import('./Systems.jsx'));
+const MarketingPlan = lazy(() => import('./MarketingPlan.jsx'));
+const VideoIdeas = lazy(() => import('./VideoIdeas.jsx'));
+const ContentPlan = lazy(() => import('./ContentPlan.jsx'));
+const MetricsView = lazy(() => import('./MetricsView.jsx'));
+const Finance = lazy(() => import('./Finance.jsx'));
+const ClientTasks = lazy(() => import('./ClientTasks.jsx'));
+const ClientService = lazy(() => import('./ClientService.jsx'));
+const ClientView = lazy(() => import('./ClientView.jsx'));
+const ClientApprovals = lazy(() => import('./ClientApprovals.jsx'));
+const SiteSettings = lazy(() => import('./SiteSettings.jsx'));
+
+function BusinessPage({ view, advisorId, onNavigate, onSelectClient, viewClientId, viewTab, onViewClient }) {
   if (view === 'tasks') return <BizTasks advisorId={advisorId} />;
   if (view === 'projects') return <Projects advisorId={advisorId} />;
   if (view === 'systems') return <Systems advisorId={advisorId} />;
@@ -28,4 +31,8 @@ export default function BusinessView({ view, advisorId, onNavigate, onSelectClie
   if (view.startsWith('sales-')) return <MetricsView advisorId={advisorId} kind="sales" scope={view.slice(6)} />;
   if (view.startsWith('fin-')) return <Finance key={view} advisorId={advisorId} scope={view.slice(4)} onNavigate={onNavigate} />;
   return null;
+}
+
+export default function BusinessView(props) {
+  return <Suspense fallback={<Skeleton height="260px" radius="18px" />}><BusinessPage {...props} /></Suspense>;
 }
