@@ -52,6 +52,8 @@ export const VARIABLE_TEMPLATE = [
   entry('סיגריות'),
   entry('עזרת/שמרטף', 'עזרה/מטפלת'),
   entry('תיקוני רכב'),
+  entry('ביטוח חובה'),
+  entry('ביטוח מקיף'),
   entry('בריאות'),
   entry('בעלי חיים'),
   entry('דמי כיס/ילדים'),
