@@ -234,7 +234,7 @@
     .nav-item{flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;background:none;padding:0;height:100%;transition:opacity 0.18s;-webkit-tap-highlight-color:transparent;font-family:inherit;}
     .nav-item .nav-icon{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;transition:background 0.18s,transform 0.12s cubic-bezier(0.22,1,0.36,1);}
     .nav-item .nav-icon{position:relative;}
-    .nav-badge{position:absolute;top:-2px;right:-3px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:0.66rem;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--surface);animation:navBadgePop .35s cubic-bezier(.22,1,.36,1);}
+    .nav-badge{position:absolute;top:0;right:-2px;width:10px;height:10px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--surface);animation:navBadgePop .35s cubic-bezier(.22,1,.36,1);}
     .nav-badge[hidden]{display:none;}
     @keyframes navBadgePop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
     .nav-item .nav-icon svg{width:20px;height:20px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.18s;}
@@ -5231,7 +5231,6 @@ function _updateTasksBadge(){
   if(!b)return;
   const n=_advisorLink?.status==='active'?_unseenAdvisorCount():0;
   b.hidden=!n;
-  b.textContent=n>9?'9+':String(n);
   if(nav)nav.setAttribute('aria-label',n?'משימות, '+n+' עדכונים חדשים מהיועץ':'משימות');
 }
 function _markAdvisorItemsSeen(){
