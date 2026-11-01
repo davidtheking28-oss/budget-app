@@ -5067,8 +5067,6 @@ async function _doRequestPendingAdvisor(){
   let ref=null;
   try{ref=localStorage.getItem('budget_pending_advisor');}catch(e){}
   if(!ref||!_cloudUser||!_sb)return;
-  const ok=await confirmSheet({title:'חיבור ליועץ פיננסי',message:'הגעת דרך קישור הזמנה של יועץ פיננסי. לשלוח לו בקשה לצפות ולערוך את התקציב שלך? הוא יקבל גישה רק אחרי שיאשר.',icon:'💬',confirmText:'שלח בקשה',cancelText:'לא עכשיו'});
-  if(!ok){try{localStorage.removeItem('budget_pending_advisor');}catch(e){}return;}
   const {data,error}=await _sb.rpc('request_advisor_link',{p_advisor:ref});
   if(error)return;
   try{localStorage.removeItem('budget_pending_advisor');}catch(e){}

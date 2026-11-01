@@ -621,3 +621,13 @@ test('a pending advisor invite survives the guest-to-user account switch',()=>{
   assert.equal(localStorage.getItem('budget_pending_advisor'),'11111111-1111-1111-1111-111111111111');
   assert.equal(localStorage.getItem('budget_tx'),null);
 });
+
+test('a pending advisor invite sends the request straight away without asking the client',async()=>{
+  const localStorage=storage({budget_pending_advisor:'11111111-1111-1111-1111-111111111111'});
+  const calls=[];let toast='';
+  const ctx=functions(['_doRequestPendingAdvisor'],{localStorage,_cloudUser:{id:'u'},_sb:{rpc:async(n,a)=>{calls.push([n,a]);return {data:'ok',error:null};}},showToast:m=>{toast=m;},confirmSheet:()=>{throw new Error('must not ask');}});
+  await ctx._doRequestPendingAdvisor();
+  assert.deepEqual(calls,[['request_advisor_link',{p_advisor:'11111111-1111-1111-1111-111111111111'}]]);
+  assert.equal(localStorage.getItem('budget_pending_advisor'),null);
+  assert.match(toast,/הבקשה נשלחה/);
+});
