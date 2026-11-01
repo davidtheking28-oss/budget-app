@@ -169,6 +169,7 @@ input[type="number"] {
 }
 
 html, body { height: 100%; }
+#root { display: flow-root; min-height: 100%; }
 
 body {
   margin: 0;
