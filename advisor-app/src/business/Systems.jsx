@@ -134,7 +134,7 @@ export default function Systems({ advisorId }) {
   return (
     <div className={styles.stack}>
       <section className={styles.card}>
-        <div className={styles.grid3} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))' }}>
+        <div className={styles.departmentTabs} role="group" aria-label="סינון סיסטמים לפי מחלקה">
           {SYSTEM_DEPARTMENTS.map(d => (
             <button key={d.key} type="button" className={styles.stat} style={{ cursor: 'pointer', textAlign: 'start', borderColor: dept === d.key ? 'var(--accent)' : undefined }} aria-pressed={dept === d.key} onClick={() => setDept(dept === d.key ? '' : d.key)}>
               <div className={styles.toolbar}>

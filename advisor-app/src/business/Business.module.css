@@ -335,3 +335,48 @@
 .journeyBody { display: grid; gap: 14px; padding: 18px 20px; }
 .journeySection .sectionHeading { margin-inline-end: 0; }
 @media (max-width: 600px) { .financeForm { grid-template-columns: minmax(0, 1fr); } }
+
+.chartEmpty { display: flex; flex-direction: column; justify-content: center; gap: 8px; min-height: 110px; padding: 20px; border-radius: var(--radius-md); background: var(--surface2); color: var(--text2); text-align: center; }
+.chartEmpty strong { color: var(--text); font-size: var(--text-base); }
+.chartEmpty span { font-size: var(--text-sm); }
+.reportToolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; color: var(--text2); font-size: var(--text-sm); }
+.reportScroll { max-height: 480px; scrollbar-width: thin; }
+.reportTable { min-width: 780px; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+.reportTable th { position: sticky; top: 0; z-index: 1; padding-block: 12px; background: var(--surface2); color: var(--text2); }
+.reportTable td { padding-block: 14px; font-weight: 500; }
+.reportTable td:first-child { font-weight: 700; white-space: nowrap; }
+.reportTable tr:hover td { background: var(--hover); }
+.reportTotal td { background: var(--surface2); color: var(--text); font-weight: 800; border-top: 1px solid var(--border-strong); }
+.summaryStats { gap: 0; padding: 12px 8px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
+.summaryStats .stat { border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: 10px 16px; }
+.summaryStats .statValue { font-size: var(--text-xl); }
+.bigCard > .summaryStats { padding: 0; border: 0; }
+.attentionCell { min-width: 220px; max-width: 300px; white-space: normal; }
+.attentionLead { color: var(--text); font-weight: 700; line-height: 1.5; }
+.attentionDetails { color: var(--text2); font-size: var(--text-sm); margin-top: 4px; }
+.attentionDetails summary { cursor: pointer; color: var(--accent); }
+.attentionDetails ul { margin: 8px 0 0; padding-inline-start: 18px; line-height: 1.7; }
+.settingsRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end; }
+.settingsGroup { display: flex; flex-direction: column; gap: 12px; padding-block: 16px; border-top: 1px solid var(--border); }
+.settingsHeading { font-size: var(--text-base); color: var(--text); font-weight: 700; margin: 0; }
+.settingsPreview { display: flex; align-items: center; gap: 14px; }
+.settingsPreview small { display: block; color: var(--text2); font-size: var(--text-sm); margin-top: 4px; }
+@media (max-width: 600px) { .settingsRow { grid-template-columns: minmax(0, 1fr); } }
+
+.departmentTabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.departmentTabs .stat { padding: 10px 12px; border-radius: var(--radius-md); box-shadow: none; }
+.departmentTabs .iconTile { width: 28px; height: 28px; background: transparent; }
+.departmentTabs .stat[aria-pressed="true"] { background: var(--accent-dim); }
+.compactOverview { padding-block: 16px; }
+.compactOverview .cardHead { margin-bottom: 12px; }
+.compactOverview .iconTile { width: 30px; height: 30px; }
+.compactOverview .statNote { margin-top: 4px; }
+
+.reportToolbar:has(> input) { justify-content: flex-start; gap: 8px; }
+.reportScroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.brandingLayout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; }
+.brandingLayout > h2, .brandingLayout > p, .brandingLayout > .settingsPreview, .settingsFull { grid-column: 1 / -1; }
+.brandingLayout > .settingsGroup { padding-block: 16px 0; }
+@media (max-width: 760px) { .brandingLayout { grid-template-columns: minmax(0, 1fr); } }
+
+.pillOn .pillCount { opacity: 1; }

@@ -23,6 +23,7 @@ export default function VideoIdeas({ advisorId }) {
   const [topic, setTopic] = useState('');
   const [offset, setOffset] = useState(0);
   const [poolOpen, setPoolOpen] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(12);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="18px" />;
@@ -105,12 +106,12 @@ export default function VideoIdeas({ advisorId }) {
         {poolOpen && (
           <>
             <div className={styles.pills} role="group" aria-label="נושא">
-              <button type="button" className={!topic ? styles.pillOn : styles.pill} aria-pressed={!topic} onClick={() => setTopic('')}>הכל <span className={styles.pillCount}>{available.length}</span></button>
-              {IDEA_TOPICS.map(t => <button key={t} type="button" className={topic === t ? styles.pillOn : styles.pill} aria-pressed={topic === t} onClick={() => setTopic(t)}>{t} <span className={styles.pillCount}>{topicCount(t)}</span></button>)}
+              <button type="button" className={!topic ? styles.pillOn : styles.pill} aria-pressed={!topic} onClick={() => { setTopic(''); setVisibleCount(12); }}>הכל <span className={styles.pillCount}>{available.length}</span></button>
+              {IDEA_TOPICS.map(t => <button key={t} type="button" className={topic === t ? styles.pillOn : styles.pill} aria-pressed={topic === t} onClick={() => { setTopic(t); setVisibleCount(12); }}>{t} <span className={styles.pillCount}>{topicCount(t)}</span></button>)}
             </div>
             {pool.length === 0 ? <div className={styles.empty}>אין רעיונות בנושא הזה</div> : (
               <div className={styles.tileGrid4} style={{ marginTop: 16 }}>
-                {pool.map(p => (
+                {pool.slice(0, visibleCount).map(p => (
                   <div key={p.text} className={styles.stat} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <span className={styles.rowMeta}>{p.topic}</span>
                     <span className={styles.rowTitle} style={{ flex: 1 }}>{p.text}</span>
@@ -119,6 +120,10 @@ export default function VideoIdeas({ advisorId }) {
                 ))}
               </div>
             )}
+            <div className={styles.reportToolbar}>
+              <span className={styles.cardSub} role="status">מוצגים {Math.min(visibleCount, pool.length)} מתוך {pool.length} רעיונות</span>
+              {pool.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 12)}>הצג עוד רעיונות</button>}
+            </div>
           </>
         )}
       </section>
@@ -127,7 +132,7 @@ export default function VideoIdeas({ advisorId }) {
         <Modal title="רעיון חדש" onClose={() => setModal(false)}>
           <form className={styles.formGrid} onSubmit={submit}>
             <label className={styles.fieldLabel}>על מה הסרטון<input className={styles.input} value={text} onChange={e => setText(e.target.value)} /></label>
-            <div className={styles.toolbar}>
+            <div className={styles.formActions}>
               <button type="submit" className={styles.btn}>הוסף</button>
               <button type="button" className={styles.btnGhost} onClick={() => setModal(false)}>ביטול</button>
             </div>

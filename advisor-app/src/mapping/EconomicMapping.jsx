@@ -680,7 +680,10 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         </section>
       )}
 
+      <details className={styles.mappingDetails}>
+        <summary><span>מחשבוני הוצאות משתנות</span><small>הזנה ידנית ופירוט לפי קטגוריה</small></summary>
       <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} hidden={hiddenCats} extra={extraCats} labelFor={labelFor} onRename={renameCategory} onAdd={addManual('expense')} onDelete={deleteManual} onAddBox={addBox} onRemoveBox={hideCategory} />
+      </details>
 
       <div className={styles.card}>
         <h2 id="mapping-upload" className={styles.cardTitle}>העלאת דפי חשבון</h2>

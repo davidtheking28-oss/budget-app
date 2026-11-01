@@ -9,6 +9,7 @@ ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip)
 export default function TrendChart({ title = 'מגמות לאורך הזמן', labels, metrics, footnote, controls }) {
   const [active, setActive] = useState(metrics[0].key);
   const metric = metrics.find(m => m.key === active) || metrics[0];
+  const hasValues = metric.values.some(value => Number(value) !== 0 && value != null);
   const CT = chartTheme();
   const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || CT.green;
   const data = {
@@ -29,7 +30,7 @@ export default function TrendChart({ title = 'מגמות לאורך הזמן', l
       <div className={styles.segment} role="group" aria-label="מדד להצגה בגרף" style={{ marginBottom: 'var(--space-3)', flexWrap: 'wrap' }}>
         {metrics.map(m => <button key={m.key} type="button" className={m.key === metric.key ? styles.segBtnOn : styles.segBtn} aria-pressed={m.key === metric.key} onClick={() => setActive(m.key)}>{m.label}</button>)}
       </div>
-      <div className={styles.chartBox}><Line aria-label={`${title} · ${metric.label}: ${labels.map((label, i) => `${label}: ${metric.format(metric.values[i])}`).join(' · ')}`} data={data} options={options} /></div>
+      {hasValues ? <div className={styles.chartBox}><Line aria-label={`${title} · ${metric.label}: ${labels.map((label, i) => `${label}: ${metric.format(metric.values[i])}`).join(' · ')}`} data={data} options={options} /></div> : <div className={styles.chartEmpty}><strong>כל הערכים במדד זה הם 0</strong><span>אפשר לבחור מדד אחר או לעדכן את נתוני התקופה.</span></div>}
       {footnote && <p className={styles.note}>{footnote}</p>}
     </section>
   );

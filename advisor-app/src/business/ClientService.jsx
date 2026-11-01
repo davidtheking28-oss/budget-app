@@ -121,7 +121,9 @@ export default function ClientService({ advisorId, onSelect }) {
                           <span className={styles.num}>{percentLabel(progress.rate)}</span>
                         </div>
                       </td>
-                      <td style={{ minWidth: 300 }}><div className={styles.pills}>{attention.length ? attention.map(a => <span key={a} className={styles.pillBtn + ' ' + styles.pillWarn} style={{ cursor: 'default' }}>{a}</span>) : <span className={styles.rowMeta}>הכול תקין</span>}</div></td>
+                      <td className={styles.attentionCell}>
+                        {attention.length ? <><div className={styles.attentionLead}>{attention[0]}</div>{attention.length > 1 && <details className={styles.attentionDetails}><summary>ועוד {attention.length - 1} לטיפול</summary><ul>{attention.slice(1).map(item => <li key={item}>{item}</li>)}</ul></details>}</> : <span className={styles.rowMeta}>הכול תקין</span>}
+                      </td>
                       <td>
                         <select className={styles.pillSelect + (svc.tone ? ' ' + styles[svc.tone] : '')} aria-label={'סטטוס לקוח: ' + (c.name || c.client_email)} value={svc.key} onChange={e => deals.saveDeal(dealByLink[c.id], { service_status: e.target.value })}>
                           {SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}

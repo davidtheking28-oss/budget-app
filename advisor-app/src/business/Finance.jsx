@@ -333,6 +333,9 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
 function RangeView({ entries, businessType, scope, from, to, title, controls, ops, onNavigate }) {
   const range = financeRange(entries, from, to, businessType);
   const [expMonth, setExpMonth] = useState('');
+  const [showAllMonths, setShowAllMonths] = useState(false);
+  const activeMonths = range.rows.filter(row => row.incomes.length || row.fixed.length || row.variable.length);
+  const visibleMonths = showAllMonths ? range.rows : activeMonths;
   const [expCategory, setExpCategory] = useState('');
   const CT = chartTheme();
   const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || CT.green;
@@ -375,12 +378,14 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
       </section>
 
       <section className={styles.card}>
-        <div className={styles.cardHead}><h3 className={styles.cardTitle}>כל החודשים</h3><span className={styles.cardSub}>{range.rows.length} חודשים</span></div>
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
+        <div className={styles.cardHead}><h3 className={styles.cardTitle}>פירוט לפי חודש</h3><span className={styles.cardSub} role="status">{activeMonths.length} חודשים עם פעילות מתוך {range.rows.length}</span></div>
+        {activeMonths.length < range.rows.length && <label className={styles.reportToolbar}><input type="checkbox" className={styles.check} checked={showAllMonths} onChange={e => setShowAllMonths(e.target.checked)} />הצג גם חודשים ללא פעילות</label>}
+        {!visibleMonths.length && <p className={styles.empty}>אין פעילות בתקופה שנבחרה</p>}
+        <div className={styles.tableWrap + ' ' + styles.reportScroll} tabIndex={0} role="region" aria-label="פירוט כספי חודשי — גלול לצפייה בכל העמודות">
+          <table className={styles.table + ' ' + styles.reportTable}>
             <thead><tr><th>חודש</th><th>הכנסות</th><th>סך הוצאות</th><th>מע״מ</th><th>רווח תפעולי</th><th>רווח נטו</th><th>קבלות חסרות</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
             <tbody>
-              {[...range.rows].reverse().map(r => (
+              {[...visibleMonths].reverse().map(r => (
                 <tr key={r.period}>
                   <td>{periodLabel(r.period)}</td>
                   <td className={styles.num}>{r.income ? money(r.income) : 'אין'}</td><td className={styles.num}>{r.expenses ? money(r.expenses) : 'אין'}</td><td className={styles.num}>{r.vat ? money(r.vat) : 'אין'}</td>

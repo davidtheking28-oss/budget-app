@@ -179,7 +179,7 @@ export default function BizTasks({ advisorId }) {
 
   return (
     <div className={styles.stack}>
-      <section className={styles.bigCard}>
+      <section className={styles.bigCard + ' ' + styles.compactOverview}>
         <div className={styles.cardHead}>
           <div className={styles.toolbar}>
             <span className={styles.iconTile} aria-hidden="true">{icons.calendarCheck}</span>

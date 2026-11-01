@@ -86,7 +86,7 @@ export default function ClientTasks({ advisorId, onSelect }) {
         </div>
       </section>
 
-      <div className={styles.grid3}>
+      <div className={styles.grid3 + ' ' + styles.summaryStats}>
         <div className={styles.stat}><div className={styles.statLabel}>משימות פתוחות במנה</div><div className={styles.statValue}>{mine.length}</div></div>
         <div className={styles.stat}><div className={styles.statLabel}>סך המשימות במנה</div><div className={styles.statValue}>{totalForClient}</div></div>
         <div className={styles.stat}><div className={styles.statLabel}>פתוחות אצל הלקוחות</div><div className={styles.statValue}>{openEverywhere}</div></div>

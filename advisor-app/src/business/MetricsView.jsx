@@ -14,22 +14,31 @@ const count = value => (value ? value : '—');
 
 function MarketingStats({ m, title }) {
   return (
-    <div className={styles.grid4} role="group" aria-label={title}>
+    <div className={styles.grid4 + ' ' + styles.summaryStats} role="group" aria-label={title}>
       <div className={styles.stat}><div className={styles.statLabel}>עלות ממוצעת לעוקב</div><div className={styles.statValue}>{cost(m.costPerFollower)}</div><div className={styles.statNote}>בוסטים / עוקבים חדשים</div></div>
-      <div className={styles.stat}><div className={styles.statLabel}>עלות לפגישת התאמה</div><div className={styles.statValue}>{cost(m.costPerMeeting)}</div><div className={styles.statNote}>Boosts / פגישות התאמה</div></div>
-      <div className={styles.stat}><div className={styles.statLabel}>עלות ללקוח חדש</div><div className={styles.statValue}>{cost(m.costPerClient)}</div><div className={styles.statNote}>Boosts / סגירות</div></div>
+      <div className={styles.stat}><div className={styles.statLabel}>עלות לפגישת התאמה</div><div className={styles.statValue}>{cost(m.costPerMeeting)}</div><div className={styles.statNote}>בוסטים / פגישות התאמה</div></div>
+      <div className={styles.stat}><div className={styles.statLabel}>עלות ללקוח חדש</div><div className={styles.statValue}>{cost(m.costPerClient)}</div><div className={styles.statNote}>בוסטים / סגירות</div></div>
       <div className={styles.stat}><div className={styles.statLabel}>אחוז סגירה</div><div className={styles.statValue}>{percentLabel(m.closeRate)}</div><div className={styles.statNote}>סגירות / פגישות התאמה</div></div>
     </div>
   );
 }
 
 function MarketingTable({ rows }) {
+  const [showAll, setShowAll] = useState(false);
+  const activeRows = rows.filter(r => [r.m.followers, r.m.boosts, r.m.budget, r.m.meetings, r.m.closings, r.f.total, r.f.meetings, r.f.showed, r.f.relevant, r.f.closed].some(value => (Number(value) || 0) !== 0));
+  const visibleRows = showAll ? rows : activeRows;
   return (
-    <div className={styles.tableWrap}>
-      <table className={styles.table}>
+    <div>
+      <div className={styles.reportToolbar}>
+        <span className={styles.cardSub} role="status">{activeRows.length} חודשים עם פעילות מתוך {rows.length}</span>
+        {activeRows.length < rows.length && <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={showAll} onChange={e => setShowAll(e.target.checked)} />הצג גם חודשים ללא פעילות</label>}
+      </div>
+      {!visibleRows.length && <p className={styles.empty}>אין פעילות בתקופה שנבחרה</p>}
+      <div className={styles.tableWrap + ' ' + styles.reportScroll} tabIndex={0} role="region" aria-label="פירוט חודשי — גלול לצפייה בכל העמודות">
+      <table className={styles.table + ' ' + styles.reportTable}>
         <thead><tr><th>חודש</th><th>פגישות רלוונטיות שהתקיימו</th><th>פגישות</th><th>לידים</th><th>עוקבים שנוספו</th><th>תקציב שיווק</th><th>עלות לעוקב</th><th>עלות לפגישה</th><th>עלות לפגישה רלוונטית</th><th>עלות ללקוח</th></tr></thead>
         <tbody>
-          {rows.map(r => (
+          {visibleRows.map(r => (
             <tr key={r.label}>
               <td>{r.label}</td><td className={styles.num}>{count(r.f.relevant)}</td><td className={styles.num}>{count(r.m.meetings)}</td>
               <td className={styles.num}>{count(r.f.total)}</td><td className={styles.num}>{count(r.m.followers)}</td><td className={styles.num}>{fmt(r.m.budget)}</td>
@@ -39,13 +48,14 @@ function MarketingTable({ rows }) {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
 
 function FunnelStats({ s, title }) {
   return (
-    <div className={styles.grid4 + ' ' + styles.statsBare} role="group" aria-label={title}>
+    <div className={styles.grid4 + ' ' + styles.summaryStats} role="group" aria-label={title}>
       <div className={styles.stat}><div className={styles.statLabel}>לידים</div><div className={styles.statValue}>{s.total}</div><div className={styles.statNote}>נכנסו בתקופה</div></div>
       <div className={styles.stat}><div className={styles.statLabel}>פגישות שנקבעו</div><div className={styles.statValue}>{s.meetings}</div><div className={styles.statNote}>מתוך {s.total} לידים</div></div>
       <div className={styles.stat}><div className={styles.statLabel}>הגיעו לפגישה</div><div className={styles.statValue}>{s.showed}</div><div className={styles.statNote}>מתוך {s.total} לידים</div></div>
@@ -61,23 +71,33 @@ function FunnelStats({ s, title }) {
 const funnelCount = (s, value) => (s.total + s.meetings + s.showed + s.relevant + s.closed === 0 ? 'אין' : value);
 
 function FunnelTable({ rows, total }) {
+  const [showAll, setShowAll] = useState(false);
+  const activeRows = rows.filter(r => [r.s.total, r.s.meetings, r.s.showed, r.s.relevant, r.s.closed].some(value => (Number(value) || 0) !== 0));
+  const visibleRows = showAll ? rows : activeRows;
   return (
-    <div className={styles.tableWrap}>
-      <table className={styles.table}>
+    <div>
+      <div className={styles.reportToolbar}>
+        <span className={styles.cardSub} role="status">{activeRows.length} חודשים עם פעילות מתוך {rows.length}</span>
+        {activeRows.length < rows.length && <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={showAll} onChange={e => setShowAll(e.target.checked)} />הצג גם חודשים ללא פעילות</label>}
+      </div>
+      {!visibleRows.length && <p className={styles.empty}>אין פעילות בתקופה שנבחרה</p>}
+      <div className={styles.tableWrap + ' ' + styles.reportScroll} tabIndex={0} role="region" aria-label="פירוט חודשי — גלול לצפייה בכל העמודות">
+      <table className={styles.table + ' ' + styles.reportTable}>
         <thead><tr><th>חודש</th><th>לידים</th><th>פגישות</th><th>הגיעו</th><th>פגישות רלוונטיות</th><th>נסגרו</th><th>אחוז הגעה</th><th>אחוז רלוונטיות</th><th>אחוז סגירה</th></tr></thead>
         <tbody>
-          {rows.map(r => (
+          {visibleRows.map(r => (
             <tr key={r.label}>
               <td>{r.label}</td><td className={styles.num}>{funnelCount(r.s, r.s.total)}</td><td className={styles.num}>{funnelCount(r.s, r.s.meetings)}</td><td className={styles.num}>{funnelCount(r.s, r.s.showed)}</td><td className={styles.num}>{funnelCount(r.s, r.s.relevant)}</td><td className={styles.num}>{funnelCount(r.s, r.s.closed)}</td>
               <td className={styles.num}>{percentLabel(r.s.showRate)}</td><td className={styles.num}>{percentLabel(r.s.relevantRate)}</td><td className={styles.num}>{percentLabel(r.s.closeRate)}</td>
             </tr>
           ))}
-          <tr>
+          <tr className={styles.reportTotal}>
             <td><strong>סה״כ לתקופה</strong></td><td className={styles.num}>{funnelCount(total, total.total)}</td><td className={styles.num}>{funnelCount(total, total.meetings)}</td><td className={styles.num}>{funnelCount(total, total.showed)}</td><td className={styles.num}>{funnelCount(total, total.relevant)}</td><td className={styles.num}>{funnelCount(total, total.closed)}</td>
             <td className={styles.num}>{percentLabel(total.showRate)}</td><td className={styles.num}>{percentLabel(total.relevantRate)}</td><td className={styles.num}>{percentLabel(total.closeRate)}</td>
           </tr>
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -114,11 +134,11 @@ function MarketingBody({ advisorId, ym, scope, onNavigate }) {
   return (
     <>
       {scope === 'year' && (
-        <div className={styles.grid4} role="group" aria-label="סיכום שנתי">
+        <div className={styles.grid4 + ' ' + styles.summaryStats} role="group" aria-label="סיכום שנתי">
           <div className={styles.stat}><div className={styles.statLabel}>לידים שנכנסו השנה</div><div className={styles.statValue}>{yearLeads.length}</div><div className={styles.statNote}>לפי תאריך כניסת הליד</div></div>
           <div className={styles.stat}><div className={styles.statLabel}>לקוחות שנסגרו השנה</div><div className={styles.statValue}>{funnelStats(yearLeads).closed}</div><div className={styles.statNote}>סגירות ממודול המכירות</div></div>
           <div className={styles.stat}><div className={styles.statLabel}>עוקבים שנוספו השנה</div><div className={styles.statValue}>{stats.followers}</div><div className={styles.statNote}>סכום העוקבים החדשים בכל חודש</div></div>
-          <div className={styles.stat}><div className={styles.statLabel}>תקציב שיווק (סה״כ)</div><div className={styles.statValue}>{fmt(stats.budget)}</div><div className={styles.statNote}>עוקבים {fmt(stats.followersBudget)} · Boosts {fmt(stats.boosts)}</div></div>
+          <div className={styles.stat}><div className={styles.statLabel}>תקציב שיווק (סה״כ)</div><div className={styles.statValue}>{fmt(stats.budget)}</div><div className={styles.statNote}>עוקבים {fmt(stats.followersBudget)} · בוסטים {fmt(stats.boosts)}</div></div>
         </div>
       )}
       <MarketingStats m={stats} title="מדדי שיווק" />
@@ -128,7 +148,7 @@ function MarketingBody({ advisorId, ym, scope, onNavigate }) {
           <div className={styles.tileGrid4}>
             <button type="button" className={styles.linkTile} onClick={() => onNavigate('marketing')}><span className={styles.linkTileTitle}>נתוני עוקבים</span><span className={styles.linkTileValue}>{stats.followers}</span><span className={styles.rowMeta}>{stats.followers} החודש</span></button>
             <button type="button" className={styles.linkTile} onClick={() => onNavigate('marketing')}><span className={styles.linkTileTitle}>לידים משיווק</span><span className={styles.linkTileValue}>{stats.meetings} פגישות</span><span className={styles.rowMeta}>{stats.closings} סגירות</span></button>
-            <button type="button" className={styles.linkTile} onClick={() => onNavigate('marketing')}><span className={styles.linkTileTitle}>תקציב שיווק</span><span className={styles.linkTileValue}>{fmt(stats.budget)}</span><span className={styles.rowMeta}>עוקבים ו-Boosts</span></button>
+            <button type="button" className={styles.linkTile} onClick={() => onNavigate('marketing')}><span className={styles.linkTileTitle}>תקציב שיווק</span><span className={styles.linkTileValue}>{fmt(stats.budget)}</span><span className={styles.rowMeta}>עוקבים ובוסטים</span></button>
             <button type="button" className={styles.linkTile} onClick={() => onNavigate('marketing-full')}><span className={styles.linkTileTitle}>כל המדדים</span><span className={styles.linkTileValue}>{chartMetrics.filter(c => c.values[c.values.length - 1] > 0).length}/{chartMetrics.length}</span><span className={styles.rowMeta}>מדדים עם נתונים החודש</span></button>
           </div>
         </>

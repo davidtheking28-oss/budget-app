@@ -23,7 +23,7 @@ function NumberFields({ fields, data, onSave, onClose }) {
           <input className={styles.input} inputMode="decimal" placeholder="0" value={values[f.key]} onChange={e => setValues(prev => ({ ...prev, [f.key]: e.target.value }))} />
         </label>
       ))}
-      <div className={styles.toolbar}>
+      <div className={styles.formActions}>
         <button type="submit" className={styles.btn}>שמירה</button>
         <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
       </div>
@@ -170,7 +170,7 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
           <div className={styles.sectionLabel}>החודש במספרים</div>
           <span className={styles.toolbar}><span className={styles.rowMeta}>בוסטים: {fmt(metrics.boosts)}</span>{baseline != null && <button type="button" className={styles.btnGhost} onClick={() => setModal('networks')}>עדכון עוקבים</button>}</span>
         </div>
-        <div className={styles.tileGrid4}>
+        {(baseline != null || metrics.followers || metrics.boosts || metrics.meetings || metrics.closings) ? <div className={styles.tileGrid4}>
           {tiles.map(t => (
             <button key={t.key} type="button" className={styles.stat} style={{ position: 'relative', cursor: 'pointer', textAlign: 'start', font: 'inherit', color: 'inherit' }} onClick={() => setModal(t.modal)}>
               <div className={styles.statLabel} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -181,7 +181,7 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
               <div className={styles.statNote}>{t.note}</div>
             </button>
           ))}
-        </div>
+        </div> : <p className={styles.cardSub}>מתחילים במספר העוקבים הנוכחי. מדדי העלות והצמיחה יתעדכנו עם הזנת הפעילות.</p>}
         {baseline == null && (
           <div className={styles.toolbar} style={{ background: 'var(--surface2,rgba(255,255,255,0.04))', borderRadius: 10, padding: '12px 14px', marginTop: 14 }}>
             <div style={{ flex: 1 }}>
