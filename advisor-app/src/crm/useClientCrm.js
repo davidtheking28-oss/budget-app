@@ -109,8 +109,9 @@ export function useClientCrm(advisorId, clientId, onRestore) {
 
   async function toggleTask(id, done) {
     const before = tasks.find(t => t.id === id);
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done } : t));
-    const { error } = await supabase.from('advisor_tasks').update({ done }).eq('id', id).eq('advisor_id', advisorId);
+    const stamp = done ? { done_at: new Date().toISOString(), done_by: 'advisor' } : { done_at: null, done_by: null };
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, done, ...stamp } : t));
+    const { error } = await supabase.from('advisor_tasks').update({ done, ...stamp }).eq('id', id).eq('advisor_id', advisorId);
     if (error) { setTasks(prev => prev.map(t => t.id === id ? before : t)); toast('שגיאה בעדכון המשימה', 'error'); return; }
     toast(done ? 'משימה סומנה כהושלמה' : 'משימה סומנה כפתוחה', 'success');
   }
