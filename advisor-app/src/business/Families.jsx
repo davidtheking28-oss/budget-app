@@ -36,11 +36,16 @@ function NewFamilyModal({ clients, onSave, onClose }) {
         <div className={styles.fieldLabel}>מי במשפחה
           <input className={styles.input} type="search" placeholder="חיפוש לפי שם או מייל" aria-label="חיפוש חבר משפחה" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <label><input type="checkbox" checked={self} onChange={e => setSelf(e.target.checked)} /> אני · האזור האישי שלי יהיה חלק מהמשפחה</label>
+        <label className={styles.familyChoice}><input className={styles.check} type="checkbox" checked={self} onChange={e => setSelf(e.target.checked)} /><span><strong>אני</strong><small>האזור האישי שלי יהיה חלק מהמשפחה</small></span></label>
         {visible.map(c => (
-          <label key={c.id}><input type="checkbox" checked={picked.includes(c.id)} onChange={() => toggle(c.id)} /> {labelOf(c)}{c.name && c.client_email ? ' · ' + c.client_email : ''}</label>
+          <label key={c.id} className={styles.familyChoice}>
+            <input className={styles.check} type="checkbox" checked={picked.includes(c.id)} onChange={() => toggle(c.id)} />
+            <span><strong>{labelOf(c)}</strong>{c.name && c.client_email && <small dir="ltr">{c.client_email}</small>}</span>
+          </label>
         ))}
-        <div className={styles.toolbar}>
+        {!visible.length && <p className={styles.note}>לא נמצאו לקוחות בחיפוש הזה</p>}
+        <div className={styles.formActions}>
+          <span className={styles.cardSub} role="status">נבחרו {total} · נדרשים לפחות שניים</span>
           <button type="submit" className={styles.btn} disabled={saving || !name.trim() || total < 2}>יצירה</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>

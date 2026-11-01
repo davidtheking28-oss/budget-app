@@ -123,11 +123,11 @@ export default function Assets({ clientUserId, advisorId }) {
           <div className={styles.cardFoot}>
             {showAsset ? (
               <AddForm open className={styles.form} onEscape={() => setShowAsset(false)}>
-                <input className={styles.input} placeholder="שם הנכס" aria-label="שם הנכס" value={name} onChange={e => setName(e.target.value)} />
-                <select aria-label="סוג הנכס" className={styles.input} value={category} onChange={e => setCategory(e.target.value)}>
+                <label className={styles.formField}>שם הנכס<input className={styles.input} placeholder="שם הנכס" aria-label="שם הנכס" value={name} onChange={e => setName(e.target.value)} /></label>
+                <label className={styles.formField}>סוג הנכס<select aria-label="סוג הנכס" className={styles.input} value={category} onChange={e => setCategory(e.target.value)}>
                   {ASSET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום הנכס" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} />
+                </select></label>
+                <label className={styles.formField}>סכום הנכס<input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום הנכס" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} /></label>
                 <Button onClick={submit}>הוסף</Button>
                 <Button variant="ghost" onClick={() => setShowAsset(false)}>ביטול</Button>
               </AddForm>
@@ -161,9 +161,9 @@ export default function Assets({ clientUserId, advisorId }) {
           <div className={styles.cardFoot}>
             {showLoan ? (
               <AddForm open className={styles.form} onEscape={() => setShowLoan(false)}>
-                <input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} />
-                <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההתחייבות" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} />
-                <input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להתחייבות" value={loanMonthly} onChange={e => setLoanMonthly(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitLoan()} />
+                <label className={styles.formField}>שם ההתחייבות<input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} /></label>
+                <label className={styles.formField}>יתרת ההתחייבות<input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההתחייבות" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} /></label>
+                <label className={styles.formField}>החזר חודשי להתחייבות<input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להתחייבות" value={loanMonthly} onChange={e => setLoanMonthly(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitLoan()} /></label>
                 <Button onClick={submitLoan}>הוסף</Button>
                 <Button variant="ghost" onClick={() => setShowLoan(false)}>ביטול</Button>
               </AddForm>

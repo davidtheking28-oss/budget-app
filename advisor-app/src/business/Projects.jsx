@@ -17,11 +17,12 @@ const metaOf = project => [project.importance ? 'חשיבות ' + project.import
 
 function ProjectForm({ title, initial, submitLabel, onSubmit, onClose }) {
   const [form, setForm] = useState(initial);
+  const [nameError, setNameError] = useState(false);
   const set = patch => setForm(prev => ({ ...prev, ...patch }));
 
   function submit(e) {
     e.preventDefault();
-    if (!form.name.trim()) { toast('כתוב שם לפרויקט', 'error'); return; }
+    if (!form.name.trim()) { setNameError(true); e.currentTarget.elements.projectName.focus(); return; }
     const rank = Number(form.importance);
     if (form.importance !== '' && form.importance !== null && !(rank >= 1 && rank <= 10)) { toast('דירוג החשיבות הוא מספר בין 1 ל-10', 'error'); return; }
     onSubmit({ name: form.name.trim(), description: form.description.trim(), deadline: form.deadline, importance: form.importance === '' || form.importance === null ? null : rank, investment: form.investment });
@@ -30,7 +31,7 @@ function ProjectForm({ title, initial, submitLabel, onSubmit, onClose }) {
   return (
     <Modal title={title} onClose={onClose}>
       <form className={styles.formGrid} onSubmit={submit}>
-        <label className={styles.fieldLabel}>שם הפרויקט<input className={styles.input} placeholder="למשל: השקת קורס דיגיטלי" value={form.name} onChange={e => set({ name: e.target.value })} /></label>
+        <label className={styles.fieldLabel}>שם הפרויקט · חובה<input name="projectName" className={styles.input} placeholder="למשל: השקת קורס דיגיטלי" aria-invalid={nameError} aria-describedby={nameError ? "project-name-error" : undefined} value={form.name} onChange={e => { set({ name: e.target.value }); setNameError(false); }} />{nameError && <span id="project-name-error" className={styles.fieldError} role="alert">כתוב שם לפרויקט</span>}</label>
         <label className={styles.fieldLabel}>תיאור<textarea className={styles.input + ' ' + styles.textarea} value={form.description} onChange={e => set({ description: e.target.value })} placeholder="פרטים נוספים (לא חובה)" /></label>
         <div className={styles.formRow}>
           <label className={styles.fieldLabel}>דדליין הפרויקט<input className={styles.input} type="date" value={form.deadline} onChange={e => set({ deadline: e.target.value })} /></label>
@@ -42,7 +43,7 @@ function ProjectForm({ title, initial, submitLabel, onSubmit, onClose }) {
             <button type="button" className={form.investment ? styles.segBtnOn : styles.segBtn} aria-pressed={form.investment} onClick={() => set({ investment: true })}>נדרשת</button>
           </div>
         </label>
-        <div className={styles.toolbar}>
+        <div className={styles.formActions}>
           <button type="submit" className={styles.btn}>{submitLabel}</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>

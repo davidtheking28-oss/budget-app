@@ -91,12 +91,12 @@ export default function CreditCards({ settings, save }) {
           </div>
         )}
         <AddForm label="הוספת כרטיס" open={editingId != null} className={styles.form}>
-          <input className={styles.input} inputMode="numeric" maxLength={4} placeholder="מספר כרטיס (4 ספרות)" aria-label="מספר כרטיס, 4 ספרות אחרונות" value={form.last4} onChange={e => setForm({ ...form, last4: e.target.value })} />
-          <input className={styles.input} placeholder="חברה" aria-label="חברת אשראי" value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="numeric" placeholder="תאריך חיוב (יום בחודש)" aria-label="תאריך חיוב, יום בחודש" value={form.billingDay} onChange={e => setForm({ ...form, billingDay: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="מסגרת" aria-label="מסגרת אשראי" value={form.limit} onChange={e => setForm({ ...form, limit: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="דמי כרטיס לחודש" aria-label="דמי כרטיס לחודש" value={form.fee} onChange={e => setForm({ ...form, fee: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סל מצטבר" aria-label="סל מצטבר" value={form.accumulated} onChange={e => setForm({ ...form, accumulated: e.target.value })} />
+          <label className={styles.formField}>מספר כרטיס, 4 ספרות אחרונות<input className={styles.input} inputMode="numeric" maxLength={4} placeholder="מספר כרטיס (4 ספרות)" aria-label="מספר כרטיס, 4 ספרות אחרונות" value={form.last4} onChange={e => setForm({ ...form, last4: e.target.value })} /></label>
+          <label className={styles.formField}>חברת אשראי<input className={styles.input} placeholder="חברה" aria-label="חברת אשראי" value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} /></label>
+          <label className={styles.formField}>תאריך חיוב, יום בחודש<input className={styles.input} type="number" inputMode="numeric" placeholder="תאריך חיוב (יום בחודש)" aria-label="תאריך חיוב, יום בחודש" value={form.billingDay} onChange={e => setForm({ ...form, billingDay: e.target.value })} /></label>
+          <label className={styles.formField}>מסגרת אשראי<input className={styles.input} type="number" inputMode="decimal" placeholder="מסגרת" aria-label="מסגרת אשראי" value={form.limit} onChange={e => setForm({ ...form, limit: e.target.value })} /></label>
+          <label className={styles.formField}>דמי כרטיס לחודש<input className={styles.input} type="number" inputMode="decimal" placeholder="דמי כרטיס לחודש" aria-label="דמי כרטיס לחודש" value={form.fee} onChange={e => setForm({ ...form, fee: e.target.value })} /></label>
+          <label className={styles.formField}>סל מצטבר<input className={styles.input} type="number" inputMode="decimal" placeholder="סל מצטבר" aria-label="סל מצטבר" value={form.accumulated} onChange={e => setForm({ ...form, accumulated: e.target.value })} /></label>
           <Button onClick={submit}>{editingId != null ? 'שמור' : 'הוספת כרטיס'}</Button>
           {editingId != null && <Button variant="ghost" onClick={reset}>ביטול</Button>}
         </AddForm>

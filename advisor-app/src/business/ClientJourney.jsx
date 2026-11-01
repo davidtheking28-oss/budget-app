@@ -11,6 +11,8 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
   const [journey, setJourney] = useState(() => readJourney(row.deal?.journey));
   const [initial] = useState(journey);
   const [taskDraft, setTaskDraft] = useState({});
+  const [opened, setOpened] = useState(() => Object.fromEntries(MEETINGS.map(m => [m.key, m.key === MEETINGS.find(next => !readJourney(row.deal?.journey).meetings[next.key].done)?.key])));
+  const [intakeOpen, setIntakeOpen] = useState(() => !ONBOARDING.every(s => readJourney(row.deal?.journey).onboarding[s.key]));
   useEffect(() => {
     const taskIds = MEETINGS.flatMap(m => initial.meetings[m.key].tasks.map(t => t.id).filter(Boolean));
     const meetingIds = MEETINGS.map(m => initial.meetings[m.key].meetingId).filter(Boolean);
@@ -129,8 +131,9 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
         </label>
       </section>
 
-      <section className={styles.card}>
-        <h2 className={styles.sectionHeading}>קליטה</h2>
+      <details className={styles.card + ' ' + styles.journeySection} open={intakeOpen} onToggle={e => setIntakeOpen(e.currentTarget.open)}>
+        <summary><span>קליטה</span><span className={styles.rowMeta}>{ONBOARDING.filter(s => journey.onboarding[s.key]).length}/{ONBOARDING.length} הושלמו</span></summary>
+        <div className={styles.journeyBody}>
         <ul className={styles.rowList}>
           {ONBOARDING.map(s => (
             <li key={s.key} className={styles.rowItem}>
@@ -140,12 +143,15 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
             </li>
           ))}
         </ul>
-      </section>
+        </div>
+      </details>
 
       {MEETINGS.map((m, index) => {
         const data = journey.meetings[m.key];
         return (
-          <section key={m.key} className={styles.card}>
+          <details key={m.key} className={styles.card + ' ' + styles.journeySection} open={opened[m.key]} onToggle={e => { const open = e.currentTarget.open; setOpened(prev => ({ ...prev, [m.key]: open })); }}>
+            <summary><span>{index + 1} · {m.title}</span><span className={styles.rowMeta}>{data.done ? 'הושלמה' : 'להשלמה'}{data.date ? ' · ' + new Date(data.date).toLocaleDateString('he-IL') : ''}</span></summary>
+            <div className={styles.journeyBody}>
             <div className={styles.toolbar}>
               <h2 className={styles.sectionHeading} style={{ flex: 1 }}>{index + 1} · {m.title}</h2>
               <label className={styles.toolbar} style={{ gap: 8 }}>
@@ -218,7 +224,8 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
                 <div><button type="button" className={styles.btnGhost} onClick={() => setMeeting(m.key, { followups: [...data.followups, false] })}>הוסף שבוע מעקב ({data.followups.length + 1})</button></div>
               </>
             )}
-          </section>
+            </div>
+          </details>
         );
       })}
 

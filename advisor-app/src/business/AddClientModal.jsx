@@ -21,7 +21,7 @@ export default function AddClientModal({ methods, sources, onSave, onClose }) {
   return (
     <Modal title="לקוח חדש" onClose={onClose}>
       <form className={styles.stack} onSubmit={submit}>
-        <label className={styles.fieldLabel}>שם מלא
+        <label className={styles.fieldLabel}>שם מלא · חובה
           <input className={styles.input} value={form.name} onChange={e => set({ name: e.target.value })} required />
         </label>
         <label className={styles.fieldLabel}>טלפון
@@ -30,6 +30,9 @@ export default function AddClientModal({ methods, sources, onSave, onClose }) {
         <label className={styles.fieldLabel}>אימייל
           <input className={styles.input} type="email" dir="ltr" value={form.email} onChange={e => set({ email: e.target.value })} />
         </label>
+        <details className={styles.formDetails}>
+          <summary>עסקה, תשלום וסיכום שיחה · רשות</summary>
+          <div className={styles.formGrid}>
         <label className={styles.fieldLabel}>מחיר העסקה
           <input className={styles.input} inputMode="decimal" placeholder="₪" value={form.price} onChange={e => set({ price: e.target.value })} />
         </label>
@@ -50,7 +53,9 @@ export default function AddClientModal({ methods, sources, onSave, onClose }) {
         <label className={styles.fieldLabel}>סיכום שיחת התאמה
           <textarea className={styles.input + ' ' + styles.textarea} value={form.call_summary} onChange={e => set({ call_summary: e.target.value })} />
         </label>
-        <div className={styles.toolbar}>
+          </div>
+        </details>
+        <div className={styles.formActions}>
           <button type="submit" className={styles.btn} disabled={saving || !form.name.trim()}>הוספה</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>

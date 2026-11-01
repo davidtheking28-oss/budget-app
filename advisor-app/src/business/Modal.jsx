@@ -31,7 +31,7 @@ export default function Modal({ title, onClose, children, wide = false }) {
           <h3 className={styles.cardTitle}>{title}</h3>
           <button type="button" className={styles.iconBtn} onClick={onClose} aria-label="סגור">×</button>
         </div>
-        {children}
+        <div className={styles.modalBody}>{children}</div>
       </div>
     </div>,
     document.body

@@ -52,6 +52,8 @@ export default function Prospects({ advisorId, onConvert }) {
   const restoreId = useRef(null);
   const saveTimer = useRef(null);
   const pending = useRef(null);
+  const saveVersion = useRef(0);
+  const [saveState, setSaveState] = useState('saved');
 
   useEffect(() => {
     if (editingId != null) {
@@ -73,22 +75,28 @@ export default function Prospects({ advisorId, onConvert }) {
   const closeOfAll = stats.showed > 0 ? stats.closed / stats.showed : null;
 
   function startEdit(p) {
+    saveVersion.current += 1;
+    setSaveState('saved');
     setEditingId(p.id);
     setModalOpen(true);
     setForm({ status: p.status || 'new', name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', meeting_date: p.meeting_date || '', meeting_time: p.meeting_time || '', attempts: p.attempts || 0, attendance_confirmed: !!p.attendance_confirmed, showed: !!p.showed, relevant: !!p.relevant, closed: !!p.closed, closed_at: p.closed_at || '' });
   }
 
-  function flush() {
+  async function flush() {
     clearTimeout(saveTimer.current);
     if (pending.current) {
       const { id, next } = pending.current;
       pending.current = null;
-      updateProspect(id, toRow(next, today));
+      const version = saveVersion.current;
+      setSaveState('saving');
+      const ok = await updateProspect(id, toRow(next, today));
+      if (version === saveVersion.current) setSaveState(ok ? 'saved' : 'error');
     }
   }
 
   function reset() {
     flush();
+    saveVersion.current += 1;
     restoreId.current = editingId;
     setEditingId(null);
     setForm(EMPTY);
@@ -99,7 +107,15 @@ export default function Prospects({ advisorId, onConvert }) {
     const next = { ...form, ...patch };
     if ('closed' in patch) next.closed_at = patch.closed ? (form.closed_at || today) : '';
     setForm(next);
+    if (editingId != null && !next.name.trim()) {
+      clearTimeout(saveTimer.current);
+      pending.current = null;
+      saveVersion.current += 1;
+      setSaveState('invalid');
+    }
     if (editingId != null && next.name.trim()) {
+      saveVersion.current += 1;
+      setSaveState('pending');
       pending.current = { id: editingId, next };
       clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(flush, AUTOSAVE_MS);
@@ -172,11 +188,16 @@ export default function Prospects({ advisorId, onConvert }) {
       {modalOpen && (
         <Modal title={editing ? 'עריכת ליד: ' + form.name : 'ליד חדש'} onClose={reset} wide>
           <form className={biz.formGrid} onSubmit={e => { e.preventDefault(); if (!editing) submit(); }}>
-            <label className={biz.fieldLabel}>שם מלא<input ref={nameRef} className={biz.input} value={form.name} onChange={e => patchForm({ name: e.target.value })} /></label>
+            {editing && <p className={biz.saveStatus} role="status">{saveState === 'saving' ? 'שומר שינויים…' : saveState === 'pending' ? 'יש שינויים לשמירה' : saveState === 'invalid' ? 'יש להזין שם כדי לשמור' : saveState === 'error' ? 'השמירה נכשלה — ערוך שוב כדי לנסות מחדש' : 'כל השינויים נשמרו'}</p>}
+            <h3 className={biz.formSection}>פרטי קשר</h3>
+            <label className={biz.fieldLabel}>שם מלא · חובה<input ref={nameRef} className={biz.input} value={form.name} onChange={e => patchForm({ name: e.target.value })} /></label>
             <div className={biz.formRow}>
               <label className={biz.fieldLabel}>טלפון<input className={biz.input} dir="ltr" inputMode="tel" value={form.phone} onChange={e => patchForm({ phone: e.target.value })} /></label>
               <label className={biz.fieldLabel}>אימייל<input className={biz.input} dir="ltr" type="email" value={form.email} onChange={e => patchForm({ email: e.target.value })} /></label>
             </div>
+            <details className={biz.formDetails} open={editing}>
+              <summary>פגישה, שלב וסיכום שיחה</summary>
+              <div className={biz.formGrid}>
             <div className={biz.formRow}>
               <label className={biz.fieldLabel}>מקור הגעה<select className={biz.select} value={form.source} onChange={e => patchForm({ source: e.target.value })}><option value="">בחר מקור</option>{[...new Set([...SOURCES, form.source].filter(Boolean))].map(src => <option key={src} value={src}>{src}</option>)}</select></label>
               <label className={biz.fieldLabel}>תאריך כניסת ליד<input className={biz.input} type="date" value={form.contacted_at} onChange={e => patchForm({ contacted_at: e.target.value })} /></label>
@@ -201,15 +222,17 @@ export default function Prospects({ advisorId, onConvert }) {
               ))}
             </div>
             <label className={biz.fieldLabel}>פירוט שיחה<textarea className={biz.input + ' ' + biz.textarea} placeholder="מצב נוכחי, כאב מרכזי, מטרות, התנגדויות, מה סוכם..." value={form.notes} onChange={e => patchForm({ notes: e.target.value })} /></label>
+              </div>
+            </details>
+            {editing && <details className={biz.dangerDetails}><summary>פעולות נוספות</summary><button type="button" className={biz.btnGhost} onClick={remove}>מחיקת הליד</button></details>}
             {editing ? (
-              <div className={biz.toolbar}>
+              <div className={biz.formActions}>
                 <button type="button" className={biz.btn} onClick={reset}>סגירה</button>
                 {editedProspect && editedProspect.status !== 'not_relevant' && <button type="button" className={biz.btnGhost} onClick={() => onConvert(editedProspect)}>פתח כלקוח</button>}
-                <button type="button" className={biz.btnGhost} onClick={remove}>מחיקה</button>
-                <span className={biz.rowMeta}>כל שינוי נשמר לבד</span>
+
               </div>
             ) : (
-              <div className={biz.toolbar}>
+              <div className={biz.formActions}>
                 <button type="submit" className={biz.btn} disabled={saving || !form.name.trim()}>הוספת ליד</button>
                 <button type="button" className={biz.btnGhost} onClick={reset}>ביטול</button>
               </div>

@@ -4,7 +4,6 @@ import Modal from './Modal.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
-import { toast } from '../toast.js';
 import { icons } from './BusinessNav.jsx';
 import HeaderAction from './HeaderAction.jsx';
 import styles from './Business.module.css';
@@ -19,22 +18,23 @@ const SYSTEM_DEPARTMENTS = [
 
 function SystemForm({ initial, title, submitLabel, onSubmit, onClose }) {
   const [form, setForm] = useState(initial);
+  const [nameError, setNameError] = useState(false);
   const set = patch => setForm(prev => ({ ...prev, ...patch }));
 
   function submit(e) {
     e.preventDefault();
-    if (!form.name.trim()) { toast('כתוב שם לסיסטם', 'error'); return; }
+    if (!form.name.trim()) { setNameError(true); e.currentTarget.elements.systemName.focus(); return; }
     onSubmit({ name: form.name.trim(), dept: form.dept, summary: form.summary.trim(), notes: form.notes.trim() });
   }
 
   return (
     <Modal title={title} onClose={onClose}>
       <form className={styles.formGrid} onSubmit={submit}>
-        <label className={styles.fieldLabel}>שם הסיסטם<input className={styles.input} value={form.name} onChange={e => set({ name: e.target.value })} /></label>
+        <label className={styles.fieldLabel}>שם הסיסטם · חובה<input name="systemName" className={styles.input} aria-invalid={nameError} aria-describedby={nameError ? "system-name-error" : undefined} value={form.name} onChange={e => { set({ name: e.target.value }); setNameError(false); }} />{nameError && <span id="system-name-error" className={styles.fieldError} role="alert">כתוב שם לסיסטם</span>}</label>
         <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} value={form.dept} onChange={e => set({ dept: e.target.value })}>{SYSTEM_DEPARTMENTS.map(d => <option key={d.key} value={d.key}>{d.key}</option>)}</select></label>
         <label className={styles.fieldLabel}>תיאור קצר<input className={styles.input} placeholder="במשפט אחד: על מה הסיסטם הזה" value={form.summary} onChange={e => set({ summary: e.target.value })} /><span className={styles.cardSub}>את התוכן כותבים בשלבים, אחרי יצירת הסיסטם.</span></label>
         <label className={styles.fieldLabel}>הערות<textarea className={styles.input + ' ' + styles.textarea} value={form.notes} onChange={e => set({ notes: e.target.value })} /></label>
-        <div className={styles.toolbar}>
+        <div className={styles.formActions}>
           <button type="submit" className={styles.btn}>{submitLabel}</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>

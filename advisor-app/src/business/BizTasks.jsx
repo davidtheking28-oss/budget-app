@@ -5,7 +5,6 @@ import Modal from './Modal.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
-import { toast } from '../toast.js';
 import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 
@@ -41,13 +40,14 @@ function priorityClass(p) {
 
 function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave }) {
   const [form, setForm] = useState(EMPTY);
+  const [nameError, setNameError] = useState(false);
   const [editingDepts, setEditingDepts] = useState(false);
   const [newDept, setNewDept] = useState('');
   const set = key => e => setForm(prev => ({ ...prev, [key]: e.target.value }));
 
   function submit(e) {
     e.preventDefault();
-    if (!form.name.trim()) { toast('כתוב שם למשימה', 'error'); return; }
+    if (!form.name.trim()) { setNameError(true); e.currentTarget.elements.taskName.focus(); return; }
     const dueDate = form.dueKind === 'today' ? today : form.dueKind === 'tomorrow' ? addDays(today, 1) : form.dueDate;
     onSave({ name: form.name.trim(), description: form.description.trim(), dept: form.dept, priority: form.priority, dueDate, deadline: form.deadline, difficulty: form.difficulty, recurrence: form.recurrence, done: false });
   }
@@ -62,7 +62,20 @@ function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave })
   return (
     <Modal title="משימה חדשה" onClose={onClose}>
       <form className={styles.formGrid} onSubmit={submit}>
-        <label className={styles.fieldLabel}>שם המשימה<input className={styles.input} value={form.name} onChange={set('name')} /></label>
+        <label className={styles.fieldLabel}>שם המשימה · חובה<input name="taskName" className={styles.input} aria-invalid={nameError} aria-describedby={nameError ? "task-name-error" : undefined} value={form.name} onChange={e => { set('name')(e); setNameError(false); }} />{nameError && <span id="task-name-error" className={styles.fieldError} role="alert">כתוב שם למשימה</span>}</label>
+        <div className={styles.fieldLabel}>מועד ביצוע
+          <div className={styles.segment} role="group" aria-label="מועד ביצוע">
+            {[['today', 'היום'], ['tomorrow', 'מחר'], ['other', 'תאריך אחר']].map(([k, label]) => (
+              <button key={k} type="button" className={form.dueKind === k ? styles.segBtnOn : styles.segBtn} aria-pressed={form.dueKind === k} onClick={() => setForm(prev => ({ ...prev, dueKind: k }))}>{label}</button>
+            ))}
+          </div>
+          {form.dueKind === 'other' && <input className={styles.input} type="date" aria-label="תאריך ביצוע" value={form.dueDate} onChange={set('dueDate')} />}
+          <span className={styles.note}>קובע אם המשימה מופיעה בהיום / מחר / השבוע</span>
+        </div>
+          <label className={styles.fieldLabel}>עדיפות<select className={styles.select} value={form.priority} onChange={set('priority')}>{PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}</select></label>
+        <details className={styles.formDetails}>
+          <summary>פרטים נוספים ותכנון</summary>
+          <div className={styles.formGrid}>
         <label className={styles.fieldLabel}>תיאור<textarea className={styles.input + ' ' + styles.textarea} value={form.description} onChange={set('description')} /></label>
         <div className={styles.formRow}>
           <div className={styles.fieldLabel} style={{ gridColumn: "1 / -1" }} role="group" aria-label="מחלקה">
@@ -79,16 +92,6 @@ function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave })
               </div>
             )}
           </div>
-          <label className={styles.fieldLabel}>עדיפות<select className={styles.select} value={form.priority} onChange={set('priority')}>{PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}</select></label>
-        </div>
-        <div className={styles.fieldLabel}>מועד ביצוע
-          <div className={styles.segment} role="group" aria-label="מועד ביצוע">
-            {[['today', 'היום'], ['tomorrow', 'מחר'], ['other', 'תאריך אחר']].map(([k, label]) => (
-              <button key={k} type="button" className={form.dueKind === k ? styles.segBtnOn : styles.segBtn} aria-pressed={form.dueKind === k} onClick={() => setForm(prev => ({ ...prev, dueKind: k }))}>{label}</button>
-            ))}
-          </div>
-          {form.dueKind === 'other' && <input className={styles.input} type="date" aria-label="תאריך ביצוע" value={form.dueDate} onChange={set('dueDate')} />}
-          <span className={styles.note}>קובע אם המשימה מופיעה בהיום / מחר / השבוע</span>
         </div>
         <label className={styles.fieldLabel}>דדליין<input className={styles.input} type="date" value={form.deadline} onChange={set('deadline')} />{!form.deadline && <span className={styles.note}>אין דדליין למשימה הזו</span>}</label>
         <label className={styles.fieldLabel}>רמת קושי
@@ -104,7 +107,9 @@ function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave })
           </div>
         </div>
         <p className={styles.note}>תאריך ושעת היצירה נשמרים אוטומטית. אין צורך להזין אותם.</p>
-        <div className={styles.toolbar}>
+          </div>
+        </details>
+        <div className={styles.formActions}>
           <button type="submit" className={styles.btn}>הוספה</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>

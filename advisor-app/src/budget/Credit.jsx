@@ -150,14 +150,14 @@ export default function Credit({ clientUserId, advisorId, focus }) {
             </div>
           )}
           <AddForm label="הוספת עסקה" open={editingPaymentId != null} className={styles.form}>
-            <select className={styles.input} aria-label="מספר כרטיס" value={paymentForm.card} onChange={e => setPaymentForm({ ...paymentForm, card: e.target.value })}>
+            <label className={styles.formField}>מספר כרטיס<select className={styles.input} aria-label="מספר כרטיס" value={paymentForm.card} onChange={e => setPaymentForm({ ...paymentForm, card: e.target.value })}>
               <option value="">מספר כרטיס</option>
               {[...new Set([...cards.map(c => c.last4).filter(Boolean), paymentForm.card].filter(Boolean))].map(n => <option key={n} value={n}>•••• {n}</option>)}
-            </select>
-            <input className={styles.input} placeholder="שם העסק" aria-label="שם העסק" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} />
-            <input className={styles.input} type="number" inputMode="numeric" placeholder="מס׳ תשלומים" aria-label="מספר תשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} />
-            <input className={styles.input} type="number" inputMode="numeric" placeholder="תשלום נוכחי" aria-label="תשלום נוכחי" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} />
-            <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום תשלום" aria-label="סכום תשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
+            </select></label>
+            <label className={styles.formField}>שם העסק<input className={styles.input} placeholder="שם העסק" aria-label="שם העסק" value={paymentForm.name} onChange={e => setPaymentForm({ ...paymentForm, name: e.target.value })} /></label>
+            <label className={styles.formField}>מספר תשלומים<input className={styles.input} type="number" inputMode="numeric" placeholder="מס׳ תשלומים" aria-label="מספר תשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} /></label>
+            <label className={styles.formField}>תשלום נוכחי<input className={styles.input} type="number" inputMode="numeric" placeholder="תשלום נוכחי" aria-label="תשלום נוכחי" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} /></label>
+            <label className={styles.formField}>סכום תשלום<input className={styles.input} type="number" inputMode="decimal" placeholder="סכום תשלום" aria-label="סכום תשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} /></label>
             <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוספת עסקה'}</Button>
             {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
           </AddForm>
@@ -199,12 +199,12 @@ export default function Credit({ clientUserId, advisorId, focus }) {
           </div>
         )}
         <AddForm label="הוספת הלוואה" open={editingLoanId != null} className={styles.form}>
-          <input className={styles.input} placeholder="שם החוב" aria-label="שם החוב" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום מקורי" aria-label="סכום מקורי" value={loanForm.original} onChange={e => setLoanForm({ ...loanForm, original: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="יתרת קרן" aria-label="יתרת קרן" value={loanForm.remaining} onChange={e => setLoanForm({ ...loanForm, remaining: e.target.value })} />
-          <input className={styles.input} type="date" aria-label="נכון לתאריך" value={loanForm.asOf} onChange={e => setLoanForm({ ...loanForm, asOf: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} />
-          <input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} />
+          <label className={styles.formField}>שם החוב<input className={styles.input} placeholder="שם החוב" aria-label="שם החוב" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} /></label>
+          <label className={styles.formField}>סכום מקורי<input className={styles.input} type="number" inputMode="decimal" placeholder="סכום מקורי" aria-label="סכום מקורי" value={loanForm.original} onChange={e => setLoanForm({ ...loanForm, original: e.target.value })} /></label>
+          <label className={styles.formField}>יתרת קרן<input className={styles.input} type="number" inputMode="decimal" placeholder="יתרת קרן" aria-label="יתרת קרן" value={loanForm.remaining} onChange={e => setLoanForm({ ...loanForm, remaining: e.target.value })} /></label>
+          <label className={styles.formField}>נכון לתאריך<input className={styles.input} type="date" aria-label="נכון לתאריך" value={loanForm.asOf} onChange={e => setLoanForm({ ...loanForm, asOf: e.target.value })} /></label>
+          <label className={styles.formField}>ריבית שנתית באחוזים<input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} /></label>
+          <label className={styles.formField}>החזר חודשי<input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} /></label>
           <Button onClick={submitLoan}>{editingLoanId != null ? 'שמור' : 'הוספת הלוואה'}</Button>
           {editingLoanId != null && <Button variant="ghost" onClick={resetLoanForm}>ביטול</Button>}
         </AddForm>

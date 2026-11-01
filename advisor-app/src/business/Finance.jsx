@@ -10,7 +10,6 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { fmt } from '../format.js';
-import { toast } from '../toast.js';
 import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 
@@ -41,11 +40,13 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
   const [form, setForm] = useState({ amount: '', clearing: '', desc: '', date: period === ymKey(new Date().getFullYear(), new Date().getMonth()) ? todayIso() : period + '-01', receipt: true });
   const savingRef = useRef(false);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState(null);
   async function submit(e) {
     e.preventDefault();
     if (savingRef.current) return;
-    if (!(num(form.amount) > 0)) { toast('הזן סכום תקין', 'error'); return; }
-    if (!form.date.startsWith(period)) { toast('התאריך חייב להיות בחודש שנבחר', 'error'); return; }
+    if (!(num(form.amount) > 0)) { setFormError({ field: 'amount', message: 'הזן סכום גדול מאפס' }); e.currentTarget.querySelector('[data-amount]').focus(); return; }
+    if (!form.date.startsWith(period)) { setFormError({ field: 'date', message: 'התאריך חייב להיות בחודש שנבחר' }); e.currentTarget.querySelector('[type=date]').focus(); return; }
+    setFormError(null);
     savingRef.current = true;
     setSaving(true);
     try {
@@ -75,13 +76,14 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
       )}
       {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הכנסות</button>}
       {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
-      <form className={styles.addForm} onSubmit={submit}>
-        <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="סכום" aria-label="סכום ההכנסה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} />
-        <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="עלות סליקה" aria-label="עלות סליקה וניכיון" value={form.clearing} onChange={e => setForm(prev => ({ ...prev, clearing: e.target.value }))} />
-        <input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההכנסה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} />
-        <input className={styles.input} type="date" aria-label="תאריך" value={form.date} onChange={e => setForm(prev => ({ ...prev, date: e.target.value }))} />
+      <form className={styles.addForm + ' ' + styles.financeForm} onSubmit={submit}>
+        <label className={styles.fieldLabel}>סכום ההכנסה<input className={styles.input + ' ' + styles.numInput} data-amount aria-invalid={formError?.field === 'amount'} aria-describedby={formError?.field === 'amount' ? 'finance-form-error' : undefined} inputMode="decimal" placeholder="סכום" aria-label="סכום ההכנסה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} /></label>
+        <label className={styles.fieldLabel}>עלות סליקה וניכיון<input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="עלות סליקה" aria-label="עלות סליקה וניכיון" value={form.clearing} onChange={e => setForm(prev => ({ ...prev, clearing: e.target.value }))} /></label>
+        <label className={styles.fieldLabel}>תיאור ההכנסה<input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההכנסה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} /></label>
+        <label className={styles.fieldLabel}>תאריך<input className={styles.input} type="date" aria-invalid={formError?.field === 'date'} aria-describedby={formError?.field === 'date' ? 'finance-form-error' : undefined} aria-label="תאריך" value={form.date} onChange={e => setForm(prev => ({ ...prev, date: e.target.value }))} /></label>
         <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={form.receipt} onChange={e => setForm(prev => ({ ...prev, receipt: e.target.checked }))} />יש קבלה</label>
-        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף הכנסה'}</button>
+        {formError && <p id="finance-form-error" className={styles.fieldError} role="alert">{formError.message}</p>}
+        <div className={styles.formActions}>        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף הכנסה'}</button></div>
       </form>
     </Modal>
   );
@@ -91,10 +93,12 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
   const [form, setForm] = useState({ amount: '', category: 'ללא קטגוריה', desc: '' });
   const savingRef = useRef(false);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState(null);
   async function submit(e) {
     e.preventDefault();
     if (savingRef.current) return;
-    if (!(num(form.amount) > 0)) { toast('הזן סכום תקין', 'error'); return; }
+    if (!(num(form.amount) > 0)) { setFormError({ field: 'amount', message: 'הזן סכום גדול מאפס' }); e.currentTarget.querySelector('[data-amount]').focus(); return; }
+    setFormError(null);
     savingRef.current = true;
     setSaving(true);
     try {
@@ -123,11 +127,12 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
       )}
       {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הוצאות קבועות</button>}
       {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
-      <form className={styles.addForm} onSubmit={submit}>
-        <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="₪" aria-label="סכום חודשי" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} />
-        <select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
-        <input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} />
-        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף הוצאה'}</button>
+      <form className={styles.addForm + ' ' + styles.financeForm} onSubmit={submit}>
+        <label className={styles.fieldLabel}>סכום חודשי<input className={styles.input + ' ' + styles.numInput} data-amount aria-invalid={formError?.field === 'amount'} aria-describedby={formError?.field === 'amount' ? 'finance-form-error' : undefined} inputMode="decimal" placeholder="₪" aria-label="סכום חודשי" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} /></label>
+        <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
+        <label className={styles.fieldLabel}>תיאור ההוצאה<input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} /></label>
+        {formError && <p id="finance-form-error" className={styles.fieldError} role="alert">{formError.message}</p>}
+        <div className={styles.formActions}>        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף הוצאה'}</button></div>
       </form>
       <p className={styles.note}>הוצאה קבועה ממשיכה אוטומטית לחודשים הבאים. שינוי, הוספה או מחיקה כאן משפיעים על החודש הזה ועל החודשים שאחריו בלבד.</p>
     </Modal>
@@ -138,11 +143,13 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
   const [form, setForm] = useState({ amount: '', category: 'ללא קטגוריה', desc: '', date: period === ymKey(new Date().getFullYear(), new Date().getMonth()) ? todayIso() : period + '-01', receipt: false });
   const savingRef = useRef(false);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState(null);
   async function submit(e) {
     e.preventDefault();
     if (savingRef.current) return;
-    if (!(num(form.amount) > 0)) { toast('הזן סכום תקין', 'error'); return; }
-    if (!form.date.startsWith(period)) { toast('התאריך חייב להיות בחודש שנבחר', 'error'); return; }
+    if (!(num(form.amount) > 0)) { setFormError({ field: 'amount', message: 'הזן סכום גדול מאפס' }); e.currentTarget.querySelector('[data-amount]').focus(); return; }
+    if (!form.date.startsWith(period)) { setFormError({ field: 'date', message: 'התאריך חייב להיות בחודש שנבחר' }); e.currentTarget.querySelector('[type=date]').focus(); return; }
+    setFormError(null);
     savingRef.current = true;
     setSaving(true);
     try {
@@ -172,13 +179,14 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
       )}
       {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הוצאות משתנות</button>}
       {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
-      <form className={styles.addForm} onSubmit={submit}>
-        <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="₪" aria-label="סכום ההוצאה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} />
-        <select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
-        <input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} />
-        <input className={styles.input} type="date" aria-label="תאריך" value={form.date} onChange={e => setForm(prev => ({ ...prev, date: e.target.value }))} />
+      <form className={styles.addForm + ' ' + styles.financeForm} onSubmit={submit}>
+        <label className={styles.fieldLabel}>סכום ההוצאה<input className={styles.input + ' ' + styles.numInput} data-amount aria-invalid={formError?.field === 'amount'} aria-describedby={formError?.field === 'amount' ? 'finance-form-error' : undefined} inputMode="decimal" placeholder="₪" aria-label="סכום ההוצאה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} /></label>
+        <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
+        <label className={styles.fieldLabel}>תיאור ההוצאה<input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} /></label>
+        <label className={styles.fieldLabel}>תאריך<input className={styles.input} type="date" aria-invalid={formError?.field === 'date'} aria-describedby={formError?.field === 'date' ? 'finance-form-error' : undefined} aria-label="תאריך" value={form.date} onChange={e => setForm(prev => ({ ...prev, date: e.target.value }))} /></label>
         <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={form.receipt} onChange={e => setForm(prev => ({ ...prev, receipt: e.target.checked }))} />יש קבלה</label>
-        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף הוצאה'}</button>
+        {formError && <p id="finance-form-error" className={styles.fieldError} role="alert">{formError.message}</p>}
+        <div className={styles.formActions}>        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף הוצאה'}</button></div>
       </form>
     </Modal>
   );
