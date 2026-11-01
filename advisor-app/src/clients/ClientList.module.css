@@ -425,6 +425,7 @@
 .addForm {
   display: flex;
   gap: 10px;
+  flex-basis: 100%;
 }
 
 /* On a narrow screen the four controls shrank past their content and clipped
