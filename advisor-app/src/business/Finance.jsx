@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { chartTheme } from '../categories.js';
@@ -140,21 +140,37 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
 }
 
 function StatTiles({ items }) {
+  const cols = items.length === 3 ? { gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' } : undefined;
   return (
-    <div className={styles.tileGrid4} style={{ marginTop: 18 }}>
+    <div className={styles.tileGrid4} style={{ marginTop: 18, ...cols }}>
       {items.map(t => (
         <div key={t.label} className={styles.stat}>
           <div className={styles.statLabel}>{t.label}</div>
           <div className={styles.statValue + (t.tone ? ' ' + styles[t.tone] : '')}>{t.value}</div>
           {t.note && <div className={styles.statNote}>{t.note}</div>}
+          {t.bar !== undefined && <span className={styles.progress} style={{ display: 'block', marginTop: 10 }}><span className={styles.progressFill} style={{ display: 'block', width: Math.min(1, Math.max(0, t.bar)) * 100 + '%' }} /></span>}
         </div>
       ))}
     </div>
   );
 }
 
-function MonthView({ entries, ops, businessType, ym, onYm }) {
-  const [modal, setModal] = useState(null);
+const openFinanceMonth = (period, modal) => {
+  try { sessionStorage.setItem('advisor_finance_open', JSON.stringify({ period, modal })); } catch { /* navigation hint only */ }
+};
+const readFinanceOpen = () => {
+  try {
+    const raw = sessionStorage.getItem('advisor_finance_open');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+};
+const clearFinanceOpen = () => {
+  try { sessionStorage.removeItem('advisor_finance_open'); } catch { /* navigation hint only */ }
+};
+const svgProps = { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
+
+function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
+  const [modal, setModal] = useState(initialModal || null);
   const period = ymKey(ym.year, ym.month);
   const m = financeMonth(entries, period, businessType);
   const breakdown = expenseBreakdown([...m.fixed, ...m.variable]);
@@ -261,7 +277,7 @@ function MonthView({ entries, ops, businessType, ym, onYm }) {
   );
 }
 
-function RangeView({ entries, businessType, scope, from, to, title, controls, ops }) {
+function RangeView({ entries, businessType, scope, from, to, title, controls, ops, onNavigate }) {
   const range = financeRange(entries, from, to, businessType);
   const [expMonth, setExpMonth] = useState('');
   const [expCategory, setExpCategory] = useState('');
@@ -284,16 +300,21 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
   return (
     <div className={styles.stack}>
       <section className={styles.bigCard}>
-        <div className={styles.cardHead}><BusinessTypeBar value={businessType} onChange={ops.setBusinessType} />{controls}</div>
+        <div className={styles.cardHead}><BusinessTypeBar value={businessType} onChange={ops.setBusinessType} />{scope === 'custom' ? null : controls}</div>
         <div className={styles.sectionLabel} style={{ marginTop: 0 }}>{title} · רווח כולל</div>
         <div className={styles.bigNumber + ' ' + (range.net < 0 ? styles.statNeg : '')}>{money(range.net)}</div>
         <StatTiles items={[
-          { label: 'הכנסה כוללת', value: money(range.income) },
-          { label: 'הוצאה כוללת', value: money(range.expenses) },
-          { label: 'אחוז רווח', value: percentLabel(range.margin) },
-          { label: 'קבלות חסרות', value: String(range.missingReceipts), tone: range.missingReceipts ? 'statNeg' : '' }
+          { label: 'הכנסה כוללת', value: money(range.income), bar: range.income > 0 ? 1 : 0 },
+          { label: 'הוצאה כוללת', value: money(range.expenses), bar: range.income > 0 ? range.expenses / range.income : 0 },
+          { label: 'אחוז רווח', value: percentLabel(range.margin), bar: range.margin || 0 }
         ]} />
       </section>
+
+      {scope === 'custom' && (
+        <section className={styles.card}>
+          <div className={styles.cardHead}>{controls}</div>
+        </section>
+      )}
 
       <section className={styles.card}>
         <div className={styles.cardHead}><div><h3 className={styles.cardTitle}>הכנסות מול רווח נטו</h3><p className={styles.cardSub}>{periodLabel(from)} ועד {periodLabel(to)}</p></div></div>
@@ -304,13 +325,19 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
         <div className={styles.cardHead}><h3 className={styles.cardTitle}>כל החודשים</h3><span className={styles.cardSub}>{range.rows.length} חודשים</span></div>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
-            <thead><tr><th>חודש</th><th>הכנסות</th><th>סך הוצאות</th><th>מע״מ</th><th>רווח תפעולי</th><th>רווח נטו</th><th>קבלות חסרות</th></tr></thead>
+            <thead><tr><th>חודש</th><th>הכנסות</th><th>סך הוצאות</th><th>מע״מ</th><th>רווח תפעולי</th><th>רווח נטו</th><th>קבלות חסרות</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
             <tbody>
               {[...range.rows].reverse().map(r => (
                 <tr key={r.period}>
                   <td>{periodLabel(r.period)}</td>
                   <td className={styles.num}>{r.income ? money(r.income) : 'אין'}</td><td className={styles.num}>{r.expenses ? money(r.expenses) : 'אין'}</td><td className={styles.num}>{r.vat ? money(r.vat) : 'אין'}</td>
                   <td className={styles.num}>{r.income || r.expenses ? money(r.operating) : 'אין'}</td><td className={styles.num}>{r.income || r.expenses ? money(r.net) : 'אין'}</td><td className={styles.num}>{r.missingReceipts || 'אין'}</td>
+                  <td>
+                    <div className={styles.toolbar} style={{ flexWrap: 'nowrap', gap: 2 }}>
+                      <button type="button" className={styles.iconBtn} style={{ width: 30, height: 30, borderColor: 'transparent' }} aria-label={'עריכת ' + periodLabel(r.period)} title="עריכה" onClick={() => { openFinanceMonth(r.period, 'income'); onNavigate?.('fin-month'); }}><svg {...svgProps}><path d="M4 20h4L19 9l-4-4L4 16z" /></svg></button>
+                      <button type="button" className={styles.iconBtn} style={{ width: 30, height: 30, borderColor: 'transparent' }} aria-label={'צפייה ב' + periodLabel(r.period)} title="צפייה" onClick={() => { openFinanceMonth(r.period, null); onNavigate?.('fin-month'); }}><svg {...svgProps}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg></button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -348,11 +375,13 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
   );
 }
 
-export default function Finance({ advisorId, scope }) {
+export default function Finance({ advisorId, scope, onNavigate }) {
   const { records, loading, error, reload, add, update, remove } = useBizRecords(advisorId, 'finance_entry');
   const now = new Date();
   const currentPeriod = ymKey(now.getFullYear(), now.getMonth());
-  const [ym, setYm] = useState({ year: now.getFullYear(), month: now.getMonth() });
+  const [openHint] = useState(readFinanceOpen);
+  useEffect(() => { clearFinanceOpen(); }, []);
+  const [ym, setYm] = useState(() => (openHint?.period ? { year: Number(openHint.period.slice(0, 4)), month: Number(openHint.period.slice(5, 7)) - 1 } : { year: now.getFullYear(), month: now.getMonth() }));
   const [year, setYear] = useState(now.getFullYear());
   const [custom, setCustom] = useState({ fromYear: now.getFullYear() - 1, fromMonth: 0, toYear: now.getFullYear(), toMonth: now.getMonth() });
   const [businessType, setBusinessType] = useState(readBusinessType);
@@ -367,17 +396,17 @@ export default function Finance({ advisorId, scope }) {
   };
   const ops = { add, update, remove, setBusinessType: pickType };
 
-  if (scope === 'month') return <MonthView entries={entries} ops={ops} businessType={businessType} ym={ym} onYm={setYm} />;
+  if (scope === 'month') return <MonthView entries={entries} ops={ops} businessType={businessType} ym={ym} onYm={setYm} initialModal={openHint?.modal} />;
 
   if (scope === 'year') {
     const to = year === now.getFullYear() ? currentPeriod : `${year}-12`;
-    return <RangeView key="year" entries={entries} ops={ops} businessType={businessType} scope={scope} from={`${year}-01`} to={to} title={String(year)} controls={<MonthPicker year={year} month={0} withMonth={false} onChange={y => setYear(y)} />} />;
+    return <RangeView key="year" entries={entries} ops={ops} businessType={businessType} scope={scope} onNavigate={onNavigate} from={`${year}-01`} to={to} title={String(year)} controls={<MonthPicker year={year} month={0} withMonth={false} onChange={y => setYear(y)} />} />;
   }
 
   if (scope === 'full') {
     const periods = entries.map(e => e.startPeriod || e.period).filter(Boolean).sort();
     const from = periods[0] && periods[0] < currentPeriod ? periods[0] : `${now.getFullYear()}-01`;
-    return <RangeView key="full" entries={entries} ops={ops} businessType={businessType} scope={scope} from={from} to={currentPeriod} title={`מאז ${periodLabel(from)}`} />;
+    return <RangeView key="full" entries={entries} ops={ops} businessType={businessType} scope={scope} onNavigate={onNavigate} from={from} to={currentPeriod} title={`מאז ${periodLabel(from)}`} />;
   }
 
   const from = ymKey(custom.fromYear, custom.fromMonth);
@@ -394,5 +423,5 @@ export default function Finance({ advisorId, scope }) {
       <select className={styles.select} aria-label="עד שנה" value={custom.toYear} onChange={setField('toYear')}>{yearOptions().map(y => <option key={y} value={y}>{y}</option>)}</select>
     </div>
   );
-  return <RangeView key="custom" entries={entries} ops={ops} businessType={businessType} scope={scope} from={from} to={to} title={`${periodLabel(from)} עד ${periodLabel(to)}`} controls={controls} />;
+  return <RangeView key="custom" entries={entries} ops={ops} businessType={businessType} scope={scope} onNavigate={onNavigate} from={from} to={to} title={`${periodLabel(from)} עד ${periodLabel(to)}`} controls={controls} />;
 }

@@ -45,7 +45,7 @@ function MarketingTable({ rows }) {
 
 function FunnelStats({ s, title }) {
   return (
-    <div className={styles.grid4} role="group" aria-label={title}>
+    <div className={styles.grid4 + ' ' + styles.statsBare} role="group" aria-label={title}>
       <div className={styles.stat}><div className={styles.statLabel}>לידים</div><div className={styles.statValue}>{s.total}</div><div className={styles.statNote}>נכנסו בתקופה</div></div>
       <div className={styles.stat}><div className={styles.statLabel}>פגישות שנקבעו</div><div className={styles.statValue}>{s.meetings}</div><div className={styles.statNote}>מתוך {s.total} לידים</div></div>
       <div className={styles.stat}><div className={styles.statLabel}>הגיעו לפגישה</div><div className={styles.statValue}>{s.showed}</div><div className={styles.statNote}>מתוך {s.total} לידים</div></div>

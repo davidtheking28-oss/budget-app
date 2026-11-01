@@ -93,6 +93,7 @@ export default function ClientApprovals({ advisorId }) {
 
   const tiles = [
     { kinds: ['requested'], label: 'ממתינים לאישור', note: 'נרשמו דרך הקישור שלך' },
+    { kinds: ['waitApproval', 'waitSignup'], label: 'ממתינים לשיוך', note: 'הוזמנו על ידיך ועוד לא חוברו' },
     { kinds: ['active'], label: 'לקוחות פעילים', note: 'מחוברים אליך כרגע' },
     { kinds: ['blocked'], label: 'חסומים', note: 'לא יכולים להירשם דרך הקישור' }
   ];

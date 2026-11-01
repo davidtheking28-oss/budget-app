@@ -24,6 +24,6 @@ export default function BusinessView({ view, advisorId, onNavigate, onSelectClie
   if (view === 'ideas') return <VideoIdeas advisorId={advisorId} />;
   if (view.startsWith('marketing-')) return <MetricsView advisorId={advisorId} kind="marketing" scope={view.slice(10)} onNavigate={onNavigate} />;
   if (view.startsWith('sales-')) return <MetricsView advisorId={advisorId} kind="sales" scope={view.slice(6)} />;
-  if (view.startsWith('fin-')) return <Finance advisorId={advisorId} scope={view.slice(4)} />;
+  if (view.startsWith('fin-')) return <Finance key={view} advisorId={advisorId} scope={view.slice(4)} onNavigate={onNavigate} />;
   return null;
 }
