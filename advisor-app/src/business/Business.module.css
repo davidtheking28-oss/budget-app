@@ -204,7 +204,8 @@
 .denseTable th, .denseTable td { padding: 8px 8px; white-space: nowrap; }
 .denseTable .input, .denseTable .select { min-height: 34px; padding: 4px 8px; font-size: var(--text-sm); }
 .denseTable .emailCell { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
-.denseTable th:last-child, .denseTable td:last-child { position: sticky; inset-inline-end: 0; background: var(--surface); border-inline-start: 1px solid var(--border); }
+.denseTable th:last-child, .denseTable td:last-child { position: sticky; inset-inline-end: 0; background: var(--surface); }
+.denseTable thead th:last-child { background: var(--surface2); }
 
 .ghostField { border-color: transparent; background: transparent; }
 .denseTable .ghostField:hover { border-color: var(--border); }
