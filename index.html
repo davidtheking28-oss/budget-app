@@ -5437,7 +5437,7 @@ function exportCSV(){
   const csv = '﻿' + rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'תקציב_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.download = 'תקציב_' + localISO() + '.csv';
   a.click();
   showToast('📥 הקובץ יורד...');
 }
@@ -5450,7 +5450,7 @@ function exportBackup(){
   };
   const a = document.createElement('a');
   a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
-  a.download = 'גיבוי_תקציב_' + new Date().toISOString().split('T')[0] + '.json';
+  a.download = 'גיבוי_תקציב_' + localISO() + '.json';
   a.click();
   showToast('💾 הגיבוי יורד...');
 }
@@ -9395,7 +9395,7 @@ setTimeout(autoCarryRecurring,500);
     wb.xlsx.writeBuffer().then(function(buf){
       var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
       var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-      a.download='budget_'+new Date().toISOString().split('T')[0]+'.xlsx'; a.click();
+      a.download='budget_'+localISO()+'.xlsx'; a.click();
       setTimeout(function(){URL.revokeObjectURL(a.href);},4000);
       if(typeof showToast==='function') showToast('\u{1F4CA} קובץ Excel ירד!');
     });
