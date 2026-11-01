@@ -189,7 +189,6 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
           <option value="">בחר פגישה</option>
           {MEETING_NUMBERS.map(n => <option key={n} value={n}>{n}</option>)}
         </select>
-        <input className={styles.input} disabled={savingMeeting} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
         <input className={styles.input} type="datetime-local" step="1800" disabled={savingMeeting} aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
         <label className={styles.forClientLabel}>
           <input type="checkbox" className={styles.checkbox} disabled={savingMeeting} checked={meetingForClient} onChange={e => setMeetingForClient(e.target.checked)} />
