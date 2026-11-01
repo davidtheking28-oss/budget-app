@@ -54,9 +54,9 @@ export default function PersonalBudget({ userId }) {
   return (
     <BudgetModeContext.Provider value="personal">
       <div className={styles.stack}>
-        <div className={styles.pills} role="group" aria-label="אזור בתקציב">
+        <div className={styles.pills} role="group" aria-label="אזור בתזרים">
           <button type="button" className={tab === 'mapping' ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === 'mapping'} onClick={() => changeTab('mapping')}>מיפוי</button>
-          <button type="button" className={tab === 'budget' ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === 'budget'} onClick={() => changeTab('budget')}>תקציב</button>
+          <button type="button" className={tab === 'budget' ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === 'budget'} onClick={() => changeTab('budget')}>תזרים</button>
         </div>
         <div className={styles.stack}>
           <div className={styles.pills} role="group" aria-label="תצוגות נוספות">
