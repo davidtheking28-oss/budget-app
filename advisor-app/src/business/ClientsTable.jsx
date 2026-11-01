@@ -122,7 +122,6 @@ export default function ClientsTable({ advisorId, onOpen, onRemove }) {
                 <tr>
                   {sortHead('name', 'שם מלא')}
                   <th>טלפון</th>
-                  <th>אימייל</th>
                   {sortHead('created_at', 'הצטרפות')}
                   {sortHead('ends_at', 'סיום')}
                   {sortHead('price', 'מחיר העסקה')}
@@ -140,12 +139,11 @@ export default function ClientsTable({ advisorId, onOpen, onRemove }) {
                   const svc = SERVICE_STATUSES.find(s => s.key === statusOf(r));
                   return (
                     <tr key={r.id}>
-                      <td><input className={styles.input + ' ' + styles.ghostField + ' ' + styles.nameCell} style={{ minWidth: 130 }} data-name-of={r.id} aria-label={'שם: ' + label(r)} defaultValue={r.name || ''} onBlur={e => { if (e.target.value.trim() !== (r.name || '')) saveContact(r, { name: e.target.value.trim() || null }); }} /></td>
-                      <td><input className={styles.input + ' ' + styles.ghostField} dir="ltr" style={{ width: 118 }} aria-label={'טלפון: ' + label(r)} defaultValue={r.phone || ''} onBlur={e => { if (e.target.value.trim() !== (r.phone || '')) saveContact(r, { phone: e.target.value.trim() || null }); }} /></td>
-                      <td dir="ltr" className={styles.rowMeta + ' ' + styles.emailCell} title={r.client_email}>{r.client_email || '—'}</td>
+                      <td className={styles.nameTd}><input className={styles.input + ' ' + styles.ghostField + ' ' + styles.nameCell} data-name-of={r.id} placeholder="ללא שם" aria-label={'שם: ' + label(r)} defaultValue={r.name || ''} onBlur={e => { if (e.target.value.trim() !== (r.name || '')) saveContact(r, { name: e.target.value.trim() || null }); }} /><div dir="ltr" className={styles.rowMeta + ' ' + styles.emailUnder} title={r.client_email}>{r.client_email || '—'}</div></td>
+                      <td><input className={styles.input + ' ' + styles.ghostField} dir="ltr" placeholder="—" style={{ width: 112 }} aria-label={'טלפון: ' + label(r)} defaultValue={r.phone || ''} onBlur={e => { if (e.target.value.trim() !== (r.phone || '')) saveContact(r, { phone: e.target.value.trim() || null }); }} /></td>
                       <td className={styles.num}>{formatDay(r.created_at)}</td>
-                      <td><input className={styles.input + ' ' + styles.ghostField} type="date" aria-label={'תאריך סיום: ' + label(r)} value={r.deal?.ends_at || ''} onChange={e => saveDeal(r, { ends_at: e.target.value || null })} /></td>
-                      <td><input className={styles.input + ' ' + styles.ghostField + ' ' + styles.numInput} style={{ width: 96 }} inputMode="decimal" placeholder="₪" aria-label={'מחיר העסקה: ' + label(r)} defaultValue={r.deal?.price ?? ''} onBlur={e => { const v = e.target.value.trim(); if (v !== String(r.deal?.price ?? '')) saveDeal(r, { price: v === '' ? null : Math.max(0, num(v)) }); }} /></td>
+                      <td><label className={styles.dateCell}><span>{formatDay(r.deal?.ends_at)}</span><input className={styles.dateHidden} type="date" aria-label={'תאריך סיום: ' + label(r)} value={r.deal?.ends_at || ''} onClick={e => e.target.showPicker?.()} onChange={e => saveDeal(r, { ends_at: e.target.value || null })} /></label></td>
+                      <td><input className={styles.input + ' ' + styles.ghostField + ' ' + styles.numInput} style={{ width: 84 }} inputMode="decimal" placeholder="—" aria-label={'מחיר העסקה: ' + label(r)} defaultValue={r.deal?.price ?? ''} onBlur={e => { const v = e.target.value.trim(); if (v !== String(r.deal?.price ?? '')) saveDeal(r, { price: v === '' ? null : Math.max(0, num(v)) }); }} /></td>
                       <td>
                         <select className={styles.pillSelect + ' ' + styles[pay.tone]} aria-label={'סטטוס תשלום: ' + label(r)} value={pay.key} onChange={e => saveDeal(r, { payment_status: e.target.value })}>
                           {PAYMENT_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
