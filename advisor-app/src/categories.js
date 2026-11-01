@@ -7,6 +7,10 @@ export const INCOME_CATS = ['שכר','שכר בן/בת זוג','פרילנס','�
 export const EXPENSE_CATS_BUSINESS = ['שיווק ופרסום','מערכות ותוכנה','ציוד משרדי','שכר עובדים','חשבונאות ומשפטי','שכירות משרד','תקשורת עסקית','נסיעות עסקיות','ייצוג וארוח','אחסון ולוגיסטיקה','מסים ואגרות','ביטוח עסקי','הדרכות והשתלמויות','פיתוח ומחקר','קניות ציוד','אחר'];
 export const INCOME_CATS_BUSINESS = ['הכנסות ממכירות','שירותים','פרויקטים','מנויים לקוחות','עמלות','ייעוץ','השקעות','אחר'];
 
+export function withCustomCats(list, settings) {
+  const custom = (settings?.customCats || []).filter(c => typeof c === 'string' && c && !list.includes(c));
+  return custom.length ? [...list.slice(0, -1), ...custom, list[list.length - 1]] : list;
+}
 export function expenseCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_BUSINESS : EXPENSE_CATS; }
 export function incomeCatsFor(mode) { return mode === 'business' ? INCOME_CATS_BUSINESS : INCOME_CATS; }
 export function budgetCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_BUSINESS : BUDGET_CATS; }

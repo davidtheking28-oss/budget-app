@@ -7,7 +7,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { addMonths, getMonthTx, localISODate } from '../budget/monthUtils.js';
 import { addItem } from '../budget/itemHelpers.js';
-import { budgetCatsFor } from '../categories.js';
+import { budgetCatsFor, withCustomCats } from '../categories.js';
 import { toast } from '../toast.js';
 import { fmt } from '../format.js';
 import styles from './Business.module.css';
@@ -63,7 +63,7 @@ export default function PersonalExpenses({ userId }) {
             </label>
             <label className={styles.fieldLabel}>קטגוריה
               <select className={styles.select} value={form.cat} onChange={e => setForm(f => ({ ...f, cat: e.target.value }))}>
-                {budgetCatsFor(MODE).map(c => <option key={c} value={c}>{c}</option>)}
+                {withCustomCats(budgetCatsFor(MODE), data.settings).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
             <label className={styles.fieldLabel}>תאריך

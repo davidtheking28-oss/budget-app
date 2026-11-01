@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
+import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE, chartTheme, withCustomCats } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
 import { monthKeyOf, incomeSourcesFor } from './budgetMath.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
@@ -119,7 +119,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   });
   const [variable, setVariable] = useState(() => {
     const existing = data?.budgets || {};
-    return EXPENSE_CATS.map(name => trackRow({ name, amount: existing[name] ?? '' }));
+    return withCustomCats(EXPENSE_CATS, data?.settings).map(name => trackRow({ name, amount: existing[name] ?? '' }));
   });
   const [goals] = useState(() =>
     (data?.goals || []).map(g => ({ id: g.id, name: g.name || '', target: g.target ?? '', months: g.months ?? '', saved: g.saved || 0 }))
