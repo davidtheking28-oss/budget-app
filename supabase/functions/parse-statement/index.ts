@@ -38,7 +38,8 @@ async function checkRateLimit(req: Request): Promise<boolean> {
       .eq('user_id', user.id)
       .gte('created_at', dayAgo)
     if ((dayCount ?? 0) >= DAILY_LIMIT_MAX) return false
-    await supabase.from('ai_requests').insert({ user_id: user.id })
+    const { error: capErr } = await supabase.from('ai_requests').insert({ user_id: user.id })
+    if (capErr) return false
     return true
   } catch (err) {
     // Fail CLOSED: a transient DB/auth hiccup must not hand out an unmetered
@@ -126,7 +127,7 @@ If the page is not a statement page with transaction lines (e.g. a cover page, a
         ],
       },
     ])
-    if ('error' in out) return json({ error: 'upstream', ...out.error }, 502)
+    if ('error' in out) return json({ error: 'upstream', status: out.error.status }, 502)
     const text = out.text
 
     let parsed
@@ -150,7 +151,7 @@ If the page is not a statement page with transaction lines (e.g. a cover page, a
     return json({ transactions, page_looks_like_statement: !!parsed.page_looks_like_statement }, 200)
   } catch (err) {
     console.error('parse-statement', err)
-    return json({ error: 'server', detail: String(err) }, 500)
+    return json({ error: 'server' }, 500)
   }
 })
 

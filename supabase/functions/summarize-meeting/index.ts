@@ -28,7 +28,8 @@ async function checkRateLimit(req: Request): Promise<boolean> {
       .eq('user_id', user.id)
       .gte('created_at', since)
     if ((count ?? 0) >= RATE_LIMIT_MAX) return false
-    await supabase.from('ai_requests').insert({ user_id: user.id })
+    const { error: capErr } = await supabase.from('ai_requests').insert({ user_id: user.id })
+    if (capErr) return false
     return true
   } catch (err) {
     // Fail CLOSED: a transient DB/auth hiccup must not hand out an unmetered
@@ -85,7 +86,7 @@ Output ONLY a JSON object: {"tasks":["task 1","task 2"]}`
       { role: 'system', content: system },
       { role: 'user', content: String(summary) },
     ])
-    if ('error' in out) return json({ error: 'upstream', ...out.error }, 502)
+    if ('error' in out) return json({ error: 'upstream', status: out.error.status }, 502)
     const text = out.text
 
     let parsed
@@ -98,7 +99,7 @@ Output ONLY a JSON object: {"tasks":["task 1","task 2"]}`
     return json({ tasks }, 200)
   } catch (err) {
     console.error('summarize-meeting', err)
-    return json({ error: 'server', detail: String(err) }, 500)
+    return json({ error: 'server' }, 500)
   }
 })
 
