@@ -3,9 +3,6 @@
   align-items: center;
   min-height: 40px;
   width: fit-content;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
   padding: 0;
 }
 
@@ -29,11 +26,11 @@
   align-items: center;
   justify-content: center;
   background: none;
-  border: none;
+  border: 1px solid var(--border);
   color: var(--text2);
-  border-radius: 8px;
-  width: 28px;
-  height: 38px;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s var(--ease-out-expo);
 }
@@ -57,8 +54,8 @@
 .label {
   font-family: var(--font-body);
   font-size: var(--text-base);
-  font-weight: 400;
-  color: var(--text2);
+  font-weight: 700;
+  color: var(--text);
   cursor: pointer;
   text-align: center;
   min-width: 0;
@@ -76,6 +73,7 @@
 
 .label:disabled {
   cursor: default;
+  color: var(--text);
 }
 
 .nextMeeting {
