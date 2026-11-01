@@ -131,6 +131,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
     <div className={styles.stack}>
       <div className={styles.viewHead}>
         <h1 className={styles.viewTitle}>תצוגת לקוח</h1>
+        {client && <Button variant="ghost" onClick={openInNewWindow}>פתיחה בחלון חדש</Button>}
         <label className={styles.toolbar}>
           <span className={styles.statLabel}>לקוח:</span>
           <select className={styles.select} style={{ width: 280, maxWidth: '100%' }} value={clientId || ''} aria-label="בחירת לקוח" onChange={e => changeClient(e.target.value)}>
@@ -139,7 +140,6 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
           </select>
         </label>
         {client && <span className={styles.cardSub}>מציג את המסכים של <b>{clientName}</b>, בדיוק כמו שהוא רואה אותם</span>}
-        {client && <Button variant="ghost" onClick={openInNewWindow}>פתיחה בחלון חדש</Button>}
       </div>
       <div className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
         <div className={styles.pills} role="group" aria-label="אזור בכרטיס הלקוח">

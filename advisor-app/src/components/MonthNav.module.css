@@ -1,5 +1,7 @@
 .wrap {
   display: inline-flex;
+  align-items: center;
+  min-height: 40px;
   width: fit-content;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -31,7 +33,7 @@
   color: var(--text2);
   border-radius: 8px;
   width: 28px;
-  height: 32px;
+  height: 38px;
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s var(--ease-out-expo);
 }
