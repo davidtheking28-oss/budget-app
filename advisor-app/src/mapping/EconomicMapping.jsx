@@ -618,12 +618,13 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         <h2 className={styles.actualTitle}>המיפוי שלך</h2>
         <div className={styles.actualSub}>{hasStatements ? `התמונה המלאה: ממוצע חודשי · ${monthsLabel(cashflow.monthsCovered)} של דפי חשבון` : 'התמונה המלאה: סכומים חודשיים שהוזנו ידנית'}</div>
         <div className={layout.summaryGrid}>
-          <div className={layout.box}>
+          <div className={layout.box + ' ' + layout.comparisonPanel}>
+            <h3 className={layout.boxTitle}>הכנסות מול הוצאות</h3>
             <div className={styles.actualChart} role="img" aria-label={`ביצוע: הכנסות ${fmt(cashflow.income * periodMul)}, הוצאות ${fmt(cashflow.expense * periodMul)}`}>
               <Bar aria-hidden="true" data={actualChartData} plugins={[barValueLabels]} options={actualChartOptions} />
             </div>
           </div>
-          <div className={styles.flowBox + ' ' + layout.box}>
+          <div className={styles.flowBox + ' ' + layout.box + ' ' + layout.flowSummary}>
             <div className={styles.flowBoxHead}>
               <span className={styles.flowBoxTitle}>תזרים</span>
               <div className={styles.flowToggle} role="group" aria-label="תקופה">
@@ -641,22 +642,14 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
             </div>
           </div>
 
-          <div className={layout.box}>
-            <div className={styles.actualTitle}>לאן הולך הכסף</div>
+          <div className={layout.box + ' ' + layout.breakdownPanel}>
+            <h3 className={layout.boxTitle}>לאן הולך הכסף</h3>
             <div className={styles.actualSub}>כך מתחלקת ההוצאה החודשית הממוצעת בין הקטגוריות</div>
             <div className={styles.flowToggle} role="group" aria-label="חלוקה">
               <button type="button" aria-pressed={donutView === 'cat'} className={donutView === 'cat' ? styles.flowToggleActive : ''} onClick={() => setDonutView('cat')}>לפי קטגוריה</button>
               <button type="button" aria-pressed={donutView === 'type'} className={donutView === 'type' ? styles.flowToggleActive : ''} onClick={() => setDonutView('type')}>לפי סוג</button>
             </div>
-            {donutItems.length > 0 && (
-              <p className={styles.donutInsight}>
-                {donutView === 'cat'
-                  ? `הקטגוריה הגדולה ביותר היא ${donutItems[0].name}, עם ${Math.round(donutItems[0].value / donutTotal * 100)}% מההוצאות.${donutItems.length > 2 ? ` שלוש הקטגוריות הגדולות יחד הן ${Math.round(donutItems.slice(0, 3).reduce((sum, i) => sum + i.value, 0) / donutTotal * 100)}% מהכסף שיוצא.` : ''}`
-                  : donutItems.map(i => `${i.name}: ${Math.round(i.value / donutTotal * 100)}%`).join(' · ')}
-              </p>
-            )}
-              {donutItems.length === 0 && <p className={layout.boxEmpty}>עוד אין כאן הוצאות להציג.</p>}
-          <div className={styles.donutWrap}>
+            {donutItems.length > 0 ? <div className={layout.breakdownBody}>
               <div className={styles.donut} role="img" aria-label={`התפלגות ההוצאות: ${donutItems.map(item => `${item.name}: ${fmt(item.value)}`).join(' · ')}`}>
                 <Doughnut aria-hidden="true" data={donutData} options={donutOptions} />
                 <div className={styles.donutCenter}>
@@ -664,7 +657,12 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                   <span className={styles.donutCenterValue}>{fmt(donutTotal)}</span>
                 </div>
               </div>
-            </div>
+              <p className={styles.donutInsight}>
+                {donutView === 'cat'
+                  ? `הקטגוריה הגדולה ביותר היא ${donutItems[0].name}, עם ${Math.round(donutItems[0].value / donutTotal * 100)}% מההוצאות.${donutItems.length > 2 ? ` שלוש הקטגוריות הגדולות יחד הן ${Math.round(donutItems.slice(0, 3).reduce((sum, i) => sum + i.value, 0) / donutTotal * 100)}% מהכסף שיוצא.` : ''}`
+                  : donutItems.map(i => `${i.name}: ${Math.round(i.value / donutTotal * 100)}%`).join(' · ')}
+              </p>
+            </div> : <p className={layout.boxEmpty}>עוד אין כאן הוצאות להציג.</p>}
           </div>
         </div>
       </section>
