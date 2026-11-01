@@ -78,7 +78,7 @@
   min-height: var(--control-h);
   min-width: 0;
   border: 1px solid var(--control-border);
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   background: var(--input-bg);
   color: var(--text);
   padding: 0 12px;
