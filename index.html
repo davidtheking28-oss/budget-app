@@ -3209,7 +3209,7 @@ const INCOME_CATS =['שכר','שכר בן/בת זוג','פרילנס','קצבת 
 const COLORS=['#0078f8','#2dd4bf','#34d399','#4ade80','#a3e635','#fbbf24','#facc15','#fb923c','#f87171','#38bdf8','#818cf8','#a78bfa','#e879f9','#f472b6'];
 
 function _accountKeys(){
-  return Object.keys(localStorage).filter(k=>k.startsWith('budget_')&&!k.startsWith('budget_profile:')&&!['budget_local_owner','budget_account_transition','budget_theme','budget_dark','budget_install_dismiss','budget_vapid_pub'].includes(k));
+  return Object.keys(localStorage).filter(k=>k.startsWith('budget_')&&!k.startsWith('budget_profile:')&&!['budget_local_owner','budget_account_transition','budget_theme','budget_dark','budget_install_dismiss','budget_vapid_pub','budget_pending_advisor'].includes(k));
 }
 function _switchLocalAccount(next){
   const previous=localStorage.getItem('budget_local_owner')||'guest';

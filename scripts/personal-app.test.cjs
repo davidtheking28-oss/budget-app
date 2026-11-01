@@ -613,3 +613,11 @@ test('user category rules beat learned categories, longest match wins, and apply
   assert.equal(transactions[2].cat,'אחר');
   assert.equal(transactions[3].cat,'שונות');
 });
+
+test('a pending advisor invite survives the guest-to-user account switch',()=>{
+  const localStorage=storage({budget_local_owner:'guest',budget_pending_advisor:'11111111-1111-1111-1111-111111111111',budget_tx:'[1]'});
+  const ctx=functions(['_accountKeys','_switchLocalAccount'],{localStorage});
+  assert.equal(ctx._switchLocalAccount('new-user'),true);
+  assert.equal(localStorage.getItem('budget_pending_advisor'),'11111111-1111-1111-1111-111111111111');
+  assert.equal(localStorage.getItem('budget_tx'),null);
+});
