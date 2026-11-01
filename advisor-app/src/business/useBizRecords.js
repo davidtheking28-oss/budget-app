@@ -29,13 +29,12 @@ export function useBizRecords(advisorId, kind, period = null) {
   }
 
   async function update(id, patch) {
-    const before = records;
     const current = records.find(r => r.id === id);
     if (!current) return false;
     const next = { ...current.data, ...patch };
     setRecords(prev => prev.map(r => r.id === id ? { ...r, data: next } : r));
     const { error: err } = await supabase.from('advisor_biz_records').update({ data: next, updated_at: new Date().toISOString() }).eq('id', id).eq('advisor_id', advisorId);
-    if (err) { toast('שגיאה בשמירה', 'error'); setRecords(before); return false; }
+    if (err) { toast('שגיאה בשמירה', 'error'); setRecords(prev => prev.map(r => r.id === id && r.data === next ? current : r)); return false; }
     return true;
   }
 
