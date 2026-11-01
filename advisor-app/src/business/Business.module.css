@@ -195,6 +195,7 @@
 .cell + .cell { border-inline-start: 1px solid var(--border); }
 .cell:first-child { padding-inline-start: 0; }
 .cell:last-child { padding-inline-end: 0; }
+.cell > .bigNumber, .cell > .statValue, .cell > .statNote { padding-inline-start: 50px; }
 @media (max-width: 760px) {
   .cell { padding: var(--space-3) 0; }
   .cell + .cell { border-inline-start: none; border-top: 1px solid var(--border); }
