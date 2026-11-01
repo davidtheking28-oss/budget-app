@@ -3,7 +3,7 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingCalculators.module.css';
 
-function Calculator({ category, total, count, onAdd }) {
+function Calculator({ category, total, count, onAdd, onRemove }) {
   const [value, setValue] = useState('');
 
   function submit(e) {
@@ -20,6 +20,7 @@ function Calculator({ category, total, count, onAdd }) {
         <span className={styles.name} title={labelOf(category)}>{labelOf(category)}</span>
         <span className={styles.total}>{fmt(total)}</span>
         <span className={styles.count} title="מספר הסכומים שהוזנו ידנית">{count}</span>
+        {onRemove && <button type="button" className={styles.remove} aria-label={'הסר תיבה: ' + labelOf(category)} onClick={onRemove}>✕</button>}
       </div>
       <div className={styles.entry}>
         <input className={styles.input} inputMode="decimal" placeholder="סכום" aria-label={'הוספת סכום: ' + labelOf(category)} value={value} onChange={e => setValue(e.target.value)} />
@@ -29,18 +30,17 @@ function Calculator({ category, total, count, onAdd }) {
   );
 }
 
-export default function MappingCalculators({ categories, addCats, rows, hidden, onAdd }) {
-  const [pending, setPending] = useState([]);
+export default function MappingCalculators({ categories, addCats, rows, hidden, extra, onAdd, onAddBox, onRemoveBox }) {
   const [picked, setPicked] = useState('');
   const manualExtra = rows.filter(r => r.manual && !categories.includes(r.category)).map(r => r.category);
   const visibleTemplate = categories.filter(c => !hidden.includes(c) || rows.some(r => r.category === c));
-  const shown = [...new Set([...visibleTemplate, ...manualExtra, ...pending])];
+  const shown = [...new Set([...visibleTemplate, ...manualExtra, ...extra])];
   const available = addCats.filter(c => !shown.includes(c));
   const chosen = available.includes(picked) ? picked : available[0];
 
   function addBox() {
     if (!chosen) return;
-    setPending(prev => [...prev, chosen]);
+    onAddBox(chosen);
     setPicked('');
   }
 
@@ -51,7 +51,7 @@ export default function MappingCalculators({ categories, addCats, rows, hidden, 
       <div className={styles.grid}>
         {shown.map(c => {
           const mine = rows.filter(r => r.category === c);
-          return <Calculator key={c} category={c} total={mine.reduce((s, r) => s + r.amount, 0)} count={mine.filter(r => r.manual).length} onAdd={onAdd} />;
+          return <Calculator key={c} category={c} total={mine.reduce((s, r) => s + r.amount, 0)} count={mine.filter(r => r.manual).length} onAdd={onAdd} onRemove={mine.length === 0 ? () => onRemoveBox(c) : undefined} />;
         })}
       </div>
       {available.length > 0 && (

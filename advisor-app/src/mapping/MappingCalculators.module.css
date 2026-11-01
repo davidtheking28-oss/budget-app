@@ -37,6 +37,17 @@
   text-align: center;
 }
 
+.remove {
+  flex: none;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.remove:hover { color: var(--text); }
+
 .entry { display: flex; gap: 6px; margin-top: 10px; }
 
 .input {

@@ -471,7 +471,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     else if (String(value).trim() === '' || amount === 0) saveManual(manualItems.filter(t => t.id !== id));
   };
   const hiddenCats = data?.hidden_categories || [];
-  const hideCategory = cat => {
+  const extraCats = data?.extra_categories || [];
+  const saveCats = (hidden_categories, extra_categories) => {
     const now = new Date();
     const fallbackStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
     return save({
@@ -479,9 +480,12 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       period_start: data?.period_start || fallbackStart,
       period_end: data?.period_end || fallbackStart,
       transactions: data?.transactions || [],
-      hidden_categories: [...new Set([...hiddenCats, cat])]
+      hidden_categories,
+      extra_categories
     });
   };
+  const hideCategory = cat => saveCats([...new Set([...hiddenCats, cat])], extraCats.filter(c => c !== cat));
+  const addBox = cat => saveCats(hiddenCats.filter(c => c !== cat), [...new Set([...extraCats, cat])]);
   const deleteManual = id => saveManual(manualItems.filter(t => t.id !== id));
   const deleteManualMany = ids => saveManual(manualItems.filter(t => !ids.includes(t.id)));
   const CT = chartTheme();
@@ -628,7 +632,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         </section>
       )}
 
-      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} hidden={hiddenCats} onAdd={addManual('expense')} />
+      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} hidden={hiddenCats} extra={extraCats} onAdd={addManual('expense')} onAddBox={addBox} onRemoveBox={hideCategory} />
 
       <div className={styles.card}>
         <h2 id="mapping-upload" className={styles.cardTitle}>העלאת דפי חשבון</h2>
