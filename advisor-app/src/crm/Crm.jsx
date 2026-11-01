@@ -46,6 +46,8 @@ function downloadIcs(meeting) {
   URL.revokeObjectURL(url);
 }
 
+const MEETING_NUMBERS = ['פגישה 1', 'פגישה 2', 'פגישה 3', 'פגישה 4'];
+
 export default function Crm({ view = 'client', action, advisorId, clientId, email, onChange, onDirtyChange }) {
   const { tasks, meetings, loading, error, reload, addTasks, editTask, toggleTask, deleteTask, addMeeting, editMeeting, deleteMeeting, respondMeeting, setMeetingSummary } = useClientCrm(advisorId, clientId, onChange);
   const { profile, save: saveProfile } = useClientProfile(advisorId, clientId);
@@ -183,6 +185,10 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
       <div>
       <div className={styles.sectionBodyInner}>
       <AddForm label="קבע פגישה" openSignal={signal('meeting')} className={styles.form}>
+        <select className={styles.input} disabled={savingMeeting} aria-label="מספר הפגישה" value={MEETING_NUMBERS.includes(meetingNotes) ? meetingNotes : ''} onChange={e => setMeetingNotes(e.target.value)}>
+          <option value="">בחר פגישה</option>
+          {MEETING_NUMBERS.map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
         <input className={styles.input} disabled={savingMeeting} aria-label="נושא הפגישה" placeholder="נושא / הערה" value={meetingNotes} onChange={e => setMeetingNotes(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitMeeting()} />
         <input className={styles.input} type="datetime-local" step="1800" disabled={savingMeeting} aria-label="תאריך ושעת הפגישה" value={meetingAt} onChange={e => setMeetingAt(e.target.value)} />
         <label className={styles.forClientLabel}>
