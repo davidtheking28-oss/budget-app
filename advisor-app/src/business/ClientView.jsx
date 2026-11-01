@@ -131,7 +131,6 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
     <div className={styles.stack}>
       <div className={styles.viewHead}>
         <h1 className={styles.viewTitle}>תצוגת לקוח</h1>
-        {client && <Button variant="ghost" onClick={openInNewWindow}>פתיחה בחלון חדש</Button>}
         <label className={styles.toolbar}>
           <span className={styles.statLabel}>לקוח:</span>
           <select className={styles.select} style={{ width: 280, maxWidth: '100%' }} value={clientId || ''} aria-label="בחירת לקוח" onChange={e => changeClient(e.target.value)}>
@@ -147,6 +146,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
             <button key={t.key} type="button" className={tab === t.key ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === t.key} onClick={() => changeTab(t.key)}>{t.label}</button>
           ))}
         </div>
+        {client && <Button variant="ghost" onClick={openInNewWindow}>פתיחה בחלון חדש</Button>}
       </div>
       {!client && (
         <section className={styles.card}>
