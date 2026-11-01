@@ -541,11 +541,11 @@ test('launch theme and every theme-color tag follow the resolved theme',()=>{
   assert.deepEqual(dark.metas.map(m=>m.content),['#221e19','#221e19']);assert.equal(dark.bar.content,'black-translucent');
   dark.win._themeChrome(false);
   assert.equal(dark.doc.documentElement.style.background,'#eef3f1');
-  assert.deepEqual(dark.metas.map(m=>m.content),['#e5eeeb','#e5eeeb']);assert.equal(dark.bar.content,'default');
+  assert.deepEqual(dark.metas.map(m=>m.content),['#e8eef6','#e8eef6']);assert.equal(dark.bar.content,'default');
   assert.equal(dark.scheme.content,'light');
   const manual=launch({budget_theme:'light'},true);
   assert.equal(manual.state.dark,false);
-  assert.deepEqual(manual.metas.map(m=>m.content),['#e5eeeb','#e5eeeb']);assert.equal(manual.bar.content,'default');
+  assert.deepEqual(manual.metas.map(m=>m.content),['#e8eef6','#e8eef6']);assert.equal(manual.bar.content,'default');
 });
 
 test('category suggestions ignore a response for an older description',async()=>{
