@@ -83,7 +83,10 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
                 <input className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
               </span>
             ) : (
-              <span className={styles.readonly}>{fmt(r.amount)}</span>
+              <span className={styles.field} title="סכום מצטבר, לעריכה השתמש במחשבונים">
+                <span className={styles.currency} aria-hidden="true">₪</span>
+                <input className={styles.input} readOnly tabIndex={-1} aria-label={'סכום חודשי: ' + labelFor(r.category)} value={Math.round(r.amount)} />
+              </span>
             )}
             {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelFor(r.category)} onClick={() => onHide(r.category)} /> : r.manualIds.length > 0 ? <DeleteButton title={'מחק שורה: ' + labelFor(r.category)} onClick={() => (r.manual ? onDelete(r.id) : deleteGroup(r.manualIds))} /> : <span aria-hidden="true" />}
           </div>
