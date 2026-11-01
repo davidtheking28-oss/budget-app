@@ -206,7 +206,7 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
         ]} />
       </section>
 
-      <div className={styles.sectionLabel}>פרטי החודש</div>
+      <h2 className={styles.sectionHeading} style={{ margin: 'var(--space-4) 0 var(--space-2)' }}>פרטי החודש</h2>
       <div className={styles.grid2}>
       <div className={styles.stack}>
       <div className={styles.grid2}>

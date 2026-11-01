@@ -34,7 +34,7 @@ export const DEPARTMENTS = [
       { key: 'client-approvals', label: 'אישור לקוחות', icon: icons.users, bare: true, description: 'הזמנות פתוחות ולקוחות שמחכים לאישור.' },
       { key: 'projects', label: 'פרויקטים', icon: icons.folder, bare: true },
       { key: 'systems', label: 'סיסטמים', icon: icons.nodes, bare: true },
-      { key: 'site-settings', label: 'הגדרות אתר', icon: icons.gear, bare: true }
+      { key: 'site-settings', label: 'הגדרות אתר', icon: icons.gear, bare: true, description: 'כל מה שמעצב את הדוחות שהלקוחות מקבלים ממך.' }
     ]
   },
   {

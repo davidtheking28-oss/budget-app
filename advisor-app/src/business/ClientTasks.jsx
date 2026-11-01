@@ -68,13 +68,15 @@ export default function ClientTasks({ advisorId, onSelect }) {
     <div className={styles.stack}>
       <section className={styles.bigCard}>
         <div className={styles.stack}>
-          <div className={styles.segment} role="group" aria-label="סינון לפי חודש" style={{ flexWrap: 'wrap', alignSelf: 'flex-start' }}>
-            <button type="button" className={month === 'all' ? styles.segBtnOn : styles.segBtn} aria-pressed={month === 'all'} onClick={() => setMonth('all')}>הכל {mine.length}</button>
-            {months.map(m => <button key={m} type="button" className={month === m ? styles.segBtnOn : styles.segBtn} aria-pressed={month === m} onClick={() => setMonth(m)}>{monthLabel(m)} {mine.filter(t => monthKey(t) === m).length}</button>)}
-          </div>
+          {months.length > 0 && (
+            <div className={styles.segment} role="group" aria-label="סינון לפי חודש" style={{ flexWrap: 'wrap', alignSelf: 'flex-start' }}>
+              <button type="button" className={month === 'all' ? styles.segBtnOn : styles.segBtn} aria-pressed={month === 'all'} onClick={() => setMonth('all')}>הכל {mine.length}</button>
+              {months.map(m => <button key={m} type="button" className={month === m ? styles.segBtnOn : styles.segBtn} aria-pressed={month === m} onClick={() => setMonth(m)}>{monthLabel(m)} {mine.filter(t => monthKey(t) === m).length}</button>)}
+            </div>
+          )}
           <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
             <button type="button" className={styles.iconBtn} aria-label="הלקוח הבא" disabled={!pool.length || index >= pool.length - 1} onClick={() => step(1)}><svg {...svgProps}><path d="m15 6-6 6 6 6" /></svg></button>
-            <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
+            <div style={{ flex: '0 1 260px', textAlign: 'center', minWidth: 0 }}>
               <div className={styles.rowTitle}>{current ? (current.name || current.client_email) : 'אין לקוחות'}</div>
               {current && <div className={styles.rowMeta}>{Math.min(index, pool.length - 1) + 1} מתוך {pool.length}</div>}
             </div>

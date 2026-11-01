@@ -147,7 +147,7 @@ export default function ClientApprovals({ advisorId }) {
                     <span className={styles.userAvatar} aria-hidden="true">{initial(r)}</span>
                     <span className={styles.userMain}>
                       <span className={styles.rowTitle}>{r.name || r.email}</span>
-                      {r.name && <span dir="ltr" className={styles.rowMeta} style={{ textAlign: 'start' }}>{r.email}</span>}
+                      {r.name && <span dir="ltr" className={styles.rowMeta} style={{ textAlign: 'right' }}>{r.email}</span>}
                     </span>
                     <span className={styles.tag}>{STATUS_LABEL[r.kind]}</span>
                   </button>
@@ -160,7 +160,7 @@ export default function ClientApprovals({ advisorId }) {
                   <span className={styles.userAvatar + ' ' + styles.userAvatarBig} aria-hidden="true">{initial(selected)}</span>
                   <div className={styles.userMain}>
                     <div className={styles.rowTitle}>{selected.name || selected.email}</div>
-                    {selected.name && <div dir="ltr" className={styles.rowMeta} style={{ textAlign: 'start' }}>{selected.email}</div>}
+                    {selected.name && <div dir="ltr" className={styles.rowMeta} style={{ textAlign: 'right' }}>{selected.email}</div>}
                   </div>
                 </div>
                 <div className={styles.grid2}>

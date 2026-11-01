@@ -139,6 +139,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
           </select>
         </label>
         {client && <span className={styles.cardSub}>מציג את המסכים של <b>{clientName}</b>, בדיוק כמו שהוא רואה אותם</span>}
+        {client && <Button variant="ghost" onClick={openInNewWindow}>פתיחה בחלון חדש</Button>}
       </div>
       <div className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
         <div className={styles.pills} role="group" aria-label="אזור בכרטיס הלקוח">
@@ -146,7 +147,6 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
             <button key={t.key} type="button" className={tab === t.key ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === t.key} onClick={() => changeTab(t.key)}>{t.label}</button>
           ))}
         </div>
-        {client && <Button variant="ghost" onClick={openInNewWindow}>פתיחה בחלון חדש</Button>}
       </div>
       {!client && (
         <section className={styles.card}>

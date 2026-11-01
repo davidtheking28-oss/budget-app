@@ -209,6 +209,8 @@
 .denseTable .emailCell { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
 .denseTable th:last-child, .denseTable td:last-child { position: sticky; inset-inline-end: 0; background: var(--surface); }
 .denseTable thead th:last-child { background: var(--surface2); }
+.denseTable tbody td:last-child { border-bottom: none; background: linear-gradient(var(--border), var(--border)) bottom / 100% 1px no-repeat, var(--surface); }
+.denseTable tbody tr:last-child td:last-child { background: var(--surface); }
 .denseTable .iconBtn { width: 30px; height: 30px; border-color: transparent; background: transparent; }
 .denseTable .iconBtn:hover { border-color: var(--border); background: var(--surface2); }
 .denseTable th:last-child, .denseTable td:last-child { padding-inline: 4px; }

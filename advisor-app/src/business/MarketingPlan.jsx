@@ -171,8 +171,10 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
         <div className={styles.tileGrid4}>
           {tiles.map(t => (
             <button key={t.key} type="button" className={styles.stat} style={{ position: 'relative', cursor: 'pointer', textAlign: 'start', font: 'inherit', color: 'inherit' }} onClick={() => setModal(t.modal)}>
-              <span aria-hidden="true" style={{ position: 'absolute', insetBlockStart: 8, insetInlineEnd: 10, color: 'var(--text3)', fontSize: '1.1rem', lineHeight: 1 }}>‹</span>
-              <div className={styles.statLabel}>{t.label}</div>
+              <div className={styles.statLabel} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span>{t.label}</span>
+                <span aria-hidden="true" style={{ color: 'var(--text3)', fontSize: '1.1rem', lineHeight: 1 }}>‹</span>
+              </div>
               <div className={styles.statValue}>{t.value}</div>
               <div className={styles.statNote}>{t.note}</div>
             </button>

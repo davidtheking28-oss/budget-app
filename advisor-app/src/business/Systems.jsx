@@ -6,6 +6,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import { icons } from './BusinessNav.jsx';
+import HeaderAction from './HeaderAction.jsx';
 import styles from './Business.module.css';
 
 const SYSTEM_DEPARTMENTS = [
@@ -145,9 +146,7 @@ export default function Systems({ advisorId }) {
         </div>
       </section>
 
-      <div className={styles.toolbar}>
-        <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ הוסף סיסטם</button>
-      </div>
+      <HeaderAction><button type="button" className={styles.btn} onClick={() => setModal(true)}>+ הוסף סיסטם</button></HeaderAction>
 
       <div className={styles.cardHead} style={{ marginBottom: 0 }}>
         <h3 className={styles.cardTitle}>{dept ? `סיסטמים: ${dept}` : 'כל הסיסטמים'}</h3>
