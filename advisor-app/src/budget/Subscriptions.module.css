@@ -30,7 +30,7 @@
 
 .form input,
 .form select {
-  height: var(--control-h);
+  min-height: var(--control-h);
   min-width: 0;
 }
 
