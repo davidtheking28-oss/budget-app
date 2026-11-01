@@ -154,10 +154,10 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
   }
 
   const tiles = [
-    { key: 'followers', label: 'עוקבים חדשים', value: String(metrics.followers), note: `סה״כ ${totalFollowers}` },
-    { key: 'follower', label: 'עלות לעוקב', value: cost(metrics.followers > 0 && metrics.boosts > 0 ? metrics.boosts / metrics.followers : null), note: 'בוסטים חלקי עוקבים חדשים' },
-    { key: 'meeting', label: 'עלות לפגישת התאמה', value: cost(metrics.costPerMeeting), note: `${metrics.meetings} פגישות התאמה` },
-    { key: 'client', label: 'עלות ללקוח', value: cost(metrics.costPerClient), note: `${metrics.closings} לקוחות נסגרו` }
+    { key: 'followers', modal: 'networks', label: 'עוקבים חדשים', value: String(metrics.followers), note: `סה״כ ${totalFollowers}` },
+    { key: 'follower', modal: 'networks', label: 'עלות לעוקב', value: cost(metrics.followers > 0 && metrics.boosts > 0 ? metrics.boosts / metrics.followers : null), note: 'בוסטים חלקי עוקבים חדשים' },
+    { key: 'meeting', modal: 'leads', label: 'עלות לפגישת התאמה', value: cost(metrics.costPerMeeting), note: `${metrics.meetings} פגישות התאמה` },
+    { key: 'client', modal: 'leads', label: 'עלות ללקוח', value: cost(metrics.costPerClient), note: `${metrics.closings} לקוחות נסגרו` }
   ];
 
   return (
@@ -170,11 +170,12 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
         </div>
         <div className={styles.tileGrid4}>
           {tiles.map(t => (
-            <div key={t.key} className={styles.stat}>
+            <button key={t.key} type="button" className={styles.stat} style={{ position: 'relative', cursor: 'pointer', textAlign: 'start', font: 'inherit', color: 'inherit' }} onClick={() => setModal(t.modal)}>
+              <span aria-hidden="true" style={{ position: 'absolute', insetBlockStart: 8, insetInlineEnd: 10, color: 'var(--text3)', fontSize: '1.1rem', lineHeight: 1 }}>‹</span>
               <div className={styles.statLabel}>{t.label}</div>
               <div className={styles.statValue}>{t.value}</div>
               <div className={styles.statNote}>{t.note}</div>
-            </div>
+            </button>
           ))}
         </div>
         {baseline == null && (

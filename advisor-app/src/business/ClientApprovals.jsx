@@ -43,6 +43,7 @@ export default function ClientApprovals({ advisorId }) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [confirming, setConfirming] = useState(null);
+  const [selectedKey, setSelectedKey] = useState(null);
 
   if (loading) return <Skeleton height="220px" radius="18px" />;
 
@@ -73,6 +74,13 @@ export default function ClientApprovals({ advisorId }) {
     toast(action === 'approve' ? 'הלקוח אושר' : action === 'remove' ? 'הלקוח נמחק' : action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
     reload();
   }
+
+  const selected = visible.find(r => r.key === selectedKey) || visible[0] || null;
+  const initial = r => ((r.name || r.email || '?').trim()[0] || '?').toUpperCase();
+  const panelActions = r => ROW_ACTIONS[r.kind].filter(a => a !== 'block' && a !== 'trash');
+  const dangerActions = r => ROW_ACTIONS[r.kind].filter(a => a === 'block' || a === 'trash');
+  const actionHint = { approve: 'הלקוח יקבל גישה לתקציב שלך', end: 'בלי למחוק את החשבון', cancel: 'ההזמנה תוסר מהרשימה', reject: 'הבקשה תוסר מהרשימה', remove: 'פרטי העסקה יימחקו', block: 'אי אפשר להזמין שוב', trash: 'אפשר לשחזר עד ' + TRASH_DAYS + ' יום' };
+  const chooseAction = (r, a) => (a === 'approve' ? run(r, a) : setConfirming({ key: r.key, action: a }));
 
   async function restore(row) {
     const { data, error } = await supabase.rpc('restore_advisor_client', { p_archive: row.id });
@@ -129,36 +137,67 @@ export default function ClientApprovals({ advisorId }) {
           </div>
         </div>
         {visible.length === 0 ? <div className={styles.emptyState}><span>אין משתמשים להצגה</span></div> : (
-          <div className={styles.tableWrap}>
-            <table className={styles.table}>
-              <thead><tr><th>אימייל</th><th>נשלח</th><th>סטטוס</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
-              <tbody>
-                {visible.map(r => (
-                  <tr key={r.key}>
-                    <td className={styles.rowMeta}>{r.name && <div><strong>{r.name}</strong></div>}<div dir="ltr" style={{ textAlign: 'start' }}>{r.email}</div></td>
-                    <td className={styles.num}>{formatDate(r.createdAt.slice(0, 10))}</td>
-                    <td><span className={styles.tag}>{STATUS_LABEL[r.kind]}</span></td>
-                    <td>
-                      {confirming?.key === r.key ? (
-                        <div className={styles.toolbar}>
-                          <button type="button" className={styles.btnGhost} onClick={() => run(r, confirming.action)}>{ACTIONS[confirming.action].confirm}</button>
-                          <button type="button" className={styles.btnGhost} onClick={() => setConfirming(null)}>חזרה</button>
-                        </div>
-                      ) : (
-                        <div className={styles.toolbar}>
-                          {ROW_ACTIONS[r.kind].map(a => (
-                            <button key={a} type="button" className={styles.btnGhost} aria-label={ACTIONS[a].label + ': ' + r.email} onClick={() => (a === 'approve' ? run(r, a) : setConfirming({ key: r.key, action: a }))}>{ACTIONS[a].label}</button>
-                          ))}
-                          {(r.kind === 'blocked' || r.kind === 'trashed') && (
-                            <button type="button" className={styles.btnGhost} aria-label={(r.kind === 'blocked' ? 'ביטול חסימה: ' : 'שחזור: ') + r.email} onClick={() => restore(r)}>{r.kind === 'blocked' ? 'ביטול חסימה' : 'שחזור'}</button>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className={styles.approvalsGrid}>
+            <ul className={styles.userList} aria-label="רשימת משתמשים">
+              {visible.map(r => (
+                <li key={r.key}>
+                  <button type="button" className={styles.userRow + (selected?.key === r.key ? ' ' + styles.userRowOn : '')} aria-pressed={selected?.key === r.key} onClick={() => { setSelectedKey(r.key); setConfirming(null); }}>
+                    <span className={styles.userAvatar} aria-hidden="true">{initial(r)}</span>
+                    <span className={styles.userMain}>
+                      <span className={styles.rowTitle}>{r.name || r.email}</span>
+                      {r.name && <span dir="ltr" className={styles.rowMeta} style={{ textAlign: 'start' }}>{r.email}</span>}
+                    </span>
+                    <span className={styles.tag}>{STATUS_LABEL[r.kind]}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {selected && (
+              <aside className={styles.userPanel} aria-label="פרטי משתמש">
+                <div className={styles.userPanelHead}>
+                  <span className={styles.userAvatar + ' ' + styles.userAvatarBig} aria-hidden="true">{initial(selected)}</span>
+                  <div className={styles.userMain}>
+                    <div className={styles.rowTitle}>{selected.name || selected.email}</div>
+                    {selected.name && <div dir="ltr" className={styles.rowMeta} style={{ textAlign: 'start' }}>{selected.email}</div>}
+                  </div>
+                </div>
+                <div className={styles.grid2}>
+                  <div className={styles.stat}><div className={styles.statLabel}>סטטוס</div><div className={styles.rowTitle}>{STATUS_LABEL[selected.kind]}</div></div>
+                  <div className={styles.stat}><div className={styles.statLabel}>נשלח</div><div className={styles.rowTitle}>{formatDate(selected.createdAt.slice(0, 10))}</div></div>
+                </div>
+                {confirming?.key === selected.key ? (
+                  <div className={styles.userConfirm} role="alert">
+                    <div className={styles.rowTitle}>{ACTIONS[confirming.action].confirm}</div>
+                    <div className={styles.toolbar}>
+                      <button type="button" className={styles.btn} onClick={() => run(selected, confirming.action)}>{ACTIONS[confirming.action].label}</button>
+                      <button type="button" className={styles.btnGhost} onClick={() => setConfirming(null)}>חזרה</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {(panelActions(selected).length > 0 || selected.kind === 'blocked' || selected.kind === 'trashed') && (
+                      <>
+                        <div className={styles.sectionLabel}>פעולות</div>
+                        {panelActions(selected).map(a => (
+                          <button key={a} type="button" className={styles.userAction} aria-label={ACTIONS[a].label + ': ' + selected.email} onClick={() => chooseAction(selected, a)}><span className={styles.rowTitle}>{ACTIONS[a].label}</span><span className={styles.rowMeta}>{actionHint[a]}</span></button>
+                        ))}
+                        {(selected.kind === 'blocked' || selected.kind === 'trashed') && (
+                          <button type="button" className={styles.userAction} aria-label={(selected.kind === 'blocked' ? 'ביטול חסימה: ' : 'שחזור: ') + selected.email} onClick={() => restore(selected)}><span className={styles.rowTitle}>{selected.kind === 'blocked' ? 'ביטול חסימה' : 'שחזור'}</span><span className={styles.rowMeta}>{selected.kind === 'blocked' ? 'הלקוח יוכל להירשם שוב' : 'תישלח הזמנה חדשה ללקוח'}</span></button>
+                        )}
+                      </>
+                    )}
+                    {dangerActions(selected).length > 0 && (
+                      <>
+                        <div className={styles.sectionLabel}>זהירות</div>
+                        {dangerActions(selected).map(a => (
+                          <button key={a} type="button" className={styles.userAction + ' ' + styles.userActionDanger} aria-label={ACTIONS[a].label + ': ' + selected.email} onClick={() => chooseAction(selected, a)}><span className={styles.rowTitle}>{ACTIONS[a].label}</span><span className={styles.rowMeta}>{actionHint[a]}</span></button>
+                        ))}
+                      </>
+                    )}
+                  </>
+                )}
+              </aside>
+            )}
           </div>
         )}
       </section>

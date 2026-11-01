@@ -260,3 +260,22 @@
 .bigPill:focus-visible, .bigPillOn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .statsBare .stat { border-color: transparent; background: transparent; box-shadow: none; padding-inline: 4px; }
+
+.approvalsGrid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--space-4); align-items: start; }
+.userList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.userRow { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md, 12px); background: var(--surface); color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.userRow:hover { border-color: var(--accent); }
+.userRow:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.userRowOn { border-color: var(--accent); background: var(--surface2); }
+.userAvatar { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 800; }
+.userAvatarBig { width: 48px; height: 48px; font-size: var(--text-lg); }
+.userMain { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.userMain > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.userPanel { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-lg, 16px); background: var(--surface); }
+.userPanelHead { display: flex; align-items: center; gap: 12px; }
+.userConfirm { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md, 12px); background: var(--surface2); }
+.userAction { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md, 12px); background: var(--surface); color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.userAction:hover { border-color: var(--accent); }
+.userAction:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.userActionDanger .rowTitle { color: var(--red); }
+@media (max-width: 960px) { .approvalsGrid { grid-template-columns: minmax(0, 1fr); } }
