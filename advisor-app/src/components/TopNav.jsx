@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import Logo from './Logo.jsx';
 import styles from './TopNav.module.css';
 
-export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, end, hideBrand }) {
+export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, end, hideBrand, logoUrl }) {
   const globals = [
     onBack && { key: 'clients', label: 'הלקוחות שלי', onClick: onBack, active: homeActive },
     ...(homeLinks || []).map(l => ({ key: l.key, label: l.label, onClick: l.onClick, active: l.active })),
@@ -32,7 +32,7 @@ export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, o
         <div className={styles.end}>
           {onToggleTheme && (
             <button type="button" className={styles.themeBtn} onClick={onToggleTheme} aria-pressed={theme === 'dark'} aria-label={theme === 'dark' ? 'עבור למצב בהיר' : 'עבור למצב כהה'}>
-              {theme === 'dark' ? 'מצב בהיר' : 'מצב כהה'}
+              <Logo size="sm" src={logoUrl} />
             </button>
           )}
           {end}
