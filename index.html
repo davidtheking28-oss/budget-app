@@ -2319,11 +2319,9 @@
       <div class="balance-hero-bloom" style="top:-32%;right:-14%;width:55%;padding-bottom:55%;"></div>
       <div class="balance-hero-bloom" style="bottom:-38%;left:-10%;width:45%;padding-bottom:45%;opacity:0.55;"></div>
       <div class="relative" style="z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%">
-        <div class="text-sm font-semibold" style="color:#fff">התזרים שלך החודש</div>
-        <div id="txFlowViewToggle" style="display:flex;gap:2px;background:rgba(0,0,0,0.18);border-radius:999px;padding:3px;flex-shrink:0">
-          <button type="button" data-view="plan" onclick="setTxFlowView('plan')" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0">תכנון</button>
-          <button type="button" class="active" data-view="actual" onclick="setTxFlowView('actual')" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0">בפועל</button>
+        <div style="display:flex;align-items:center;justify-content:center;width:100%">
+        <div id="txFlowViewToggle" style="display:flex;gap:0;background:rgba(0,0,0,0.18);border-radius:999px;padding:3px;flex-shrink:0">
+          <button type="button" class="active" id="txFlowSwitchBtn" data-view="actual" onclick="toggleTxFlowView()" aria-label="החלפה בין תכנון לבפועל" style="border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer;min-height:0;display:flex;align-items:center;gap:6px"><span id="txFlowSwitchLabel">בפועל</span><span aria-hidden="true" style="opacity:.8">⇄</span></button>
         </div>
         </div>
         <div class="font-extrabold font-mono tracking-tight" id="txPageFlow" style="color:#fff;font-size:clamp(2rem,9vw,2.5rem);line-height:1.1;white-space:nowrap;margin-top:12px;letter-spacing:-0.02em">₪0</div>
@@ -6321,9 +6319,12 @@ function setRangeChip(r){
 let _txFlowView='actual';
 function setTxFlowView(v){
   _txFlowView=v;
-  document.querySelectorAll('#txFlowViewToggle button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  const b=document.getElementById('txFlowSwitchBtn'),l=document.getElementById('txFlowSwitchLabel');
+  if(b)b.dataset.view=v;
+  if(l)l.textContent=v==='plan'?'תכנון':'בפועל';
   renderTxPage();
 }
+function toggleTxFlowView(){setTxFlowView(_txFlowView==='plan'?'actual':'plan');}
 let _txSearchTimer=null;
 function queueTxSearch(event){
   clearTimeout(_txSearchTimer);
