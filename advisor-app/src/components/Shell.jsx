@@ -182,7 +182,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, d
   if (desktop && homeNav) {
     return (
       <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
-        <SideNav nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} footer={accountFooter} workspace={workspace} onWorkspaceChange={onWorkspaceChange} />
+        <SideNav logoUrl={profile?.logo_url} nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} footer={accountFooter} workspace={workspace} onWorkspaceChange={onWorkspaceChange} />
         <div className={styles.sideMain}>
           <TopNav hideBrand tabs={homeTabs} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
           <main className={styles.contentTop + " " + styles.homeContent}>
@@ -215,7 +215,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, d
 
   return (
     <div className={styles.shell} dir="rtl" inert={shellInert ? '' : undefined}>
-      <IconRail homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
+      <IconRail logoUrl={profile?.logo_url} homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
       <div className={styles.topbarBleed}>
         <div className={styles.topbar}>
           <div className={styles.logo}>שקל שקל · יועץ</div>

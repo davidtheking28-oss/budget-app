@@ -3,10 +3,10 @@ import AccessibilityButton from './AccessibilityButton.jsx';
 import LegalLinks from './LegalLinks.jsx';
 import styles from './SideNav.module.css';
 
-export default function SideNav({ nav, activeNav, onNavChange, footer, workspace = 'advisor', onWorkspaceChange }) {
+export default function SideNav({ nav, activeNav, onNavChange, footer, logoUrl, workspace = 'advisor', onWorkspaceChange }) {
   return (
     <aside className={styles.side}>
-      <div className={styles.brand}><Logo size="sm" /><span>שקל שקל · יועץ</span></div>
+      <div className={styles.brand}><Logo size="sm" src={logoUrl} /><span>שקל שקל · יועץ</span></div>
       <div className={styles.modes}>
         <button type="button" className={styles.mode + (workspace === 'advisor' ? ' ' + styles.modeOn : '')} aria-pressed={workspace === 'advisor'} onClick={() => onWorkspaceChange?.('advisor')}>יועץ</button>
         <button type="button" className={styles.mode + (workspace === 'personal' ? ' ' + styles.modeOn : '')} aria-pressed={workspace === 'personal'} onClick={() => onWorkspaceChange?.('personal')}>אישי</button>

@@ -4,7 +4,7 @@ import styles from './IconRail.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 18, height: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
 
-export default function IconRail({ homeLinks, clientName, clientSince, onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, footer }) {
+export default function IconRail({ homeLinks, clientName, clientSince, onBack, homeActive, onSearch, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, footer, logoUrl }) {
   const globalActions = [
     onBack && {
       key: 'clients',
@@ -47,7 +47,7 @@ export default function IconRail({ homeLinks, clientName, clientSince, onBack, h
   return (
     <div className={styles.rail}>
       <div className={styles.head}>
-        <div className={styles.mark} aria-hidden="true"><Logo /></div>
+        <div className={styles.mark} aria-hidden="true"><Logo src={logoUrl} /></div>
         <div className={styles.headText}>
           {clientName && <div className={styles.clientName} title={clientName}>{clientName}</div>}
           {clientSince && <div className={styles.clientSince}>לקוח מאז {clientSince}</div>}
