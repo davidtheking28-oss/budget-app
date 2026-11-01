@@ -29,17 +29,38 @@ function Calculator({ category, total, count, onAdd }) {
   );
 }
 
-export default function MappingCalculators({ categories, rows, onAdd }) {
+export default function MappingCalculators({ categories, addCats, rows, onAdd }) {
+  const [pending, setPending] = useState([]);
+  const [picked, setPicked] = useState('');
+  const manualExtra = rows.filter(r => r.manual && !categories.includes(r.category)).map(r => r.category);
+  const shown = [...new Set([...categories, ...manualExtra, ...pending])];
+  const available = addCats.filter(c => !shown.includes(c));
+  const chosen = available.includes(picked) ? picked : available[0];
+
+  function addBox() {
+    if (!chosen) return;
+    setPending(prev => [...prev, chosen]);
+    setPicked('');
+  }
+
   return (
     <section className={styles.card}>
       <h3 className={styles.title}>מחשבוני ההוצאות המשתנות</h3>
       <p className={styles.note}>רשום סכום בכל פעם שיש הוצאה, והוא יתווסף לסכום החודשי של הקטגוריה.</p>
       <div className={styles.grid}>
-        {categories.map(c => {
+        {shown.map(c => {
           const mine = rows.filter(r => r.category === c);
           return <Calculator key={c} category={c} total={mine.reduce((s, r) => s + r.amount, 0)} count={mine.filter(r => r.manual).length} onAdd={onAdd} />;
         })}
       </div>
+      {available.length > 0 && (
+        <div className={styles.addBox}>
+          <select className={styles.input} aria-label="קטגוריה לתיבה חדשה" value={chosen} onChange={e => setPicked(e.target.value)}>
+            {available.map(c => <option key={c} value={c}>{labelOf(c)}</option>)}
+          </select>
+          <button type="button" className={styles.addBoxBtn} onClick={addBox}>+ תיבה</button>
+        </div>
+      )}
     </section>
   );
 }

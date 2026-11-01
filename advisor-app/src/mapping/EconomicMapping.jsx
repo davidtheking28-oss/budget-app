@@ -616,7 +616,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         </section>
       )}
 
-      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} rows={variableRows} onAdd={addManual('expense')} />
+      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} onAdd={addManual('expense')} />
 
       <div className={styles.card}>
         <h2 id="mapping-upload" className={styles.cardTitle}>העלאת דפי חשבון</h2>
