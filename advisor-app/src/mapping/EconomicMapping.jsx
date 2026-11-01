@@ -557,12 +557,14 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     }
   };
   const donutItems = (() => {
-    if (!categories.length) return [];
+    const avgs = computeCategoryAverages(mathTransactions).averages;
+    const cats = Object.keys(avgs).filter(c => avgs[c] > 0).sort((a, b) => avgs[b] - avgs[a]);
+    if (!cats.length) return [];
     if (donutView === 'type') {
-      return computeExpenseTypeBreakdown(data.category_averages);
+      return computeExpenseTypeBreakdown(avgs);
     }
-    const top = categories.slice(0, 7).map(c => ({ name: c, value: data.category_averages[c] }));
-    const rest = categories.slice(7).reduce((sum, c) => sum + data.category_averages[c], 0);
+    const top = cats.slice(0, 7).map(c => ({ name: c, value: avgs[c] }));
+    const rest = cats.slice(7).reduce((sum, c) => sum + avgs[c], 0);
     return rest > 0 ? [...top, { name: 'אחר', value: rest }] : top;
   })();
   const donutTotal = donutItems.reduce((sum, i) => sum + i.value, 0) || 1;

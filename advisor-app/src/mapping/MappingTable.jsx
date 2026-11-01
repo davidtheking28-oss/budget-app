@@ -76,17 +76,17 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             {r.placeholder ? (
               <span className={styles.field}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
-                <input className={styles.input} inputMode="decimal" placeholder="0" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue="" onBlur={e => { const v = parseFloat(e.target.value); if (v > 0) onAdd(r.category, '', v); }} />
+                <input key={"p:" + r.line} className={styles.input} inputMode="decimal" placeholder="0" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue="" onBlur={e => { const v = parseFloat(e.target.value); if (v > 0) onAdd(r.category, '', v); }} />
               </span>
             ) : r.manual ? (
               <span className={styles.field}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
-                <input className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
+                <input key={"e:" + r.line + ":" + r.amount} className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
               </span>
             ) : (
               <span className={styles.field} title={r.auto ? 'נמשך אוטומטית מהלשונית ביטוחים · שנתיות · מנויים · חינוך. כדי לעקוף, הזן סכום בשורה' : 'סכום מצטבר, לעריכה השתמש במחשבונים'}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
-                <input className={styles.input} readOnly tabIndex={-1} aria-label={'סכום חודשי: ' + labelFor(r.category)} value={Math.round(r.amount)} />
+                <input key={"r:" + r.line + ":" + r.amount} className={styles.input} readOnly tabIndex={-1} aria-label={'סכום חודשי: ' + labelFor(r.category)} value={Math.round(r.amount)} />
               </span>
             )}
             {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelFor(r.category)} onClick={() => onHide(r.category)} /> : r.manualIds.length > 0 ? <DeleteButton title={'מחק שורה: ' + labelFor(r.category)} onClick={() => (r.manual ? onDelete(r.id) : deleteGroup(r.manualIds))} /> : <span aria-hidden="true" />}
