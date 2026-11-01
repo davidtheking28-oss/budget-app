@@ -20,7 +20,7 @@ import layout from './MappingLayout.module.css';
 // transaction the parser tagged this way doesn't fall off the dropdown.
 const LOAN_CATEGORY = 'החזר הלוואות + חיוב קבוע';
 const FOREIGN_ORDERS_CATEGORY = 'הזמנות מחו״ל';
-const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS.slice(0, -1), FOREIGN_ORDERS_CATEGORY, 'ביטוח חובה', 'ביטוח מקיף', ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c)), 'שונות'];
+const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS.slice(0, -1), FOREIGN_ORDERS_CATEGORY, ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c)), 'שונות'];
 const INCOME_ADD_CATS = [...INCOME_TEMPLATE.map(t => t.key), ...INCOME_CATS.filter(c => !INCOME_TEMPLATE.some(t => t.key === c))];
 const FIXED_ADD_CATS = [...FIXED_TEMPLATE.map(t => t.key), ...FIXED_KEYS.filter(c => !FIXED_TEMPLATE.some(t => t.key === c))];
 const VARIABLE_ADD_CATS = [...VARIABLE_TEMPLATE.map(t => t.key), ...MAPPING_EXPENSE_CATS.filter(c => !FIXED_KEYS.includes(c) && !SAVINGS_KEYS.includes(c) && !VARIABLE_TEMPLATE.some(t => t.key === c))];
