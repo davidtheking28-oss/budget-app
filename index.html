@@ -5128,15 +5128,6 @@ async function _promptAdvisorInvite(){
   const ok=await confirmSheet({title:'הזמנה מהיועץ הפיננסי שלך',message:'היועץ הפיננסי שלך הזמין אותך להתחבר לתקציב. אישור ייתן לו גישה לצפייה ועריכה של התקציב.',icon:'💬',confirmText:'אישור והתחברות',cancelText:'אחר כך'});
   if(ok)respondAdvisorInvite(true);
 }
-async function copyAdvisorCode(){
-  if(!_advisorLink?.invite_code)return;
-  try{
-    await navigator.clipboard.writeText(_advisorLink.invite_code);
-    showToast('✅ הקוד הועתק');
-  }catch(e){
-    showToast('❌ לא ניתן להעתיק, העתק ידנית');
-  }
-}
 async function removeAdvisorLink(){
   if(!_advisorLink||!_sb)return;
   const btn=(typeof event!=='undefined'&&event)?event.target:null;
@@ -5187,12 +5178,8 @@ function renderAdvisorLinkSection(){
     return;
   }
   if(_advisorLink.status==='pending'){
-    el.innerHTML='<div style="background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:center">'
-      +'<div style="font-size:1.4rem;margin-bottom:4px">🔑</div>'
-      +'<div style="font-size:1.4rem;font-weight:800;letter-spacing:6px;font-family:var(--font-num);color:var(--accent);direction:ltr">'+esc(_advisorLink.invite_code)+'</div>'
-      +'<button class="btn btn-outline btn-sm" onclick="copyAdvisorCode()" style="margin-top:8px">העתק קוד</button>'
-      +'<div style="font-size:0.72rem;color:var(--text3);margin-top:4px">שתף את הקוד עם היועץ הפיננסי שלך · תקף ל-24 שעות</div></div>'
-      +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">בטל קוד</button>';
+    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">קוד היועץ הישן כבר לא בשימוש. כדי להתחבר ליועץ, בקש ממנו קישור הרשמה ופתח אותו בעודך מחובר.</div>'
+      +'<button class="btn btn-outline btn-sm" onclick="removeAdvisorLink()" style="width:100%;color:var(--red)">הסר את הקוד</button>';
     return;
   }
   el.innerHTML='<div style="display:flex;align-items:center;gap:8px;background:rgba(16,185,129,0.08);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
