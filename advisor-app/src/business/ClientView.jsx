@@ -23,7 +23,7 @@ const TABS = [
   { key: 'tasks', label: 'משימות' }
 ];
 
-const CHIPS = [
+export const CHIPS = [
   { key: 'main', label: 'תצוגה ראשית' },
   { key: 'cards', label: 'כרטיסי אשראי', view: 'credit', focus: 'cards' },
   { key: 'loans', label: 'חובות והלוואות', view: 'credit', focus: 'loans' },
@@ -32,11 +32,11 @@ const CHIPS = [
   { key: 'subs', label: 'ביטוחים · שנתיות · מנויים · חינוך', view: 'subs' }
 ];
 
-const CHIP_FOR_VIEW = { credit: 'loans', mortgage: 'mortgage', subs: 'subs' };
+export const CHIP_FOR_VIEW = { credit: 'loans', mortgage: 'mortgage', subs: 'subs' };
 
 const UNSAVED = 'יש שינויים שטרם נשמרו. להמשיך בלי לשמור?';
 
-function Heading({ title, text }) {
+export function Heading({ title, text }) {
   return (
     <div>
       <h2 className={styles.viewHeading}>{title}</h2>

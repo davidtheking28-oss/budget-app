@@ -3,13 +3,13 @@ import AccessibilityButton from './AccessibilityButton.jsx';
 import LegalLinks from './LegalLinks.jsx';
 import styles from './SideNav.module.css';
 
-export default function SideNav({ nav, activeNav, onNavChange, footer }) {
+export default function SideNav({ nav, activeNav, onNavChange, footer, workspace = 'advisor', onWorkspaceChange }) {
   return (
     <aside className={styles.side}>
       <div className={styles.brand}><Logo size="sm" /><span>שקל שקל · יועץ</span></div>
       <div className={styles.modes}>
-        <span className={styles.mode + " " + styles.modeOn} aria-current="page">יועץ</span>
-        <a className={styles.mode} href={import.meta.env.BASE_URL + "../"}>אישי</a>
+        <button type="button" className={styles.mode + (workspace === 'advisor' ? ' ' + styles.modeOn : '')} aria-pressed={workspace === 'advisor'} onClick={() => onWorkspaceChange?.('advisor')}>יועץ</button>
+        <button type="button" className={styles.mode + (workspace === 'personal' ? ' ' + styles.modeOn : '')} aria-pressed={workspace === 'personal'} onClick={() => onWorkspaceChange?.('personal')}>אישי</button>
       </div>
       <nav className={styles.nav} aria-label="ניווט מחלקה">
         {nav.map((n, i) => (

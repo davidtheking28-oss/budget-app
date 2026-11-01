@@ -24,7 +24,7 @@
 }
 
 .itemHead { display: flex; align-items: center; gap: 8px; }
-.name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 800; color: var(--text); }
+.name { flex: 1; min-width: 0; overflow-wrap: anywhere; line-height: 1.3; font-weight: 800; color: var(--text); }
 .total { font-weight: 800; color: var(--accent); }
 .count {
   min-width: 22px;
@@ -54,6 +54,7 @@
 
 .add {
   flex: none;
+  font-family: inherit;
   width: 40px;
   min-height: 40px;
   border: none;

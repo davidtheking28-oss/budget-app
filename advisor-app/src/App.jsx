@@ -19,6 +19,8 @@ import { useTheme } from './useTheme.js';
 import { useUrlParam } from './useUrlParam.js';
 import Prospects from './clients/Prospects.jsx';
 import BusinessView from './business/BusinessView.jsx';
+import PersonalView from './business/PersonalView.jsx';
+import { PERSONAL_NAV, PERSONAL_KEYS } from './business/PersonalNav.jsx';
 import { BUSINESS_NAV, BUSINESS_KEYS, DEPARTMENTS, deptOf, pageTitle } from './business/BusinessNav.jsx';
 
 // Older links opened a standalone client screen (?client=<id>&nav=<tab>); that
@@ -30,6 +32,8 @@ const legacyTab = legacyParams.get('nav');
 export default function App() {
   const { session, loading, isRecovery, clearRecovery } = useSession();
   const [homeView, setHomeView] = useUrlParam('view', 'clients', legacyClient ? 'client-view' : 'clients', { history: true });
+  const [workspace, setWorkspace] = useUrlParam('ws', 'advisor', 'advisor', { history: true });
+  const [personalView, setPersonalView] = useUrlParam('pview', 'personal-expenses', 'personal-expenses', { history: true });
   const [viewClientId, setViewClientId] = useState(legacyClient);
   const [viewTab, setViewTab] = useState(legacyTab);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -70,27 +74,34 @@ export default function App() {
   const activeHome = BUSINESS_KEYS.includes(homeView) ? homeView : 'clients';
   const activeDept = deptOf(activeHome);
   const homeItem = BUSINESS_NAV.find(n => n.key === activeHome);
+  const personal = workspace === 'personal';
+  const activePersonal = PERSONAL_KEYS.includes(personalView) ? personalView : 'personal-expenses';
+  const personalItem = PERSONAL_NAV.find(n => n.key === activePersonal);
 
   return (
     <>
       <Shell
         email={session.user.email}
         advisorId={session.user.id}
-        workspaceKey={`${session.user.id}:home:${homeView}`}
+        workspaceKey={personal ? `${session.user.id}:personal:${activePersonal}` : `${session.user.id}:home:${homeView}`}
         onSearch={() => setSearchOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
         inert={searchOpen}
-        onHomeClients={() => setHomeView('clients')}
-        homeNav={BUSINESS_NAV.filter(n => n.dept === activeDept.key)}
-        homeActive={activeHome}
-        onHomeNavChange={setHomeView}
-        homeTabs={DEPARTMENTS.map(d => ({ key: d.key, label: d.label, icon: d.icon, active: d.key === activeDept.key, onClick: () => setHomeView(d.items[0].key) }))}
-        title={activeHome === 'client-view' ? '' : pageTitle(homeItem)}
-        description={activeHome === 'tasks' ? new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : homeItem?.description}
-        homeLinks={BUSINESS_NAV.filter(n => n.key !== 'clients').map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => setHomeView(n.key), icon: n.icon }))}
+        onHomeClients={personal ? () => setWorkspace('advisor') : () => setHomeView('clients')}
+        workspace={workspace}
+        onWorkspaceChange={setWorkspace}
+        homeNav={personal ? PERSONAL_NAV : BUSINESS_NAV.filter(n => n.dept === activeDept.key)}
+        homeActive={personal ? activePersonal : activeHome}
+        onHomeNavChange={personal ? setPersonalView : setHomeView}
+        homeTabs={personal ? [] : DEPARTMENTS.map(d => ({ key: d.key, label: d.label, icon: d.icon, active: d.key === activeDept.key, onClick: () => setHomeView(d.items[0].key) }))}
+        title={personal ? personalItem?.label || '' : activeHome === 'client-view' ? '' : pageTitle(homeItem)}
+        description={personal ? personalItem?.description : activeHome === 'tasks' ? new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : homeItem?.description}
+        homeLinks={personal ? PERSONAL_NAV.map(n => ({ key: n.key, label: n.label, active: activePersonal === n.key, onClick: () => setPersonalView(n.key), icon: n.icon })) : BUSINESS_NAV.filter(n => n.key !== 'clients').map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => setHomeView(n.key), icon: n.icon }))}
       >
-        {activeHome === 'prospects'
+        {personal
+          ? <PersonalView view={activePersonal} userId={session.user.id} email={session.user.email} />
+          : activeHome === 'prospects'
           ? <Prospects advisorId={session.user.id} onConvert={async () => { try { await navigator.clipboard.writeText(signupMessage(session.user.id)); toast('קישור ההרשמה הועתק, שלח אותו ללקוח', 'success'); } catch { toast('אפשר להעתיק את הקישור ממסך אישור לקוחות', 'info'); } setHomeView('client-approvals'); }} />
           : activeHome !== 'clients'
           ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} />

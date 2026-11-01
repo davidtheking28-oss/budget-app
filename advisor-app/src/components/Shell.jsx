@@ -165,7 +165,7 @@ function AccountMenu({ email, advisorId, up, block }) {
   );
 }
 
-export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, description, homeNav, homeActive, onHomeNavChange, homeTabs, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
+export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, description, homeNav, homeActive, onHomeNavChange, homeTabs, workspace, onWorkspaceChange, onSearch, email, advisorId, theme, onToggleTheme, inert: shellInert, children }) {
   const desktop = useDesktop();
   useWorkspaceScroll(workspaceKey);
 
@@ -182,7 +182,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, d
   if (desktop && homeNav) {
     return (
       <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
-        <SideNav nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} footer={accountFooter} />
+        <SideNav nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} footer={accountFooter} workspace={workspace} onWorkspaceChange={onWorkspaceChange} />
         <div className={styles.sideMain}>
           <TopNav hideBrand tabs={homeTabs} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
           <main className={styles.contentTop + " " + styles.homeContent}>
