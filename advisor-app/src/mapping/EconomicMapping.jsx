@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { useEconomicMapping } from './useEconomicMapping.js';
@@ -19,6 +19,7 @@ import layout from './MappingLayout.module.css';
 // (that's a personal-budget list) — it needs to stay selectable here so a
 // transaction the parser tagged this way doesn't fall off the dropdown.
 const LOAN_CATEGORY = 'החזר הלוואות + חיוב קבוע';
+const INSURANCE_MOVE_CATS = ['ביטוח חובה', 'ביטוח מקיף'];
 const FOREIGN_ORDERS_CATEGORY = 'הזמנות מחו״ל';
 const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS.slice(0, -1), FOREIGN_ORDERS_CATEGORY, ...FIXED_CATS.filter(c => !EXPENSE_CATS.includes(c)), 'שונות'];
 const INCOME_ADD_CATS = [...INCOME_TEMPLATE.map(t => t.key), ...INCOME_CATS.filter(c => !INCOME_TEMPLATE.some(t => t.key === c))];
@@ -207,6 +208,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [donutView, setDonutView] = useState('cat');
   const [reviewOnly, setReviewOnly] = useState(false);
   const fileInputRef = useRef(null);
+  const movingInsurance = useRef(false);
   const opts = monthOptions();
 
   // Groups the mapping's recurring loan/savings transactions by description and
@@ -231,6 +233,21 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const manualItems = (data?.transactions || []).filter(t => t.manual);
   const hasStatements = (data?.transactions || []).some(t => !t.manual);
   const unclassifiedCount = (data?.transactions || []).filter(t => !t.manual && isUnclassified(t)).length;
+
+  useEffect(() => {
+    const moving = manualItems.filter(t => INSURANCE_MOVE_CATS.includes(t.category));
+    if (!data || !budgetData || !moving.length || movingInsurance.current) return;
+    movingInsurance.current = true;
+    (async () => {
+      for (const t of moving) {
+        const ok = await addItem(saveBudget, 'insurances', { name: t.category, type: t.category, monthly: Number(t.amount) || 0 });
+        if (ok === false) { movingInsurance.current = false; return; }
+      }
+      await saveManual(manualItems.filter(t => !INSURANCE_MOVE_CATS.includes(t.category)));
+      toast('סכומי ביטוח חובה ומקיף הועברו לקטגוריית הביטוחים', 'success');
+      movingInsurance.current = false;
+    })();
+  });
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) {
