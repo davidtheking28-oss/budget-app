@@ -84,7 +84,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
                 <input className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
               </span>
             ) : (
-              <span className={styles.field} title={r.auto ? 'נמשך אוטומטית מהתקציב של הלקוח. כדי לעקוף, הזן סכום בשורה' : 'סכום מצטבר, לעריכה השתמש במחשבונים'}>
+              <span className={styles.field} title={r.auto ? 'נמשך אוטומטית מהלשונית ביטוחים · שנתיות · מנויים · חינוך. כדי לעקוף, הזן סכום בשורה' : 'סכום מצטבר, לעריכה השתמש במחשבונים'}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
                 <input className={styles.input} readOnly tabIndex={-1} aria-label={'סכום חודשי: ' + labelFor(r.category)} value={Math.round(r.amount)} />
               </span>
