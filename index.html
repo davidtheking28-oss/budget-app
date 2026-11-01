@@ -1787,7 +1787,7 @@
       </div>
       <div id="authOtpStep" style="display:none">
         <div id="authOtpNote" class="auth-footer-note" style="margin-bottom:10px;word-break:break-all"></div>
-        <input id="authOtpInput" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr" placeholder="קוד בן 6 ספרות" aria-label="קוד אימות" oninput="this.value=this.value.replace(/\D/g,'');if(this.value.length===6)authVerifyOtp()" style="width:100%;box-sizing:border-box;padding:14px 16px;border:1.5px solid var(--accent);border-radius:14px;font-size:1.5rem;font-family:var(--font-num);color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700;letter-spacing:8px"/>
+        <input id="authOtpInput" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" dir="ltr" placeholder="הקוד שנשלח אליך" aria-label="קוד אימות" oninput="this.value=this.value.replace(/\D/g,'');if(this.value.length===8)authVerifyOtp()" style="width:100%;box-sizing:border-box;padding:14px 16px;border:1.5px solid var(--accent);border-radius:14px;font-size:1.5rem;font-family:var(--font-num);color:var(--text);background:var(--surface);outline:none;text-align:center;font-weight:700;letter-spacing:8px"/>
         <button id="authVerifyBtn" type="button" class="btn btn-primary btn-full" style="margin-top:10px" onclick="authVerifyOtp()">אימות</button>
         <button type="button" class="auth-skip-btn" onclick="authBackToEmail()">שינוי כתובת מייל</button>
       </div>
@@ -8632,7 +8632,7 @@ async function authSendEmail(){
 async function authVerifyOtp(){
   const inp=document.getElementById('authOtpInput');
   const code=(inp?.value||'').trim();
-  if(code.length!==6||_authVerifying)return;
+  if(code.length<6||code.length>8||_authVerifying)return;
   _authVerifying=true;
   const btn=document.getElementById('authVerifyBtn');
   btn.disabled=true;btn.textContent='מאמת…';
