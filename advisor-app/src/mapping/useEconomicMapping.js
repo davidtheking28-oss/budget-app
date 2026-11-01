@@ -64,6 +64,12 @@ function retainChannel(clientUserId) {
         invalidate(clientUserId);
         fetchEntry(clientUserId);
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'advisor_clients', filter: `client_id=eq.${clientUserId}` }, payload => {
+        if (payload.eventType === 'DELETE' || (payload.new?.status && payload.new.status !== 'active')) {
+          invalidate(clientUserId);
+          setEntry(clientUserId, { data: null, error: { message: 'access_revoked' }, ts: Date.now() });
+        }
+      })
       .subscribe();
     entry = { channel, count: 0 };
     channels.set(clientUserId, entry);
@@ -88,7 +94,14 @@ export function useEconomicMapping(clientUserId, advisorId) {
     const releaseChannel = retainChannel(clientUserId);
     const cached = cache.get(clientUserId);
     if (!cached || Date.now() - cached.ts > STALE_MS) fetchEntry(clientUserId);
-    return () => { unsubscribe(); releaseChannel(); };
+    const refresh = () => { invalidate(clientUserId); fetchEntry(clientUserId); };
+    window.addEventListener('focus', refresh);
+    window.addEventListener('online', refresh);
+    return () => {
+      unsubscribe(); releaseChannel();
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('online', refresh);
+    };
   }, [clientUserId]);
 
   const reload = useCallback(() => {
@@ -101,6 +114,7 @@ export function useEconomicMapping(clientUserId, advisorId) {
 
   const save = useCallback(async (row) => {
     if (!clientUserId) return;
+    if (cache.get(clientUserId)?.error?.message === 'access_revoked') return false;
     const prev = cache.get(clientUserId)?.data || null;
     const next = { hidden_categories: prev?.hidden_categories, extra_categories: prev?.extra_categories, category_labels: prev?.category_labels, ...row, advisor_id: advisorId, client_id: clientUserId };
     invalidate(clientUserId);
