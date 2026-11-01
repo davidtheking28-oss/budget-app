@@ -130,13 +130,15 @@ export default function Prospects({ advisorId, onConvert }) {
       <h1 className={styles.srOnly}>מתעניינים</h1>
       <HeaderAction><button type="button" className={biz.btn} onClick={() => { setForm(EMPTY); setEditingId(null); setModalOpen(true); }}>+ הוסף ליד</button></HeaderAction>
 
-      <div className={biz.grid4} role="group" aria-label="מדדי מכירות" style={{ marginBottom: 'var(--space-3)', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))' }}>
+      <section className={biz.bigCard} style={{ marginBottom: 'var(--space-3)' }}>
+        <div className={biz.grid4 + ' ' + biz.statsBare} role="group" aria-label="מדדי מכירות" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))' }}>
         <div className={biz.stat}><div className={biz.statLabel}>פגישות התאמה שנקבעו</div><div className={biz.statValue}>{stats.meetings}</div><div className={biz.statNote}>מתוך {stats.total} לידים</div></div>
         <div className={biz.stat}><div className={biz.statLabel}>אחוז הגעה לשיחות</div><div className={biz.statValue}>{percentLabel(stats.showRate)}</div><div className={biz.statNote}>{stats.showed} הגיעו מתוך {stats.total} לידים</div></div>
         <div className={biz.stat}><div className={biz.statLabel}>אחוז רלוונטיות</div><div className={biz.statValue}>{percentLabel(stats.relevantRate)}</div><div className={biz.statNote}>{stats.relevant} רלוונטיים מתוך {stats.showed}</div></div>
         <div className={biz.stat}><div className={biz.statLabel}>אחוז סגירה</div><div className={biz.statValue}>{percentLabel(stats.closeRate)}</div><div className={biz.statNote}>{stats.closed} נסגרו מתוך {stats.relevant} רלוונטיים</div></div>
         <div className={biz.stat}><div className={biz.statLabel}>אחוז סגירה מכל השיחות</div><div className={biz.statValue}>{percentLabel(closeOfAll)}</div><div className={biz.statNote}>{stats.closed} נסגרו מתוך {stats.showed} שהגיעו</div></div>
       </div>
+      </section>
 
       <div className={biz.toolbar} style={{ marginBottom: 'var(--space-3)' }}>
         <input className={biz.input + ' ' + biz.inputGrow} type="search" placeholder="חיפוש ליד..." aria-label="חיפוש ליד" value={search} onChange={e => setSearch(e.target.value)} />

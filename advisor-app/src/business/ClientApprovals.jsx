@@ -79,7 +79,7 @@ export default function ClientApprovals({ advisorId }) {
   const initial = r => ((r.name || r.email || '?').trim()[0] || '?').toUpperCase();
   const panelActions = r => ROW_ACTIONS[r.kind].filter(a => a !== 'block' && a !== 'trash');
   const dangerActions = r => ROW_ACTIONS[r.kind].filter(a => a === 'block' || a === 'trash');
-  const actionHint = { approve: 'הלקוח יקבל גישה לתקציב שלך', end: 'בלי למחוק את החשבון', cancel: 'ההזמנה תוסר מהרשימה', reject: 'הבקשה תוסר מהרשימה', remove: 'פרטי העסקה יימחקו', block: 'אי אפשר להזמין שוב', trash: 'אפשר לשחזר עד ' + TRASH_DAYS + ' יום' };
+  const actionHint = { approve: 'ישויך אוטומטית ללקוח ידני עם אותו מייל, אם קיים', end: 'בלי למחוק את החשבון', cancel: 'ההזמנה תוסר מהרשימה', reject: 'הבקשה תוסר מהרשימה', remove: 'פרטי העסקה יימחקו', block: 'אי אפשר להזמין שוב', trash: 'אפשר לשחזר עד ' + TRASH_DAYS + ' יום' };
   const chooseAction = (r, a) => (a === 'approve' ? run(r, a) : setConfirming({ key: r.key, action: a }));
 
   async function restore(row) {
