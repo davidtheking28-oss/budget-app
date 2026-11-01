@@ -5106,13 +5106,29 @@ function _requestPendingAdvisor(){
   if(!_pendingAdvisorCall)_pendingAdvisorCall=_doRequestPendingAdvisor().finally(()=>{_pendingAdvisorCall=null;});
   return _pendingAdvisorCall;
 }
-async function _doRequestPendingAdvisor(){
+const _ADVISOR_REF_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function _pendingAdvisorRef(){
   let ref=null;
   try{ref=localStorage.getItem('budget_pending_advisor');}catch(e){}
+  if(!ref){const m=_cloudUser?.user_metadata?.advisor_ref;if(typeof m==='string'&&_ADVISOR_REF_RE.test(m))ref=m;}
+  return ref;
+}
+function _authRedirectUrl(){
+  const ref=_pendingAdvisorRef();
+  return 'https://davidtheking28-oss.github.io/budget-app/'+(ref?'?advisor='+ref:'');
+}
+function _authSignupData(){
+  const ref=_pendingAdvisorRef();
+  return ref?{advisor_ref:ref}:{};
+}
+async function _doRequestPendingAdvisor(){
+  const ref=_pendingAdvisorRef();
   if(!ref||!_cloudUser||!_sb)return;
   const {data,error}=await _sb.rpc('request_advisor_link',{p_advisor:ref});
   if(error)return;
   try{localStorage.removeItem('budget_pending_advisor');}catch(e){}
+  if(_cloudUser.user_metadata?.advisor_ref)_sb.auth.updateUser({data:{advisor_ref:null}}).catch(()=>{});
+  try{const u=new URL(location.href);if(u.searchParams.has('advisor')){u.searchParams.delete('advisor');history.replaceState(null,'',u.pathname+u.search+u.hash);}}catch(e){}
   if(data==='ok')showToast('✓ הבקשה נשלחה ליועץ, ממתין לאישורו');
 }
 async function _promptAdvisorInvite(){
@@ -8133,7 +8149,7 @@ async function obSendEmail(){
   if(btn){btn.disabled=true;btn.textContent='שולח…';}
   try{
     if(!_sb)throw new Error('no_sb');
-    const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:'https://davidtheking28-oss.github.io/budget-app/'}});
+    const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:_authRedirectUrl(),data:_authSignupData()}});
     if(error)throw error;
     _obOtpSent=true;
     renderOnboardStep();
@@ -8648,7 +8664,7 @@ async function authSendEmail(){
   if(!_sb){showToast('❌ שירות ענן אינו זמין');return;}
   const btn=document.getElementById('authSendBtn');
   btn.disabled=true;btn.textContent='שולח…';
-  const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:'https://davidtheking28-oss.github.io/budget-app/'}});
+  const {error}=await _sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:_authRedirectUrl(),data:_authSignupData()}});
   btn.disabled=false;btn.textContent='שלח לי קוד';
   if(error){showToast('❌ שגיאה בשליחת הקוד, נסה שוב');return;}
   _authEmail=email;
@@ -8679,7 +8695,7 @@ async function authGoogleSignIn(){
   if(!_sb){showToast('❌ שירות ענן אינו זמין');return;}
   const {error}=await _sb.auth.signInWithOAuth({
     provider:'google',
-    options:{redirectTo:'https://davidtheking28-oss.github.io/budget-app/'}
+    options:{redirectTo:_authRedirectUrl()}
   });
   if(error)showToast('❌ '+error.message);
 }
