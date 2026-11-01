@@ -53,7 +53,6 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             <span className={styles.name}>
               {selecting && r.manual && <input type="checkbox" className={styles.check} aria-label={'בחר שורה: ' + labelOf(r.category)} checked={picked.includes(r.id)} onChange={() => togglePick(r.id)} />}
               {labelOf(r.category)}{r.desc ? ' · ' + r.desc : ''}
-              {!r.manual && !r.placeholder && <span className={styles.tag}>מדפי חשבון</span>}
               {tag && templateKeys.includes(r.category) && <span className={styles.tag}>{tag}</span>}
             </span>
             {r.placeholder ? (
