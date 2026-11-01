@@ -189,7 +189,7 @@
        container moves scrolling to a nested element, where overscroll-behavior
        actually works in Safari. See initHeaderAutoHide/initPullRefresh/showPage/
        _lockBodyScroll, all updated to scroll #main-content instead of window. */
-    body{font-family:var(--font-sans);background:var(--bg);color:var(--text);direction:rtl;position:fixed;inset:0 0 auto;height:100vh;height:100dvh;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:var(--lh-normal);letter-spacing:var(--track-normal);font-feature-settings:'kern' 1;text-rendering:optimizeLegibility;}
+    body{font-family:var(--font-sans);background:var(--bg);color:var(--text);direction:rtl;position:fixed;inset:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:var(--lh-normal);letter-spacing:var(--track-normal);font-feature-settings:'kern' 1;text-rendering:optimizeLegibility;}
     body.dark{background:var(--bg);}
     body.dark::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 150% 60% at 50% 6%,#24201a 0%,var(--bg) 62%);}
     /* Hebrew text: neutralize Latin-oriented negative tracking from utility classes */
