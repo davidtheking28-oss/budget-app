@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import Logo from './Logo.jsx';
 import styles from './TopNav.module.css';
 
-export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, end, hideBrand, logoUrl }) {
+export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, end, hideBrand }) {
   const globals = [
     onBack && { key: 'clients', label: 'הלקוחות שלי', onClick: onBack, active: homeActive },
     ...(homeLinks || []).map(l => ({ key: l.key, label: l.label, onClick: l.onClick, active: l.active })),
@@ -32,7 +32,9 @@ export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, o
         <div className={styles.end}>
           {onToggleTheme && (
             <button type="button" className={styles.themeBtn} onClick={onToggleTheme} aria-pressed={theme === 'dark'} aria-label={theme === 'dark' ? 'עבור למצב בהיר' : 'עבור למצב כהה'}>
-              <Logo size="sm" src={logoUrl} />
+              {theme === 'dark'
+                ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2M12 19.5v2M4.5 12h-2M21.5 12h-2M6.3 6.3 4.9 4.9M19.1 19.1l-1.4-1.4M17.7 6.3l1.4-1.4M4.9 19.1l1.4-1.4" /></svg>
+                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 13.2A8.2 8.2 0 0 1 10.8 4a8.5 8.5 0 1 0 9.2 9.2z" /></svg>}
             </button>
           )}
           {end}

@@ -185,7 +185,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, d
       <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
         <SideNav logoUrl={profile?.logo_url} nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} footer={accountFooter} workspace={workspace} onWorkspaceChange={onWorkspaceChange} />
         <div className={styles.sideMain}>
-          <TopNav logoUrl={profile?.logo_url} hideBrand tabs={homeTabs} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
+          <TopNav hideBrand tabs={homeTabs} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
           <main className={styles.contentTop + " " + styles.homeContent}>
             {title ? (
               <div className={styles.clientHead + ' ' + styles.homeHead}>
@@ -206,7 +206,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, d
   if (desktop) {
     return (
       <div className={styles.shellTop} dir="rtl" inert={shellInert ? '' : undefined}>
-        <TopNav logoUrl={profile?.logo_url} homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} theme={theme} onToggleTheme={onToggleTheme} end={topEnd} />
+        <TopNav homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} theme={theme} onToggleTheme={onToggleTheme} end={topEnd} />
         <main className={styles.contentTop}>
           {children}
         </main>
