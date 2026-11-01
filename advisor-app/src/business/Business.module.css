@@ -111,8 +111,8 @@
 
 .tableWrap { overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
-.table th { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text3); font-size: var(--text-xs); font-weight: 700; text-align: right; white-space: nowrap; }
-.table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.table th { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text3); font-size: var(--text-xs); font-weight: 600; text-align: right; white-space: nowrap; }
+.table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; font-weight: 600; }
 .table tr:last-child td { border-bottom: none; }
 .rowDone td { color: var(--text3); }
 .rowDone .taskName { text-decoration: line-through; }
