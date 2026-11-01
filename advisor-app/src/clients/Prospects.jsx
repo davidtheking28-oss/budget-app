@@ -128,7 +128,6 @@ export default function Prospects({ advisorId, onConvert }) {
   return (
     <div className={styles.page}>
       <h1 className={styles.srOnly}>מתעניינים</h1>
-      <HeaderAction targetId="biz-header-sub" fallback={false}><p className={biz.headSub}>{prospects.length} לידים במערכת</p></HeaderAction>
       <HeaderAction><button type="button" className={biz.btn} onClick={() => { setForm(EMPTY); setEditingId(null); setModalOpen(true); }}>+ הוסף ליד</button></HeaderAction>
 
       <div className={biz.grid4} role="group" aria-label="מדדי מכירות" style={{ marginBottom: 'var(--space-3)' }}>

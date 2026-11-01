@@ -6,7 +6,6 @@ import ClientJourney from './ClientJourney.jsx';
 import { MEETINGS, readJourney, journeyProgress, currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
 import { scheduleJourneyMeeting } from './journeyMeetings.js';
 import { toast } from '../toast.js';
-import HeaderAction from './HeaderAction.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { formatDate } from '../budget/monthUtils.js';
@@ -65,7 +64,6 @@ export default function ClientService({ advisorId, onSelect }) {
 
   return (
     <div className={styles.stack}>
-      <HeaderAction targetId="biz-header-sub" fallback={false}><p className={styles.headSub}>{activeCount} לקוחות פעילים בתהליך</p></HeaderAction>
       <section className={styles.bigCard}>
         <div className={styles.grid2 + ' ' + styles.cellGrid}>
           <div className={styles.cell}>

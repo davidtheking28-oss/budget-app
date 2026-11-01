@@ -6,7 +6,6 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
-import HeaderAction from './HeaderAction.jsx';
 import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 
@@ -150,7 +149,6 @@ export default function Projects({ advisorId }) {
   if (open) {
     return (
       <>
-        <HeaderAction targetId="biz-header-sub" fallback={false}><p className={styles.headSub}>{records.length} פרויקטים</p></HeaderAction>
         <ProjectDetail project={{ id: open.id, ...open.data }} onBack={() => setOpenId(null)} onUpdate={patch => update(open.id, patch)} onRemove={async () => { await remove(open.id, 'הפרויקט נמחק'); setOpenId(null); }} />
       </>
     );
@@ -176,7 +174,6 @@ export default function Projects({ advisorId }) {
 
   return (
     <div className={styles.stack}>
-      <HeaderAction targetId="biz-header-sub" fallback={false}><p className={styles.headSub}>{records.length} פרויקטים</p></HeaderAction>
       <section className={styles.card}>
         <div className={styles.cardHead} style={{ marginBottom: 0 }}>
           <h3 className={styles.cardTitle}>הפרויקטים שלי</h3>

@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { useClientDeals } from './useClientDeals.js';
 import { num } from './bizMath.js';
-import HeaderAction from './HeaderAction.jsx';
 import ClientCard from './ClientCard.jsx';
 import AddClientModal from './AddClientModal.jsx';
 import ClientJourney from './ClientJourney.jsx';
@@ -82,7 +81,6 @@ export default function ClientsTable({ advisorId, onOpen, onRemove }) {
 
   return (
     <div className={styles.stack}>
-      <HeaderAction targetId="biz-header-sub" fallback={false}><p className={styles.headSub}>{rows.length} לקוחות במערכת</p></HeaderAction>
       <section className={styles.bigCard} role="group" aria-label="סיכום לקוחות">
         <div className={styles.grid3 + ' ' + styles.cellGrid}>
           <div className={styles.cell}>
