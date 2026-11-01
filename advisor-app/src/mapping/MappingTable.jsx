@@ -17,9 +17,10 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   const templateKeys = template.map(t => t.key);
   const group = cat => {
     const rs = rows.filter(r => r.category === cat);
-    const manualRows = rs.filter(r => r.manual);
-    const single = rs.length === 1 && rs[0].manual;
+    const manualRows = rs.filter(r => r.manual && !r.auto);
+    const single = rs.length === 1 && rs[0].manual && !rs[0].auto;
     return {
+      auto: rs.some(r => r.auto),
       line: 'cat:' + cat,
       category: cat,
       amount: rs.reduce((s, r) => s + r.amount, 0),
@@ -83,7 +84,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
                 <input className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
               </span>
             ) : (
-              <span className={styles.field} title="סכום מצטבר, לעריכה השתמש במחשבונים">
+              <span className={styles.field} title={r.auto ? 'נמשך אוטומטית מהתקציב של הלקוח. כדי לעקוף, הזן סכום בשורה' : 'סכום מצטבר, לעריכה השתמש במחשבונים'}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
                 <input className={styles.input} readOnly tabIndex={-1} aria-label={'סכום חודשי: ' + labelFor(r.category)} value={Math.round(r.amount)} />
               </span>

@@ -9,10 +9,11 @@ import { resizeImageToJpeg } from './resizeImage.js';
 import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
 import { addItem } from '../budget/itemHelpers.js';
+import { monthlyEquivalent } from '../budget/Subscriptions.jsx';
 import MerchantRules from './MerchantRules.jsx';
 import MappingTable from './MappingTable.jsx';
 import MappingCalculators from './MappingCalculators.jsx';
-import { labelOf, SAVINGS_CATEGORY, SAVINGS_KEYS, FIXED_KEYS, INCOME_TEMPLATE, SAVINGS_TEMPLATE, FIXED_TEMPLATE, VARIABLE_TEMPLATE } from './mappingTemplates.js';
+import { labelOf, ANNUAL_CATEGORY, SAVINGS_CATEGORY, SAVINGS_KEYS, FIXED_KEYS, INCOME_TEMPLATE, SAVINGS_TEMPLATE, FIXED_TEMPLATE, VARIABLE_TEMPLATE } from './mappingTemplates.js';
 import layout from './MappingLayout.module.css';
 
 // The mapping's own savings-transfer category doesn't live in EXPENSE_CATS
@@ -454,13 +455,24 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const cardCharges = (data?.transactions || []).filter(looksLikeCardCharge);
   const cardChargesExcluded = cardCharges.length > 0 && cardCharges.every(t => t.excluded);
   const cardChargesTotal = cardCharges.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-  const cashflow = computeCashflowSummary(data?.transactions || []);
-  const mappingRows = computeMappingRows(data?.transactions || []);
+  const monthlyOf = (list, key) => (list || []).reduce((s, x) => s + (Number(x[key]) || 0), 0);
+  const autoFixedAmounts = budgetData ? {
+    'ביטוחים': monthlyOf((budgetData.insurances || []).filter(x => !x.closed), 'monthly'),
+    'מנויים ושירותים': (budgetData.subscriptions || []).reduce((s, x) => s + (x.active ? monthlyEquivalent(x.cycle, x.amount || 0) : 0), 0),
+    'חינוך, חוגים וקייטנות': monthlyOf(budgetData.education, 'monthly'),
+    [ANNUAL_CATEGORY]: (budgetData.annualExpenses || []).reduce((s, x) => s + (Number(x.annual) || 0) / 12, 0)
+  } : {};
+  const autoFixedTx = Object.entries(autoFixedAmounts)
+    .filter(([cat, amount]) => amount > 0 && !(data?.transactions || []).some(t => t.category === cat && !t.excluded))
+    .map(([category, amount]) => ({ id: 'auto:' + category, auto: true, manual: true, type: 'expense', category, desc: '', amount: Math.round(amount), date: null, source_month: 'manual' }));
+  const mathTransactions = [...(data?.transactions || []), ...autoFixedTx];
+  const cashflow = computeCashflowSummary(mathTransactions);
+  const mappingRows = computeMappingRows(mathTransactions);
   const savingsRows = mappingRows.expense.filter(r => SAVINGS_KEYS.includes(r.category));
   const fixedRows = mappingRows.expense.filter(r => FIXED_KEYS.includes(r.category));
 
   const fixedTransfer = Object.entries(fixedRows.reduce((acc, r) => {
-    if (FIXED_CATS.includes(r.category) && r.amount > 0) acc[r.category] = (acc[r.category] || 0) + r.amount;
+    if (FIXED_CATS.includes(r.category) && r.amount > 0 && !r.auto) acc[r.category] = (acc[r.category] || 0) + r.amount;
     return acc;
   }, {})).map(([cat, amount]) => ({ cat, amount: Math.round(amount) })).filter(r => r.amount > 0);
   const fixedTransferTotal = fixedTransfer.reduce((sum, r) => sum + r.amount, 0);
