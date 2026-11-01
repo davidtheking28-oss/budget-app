@@ -54,11 +54,16 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
       setForm(prev => ({ ...prev, amount: '', clearing: '', desc: '' }));
     } finally { savingRef.current = false; setSaving(false); }
   }
+  const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(100);
+  const filtered = incomes.filter(entry => [entry.desc, entry.category, entry.date, entry.amount].some(value => String(value ?? '').toLocaleLowerCase('he').includes(search.trim().toLocaleLowerCase('he'))));
+
   return (
     <Modal title={`הכנסות · ${periodLabel(period)}`} onClose={onClose} wide>
+      <input type="search" className={styles.input} aria-label="חיפוש בהכנסות" placeholder="חיפוש לפי תיאור, תאריך או סכום" value={search} onChange={e => { setSearch(e.target.value); setVisibleCount(100); }} />
       {incomes.length === 0 ? <div className={styles.empty}>עוד לא הוזנו הכנסות לחודש הזה.</div> : (
         <ul className={styles.rowList}>
-          {incomes.map(e => (
+          {filtered.slice(0, visibleCount).map(e => (
             <li key={e.id} className={styles.rowItem}>
               <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || 'הכנסה'}</div><div className={styles.rowMeta}>{e.date}{e.clearing ? ` · סליקה ${money(e.clearing)}` : ''}</div></div>
               <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={!!e.receipt} onChange={ev => onUpdate(e.id, { receipt: ev.target.checked })} />קבלה</label>
@@ -68,6 +73,8 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
           ))}
         </ul>
       )}
+      {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הכנסות</button>}
+      {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
       <form className={styles.addForm} onSubmit={submit}>
         <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="סכום" aria-label="סכום ההכנסה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} />
         <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="עלות סליקה" aria-label="עלות סליקה וניכיון" value={form.clearing} onChange={e => setForm(prev => ({ ...prev, clearing: e.target.value }))} />
@@ -96,11 +103,16 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
       setForm(prev => ({ ...prev, amount: '', desc: '' }));
     } finally { savingRef.current = false; setSaving(false); }
   }
+  const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(100);
+  const filtered = fixed.filter(entry => [entry.desc, entry.category, entry.date, entry.amount].some(value => String(value ?? '').toLocaleLowerCase('he').includes(search.trim().toLocaleLowerCase('he'))));
+
   return (
     <Modal title={`הוצאות קבועות · ${periodLabel(period)}`} onClose={onClose} wide>
+      <input type="search" className={styles.input} aria-label="חיפוש בהוצאות קבועות" placeholder="חיפוש לפי תיאור, תאריך או סכום" value={search} onChange={e => { setSearch(e.target.value); setVisibleCount(100); }} />
       {fixed.length === 0 ? <div className={styles.empty}>עוד לא הוגדרו הוצאות לחודש הזה.</div> : (
         <ul className={styles.rowList}>
-          {fixed.map(e => (
+          {filtered.slice(0, visibleCount).map(e => (
             <li key={e.id} className={styles.rowItem}>
               <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || e.category}</div><div className={styles.rowMeta}>{e.category} · מ-{periodLabel(e.startPeriod)}</div></div>
               <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" aria-label={'סכום חודשי: ' + (e.desc || e.category)} defaultValue={e.amount} onBlur={ev => { if (num(ev.target.value) > 0 && num(ev.target.value) !== num(e.amount)) onChangeAmount(e, num(ev.target.value)); }} />
@@ -109,6 +121,8 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
           ))}
         </ul>
       )}
+      {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הוצאות קבועות</button>}
+      {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
       <form className={styles.addForm} onSubmit={submit}>
         <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="₪" aria-label="סכום חודשי" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} />
         <select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
@@ -137,11 +151,16 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
       setForm(prev => ({ ...prev, amount: '', desc: '' }));
     } finally { savingRef.current = false; setSaving(false); }
   }
+  const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(100);
+  const filtered = variable.filter(entry => [entry.desc, entry.category, entry.date, entry.amount].some(value => String(value ?? '').toLocaleLowerCase('he').includes(search.trim().toLocaleLowerCase('he'))));
+
   return (
     <Modal title={`הוצאות משתנות · ${periodLabel(period)}`} onClose={onClose} wide>
+      <input type="search" className={styles.input} aria-label="חיפוש בהוצאות משתנות" placeholder="חיפוש לפי תיאור, תאריך או סכום" value={search} onChange={e => { setSearch(e.target.value); setVisibleCount(100); }} />
       {variable.length === 0 ? <div className={styles.empty}>עוד לא הוזנו הוצאות לחודש הזה.</div> : (
         <ul className={styles.rowList}>
-          {variable.map(e => (
+          {filtered.slice(0, visibleCount).map(e => (
             <li key={e.id} className={styles.rowItem}>
               <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || e.category}</div><div className={styles.rowMeta}>{e.category} · {e.date}</div></div>
               <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={!!e.receipt} onChange={ev => onUpdate(e.id, { receipt: ev.target.checked })} />קבלה</label>
@@ -151,6 +170,8 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
           ))}
         </ul>
       )}
+      {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הוצאות משתנות</button>}
+      {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
       <form className={styles.addForm} onSubmit={submit}>
         <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="₪" aria-label="סכום ההוצאה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} />
         <select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
