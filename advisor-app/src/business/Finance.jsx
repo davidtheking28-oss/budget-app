@@ -67,7 +67,7 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
             <li key={e.id} className={styles.rowItem}>
               <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || 'הכנסה'}</div><div className={styles.rowMeta}>{e.date}{e.clearing ? ` · סליקה ${money(e.clearing)}` : ''}</div></div>
               <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={!!e.receipt} onChange={ev => onUpdate(e.id, { receipt: ev.target.checked })} />קבלה</label>
-              <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" aria-label={'סכום ההכנסה: ' + (e.desc || e.category || '')} defaultValue={e.amount} onBlur={ev => { const v = num(ev.target.value); if (v > 0 && v !== num(e.amount)) onUpdate(e.id, { amount: v }); else ev.target.value = e.amount; }} />
+              <input className={styles.input + ' ' + styles.numInput} key={e.amount} inputMode="decimal" aria-label={'סכום ההכנסה: ' + (e.desc || e.category || '')} defaultValue={e.amount} onBlur={ev => { const v = num(ev.target.value); if (v > 0 && v !== num(e.amount)) onUpdate(e.id, { amount: v }); else ev.target.value = e.amount; }} />
               <DeleteButton title="מחק הכנסה" onClick={() => onRemove(e.id, 'ההכנסה נמחקה')} />
             </li>
           ))}
@@ -115,7 +115,7 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
           {filtered.slice(0, visibleCount).map(e => (
             <li key={e.id} className={styles.rowItem}>
               <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || e.category}</div><div className={styles.rowMeta}>{e.category} · מ-{periodLabel(e.startPeriod)}</div></div>
-              <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" aria-label={'סכום חודשי: ' + (e.desc || e.category)} defaultValue={e.amount} onBlur={ev => { if (num(ev.target.value) > 0 && num(ev.target.value) !== num(e.amount)) onChangeAmount(e, num(ev.target.value)); }} />
+              <input className={styles.input + ' ' + styles.numInput} key={e.amount} inputMode="decimal" aria-label={'סכום חודשי: ' + (e.desc || e.category)} defaultValue={e.amount} onBlur={ev => { if (num(ev.target.value) > 0 && num(ev.target.value) !== num(e.amount)) onChangeAmount(e, num(ev.target.value)); }} />
               <DeleteButton title="הפסק הוצאה קבועה" onClick={() => onEnd(e)} />
             </li>
           ))}
@@ -164,7 +164,7 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
             <li key={e.id} className={styles.rowItem}>
               <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || e.category}</div><div className={styles.rowMeta}>{e.category} · {e.date}</div></div>
               <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={!!e.receipt} onChange={ev => onUpdate(e.id, { receipt: ev.target.checked })} />קבלה</label>
-              <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" aria-label={'סכום ההוצאה: ' + (e.desc || e.category || '')} defaultValue={e.amount} onBlur={ev => { const v = num(ev.target.value); if (v > 0 && v !== num(e.amount)) onUpdate(e.id, { amount: v }); else ev.target.value = e.amount; }} />
+              <input className={styles.input + ' ' + styles.numInput} key={e.amount} inputMode="decimal" aria-label={'סכום ההוצאה: ' + (e.desc || e.category || '')} defaultValue={e.amount} onBlur={ev => { const v = num(ev.target.value); if (v > 0 && v !== num(e.amount)) onUpdate(e.id, { amount: v }); else ev.target.value = e.amount; }} />
               <DeleteButton title="מחק הוצאה" onClick={() => onRemove(e.id, 'ההוצאה נמחקה')} />
             </li>
           ))}
