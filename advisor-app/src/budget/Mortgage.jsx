@@ -42,7 +42,7 @@ function Check({ title, value, note, tone }) {
   return (
     <div className={styles.check + (tone ? ' ' + styles[tone] : '')}>
       <div className={styles.checkTitle}>{title}</div>
-      <div className={styles.checkValue}>{value}</div>
+      <div className={styles.checkValue + (value === 'חסר' ? ' ' + styles.missing : '')}>{value}</div>
       {note && <div className={styles.checkNote}>{note}</div>}
     </div>
   );
@@ -82,31 +82,44 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
           </svg>
         </button>
       </div>
-      {empty && <p className={styles.note}>עוד לא מילאת משכנתא.</p>}
-      <p className={styles.note}>ההחזר החודשי נשלף לשורת המשכנתא בהוצאות הקבועות. "יתרת קרן" ו"חודשים שנותרו" הם המצב בחודש שאתה מסתכל עליו, והם יורדים לבד מחודש לחודש לפי ההחזר החודשי.</p>
-
-      <div className={styles.grid}>
-        <Field label="גוף מממן" type="text" value={scenario.financier} onSave={v => patch({ financier: v })} />
-        <Field label="שווי הנכס" prefix="₪" value={scenario.propertyValue} onSave={v => patch({ propertyValue: v })} />
-        <Field label="גובה המשכנתא (יתרת קרן)" prefix="₪" value={scenario.principal} onSave={v => patch({ principal: v })} />
-        <Field label="נכון לתאריך" type="date" value={scenario.asOf} onSave={v => patch({ asOf: v })} />
-        <Field label="חודשים שנותרו" value={scenario.monthsLeft} onSave={v => patch({ monthsLeft: v })} />
-        <Field label="החזר חודשי משכנתא" prefix="₪" value={scenario.monthly} onSave={v => patch({ monthly: v })} />
-        <div className={styles.field}>
-          <span className={styles.fieldLabel}>החזר חודשי הלוואות</span>
-          <span className={styles.static}>{fmt(loansMonthly)}</span>
-        </div>
-        <Field label="הכנסות (לכושר החזר)" prefix="₪" value={scenario.income} onSave={v => patch({ income: v })} />
+      <div className={styles.notes}>
+        {empty && <p className={styles.noteStrong}>עוד לא מילאת משכנתא.</p>}
+        <p className={styles.note}>ההחזר החודשי נשלף לשורת המשכנתא בהוצאות הקבועות. "יתרת קרן" ו"חודשים שנותרו" הם המצב בחודש שאתה מסתכל עליו, והם יורדים לבד מחודש לחודש לפי ההחזר החודשי.</p>
       </div>
 
-      <div className={styles.checks}>
-        <Check title="גובה המשכנתא (יתרת קרן) · המצב החודש" value={principalNow === null ? 'חסר' : fmt(principalNow)} note="הקרן שנותרה בחודש הזה, אחרי ההחזרים שכבר ירדו" />
-        <Check title="חודשים שנותרו · המצב החודש" value={monthsNow === null ? 'חסר' : monthsNow} note={monthsNow === null ? 'מלאו "חודשים שנותרו" כדי לראות' : undefined} />
-        <Check title="שווי הנכס" value={propertyValue > 0 ? 'תקין' : 'חסר'} />
-        <Check title="אחוז מימון" value={ltv === null ? 'חסר' : ltv.toFixed(1) + '%'} note="ירוק עד 50% · כתום עד 70%" tone={ltv === null ? undefined : ltvTone(ltv)} />
-        <Check title="השלמה ל-50% מימון" value={gapTo(50) === null ? 'חסר' : fmt(gapTo(50))} note="כמה הון עצמי חסר כדי להגיע ל-50%" />
-        <Check title="השלמה ל-70% מימון" value={gapTo(70) === null ? 'חסר' : fmt(gapTo(70))} note="כמה הון עצמי חסר כדי להגיע ל-70%" />
-        <Check title="יחס החזר להכנסה" value={ratio === null ? 'חסר' : ratio.toFixed(1) + '%'} note="משכנתא והלוואות מתוך ההכנסות" tone={ratio === null ? undefined : ratio <= 40 ? 'good' : 'bad'} />
+      <div className={styles.group}>
+        <h3 className={styles.groupTitle}>פרטי המשכנתא</h3>
+        <div className={styles.grid}>
+          <Field label="גוף מממן" type="text" value={scenario.financier} onSave={v => patch({ financier: v })} />
+          <Field label="שווי הנכס" prefix="₪" value={scenario.propertyValue} onSave={v => patch({ propertyValue: v })} />
+          <Field label="יתרת קרן" prefix="₪" value={scenario.principal} onSave={v => patch({ principal: v })} />
+          <Field label="נכון לתאריך" type="date" value={scenario.asOf} onSave={v => patch({ asOf: v })} />
+          <Field label="חודשים שנותרו" value={scenario.monthsLeft} onSave={v => patch({ monthsLeft: v })} />
+        </div>
+      </div>
+
+      <div className={styles.group}>
+        <h3 className={styles.groupTitle}>החזרים והכנסות</h3>
+        <div className={styles.grid}>
+          <Field label="החזר חודשי משכנתא" prefix="₪" value={scenario.monthly} onSave={v => patch({ monthly: v })} />
+          <div className={styles.field}>
+            <span className={styles.fieldLabel}>החזר חודשי הלוואות</span>
+            <span className={styles.static}>{fmt(loansMonthly)}</span>
+          </div>
+          <Field label="הכנסות (לכושר החזר)" prefix="₪" value={scenario.income} onSave={v => patch({ income: v })} />
+        </div>
+      </div>
+
+      <div className={styles.group}>
+        <h3 className={styles.groupTitle}>המצב החודש</h3>
+        <div className={styles.checks}>
+          <Check title="יתרת קרן" value={principalNow === null ? 'חסר' : fmt(principalNow)} note="הקרן שנותרה בחודש הזה, אחרי ההחזרים שכבר ירדו" />
+          <Check title="חודשים שנותרו" value={monthsNow === null ? 'חסר' : monthsNow} note={monthsNow === null ? 'מלאו "חודשים שנותרו" כדי לראות' : undefined} />
+          <Check title="אחוז מימון" value={ltv === null ? 'חסר' : ltv.toFixed(1) + '%'} note="ירוק עד 50% · כתום עד 70%" tone={ltv === null ? undefined : ltvTone(ltv)} />
+          <Check title="השלמה ל-50% מימון" value={gapTo(50) === null ? 'חסר' : fmt(gapTo(50))} note="כמה הון עצמי חסר כדי להגיע ל-50%" />
+          <Check title="השלמה ל-70% מימון" value={gapTo(70) === null ? 'חסר' : fmt(gapTo(70))} note="כמה הון עצמי חסר כדי להגיע ל-70%" />
+          <Check title="יחס החזר להכנסה" value={ratio === null ? 'חסר' : ratio.toFixed(1) + '%'} note="משכנתא והלוואות מתוך ההכנסות" tone={ratio === null ? undefined : ratio <= 40 ? 'good' : 'bad'} />
+        </div>
       </div>
     </section>
   );
