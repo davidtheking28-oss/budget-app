@@ -177,16 +177,18 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, d
     </>
   );
 
+  const skipLink = <a tabIndex={0} className={styles.skipLink} href="#main-content">דלג לתוכן הראשי</a>;
   const sideEnd = onSearch ? <SearchBar onOpen={onSearch} /> : null;
   const accountFooter = <AccountMenu email={email} advisorId={advisorId} up block />;
 
   if (desktop && homeNav) {
     return (
       <div className={styles.shellSide} dir="rtl" inert={shellInert ? '' : undefined}>
+        {skipLink}
         <SideNav logoUrl={profile?.logo_url} nav={homeNav} activeNav={homeActive} onNavChange={onHomeNavChange} footer={accountFooter} workspace={workspace} onWorkspaceChange={onWorkspaceChange} />
         <div className={styles.sideMain}>
           <TopNav hideBrand tabs={homeTabs} theme={theme} onToggleTheme={onToggleTheme} end={sideEnd} />
-          <main className={styles.contentTop + " " + styles.homeContent}>
+          <main id="main-content" tabIndex={-1} className={styles.contentTop + " " + styles.homeContent}>
             {title ? (
               <div className={styles.clientHead + ' ' + styles.homeHead}>
                 <div className={styles.titleBlock}>
@@ -206,8 +208,9 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, d
   if (desktop) {
     return (
       <div className={styles.shellTop} dir="rtl" inert={shellInert ? '' : undefined}>
+        {skipLink}
         <TopNav homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} theme={theme} onToggleTheme={onToggleTheme} end={topEnd} />
-        <main className={styles.contentTop}>
+        <main id="main-content" tabIndex={-1} className={styles.contentTop}>
           {children}
         </main>
       </div>
@@ -216,6 +219,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, d
 
   return (
     <div className={styles.shell} dir="rtl" inert={shellInert ? '' : undefined}>
+      {skipLink}
       <IconRail logoUrl={profile?.logo_url} homeLinks={homeLinks} onBack={onHomeClients || (() => {})} homeActive={!homeLinks?.some(l => l.active)} onSearch={onSearch} theme={theme} onToggleTheme={onToggleTheme} />
       <div className={styles.topbarBleed}>
         <div className={styles.topbar}>
@@ -227,7 +231,7 @@ export default function Shell({ workspaceKey, homeLinks, onHomeClients, title, d
           </div>
         </div>
       </div>
-      <main className={styles.content}>
+      <main id="main-content" tabIndex={-1} className={styles.content}>
         {homeNav && title && (
           <div className={styles.homeHeadMobile}>
             <h1 className={styles.clientTitle}>{title}</h1>
