@@ -115,13 +115,15 @@ export default function ClientApprovals({ advisorId }) {
       </div>
 
       <section className={styles.card}>
-        <div className={styles.cardHead}>
-          <h2 className={styles.cardTitle}>הזמן לקוח חדש</h2>
-        </div>
-        <p className={styles.note} style={{ margin: 0 }}>שלח ללקוח קישור. הוא נרשם בעצמו, והבקשה שלו מופיעה כאן לאישורך.</p>
-        <div className={styles.toolbar}>
-          <button type="button" className={styles.btn} onClick={copySignupLink}>העתק קישור הזמנה</button>
-          <a className={styles.btnGhost} style={{ textDecoration: 'none' }} href={'https://wa.me/?text=' + encodeURIComponent(signupMessage(advisorId))} target="_blank" rel="noopener noreferrer">שלח בוואטסאפ</a>
+        <div className={styles.inviteRow}>
+          <div className={styles.inviteText}>
+            <h2 className={styles.cardTitle}>הזמן לקוח חדש</h2>
+            <p className={styles.note} style={{ margin: 0 }}>שלח ללקוח קישור. הוא נרשם בעצמו, והבקשה שלו מופיעה כאן לאישורך.</p>
+          </div>
+          <div className={styles.toolbar}>
+            <button type="button" className={styles.btn} onClick={copySignupLink}>העתק קישור הזמנה</button>
+            <a className={styles.btnGhost} style={{ textDecoration: 'none' }} href={'https://wa.me/?text=' + encodeURIComponent(signupMessage(advisorId))} target="_blank" rel="noopener noreferrer">שלח בוואטסאפ</a>
+          </div>
         </div>
       </section>
 
