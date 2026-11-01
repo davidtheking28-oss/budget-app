@@ -287,3 +287,16 @@
 
 .inviteRow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
 .inviteText { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+.summaryStrip { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-6); padding: var(--space-4) var(--space-5); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: 0 6px 20px -12px rgba(0, 0, 0, 0.35); }
+.stripStats { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-4) var(--space-6); margin-inline-start: auto; }
+.stripStat { display: flex; flex-direction: column; gap: 4px; min-width: 120px; }
+.stripValue { font-size: var(--text-lg, 18px); font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tileGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: var(--space-3); }
+.tile { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-2) var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.ring { width: 96px; height: 96px; }
+.ringTrack { fill: none; stroke: var(--border-strong); stroke-width: 8; }
+.ringFill { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; }
+.ringOver { fill: none; stroke: var(--red); stroke-width: 8; stroke-linecap: round; }
+.ringText { fill: var(--text); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.tileLabel { font-size: var(--text-sm); font-weight: 700; color: var(--text); text-align: center; line-height: 1.25; }

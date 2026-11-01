@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useClientBudget } from '../budget/useClientBudget.js';
 import MonthTransactions from '../budget/MonthTransactions.jsx';
-import Donut, { donutSlices } from '../components/Donut.jsx';
+import HeaderAction from './HeaderAction.jsx';
 import MonthNav from '../components/MonthNav.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { addMonths, getMonthTx, localISODate } from '../budget/monthUtils.js';
 import { addItem } from '../budget/itemHelpers.js';
-import { budgetCatsFor, withCustomCats } from '../categories.js';
+import { budgetCatsFor, EXPENSE_CATS, FIXED_CATS, withCustomCats } from '../categories.js';
 import { toast } from '../toast.js';
 import { fmt } from '../format.js';
 import styles from './Business.module.css';
@@ -27,9 +27,13 @@ export default function PersonalExpenses({ userId }) {
 
   const month = getMonthTx(data.transactions, ym.year, ym.month);
   const spent = month.filter(t => t.type === 'expense').reduce((s, t) => s + (Number(t.amount) || 0), 0);
-  const income = month.filter(t => t.type === 'income').reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const byCat = {};
   for (const t of month) if (t.type === 'expense') byCat[t.cat || 'שונות'] = (byCat[t.cat || 'שונות'] || 0) + (Number(t.amount) || 0);
+
+  const fixedNames = new Set([...FIXED_CATS, ...(data.fixed_expenses || []).map(f => f.id)]);
+  const tileCats = withCustomCats(EXPENSE_CATS, data.settings).filter(cat => !fixedNames.has(cat));
+  const budgetTotal = tileCats.reduce((sum, cat) => sum + (Number(data.budgets?.[cat]) || 0), 0)
+    + (data.fixed_expenses || []).reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
 
   async function submit(e) {
     e.preventDefault();
@@ -49,10 +53,7 @@ export default function PersonalExpenses({ userId }) {
 
   return (
     <div className={styles.stack}>
-      <div className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
-        <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={() => setYm({ year: now.getFullYear(), month: now.getMonth() })} />
-        <button type="button" className={styles.btn} aria-expanded={open} onClick={() => setOpen(v => !v)}>+ הוספת הוצאה</button>
-      </div>
+      <HeaderAction><button type="button" className={styles.btn} aria-expanded={open} onClick={() => setOpen(v => !v)}>+ הוספת הוצאה</button></HeaderAction>
 
       {open && (
         <form className={styles.card} onSubmit={submit} aria-label="הוספת הוצאה">
@@ -80,20 +81,34 @@ export default function PersonalExpenses({ userId }) {
         </form>
       )}
 
-      <section className={styles.card}>
-        <div className={styles.grid3}>
-          <div className={styles.stat}><div className={styles.statLabel}>הוצאות החודש</div><div className={styles.statValue}>{fmt(spent)}</div></div>
-          <div className={styles.stat}><div className={styles.statLabel}>הכנסות החודש</div><div className={styles.statValue}>{fmt(income)}</div></div>
-          <div className={styles.stat}><div className={styles.statLabel}>יתרה לחודש</div><div className={styles.statValue}>{fmt(income - spent)}</div></div>
+      <section className={styles.summaryStrip} aria-label="סיכום החודש">
+        <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={() => setYm({ year: now.getFullYear(), month: now.getMonth() })} />
+        <div className={styles.stripStats}>
+          <div className={styles.stripStat}><div className={styles.statLabel}>הוצאות החודש</div><div className={styles.stripValue}>{fmt(spent)}</div></div>
+          <div className={styles.stripStat}><div className={styles.statLabel}>תקציב החודש (קבועות + משתנות)</div><div className={styles.stripValue}>{budgetTotal > 0 ? fmt(budgetTotal) : 'עוד לא נקבע'}</div></div>
+          <div className={styles.stripStat}><div className={styles.statLabel}>יתרה לחודש</div><div className={styles.stripValue}>{budgetTotal > 0 ? fmt(budgetTotal - spent) : 'אין'}</div></div>
         </div>
       </section>
 
-      {Object.keys(byCat).length > 0 && (
-        <section className={styles.card}>
-          <div className={styles.cardHead}><h2 className={styles.cardTitle}>לאן הולך הכסף</h2></div>
-          <Donut items={donutSlices(byCat, 6)} title="הוצאות לפי קטגוריה" />
-        </section>
-      )}
+      <h2 className={styles.sectionHeading}>הוצאות משתנות</h2>
+      <div className={styles.tileGrid}>
+        {tileCats.map(cat => {
+          const value = byCat[cat] || 0;
+          const budget = Number(data.budgets?.[cat]) || 0;
+          const pct = budget > 0 ? Math.min(value / budget, 1) : value > 0 ? 1 : 0;
+          const over = budget > 0 && value > budget;
+          return (
+            <div key={cat} className={styles.tile}>
+              <svg className={styles.ring} viewBox="0 0 100 100" role="img" aria-label={`${cat}: ${fmt(value)}${budget > 0 ? ` מתוך ${fmt(budget)}` : ''}`}>
+                <circle cx="50" cy="50" r="42" className={styles.ringTrack} />
+                {pct > 0 && <circle cx="50" cy="50" r="42" className={over ? styles.ringOver : styles.ringFill} strokeDasharray={`${(pct * 263.9).toFixed(1)} 263.9`} transform="rotate(-90 50 50)" />}
+                <text x="50" y="55" textAnchor="middle" className={styles.ringText}>{fmt(value)}</text>
+              </svg>
+              <div className={styles.tileLabel}>{cat}</div>
+            </div>
+          );
+        })}
+      </div>
 
       <MonthTransactions data={data} save={save} mode={MODE} year={ym.year} month={ym.month} />
     </div>
