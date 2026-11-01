@@ -15,16 +15,16 @@
   --primary-hover: #2c3237;
   --donut-1: #6aa5ea;
   --donut-2: #3f78c6;
-  --donut-3: #1e4a8f;
+  --donut-3: #2a5a9a;
   --donut-4: #6c777e;
   --donut-5: #3d464c;
   --surface: #ffffff;
   --surface2: #f0f4fa;
-  --accent: #1e4a8f;
-  --accent-rgb: 30, 74, 143;
-  --accent-2: #153a73;
+  --accent: #0b1b30;
+  --accent-rgb: 11, 27, 48;
+  --accent-2: #06111f;
   --accent-ink: #ffffff;
-  --accent-dim: rgba(30, 74, 143, 0.09);
+  --accent-dim: rgba(11, 27, 48, 0.09);
   /* Was #7c4a06 — contrast ratio 1.12 against --red (#b02631), functionally the
      same color to a fast glance or anyone color-blind. #c2760a (the value after
      that fix) separated cleanly from red but only cleared 3:1 against white —

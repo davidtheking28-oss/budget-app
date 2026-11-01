@@ -1,4 +1,4 @@
-export const DEFAULT_BRAND = '#1e4a8f';
+export const DEFAULT_BRAND = '#0b1b30';
 
 export function brandStyle(hex) {
   if (!/^#[0-9a-fA-F]{6}$/.test(hex || '')) return undefined;
