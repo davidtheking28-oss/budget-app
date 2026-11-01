@@ -5287,19 +5287,19 @@ function renderTasksPage(){
     +'</div>'
   ).join(''):'<div class="budget-tx-empty">אין פגישות מתוזמנות</div>';
   const tasksList=document.getElementById('clientTasksList');
-  // A completed task has nothing left to act on — once checked it's gone,
-  // same as a followed-up meeting, instead of lingering struck-through.
   const _openTasks=_advisorTasks.filter(t=>!t.done);
+  const _doneTasks=_advisorTasks.filter(t=>t.done);
   const _multiTasks=_openTasks.length>1;
-  tasksList.innerHTML=_openTasks.length?_openTasks.map((t,i)=>
-    '<label class="budget-tx-card" style="display:flex;align-items:center;gap:12px;cursor:pointer">'
-      +'<input type="checkbox" data-task-id="'+esc(t.id)+'" style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0" aria-label="סמן '+esc(t.title)+' כבוצע"/>'
+  const _taskCard=(t,num,done)=>
+    '<label class="budget-tx-card" style="display:flex;align-items:center;gap:12px;cursor:pointer'+(done?';opacity:.6':'')+'">'
+      +'<input type="checkbox" data-task-id="'+esc(t.id)+'"'+(done?' checked':'')+' style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0" aria-label="סמן '+esc(t.title)+(done?' כלא בוצע':' כבוצע')+'"/>'
       +'<div style="flex:1;min-width:0">'
-        +'<div class="budget-tx-desc">'+(_multiTasks?'<span style="color:var(--text3);font-weight:700">'+(i+1)+'. </span>':'')+esc(t.title)+'</div>'
+        +'<div class="budget-tx-desc"'+(done?' style="text-decoration:line-through"':'')+'>'+(num?'<span style="color:var(--text3);font-weight:700">'+num+'. </span>':'')+esc(t.title)+'</div>'
         +(t.due_date?'<div class="budget-tx-date">יעד: '+heDate(t.due_date)+'</div>':'')
       +'</div>'
-    +'</label>'
-  ).join(''):'<div class="budget-tx-empty">אין משימות פתוחות</div>';
+    +'</label>';
+  tasksList.innerHTML=(_openTasks.length?_openTasks.map((t,i)=>_taskCard(t,_multiTasks?i+1:0,false)).join(''):'<div class="budget-tx-empty">אין משימות פתוחות</div>')
+    +(_doneTasks.length?'<div class="budget-tx-date" style="margin:14px 4px 6px">הושלמו</div>'+_doneTasks.map(t=>_taskCard(t,0,true)).join(''):'');
   tasksList.querySelectorAll('[data-task-id]').forEach(el=>{
     el.onchange=()=>toggleAdvisorTask(el.dataset.taskId,el.checked);
   });
