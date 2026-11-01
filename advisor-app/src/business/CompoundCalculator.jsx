@@ -12,7 +12,7 @@ function Field({ label, note, value, onChange, unit, step = 'any' }) {
       {label}
       <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <input className={styles.input} type="number" inputMode="decimal" min="0" step={step} value={value} onChange={e => onChange(e.target.value)} />
-        <span className={styles.cardSub}>{unit}</span>
+        <span className={styles.cardSub} style={{ minWidth: 40 }}>{unit}</span>
       </span>
       {note && <span className={styles.note} style={{ margin: 0 }}>{note}</span>}
     </label>

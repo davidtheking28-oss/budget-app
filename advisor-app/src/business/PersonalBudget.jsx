@@ -6,7 +6,7 @@ import Credit from '../budget/Credit.jsx';
 import ObligationTiles from '../budget/ObligationTiles.jsx';
 import MonthNav from '../components/MonthNav.jsx';
 import Skeleton from '../components/Skeleton.jsx';
-import { CHIPS, Heading } from './ClientView.jsx';
+import { CHIPS } from './ClientView.jsx';
 import styles from './Business.module.css';
 
 const Mortgage = lazy(() => import('../budget/Mortgage.jsx'));
@@ -59,10 +59,6 @@ export default function PersonalBudget({ userId }) {
           <button type="button" className={tab === 'budget' ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === 'budget'} onClick={() => changeTab('budget')}>תקציב</button>
         </div>
         <div className={styles.stack}>
-          <Heading
-            title={tab === 'budget' ? 'תקציב' : 'מיפוי'}
-            text={tab === 'budget' ? 'חודשי: תכנון בתחילת החודש מול ביצוע בסופו.' : 'מיפוי: התמונה המלאה של ההוצאות וההכנסות, עם מחשבונים לכל קטגוריה משתנה.'}
-          />
           <div className={styles.pills} role="group" aria-label="תצוגות נוספות">
             {CHIPS.map(c => (
               <button key={c.key} type="button" className={chip === c.key ? styles.pillOn : styles.pill} aria-pressed={chip === c.key} onClick={() => changeChip(c.key)}>{c.label}</button>
