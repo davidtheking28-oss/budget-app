@@ -631,3 +631,11 @@ test('a pending advisor invite sends the request straight away without asking th
   assert.equal(localStorage.getItem('budget_pending_advisor'),null);
   assert.match(toast,/הבקשה נשלחה/);
 });
+
+test('the app is locked only while the client\'s own advisor request is pending',()=>{
+  const ctx=functions(['_approvalLocked']);
+  assert.equal(ctx._approvalLocked({status:'pending',requested_by_client:true}),true);
+  assert.equal(ctx._approvalLocked({status:'pending',requested_by_client:false}),false);
+  assert.equal(ctx._approvalLocked({status:'active',requested_by_client:true}),false);
+  assert.equal(ctx._approvalLocked(null),false);
+});

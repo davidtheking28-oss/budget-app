@@ -1168,6 +1168,7 @@
 
     /* ── Install (Add to Home Screen) banner ── */
     .install-banner{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-bottom) + 214px);z-index:7500;display:none;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:11px 14px;box-shadow:0 16px 44px rgba(0,0,0,.32);}
+    body.approval-locked .install-banner{display:none!important;}
     .install-banner.show{display:flex;animation:cfPop .3s cubic-bezier(.22,1,.36,1);}
 
     /* ── Advisor-meeting alerts (pending confirmation / same-day reminder) ── */
@@ -5002,6 +5003,48 @@ async function _loadAdvisorLink(){
   if(!_cloudUser||!_sb)return;
   const {data}=await _sb.from('advisor_clients').select('*').eq('client_id',_cloudUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
   _advisorLink=data||null;
+  _applyApprovalLock();
+}
+function _approvalLocked(l){return !!(l&&l.status==='pending'&&l.requested_by_client);}
+let _approvalTimer=null;
+function _applyApprovalLock(){
+  const locked=!!_cloudUser&&_approvalLocked(_advisorLink);
+  document.body.classList.toggle('approval-locked',locked);
+  let el=document.getElementById('approvalLock');
+  if(!locked){
+    if(el)el.remove();
+    if(_approvalTimer){clearInterval(_approvalTimer);_approvalTimer=null;}
+    return;
+  }
+  if(!el){
+    el=document.createElement('div');
+    el.id='approvalLock';
+    el.setAttribute('role','dialog');
+    el.setAttribute('aria-modal','true');
+    el.setAttribute('aria-label','ממתין לאישור היועץ');
+    el.style.cssText='position:fixed;inset:0;z-index:240;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;overflow-y:auto';
+    el.innerHTML='<div style="max-width:360px;width:100%;display:flex;flex-direction:column;gap:14px;align-items:center">'
+      +'<div style="font-size:2.4rem" aria-hidden="true">⏳</div>'
+      +'<div style="font-size:1.25rem;font-weight:800;color:var(--text)">ממתין לאישור היועץ</div>'
+      +'<div style="font-size:0.92rem;line-height:1.6;color:var(--text2)">הבקשה שלך נשלחה. ברגע שהיועץ יאשר אותך, האפליקציה תיפתח אוטומטית.</div>'
+      +'<button type="button" id="approvalCheck" class="btn btn-primary btn-full">בדוק עכשיו</button>'
+      +'<button type="button" id="approvalCancel" class="btn btn-full">ביטול הבקשה</button>'
+      +'<button type="button" id="approvalOut" class="btn btn-full">התנתקות</button>'
+      +'</div>';
+    document.body.appendChild(el);
+    el.querySelector('#approvalCheck').onclick=async()=>{await _loadAdvisorLink();};
+    el.querySelector('#approvalCancel').onclick=async()=>{
+      const l=_advisorLink;
+      if(!l||!_sb||!_cloudUser)return;
+      const {error}=await _sb.from('advisor_clients').delete().eq('id',l.id).eq('client_id',_cloudUser.id);
+      if(error){showToast('❌ הביטול נכשל, נסה שוב');return;}
+      _advisorLink=null;
+      _applyApprovalLock();
+      showToast('הבקשה בוטלה');
+    };
+    el.querySelector('#approvalOut').onclick=async()=>{try{await _sb.auth.signOut();}catch(e){}};
+  }
+  if(!_approvalTimer)_approvalTimer=setInterval(()=>{_loadAdvisorLink();},20000);
 }
 function genInviteCode(){
   // crypto, not Math.random: this code is the only thing standing between a stranger and
@@ -5287,6 +5330,7 @@ document.addEventListener('DOMContentLoaded',function(){
         return;
       }
       _cloudUser=session?.user||null;
+      if(!_cloudUser){_advisorLink=null;_applyApprovalLock();}
       _loadAdvisorStatus().then(_applyAdvisorGate);
       renderCloudSection();
       renderAdvisorLinkSection();
