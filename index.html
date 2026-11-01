@@ -5057,17 +5057,6 @@ function genInviteCode(){
   for(let i=0;i<buf.length;i++) code+=chars[buf[i]%chars.length];
   return code;
 }
-async function createAdvisorInvite(){
-  if(!_cloudUser||!_sb)return;
-  const btn=(typeof event!=='undefined'&&event)?event.target:null;
-  const prevLabel=btn?btn.textContent:null;
-  if(btn){btn.disabled=true;btn.textContent='יוצר קוד...';}
-  const code=genInviteCode();
-  const {data,error}=await _sb.from('advisor_clients').insert({client_id:_cloudUser.id,client_email:_cloudUser.email,invite_code:code,status:'pending'}).select().single();
-  if(error){showToast('❌ שגיאה ביצירת קוד');if(btn){btn.disabled=false;btn.textContent=prevLabel;}return;}
-  _advisorLink=data;
-  renderAdvisorLinkSection();
-}
 const LEGAL_VERSION='2026-10-12';
 let _legalCheckedFor=null;
 async function _ensureLegalConsent(){
@@ -5175,8 +5164,7 @@ function renderAdvisorLinkSection(){
     return;
   }
   if(!_advisorLink){
-    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2);margin-bottom:10px">חבר יועץ פיננסי כדי שיוכל לצפות ולערוך את התקציב שלך</div>'
-      +'<button class="btn btn-outline btn-full" onclick="createAdvisorInvite()">+ צור קוד ליועץ</button>';
+    el.innerHTML='<div style="font-size:0.82rem;color:var(--text2)">יש לך יועץ פיננסי? בקש ממנו קישור הרשמה ופתח אותו בעודך מחובר, והבקשה תישלח אליו אוטומטית</div>';
     return;
   }
   if(_advisorLink.status==='pending'&&_advisorLink.requested_by_client){

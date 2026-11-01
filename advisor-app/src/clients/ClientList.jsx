@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { useClientList } from './useClientList.js';
 import { usePendingInvites } from './usePendingInvites.js';
@@ -18,30 +18,9 @@ export default function ClientList({ advisorId, onSelect }) {
   const { leads, loading: leadsLoading, addLead, setStage: setLeadStage, deleteLead } = usePipeline(advisorId);
   const { loading: prospectsLoading, error: prospectsError } = useProspects(advisorId);
   const [pipelineOpen, setPipelineOpen] = useState(false);
-  const [code, setCode] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [secondaryOpen, setSecondaryOpen] = useState(false);
   const [confirmingInviteId, setConfirmingInviteId] = useState(null);
-  const codeInputRef = useRef(null);
-  const [addOpen, setAddOpen] = useState(false);
-  useEffect(() => { if (addOpen) setSecondaryOpen(true); }, [addOpen]);
-  useEffect(() => { if (addOpen && secondaryOpen) codeInputRef.current?.focus(); }, [addOpen, secondaryOpen, loading]);
 
-  async function claimCode() {
-    const trimmed = code.trim().toUpperCase();
-    if (!trimmed) { toast('הזן קוד', 'error'); return; }
-    setSubmitting(true);
-    const { data, error } = await supabase.rpc('claim_advisor_invite', { p_code: trimmed });
-    setSubmitting(false);
-    if (error) { console.error('claim_advisor_invite', error); toast('שגיאה בחיבור, נסה שוב', 'error'); return; }
-    if (data === 'self') { toast('החשבון המחובר כרגע הוא חשבון הלקוח עצמו - יש להתחבר לפלטפורמה עם חשבון היועץ', 'error'); return; }
-    if (data === 'rate_limited') { toast('יותר מדי ניסיונות, נסה שוב בעוד 10 דקות', 'error'); return; }
-    if (data === 'not_advisor') { toast('החשבון הזה לא מוגדר כחשבון יועץ', 'error'); return; }
-    if (data !== 'ok') { toast('קוד לא תקין, פג תוקפו או שכבר נוצל', 'error'); return; }
-    toast('הלקוח חובר בהצלחה', 'success');
-    reload();
-    setCode('');
-  }
 
   async function removeInvite(id) {
     setConfirmingInviteId(null);
@@ -82,8 +61,7 @@ export default function ClientList({ advisorId, onSelect }) {
             </svg>
           </div>
           <div className={styles.emptyTitle}>אין עדיין לקוחות מחוברים</div>
-          <div className={styles.emptyText}>שלח ללקוח קישור הרשמה ממסך "אישור לקוחות", או בקש ממנו ליצור קוד הזמנה בהגדרות האפליקציה שלו והדבק אותו כאן</div>
-          <Button className={styles.emptyCta} onClick={() => { setAddOpen(true); codeInputRef.current?.focus(); }}>חבר לקוח עם קוד</Button>
+          <div className={styles.emptyText}>שלח ללקוח את קישור ההרשמה ממסך "אישור לקוחות". אחרי שיירשם ותאשר אותו, הוא יופיע כאן</div>
         </div>
       ) : (
         <ClientsTable advisorId={advisorId} onOpen={r => onSelect(r.client_id, r.client_email)} onRemove={removeClient} />
@@ -109,23 +87,7 @@ export default function ClientList({ advisorId, onSelect }) {
       <div className={styles.sectionHead}>
         <div className={styles.sectionTitleGroup}>
           <h2 className={styles.sectionTitle}>חיבור לקוחות והזמנות {clients.length > 0 && <span className={styles.kbdHint}>{navigator.platform.startsWith('Mac') ? '⌘K' : 'Ctrl+K'} לחיפוש מהיר</span>}</h2>
-          <Button onClick={() => setAddOpen(o => !o)} aria-expanded={addOpen}>לקוח חדש +</Button>
         </div>
-        {addOpen && <div className={styles.addForm}>
-          <input
-            ref={codeInputRef}
-            className={styles.addInput + ' ' + styles.addInputCode}
-            name="invite-code"
-            autoComplete="off"
-            dir="ltr"
-            aria-label="קוד הזמנה מהלקוח"
-            placeholder="קוד הזמנה מהלקוח"
-            value={code}
-            onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-            onKeyDown={e => e.key === 'Enter' && claimCode()}
-          />
-          <Button variant="ghost" onClick={claimCode} disabled={submitting}>הוסף לקוח</Button>
-        </div>}
       </div>
 
       {pendingInvites.length > 0 && (
