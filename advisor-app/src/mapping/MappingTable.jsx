@@ -4,7 +4,7 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingTable.module.css';
 
-export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, hidden, onHide, onAdd, onAmount, onDelete, onDeleteMany }) {
+export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
   const [adding, setAdding] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState([]);
@@ -50,31 +50,31 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
         {lines.map(r => (
           <div key={r.line} className={styles.row}>
             <span className={styles.name}>
-              {selecting && r.manual && <input type="checkbox" className={styles.check} aria-label={'בחר שורה: ' + labelOf(r.category)} checked={picked.includes(r.id)} onChange={() => togglePick(r.id)} />}
-              {labelOf(r.category)}{r.desc ? ' · ' + r.desc : ''}
+              {selecting && r.manual && <input type="checkbox" className={styles.check} aria-label={'בחר שורה: ' + labelFor(r.category)} checked={picked.includes(r.id)} onChange={() => togglePick(r.id)} />}
+              {labelFor(r.category)}{r.desc ? ' · ' + r.desc : ''}
               {tag && templateKeys.includes(r.category) && <span className={styles.tag}>{tag}</span>}
             </span>
             {r.placeholder ? (
               <span className={styles.field}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
-                <input className={styles.input} inputMode="decimal" placeholder="0" aria-label={'סכום חודשי: ' + labelOf(r.category)} defaultValue="" onBlur={e => { const v = parseFloat(e.target.value); if (v > 0) onAdd(r.category, '', v); }} />
+                <input className={styles.input} inputMode="decimal" placeholder="0" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue="" onBlur={e => { const v = parseFloat(e.target.value); if (v > 0) onAdd(r.category, '', v); }} />
               </span>
             ) : r.manual ? (
               <span className={styles.field}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
-                <input className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelOf(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
+                <input className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
               </span>
             ) : (
               <span className={styles.readonly}>{fmt(r.amount)}</span>
             )}
-            {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelOf(r.category)} onClick={() => onHide(r.category)} /> : r.manual ? <DeleteButton title={'מחק שורה: ' + labelOf(r.category)} onClick={() => onDelete(r.id)} /> : <span aria-hidden="true" />}
+            {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelFor(r.category)} onClick={() => onHide(r.category)} /> : r.manual ? <DeleteButton title={'מחק שורה: ' + labelFor(r.category)} onClick={() => onDelete(r.id)} /> : <span aria-hidden="true" />}
           </div>
         ))}
       </div>
       {adding ? (
         <form className={styles.addForm} onSubmit={submit}>
           <select className={styles.addField} aria-label="קטגוריה" value={chosen} onChange={e => setCategory(e.target.value)}>
-            {addCats.map(c => <option key={c} value={c}>{labelOf(c)}</option>)}
+            {addCats.map(c => <option key={c} value={c}>{labelFor(c)}</option>)}
           </select>
           <input className={styles.addField} aria-label="תיאור (לא חובה)" placeholder="תיאור (לא חובה)" value={desc} onChange={e => setDesc(e.target.value)} />
           <input className={styles.addField} aria-label="סכום חודשי" placeholder="סכום חודשי" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} />

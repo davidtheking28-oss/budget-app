@@ -12,7 +12,7 @@ import { addItem } from '../budget/itemHelpers.js';
 import MerchantRules from './MerchantRules.jsx';
 import MappingTable from './MappingTable.jsx';
 import MappingCalculators from './MappingCalculators.jsx';
-import { SAVINGS_CATEGORY, SAVINGS_KEYS, FIXED_KEYS, INCOME_TEMPLATE, SAVINGS_TEMPLATE, FIXED_TEMPLATE, VARIABLE_TEMPLATE } from './mappingTemplates.js';
+import { labelOf, SAVINGS_CATEGORY, SAVINGS_KEYS, FIXED_KEYS, INCOME_TEMPLATE, SAVINGS_TEMPLATE, FIXED_TEMPLATE, VARIABLE_TEMPLATE } from './mappingTemplates.js';
 import layout from './MappingLayout.module.css';
 
 // The mapping's own savings-transfer category doesn't live in EXPENSE_CATS
@@ -484,6 +484,22 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       extra_categories
     });
   };
+  const labelsMap = data?.category_labels || {};
+  const labelFor = cat => labelsMap[cat] || labelOf(cat);
+  const renameCategory = (cat, name) => {
+    const next = { ...labelsMap };
+    if (name && name !== labelOf(cat)) next[cat] = name;
+    else delete next[cat];
+    const now = new Date();
+    const fallbackStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    return save({
+      ...(data || {}),
+      period_start: data?.period_start || fallbackStart,
+      period_end: data?.period_end || fallbackStart,
+      transactions: data?.transactions || [],
+      category_labels: next
+    });
+  };
   const hideCategory = cat => saveCats([...new Set([...hiddenCats, cat])], extraCats.filter(c => c !== cat));
   const addBox = cat => saveCats(hiddenCats.filter(c => c !== cat), [...new Set([...extraCats, cat])]);
   const deleteManual = id => saveManual(manualItems.filter(t => t.id !== id));
@@ -618,10 +634,10 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       </section>
 
       <div className={layout.tables}>
-        <MappingTable title="הכנסות" rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} hidden={hiddenCats} onHide={hideCategory} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} tag="הוראת קבע" addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הכנסות" rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} tag="הוראת קבע" addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
       </div>
 
       {fixedTransfer.length > 0 && (
@@ -632,7 +648,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         </section>
       )}
 
-      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} hidden={hiddenCats} extra={extraCats} onAdd={addManual('expense')} onDelete={deleteManual} onAddBox={addBox} onRemoveBox={hideCategory} />
+      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} hidden={hiddenCats} extra={extraCats} labelFor={labelFor} onRename={renameCategory} onAdd={addManual('expense')} onDelete={deleteManual} onAddBox={addBox} onRemoveBox={hideCategory} />
 
       <div className={styles.card}>
         <h2 id="mapping-upload" className={styles.cardTitle}>העלאת דפי חשבון</h2>

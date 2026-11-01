@@ -3,10 +3,18 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingCalculators.module.css';
 
-function Calculator({ category, total, entries, onAdd, onRemove, onDelete }) {
+function Calculator({ category, total, entries, labelFor, onRename, onAdd, onRemove, onDelete }) {
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
   const count = entries.length;
+
+  function startRename() { setDraft(labelFor(category)); setEditing(true); }
+  function finishRename() {
+    setEditing(false);
+    if (draft.trim() !== labelFor(category)) onRename(category, draft.trim());
+  }
 
   function submit(e) {
     e.preventDefault();
@@ -19,14 +27,21 @@ function Calculator({ category, total, entries, onAdd, onRemove, onDelete }) {
   return (
     <form className={styles.item} onSubmit={submit}>
       <div className={styles.itemHead}>
-        <span className={styles.name} title={labelOf(category)}>{labelOf(category)}</span>
+        {editing ? (
+          <input className={styles.nameInput} autoFocus aria-label="שם התיבה" value={draft} onChange={e => setDraft(e.target.value)} onBlur={finishRename} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } else if (e.key === 'Escape') setEditing(false); }} />
+        ) : (
+          <>
+            <span className={styles.name} title={labelFor(category)}>{labelFor(category)}</span>
+            <button type="button" className={styles.remove} aria-label={'שינוי שם: ' + labelFor(category)} title="שינוי שם" onClick={startRename}>✎</button>
+          </>
+        )}
         <span className={styles.total}>{fmt(total)}</span>
-        <button type="button" className={styles.count + ' ' + styles.countBtn} disabled={count === 0} aria-expanded={open} aria-label={'הצג את הסכומים שהוזנו: ' + labelOf(category)} title="הסכומים שהוזנו ידנית" onClick={() => setOpen(o => !o)}>{count}</button>
-        {onRemove && <button type="button" className={styles.remove} aria-label={'הסר תיבה: ' + labelOf(category)} onClick={onRemove}>✕</button>}
+        <button type="button" className={styles.count + ' ' + styles.countBtn} disabled={count === 0} aria-expanded={open} aria-label={'הצג את הסכומים שהוזנו: ' + labelFor(category)} title="הסכומים שהוזנו ידנית" onClick={() => setOpen(o => !o)}>{count}</button>
+        {onRemove && <button type="button" className={styles.remove} aria-label={'הסר תיבה: ' + labelFor(category)} onClick={onRemove}>✕</button>}
       </div>
       <div className={styles.entry}>
-        <input className={styles.input} inputMode="decimal" placeholder="סכום" aria-label={'הוספת סכום: ' + labelOf(category)} value={value} onChange={e => setValue(e.target.value)} />
-        <button type="submit" className={styles.add} aria-label={'הוסף סכום: ' + labelOf(category)}>+</button>
+        <input className={styles.input} inputMode="decimal" placeholder="סכום" aria-label={'הוספת סכום: ' + labelFor(category)} value={value} onChange={e => setValue(e.target.value)} />
+        <button type="submit" className={styles.add} aria-label={'הוסף סכום: ' + labelFor(category)}>+</button>
       </div>
       {open && count > 0 && (
         <ul className={styles.entries}>
@@ -43,7 +58,7 @@ function Calculator({ category, total, entries, onAdd, onRemove, onDelete }) {
   );
 }
 
-export default function MappingCalculators({ categories, addCats, rows, hidden, extra, onAdd, onDelete, onAddBox, onRemoveBox }) {
+export default function MappingCalculators({ categories, addCats, rows, hidden, extra, labelFor = labelOf, onRename, onAdd, onDelete, onAddBox, onRemoveBox }) {
   const [picked, setPicked] = useState('');
   const manualExtra = rows.filter(r => r.manual && !categories.includes(r.category)).map(r => r.category);
   const visibleTemplate = categories.filter(c => !hidden.includes(c) || rows.some(r => r.category === c));
@@ -64,13 +79,13 @@ export default function MappingCalculators({ categories, addCats, rows, hidden, 
       <div className={styles.grid}>
         {shown.map(c => {
           const mine = rows.filter(r => r.category === c);
-          return <Calculator key={c} category={c} total={mine.reduce((s, r) => s + r.amount, 0)} entries={mine.filter(r => r.manual)} onAdd={onAdd} onDelete={onDelete} onRemove={mine.length === 0 ? () => onRemoveBox(c) : undefined} />;
+          return <Calculator key={c} category={c} labelFor={labelFor} onRename={onRename} total={mine.reduce((s, r) => s + r.amount, 0)} entries={mine.filter(r => r.manual)} onAdd={onAdd} onDelete={onDelete} onRemove={mine.length === 0 ? () => onRemoveBox(c) : undefined} />;
         })}
       </div>
       {available.length > 0 && (
         <div className={styles.addBox}>
           <select className={styles.input} aria-label="קטגוריה לתיבה חדשה" value={chosen} onChange={e => setPicked(e.target.value)}>
-            {available.map(c => <option key={c} value={c}>{labelOf(c)}</option>)}
+            {available.map(c => <option key={c} value={c}>{labelFor(c)}</option>)}
           </select>
           <button type="button" className={styles.addBoxBtn} onClick={addBox}>+ תיבה</button>
         </div>

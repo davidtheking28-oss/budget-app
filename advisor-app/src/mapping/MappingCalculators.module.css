@@ -37,6 +37,20 @@
   text-align: center;
 }
 
+.nameInput {
+  flex: 1;
+  min-width: 0;
+  min-height: 32px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg);
+  color: var(--text);
+  padding: 0 8px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+}
+
 .countBtn { border: none; font-family: inherit; cursor: pointer; }
 .countBtn:disabled { cursor: default; }
 .countBtn:not(:disabled):hover { background: var(--border); color: var(--text); }
