@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { chartTheme } from '../categories.js';
@@ -39,13 +39,20 @@ function BusinessTypeBar({ value, onChange }) {
 
 function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
   const [form, setForm] = useState({ amount: '', clearing: '', desc: '', date: period === ymKey(new Date().getFullYear(), new Date().getMonth()) ? todayIso() : period + '-01', receipt: true });
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
   async function submit(e) {
     e.preventDefault();
+    if (savingRef.current) return;
     if (!(num(form.amount) > 0)) { toast('הזן סכום תקין', 'error'); return; }
     if (!form.date.startsWith(period)) { toast('התאריך חייב להיות בחודש שנבחר', 'error'); return; }
-    const saved = await onAdd({ type: 'income', amount: num(form.amount), clearing: num(form.clearing), desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      const saved = await onAdd({ type: 'income', amount: num(form.amount), clearing: num(form.clearing), desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
     if (!saved) return;
-    setForm(prev => ({ ...prev, amount: '', clearing: '', desc: '' }));
+      setForm(prev => ({ ...prev, amount: '', clearing: '', desc: '' }));
+    } finally { savingRef.current = false; setSaving(false); }
   }
   return (
     <Modal title={`הכנסות · ${periodLabel(period)}`} onClose={onClose} wide>
@@ -67,7 +74,7 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
         <input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההכנסה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} />
         <input className={styles.input} type="date" aria-label="תאריך" value={form.date} onChange={e => setForm(prev => ({ ...prev, date: e.target.value }))} />
         <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={form.receipt} onChange={e => setForm(prev => ({ ...prev, receipt: e.target.checked }))} />יש קבלה</label>
-        <button type="submit" className={styles.btn}>הוסף הכנסה</button>
+        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף הכנסה'}</button>
       </form>
     </Modal>
   );
@@ -75,12 +82,19 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
 
 function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
   const [form, setForm] = useState({ amount: '', category: 'ללא קטגוריה', desc: '' });
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
   async function submit(e) {
     e.preventDefault();
+    if (savingRef.current) return;
     if (!(num(form.amount) > 0)) { toast('הזן סכום תקין', 'error'); return; }
-    const saved = await onAdd({ type: 'expense', fixed: true, amount: num(form.amount), category: form.category, desc: form.desc.trim(), startPeriod: period }, period);
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      const saved = await onAdd({ type: 'expense', fixed: true, amount: num(form.amount), category: form.category, desc: form.desc.trim(), startPeriod: period }, period);
     if (!saved) return;
-    setForm(prev => ({ ...prev, amount: '', desc: '' }));
+      setForm(prev => ({ ...prev, amount: '', desc: '' }));
+    } finally { savingRef.current = false; setSaving(false); }
   }
   return (
     <Modal title={`הוצאות קבועות · ${periodLabel(period)}`} onClose={onClose} wide>
@@ -99,7 +113,7 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
         <input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="₪" aria-label="סכום חודשי" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} />
         <select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
         <input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} />
-        <button type="submit" className={styles.btn}>הוסף הוצאה</button>
+        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף הוצאה'}</button>
       </form>
       <p className={styles.note}>הוצאה קבועה ממשיכה אוטומטית לחודשים הבאים. שינוי, הוספה או מחיקה כאן משפיעים על החודש הזה ועל החודשים שאחריו בלבד.</p>
     </Modal>
@@ -108,13 +122,20 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
 
 function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose }) {
   const [form, setForm] = useState({ amount: '', category: 'ללא קטגוריה', desc: '', date: period === ymKey(new Date().getFullYear(), new Date().getMonth()) ? todayIso() : period + '-01', receipt: false });
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
   async function submit(e) {
     e.preventDefault();
+    if (savingRef.current) return;
     if (!(num(form.amount) > 0)) { toast('הזן סכום תקין', 'error'); return; }
     if (!form.date.startsWith(period)) { toast('התאריך חייב להיות בחודש שנבחר', 'error'); return; }
-    const saved = await onAdd({ type: 'expense', amount: num(form.amount), category: form.category, desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      const saved = await onAdd({ type: 'expense', amount: num(form.amount), category: form.category, desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
     if (!saved) return;
-    setForm(prev => ({ ...prev, amount: '', desc: '' }));
+      setForm(prev => ({ ...prev, amount: '', desc: '' }));
+    } finally { savingRef.current = false; setSaving(false); }
   }
   return (
     <Modal title={`הוצאות משתנות · ${periodLabel(period)}`} onClose={onClose} wide>
@@ -136,7 +157,7 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
         <input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} />
         <input className={styles.input} type="date" aria-label="תאריך" value={form.date} onChange={e => setForm(prev => ({ ...prev, date: e.target.value }))} />
         <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={form.receipt} onChange={e => setForm(prev => ({ ...prev, receipt: e.target.checked }))} />יש קבלה</label>
-        <button type="submit" className={styles.btn}>הוסף הוצאה</button>
+        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף הוצאה'}</button>
       </form>
     </Modal>
   );
