@@ -73,23 +73,14 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   // showing this month's actual next to that plan, matched by name (income) / category
   // (fixed), the same way transactions already resolve against them elsewhere.
   const monthTx = useMemo(() => getMonthTx(data?.transactions, year, month), [data, year, month]);
-  const incomeActual = useMemo(() => {
-    const map = {};
-    monthTx.filter(t => t.type === 'income').forEach(t => {
-      const descKey = (t.desc || '').trim().toLowerCase();
-      if (descKey) map[descKey] = (map[descKey] || 0) + t.amount;
-      const catKey = (t.cat || '').trim().toLowerCase();
-      if (catKey) map[catKey] = (map[catKey] || 0) + t.amount;
-    });
-    return map;
-  }, [monthTx]);
   const fixedActual = useMemo(() => {
     const map = {};
-    monthTx.filter(t => t.type === 'expense' && FIXED_CATS.includes(t.cat)).forEach(t => {
+    monthTx.filter(t => (t.type === 'expense' || t.type === 'saving') && FIXED_CATS.includes(t.cat)).forEach(t => {
       map[t.cat] = (map[t.cat] || 0) + t.amount;
     });
     return map;
   }, [monthTx]);
+  const fixedNameSet = useMemo(() => new Set([...FIXED_CATS, ...(data?.fixed_expenses || []).map(f => f.id)]), [data]);
   const [actualEdits, setActualEdits] = useState({});
   const [savedActualEdits, setSavedActualEdits] = useState({});
   const variableActualBase = useMemo(() => {
@@ -103,10 +94,18 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const map = { ...variableActualBase };
     Object.entries(actualEdits).forEach(([name, v]) => {
       const n = parseFloat(v);
-      if (Number.isFinite(n) && n >= (variableActualBase[name] || 0)) map[name] = n;
+      if (!fixedNameSet.has(name) && Number.isFinite(n) && n >= (variableActualBase[name] || 0)) map[name] = n;
     });
     return map;
-  }, [variableActualBase, actualEdits]);
+  }, [variableActualBase, actualEdits, fixedNameSet]);
+  const fixedActualFinal = useMemo(() => {
+    const map = { ...fixedActual };
+    Object.entries(actualEdits).forEach(([name, v]) => {
+      const n = parseFloat(v);
+      if (fixedNameSet.has(name) && Number.isFinite(n) && n >= (fixedActual[name] || 0)) map[name] = n;
+    });
+    return map;
+  }, [fixedActual, actualEdits, fixedNameSet]);
 
   const [incomes, setIncomes] = useState(() => {
     const existing = incomeSourcesFor(data?.settings, new Date().getFullYear(), new Date().getMonth());
@@ -150,14 +149,14 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     () => monthTx.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount) || 0), 0),
     [monthTx]
   );
-  const totalFixedActual = useMemo(() => Object.values(fixedActual).reduce((s, v) => s + v, 0), [fixedActual]);
+  const totalFixedActual = useMemo(() => Object.values(fixedActualFinal).reduce((s, v) => s + v, 0), [fixedActualFinal]);
   const totalVarActual = useMemo(() => Object.values(variableActual).reduce((s, v) => s + v, 0), [variableActual]);
   const actualFlow = totalIncomeActual - (totalFixedActual + totalVarActual);
 
   // "left"/actualFlow already have the savings standing-order subtracted as an ordinary
   // fixed expense — that's "with a savings deposit". Add it back for the "without" figure.
   const plannedSavings = parseFloat(fixed.find(r => r.name.trim() === SAVINGS_CATEGORY)?.amount) || 0;
-  const actualSavings = fixedActual[SAVINGS_CATEGORY] || 0;
+  const actualSavings = fixedActualFinal[SAVINGS_CATEGORY] || 0;
 
   const CT = chartTheme();
   const summaryChartOptions = {
@@ -193,7 +192,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     ? { sub: `ממוצע חודשי על פני ${avg.months === 1 ? 'חודש אחד' : `${avg.months} חודשים`}`, income: avg.income, expenses: avg.fixed + avg.variable, flow: avg.income - avg.fixed - avg.variable, savings: avg.savings, fixed: avg.fixed, variable: avg.variable }
     : { sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, savings: actualSavings, fixed: totalFixedActual, variable: totalVarActual };
   const planCategories = [...fixed.filter(r => !isSavingsRow(r)), ...variable].map(r => ({ label: r.name, value: parseFloat(r.amount) || 0 }));
-  const actualCategories = [...Object.entries(fixedActual), ...Object.entries(variableActual)].map(([label, value]) => ({ label, value }));
+  const actualCategories = [...Object.entries(fixedActualFinal), ...Object.entries(variableActual)].map(([label, value]) => ({ label, value }));
   const summaryCards = [
     { key: 'plan', title: 'תכנון', sub: 'מה תוכנן לחודש הזה', income: totalIncome, expenses: totalFixed + totalVar, flow: left, flowNoSavings: left + plannedSavings, breakdown: breakdownOf(totalFixed, totalVar, left), categories: planCategories },
     { key: 'actual', title: 'ביצוע', sub: actualCard.sub, income: actualCard.income, expenses: actualCard.expenses, flow: actualCard.flow, flowNoSavings: actualCard.flow + actualCard.savings, breakdown: breakdownOf(actualCard.fixed, actualCard.variable, actualCard.flow), categories: flowPeriod === 'avg' ? null : actualCategories }
@@ -224,9 +223,9 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const today = new Date();
     const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const adjustments = Object.entries(actualEdits)
-      .map(([cat, v]) => ({ cat, delta: (parseFloat(v) || 0) - (variableActualBase[cat] || 0) }))
+      .map(([cat, v]) => ({ cat, delta: (parseFloat(v) || 0) - ((fixedNameSet.has(cat) ? fixedActual[cat] : variableActualBase[cat]) || 0) }))
       .filter(a => a.delta > 0)
-      .map((a, i) => ({ id: 'adj' + Date.now() + '_' + i, type: 'expense', cat: a.cat, desc: 'התאמת ביצוע (אשף תקציב)', amount: Math.round(a.delta * 100) / 100, date: todayIso, recurring: false }));
+      .map((a, i) => ({ id: 'adj' + Date.now() + '_' + i, type: a.cat === SAVINGS_CATEGORY ? 'saving' : 'expense', cat: a.cat, desc: 'התאמת ביצוע (אשף תקציב)', amount: Math.round(a.delta * 100) / 100, date: todayIso, recurring: false }));
 
     setSaving(true);
     setSaveStatus('saving');
@@ -334,7 +333,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     className={styles.tblInput + (over ? ' ' + styles.tblOver : '')}
                     type="number"
                     inputMode="decimal"
-                    min={variableActualBase[r.name] || 0}
+                    min={(fixedNameSet.has(r.name) ? fixedActual[r.name] : variableActualBase[r.name]) || 0}
                     aria-label={'ביצוע · ' + (r.name || 'שורה חדשה')}
                     placeholder="0"
                     data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String(savedActualEdits[r.name] ?? (actualOf(r.name, r.amount) || ''))}
@@ -349,7 +348,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             );
           })()))}
         </div>
-        <Button variant="ghost" onClick={() => addRow(setter, '', newRow)}>{editableActual ? '+ קטגוריה' : '+ הוסף שורה'}</Button>
+        <Button variant="ghost" onClick={() => addRow(setter, '', newRow)}>{editableActual && list === variable ? '+ קטגוריה' : '+ הוסף שורה'}</Button>
       </>
     );
   }
@@ -396,7 +395,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 className={styles.itemAmountInput}
                 type="number"
                 inputMode="decimal"
-                min={variableActualBase[r.name] || 0}
+                min={(fixedNameSet.has(r.name) ? fixedActual[r.name] : variableActualBase[r.name]) || 0}
                 aria-label="ביצוע בפועל"
                 data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String(savedActualEdits[r.name] ?? (actualOf(r.name, r.amount) || ''))}
                     value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
@@ -563,7 +562,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 <span className={styles.cardTitle}>חסכונות והשקעות</span>
                 <span className={styles.cardTotal}>{fmt(totalSavings)}</span>
               </div>
-              {tableList(fixed, setFixed, 'שם החיסכון', name => fixedActual[name] || 0, false, isSavingsRow, { savings: true })}
+              {tableList(fixed, setFixed, 'שם החיסכון', name => fixedActual[name] || 0, true, isSavingsRow, { savings: true })}
             </div>
           </div>
 
@@ -573,7 +572,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 <span className={styles.cardTitle}>הוצאות חודשיות קבועות</span>
                 <span className={styles.cardTotal}>{fmt(totalFixed - totalSavings)}</span>
               </div>
-              {tableList(fixed, setFixed, 'שם ההוצאה הקבועה', name => fixedActual[name] || 0, false, r => !isSavingsRow(r))}
+              {tableList(fixed, setFixed, 'שם ההוצאה הקבועה', name => fixedActual[name] || 0, true, r => !isSavingsRow(r))}
             </div>
             <div className={styles.card}>
               <div className={styles.cardTitleRow}>
