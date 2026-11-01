@@ -4,11 +4,10 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingTable.module.css';
 
-export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, onAdd, onAmount, onDelete, onDeleteMany }) {
+export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, hidden, onHide, onAdd, onAmount, onDelete, onDeleteMany }) {
   const [adding, setAdding] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState([]);
-  const [hidden, setHidden] = useState([]);
   const [category, setCategory] = useState('');
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
@@ -68,7 +67,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             ) : (
               <span className={styles.readonly}>{fmt(r.amount)}</span>
             )}
-            {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelOf(r.category)} onClick={() => setHidden(prev => [...prev, r.category])} /> : r.manual ? <DeleteButton title={'מחק שורה: ' + labelOf(r.category)} onClick={() => onDelete(r.id)} /> : <span aria-hidden="true" />}
+            {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelOf(r.category)} onClick={() => onHide(r.category)} /> : r.manual ? <DeleteButton title={'מחק שורה: ' + labelOf(r.category)} onClick={() => onDelete(r.id)} /> : <span aria-hidden="true" />}
           </div>
         ))}
       </div>

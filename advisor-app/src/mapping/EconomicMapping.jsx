@@ -470,6 +470,18 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     if (amount > 0) saveManual(manualItems.map(t => (t.id === id ? { ...t, amount } : t)));
     else if (String(value).trim() === '' || amount === 0) saveManual(manualItems.filter(t => t.id !== id));
   };
+  const hiddenCats = data?.hidden_categories || [];
+  const hideCategory = cat => {
+    const now = new Date();
+    const fallbackStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    return save({
+      ...(data || {}),
+      period_start: data?.period_start || fallbackStart,
+      period_end: data?.period_end || fallbackStart,
+      transactions: data?.transactions || [],
+      hidden_categories: [...new Set([...hiddenCats, cat])]
+    });
+  };
   const deleteManual = id => saveManual(manualItems.filter(t => t.id !== id));
   const deleteManualMany = ids => saveManual(manualItems.filter(t => !ids.includes(t.id)));
   const CT = chartTheme();
@@ -602,10 +614,10 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       </section>
 
       <div className={layout.tables}>
-        <MappingTable title="הכנסות" rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} tag="הוראת קבע" addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הכנסות" rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} hidden={hiddenCats} onHide={hideCategory} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} tag="הוראת קבע" addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
       </div>
 
       {fixedTransfer.length > 0 && (
@@ -616,7 +628,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         </section>
       )}
 
-      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} onAdd={addManual('expense')} />
+      <MappingCalculators categories={VARIABLE_ADD_CATS.slice(0, VARIABLE_TEMPLATE.length)} addCats={VARIABLE_ADD_CATS} rows={variableRows} hidden={hiddenCats} onAdd={addManual('expense')} />
 
       <div className={styles.card}>
         <h2 id="mapping-upload" className={styles.cardTitle}>העלאת דפי חשבון</h2>

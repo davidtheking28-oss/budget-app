@@ -29,11 +29,12 @@ function Calculator({ category, total, count, onAdd }) {
   );
 }
 
-export default function MappingCalculators({ categories, addCats, rows, onAdd }) {
+export default function MappingCalculators({ categories, addCats, rows, hidden, onAdd }) {
   const [pending, setPending] = useState([]);
   const [picked, setPicked] = useState('');
   const manualExtra = rows.filter(r => r.manual && !categories.includes(r.category)).map(r => r.category);
-  const shown = [...new Set([...categories, ...manualExtra, ...pending])];
+  const visibleTemplate = categories.filter(c => !hidden.includes(c) || rows.some(r => r.category === c));
+  const shown = [...new Set([...visibleTemplate, ...manualExtra, ...pending])];
   const available = addCats.filter(c => !shown.includes(c));
   const chosen = available.includes(picked) ? picked : available[0];
 
