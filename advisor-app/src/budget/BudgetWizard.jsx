@@ -147,9 +147,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const left = totalIncome - (totalFixed + totalVar);
 
   const totalIncomeActual = useMemo(
-    () => incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
-      .reduce((s, r) => s + (incomeActual[(r.name || '').trim().toLowerCase()] || parseFloat(r.amount) || 0), 0),
-    [incomes, incomeActual]
+    () => monthTx.filter(t => t.type === 'income').reduce((s, t) => s + (parseFloat(t.amount) || 0), 0),
+    [monthTx]
   );
   const totalFixedActual = useMemo(() => Object.values(fixedActual).reduce((s, v) => s + v, 0), [fixedActual]);
   const totalVarActual = useMemo(() => Object.values(variableActual).reduce((s, v) => s + v, 0), [variableActual]);
