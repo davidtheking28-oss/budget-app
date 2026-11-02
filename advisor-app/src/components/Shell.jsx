@@ -25,6 +25,7 @@ function useDesktop() {
 function AccountMenu({ email, advisorId, up, block }) {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
   const [saving, setSaving] = useState(false);
   const { profile, saveName, saveLogo, removeLogo, saveBrandColor } = useAdvisorProfile(advisorId);
   const [name, setName] = useState('');
@@ -55,14 +56,21 @@ function AccountMenu({ email, advisorId, up, block }) {
   }, [open]);
 
   async function changePassword() {
+    if (saving) return;
     if (!password || password.length < 6) { toast('הסיסמה חייבת להיות באורך 6 תווים לפחות', 'error'); return; }
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    setSaving(false);
-    if (error) { toast('שגיאה בעדכון הסיסמה', 'error'); return; }
-    toast('הסיסמה עודכנה', 'success');
-    setPassword('');
-    setOpen(false);
+    setPasswordError(false);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) { setPasswordError(true); return; }
+      toast('הסיסמה עודכנה', 'success');
+      setPassword('');
+      setOpen(false);
+    } catch {
+      setPasswordError(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function submitName() {
@@ -125,6 +133,7 @@ function AccountMenu({ email, advisorId, up, block }) {
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && changePassword()}
           />
+          {passwordError && <p className={styles.accountPanelHint} role="alert">הסיסמה לא עודכנה. בדוק את החיבור ונסה שוב.</p>}
           <button type="button" className={styles.accountSaveBtn} onClick={changePassword} disabled={saving}>{saving ? 'שומר…' : 'עדכן סיסמה'}</button>
           <div className={styles.accountDivider} />
           <div className={styles.accountPanelLabel}>מיתוג לדוחות</div>
