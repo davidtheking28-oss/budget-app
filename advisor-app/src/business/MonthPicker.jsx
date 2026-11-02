@@ -24,7 +24,7 @@ export default function MonthPicker({ year, month, onChange, withMonth = true })
         </select>
       )}
       <select className={styles.select} aria-label="שנה" value={year} onChange={e => onChange(parseInt(e.target.value, 10), month)}>
-        {yearOptions().map(y => <option key={y} value={y}>{y}</option>)}
+        {yearOptions(year).map(y => <option key={y} value={y}>{y}</option>)}
       </select>
       <button type="button" className={styles.iconBtn} aria-label={withMonth ? 'החודש הבא' : 'השנה הבאה'} onClick={() => step(1)}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg></button>
     </div>

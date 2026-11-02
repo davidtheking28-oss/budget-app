@@ -134,7 +134,7 @@ export default function ClientService({ advisorId, onSelect }) {
                           {SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
                       </td>
-                      <td><div className={service.rowActions}><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>{upcoming && <button type="button" className={styles.btnGhost + ' ' + service.scheduleButton} aria-label={'רישום הפגישה הבאה של ' + (c.name || c.client_email)} title="רישום הפגישה הבאה" onClick={() => setMeetingDraft({ id: c.id, date: meetingDate })}><svg {...svgProps}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>תיאום פגישה</button>}</div></td>
+                      <td><div className={service.rowActions}><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>{upcoming && <button type="button" className={styles.btnGhost + ' ' + service.scheduleButton} aria-label={'רישום הפגישה הבאה של ' + (c.name || c.client_email)} title="רישום הפגישה הבאה" onClick={() => setMeetingDraft({ id: c.id, date: meetingDate })}><svg {...svgProps}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>תיאום פגישה</button>}</div></td>
                     </tr>
                   );
                 })}
