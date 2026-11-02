@@ -110,7 +110,7 @@ function PlanFrame({ doc, stored, onDone }) {
     <iframe
       ref={frameRef}
       title="לוח תוכן ל-4 שבועות"
-      src={`${import.meta.env.BASE_URL}content-plan.html`}
+      src={`${import.meta.env.BASE_URL}content-plan.html?v=compact-20261102`}
       onLoad={attach}
       scrolling="no"
       style={{ display: 'block', width: '100%', height: 640, border: 0 }}
@@ -195,7 +195,7 @@ export default function ContentPlan({ advisorId }) {
 
   return (
     <section className={styles.workspace}>
-      <div className={styles.workspaceHeader}><div><h2>לוח התוכן שלך</h2><p>תכנון ל־4 שבועות ומעקב אחר הביצוע</p></div><Button variant="ghost" onClick={() => fileInput.current?.click()}>טען קובץ תוכן מעודכן</Button>{picker}</div>
+      <div className={styles.workspaceHeader}><Button variant="ghost" onClick={() => fileInput.current?.click()}>טען קובץ תוכן מעודכן</Button>{picker}</div>
       <PlanFrame key={version} doc={doc} stored={stored} onDone={onDone} />
     </section>
   );

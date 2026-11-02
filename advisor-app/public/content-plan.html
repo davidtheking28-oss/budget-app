@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="he"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>לוח תוכן 4 שבועות</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap">
 <style>
@@ -136,8 +136,28 @@ h3{font-size:var(--t-md,.94rem)}
 .bgrp h3 small{font-size:var(--t-sm,.8rem)}
 .sheet{font-size:var(--t-base,.86rem)}
 .x{border-radius:50%}
+.wrap{gap:14px}
+.top{gap:4px}
+.prog{gap:12px}
+.bar{height:6px}
+.tabs{padding-block:6px}
+.panel{gap:14px}
+.now{display:block;padding:0;border-color:var(--line)}
+.plan-help>summary{padding:12px 16px;cursor:pointer;font-weight:700;font-size:var(--t-base,.86rem);color:var(--fg)}
+.plan-help>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.plan-help>ol,.plan-help>ul{margin:0 16px 14px}
+.plan-help>p{margin:0 16px 12px}
+.rules{gap:0;border-block:1px solid var(--line);padding-block:6px}
+.rule{background:transparent;border:0;border-inline-start:1px solid var(--line);border-radius:0;padding:8px 14px}
+.rule:first-child{border-inline-start:0;padding-inline-start:0}
+.rule b{font-size:var(--t-base,.86rem)}
+.legend{gap:6px 12px}
+.week{gap:12px}
+.c.done{opacity:1;background:var(--bg);border-color:var(--line)}
+.c.done .t{color:var(--mute)}
+@media(max-width:760px){.rule:nth-child(3){border-inline-start:0;padding-inline-start:0}}
 </style>
 <div id="app" dir="rtl"></div>
 <div class="scrim" id="scrim" hidden></div>
 <aside class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="shT" dir="rtl"></aside>
-<script src="content-plan.js"></script>
+<script src="content-plan.js?v=compact-20261102"></script>

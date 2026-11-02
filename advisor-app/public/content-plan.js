@@ -2,6 +2,13 @@
 var booted=false;
 function boot(P){
 var DATA=P.DATA,BANK=P.BANK,GUIDES=P.GUIDES;
+document.querySelectorAll('.now').forEach(function(box){
+var heading=box.querySelector('h2,h3,h4'),details=document.createElement('details'),summary=document.createElement('summary');
+details.className='plan-help';summary.textContent=heading?heading.textContent:'מה עושים עכשיו';
+if(heading)heading.remove();
+while(box.firstChild)details.appendChild(box.firstChild);
+details.insertBefore(summary,details.firstChild);box.appendChild(details);
+});
 var D=['ראשון','שלישי','רביעי','חמישי'];
 var saved={};
 try{saved=JSON.parse(localStorage.getItem('plan-done')||'{}')}catch(e){}
@@ -15,7 +22,7 @@ out+='<div class="week"><div class="whead"><h2>שבוע '+w.n+'</h2><span class=
 w.items.forEach(function(id,i){
 var it=DATA.items[id],v=it.type==='v',nd=it.ready?'':needs(it);
 out+='<div class="c'+(v?' v':'')+(saved[id]?' done':'')+'" data-id="'+id+'"><div class="head"><span class="day">'+D[i]+'<small>'+w.dates[i]+'</small></span>'
-+'<label class="done-box"><input type="checkbox"'+(saved[id]?' checked':'')+'>הועלה</label></div>'
++'<label class="done-box"><input type="checkbox" aria-label="הועלה: '+esc(it.title)+'"'+(saved[id]?' checked':'')+'>הועלה</label></div>'
 +'<div class="tags"><span class="tag k">'+(v?'ערך':'חשיפה')+'</span><span class="tag f">'+esc(it.fmt)+'</span>'+(it.ready?'<span class="tag f">מוכן</span>':'')+'</div>'
 +'<div class="t">'+esc(it.title)+'</div>'
 +(it.formula?'<div class="fm">נוסחה: '+esc(it.formula.replace(/^\d+\.\s*/,''))+'</div>':'')
@@ -49,7 +56,18 @@ document.getElementById('gIdeas').innerHTML=GUIDES.ideas.map(function(x){return 
 document.getElementById('gHow').innerHTML=GUIDES.how.map(function(s){return '<li>'+esc(s)+'</li>'}).join('');
 var tabs=document.querySelectorAll('.tab');
 function show(id){tabs.forEach(function(t){var on=t.getAttribute('data-tab')===id;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;document.getElementById(t.getAttribute('data-tab')).hidden=!on});try{localStorage.setItem('plan-tab',id)}catch(e){}}
-tabs.forEach(function(t){t.addEventListener('click',function(){show(t.getAttribute('data-tab'));window.scrollTo(0,0)})});
+tabs.forEach(function(t){
+t.addEventListener('click',function(){show(t.getAttribute('data-tab'));window.scrollTo(0,0)});
+t.addEventListener('keydown',function(e){
+var i=Array.prototype.indexOf.call(tabs,t),next=i,rtl=getComputedStyle(t).direction==='rtl';
+if(e.key==='ArrowLeft')next=(i+(rtl?1:-1)+tabs.length)%tabs.length;
+else if(e.key==='ArrowRight')next=(i+(rtl?-1:1)+tabs.length)%tabs.length;
+else if(e.key==='Home')next=0;
+else if(e.key==='End')next=tabs.length-1;
+else return;
+e.preventDefault();show(tabs[next].getAttribute('data-tab'));tabs[next].focus();
+});
+});
 var start='plan',h=(location.hash||'').slice(1);
 if(['plan','bank','guides','diff','ideas','profile'].indexOf(h)>-1)start=h;else{try{var s=localStorage.getItem('plan-tab');if(s&&document.getElementById(s))start=s}catch(e){}}
 show(start);
