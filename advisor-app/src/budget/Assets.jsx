@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
@@ -25,6 +25,9 @@ export default function Assets({ clientUserId, advisorId }) {
   const [loanMonthly, setLoanMonthly] = useState('');
   const [showAsset, setShowAsset] = useState(false);
   const [showLoan, setShowLoan] = useState(false);
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState('');
+  const [saveError, setSaveError] = useState('');
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading || !data) {
@@ -45,18 +48,34 @@ export default function Assets({ clientUserId, advisorId }) {
   const netWorth = totalAssets - totalLiabilities;
 
   async function submit() {
+    if (savingRef.current) return;
     const amt = parseFloat(amount);
     if (!name.trim() || !amt || amt <= 0) { toast('הזן שם וסכום תקינים', 'error'); return; }
+    savingRef.current = true;
+    setSaving('asset');
+    setSaveError('');
+    try {
     const ok = await addItem(save, 'assets', { name: name.trim(), category, amount: amt });
-    if (ok === false) return;
+    if (ok === false) { setSaveError('asset'); return; }
     toast('נכס נוסף', 'success');
     setName('');
     setAmount('');
+    } catch {
+      setSaveError('asset');
+    } finally {
+      savingRef.current = false;
+      setSaving('');
+    }
   }
 
   async function submitLoan() {
+    if (savingRef.current) return;
     const rem = parseFloat(loanRemaining);
     if (!loanName.trim() || !rem || rem <= 0) { toast('הזן שם התחייבות ויתרה תקינה', 'error'); return; }
+    savingRef.current = true;
+    setSaving('loan');
+    setSaveError('');
+    try {
     const ok = await addItem(save, 'loans', {
       name: loanName.trim(),
       lender: '',
@@ -65,11 +84,17 @@ export default function Assets({ clientUserId, advisorId }) {
       original: rem,
       rate: 0
     });
-    if (ok === false) return;
+    if (ok === false) { setSaveError('loan'); return; }
     toast('התחייבות נוספה', 'success');
     setLoanName('');
     setLoanRemaining('');
     setLoanMonthly('');
+    } catch {
+      setSaveError('loan');
+    } finally {
+      savingRef.current = false;
+      setSaving('');
+    }
   }
 
   const sortedAssets = [...assets].sort((a, b) => (b.amount || 0) - (a.amount || 0));
@@ -128,7 +153,8 @@ export default function Assets({ clientUserId, advisorId }) {
                   {ASSET_CATS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select></label>
                 <label className={styles.formField}>סכום הנכס<input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="סכום" aria-label="סכום הנכס" value={amount} onChange={e => setAmount(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} /></label>
-                <Button onClick={submit}>הוסף</Button>
+                {saveError === 'asset' && <p className={styles.saveError} role="alert">הנכס לא נשמר. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
+                <Button disabled={!!saving} onClick={submit}>{saving === 'asset' ? 'שומר…' : 'הוסף'}</Button>
                 <Button variant="ghost" onClick={() => setShowAsset(false)}>ביטול</Button>
               </AddForm>
             ) : (
@@ -164,7 +190,8 @@ export default function Assets({ clientUserId, advisorId }) {
                 <label className={styles.formField}>שם ההתחייבות<input className={styles.input} placeholder="שם ההתחייבות" aria-label="שם ההתחייבות" value={loanName} onChange={e => setLoanName(e.target.value)} /></label>
                 <label className={styles.formField}>יתרת ההתחייבות<input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="יתרה" aria-label="יתרת ההתחייבות" value={loanRemaining} onChange={e => setLoanRemaining(e.target.value)} /></label>
                 <label className={styles.formField}>החזר חודשי להתחייבות<input className={styles.input + ' ' + styles.amountInput} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי להתחייבות" value={loanMonthly} onChange={e => setLoanMonthly(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitLoan()} /></label>
-                <Button onClick={submitLoan}>הוסף</Button>
+                {saveError === 'loan' && <p className={styles.saveError} role="alert">ההתחייבות לא נשמרה. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
+                <Button disabled={!!saving} onClick={submitLoan}>{saving === 'loan' ? 'שומר…' : 'הוסף'}</Button>
                 <Button variant="ghost" onClick={() => setShowLoan(false)}>ביטול</Button>
               </AddForm>
             ) : (

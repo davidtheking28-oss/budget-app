@@ -261,23 +261,27 @@ async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
   setEntry(k, { data: next, error: null, ts: Date.now() });
   let error = null;
   let savedBundle;
-  for (let attempt = 0; attempt < 4; attempt++) {
-    const { data: freshRow, error: readError } = await supabase
-      .from('budget_data').select('*').eq('user_id', clientUserId).maybeSingle();
-    if (readError) { error = readError; break; }
-    const freshBundle = mode === 'business' ? (freshRow?.business || {}) : (freshRow || {});
-    const mergedPatch = mergeBudgetPatch(freshBundle, patch);
-    const row = {
-      user_id: clientUserId, updated_by: advisorId,
-      updated_at: new Date(Math.max(Date.now(), (Date.parse(freshRow?.updated_at) || 0) + 1)).toISOString(),
-    };
-    if (mode === 'business') row.business = { ...freshBundle, ...mergedPatch };
-    else Object.assign(row, mergedPatch);
-    const result = await writeBudgetVersion(supabase, row, freshRow);
-    if (result.conflict) { error = { message: 'sync conflict' }; continue; }
-    error = result.error;
-    savedBundle = { ...freshBundle, ...mergedPatch, user_id: clientUserId };
-    break;
+  try {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const { data: freshRow, error: readError } = await supabase
+        .from('budget_data').select('*').eq('user_id', clientUserId).maybeSingle();
+      if (readError) { error = readError; break; }
+      const freshBundle = mode === 'business' ? (freshRow?.business || {}) : (freshRow || {});
+      const mergedPatch = mergeBudgetPatch(freshBundle, patch);
+      const row = {
+        user_id: clientUserId, updated_by: advisorId,
+        updated_at: new Date(Math.max(Date.now(), (Date.parse(freshRow?.updated_at) || 0) + 1)).toISOString(),
+      };
+      if (mode === 'business') row.business = { ...freshBundle, ...mergedPatch };
+      else Object.assign(row, mergedPatch);
+      const result = await writeBudgetVersion(supabase, row, freshRow);
+      if (result.conflict) { error = { message: 'sync conflict' }; continue; }
+      error = result.error;
+      savedBundle = { ...freshBundle, ...mergedPatch, user_id: clientUserId };
+      break;
+    }
+  } catch (err) {
+    error = err;
   }
   if (error) {
     // Roll back but leave `error` null: the cache is shared across tabs, and a failed

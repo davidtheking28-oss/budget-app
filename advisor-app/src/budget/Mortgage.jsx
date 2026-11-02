@@ -1,3 +1,4 @@
+import { useEffect, useId, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import { monthSummary } from './budgetMath.js';
 import Skeleton from '../components/Skeleton.jsx';
@@ -20,20 +21,36 @@ function ltvTone(ltv) {
 }
 
 function Field({ label, value, onSave, type = 'number', prefix }) {
+  const [draft, setDraft] = useState(String(value ?? ''));
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const errorId = useId();
+  useEffect(() => {
+    if (!saving && !saveError) setDraft(String(value ?? ''));
+  }, [value, saving, saveError]);
+
+  async function submit() {
+    if (saving || draft === String(value ?? '')) return;
+    setSaving(true);
+    setSaveError(false);
+    try {
+      if (await onSave(draft) === false) setSaveError(true);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <label className={styles.field}>
       <span className={styles.fieldLabel}>{label}</span>
       <span className={styles.inputWrap}>
         {prefix && <span className={styles.prefix}>{prefix}</span>}
-        <input
-          className={styles.input}
-          type={type}
-          inputMode={type === 'number' ? 'decimal' : undefined}
-          defaultValue={value ?? ''}
-          key={String(value ?? '')}
-          onBlur={e => { if (e.target.value !== String(value ?? '')) onSave(e.target.value); }}
-        />
+        <input className={styles.input} type={type} inputMode={type === 'number' ? 'decimal' : undefined} aria-label={label} aria-describedby={saveError ? errorId : undefined} value={draft} disabled={saving} onChange={e => setDraft(e.target.value)} onBlur={submit} />
       </span>
+      {saving && <span className={styles.checkNote} role="status">שומר…</span>}
+      {saveError && <span id={errorId} className={styles.saveError} role="alert">הערך לא נשמר. הוא נשאר כאן.<button type="button" className={styles.retry} aria-label={'נסה לשמור שוב: ' + label} onClick={submit}>נסה שוב</button></span>}
     </label>
   );
 }
