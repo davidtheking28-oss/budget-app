@@ -1,0 +1,32 @@
+.periodHeader { padding-block: 14px; }
+.marketingStats { gap: 12px; }
+.marketingStats > div { padding: 14px 16px; }
+.marketingStats > div > div:nth-child(2) { font-size: var(--text-xl); margin-block: 8px 4px; font-variant-numeric: tabular-nums; }
+.funnelStages { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+.funnelStage { display: grid; gap: 6px; padding: 12px 18px; border-inline-start: 1px solid var(--border); }
+.funnelStage:first-child { border-inline-start: 0; padding-inline-start: 0; }
+.funnelStage strong { font-size: var(--text-stat); font-variant-numeric: tabular-nums; color: var(--text); line-height: 1.15; }
+.funnelResult { border-radius: var(--radius-sm); background: var(--accent-dim); }
+.funnelResult strong { color: var(--accent); }
+.conversionRates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; border-top: 1px solid var(--border); margin-block-start: 20px; padding-block-start: 14px; }
+.conversionRates > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 10px; font-size: var(--text-sm); color: var(--text2); }
+.conversionRates strong { color: var(--text); font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+.conversionRates > div > span:last-child { flex-basis: 100%; margin-top: 0; }
+.detailTable th { vertical-align: middle; line-height: 1.45; }
+.detailTable th:first-child, .detailTable td:first-child { position: sticky; inset-inline-start: 0; z-index: 1; background: var(--surface); min-width: 96px; font-weight: 700; }
+.detailTable thead th:first-child { background: var(--surface2); }
+.detailTable tbody tr:hover td { background: var(--surface2); }
+.calculationNote { margin-block-start: 14px; padding-block-start: 12px; border-top: 1px solid var(--border); color: var(--text2); font-size: var(--text-sm); }
+.calculationNote summary { cursor: pointer; font-weight: 600; }
+.calculationNote summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+@media (max-width: 950px) {
+ .funnelStage { padding-inline: 12px; }
+ .funnelStage strong { font-size: var(--text-xl); }
+ .conversionRates { gap: 12px; }
+}
+@media (max-width: 600px) {
+ .funnelStages { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+ .funnelStage, .funnelStage:first-child { border: 0; padding: 12px; }
+ .conversionRates { grid-template-columns: 1fr; }
+ .conversionRates > div > span:last-child { flex-basis: auto; }
+}

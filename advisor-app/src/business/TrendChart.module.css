@@ -1,0 +1,2 @@
+.metricPicker { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-block-end: var(--space-3); color: var(--text2); font-size: var(--text-sm); }
+.metricPicker select { min-width: 190px; max-width: 100%; }

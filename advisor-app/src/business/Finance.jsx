@@ -12,6 +12,8 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { fmt } from '../format.js';
 import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
+import layout from './Finance.module.css';
+import { formatDate } from '../budget/monthUtils.js';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -61,14 +63,16 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
 
   return (
     <Modal title={`הכנסות · ${periodLabel(period)}`} onClose={onClose} wide>
+      <section className={layout.records}>
+      <div className={layout.sectionHead}><h3 className={layout.heading}>רשומות בחודש</h3><span className={layout.recordCount}>{incomes.length} רשומות</span></div>
       <input type="search" className={styles.input} aria-label="חיפוש בהכנסות" placeholder="חיפוש לפי תיאור, תאריך או סכום" value={search} onChange={e => { setSearch(e.target.value); setVisibleCount(100); }} />
       {incomes.length === 0 ? <div className={styles.empty}>עוד לא הוזנו הכנסות לחודש הזה.</div> : (
-        <ul className={styles.rowList}>
+        <ul className={styles.rowList + ' ' + layout.entries}>
           {filtered.slice(0, visibleCount).map(e => (
-            <li key={e.id} className={styles.rowItem}>
-              <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || 'הכנסה'}</div><div className={styles.rowMeta}>{e.date}{e.clearing ? ` · סליקה ${money(e.clearing)}` : ''}</div></div>
+            <li key={e.id} className={styles.rowItem + ' ' + layout.entry}>
+              <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || 'הכנסה'}</div><div className={styles.rowMeta}><time className={layout.date} dateTime={e.date}>{formatDate(e.date)}</time>{e.clearing ? ` · סליקה ${money(e.clearing)}` : ''}</div></div>
               <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={!!e.receipt} onChange={ev => onUpdate(e.id, { receipt: ev.target.checked })} />קבלה</label>
-              <input className={styles.input + ' ' + styles.numInput} key={e.amount} inputMode="decimal" aria-label={'סכום ההכנסה: ' + (e.desc || e.category || '')} defaultValue={e.amount} onBlur={ev => { const v = num(ev.target.value); if (v > 0 && v !== num(e.amount)) onUpdate(e.id, { amount: v }); else ev.target.value = e.amount; }} />
+              <input className={styles.input + ' ' + styles.numInput + ' ' + layout.amount} key={e.amount} inputMode="decimal" aria-label={'סכום ההכנסה: ' + (e.desc || e.category || '')} defaultValue={e.amount} onBlur={ev => { const v = num(ev.target.value); if (v > 0 && v !== num(e.amount)) onUpdate(e.id, { amount: v }); else ev.target.value = e.amount; }} />
               <DeleteButton title="מחק הכנסה" onClick={() => onRemove(e.id, 'ההכנסה נמחקה')} />
             </li>
           ))}
@@ -76,7 +80,9 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
       )}
       {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הכנסות</button>}
       {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
-      <form className={styles.addForm + ' ' + styles.financeForm} onSubmit={submit}>
+      </section>
+      <form className={styles.addForm + ' ' + styles.financeForm + ' ' + layout.entryForm} onSubmit={submit}>
+        <h3 className={layout.formHeading}>הוספת רשומה</h3>
         <label className={styles.fieldLabel}>סכום ההכנסה<input className={styles.input + ' ' + styles.numInput} data-amount aria-invalid={formError?.field === 'amount'} aria-describedby={formError?.field === 'amount' ? 'finance-form-error' : undefined} inputMode="decimal" placeholder="סכום" aria-label="סכום ההכנסה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} /></label>
         <label className={styles.fieldLabel}>עלות סליקה וניכיון<input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="עלות סליקה" aria-label="עלות סליקה וניכיון" value={form.clearing} onChange={e => setForm(prev => ({ ...prev, clearing: e.target.value }))} /></label>
         <label className={styles.fieldLabel}>תיאור ההכנסה<input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההכנסה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} /></label>
@@ -113,13 +119,15 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
 
   return (
     <Modal title={`הוצאות קבועות · ${periodLabel(period)}`} onClose={onClose} wide>
+      <section className={layout.records}>
+      <div className={layout.sectionHead}><h3 className={layout.heading}>רשומות בחודש</h3><span className={layout.recordCount}>{fixed.length} רשומות</span></div>
       <input type="search" className={styles.input} aria-label="חיפוש בהוצאות קבועות" placeholder="חיפוש לפי תיאור, תאריך או סכום" value={search} onChange={e => { setSearch(e.target.value); setVisibleCount(100); }} />
       {fixed.length === 0 ? <div className={styles.empty}>עוד לא הוגדרו הוצאות לחודש הזה.</div> : (
-        <ul className={styles.rowList}>
+        <ul className={styles.rowList + ' ' + layout.entries}>
           {filtered.slice(0, visibleCount).map(e => (
-            <li key={e.id} className={styles.rowItem}>
+            <li key={e.id} className={styles.rowItem + ' ' + layout.entry}>
               <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || e.category}</div><div className={styles.rowMeta}>{e.category} · מ-{periodLabel(e.startPeriod)}</div></div>
-              <input className={styles.input + ' ' + styles.numInput} key={e.amount} inputMode="decimal" aria-label={'סכום חודשי: ' + (e.desc || e.category)} defaultValue={e.amount} onBlur={ev => { if (num(ev.target.value) > 0 && num(ev.target.value) !== num(e.amount)) onChangeAmount(e, num(ev.target.value)); }} />
+              <input className={styles.input + ' ' + styles.numInput + ' ' + layout.amount} key={e.amount} inputMode="decimal" aria-label={'סכום חודשי: ' + (e.desc || e.category)} defaultValue={e.amount} onBlur={ev => { if (num(ev.target.value) > 0 && num(ev.target.value) !== num(e.amount)) onChangeAmount(e, num(ev.target.value)); }} />
               <DeleteButton title="הפסק הוצאה קבועה" onClick={() => onEnd(e)} />
             </li>
           ))}
@@ -127,7 +135,9 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
       )}
       {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הוצאות קבועות</button>}
       {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
-      <form className={styles.addForm + ' ' + styles.financeForm} onSubmit={submit}>
+      </section>
+      <form className={styles.addForm + ' ' + styles.financeForm + ' ' + layout.entryForm} onSubmit={submit}>
+        <h3 className={layout.formHeading}>הוספת רשומה</h3>
         <label className={styles.fieldLabel}>סכום חודשי<input className={styles.input + ' ' + styles.numInput} data-amount aria-invalid={formError?.field === 'amount'} aria-describedby={formError?.field === 'amount' ? 'finance-form-error' : undefined} inputMode="decimal" placeholder="₪" aria-label="סכום חודשי" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} /></label>
         <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
         <label className={styles.fieldLabel}>תיאור ההוצאה<input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} /></label>
@@ -164,14 +174,16 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
 
   return (
     <Modal title={`הוצאות משתנות · ${periodLabel(period)}`} onClose={onClose} wide>
+      <section className={layout.records}>
+      <div className={layout.sectionHead}><h3 className={layout.heading}>רשומות בחודש</h3><span className={layout.recordCount}>{variable.length} רשומות</span></div>
       <input type="search" className={styles.input} aria-label="חיפוש בהוצאות משתנות" placeholder="חיפוש לפי תיאור, תאריך או סכום" value={search} onChange={e => { setSearch(e.target.value); setVisibleCount(100); }} />
       {variable.length === 0 ? <div className={styles.empty}>עוד לא הוזנו הוצאות לחודש הזה.</div> : (
-        <ul className={styles.rowList}>
+        <ul className={styles.rowList + ' ' + layout.entries}>
           {filtered.slice(0, visibleCount).map(e => (
-            <li key={e.id} className={styles.rowItem}>
-              <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || e.category}</div><div className={styles.rowMeta}>{e.category} · {e.date}</div></div>
+            <li key={e.id} className={styles.rowItem + ' ' + layout.entry}>
+              <div className={styles.rowMain}><div className={styles.rowTitle}>{e.desc || e.category}</div><div className={styles.rowMeta}>{e.category} · <time className={layout.date} dateTime={e.date}>{formatDate(e.date)}</time></div></div>
               <label className={styles.toolbar}><input type="checkbox" className={styles.check} checked={!!e.receipt} onChange={ev => onUpdate(e.id, { receipt: ev.target.checked })} />קבלה</label>
-              <input className={styles.input + ' ' + styles.numInput} key={e.amount} inputMode="decimal" aria-label={'סכום ההוצאה: ' + (e.desc || e.category || '')} defaultValue={e.amount} onBlur={ev => { const v = num(ev.target.value); if (v > 0 && v !== num(e.amount)) onUpdate(e.id, { amount: v }); else ev.target.value = e.amount; }} />
+              <input className={styles.input + ' ' + styles.numInput + ' ' + layout.amount} key={e.amount} inputMode="decimal" aria-label={'סכום ההוצאה: ' + (e.desc || e.category || '')} defaultValue={e.amount} onBlur={ev => { const v = num(ev.target.value); if (v > 0 && v !== num(e.amount)) onUpdate(e.id, { amount: v }); else ev.target.value = e.amount; }} />
               <DeleteButton title="מחק הוצאה" onClick={() => onRemove(e.id, 'ההוצאה נמחקה')} />
             </li>
           ))}
@@ -179,7 +191,9 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
       )}
       {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הוצאות משתנות</button>}
       {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
-      <form className={styles.addForm + ' ' + styles.financeForm} onSubmit={submit}>
+      </section>
+      <form className={styles.addForm + ' ' + styles.financeForm + ' ' + layout.entryForm} onSubmit={submit}>
+        <h3 className={layout.formHeading}>הוספת רשומה</h3>
         <label className={styles.fieldLabel}>סכום ההוצאה<input className={styles.input + ' ' + styles.numInput} data-amount aria-invalid={formError?.field === 'amount'} aria-describedby={formError?.field === 'amount' ? 'finance-form-error' : undefined} inputMode="decimal" placeholder="₪" aria-label="סכום ההוצאה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} /></label>
         <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
         <label className={styles.fieldLabel}>תיאור ההוצאה<input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} /></label>
