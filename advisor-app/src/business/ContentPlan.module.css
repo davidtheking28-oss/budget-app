@@ -1,0 +1,14 @@
+.stateCard { padding: 28px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-card); }
+.emptyHeading { display: flex; align-items: center; gap: 16px; }
+.emptyHeading h2, .workspaceHeader h2 { margin: 0; color: var(--text); font-size: var(--text-lg); font-weight: 800; }
+.emptyHeading p, .workspaceHeader p { margin: 4px 0 0; color: var(--text2); font-size: var(--text-sm); }
+.planIcon { display: grid; place-items: center; flex-shrink: 0; width: 52px; height: 52px; background: var(--accent-dim); color: var(--accent); border-radius: var(--radius-md); }
+.importSteps { display: grid; gap: 14px; padding-inline-start: 22px; margin: 24px 0; color: var(--text2); font-size: var(--text-sm); line-height: 1.7; }
+.importSteps li::marker { color: var(--accent); font-weight: 800; }
+.fileName { display: inline-block; margin-inline-start: 6px; padding: 2px 8px; background: var(--surface2); border-radius: var(--radius-xs); color: var(--text); font-size: var(--text-xs); overflow-wrap: anywhere; }
+.importFooter { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 18px; padding-block-start: 20px; border-top: 1px solid var(--border); }
+.importFooter span { color: var(--text2); font-size: var(--text-xs); }
+.loading p { margin: 0 0 12px; color: var(--text2); font-size: var(--text-sm); }
+.workspace { min-width: 0; }
+.workspaceHeader { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding-block-end: 16px; margin-block-end: 16px; border-bottom: 1px solid var(--border); }
+@media (max-width: 600px) { .stateCard { padding: 20px; } .emptyHeading { align-items: flex-start; gap: 12px; } .fileName { margin-inline-start: 0; } }

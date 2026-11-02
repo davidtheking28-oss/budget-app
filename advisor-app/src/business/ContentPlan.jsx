@@ -4,6 +4,7 @@ import { toast } from '../toast.js';
 import Button from '../components/Button.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
+import styles from './ContentPlan.module.css';
 
 const TABLE = 'advisor_biz_records';
 const PROGRESS = 'content_plan_progress';
@@ -173,29 +174,29 @@ export default function ContentPlan({ advisorId }) {
     toast('התוכן נשמר', 'success');
   }
 
-  if (error) return <ErrorState onRetry={load} />;
-  if (doc === undefined) return <Skeleton height="320px" radius="18px" />;
+  if (error) return <section className={styles.stateCard}><ErrorState message="לא הצלחנו לטעון את לוח התוכן" onRetry={load} /></section>;
+  if (doc === undefined) return <section className={styles.loading} aria-busy="true"><p role="status">טוען את לוח התוכן שלך…</p><Skeleton height="220px" radius="18px" /></section>;
 
   const picker = <input ref={fileInput} type="file" accept="application/json,.json" onChange={importFile} hidden />;
 
   if (doc === null) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, padding: 24, border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--surface)' }}>
-        <div style={{ fontSize: 'var(--text-lg)', fontWeight: 800 }}>לוח התוכן עדיין לא נטען</div>
-        <div style={{ color: 'var(--text2)', fontSize: 'var(--text-base)', lineHeight: 1.6 }}>התוכן נשמר בפרטיות בחשבון שלך ולא באתר. כדי לטעון אותו בפעם הראשונה, בחר את קובץ התוכן (content-plan-content.json).</div>
-        <Button onClick={() => fileInput.current?.click()}>בחר קובץ תוכן</Button>
+      <section className={styles.stateCard}>
+        <div className={styles.emptyHeading}>
+          <span className={styles.planIcon} aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4M17 3v4M3 11h18M7 15h3M14 15h3M7 18h3" /></svg></span>
+          <div><h2>לוח התוכן שלך מתחיל כאן</h2><p>כל התכנון ל־4 שבועות, במקום אחד.</p></div>
+        </div>
+        <ol className={styles.importSteps}><li>בחר את קובץ התוכן שקיבלת <bdi className={styles.fileName}>content-plan-content.json</bdi></li><li>לאחר הטעינה אפשר לעבור על התוכן ולסמן מה כבר בוצע.</li></ol>
+        <div className={styles.importFooter}><Button onClick={() => fileInput.current?.click()}>בחר קובץ תוכן</Button><span>התוכן וסימוני הביצוע נשמרים בחשבון שלך.</span></div>
         {picker}
-      </div>
+      </section>
     );
   }
 
   return (
-    <>
+    <section className={styles.workspace}>
+      <div className={styles.workspaceHeader}><div><h2>לוח התוכן שלך</h2><p>תכנון ל־4 שבועות ומעקב אחר הביצוע</p></div><Button variant="ghost" onClick={() => fileInput.current?.click()}>טען קובץ תוכן מעודכן</Button>{picker}</div>
       <PlanFrame key={version} doc={doc} stored={stored} onDone={onDone} />
-      <div style={{ display: 'flex', justifyContent: 'flex-start', paddingBlock: 8 }}>
-        <Button variant="ghost" onClick={() => fileInput.current?.click()}>טען קובץ תוכן מעודכן</Button>
-        {picker}
-      </div>
-    </>
+    </section>
   );
 }

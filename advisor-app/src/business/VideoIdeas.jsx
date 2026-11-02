@@ -9,6 +9,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
+import layout from './VideoIdeas.module.css';
 
 const STATUSES = [
   { key: 'idea', label: 'רעיון', dot: 'var(--text3)', hint: 'עוד אין כאן רעיונות. אפשר לקחת אחד מהמאגר למטה בלחיצה.' },
@@ -50,32 +51,19 @@ export default function VideoIdeas({ advisorId }) {
     <div className={styles.stack}>
       <HeaderAction><button type="button" className={styles.btn} onClick={() => setModal(true)}>+ רעיון חדש</button></HeaderAction>
 
-      <section className={styles.bigCard} style={{ background: 'linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), var(--surface) 55%)' }}>
-        <div className={styles.toolbar}><span className={styles.cardSub}>רעיון של היום</span>{daily && <span className={styles.tag}>{daily.topic}</span>}</div>
-        {daily ? (
-          <>
-            <h3 className={styles.cardTitle} style={{ fontSize: 'var(--text-xl, 1.5rem)', margin: '18px 0 26px' }}>{daily.text}</h3>
-            <div className={styles.toolbar}>
-              <button type="button" className={styles.btn} onClick={() => addIdea(daily.text, daily.topic)}>להוסיף לרעיונות שלי +</button>
-              <button type="button" className={styles.btnGhost} onClick={() => setOffset(o => o + 1)}>רעיון אחר</button>
-            </div>
-          </>
-        ) : <div className={styles.empty}>הוספת את כל הרעיונות מהמאגר</div>}
-      </section>
-
-      <div className={styles.grid3}>
+      <div className={styles.grid3 + ' ' + layout.board}>
         {STATUSES.map(s => {
           const list = ideas.filter(i => i.status === s.key);
           return (
-            <section key={s.key} className={styles.card}>
+            <section key={s.key} className={styles.card + ' ' + layout.column} aria-label={s.label}>
               <div className={styles.cardHead}>
                 <h3 className={styles.cardTitle}><span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: '50%', background: s.dot, marginInlineEnd: 8 }} aria-hidden="true" />{s.label}</h3>
                 <span className={styles.cardSub}>{list.length}</span>
               </div>
-              {list.length === 0 ? <div className={styles.hintBox}>{s.hint}</div> : (
+              {list.length === 0 ? <div className={layout.emptyColumn}>{s.hint}</div> : (
                 <ul className={styles.rowList}>
                   {list.map(i => (
-                    <li key={i.id} className={styles.rowItem}>
+                    <li key={i.id} className={styles.rowItem + ' ' + layout.ideaRow}>
                       <div className={styles.rowMain}>
                         <div className={styles.rowTitle}>{i.text}</div>
                         <div className={styles.toolbar} style={{ marginTop: 6 }}>
@@ -95,6 +83,19 @@ export default function VideoIdeas({ advisorId }) {
         })}
       </div>
 
+      <section className={styles.card + ' ' + layout.daily}>
+        <div className={styles.toolbar}><span className={styles.cardSub}>רעיון של היום</span>{daily && <span className={styles.tag}>{daily.topic}</span>}</div>
+        {daily ? (
+          <>
+            <h3 className={styles.cardTitle + ' ' + layout.dailyTitle}>{daily.text}</h3>
+            <div className={styles.toolbar}>
+              <button type="button" className={styles.btn} onClick={() => addIdea(daily.text, daily.topic)}>להוסיף לרעיונות שלי +</button>
+              <button type="button" className={styles.btnGhost} onClick={() => setOffset(o => o + 1)}>רעיון אחר</button>
+            </div>
+          </>
+        ) : <div className={styles.empty}>הוספת את כל הרעיונות מהמאגר</div>}
+      </section>
+
       <section className={styles.card}>
         <div className={styles.cardHead}>
           <div className={styles.toolbar}>
@@ -110,9 +111,9 @@ export default function VideoIdeas({ advisorId }) {
               {IDEA_TOPICS.map(t => <button key={t} type="button" className={topic === t ? styles.pillOn : styles.pill} aria-pressed={topic === t} onClick={() => { setTopic(t); setVisibleCount(12); }}>{t} <span className={styles.pillCount}>{topicCount(t)}</span></button>)}
             </div>
             {pool.length === 0 ? <div className={styles.empty}>אין רעיונות בנושא הזה</div> : (
-              <div className={styles.tileGrid4} style={{ marginTop: 16 }}>
+              <div className={layout.poolGrid}>
                 {pool.slice(0, visibleCount).map(p => (
-                  <div key={p.text} className={styles.stat} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div key={p.text} className={layout.poolItem}>
                     <span className={styles.rowMeta}>{p.topic}</span>
                     <span className={styles.rowTitle} style={{ flex: 1 }}>{p.text}</span>
                     <button type="button" className={styles.btnGhost} style={{ alignSelf: 'flex-start' }} onClick={() => addIdea(p.text, p.topic)}>להוסיף +</button>
