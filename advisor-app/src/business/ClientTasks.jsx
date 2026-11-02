@@ -76,13 +76,13 @@ export default function ClientTasks({ advisorId, onSelect }) {
             </div>
           ) : months.length === 1 ? <span className={styles.rowMeta}>{monthLabel(months[0])}</span> : null}
           <div className={layout.clientToolbar}>
-            <button type="button" className={styles.iconBtn} aria-label="הלקוח הבא" disabled={!pool.length || index >= pool.length - 1} onClick={() => step(1)}><svg {...svgProps}><path d="m15 6-6 6 6 6" /></svg></button>
+            <button type="button" className={styles.iconBtn} aria-label="הלקוח הקודם" disabled={index <= 0} onClick={() => step(-1)}><svg {...svgProps}><path d="m9 6 6 6-6 6" /></svg></button>
             <div className={layout.identity}>
               <div className={layout.eyebrow}>משימות לפי לקוח</div>
               <div className={styles.rowTitle}>{current ? (current.name || current.client_email) : 'אין לקוחות'}</div>
               {current && <div className={styles.rowMeta}>{Math.min(index, pool.length - 1) + 1} מתוך {pool.length}</div>}
             </div>
-            <button type="button" className={styles.iconBtn} aria-label="הלקוח הקודם" disabled={index <= 0} onClick={() => step(-1)}><svg {...svgProps}><path d="m9 6 6 6-6 6" /></svg></button>
+            <button type="button" className={styles.iconBtn} aria-label="הלקוח הבא" disabled={!pool.length || index >= pool.length - 1} onClick={() => step(1)}><svg {...svgProps}><path d="m15 6-6 6 6 6" /></svg></button>
             <input className={styles.input + ' ' + styles.inputGrow} type="search" placeholder="חיפוש לקוח..." aria-label="חיפוש לקוח" value={search} onChange={e => { setSearch(e.target.value); setIndex(0); }} />
           </div>
         </div>
