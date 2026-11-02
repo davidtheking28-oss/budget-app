@@ -10,7 +10,7 @@
   background: var(--workspace-rail);
   color: var(--workspace-text);
   border-inline-end: 1px solid var(--workspace-line);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .brand {
@@ -29,9 +29,9 @@
 button.mode { border: none; background: transparent; font-family: inherit; cursor: pointer; }
 button.mode:hover { color: var(--workspace-text); }
 button.mode:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
-.modeOn { background: rgba(var(--accent-rgb), 0.22); color: var(--workspace-mint); }
+button.modeOn { background: rgba(var(--accent-rgb), 0.22); color: var(--workspace-mint); }
 
-.nav { display: flex; flex-direction: column; gap: 4px; padding-top: var(--space-2); }
+.nav { display: flex; flex-direction: column; gap: var(--space-1); padding-block: var(--space-2) var(--space-4); min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 
 .group {
   margin: 18px 10px 6px;
@@ -46,14 +46,14 @@ button.mode:focus-visible { outline: 2px solid var(--workspace-mint); outline-of
   align-items: center;
   gap: 11px;
   width: 100%;
-  min-height: 41px;
+  min-height: 44px;
   padding: 11px 14px;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--workspace-text);
   font-family: inherit;
-  font-size: 14.5px;
+  font-size: var(--text-sm);
   font-weight: 500;
   text-align: start;
   cursor: pointer;
@@ -62,7 +62,10 @@ button.mode:focus-visible { outline: 2px solid var(--workspace-mint); outline-of
 .itemOn, .itemOn:hover { background: rgba(var(--accent-rgb), 0.22); color: var(--workspace-mint); font-weight: 700; }
 .item:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
 
-.icon { display: inline-flex; flex: none; opacity: 0.9; }
+.icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex: none; opacity: 0.9; }
+.icon svg { width: 18px; height: 18px; }
 
-.footer { margin-top: auto; padding: 14px 4px 0; border-top: 1px solid var(--workspace-line); }
+.footer { flex: none; margin-top: auto; padding: var(--space-3) 0 0; border-top: 1px solid var(--workspace-line); }
 .footer > div { width: 100%; }
+
+.brand, .modes { flex-shrink: 0; }

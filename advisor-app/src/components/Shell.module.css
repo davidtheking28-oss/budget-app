@@ -360,3 +360,6 @@
   transform: translateY(-200%);
 }
 .skipLink:focus { transform: none; }
+.accountBlockWrap.accountUp { margin-top: 0; padding-top: 0; border-top: 0; }
+.accountBlockWrap .accountPanel { max-height: calc(100dvh - 160px); overflow-y: auto; overscroll-behavior: contain; }
+.accountBlock > svg { flex: none; width: 18px; height: 18px; color: var(--workspace-muted); }
