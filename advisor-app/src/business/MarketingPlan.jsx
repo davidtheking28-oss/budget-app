@@ -157,6 +157,7 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
     return patch(change);
   }
 
+  const hasActivity = baseline != null || Boolean(metrics.followers || metrics.boosts || metrics.meetings || metrics.closings);
   const tiles = [
     { key: 'followers', modal: 'networks', label: 'עוקבים חדשים', value: String(metrics.followers), note: `סה״כ ${totalFollowers}` },
     { key: 'follower', modal: 'networks', label: 'עלות לעוקב', value: cost(metrics.costPerFollower), note: 'בוסטים חלקי עוקבים חדשים' },
@@ -166,13 +167,13 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
 
   return (
     <div className={styles.stack}>
-      <section className={styles.bigCard}>
-        {header}
-        <div className={styles.cardHead}>
+      {header}
+      <section className={styles.card + ' ' + layout.monthOverview}>
+        {hasActivity && <div className={styles.cardHead}>
           <div className={styles.sectionLabel}>החודש במספרים</div>
           <span className={styles.toolbar}><span className={styles.rowMeta}>בוסטים: {fmt(metrics.boosts)}</span>{baseline != null && <button type="button" className={styles.btnGhost} onClick={() => setModal('networks')}>עדכון עוקבים</button>}</span>
-        </div>
-        {(baseline != null || metrics.followers || metrics.boosts || metrics.meetings || metrics.closings) ? <div className={styles.tileGrid4 + ' ' + layout.monthMetrics}>
+        </div>}
+        {hasActivity ? <div className={styles.tileGrid4 + ' ' + layout.monthMetrics}>
           {tiles.map(t => (
             <button key={t.key} type="button" className={styles.stat + ' ' + layout.metric} onClick={() => setModal(t.modal)}>
               <div className={styles.statLabel} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -183,38 +184,38 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
               <div className={styles.statNote}>{t.note}</div>
             </button>
           ))}
-        </div> : <p className={styles.cardSub}>מתחילים במספר העוקבים הנוכחי. מדדי העלות והצמיחה יתעדכנו עם הזנת הפעילות.</p>}
+        </div> : null}
         {baseline == null && (
-          <div className={styles.toolbar} style={{ background: 'var(--surface2,rgba(255,255,255,0.04))', borderRadius: 10, padding: '12px 14px', marginTop: 14 }}>
+          <div className={layout.start}>
             <div style={{ flex: 1 }}>
-              <div className={styles.rowTitle}>בואו נתחיל</div>
-              <div className={styles.cardSub}>כמה עוקבים יש לך היום בכל רשת? מכאן נחשב לבד כמה גדלת כל חודש, ואת העלות לעוקב, לפגישה וללקוח.</div>
+              <div className={styles.rowTitle}>מתחילים ממספר העוקבים שלך</div>
+              <div className={styles.cardSub}>מזינים את העוקבים והבוסטים, ומכאן עוקבים אחר הצמיחה והעלות לאורך הזמן.</div>
             </div>
             <button type="button" className={styles.btn} onClick={() => setModal('networks')}>להתחיל</button>
           </div>
         )}
       </section>
 
-      <TrendChart title="איך גדלתי" labels={growthPeriods.map(shortLabel)} metrics={growthMetrics} footnote={growthRange === 'month' ? '12 החודשים האחרונים' : growthRange === 'year' ? 'חודשי השנה' : 'כל התקופה'} controls={
+      <TrendChart compact title="איך גדלתי" labels={growthPeriods.map(shortLabel)} metrics={growthMetrics} footnote={growthRange === 'month' ? '12 החודשים האחרונים' : growthRange === 'year' ? 'חודשי השנה' : 'כל התקופה'} controls={
         <div className={styles.segment} role="group" aria-label="טווח הגרף">
           {[['month', 'חודשי'], ['year', 'שנתי'], ['range', 'טווח']].map(([key, label]) => <button key={key} type="button" className={growthRange === key ? styles.segBtnOn : styles.segBtn} aria-pressed={growthRange === key} onClick={() => setGrowthRange(key)}>{label}</button>)}
         </div>
       } />
 
-      <div className={styles.grid3}>
-        <button type="button" className={styles.linkTile} onClick={() => setModal('tasks')}>
+      <div className={layout.quickActions}>
+        <button type="button" className={styles.linkTile + ' ' + layout.quickAction} onClick={() => setModal('tasks')}>
           <span className={styles.iconTile} aria-hidden="true">{icons.tasks}</span>
           <span className={styles.linkTileTitle}>משימות שיווק</span>
           <span className={styles.linkTileValue}>{progress.done}/{progress.total}</span>
-          <span className={styles.rowMeta}>למי שרוצה: סימון ועריכה</span>
+          <span className={styles.rowMeta}>פתיחת משימות החודש</span>
         </button>
-        <button type="button" className={styles.linkTile} onClick={() => setModal('leads')}>
+        <button type="button" className={styles.linkTile + ' ' + layout.quickAction} onClick={() => setModal('leads')}>
           <span className={styles.iconTile} aria-hidden="true">{icons.trend}</span>
           <span className={styles.linkTileTitle}>לידים משיווק</span>
           <span className={styles.linkTileValue}>{metrics.meetings} פגישות</span>
           <span className={styles.rowMeta}>{metrics.closings} סגירות</span>
         </button>
-        <button type="button" className={styles.linkTile} onClick={() => onNavigate?.('ideas')}>
+        <button type="button" className={styles.linkTile + ' ' + layout.quickAction} onClick={() => onNavigate?.('ideas')}>
           <span className={styles.iconTile} aria-hidden="true">{icons.bulb}</span>
           <span className={styles.linkTileTitle}>רעיונות לסרטונים</span>
           <span className={styles.linkTileValue}>{waiting} מחכים</span>
@@ -239,7 +240,7 @@ export default function MarketingPlan({ advisorId, onNavigate }) {
       monthLabel={`${monthName(ym.month)} ${ym.year}`}
       onNavigate={onNavigate}
       header={(
-        <div className={styles.cardHead}>
+        <div className={layout.pageHeader}>
           <h3 className={styles.cardTitle}>שיווק: {monthName(ym.month)} {ym.year}</h3>
           <MonthPicker year={ym.year} month={ym.month} onChange={(year, month) => setYm({ year, month })} />
         </div>

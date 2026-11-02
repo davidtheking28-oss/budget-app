@@ -7,7 +7,7 @@ import layout from './TrendChart.module.css';
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip);
 
-export default function TrendChart({ title = 'מגמות לאורך הזמן', labels, metrics, footnote, controls }) {
+export default function TrendChart({ title = 'מגמות לאורך הזמן', labels, metrics, footnote, controls, compact = false }) {
   const [active, setActive] = useState(metrics[0].key);
   const metric = metrics.find(m => m.key === active) || metrics[0];
   const hasValues = metric.values.some(value => Number(value) !== 0 && value != null);
@@ -26,7 +26,8 @@ export default function TrendChart({ title = 'מגמות לאורך הזמן', l
     }
   };
   return (
-    <section className={styles.card}>
+    <section className={styles.card + (compact ? ' ' + layout.compact : '')}>
+      <div className={layout.toolbar}>
       <div className={styles.cardHead}><h3 className={styles.cardTitle}>{title}</h3>{controls}</div>
       <label className={layout.metricPicker}>
         <span>מדד להצגה בגרף</span>
@@ -34,7 +35,8 @@ export default function TrendChart({ title = 'מגמות לאורך הזמן', l
           {metrics.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
         </select>
       </label>
-      {hasValues ? <div className={styles.chartBox}><Line aria-label={`${title} · ${metric.label}: ${labels.map((label, i) => `${label}: ${metric.format(metric.values[i])}`).join(' · ')}`} data={data} options={options} /></div> : <div className={styles.chartEmpty}><strong>כל הערכים במדד זה הם 0</strong><span>אפשר לבחור מדד אחר או לעדכן את נתוני התקופה.</span></div>}
+      </div>
+      {hasValues ? <div className={styles.chartBox}><Line aria-label={`${title} · ${metric.label}: ${labels.map((label, i) => `${label}: ${metric.format(metric.values[i])}`).join(' · ')}`} data={data} options={options} /></div> : <div className={styles.chartEmpty + ' ' + layout.empty}><strong>כל הערכים במדד זה הם 0</strong><span>אפשר לבחור מדד אחר או לעדכן את נתוני התקופה.</span></div>}
       {footnote && <p className={styles.note}>{footnote}</p>}
     </section>
   );
