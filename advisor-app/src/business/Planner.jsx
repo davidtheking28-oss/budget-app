@@ -230,12 +230,6 @@ export default function Planner({ advisorId }) {
 
   }
 
-  function setNote(value) {
-    const notes = { ...data.notes };
-    if (value.trim()) notes[selectedIso] = value; else delete notes[selectedIso];
-    commit({ ...data, notes }, 700);
-  }
-
   if (error) return <ErrorState onRetry={load} />;
   if (!data) return <Skeleton height="420px" radius="18px" />;
 
@@ -248,7 +242,6 @@ export default function Planner({ advisorId }) {
     : `${first.getDate()} ב${monthOf(first)} – ${last.getDate()} ב${monthOf(last)} ${last.getFullYear()}`;
   const bodyH = (layout.eH - layout.sH) * HH;
   const nowM = now.getHours() * 60 + now.getMinutes();
-  const history = Object.keys(data.notes).filter(k => k !== selectedIso && data.notes[k].trim()).sort().reverse();
   const totals = CATS.map(c => {
     const total = columns.reduce((sum, d) => sum + (data.events[isoOf(d)] || []).filter(x => x.t === c.key).reduce((s, x) => s + mins(x.e) - mins(x.s), 0), 0);
     return { ...c, hours: Math.round(total / 6) / 10 };
@@ -311,30 +304,6 @@ export default function Planner({ advisorId }) {
             {totals.map(c => <span key={c.key} className={business.tag + ' ' + styles['cat_' + c.key]}>{c.label} {c.hours} שעות</span>)}
           </div>
         )}
-      </section>
-
-      <section className={business.card + ' ' + styles.notesCard}>
-        <div className={styles.sumHead}>
-          <h3 className={business.cardTitle}>מה עשיתי ביום {DAY_NAMES[cursor.getDay()]} {shortDate(cursor)}</h3>
-          {selectedIso === todayIso && <span className={business.pill}>היום</span>}
-        </div>
-        <textarea key={selectedIso} className={business.input + ' ' + business.textarea} rows={5} aria-label="סיכום יום" placeholder="לכתוב כאן מה עשיתי היום" defaultValue={data.notes[selectedIso] || ''} onChange={e => setNote(e.target.value)} onBlur={e => setNote(e.target.value)} />
-        <details className={styles.history}>
-        <summary>סיכומים קודמים{history.length ? ` (${history.length})` : ''}</summary>
-        {history.length ? (
-          <div className={styles.hist}>
-            {history.map(k => {
-              const d = fromIso(k);
-              return (
-                <button key={k} type="button" className={styles.histRow} onClick={() => { setCursor(d); setView('day'); }}>
-                  <span className={styles.histDate}>יום {DAY_NAMES[d.getDay()]} {shortDate(d)}, {d.getFullYear()}</span>
-                  <span className={styles.histText}>{data.notes[k]}</span>
-                </button>
-              );
-            })}
-          </div>
-        ) : <p className={business.note}>עוד אין סיכומים. אחרי שתכתוב בימים נוספים הם יופיעו כאן, מהחדש לישן.</p>}
-        </details>
       </section>
 
       {draft && <EventModal draft={draft} onClose={() => setDraft(null)} onSave={saveEvent} onDelete={deleteEvent} />}
