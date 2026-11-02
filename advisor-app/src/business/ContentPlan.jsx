@@ -109,7 +109,7 @@ function PlanFrame({ doc, stored, onDone }) {
   return (
     <iframe
       ref={frameRef}
-      title="לוח תוכן ל-4 שבועות"
+      title="לוח תוכן"
       src={`${import.meta.env.BASE_URL}content-plan.html?v=compact-20261102`}
       onLoad={attach}
       scrolling="no"
@@ -184,7 +184,7 @@ export default function ContentPlan({ advisorId }) {
       <section className={styles.stateCard}>
         <div className={styles.emptyHeading}>
           <span className={styles.planIcon} aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4M17 3v4M3 11h18M7 15h3M14 15h3M7 18h3" /></svg></span>
-          <div><h2>לוח התוכן שלך מתחיל כאן</h2><p>כל התכנון ל־4 שבועות, במקום אחד.</p></div>
+          <div><h2>לוח התוכן שלך מתחיל כאן</h2><p>כל התכנון שלך, שבוע אחרי שבוע, במקום אחד.</p></div>
         </div>
         <ol className={styles.importSteps}><li>בחר את קובץ התוכן שקיבלת <bdi className={styles.fileName}>content-plan-content.json</bdi></li><li>לאחר הטעינה אפשר לעבור על התוכן ולסמן מה כבר בוצע.</li></ol>
         <div className={styles.importFooter}><Button onClick={() => fileInput.current?.click()}>בחר קובץ תוכן</Button><span>התוכן וסימוני הביצוע נשמרים בחשבון שלך.</span></div>
