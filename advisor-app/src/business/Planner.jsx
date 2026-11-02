@@ -11,7 +11,6 @@ const TABLE = 'advisor_biz_records';
 const KIND = 'planner';
 const HH = 48;
 const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-const DAY_SHORT = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 const CATS = [
   { key: 'biz', label: 'בניית העסק' },
   { key: 'client', label: 'לקוחות' },
@@ -75,17 +74,17 @@ function EventModal({ draft, onClose, onSave, onDelete }) {
       <form className={business.formGrid} onSubmit={submit}>
         <label className={business.fieldLabel}>כותרת<input className={business.input} value={form.n} maxLength={60} onChange={set('n')} /></label>
         <div className={business.fieldLabel} role="group" aria-label="קטגוריה">קטגוריה
-          <div className={business.pills}>
+          <div className={business.pills + ' ' + styles.categories}>
             {CATS.map(c => <button key={c.key} type="button" className={form.t === c.key ? business.pillOn : business.pill} aria-pressed={form.t === c.key} onClick={() => setForm(prev => ({ ...prev, t: c.key }))}>{c.label}</button>)}
           </div>
         </div>
         <label className={business.fieldLabel}>תאריך<input className={business.input} type="date" value={form.date} onChange={set('date')} /></label>
         <div className={business.formRow}>
           <label className={business.fieldLabel}>התחלה
-            <select className={business.select} value={form.s} onChange={e => { const s = e.target.value; setForm(prev => { const dur = mins(prev.e) - mins(prev.s); return { ...prev, s, e: hhmm(Math.min(1440, mins(s) + (dur > 0 ? dur : 60))) }; }); }}>{times.slice(0, 48).map(t => <option key={t} value={t}>{t}</option>)}</select>
+            <select className={business.select + ' ' + styles.timeSelect} value={form.s} onChange={e => { const s = e.target.value; setForm(prev => { const dur = mins(prev.e) - mins(prev.s); return { ...prev, s, e: hhmm(Math.min(1440, mins(s) + (dur > 0 ? dur : 60))) }; }); }}>{times.slice(0, 48).map(t => <option key={t} value={t}>{t}</option>)}</select>
           </label>
           <label className={business.fieldLabel}>סיום
-            <select className={business.select} value={form.e} onChange={set('e')}>{times.slice(1).map(t => <option key={t} value={t}>{t}</option>)}</select>
+            <select className={business.select + ' ' + styles.timeSelect} value={form.e} onChange={set('e')}>{times.slice(1).map(t => <option key={t} value={t}>{t}</option>)}</select>
           </label>
         </div>
         <label className={business.fieldLabel}>הערה<input className={business.input} value={form.o} maxLength={120} onChange={set('o')} /></label>
@@ -250,8 +249,8 @@ export default function Planner({ advisorId }) {
   }).filter(c => c.hours > 0);
 
   return (
-    <div className={business.stack}>
-      <section className={business.card}>
+    <div className={styles.workspace}>
+      <section className={business.card + ' ' + styles.calendarCard}>
         <div className={styles.bar}>
           <div className={styles.barGroup}>
             <button type="button" className={business.btnGhost} onClick={() => setCursor(new Date())}>היום</button>
@@ -269,25 +268,26 @@ export default function Planner({ advisorId }) {
           </div>
         </div>
 
-        <div className={styles.scroll}>
+        <p className={business.note + ' ' + styles.calendarHint}>לחיצה על משבצת ריקה מוסיפה אירוע. לחיצה על אירוע פותחת אותו לעריכה.</p>
+        <div className={styles.scroll} tabIndex={0} role="region" aria-label="יומן שעות — גלילה לצפייה בכל השעות והימים">
           <div className={view === 'week' ? styles.wide : undefined}>
             <div className={styles.head} style={{ '--n': columns.length }}>
               <div />
               {columns.map(d => (
-                <button key={isoOf(d)} type="button" className={styles.dayHead + (isoOf(d) === todayIso ? ' ' + styles.today : '') + (view === 'week' && isoOf(d) === selectedIso ? ' ' + styles.sel : '')} onClick={() => { setCursor(d); setView('day'); }} aria-label={`יום ${DAY_NAMES[d.getDay()]} ${shortDate(d)}`}>
-                  <small>{view === 'day' ? `יום ${DAY_NAMES[d.getDay()]}` : DAY_SHORT[d.getDay()]}</small>
+                <button key={isoOf(d)} type="button" className={styles.dayHead + (d.getDay() >= 5 ? ' ' + styles.weekend : '') + (isoOf(d) === todayIso ? ' ' + styles.today : '') + (view === 'week' && isoOf(d) === selectedIso ? ' ' + styles.sel : '')} onClick={() => { setCursor(d); setView('day'); }} aria-label={`יום ${DAY_NAMES[d.getDay()]} ${shortDate(d)}`}>
+                  <small>{view === 'day' ? `יום ${DAY_NAMES[d.getDay()]}` : DAY_NAMES[d.getDay()]}</small>
                   <b>{d.getDate()}</b>
                 </button>
               ))}
             </div>
             <div className={styles.body} style={{ '--n': columns.length }}>
               <div className={styles.gutter} style={{ height: bodyH }}>
-                {Array.from({ length: layout.eH - layout.sH - 1 }, (_, i) => <span key={i} style={{ top: (i + 1) * HH }}>{pad(layout.sH + i + 1)}:00</span>)}
+                {Array.from({ length: layout.eH - layout.sH }, (_, i) => <span key={i} style={{ top: i === 0 ? 12 : i * HH }}>{pad(layout.sH + i)}:00</span>)}
               </div>
               {layout.perDay.map(({ d, items }) => (
-                <div key={isoOf(d)} className={styles.col} style={{ height: bodyH, backgroundSize: `100% ${HH}px` }} onClick={e => { if (e.target === e.currentTarget || e.target.dataset.now) slotClick(e, d); }}>
+                <div key={isoOf(d)} className={styles.col + (d.getDay() >= 5 ? ' ' + styles.weekend : '') + (isoOf(d) === todayIso ? ' ' + styles.currentDay : '')} style={{ height: bodyH, backgroundSize: `100% ${HH}px` }} onClick={e => { if (e.target === e.currentTarget || e.target.dataset.now) slotClick(e, d); }}>
                   {items.map(it => (
-                    <button key={it.ev.id} type="button" className={styles.event + ' ' + styles['cat_' + it.ev.t]} style={{ top: ((it.s - layout.sH * 60) / 60) * HH, height: Math.max(22, ((it.e - it.s) / 60) * HH - 2), insetInlineStart: `calc(${it.col} * 100% / ${it.cols} + 2px)`, width: `calc(100% / ${it.cols} - 4px)` }} onClick={() => setDraft({ ...it.ev, date: isoOf(d) })}>
+                    <button key={it.ev.id} type="button" aria-label={`${it.ev.n} · ${it.ev.s}–${it.ev.e} · ${CATS.find(c => c.key === it.ev.t)?.label || ''}`} title={`${it.ev.n} · ${it.ev.s}–${it.ev.e}`} className={styles.event + ' ' + styles['cat_' + it.ev.t]} style={{ top: ((it.s - layout.sH * 60) / 60) * HH, height: Math.max(22, ((it.e - it.s) / 60) * HH - 2), insetInlineStart: `calc(${it.col} * 100% / ${it.cols} + 2px)`, width: `calc(100% / ${it.cols} - 4px)` }} onClick={() => setDraft({ ...it.ev, date: isoOf(d) })}>
                       <span className={styles.evTitle}>{it.ev.n}</span>
                       {it.e - it.s >= 45 && <span className={styles.evTime}>{it.ev.s}–{it.ev.e}</span>}
                     </button>
@@ -304,16 +304,16 @@ export default function Planner({ advisorId }) {
             {totals.map(c => <span key={c.key} className={business.tag + ' ' + styles['cat_' + c.key]}>{c.label} {c.hours} שעות</span>)}
           </div>
         )}
-        <p className={business.note}>לחיצה על משבצת ריקה מוסיפה אירוע, ולחיצה על אירוע פותחת אותו לעריכה.</p>
       </section>
 
-      <section className={business.card}>
+      <section className={business.card + ' ' + styles.notesCard}>
         <div className={styles.sumHead}>
           <h3 className={business.cardTitle}>מה עשיתי ביום {DAY_NAMES[cursor.getDay()]} {shortDate(cursor)}</h3>
           {selectedIso === todayIso && <span className={business.pill}>היום</span>}
         </div>
         <textarea key={selectedIso} className={business.input + ' ' + business.textarea} rows={5} aria-label="סיכום יום" placeholder="לכתוב כאן מה עשיתי היום" defaultValue={data.notes[selectedIso] || ''} onChange={e => setNote(e.target.value)} onBlur={e => setNote(e.target.value)} />
-        <h4 className={business.sectionLabel}>סיכומים קודמים{history.length ? ` (${history.length})` : ''}</h4>
+        <details className={styles.history}>
+        <summary>סיכומים קודמים{history.length ? ` (${history.length})` : ''}</summary>
         {history.length ? (
           <div className={styles.hist}>
             {history.map(k => {
@@ -327,6 +327,7 @@ export default function Planner({ advisorId }) {
             })}
           </div>
         ) : <p className={business.note}>עוד אין סיכומים. אחרי שתכתוב בימים נוספים הם יופיעו כאן, מהחדש לישן.</p>}
+        </details>
       </section>
 
       {draft && <EventModal draft={draft} onClose={() => setDraft(null)} onSave={saveEvent} onDelete={deleteEvent} />}
