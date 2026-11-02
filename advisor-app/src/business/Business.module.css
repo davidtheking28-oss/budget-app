@@ -132,7 +132,7 @@
 }
 
 .overlay { position: fixed; inset: 0; z-index: var(--z-overlay, 100); display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(10, 16, 14, 0.55); }
-.modal { width: min(520px, 100%); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 22px; }
+.modal { width: min(520px, 100%); max-height: calc(100dvh - 32px); overflow: hidden; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 22px; }
 .modalWide { width: min(720px, 100%); }
 .modalHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
 .iconBtn { display: inline-flex; align-items: center; justify-content: center; padding: 0; font-family: inherit; width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--text2); font-size: var(--text-xl); line-height: 1; cursor: pointer; }
@@ -274,7 +274,9 @@
 .ringText { fill: var(--text); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .tileLabel { font-size: var(--text-sm); font-weight: 700; color: var(--text); text-align: center; line-height: 1.25; }
 
-.modalHead { flex: none; }
+.modalHead { flex: none; gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border); }
+.modalHead .cardTitle { min-width: 0; overflow-wrap: anywhere; }
+.modalHead .iconBtn { width: 44px; height: 44px; flex: none; border-radius: var(--radius-sm); }
 .modalBody { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 3px 4px 0; margin-inline: -4px; scrollbar-width: thin; }
 .formActions { position: sticky; bottom: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-block: 14px 4px; border-top: 1px solid var(--border); background: var(--surface); margin-top: 8px; }
 .formDetails { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; min-width: 0; }

@@ -29,7 +29,7 @@ export default function Modal({ title, onClose, children, wide = false }) {
       <div className={styles.modal + (wide ? ' ' + styles.modalWide : '')} role="dialog" tabIndex={-1} aria-modal="true" aria-label={title} ref={ref}>
         <div className={styles.modalHead}>
           <h3 className={styles.cardTitle}>{title}</h3>
-          <button type="button" className={styles.iconBtn} onClick={onClose} aria-label="סגור">×</button>
+          <button type="button" className={styles.iconBtn} onClick={onClose} aria-label="סגור"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
         </div>
         <div className={styles.modalBody}>{children}</div>
       </div>
