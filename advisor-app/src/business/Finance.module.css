@@ -34,7 +34,10 @@ button.action:focus-visible { outline: 2px solid var(--accent); outline-offset: 
 .breakdown { padding: var(--space-4) var(--space-5); }
 .breakdownList { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-6); }
 .breakdownRow { display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-3); border-bottom: 1px solid var(--border); min-width: 0; }
-.emptyMonth { color: var(--text2); font-size: var(--text-sm); padding-block: var(--space-3); }
+.emptyBreakdown { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding-block: var(--space-3); }
+.emptyBreakdown p { margin: 0; color: var(--text2); font-size: var(--text-sm); }
+.actionNote { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.actionCue { color: var(--accent); font-size: var(--text-base); }
 .calculation { border-top: 1px solid var(--border); padding-top: var(--space-3); }
 .calculation > summary { cursor: pointer; color: var(--text2); font-size: var(--text-sm); font-weight: 700; padding-block: var(--space-2); }
 .calculation > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

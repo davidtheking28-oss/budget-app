@@ -249,7 +249,7 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
       <section className={layout.monthSummary} aria-label="סיכום החודש">
         <div className={layout.netFact}>
           <span className={styles.cardSub}>{periodLabel(period)} · רווח נטו משוער</span>
-          <strong className={layout.netValue + ' ' + (m.net < 0 ? styles.statNeg : styles.statPos)}>{money(m.net)}</strong>
+          <strong className={layout.netValue + ' ' + (m.net < 0 ? styles.statNeg : m.net > 0 ? styles.statPos : '')}>{money(m.net)}</strong>
         </div>
         {[
           { label: 'רווח תפעולי', value: money(m.operating), tone: m.operating < 0 ? styles.statNeg : '' },
@@ -263,21 +263,21 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
           <span className={layout.actionTitle}>הכנסות</span>
           <strong className={layout.actionValue}>{money(m.income)}</strong>
           <IncomeBar value={m.afterClearing} />
-          <span className={layout.actionNote}>סליקה {money(m.clearing)} · אחרי ניכיון {money(m.afterClearing)}</span>
+          <span className={layout.actionNote}>{m.incomes.length ? <>סליקה {money(m.clearing)} · אחרי ניכיון {money(m.afterClearing)}</> : 'הוסף את ההכנסה הראשונה'}<span className={layout.actionCue} aria-hidden="true">←</span></span>
         </button>
         <button type="button" className={layout.action} onClick={() => setModal('fixed')}>
           <span className={layout.actionIcon} aria-hidden="true">{icons.table}</span>
           <span className={layout.actionTitle}>הוצאות קבועות</span>
           <strong className={layout.actionValue}>{money(m.fixedTotal)}</strong>
           <IncomeBar value={m.fixedTotal} />
-          <span className={layout.actionNote}>{m.fixed.length} הוצאות{m.income > 0 ? ` · ${percentLabel(shareOfIncome(m.fixedTotal))} מההכנסות` : ''}</span>
+          <span className={layout.actionNote}>{m.fixed.length ? <>{m.fixed.length} הוצאות{m.income > 0 ? ` · ${percentLabel(shareOfIncome(m.fixedTotal))} מההכנסות` : ''}</> : 'הוסף הוצאה קבועה'}<span className={layout.actionCue} aria-hidden="true">←</span></span>
         </button>
         <button type="button" className={layout.action} onClick={() => setModal('variable')}>
           <span className={layout.actionIcon} aria-hidden="true">{icons.table}</span>
           <span className={layout.actionTitle}>הוצאות משתנות</span>
           <strong className={layout.actionValue}>{money(m.variableTotal)}</strong>
           <IncomeBar value={m.variableTotal} />
-          <span className={layout.actionNote}>{m.variable.length} הוצאות{m.income > 0 ? ` · ${percentLabel(shareOfIncome(m.variableTotal))} מההכנסות` : ''}</span>
+          <span className={layout.actionNote}>{m.variable.length ? <>{m.variable.length} הוצאות{m.income > 0 ? ` · ${percentLabel(shareOfIncome(m.variableTotal))} מההכנסות` : ''}</> : 'הוסף הוצאה משתנה'}<span className={layout.actionCue} aria-hidden="true">←</span></span>
         </button>
         <div className={layout.action}>
           <span className={layout.actionIcon} aria-hidden="true">{icons.percent}</span>
@@ -287,9 +287,9 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
           <span className={layout.actionNote}>מע״מ {vatPercent}% · מס {INCOME_TAX_RATE * 100}% · ב״ל {NATIONAL_INSURANCE_RATE * 100}%</span>
         </div>
       </section>
-      <section className={styles.card + ' ' + layout.breakdown}>
+      {breakdown.length === 0 ? <section className={layout.emptyBreakdown} aria-label="פילוח הוצאות"><h3 className={styles.cardTitle}>פילוח הוצאות</h3><p>הפילוח יופיע כאן לאחר הוספת הוצאות לחודש הזה.</p></section> : <section className={styles.card + ' ' + layout.breakdown}>
         <div className={styles.cardHead}><div><h3 className={styles.cardTitle}>פילוח הוצאות</h3><p className={styles.cardSub}>כמה הוצאתי ועל מה</p></div><strong className={layout.factValue}>{money(m.expenses)}</strong></div>
-        {breakdown.length === 0 ? <div className={layout.emptyMonth}>עוד אין הוצאות בחודש הזה</div> : (
+        {(
           <ul className={layout.breakdownList}>
             {breakdown.map(b => (
               <li key={b.category} className={layout.breakdownRow}>
@@ -299,7 +299,7 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
             ))}
           </ul>
         )}
-      </section>
+      </section>}
       <details className={layout.calculation}>
         <summary>פירוט חישוב החודש</summary>
           <ul className={styles.rowList}>
@@ -311,7 +311,7 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
             ].map(([label, value]) => (
               <li key={label} className={styles.rowItem}><div className={styles.rowMain}>{label}</div><span className={styles.num}>{money(value)}</span></li>
             ))}
-            <li className={styles.rowItem}><div className={styles.rowMain}><div className={styles.rowTitle}>רווח נטו משוער</div><div className={styles.rowMeta}>כמה באמת נשאר לך החודש</div></div><span className={layout.ledgerNet + ' ' + (m.net < 0 ? styles.statNeg : styles.statPos)}>{money(m.net)}</span></li>
+            <li className={styles.rowItem}><div className={styles.rowMain}><div className={styles.rowTitle}>רווח נטו משוער</div><div className={styles.rowMeta}>כמה באמת נשאר לך החודש</div></div><span className={layout.ledgerNet + ' ' + (m.net < 0 ? styles.statNeg : m.net > 0 ? styles.statPos : '')}>{money(m.net)}</span></li>
           </ul>
       </details>
       <p className={styles.note}>המספרים הם הערכה בלבד לצורכי ניהול שוטף, ואינם תחליף לייעוץ מס או להנהלת חשבונות.</p>
