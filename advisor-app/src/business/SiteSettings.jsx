@@ -3,6 +3,7 @@ import { useAdvisorProfile } from '../auth/useAdvisorProfile.js';
 import { DEFAULT_BRAND } from '../brandColor.js';
 import { toast } from '../toast.js';
 import Skeleton from '../components/Skeleton.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import MfaSettings from './MfaSettings.jsx';
 import { signupMessage } from './clientApp.js';
 import styles from './Business.module.css';
@@ -18,16 +19,18 @@ async function copySignupLink(advisorId) {
 }
 
 export default function SiteSettings({ advisorId }) {
-  const { profile, saveName, saveLogo, removeLogo, saveBrandColor } = useAdvisorProfile(advisorId);
+  const { profile, error, reload, saveName, saveLogo, removeLogo, saveBrandColor } = useAdvisorProfile(advisorId);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState('');
   const fileRef = useRef(null);
 
   useEffect(() => { setName(profile?.display_name || ''); }, [profile?.display_name]);
 
+  if (error) return <ErrorState onRetry={reload} />;
   if (!profile) return <Skeleton height="220px" radius="18px" />;
 
   async function submitName() {
+    if (busy) return;
     setBusy('name');
     const ok = await saveName(name);
     setBusy('');
@@ -46,7 +49,7 @@ export default function SiteSettings({ advisorId }) {
 
   async function clearLogo() {
     const ok = await removeLogo();
-    if (ok) toast('הלוגו הוסר', 'success');
+    toast(ok ? 'הלוגו הוסר' : 'שגיאה בהסרת הלוגו', ok ? 'success' : 'error');
   }
 
   async function pickColor(hex) {

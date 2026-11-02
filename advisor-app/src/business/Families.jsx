@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 import Modal from './Modal.jsx';
+import ErrorState from '../components/ErrorState.jsx';
+import Skeleton from '../components/Skeleton.jsx';
 import styles from './Business.module.css';
 
 const labelOf = l => l.name || l.client_email || 'לקוח';
@@ -12,6 +14,7 @@ function NewFamilyModal({ clients, onSave, onClose }) {
   const [self, setSelf] = useState(false);
   const [picked, setPicked] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const needle = search.trim().toLowerCase();
   const visible = clients.filter(c => !needle || [c.name, c.client_email].some(v => (v || '').toLowerCase().includes(needle)));
   const total = picked.length + (self ? 1 : 0);
@@ -21,14 +24,20 @@ function NewFamilyModal({ clients, onSave, onClose }) {
     e.preventDefault();
     if (!name.trim() || total < 2 || saving) return;
     setSaving(true);
-    const ok = await onSave({ name: name.trim(), include_self: self, member_links: picked });
-    setSaving(false);
-    if (ok) onClose();
+    setSaveError(false);
+    try {
+      const ok = await onSave({ name: name.trim(), include_self: self, member_links: picked });
+      if (ok) onClose(); else setSaveError(true);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <Modal title="משפחה חדשה" onClose={onClose}>
-      <form className={styles.stack} onSubmit={submit}>
+      <form className={styles.stack} onSubmit={submit} aria-busy={saving}>
         <p className={styles.note} style={{ margin: 0 }}>שם למשפחה, ומי נמצא בה: הלקוחות שלך, ואם תרצה גם אתה. לפחות שניים.</p>
         <label className={styles.fieldLabel}>שם המשפחה
           <input className={styles.input} placeholder="למשל, משפחת כהן" value={name} onChange={e => setName(e.target.value)} />
@@ -44,9 +53,10 @@ function NewFamilyModal({ clients, onSave, onClose }) {
           </label>
         ))}
         {!visible.length && <p className={styles.note}>לא נמצאו לקוחות בחיפוש הזה</p>}
+        {saveError && <p className={styles.fieldError} role="alert">המשפחה לא נשמרה. השם והבחירות נשארו כאן — אפשר לנסות שוב.</p>}
         <div className={styles.formActions}>
           <span className={styles.cardSub} role="status">נבחרו {total} · נדרשים לפחות שניים</span>
-          <button type="submit" className={styles.btn} disabled={saving || !name.trim() || total < 2}>יצירה</button>
+          <button type="submit" className={styles.btn} disabled={saving || !name.trim() || total < 2}>{saving ? 'שומר…' : 'יצירה'}</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>
       </form>
@@ -58,11 +68,24 @@ export default function Families({ advisorId, links }) {
   const [families, setFamilies] = useState([]);
   const [adding, setAdding] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState(null);
   const clients = links.filter(l => l.status === 'active' || l.status === 'manual');
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('advisor_families').select('id, name, include_self, member_links, created_at').eq('advisor_id', advisorId).order('created_at', { ascending: false });
-    setFamilies(data || []);
+    setLoading(true);
+    setError(false);
+    try {
+      const { data, error: err } = await supabase.from('advisor_families').select('id, name, include_self, member_links, created_at').eq('advisor_id', advisorId).order('created_at', { ascending: false });
+      if (err) { setError(true); return; }
+      setFamilies(data || []);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }, [advisorId]);
 
   useEffect(() => { load(); }, [load]);
@@ -76,11 +99,20 @@ export default function Families({ advisorId, links }) {
   }
 
   async function remove(id) {
-    setConfirmingId(null);
-    const { error } = await supabase.from('advisor_families').delete().eq('id', id).eq('advisor_id', advisorId);
-    if (error) { toast('שגיאה במחיקת המשפחה', 'error'); return; }
-    toast('המשפחה נמחקה', 'success');
-    load();
+    if (removing) return;
+    setRemoving(true);
+    setRemoveError(null);
+    try {
+      const { error } = await supabase.from('advisor_families').delete().eq('id', id).eq('advisor_id', advisorId);
+      if (error) { setRemoveError(id); return; }
+      setConfirmingId(null);
+      toast('המשפחה נמחקה', 'success');
+      await load();
+    } catch {
+      setRemoveError(id);
+    } finally {
+      setRemoving(false);
+    }
   }
 
   const members = f => [
@@ -94,7 +126,7 @@ export default function Families({ advisorId, links }) {
         <h2 className={styles.cardTitle}>משפחות</h2>
         <button type="button" className={styles.btn} onClick={() => setAdding(true)}>משפחה חדשה</button>
       </div>
-      {families.length === 0 ? <div className={styles.emptyState}><span>אין משפחות עדיין.</span></div> : (
+      {error ? <ErrorState onRetry={load} /> : loading ? <Skeleton height="100px" /> : families.length === 0 ? <div className={styles.emptyState}><span>אין משפחות עדיין.</span></div> : (
         <div className={styles.stack}>
           {families.map(f => (
             <div key={f.id} className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
@@ -102,12 +134,13 @@ export default function Families({ advisorId, links }) {
                 <strong>{f.name}</strong>
                 <div className={styles.rowMeta}>{members(f).join(' · ')}</div>
               </div>
+              {removeError === f.id && <span className={styles.fieldError} role="alert">מחיקת המשפחה לא הושלמה. אפשר לנסות שוב.</span>}
               {confirmingId === f.id ? (
                 <div className={styles.toolbar}>
-                  <button type="button" className={styles.btnGhost} onClick={() => remove(f.id)}>למחוק את המשפחה?</button>
-                  <button type="button" className={styles.btnGhost} onClick={() => setConfirmingId(null)}>חזרה</button>
+                  <button type="button" className={styles.btnGhost} disabled={removing} onClick={() => remove(f.id)}>למחוק את המשפחה?</button>
+                  <button type="button" className={styles.btnGhost} disabled={removing} onClick={() => setConfirmingId(null)}>חזרה</button>
                 </div>
-              ) : <button type="button" className={styles.btnGhost} aria-label={'מחיקת משפחה: ' + f.name} onClick={() => setConfirmingId(f.id)}>מחיקה</button>}
+              ) : <button type="button" className={styles.btnGhost} aria-label={'מחיקת משפחה: ' + f.name} disabled={removing} onClick={() => { setConfirmingId(f.id); setRemoveError(null); }}>מחיקה</button>}
             </div>
           ))}
         </div>
