@@ -20,23 +20,36 @@ const SYSTEM_DEPARTMENTS = [
 function SystemForm({ initial, title, submitLabel, onSubmit, onClose }) {
   const [form, setForm] = useState(initial);
   const [nameError, setNameError] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const set = patch => setForm(prev => ({ ...prev, ...patch }));
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
+    if (saving) return;
     if (!form.name.trim()) { setNameError(true); e.currentTarget.elements.systemName.focus(); return; }
-    onSubmit({ name: form.name.trim(), dept: form.dept, summary: form.summary.trim(), notes: form.notes.trim() });
+    setSaving(true);
+    setSaveError(false);
+    try {
+      const saved = await onSubmit({ name: form.name.trim(), dept: form.dept, summary: form.summary.trim(), notes: form.notes.trim() });
+      if (!saved) setSaveError(true);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <Modal title={title} onClose={onClose}>
-      <form className={styles.formGrid} onSubmit={submit}>
+      <form className={styles.formGrid} onSubmit={submit} aria-busy={saving}>
         <label className={styles.fieldLabel}>שם הסיסטם · חובה<input name="systemName" className={styles.input} aria-invalid={nameError} aria-describedby={nameError ? "system-name-error" : undefined} value={form.name} onChange={e => { set({ name: e.target.value }); setNameError(false); }} />{nameError && <span id="system-name-error" className={styles.fieldError} role="alert">כתוב שם לסיסטם</span>}</label>
         <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} value={form.dept} onChange={e => set({ dept: e.target.value })}>{SYSTEM_DEPARTMENTS.map(d => <option key={d.key} value={d.key}>{d.key}</option>)}</select></label>
         <label className={styles.fieldLabel}>תיאור קצר<input className={styles.input} placeholder="במשפט אחד: על מה הסיסטם הזה" value={form.summary} onChange={e => set({ summary: e.target.value })} /><span className={styles.cardSub}>את התוכן כותבים בשלבים, אחרי יצירת הסיסטם.</span></label>
         <label className={styles.fieldLabel}>הערות<textarea className={styles.input + ' ' + styles.textarea} value={form.notes} onChange={e => set({ notes: e.target.value })} /></label>
+        {saveError && <p className={styles.fieldError} role="alert">השינויים לא נשמרו. הפרטים נשארו כאן — אפשר לנסות שוב.</p>}
         <div className={styles.formActions}>
-          <button type="submit" className={styles.btn}>{submitLabel}</button>
+          <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : submitLabel}</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>
       </form>
@@ -96,7 +109,7 @@ function SystemDetail({ system, onBack, onUpdate, onRemove }) {
           title={'עריכת סיסטם: ' + system.name}
           initial={{ name: system.name, dept: system.dept, summary: system.summary || '', notes: system.notes || '' }}
           submitLabel="שמירה"
-          onSubmit={patch => { onUpdate(patch); setEditing(false); }}
+          onSubmit={async patch => { const saved = await onUpdate(patch); if (saved) setEditing(false); return saved; }}
           onClose={() => setEditing(false)}
         />
       )}
@@ -121,6 +134,7 @@ export default function Systems({ advisorId }) {
   async function create(fields) {
     const row = await add({ ...fields, steps: [] });
     if (row) setModal(false);
+    return !!row;
   }
 
   const open = records.find(r => r.id === openId);
@@ -155,7 +169,7 @@ export default function Systems({ advisorId }) {
       </div>
 
       <section className={styles.card}>
-        {visible.length === 0 ? (
+        {visible.length === 0 && (search.trim() || dept) ? <div className={styles.emptyState}><span>לא נמצאו סיסטמים בסינון הזה</span><button type="button" className={styles.btnGhost} onClick={() => { setSearch(''); setDept(''); }}>נקה סינון</button></div> : visible.length === 0 ? (
           <div className={styles.emptyState}>
             <span className={styles.iconTile} aria-hidden="true">{icons.nodes}</span>
             <span>אין סיסטמים כאן עדיין</span>

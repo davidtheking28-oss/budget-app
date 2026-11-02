@@ -19,19 +19,31 @@ const metaOf = project => [project.importance ? 'חשיבות ' + project.import
 function ProjectForm({ title, initial, submitLabel, onSubmit, onClose }) {
   const [form, setForm] = useState(initial);
   const [nameError, setNameError] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const set = patch => setForm(prev => ({ ...prev, ...patch }));
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
+    if (saving) return;
     if (!form.name.trim()) { setNameError(true); e.currentTarget.elements.projectName.focus(); return; }
     const rank = Number(form.importance);
     if (form.importance !== '' && form.importance !== null && !(rank >= 1 && rank <= 10)) { toast('דירוג החשיבות הוא מספר בין 1 ל-10', 'error'); return; }
-    onSubmit({ name: form.name.trim(), description: form.description.trim(), deadline: form.deadline, importance: form.importance === '' || form.importance === null ? null : rank, investment: form.investment });
+    setSaving(true);
+    setSaveError(false);
+    try {
+      const saved = await onSubmit({ name: form.name.trim(), description: form.description.trim(), deadline: form.deadline, importance: form.importance === '' || form.importance === null ? null : rank, investment: form.investment });
+      if (!saved) setSaveError(true);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <Modal title={title} onClose={onClose}>
-      <form className={styles.formGrid} onSubmit={submit}>
+      <form className={styles.formGrid} onSubmit={submit} aria-busy={saving}>
         <label className={styles.fieldLabel}>שם הפרויקט · חובה<input name="projectName" className={styles.input} placeholder="למשל: השקת קורס דיגיטלי" aria-invalid={nameError} aria-describedby={nameError ? "project-name-error" : undefined} value={form.name} onChange={e => { set({ name: e.target.value }); setNameError(false); }} />{nameError && <span id="project-name-error" className={styles.fieldError} role="alert">כתוב שם לפרויקט</span>}</label>
         <label className={styles.fieldLabel}>תיאור<textarea className={styles.input + ' ' + styles.textarea} value={form.description} onChange={e => set({ description: e.target.value })} placeholder="פרטים נוספים (לא חובה)" /></label>
         <div className={styles.formRow}>
@@ -44,8 +56,9 @@ function ProjectForm({ title, initial, submitLabel, onSubmit, onClose }) {
             <button type="button" className={form.investment ? styles.segBtnOn : styles.segBtn} aria-pressed={form.investment} onClick={() => set({ investment: true })}>נדרשת</button>
           </div>
         </label>
+        {saveError && <p className={styles.fieldError} role="alert">השינויים לא נשמרו. הפרטים נשארו כאן — אפשר לנסות שוב.</p>}
         <div className={styles.formActions}>
-          <button type="submit" className={styles.btn}>{submitLabel}</button>
+          <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : submitLabel}</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>
       </form>
@@ -130,7 +143,7 @@ function ProjectDetail({ project, onBack, onUpdate, onRemove }) {
           title={'עריכת פרויקט: ' + project.name}
           initial={{ name: project.name, description: project.description || '', deadline: project.deadline || '', importance: project.importance ?? '', investment: !!project.investment }}
           submitLabel="שמירה"
-          onSubmit={patch => { onUpdate(patch); setEditing(false); }}
+          onSubmit={async patch => { const saved = await onUpdate(patch); if (saved) setEditing(false); return saved; }}
           onClose={() => setEditing(false)}
         />
       )}
@@ -172,6 +185,7 @@ export default function Projects({ advisorId }) {
   async function create(fields) {
     const row = await add({ ...fields, steps: [], order: records.length });
     if (row) setModal(false);
+    return !!row;
   }
 
   return (
