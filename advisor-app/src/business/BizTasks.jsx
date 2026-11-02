@@ -42,15 +42,26 @@ function priorityClass(p) {
 function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave }) {
   const [form, setForm] = useState(EMPTY);
   const [nameError, setNameError] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [editingDepts, setEditingDepts] = useState(false);
   const [newDept, setNewDept] = useState('');
   const set = key => e => setForm(prev => ({ ...prev, [key]: e.target.value }));
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
+    if (saving) return;
     if (!form.name.trim()) { setNameError(true); e.currentTarget.elements.taskName.focus(); return; }
     const dueDate = form.dueKind === 'today' ? today : form.dueKind === 'tomorrow' ? addDays(today, 1) : form.dueDate;
-    onSave({ name: form.name.trim(), description: form.description.trim(), dept: form.dept, priority: form.priority, dueDate, deadline: form.deadline, difficulty: form.difficulty, recurrence: form.recurrence, done: false });
+    setSaving(true);
+    setSaveError(false);
+    try {
+      if (!(await onSave({ name: form.name.trim(), description: form.description.trim(), dept: form.dept, priority: form.priority, dueDate, deadline: form.deadline, difficulty: form.difficulty, recurrence: form.recurrence, done: false }))) setSaveError(true);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function addDept() {
@@ -62,7 +73,7 @@ function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave })
 
   return (
     <Modal title="משימה חדשה" onClose={onClose}>
-      <form className={styles.formGrid} onSubmit={submit}>
+      <form className={styles.formGrid} onSubmit={submit} aria-busy={saving}>
         <label className={styles.fieldLabel}>שם המשימה · חובה<input name="taskName" className={styles.input} aria-invalid={nameError} aria-describedby={nameError ? "task-name-error" : undefined} value={form.name} onChange={e => { set('name')(e); setNameError(false); }} />{nameError && <span id="task-name-error" className={styles.fieldError} role="alert">כתוב שם למשימה</span>}</label>
         <div className={styles.fieldLabel}>מועד ביצוע
           <div className={styles.segment} role="group" aria-label="מועד ביצוע">
@@ -110,8 +121,9 @@ function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave })
         <p className={styles.note}>תאריך ושעת היצירה נשמרים אוטומטית. אין צורך להזין אותם.</p>
           </div>
         </details>
+        {saveError && <p className={styles.fieldError} role="alert">המשימה לא נשמרה. הפרטים נשארו כאן — אפשר לנסות שוב.</p>}
         <div className={styles.formActions}>
-          <button type="submit" className={styles.btn}>הוספה</button>
+          <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוספה'}</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>
       </form>
@@ -176,6 +188,7 @@ export default function BizTasks({ advisorId }) {
   async function save(data) {
     const row = await add(data);
     if (row) setModal(false);
+    return !!row;
   }
 
   return (

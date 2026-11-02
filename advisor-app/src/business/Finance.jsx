@@ -55,6 +55,8 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
       const saved = await onAdd({ type: 'income', amount: num(form.amount), clearing: num(form.clearing), desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
       if (!saved) { setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' }); return; }
       setForm(prev => ({ ...prev, amount: '', clearing: '', desc: '' }));
+    } catch {
+      setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' });
     } finally { savingRef.current = false; setSaving(false); }
   }
   const [search, setSearch] = useState('');
@@ -111,6 +113,8 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
       const saved = await onAdd({ type: 'expense', fixed: true, amount: num(form.amount), category: form.category, desc: form.desc.trim(), startPeriod: period }, period);
       if (!saved) { setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' }); return; }
       setForm(prev => ({ ...prev, amount: '', desc: '' }));
+    } catch {
+      setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' });
     } finally { savingRef.current = false; setSaving(false); }
   }
   const [search, setSearch] = useState('');
@@ -166,6 +170,8 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
       const saved = await onAdd({ type: 'expense', amount: num(form.amount), category: form.category, desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
       if (!saved) { setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' }); return; }
       setForm(prev => ({ ...prev, amount: '', desc: '' }));
+    } catch {
+      setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' });
     } finally { savingRef.current = false; setSaving(false); }
   }
   const [search, setSearch] = useState('');

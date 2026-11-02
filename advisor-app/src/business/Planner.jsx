@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
-import { toast } from '../toast.js';
 import Modal from './Modal.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -102,6 +101,7 @@ function EventModal({ draft, onClose, onSave, onDelete }) {
 export default function Planner({ advisorId }) {
   const [data, setData] = useState(undefined);
   const [error, setError] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('');
   const [view, setView] = useState(() => (window.innerWidth < 700 ? 'day' : 'week'));
   const [cursor, setCursor] = useState(() => new Date());
   const [draft, setDraft] = useState(null);
@@ -128,22 +128,28 @@ export default function Planner({ advisorId }) {
 
   const persist = useCallback(async () => {
     const payload = latest.current;
-    if (recordId.current) {
-      const { error: err } = await supabase.from(TABLE).update({ data: payload, updated_at: new Date().toISOString() }).eq('id', recordId.current).eq('advisor_id', advisorId);
-      return !err;
+    try {
+      if (recordId.current) {
+        const { error: err } = await supabase.from(TABLE).update({ data: payload, updated_at: new Date().toISOString() }).eq('id', recordId.current).eq('advisor_id', advisorId);
+        return !err;
+      }
+      const { data: row, error: err } = await supabase.from(TABLE).insert({ advisor_id: advisorId, kind: KIND, period: null, data: payload }).select().single();
+      if (err) return false;
+      recordId.current = row.id;
+      return true;
+    } catch {
+      return false;
     }
-    const { data: row, error: err } = await supabase.from(TABLE).insert({ advisor_id: advisorId, kind: KIND, period: null, data: payload }).select().single();
-    if (err) return false;
-    recordId.current = row.id;
-    return true;
   }, [advisorId]);
 
   const commit = useCallback((next, delay = 0) => {
     latest.current = next;
     setData(next);
+    setSaveStatus('saving');
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      saveChain.current = saveChain.current.then(async () => { if (!(await persist())) toast('שגיאה בשמירה', 'error'); });
+      saveTimer.current = null;
+      saveChain.current = saveChain.current.then(async () => { const saved = await persist(); setSaveStatus(saved ? 'saved' : 'error'); });
     }, delay);
   }, [persist]);
 
@@ -209,7 +215,7 @@ export default function Planner({ advisorId }) {
     for (const k of Object.keys(events)) if (!events[k].length) delete events[k];
     commit({ ...data, events });
     setDraft(null);
-    toast('האירוע נמחק', 'success');
+
   }
 
   function copyWeek() {
@@ -221,7 +227,7 @@ export default function Planner({ advisorId }) {
     }
     commit({ ...data, events });
     setCursor(addDays(weekStart, 7));
-    toast('השבוע הועתק לשבוע הבא', 'success');
+
   }
 
   function setNote(value) {
@@ -251,6 +257,7 @@ export default function Planner({ advisorId }) {
   return (
     <div className={styles.workspace}>
       <section className={business.card + ' ' + styles.calendarCard}>
+        {saveStatus && <div className={business.toolbar} role={saveStatus === 'error' ? 'alert' : 'status'}><span className={saveStatus === 'error' ? business.fieldError : business.note}>{saveStatus === 'error' ? 'השינויים ביומן לא נשמרו. הם עדיין מוצגים כאן — נסה לשמור שוב.' : saveStatus === 'saving' ? 'שומר את השינויים…' : 'כל השינויים נשמרו'}</span>{saveStatus === 'error' && <button type="button" className={business.btnGhost} onClick={() => commit(latest.current)}>נסה לשמור שוב</button>}</div>}
         <div className={styles.bar}>
           <div className={styles.barGroup + ' ' + business.periodPicker}>
             <button type="button" className={business.btnGhost} onClick={() => setCursor(new Date())}>היום</button>
