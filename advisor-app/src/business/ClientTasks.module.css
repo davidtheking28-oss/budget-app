@@ -1,15 +1,17 @@
 .selector { padding: 12px 16px; }
 .selectorContent { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.clientToolbar > input { max-width: 560px; margin-inline-start: auto; }
 .clientToolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; order: -1; flex: 1; min-width: 340px; }
 .identity { flex: 0 1 180px; min-width: 0; text-align: center; overflow-wrap: anywhere; }
 .eyebrow { color: var(--text2); font-size: var(--text-xs); margin-bottom: var(--space-1); }
 .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
-.stat { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
+.stat { display: flex; align-items: center; justify-content: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
 .stat + .stat { border-inline-start: 1px solid var(--border); }
 .statValue { font-size: var(--text-xl); font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
 .taskSection { display: grid; gap: 8px; }
 .taskCard { padding: 8px 16px; }
-.listHeading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 16px; }
+.listHeading { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.listHeading h2 { margin: 0; }
 .listHeading p { margin: 0; max-width: 70ch; font-size: var(--text-xs); }
 .count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; padding: 2px 6px; margin-inline-start: var(--space-2); border-radius: var(--radius-sm); color: var(--text2); background: var(--surface2); font: 600 var(--text-xs) var(--font-body); vertical-align: middle; }
 .taskRow { padding-block: var(--space-3); }
@@ -20,6 +22,6 @@
   .stat + .stat { border-inline-start: 0; border-top: 1px solid var(--border); }
   .identity { flex: 1; }
   .clientToolbar { min-width: 0; flex-basis: 100%; }
-  .clientToolbar > input { flex-basis: 100%; }
+  .clientToolbar > input { flex-basis: 100%; max-width: none; margin-inline-start: 0; }
   .taskRow { flex-wrap: wrap; }
 }
