@@ -245,7 +245,7 @@ export default function Planner({ advisorId }) {
   }).filter(c => c.hours > 0);
 
   return (
-    <div className={styles.planner}>
+    <div className={business.stack}>
       <section className={business.card}>
         <div className={styles.bar}>
           <div className={styles.barGroup}>
@@ -253,7 +253,7 @@ export default function Planner({ advisorId }) {
             <button type="button" className={business.iconBtn} aria-label={view === 'day' ? 'היום הקודם' : 'השבוע הקודם'} onClick={() => setCursor(addDays(cursor, -step))}>›</button>
             <button type="button" className={business.iconBtn} aria-label={view === 'day' ? 'היום הבא' : 'השבוע הבא'} onClick={() => setCursor(addDays(cursor, step))}>‹</button>
           </div>
-          <h2 className={styles.title}>{title}</h2>
+          <h2 className={business.cardTitle + ' ' + styles.title}>{title}</h2>
           <div className={styles.barGroup}>
             <div className={business.segment} role="group" aria-label="תצוגה">
               <button type="button" className={view === 'day' ? business.segBtnOn : business.segBtn} aria-pressed={view === 'day'} onClick={() => setView('day')}>יום</button>
@@ -265,7 +265,7 @@ export default function Planner({ advisorId }) {
         </div>
 
         <div className={styles.scroll}>
-          <div className={styles.inner + (view === 'week' ? ' ' + styles.wide : '')}>
+          <div className={view === 'week' ? styles.wide : undefined}>
             <div className={styles.head} style={{ '--n': columns.length }}>
               <div />
               {columns.map(d => (
@@ -296,7 +296,7 @@ export default function Planner({ advisorId }) {
 
         {totals.length > 0 && (
           <div className={styles.totals}>
-            {totals.map(c => <span key={c.key} className={styles.chip + ' ' + styles['cat_' + c.key]}>{c.label} {c.hours} שעות</span>)}
+            {totals.map(c => <span key={c.key} className={business.tag + ' ' + styles['cat_' + c.key]}>{c.label} {c.hours} שעות</span>)}
           </div>
         )}
         <p className={business.note}>לחיצה על משבצת ריקה מוסיפה אירוע, ולחיצה על אירוע פותחת אותו לעריכה.</p>
@@ -308,7 +308,7 @@ export default function Planner({ advisorId }) {
           {selectedIso === todayIso && <span className={business.pill}>היום</span>}
         </div>
         <textarea key={selectedIso} className={business.input + ' ' + business.textarea} rows={5} aria-label="סיכום יום" placeholder="לכתוב כאן מה עשיתי היום" defaultValue={data.notes[selectedIso] || ''} onChange={e => setNote(e.target.value)} onBlur={e => setNote(e.target.value)} />
-        <h4 className={styles.histTitle}>סיכומים קודמים{history.length ? ` (${history.length})` : ''}</h4>
+        <h4 className={business.sectionLabel}>סיכומים קודמים{history.length ? ` (${history.length})` : ''}</h4>
         {history.length ? (
           <div className={styles.hist}>
             {history.map(k => {
