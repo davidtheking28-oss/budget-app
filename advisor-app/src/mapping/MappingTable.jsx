@@ -4,11 +4,13 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingTable.module.css';
 
-export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
+export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
   const [adding, setAdding] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState([]);
   const [category, setCategory] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
   const total = rows.reduce((s, r) => s + r.amount, 0);
@@ -46,14 +48,31 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   function stopSelecting() { setSelecting(false); setPicked([]); }
   function deletePicked() { onDeleteMany(picked); stopSelecting(); }
 
+  const norm = v => String(v).trim().replace(/s+/g, ' ').toLowerCase();
+  const shownNames = lines.flatMap(l => [norm(l.category), norm(labelFor(l.category))]);
+  const suggestions = addCats.filter(c => !shownNames.includes(norm(c)) && !shownNames.includes(norm(labelFor(c))));
+
+  function closeForm() {
+    setAdding(false);
+    setName('');
+    setError('');
+  }
+
   function submit(e) {
     e.preventDefault();
     const value = parseFloat(amount);
+    let target = chosen;
+    if (allowCustom) {
+      const typed = name.trim().replace(/s+/g, ' ');
+      if (!typed) { setError('כתוב שם לקטגוריה'); return; }
+      if (shownNames.includes(norm(typed))) { setError('קטגוריה בשם הזה כבר קיימת'); return; }
+      target = addCats.find(c => norm(c) === norm(typed) || norm(labelFor(c)) === norm(typed)) || typed;
+    }
     if (!(value > 0)) return;
-    onAdd(chosen, desc.trim(), value);
+    onAdd(target, desc.trim(), value);
     setAmount('');
     setDesc('');
-    setAdding(false);
+    closeForm();
   }
 
   return (
@@ -95,13 +114,21 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
       </div>
       {adding ? (
         <form className={styles.addForm} onSubmit={submit}>
-          <select className={styles.addField} aria-label="קטגוריה" value={chosen} onChange={e => setCategory(e.target.value)}>
-            {addCats.map(c => <option key={c} value={c}>{labelFor(c)}</option>)}
-          </select>
+          {allowCustom ? (
+            <>
+              <input className={styles.addField} aria-label="שם הקטגוריה" placeholder="שם הקטגוריה" list={'cats-' + title} maxLength={40} aria-invalid={!!error} value={name} onChange={e => { setName(e.target.value); setError(''); }} />
+              <datalist id={'cats-' + title}>{suggestions.map(c => <option key={c} value={labelFor(c)} />)}</datalist>
+            </>
+          ) : (
+            <select className={styles.addField} aria-label="קטגוריה" value={chosen} onChange={e => setCategory(e.target.value)}>
+              {addCats.map(c => <option key={c} value={c}>{labelFor(c)}</option>)}
+            </select>
+          )}
           <input className={styles.addField} aria-label="תיאור (לא חובה)" placeholder="תיאור (לא חובה)" value={desc} onChange={e => setDesc(e.target.value)} />
           <input className={styles.addField} aria-label="סכום חודשי" placeholder="סכום חודשי" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} />
           <button type="submit" className={styles.pillBtn + ' ' + styles.pillBtnOn}>הוסף</button>
-          <button type="button" className={styles.pillBtn} onClick={() => setAdding(false)}>ביטול</button>
+          <button type="button" className={styles.pillBtn} onClick={closeForm}>ביטול</button>
+          {error && <p className={styles.addError} role="alert">{error}</p>}
         </form>
       ) : (
         <div className={styles.foot}>
