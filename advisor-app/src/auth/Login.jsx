@@ -22,58 +22,71 @@ export default function Login({ recovery, onRecoveryDone }) {
   }
 
   async function signIn() {
+    if (sending) return;
     setError('');
     if (!email.trim() || !password) { setError('הזן אימייל וסיסמה'); return; }
     setSending(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password
-    });
-    setSending(false);
-    if (error) { setError('אימייל או סיסמה שגויים'); return; }
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) setError('לא ניתן להתחבר. בדוק את הפרטים ואת החיבור ונסה שוב.');
+    } catch {
+      setError('לא ניתן להתחבר. בדוק את החיבור ונסה שוב.');
+    } finally {
+      setSending(false);
+    }
   }
 
   async function signUp() {
+    if (sending) return;
     setError('');
     if (!email.trim() || !password) { setError('הזן אימייל וסיסמה'); return; }
     if (password.length < 6) { setError('הסיסמה חייבת להיות באורך 6 תווים לפחות'); return; }
     setSending(true);
-    const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
-    if (error) {
+    try {
+      const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+      if (error) { setError(error.message.includes('already registered') ? 'כבר קיים חשבון עם המייל הזה' : 'שגיאה בהרשמה, נסה שוב'); return; }
+      if (data.user) {
+        const { error: requestError } = await supabase.from('advisor_access_requests').insert({ user_id: data.user.id, email: email.trim() });
+        if (requestError) { setError('החשבון נוצר, אך בקשת הגישה לא נשמרה. התחבר כדי לנסות שוב.'); return; }
+      }
+      if (!data.session) setMode('signupSent');
+    } catch {
+      setError('ההרשמה לא הושלמה. בדוק את החיבור ונסה שוב.');
+    } finally {
       setSending(false);
-      setError(error.message.includes('already registered') ? 'כבר קיים חשבון עם המייל הזה' : 'שגיאה בהרשמה, נסה שוב');
-      return;
     }
-    // Signup alone doesn't grant advisor access — someone still has to approve
-    // it. Without this row, the account has no landing spot at all afterward.
-    if (data.user) {
-      await supabase.from('advisor_access_requests').insert({ user_id: data.user.id, email: email.trim() });
-    }
-    setSending(false);
-    if (!data.session) { setMode('signupSent'); return; }
-    // Else: a session exists immediately (email confirmation off). App's own
-    // auth listener picks it up and routes to the pending-approval screen.
   }
 
   async function sendReset() {
+    if (sending) return;
     setError('');
     if (!email.trim()) { setError('הזן אימייל'); return; }
     setSending(true);
-    await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: window.location.origin + import.meta.env.BASE_URL
-    });
-    setSending(false);
-    setMode('sent');
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin + import.meta.env.BASE_URL });
+      if (error) { setError('לא ניתן לשלוח את הקישור כרגע. נסה שוב.'); return; }
+      setMode('sent');
+    } catch {
+      setError('שליחת הקישור לא הושלמה. בדוק את החיבור ונסה שוב.');
+    } finally {
+      setSending(false);
+    }
   }
 
   async function setNewPassword() {
+    if (sending) return;
     setError('');
     if (!password || password.length < 6) { setError('הסיסמה חייבת להיות באורך 6 תווים לפחות'); return; }
     setSending(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    setSending(false);
-    if (error) { setError('שגיאה בעדכון הסיסמה, נסה שוב'); return; }
-    onRecoveryDone?.();
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) { setError('שגיאה בעדכון הסיסמה, נסה שוב'); return; }
+      onRecoveryDone?.();
+    } catch {
+      setError('הסיסמה לא עודכנה. בדוק את החיבור ונסה שוב.');
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -100,7 +113,7 @@ export default function Login({ recovery, onRecoveryDone }) {
               </svg>
             </div>
             נשלח קישור אימות למייל שלך — לחץ עליו כדי להשלים את ההרשמה. לאחר מכן הבקשה שלך לגישת יועץ תמתין לאישור ידני.
-            <button type="button" className={styles.linkBtn} onClick={() => setMode('login')}>חזרה להתחברות</button>
+            <button type="button" className={styles.linkBtn} disabled={sending} onClick={() => setMode('login')}>חזרה להתחברות</button>
           </div>
         ) : mode === 'sent' ? (
           <div className={styles.sent}>
@@ -110,7 +123,7 @@ export default function Login({ recovery, onRecoveryDone }) {
               </svg>
             </div>
             אם קיים חשבון עם המייל הזה, נשלח אליו קישור לאיפוס סיסמה
-            <button type="button" className={styles.linkBtn} onClick={() => setMode('login')}>חזרה להתחברות</button>
+            <button type="button" className={styles.linkBtn} disabled={sending} onClick={() => setMode('login')}>חזרה להתחברות</button>
           </div>
         ) : mode === 'newPassword' ? (
           <>
@@ -169,12 +182,12 @@ export default function Login({ recovery, onRecoveryDone }) {
             {error && <div className={styles.error} role="alert" aria-live="polite">{error}</div>}
             {mode === 'login' && (
               <>
-                <button type="button" className={styles.linkBtn} onClick={() => { setMode('forgot'); setError(''); }}>שכחת סיסמה?</button>
-                <button type="button" className={styles.linkBtn} onClick={() => { setMode('signup'); setError(''); }}>יועץ חדש? בקש גישה</button>
+                <button type="button" className={styles.linkBtn} disabled={sending} onClick={() => { setMode('forgot'); setError(''); }}>שכחת סיסמה?</button>
+                <button type="button" className={styles.linkBtn} disabled={sending} onClick={() => { setMode('signup'); setError(''); }}>יועץ חדש? בקש גישה</button>
               </>
             )}
             {(mode === 'signup' || mode === 'forgot') && (
-              <button type="button" className={styles.linkBtn} onClick={() => { setMode('login'); setError(''); }}>חזרה להתחברות</button>
+              <button type="button" className={styles.linkBtn} disabled={sending} onClick={() => { setMode('login'); setError(''); }}>חזרה להתחברות</button>
             )}
           </>
         )}

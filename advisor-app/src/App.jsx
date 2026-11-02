@@ -12,6 +12,7 @@ import Shell from './components/Shell.jsx';
 import Toaster from './components/Toaster.jsx';
 import QuickSwitcher from './components/QuickSwitcher.jsx';
 import Skeleton from './components/Skeleton.jsx';
+import ErrorState from './components/ErrorState.jsx';
 import ClientList from './clients/ClientList.jsx';
 import { signupMessage } from './business/clientApp.js';
 import { toast } from './toast.js';
@@ -64,6 +65,7 @@ export default function App() {
   }
 
   if (mfa.status === 'loading') return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
+  if (mfa.status === 'error') return <div style={{ maxWidth: 480, margin: '20vh auto', padding: 16 }}><ErrorState message="לא ניתן להשלים את בדיקת האימות. בדוק את החיבור ונסה שוב." onRetry={mfa.refresh} /></div>;
   if (mfa.status === 'challenge') return (<><MfaChallenge factorId={mfa.factorId} onVerified={mfa.refresh} /><Toaster /></>);
 
   const openInView = (clientId, clientEmail, destination) => {

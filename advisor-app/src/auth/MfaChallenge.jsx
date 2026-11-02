@@ -9,12 +9,18 @@ export default function MfaChallenge({ factorId, onVerified }) {
   const [busy, setBusy] = useState(false);
 
   async function verify() {
+    if (busy || code.trim().length !== 6) return;
     setBusy(true);
     setError('');
-    const { error: err } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: code.trim() });
-    setBusy(false);
-    if (err) { setError('הקוד שגוי או שפג תוקפו, נסה שוב'); setCode(''); return; }
-    onVerified();
+    try {
+      const { error: err } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: code.trim() });
+      if (err) { setError('לא ניתן לאמת את הקוד. בדוק את הקוד ואת החיבור ונסה שוב.'); return; }
+      await onVerified();
+    } catch {
+      setError('האימות לא הושלם. בדוק את החיבור ונסה שוב.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -29,6 +35,7 @@ export default function MfaChallenge({ factorId, onVerified }) {
           maxLength={6}
           dir="ltr"
           aria-label="קוד אימות"
+          disabled={busy}
           value={code}
           onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
           onKeyDown={e => e.key === 'Enter' && code.length === 6 && !busy && verify()}
