@@ -6553,6 +6553,8 @@ async function addCustomBudgetCat(){
   const name=await promptSheet({title:'קטגוריה חדשה',label:'שם קטגוריית ההוצאה המשתנה:'+(remaining.length?' (לדוגמה: '+remaining.slice(0,3).join(', ')+')':'')});
   if(!name||!name.trim())return;
   const cat=name.trim();
+  const taken=[...Object.keys(budgets),...(userSettings.customCats||[])].some(c=>c.trim().toLowerCase()===cat.toLowerCase());
+  if(taken){showToast('קטגוריה כבר קיימת');return;}
   const val=await promptSheet({title:'תקציב חודשי',label:'תקציב חודשי עבור '+cat+':',type:'number',value:budgets[cat]||''});
   if(val===null)return;
   const amt=parseFloat(val);
