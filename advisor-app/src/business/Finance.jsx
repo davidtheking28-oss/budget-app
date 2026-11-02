@@ -206,22 +206,6 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
   );
 }
 
-function StatTiles({ items }) {
-  const cols = items.length === 3 ? { gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' } : undefined;
-  return (
-    <div className={styles.tileGrid4} style={{ marginTop: 18, ...cols }}>
-      {items.map(t => (
-        <div key={t.label} className={styles.stat}>
-          <div className={styles.statLabel}>{t.label}</div>
-          <div className={styles.statValue + (t.tone ? ' ' + styles[t.tone] : '')}>{t.value}</div>
-          {t.note && <div className={styles.statNote}>{t.note}</div>}
-          {t.bar !== undefined && <span className={styles.progress} style={{ display: 'block', marginTop: 10 }}><span className={styles.progressFill} style={{ display: 'block', width: Math.min(1, Math.max(0, t.bar)) * 100 + '%' }} /></span>}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 const openFinanceMonth = (period, modal) => {
   try { sessionStorage.setItem('advisor_finance_open', JSON.stringify({ period, modal })); } catch { /* navigation hint only */ }
 };
@@ -364,26 +348,25 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
 
   return (
     <div className={styles.stack}>
-      <section className={styles.bigCard}>
-        <div className={styles.cardHead}><BusinessTypeBar value={businessType} onChange={ops.setBusinessType} />{scope === 'custom' ? null : controls}</div>
-        <div className={styles.sectionLabel} style={{ marginTop: 0 }}>{title} · רווח כולל</div>
-        <div className={styles.bigNumber + ' ' + (range.net < 0 ? styles.statNeg : '')}>{money(range.net)}</div>
-        <StatTiles items={[
-          { label: 'הכנסה כוללת', value: money(range.income), bar: range.income > 0 ? 1 : 0 },
-          { label: 'הוצאה כוללת', value: money(range.expenses), bar: range.income > 0 ? range.expenses / range.income : 0 },
-          { label: 'אחוז רווח', value: percentLabel(range.margin), bar: range.margin || 0 }
-        ]} />
+      <div className={layout.monthControls}>
+        <BusinessTypeBar value={businessType} onChange={ops.setBusinessType} />
+        {controls}
+      </div>
+      <section className={layout.monthSummary} aria-label="סיכום התקופה">
+        <div className={layout.netFact}>
+          <span className={styles.cardSub}>{title} · רווח כולל</span>
+          <strong className={layout.netValue + ' ' + (range.net < 0 ? styles.statNeg : styles.statPos)}>{money(range.net)}</strong>
+        </div>
+        {[
+          { label: 'הכנסה כוללת', value: money(range.income) },
+          { label: 'הוצאה כוללת', value: money(range.expenses) },
+          { label: 'אחוז רווח', value: percentLabel(range.margin) }
+        ].map(fact => <div key={fact.label} className={layout.fact}><span className={styles.cardSub}>{fact.label}</span><strong className={layout.factValue}>{fact.value}</strong></div>)}
       </section>
-
-      {scope === 'custom' && (
-        <section className={styles.card}>
-          <div className={styles.cardHead}>{controls}</div>
-        </section>
-      )}
 
       <section className={styles.card}>
         <div className={styles.cardHead}><div><h3 className={styles.cardTitle}>הכנסות מול רווח נטו</h3><p className={styles.cardSub}>{periodLabel(from)} ועד {periodLabel(to)}</p></div></div>
-        {empty ? <div className={styles.empty}>אין עדיין נתונים להצגה</div> : <div className={styles.chartBox}><Bar aria-label={`סיכום כספי: ${chartData.datasets.map(series => `${series.label}: ${series.data.map(money).join(' · ')}`).join(' · ')}`} data={chartData} options={chartOptions} /></div>}
+        {empty ? <div className={styles.empty}>אין עדיין נתונים להצגה</div> : <div className={layout.rangeChart}><Bar aria-label={`סיכום כספי: ${chartData.datasets.map(series => `${series.label}: ${series.data.map(money).join(' · ')}`).join(' · ')}`} data={chartData} options={chartOptions} /></div>}
       </section>
 
       <section className={styles.card}>
@@ -391,7 +374,7 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
         {activeMonths.length < range.rows.length && <label className={styles.reportToolbar}><input type="checkbox" className={styles.check} checked={showAllMonths} onChange={e => setShowAllMonths(e.target.checked)} />הצג גם חודשים ללא פעילות</label>}
         {!visibleMonths.length && <p className={styles.empty}>אין פעילות בתקופה שנבחרה</p>}
         <div className={styles.tableWrap + ' ' + styles.reportScroll} tabIndex={0} role="region" aria-label="פירוט כספי חודשי — גלול לצפייה בכל העמודות">
-          <table className={styles.table + ' ' + styles.reportTable}>
+          <table className={styles.table + ' ' + styles.reportTable + ' ' + layout.rangeTable}>
             <thead><tr><th>חודש</th><th>הכנסות</th><th>סך הוצאות</th><th>מע״מ</th><th>רווח תפעולי</th><th>רווח נטו</th><th>קבלות חסרות</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
             <tbody>
               {[...visibleMonths].reverse().map(r => (

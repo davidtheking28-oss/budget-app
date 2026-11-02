@@ -46,3 +46,7 @@ button.action:focus-visible { outline: 2px solid var(--accent); outline-offset: 
   .fact:nth-child(3) { border-inline-start: 0; }
   .breakdownList { grid-template-columns: minmax(0, 1fr); }
 }
+
+.rangeChart { height: 240px; min-width: 0; }
+.rangeTable th:first-child, .rangeTable td:first-child { position: sticky; inset-inline-start: 0; background: var(--surface); z-index: 1; font-weight: 700; }
+.rangeTable thead th:first-child { background: var(--surface2); }
