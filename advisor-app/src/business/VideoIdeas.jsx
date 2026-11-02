@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useBizRecords } from './useBizRecords.js';
 import { IDEA_POOL, IDEA_TOPICS } from './videoIdeasPool.js';
 import HeaderAction from './HeaderAction.jsx';
@@ -20,6 +20,9 @@ const STATUSES = [
 export default function VideoIdeas({ advisorId }) {
   const { records, loading, error, reload, add, update, remove } = useBizRecords(advisorId, 'video_idea');
   const [modal, setModal] = useState(false);
+  const addingRef = useRef(false);
+  const [adding, setAdding] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [text, setText] = useState('');
   const [topic, setTopic] = useState('');
   const [offset, setOffset] = useState(0);
@@ -37,8 +40,21 @@ export default function VideoIdeas({ advisorId }) {
   const topicCount = t => available.filter(p => p.topic === t).length;
 
   async function addIdea(value, ideaTopic = '') {
-    const row = await add({ text: value, topic: ideaTopic, status: 'idea' });
-    return !!row;
+    if (addingRef.current) return false;
+    addingRef.current = true;
+    setAdding(true);
+    setSaveError(false);
+    try {
+      const row = await add({ text: value, topic: ideaTopic, status: 'idea' });
+      if (!row) setSaveError(true);
+      return !!row;
+    } catch {
+      setSaveError(true);
+      return false;
+    } finally {
+      addingRef.current = false;
+      setAdding(false);
+    }
   }
 
   async function submit(e) {
@@ -51,6 +67,7 @@ export default function VideoIdeas({ advisorId }) {
     <div className={styles.stack}>
       <HeaderAction><button type="button" className={styles.btn} onClick={() => setModal(true)}>+ רעיון חדש</button></HeaderAction>
 
+      {saveError && !modal && <p className={styles.fieldError} role="alert">הרעיון לא נשמר. אפשר לנסות להוסיף אותו שוב.</p>}
       <div className={styles.grid3 + ' ' + layout.board}>
         {STATUSES.map(s => {
           const list = ideas.filter(i => i.status === s.key);
@@ -89,7 +106,7 @@ export default function VideoIdeas({ advisorId }) {
           <>
             <h3 className={styles.cardTitle + ' ' + layout.dailyTitle}>{daily.text}</h3>
             <div className={styles.toolbar}>
-              <button type="button" className={styles.btn} onClick={() => addIdea(daily.text, daily.topic)}>להוסיף לרעיונות שלי +</button>
+              <button type="button" className={styles.btn} disabled={adding} onClick={() => addIdea(daily.text, daily.topic)}>להוסיף לרעיונות שלי +</button>
               <button type="button" className={styles.btnGhost} onClick={() => setOffset(o => o + 1)}>רעיון אחר</button>
             </div>
           </>
@@ -116,7 +133,7 @@ export default function VideoIdeas({ advisorId }) {
                   <div key={p.text} className={layout.poolItem}>
                     <span className={styles.rowMeta}>{p.topic}</span>
                     <span className={styles.rowTitle} style={{ flex: 1 }}>{p.text}</span>
-                    <button type="button" className={styles.btnGhost} style={{ alignSelf: 'flex-start' }} onClick={() => addIdea(p.text, p.topic)}>להוסיף +</button>
+                    <button type="button" className={styles.btnGhost} style={{ alignSelf: 'flex-start' }} disabled={adding} onClick={() => addIdea(p.text, p.topic)}>להוסיף +</button>
                   </div>
                 ))}
               </div>
@@ -131,10 +148,11 @@ export default function VideoIdeas({ advisorId }) {
 
       {modal && (
         <Modal title="רעיון חדש" onClose={() => setModal(false)}>
-          <form className={styles.formGrid} onSubmit={submit}>
+          <form className={styles.formGrid} onSubmit={submit} aria-busy={adding}>
             <label className={styles.fieldLabel}>על מה הסרטון<input className={styles.input} value={text} onChange={e => setText(e.target.value)} /></label>
+            {saveError && <p className={styles.fieldError} role="alert">הרעיון לא נשמר. הטקסט נשאר כאן — אפשר לנסות שוב.</p>}
             <div className={styles.formActions}>
-              <button type="submit" className={styles.btn}>הוסף</button>
+              <button type="submit" className={styles.btn} disabled={adding}>{adding ? 'שומר…' : 'הוסף'}</button>
               <button type="button" className={styles.btnGhost} onClick={() => setModal(false)}>ביטול</button>
             </div>
           </form>

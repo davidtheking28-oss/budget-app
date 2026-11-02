@@ -16,7 +16,22 @@ const cost = value => (value === null ? 'אין' : fmt(value));
 
 function NumberFields({ fields, data, onSave, onClose }) {
   const [values, setValues] = useState(() => Object.fromEntries(fields.map(f => [f.key, data[f.key] ?? ''])));
-  async function submit(e) { e.preventDefault(); if (await onSave(values) === false) return; onClose(); }
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  async function submit(e) {
+    e.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setSaveError(false);
+    try {
+      if (await onSave(values) === false) { setSaveError(true); return; }
+      onClose();
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  }
   return (
     <form className={styles.formGrid} onSubmit={submit}>
       {fields.map(f => (
@@ -24,8 +39,9 @@ function NumberFields({ fields, data, onSave, onClose }) {
           <input className={styles.input} inputMode="decimal" placeholder="0" value={values[f.key]} onChange={e => setValues(prev => ({ ...prev, [f.key]: e.target.value }))} />
         </label>
       ))}
+      {saveError && <p className={styles.fieldError} role="alert">הנתונים לא נשמרו. הפרטים נשארו כאן — אפשר לנסות שוב.</p>}
       <div className={styles.formActions}>
-        <button type="submit" className={styles.btn}>שמירה</button>
+        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'שמירה'}</button>
         <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
       </div>
     </form>
@@ -35,11 +51,21 @@ function NumberFields({ fields, data, onSave, onClose }) {
 function TasksModal({ tasks, onChange, onClose }) {
   const [text, setText] = useState('');
   const progress = planProgress(tasks);
-  function addTask(e) {
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  async function addTask(e) {
     e.preventDefault();
-    if (!text.trim()) return;
-    onChange([...tasks, { id: 't' + Date.now(), text: text.trim(), done: false }]);
-    setText('');
+    if (!text.trim() || saving) return;
+    setSaving(true);
+    setSaveError(false);
+    try {
+      if (await onChange([...tasks, { id: 't' + Date.now(), text: text.trim(), done: false }]) === false) { setSaveError(true); return; }
+      setText('');
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
   }
   return (
     <Modal title="משימות החודש" onClose={onClose}>
@@ -54,9 +80,10 @@ function TasksModal({ tasks, onChange, onClose }) {
         ))}
       </ul>
       {!tasks.length && <p className={layout.emptyTasks}>עוד אין משימות שיווק לחודש הזה. אפשר להתחיל במשימה הראשונה למטה.</p>}
+      {saveError && <p className={styles.fieldError} role="alert">המשימה לא נשמרה. הטקסט נשאר כאן — אפשר לנסות שוב.</p>}
       <form className={styles.toolbar + ' ' + layout.taskComposer} onSubmit={addTask}>
         <input className={styles.input + ' ' + styles.inputGrow} placeholder="משימת שיווק חדשה" aria-label="משימת שיווק חדשה" value={text} onChange={e => setText(e.target.value)} />
-        <button type="submit" className={styles.btn}>הוסף</button>
+        <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף'}</button>
       </form>
     </Modal>
   );
@@ -69,6 +96,8 @@ function NetworksModal({ networks, boosts, monthLabel, onSave, onClose }) {
   const [counts, setCounts] = useState(() => Object.fromEntries([...new Set([...NETWORKS, ...Object.keys(networks)])].map(n => [n, networks[n] ?? ''])));
   const [extra, setExtra] = useState('');
   const [boostValue, setBoostValue] = useState(boosts ?? '');
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   function addNetwork() {
     const name = extra.trim();
     if (!name || name in counts) return;
@@ -77,9 +106,18 @@ function NetworksModal({ networks, boosts, monthLabel, onSave, onClose }) {
   }
   async function submit(e) {
     e.preventDefault();
+    if (saving) return;
     const filled = Object.fromEntries(Object.entries(counts).filter(([, v]) => String(v).trim() !== ''));
-    if (await onSave(filled, boostValue) === false) return;
-    onClose();
+    setSaving(true);
+    setSaveError(false);
+    try {
+      if (await onSave(filled, boostValue) === false) { setSaveError(true); return; }
+      onClose();
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
   }
   return (
     <Modal title="בואו נתחיל" onClose={onClose}>
@@ -98,8 +136,9 @@ function NetworksModal({ networks, boosts, monthLabel, onSave, onClose }) {
           <input className={styles.input} inputMode="decimal" placeholder="₪" value={boostValue} onChange={e => setBoostValue(e.target.value)} />
           <span className={styles.note}>תקציב הבוסטים באינסטגרם ל{monthLabel}</span>
         </label>
+        {saveError && <p className={styles.fieldError} role="alert">הנתונים לא נשמרו. הפרטים נשארו כאן — אפשר לנסות שוב.</p>}
         <div className={styles.toolbar}>
-          <button type="submit" className={styles.btn}>שמירה</button>
+          <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'שמירה'}</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>אחר כך</button>
         </div>
       </form>
