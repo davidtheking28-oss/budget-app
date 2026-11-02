@@ -10,6 +10,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { fmt } from '../format.js';
 import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
+import layout from './MarketingPlan.module.css';
 
 const cost = value => (value === null ? 'אין' : fmt(value));
 
@@ -43,7 +44,7 @@ function TasksModal({ tasks, onChange, onClose }) {
   return (
     <Modal title="משימות החודש" onClose={onClose}>
       <p className={styles.cardSub}>{progress.done} מתוך {progress.total} משימות בוצעו. לחיצה על תיבה מסמנת שבוצע.</p>
-      <ul className={styles.rowList}>
+      <ul className={styles.rowList + ' ' + layout.taskList}>
         {tasks.map(t => (
           <li key={t.id} className={styles.rowItem}>
             <input type="checkbox" className={styles.check} aria-label={'בוצע: ' + t.text} checked={t.done} onChange={() => onChange(tasks.map(x => x.id === t.id ? { ...x, done: !x.done } : x))} />
@@ -52,7 +53,8 @@ function TasksModal({ tasks, onChange, onClose }) {
           </li>
         ))}
       </ul>
-      <form className={styles.toolbar} onSubmit={addTask}>
+      {!tasks.length && <p className={layout.emptyTasks}>עוד אין משימות שיווק לחודש הזה. אפשר להתחיל במשימה הראשונה למטה.</p>}
+      <form className={styles.toolbar + ' ' + layout.taskComposer} onSubmit={addTask}>
         <input className={styles.input + ' ' + styles.inputGrow} placeholder="משימת שיווק חדשה" aria-label="משימת שיווק חדשה" value={text} onChange={e => setText(e.target.value)} />
         <button type="submit" className={styles.btn}>הוסף</button>
       </form>
@@ -81,7 +83,7 @@ function NetworksModal({ networks, boosts, monthLabel, onSave, onClose }) {
   }
   return (
     <Modal title="בואו נתחיל" onClose={onClose}>
-      <form className={styles.formGrid} onSubmit={submit}>
+      <form className={styles.formGrid + ' ' + layout.networkForm} onSubmit={submit}>
         <p className={styles.cardSub}>כמה עוקבים יש לך היום? רשת שאין לך משאירים ריקה. מכאן נחשב לבד כמה גדלת כל חודש.</p>
         {Object.keys(counts).map(n => (
           <label key={n} className={styles.fieldLabel}>{n}
@@ -92,7 +94,7 @@ function NetworksModal({ networks, boosts, monthLabel, onSave, onClose }) {
           <input className={styles.input + ' ' + styles.inputGrow} placeholder="שם הרשת" aria-label="שם רשת אחרת" value={extra} onChange={e => setExtra(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addNetwork(); } }} />
           <button type="button" className={styles.btnGhost} onClick={addNetwork}>+ רשת אחרת</button>
         </div>
-        <label className={styles.fieldLabel}>בוסטים
+        <label className={styles.fieldLabel + ' ' + layout.boosts}>בוסטים
           <input className={styles.input} inputMode="decimal" placeholder="₪" value={boostValue} onChange={e => setBoostValue(e.target.value)} />
           <span className={styles.note}>תקציב הבוסטים באינסטגרם ל{monthLabel}</span>
         </label>
@@ -170,9 +172,9 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
           <div className={styles.sectionLabel}>החודש במספרים</div>
           <span className={styles.toolbar}><span className={styles.rowMeta}>בוסטים: {fmt(metrics.boosts)}</span>{baseline != null && <button type="button" className={styles.btnGhost} onClick={() => setModal('networks')}>עדכון עוקבים</button>}</span>
         </div>
-        {(baseline != null || metrics.followers || metrics.boosts || metrics.meetings || metrics.closings) ? <div className={styles.tileGrid4}>
+        {(baseline != null || metrics.followers || metrics.boosts || metrics.meetings || metrics.closings) ? <div className={styles.tileGrid4 + ' ' + layout.monthMetrics}>
           {tiles.map(t => (
-            <button key={t.key} type="button" className={styles.stat} style={{ position: 'relative', cursor: 'pointer', textAlign: 'start', font: 'inherit', color: 'inherit' }} onClick={() => setModal(t.modal)}>
+            <button key={t.key} type="button" className={styles.stat + ' ' + layout.metric} onClick={() => setModal(t.modal)}>
               <div className={styles.statLabel} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                 <span>{t.label}</span>
                 <span aria-hidden="true" style={{ color: 'var(--text3)', fontSize: '1.1rem', lineHeight: 1 }}>‹</span>

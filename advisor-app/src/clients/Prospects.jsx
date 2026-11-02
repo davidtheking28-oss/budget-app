@@ -47,6 +47,7 @@ export default function Prospects({ advisorId, onConvert }) {
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [meetingDetailsOpen, setMeetingDetailsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const nameRef = useRef(null);
   const restoreId = useRef(null);
@@ -78,6 +79,7 @@ export default function Prospects({ advisorId, onConvert }) {
     saveVersion.current += 1;
     setSaveState('saved');
     setEditingId(p.id);
+    setMeetingDetailsOpen(true);
     setModalOpen(true);
     setForm({ status: p.status || 'new', name: p.name || '', phone: p.phone || '', email: p.email || '', source: p.source || '', notes: p.notes || '', contacted_at: p.contacted_at || '', meeting_date: p.meeting_date || '', meeting_time: p.meeting_time || '', attempts: p.attempts || 0, attendance_confirmed: !!p.attendance_confirmed, showed: !!p.showed, relevant: !!p.relevant, closed: !!p.closed, closed_at: p.closed_at || '' });
   }
@@ -144,10 +146,10 @@ export default function Prospects({ advisorId, onConvert }) {
   return (
     <div className={styles.page}>
       <h1 className={styles.srOnly}>מתעניינים</h1>
-      <HeaderAction><button type="button" className={biz.btn} onClick={() => { setForm(EMPTY); setEditingId(null); setModalOpen(true); }}>+ הוסף ליד</button></HeaderAction>
+      <HeaderAction><button type="button" className={biz.btn} onClick={() => { setForm(EMPTY); setEditingId(null); setMeetingDetailsOpen(false); setModalOpen(true); }}>+ הוסף ליד</button></HeaderAction>
 
-      <section className={biz.bigCard} style={{ marginBottom: 'var(--space-3)' }}>
-        <div className={biz.grid4 + ' ' + biz.statsBare} role="group" aria-label="מדדי מכירות" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))' }}>
+      <section className={biz.bigCard + ' ' + styles.overview} style={{ marginBottom: 'var(--space-3)' }}>
+        <div className={styles.overviewGrid} role="group" aria-label="מדדי מכירות">
         <div className={biz.stat}><div className={biz.statLabel}>פגישות התאמה שנקבעו</div><div className={biz.statValue}>{stats.meetings}</div><div className={biz.statNote}>מתוך {stats.total} לידים</div></div>
         <div className={biz.stat}><div className={biz.statLabel}>אחוז הגעה לשיחות</div><div className={biz.statValue}>{percentLabel(stats.showRate)}</div><div className={biz.statNote}>{stats.showed} הגיעו מתוך {stats.total} לידים</div></div>
         <div className={biz.stat}><div className={biz.statLabel}>אחוז רלוונטיות</div><div className={biz.statValue}>{percentLabel(stats.relevantRate)}</div><div className={biz.statNote}>{stats.relevant} רלוונטיים מתוך {stats.showed}</div></div>
@@ -175,8 +177,10 @@ export default function Prospects({ advisorId, onConvert }) {
               </div>
               {cards.length === 0 ? <div className={styles.columnEmpty}>אין</div> : cards.map(p => (
                 <button key={p.id} type="button" className={styles.leadCard} data-open-prospect={p.id} onClick={() => startEdit(p)} aria-label={'פתח ליד: ' + p.name}>
-                  <span className={styles.leadName}>{p.name}</span>
-                  <span className={styles.leadMeta}>{p.contacted_at ? 'נכנס ' + formatDate(p.contacted_at) : ''}</span>
+                  <span className={styles.leadHeading}><span className={styles.leadName}>{p.name}</span><span className={styles.openArrow} aria-hidden="true">←</span></span>
+                  {p.phone && <span className={styles.leadPhone} dir="ltr">{p.phone}</span>}
+                  {p.meeting_date && <span className={styles.meetingNote}>פגישה {formatDate(p.meeting_date)}{p.meeting_time ? ' · ' + p.meeting_time.slice(0, 5) : ''}</span>}
+                  <span className={styles.leadFooter}>{p.source && <span>{p.source}</span>}{p.contacted_at && <span>נכנס {formatDate(p.contacted_at)}</span>}</span>
                 </button>
               ))}
             </section>
@@ -192,19 +196,21 @@ export default function Prospects({ advisorId, onConvert }) {
               <span>{saveState === 'saving' ? 'שומר שינויים…' : saveState === 'pending' ? 'יש שינויים לשמירה' : saveState === 'invalid' ? 'יש להזין שם כדי לשמור' : saveState === 'error' ? 'השמירה נכשלה. השינויים שלך עדיין בטופס.' : 'כל השינויים נשמרו'}</span>
               {saveState === 'error' && <button type="button" className={biz.btnGhost} onClick={() => { saveVersion.current += 1; pending.current = { id: editingId, next: form }; flush(); }}>נסה שוב</button>}
             </div>}
-            <h3 className={biz.formSection}>פרטי קשר</h3>
+            <section className={styles.contactSection} aria-label="פרטי קשר"><h3 className={biz.formSection}>פרטי קשר</h3>
             <label className={biz.fieldLabel}>שם מלא · חובה<input ref={nameRef} className={biz.input} value={form.name} onChange={e => patchForm({ name: e.target.value })} /></label>
             <div className={biz.formRow}>
               <label className={biz.fieldLabel}>טלפון<input className={biz.input} dir="ltr" inputMode="tel" value={form.phone} onChange={e => patchForm({ phone: e.target.value })} /></label>
               <label className={biz.fieldLabel}>אימייל<input className={biz.input} dir="ltr" type="email" value={form.email} onChange={e => patchForm({ email: e.target.value })} /></label>
             </div>
-            <details className={biz.formDetails} open={editing}>
+            </section>
+            <details className={biz.formDetails + ' ' + styles.meetingDetails} open={meetingDetailsOpen} onToggle={e => setMeetingDetailsOpen(e.currentTarget.open)}>
               <summary>פגישה, שלב וסיכום שיחה</summary>
               <div className={biz.formGrid}>
             <div className={biz.formRow}>
               <label className={biz.fieldLabel}>מקור הגעה<select className={biz.select} value={form.source} onChange={e => patchForm({ source: e.target.value })}><option value="">בחר מקור</option>{[...new Set([...SOURCES, form.source].filter(Boolean))].map(src => <option key={src} value={src}>{src}</option>)}</select></label>
               <label className={biz.fieldLabel}>תאריך כניסת ליד<input className={biz.input} type="date" value={form.contacted_at} onChange={e => patchForm({ contacted_at: e.target.value })} /></label>
             </div>
+            <h3 className={styles.sectionTitle}>תיאום פגישת התאמה</h3>
             <div className={biz.formRow}>
               <label className={biz.fieldLabel}>תאריך פגישת התאמה<input className={biz.input} type="date" value={form.meeting_date} onChange={e => patchForm({ meeting_date: e.target.value })} /></label>
               <label className={biz.fieldLabel}>שעת הפגישה<input className={biz.input} type="time" value={form.meeting_time} onChange={e => patchForm({ meeting_time: e.target.value })} /></label>
@@ -219,11 +225,11 @@ export default function Prospects({ advisorId, onConvert }) {
                 </div>
               </div>
             </div>
-            <div className={biz.formRow}>
+            <fieldset className={styles.outcomes}><legend>תוצאות השיחה</legend>
               {[['attendance_confirmed', 'וידא הגעה לפגישת ההתאמה'], ['showed', 'הגיע לשיחה'], ['relevant', 'רלוונטי'], ['closed', 'נסגר']].map(([key, label]) => (
                 <label key={key} className={biz.toolbar}><input type="checkbox" className={biz.check} checked={form[key]} onChange={e => patchForm({ [key]: e.target.checked })} />{label}</label>
               ))}
-            </div>
+            </fieldset>
             <label className={biz.fieldLabel}>פירוט שיחה<textarea className={biz.input + ' ' + biz.textarea} placeholder="מצב נוכחי, כאב מרכזי, מטרות, התנגדויות, מה סוכם..." value={form.notes} onChange={e => patchForm({ notes: e.target.value })} /></label>
               </div>
             </details>

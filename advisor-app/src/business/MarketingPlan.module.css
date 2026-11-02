@@ -1,0 +1,12 @@
+.networkForm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.networkForm > p, .networkForm > div, .boosts { grid-column: 1 / -1; }
+.networkForm input[inputmode] { direction: ltr; text-align: right; font-variant-numeric: tabular-nums; }
+.boosts { padding-block-start: var(--space-3); border-top: 1px solid var(--border); }
+.monthMetrics { gap: 12px; }
+.metric { position: relative; cursor: pointer; box-shadow: none; border-radius: var(--radius-md); }
+.metric:hover { border-color: var(--accent); background: var(--surface2); }
+.metric:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.taskList { margin: 0; }
+.taskComposer { margin-block-start: var(--space-3); padding-block-start: var(--space-3); border-top: 1px solid var(--border); }
+.emptyTasks { margin: 0; padding-block: var(--space-4); font-size: var(--text-sm); color: var(--text2); line-height: 1.6; }
+@media (max-width: 500px) { .networkForm { grid-template-columns: minmax(0, 1fr); } }
