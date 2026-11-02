@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
@@ -33,6 +33,28 @@ function daysUntil(dateStr) {
 
 export default function Subscriptions({ clientUserId, advisorId, only }) {
   const { data, loading, error, reload, save } = useClientBudget(clientUserId, advisorId);
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState('');
+  const [saveError, setSaveError] = useState('');
+
+  async function saveForm(key, operation) {
+    if (savingRef.current) return false;
+    savingRef.current = true;
+    setSaving(key);
+    setSaveError('');
+    try {
+      const ok = await operation();
+      if (!ok) setSaveError(key);
+      return ok;
+    } catch {
+      setSaveError(key);
+      return false;
+    } finally {
+      savingRef.current = false;
+      setSaving('');
+    }
+  }
+
 
   const [subForm, setSubForm] = useState({ name: '', category: SUB_CATEGORIES[0], amount: '', cycle: 'monthly', nextDate: '' });
   const [editingSubId, setEditingSubId] = useState(null);
@@ -43,7 +65,7 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
     if (!subForm.name.trim()) { toast('מה שם השירות?', 'error'); return; }
     if (!amount || amount <= 0) { toast('כמה עולה המנוי?', 'error'); return; }
     const patch = { name: subForm.name.trim(), category: subForm.category, amount, cycle: subForm.cycle, nextDate: subForm.nextDate };
-    const ok = editingSubId != null ? await updateItem(save, 'subscriptions', editingSubId, patch) : await addItem(save, 'subscriptions', { ...patch, active: true });
+    const ok = await saveForm('sub', () => editingSubId != null ? updateItem(save, 'subscriptions', editingSubId, patch) : addItem(save, 'subscriptions', { ...patch, active: true }));
     if (!ok) return;
     toast(editingSubId != null ? 'המנוי עודכן' : 'המנוי נוסף', 'success');
     resetSubForm();
@@ -66,7 +88,7 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
     const monthly = parseFloat(insForm.monthly) || 0;
     if (!insForm.name.trim() || !monthly) { toast('נדרשים שם ביטוח וסכום חודשי', 'error'); return; }
     const patch = { name: insForm.name.trim(), monthly, type: insForm.type };
-    const ok = editingInsId != null ? await updateItem(save, 'insurances', editingInsId, patch) : await addItem(save, 'insurances', patch);
+    const ok = await saveForm('insurance', () => editingInsId != null ? updateItem(save, 'insurances', editingInsId, patch) : addItem(save, 'insurances', patch));
     if (!ok) return;
     toast(editingInsId != null ? 'הביטוח עודכן' : 'ביטוח נוסף', 'success');
     resetInsForm();
@@ -78,7 +100,7 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
     const monthly = parseFloat(groomForm.monthly) || 0;
     if (!groomForm.name.trim() || !monthly) { toast('נדרשים שם וסכום חודשי', 'error'); return; }
     const patch = { name: groomForm.name.trim(), monthly };
-    const ok = editingGroomId != null ? await updateItem(save, 'grooming', editingGroomId, patch) : await addItem(save, 'grooming', patch);
+    const ok = await saveForm('groom', () => editingGroomId != null ? updateItem(save, 'grooming', editingGroomId, patch) : addItem(save, 'grooming', patch));
     if (!ok) return;
     toast(editingGroomId != null ? 'הפריט עודכן' : 'פריט נוסף', 'success');
     resetGroomForm();
@@ -90,7 +112,7 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
     const annual = parseFloat(eventForm.annual) || 0;
     if (!eventForm.name.trim() || !annual) { toast('נדרשים שם ועלות שנתית', 'error'); return; }
     const patch = { name: eventForm.name.trim(), annual };
-    const ok = editingEventId != null ? await updateItem(save, 'events', editingEventId, patch) : await addItem(save, 'events', patch);
+    const ok = await saveForm('event', () => editingEventId != null ? updateItem(save, 'events', editingEventId, patch) : addItem(save, 'events', patch));
     if (!ok) return;
     toast(editingEventId != null ? 'האירוע עודכן' : 'אירוע נוסף', 'success');
     resetEventForm();
@@ -102,7 +124,7 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
     const monthly = parseFloat(eduForm.monthly) || 0;
     if (!eduForm.name.trim() || !monthly) { toast('נדרשים שם וסכום חודשי', 'error'); return; }
     const patch = { name: eduForm.name.trim(), monthly };
-    const ok = editingEduId != null ? await updateItem(save, 'education', editingEduId, patch) : await addItem(save, 'education', patch);
+    const ok = await saveForm('edu', () => editingEduId != null ? updateItem(save, 'education', editingEduId, patch) : addItem(save, 'education', patch));
     if (!ok) return;
     toast(editingEduId != null ? 'הפריט עודכן' : 'פריט נוסף', 'success');
     resetEduForm();
@@ -114,7 +136,7 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
     const annual = parseFloat(annualExpForm.annual) || 0;
     if (!annualExpForm.name.trim() || !annual) { toast('נדרשים שם ועלות שנתית', 'error'); return; }
     const patch = { name: annualExpForm.name.trim(), annual };
-    const ok = editingAnnualExpId != null ? await updateItem(save, 'annualExpenses', editingAnnualExpId, patch) : await addItem(save, 'annualExpenses', patch);
+    const ok = await saveForm('annual', () => editingAnnualExpId != null ? updateItem(save, 'annualExpenses', editingAnnualExpId, patch) : addItem(save, 'annualExpenses', patch));
     if (!ok) return;
     toast(editingAnnualExpId != null ? 'ההוצאה עודכנה' : 'הוצאה נוספה', 'success');
     resetAnnualExpForm();
@@ -202,8 +224,9 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
             <option value="weekly">שבועי</option>
           </select>
           <input className={styles.input} type="date" placeholder="חידוש הבא" aria-label="תאריך החידוש הבא" value={subForm.nextDate} onChange={e => setSubForm({ ...subForm, nextDate: e.target.value })} />
-          <Button onClick={submitSub}>{editingSubId != null ? 'שמור' : 'הוסף מנוי'}</Button>
-          {editingSubId != null && <Button variant="ghost" onClick={resetSubForm}>ביטול</Button>}
+          {saveError === 'sub' && <p className={styles.saveError} role="alert">הפריט לא נשמר. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
+          <Button disabled={!!saving} onClick={submitSub}>{saving === 'sub' ? 'שומר…' : editingSubId != null ? 'שמור' : 'הוסף מנוי'}</Button>
+          {editingSubId != null && <Button variant="ghost" disabled={!!saving} onClick={resetSubForm}>ביטול</Button>}
         </AddForm>
         {subShares.length > 1 && (
           <>
@@ -264,8 +287,9 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
             {INSURANCE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" aria-label="סכום חודשי לביטוח" value={insForm.monthly} onChange={e => setInsForm({ ...insForm, monthly: e.target.value })} />
-          <Button onClick={submitInsurance}>{editingInsId != null ? 'שמור' : 'הוסף ביטוח'}</Button>
-          {editingInsId != null && <Button variant="ghost" onClick={resetInsForm}>ביטול</Button>}
+          {saveError === 'insurance' && <p className={styles.saveError} role="alert">הפריט לא נשמר. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
+          <Button disabled={!!saving} onClick={submitInsurance}>{saving === 'insurance' ? 'שומר…' : editingInsId != null ? 'שמור' : 'הוסף ביטוח'}</Button>
+          {editingInsId != null && <Button variant="ghost" disabled={!!saving} onClick={resetInsForm}>ביטול</Button>}
         </AddForm>
         {insurances.length ? (
           <div className={styles.list}>
@@ -292,8 +316,9 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
         <AddForm label="הוסף פריט" open={editingGroomId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם הפריט" aria-label="שם הפריט" value={groomForm.name} onChange={e => setGroomForm({ ...groomForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" aria-label="סכום חודשי" value={groomForm.monthly} onChange={e => setGroomForm({ ...groomForm, monthly: e.target.value })} />
-          <Button onClick={submitGroom}>{editingGroomId != null ? 'שמור' : 'הוסף'}</Button>
-          {editingGroomId != null && <Button variant="ghost" onClick={resetGroomForm}>ביטול</Button>}
+          {saveError === 'groom' && <p className={styles.saveError} role="alert">הפריט לא נשמר. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
+          <Button disabled={!!saving} onClick={submitGroom}>{saving === 'groom' ? 'שומר…' : editingGroomId != null ? 'שמור' : 'הוסף'}</Button>
+          {editingGroomId != null && <Button variant="ghost" disabled={!!saving} onClick={resetGroomForm}>ביטול</Button>}
         </AddForm>
         {grooming.length ? (
           <div className={styles.list}>
@@ -317,8 +342,9 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
         <AddForm label="הוסף אירוע" open={editingEventId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם האירוע" aria-label="שם האירוע" value={eventForm.name} onChange={e => setEventForm({ ...eventForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="עלות שנתית" aria-label="עלות שנתית" value={eventForm.annual} onChange={e => setEventForm({ ...eventForm, annual: e.target.value })} />
-          <Button onClick={submitEvent}>{editingEventId != null ? 'שמור' : 'הוסף'}</Button>
-          {editingEventId != null && <Button variant="ghost" onClick={resetEventForm}>ביטול</Button>}
+          {saveError === 'event' && <p className={styles.saveError} role="alert">הפריט לא נשמר. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
+          <Button disabled={!!saving} onClick={submitEvent}>{saving === 'event' ? 'שומר…' : editingEventId != null ? 'שמור' : 'הוסף'}</Button>
+          {editingEventId != null && <Button variant="ghost" disabled={!!saving} onClick={resetEventForm}>ביטול</Button>}
         </AddForm>
         {events.length ? (
           <div className={styles.list}>
@@ -342,8 +368,9 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
         <AddForm label="הוסף פריט" open={editingEduId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם הפריט" aria-label="שם הפריט" value={eduForm.name} onChange={e => setEduForm({ ...eduForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="סכום חודשי" aria-label="סכום חודשי" value={eduForm.monthly} onChange={e => setEduForm({ ...eduForm, monthly: e.target.value })} />
-          <Button onClick={submitEdu}>{editingEduId != null ? 'שמור' : 'הוסף'}</Button>
-          {editingEduId != null && <Button variant="ghost" onClick={resetEduForm}>ביטול</Button>}
+          {saveError === 'edu' && <p className={styles.saveError} role="alert">הפריט לא נשמר. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
+          <Button disabled={!!saving} onClick={submitEdu}>{saving === 'edu' ? 'שומר…' : editingEduId != null ? 'שמור' : 'הוסף'}</Button>
+          {editingEduId != null && <Button variant="ghost" disabled={!!saving} onClick={resetEduForm}>ביטול</Button>}
         </AddForm>
         {education.length ? (
           <div className={styles.list}>
@@ -367,8 +394,9 @@ export default function Subscriptions({ clientUserId, advisorId, only }) {
         <AddForm label="הוסף הוצאה" open={editingAnnualExpId != null} className={styles.form}>
           <input className={styles.input} placeholder="שם ההוצאה" aria-label="שם ההוצאה" value={annualExpForm.name} onChange={e => setAnnualExpForm({ ...annualExpForm, name: e.target.value })} />
           <input className={styles.input} type="number" inputMode="decimal" placeholder="עלות שנתית" aria-label="עלות שנתית" value={annualExpForm.annual} onChange={e => setAnnualExpForm({ ...annualExpForm, annual: e.target.value })} />
-          <Button onClick={submitAnnualExp}>{editingAnnualExpId != null ? 'שמור' : 'הוסף'}</Button>
-          {editingAnnualExpId != null && <Button variant="ghost" onClick={resetAnnualExpForm}>ביטול</Button>}
+          {saveError === 'annual' && <p className={styles.saveError} role="alert">הפריט לא נשמר. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
+          <Button disabled={!!saving} onClick={submitAnnualExp}>{saving === 'annual' ? 'שומר…' : editingAnnualExpId != null ? 'שמור' : 'הוסף'}</Button>
+          {editingAnnualExpId != null && <Button variant="ghost" disabled={!!saving} onClick={resetAnnualExpForm}>ביטול</Button>}
         </AddForm>
         {annualExpenses.length ? (
           <div className={styles.list}>
