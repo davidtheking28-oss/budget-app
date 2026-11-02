@@ -48,7 +48,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   function stopSelecting() { setSelecting(false); setPicked([]); }
   function deletePicked() { onDeleteMany(picked); stopSelecting(); }
 
-  const norm = v => String(v).trim().replace(/s+/g, ' ').toLowerCase();
+  const norm = v => String(v).trim().replace(/\s+/g, ' ').toLowerCase();
   const shownNames = lines.flatMap(l => [norm(l.category), norm(labelFor(l.category))]);
   const suggestions = addCats.filter(c => !shownNames.includes(norm(c)) && !shownNames.includes(norm(labelFor(c))));
 
@@ -63,7 +63,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
     const value = parseFloat(amount);
     let target = chosen;
     if (allowCustom) {
-      const typed = name.trim().replace(/s+/g, ' ');
+      const typed = name.trim().replace(/\s+/g, ' ');
       if (!typed) { setError('כתוב שם לקטגוריה'); return; }
       if (shownNames.includes(norm(typed))) { setError('קטגוריה בשם הזה כבר קיימת'); return; }
       target = addCats.find(c => norm(c) === norm(typed) || norm(labelFor(c)) === norm(typed)) || typed;
