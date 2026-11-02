@@ -20,9 +20,9 @@
   background: none;
   border: 1px solid var(--border);
   color: var(--text2);
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
+  border-radius: var(--radius-sm);
+  width: 44px;
+  height: 44px;
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s var(--ease-out-expo);
 }
@@ -67,3 +67,6 @@
   cursor: default;
   color: var(--text);
 }
+
+.arrow svg { width: 18px; height: 18px; }
+.arrow:focus-visible, .label:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

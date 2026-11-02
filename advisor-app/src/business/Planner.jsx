@@ -252,7 +252,7 @@ export default function Planner({ advisorId }) {
     <div className={styles.workspace}>
       <section className={business.card + ' ' + styles.calendarCard}>
         <div className={styles.bar}>
-          <div className={styles.barGroup}>
+          <div className={styles.barGroup + ' ' + business.periodPicker}>
             <button type="button" className={business.btnGhost} onClick={() => setCursor(new Date())}>היום</button>
             <button type="button" className={business.iconBtn} aria-label={view === 'day' ? 'היום הקודם' : 'השבוע הקודם'} onClick={() => setCursor(addDays(cursor, -step))}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9,6 15,12 9,18" /></svg></button>
             <button type="button" className={business.iconBtn} aria-label={view === 'day' ? 'היום הבא' : 'השבוע הבא'} onClick={() => setCursor(addDays(cursor, step))}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15,6 9,12 15,18" /></svg></button>

@@ -464,7 +464,7 @@ export default function Finance({ advisorId, scope, onNavigate }) {
   const to = toRaw < from ? from : toRaw;
   const setField = key => e => setCustom(prev => ({ ...prev, [key]: parseInt(e.target.value, 10) }));
   const controls = (
-    <div className={styles.toolbar}>
+    <div className={styles.periodPicker} role="group" aria-label="בחירת טווח חודשים">
       <span className={styles.cardSub}>מ-</span>
       <select className={styles.select} aria-label="מחודש" value={custom.fromMonth} onChange={setField('fromMonth')}>{MONTH_NAMES.map((n, i) => <option key={n} value={i}>{n}</option>)}</select>
       <select className={styles.select} aria-label="משנה" value={custom.fromYear} onChange={setField('fromYear')}>{yearOptions().map(y => <option key={y} value={y}>{y}</option>)}</select>
