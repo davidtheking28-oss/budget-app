@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import Skeleton from '../components/Skeleton.jsx';
 
 const BizTasks = lazy(() => import('./BizTasks.jsx'));
+const Planner = lazy(() => import('./Planner.jsx'));
 const Projects = lazy(() => import('./Projects.jsx'));
 const Systems = lazy(() => import('./Systems.jsx'));
 const MarketingPlan = lazy(() => import('./MarketingPlan.jsx'));
@@ -17,6 +18,7 @@ const SiteSettings = lazy(() => import('./SiteSettings.jsx'));
 
 function BusinessPage({ view, advisorId, onNavigate, onSelectClient, viewClientId, viewTab, onViewClient }) {
   if (view === 'tasks') return <BizTasks advisorId={advisorId} />;
+  if (view === 'planner') return <Planner advisorId={advisorId} />;
   if (view === 'projects') return <Projects advisorId={advisorId} />;
   if (view === 'systems') return <Systems advisorId={advisorId} />;
   if (view === 'client-approvals') return <ClientApprovals advisorId={advisorId} />;
