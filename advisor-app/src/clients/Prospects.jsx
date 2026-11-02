@@ -166,16 +166,21 @@ export default function Prospects({ advisorId, onConvert }) {
         </select>
       </div>
 
-      <div className={styles.board}>
+      {visible.length === 0 ? (
+        <div className={styles.emptyBoard} role="status">
+          <div><strong>{prospects.length ? 'לא נמצאו לידים שמתאימים לחיפוש' : 'עוד אין לידים בלוח'}</strong><p>{prospects.length ? 'אפשר לשנות את החיפוש או את מקור ההגעה.' : 'הוסף ליד ראשון, והלוח יתעדכן לפי שלבי המכירה.'}</p></div>
+          {prospects.length > 0 && <button type="button" className={biz.btnGhost} onClick={() => { setSearch(''); setSourceFilter('all'); }}>ניקוי החיפוש והסינון</button>}
+        </div>
+      ) : <div className={styles.board}>
         {STATUSES.map(s => {
           const cards = visible.filter(p => (p.status || 'new') === s.key);
           return (
-            <section key={s.key} className={styles.column} aria-label={s.label}>
+            <section key={s.key} className={styles.column} aria-label={s.label} data-empty={cards.length === 0}>
               <div className={styles.columnHead}>
-                <span className={styles.columnTitle}><span className={styles.dot} style={{ background: s.color }} aria-hidden="true" />{s.label}</span>
+                <h2 className={styles.columnTitle}><span className={styles.dot} style={{ background: s.color }} aria-hidden="true" />{s.label}</h2>
                 <span className={styles.columnCount}>{cards.length}</span>
               </div>
-              {cards.length === 0 ? <div className={styles.columnEmpty}>אין</div> : cards.map(p => (
+              {cards.length === 0 ? <div className={styles.columnEmpty}>אין לידים בשלב הזה</div> : cards.map(p => (
                 <button key={p.id} type="button" className={styles.leadCard} data-open-prospect={p.id} onClick={() => startEdit(p)} aria-label={'פתח ליד: ' + p.name}>
                   <span className={styles.leadHeading}><span className={styles.leadName}>{p.name}</span><span className={styles.openArrow} aria-hidden="true">←</span></span>
                   {p.phone && <span className={styles.leadPhone} dir="ltr">{p.phone}</span>}
@@ -186,7 +191,7 @@ export default function Prospects({ advisorId, onConvert }) {
             </section>
           );
         })}
-      </div>
+      </div>}
       <p className={biz.note}>כל המדדים למעלה מתעדכנים אוטומטית מטבלת הלידים.</p>
 
       {modalOpen && (
