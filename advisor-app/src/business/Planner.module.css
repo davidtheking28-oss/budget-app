@@ -42,3 +42,9 @@
 .categories > button { justify-content: center; border-radius: var(--radius-sm); padding-inline: 8px; }
 .timeSelect { direction: ltr; text-align: center; font-variant-numeric: tabular-nums; }
 @media (max-width: 600px) { .categories { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.categories > button::before { content: ''; width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: var(--c); }
+.categories > .categorySelected { background: var(--cs); color: var(--ci); border-color: var(--c); }
+.duration { margin: -4px 0 0; color: var(--text2); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.eventNote { resize: vertical; min-height: 72px; }
+.deleteEvent { margin-inline-start: auto; color: var(--red); }

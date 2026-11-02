@@ -59,6 +59,7 @@ function EventModal({ draft, onClose, onSave, onDelete }) {
   const [form, setForm] = useState(draft);
   const [error, setError] = useState('');
   const times = useMemo(timeOptions, []);
+  const duration = mins(form.e) - mins(form.s);
   const set = key => e => setForm(prev => ({ ...prev, [key]: e.target.value }));
 
   function submit(e) {
@@ -74,7 +75,7 @@ function EventModal({ draft, onClose, onSave, onDelete }) {
         <label className={business.fieldLabel}>כותרת<input className={business.input} value={form.n} maxLength={60} onChange={set('n')} /></label>
         <div className={business.fieldLabel} role="group" aria-label="קטגוריה">קטגוריה
           <div className={business.pills + ' ' + styles.categories}>
-            {CATS.map(c => <button key={c.key} type="button" className={form.t === c.key ? business.pillOn : business.pill} aria-pressed={form.t === c.key} onClick={() => setForm(prev => ({ ...prev, t: c.key }))}>{c.label}</button>)}
+            {CATS.map(c => <button key={c.key} type="button" className={(form.t === c.key ? business.pillOn + ' ' + styles.categorySelected : business.pill) + ' ' + styles['cat_' + c.key]} aria-pressed={form.t === c.key} onClick={() => setForm(prev => ({ ...prev, t: c.key }))}>{c.label}</button>)}
           </div>
         </div>
         <label className={business.fieldLabel}>תאריך<input className={business.input} type="date" value={form.date} onChange={set('date')} /></label>
@@ -86,12 +87,13 @@ function EventModal({ draft, onClose, onSave, onDelete }) {
             <select className={business.select + ' ' + styles.timeSelect} value={form.e} onChange={set('e')}>{times.slice(1).map(t => <option key={t} value={t}>{t}</option>)}</select>
           </label>
         </div>
-        <label className={business.fieldLabel}>הערה<input className={business.input} value={form.o} maxLength={120} onChange={set('o')} /></label>
+        {duration > 0 && <p className={styles.duration}>משך האירוע: {duration >= 60 ? `${duration < 120 ? 'שעה' : `${Math.floor(duration / 60)} שעות`}${duration % 60 ? ` ו־${duration % 60} דקות` : ''}` : `${duration} דקות`}</p>}
+        <label className={business.fieldLabel}>הערה<textarea className={business.input + ' ' + styles.eventNote} rows={2} value={form.o} maxLength={120} onChange={set('o')} /></label>
         {error && <p className={business.fieldError} role="alert">{error}</p>}
         <div className={business.formActions}>
           <button type="submit" className={business.btn}>שמירה</button>
           <button type="button" className={business.btnGhost} onClick={onClose}>ביטול</button>
-          {draft.id && <button type="button" className={business.btnGhost} onClick={() => onDelete(draft)}>מחיקה</button>}
+          {draft.id && <button type="button" className={business.btnGhost + ' ' + styles.deleteEvent} onClick={() => onDelete(draft)}>מחיקה</button>}
         </div>
       </form>
     </Modal>
