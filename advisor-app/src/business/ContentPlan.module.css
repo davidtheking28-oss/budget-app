@@ -12,3 +12,6 @@
 .workspace { min-width: 0; }
 .workspaceHeader { display: flex; justify-content: flex-end; margin-block-end: 12px; }
 @media (max-width: 600px) { .stateCard { padding: 20px; } .emptyHeading { align-items: flex-start; gap: 12px; } .fileName { margin-inline-start: 0; } }
+
+.saveState { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-block: 8px; color: var(--text2); font-size: var(--text-sm); }
+.saveState[role="alert"] { color: var(--red); }

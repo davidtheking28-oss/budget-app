@@ -127,43 +127,75 @@ export default function ContentPlan({ advisorId }) {
   const saveTimer = useRef(null);
   const saveChain = useRef(Promise.resolve());
   const fileInput = useRef(null);
+  const latestDone = useRef(null);
+  const importingRef = useRef(false);
+  const [importing, setImporting] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('');
 
   const load = useCallback(async () => {
     if (!advisorId) return;
     setError(false);
-    const { data, error: err } = await supabase.from(TABLE).select('id,kind,data').eq('advisor_id', advisorId).in('kind', [PROGRESS, DOC]).order('created_at', { ascending: true });
-    if (err) { setError(true); return; }
-    const byKind = {};
-    for (const row of data || []) if (!byKind[row.kind]) byKind[row.kind] = row;
-    ids.current = { [PROGRESS]: byKind[PROGRESS]?.id || null, [DOC]: byKind[DOC]?.id || null };
-    setStored(byKind[PROGRESS]?.data?.done || null);
-    setDoc(validDoc(byKind[DOC]?.data) ? byKind[DOC].data : null);
+    try {
+      const { data, error: err } = await supabase.from(TABLE).select('id,kind,data').eq('advisor_id', advisorId).in('kind', [PROGRESS, DOC]).order('created_at', { ascending: true });
+      if (err) { setError(true); return; }
+      const byKind = {};
+      for (const row of data || []) if (!byKind[row.kind]) byKind[row.kind] = row;
+      ids.current = { [PROGRESS]: byKind[PROGRESS]?.id || null, [DOC]: byKind[DOC]?.id || null };
+      setStored(byKind[PROGRESS]?.data?.done || null);
+      setDoc(validDoc(byKind[DOC]?.data) ? byKind[DOC].data : null);
+    } catch {
+      setError(true);
+    }
   }, [advisorId]);
 
   useEffect(() => { load(); }, [load]);
 
   const save = useCallback(async (kind, payload) => {
-    if (ids.current[kind]) {
-      const { error: err } = await supabase.from(TABLE).update({ data: payload, updated_at: new Date().toISOString() }).eq('id', ids.current[kind]).eq('advisor_id', advisorId);
-      return !err;
+    try {
+      if (ids.current[kind]) {
+        const { error: err } = await supabase.from(TABLE).update({ data: payload, updated_at: new Date().toISOString() }).eq('id', ids.current[kind]).eq('advisor_id', advisorId);
+        return !err;
+      }
+      const { data, error: err } = await supabase.from(TABLE).insert({ advisor_id: advisorId, kind, period: null, data: payload }).select().single();
+      if (err) return false;
+      ids.current[kind] = data.id;
+      return true;
+    } catch {
+      return false;
     }
-    const { data, error: err } = await supabase.from(TABLE).insert({ advisor_id: advisorId, kind, period: null, data: payload }).select().single();
-    if (err) return false;
-    ids.current[kind] = data.id;
-    return true;
   }, [advisorId]);
 
+  const saveProgress = useCallback(() => {
+    setSaveStatus('saving');
+    saveChain.current = saveChain.current.then(async () => {
+      const saved = await save(PROGRESS, { done: latestDone.current });
+      setSaveStatus(saved ? 'saved' : 'error');
+    });
+  }, [save]);
+
   const onDone = useCallback(done => {
+    latestDone.current = done;
+    setSaveStatus('saving');
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      saveChain.current = saveChain.current.then(async () => { if (!(await save(PROGRESS, { done }))) toast('שגיאה בשמירה', 'error'); });
+      saveTimer.current = null;
+      saveProgress();
     }, 400);
+  }, [saveProgress]);
+
+  useEffect(() => () => {
+    if (!saveTimer.current) return;
+    clearTimeout(saveTimer.current);
+    saveChain.current = saveChain.current.then(() => save(PROGRESS, { done: latestDone.current }));
   }, [save]);
 
   async function importFile(event) {
     const file = event.target.files?.[0];
     event.target.value = '';
-    if (!file) return;
+    if (!file || importingRef.current) return;
+    importingRef.current = true;
+    setImporting(true);
+    try {
     let parsed;
     try { parsed = JSON.parse(await file.text()); } catch { toast('הקובץ אינו קובץ תוכן תקין', 'error'); return; }
     if (!validDoc(parsed)) { toast('הקובץ אינו קובץ תוכן תקין', 'error'); return; }
@@ -172,6 +204,10 @@ export default function ContentPlan({ advisorId }) {
     setDoc(payload);
     setVersion(v => v + 1);
     toast('התוכן נשמר', 'success');
+    } finally {
+      importingRef.current = false;
+      setImporting(false);
+    }
   }
 
   if (error) return <section className={styles.stateCard}><ErrorState message="לא הצלחנו לטעון את לוח התוכן" onRetry={load} /></section>;
@@ -187,7 +223,7 @@ export default function ContentPlan({ advisorId }) {
           <div><h2>לוח התוכן שלך מתחיל כאן</h2><p>כל התכנון שלך, שבוע אחרי שבוע, במקום אחד.</p></div>
         </div>
         <ol className={styles.importSteps}><li>בחר את קובץ התוכן שקיבלת <bdi className={styles.fileName}>content-plan-content.json</bdi></li><li>לאחר הטעינה אפשר לעבור על התוכן ולסמן מה כבר בוצע.</li></ol>
-        <div className={styles.importFooter}><Button onClick={() => fileInput.current?.click()}>בחר קובץ תוכן</Button><span>התוכן וסימוני הביצוע נשמרים בחשבון שלך.</span></div>
+        <div className={styles.importFooter}><Button disabled={importing} onClick={() => fileInput.current?.click()}>{importing ? 'טוען ושומר…' : 'בחר קובץ תוכן'}</Button><span>התוכן וסימוני הביצוע נשמרים בחשבון שלך.</span></div>
         {picker}
       </section>
     );
@@ -195,7 +231,8 @@ export default function ContentPlan({ advisorId }) {
 
   return (
     <section className={styles.workspace}>
-      <div className={styles.workspaceHeader}><Button variant="ghost" onClick={() => fileInput.current?.click()}>טען קובץ תוכן מעודכן</Button>{picker}</div>
+      <div className={styles.workspaceHeader}><Button variant="ghost" disabled={importing} onClick={() => fileInput.current?.click()}>{importing ? 'טוען ושומר…' : 'טען קובץ תוכן מעודכן'}</Button>{picker}</div>
+      {saveStatus && <div className={styles.saveState} role={saveStatus === 'error' ? 'alert' : 'status'}><span>{saveStatus === 'error' ? 'סימוני הביצוע לא נשמרו. הם עדיין מוצגים כאן — נסה לשמור שוב.' : saveStatus === 'saving' ? 'שומר סימוני ביצוע…' : 'סימוני הביצוע נשמרו'}</span>{saveStatus === 'error' && <Button variant="ghost" onClick={saveProgress}>נסה לשמור שוב</Button>}</div>}
       <PlanFrame key={version} doc={doc} stored={stored} onDone={onDone} />
     </section>
   );
