@@ -62,7 +62,7 @@ function FunnelStats({ s, title }) {
         <div className={metrics.funnelStage}><div className={styles.statLabel}>פגישות שנקבעו</div><strong>{s.meetings}</strong><div className={styles.statNote}>מתוך {s.total} לידים</div></div>
         <div className={metrics.funnelStage}><div className={styles.statLabel}>הגיעו לפגישה</div><strong>{s.showed}</strong><div className={styles.statNote}>מתוך {s.total} לידים</div></div>
         <div className={metrics.funnelStage}><div className={styles.statLabel}>פגישות רלוונטיות</div><strong>{s.relevant}</strong><div className={styles.statNote}>מתוך {s.showed} שהגיעו</div></div>
-        <div className={metrics.funnelStage + ' ' + metrics.funnelResult}><div className={styles.statLabel}>נסגרו</div><strong>{s.closed}</strong><div className={styles.statNote}>מתוך {s.relevant} רלוונטיים</div></div>
+        <div className={metrics.funnelStage + (s.closed > 0 ? ' ' + metrics.funnelResult : '')}><div className={styles.statLabel}>נסגרו</div><strong>{s.closed}</strong><div className={styles.statNote}>מתוך {s.relevant} רלוונטיים</div></div>
       </div>
       <div className={metrics.conversionRates}>
         <div><span>אחוז הגעה</span><strong>{percentLabel(s.showRate)}</strong><span className={styles.statNote}>הגיעו / לידים</span></div>
@@ -184,8 +184,8 @@ function SalesBody({ advisorId, ym, scope }) {
   const rows = periods.map((p, i) => ({ label: scope === 'year' ? monthName(i) : monthName(Number(p.slice(5)) - 1) + ' ' + p.slice(0, 4), s: months[i] }));
   return (
     <>
-      <section className={styles.bigCard}><div className={styles.cardHead}><h3 className={styles.cardTitle}>מליד ללקוח</h3><span className={styles.cardSub}>שלבי המכירה בתקופה הנבחרת</span></div><FunnelStats s={stats} title="מדדי מכירות" /><p className={styles.note}>שורת המדדים נמדדת על הלידים שנכנסו בתקופה הנבחרת. הגרף והטבלה נספרים לפי חודש האירוע.</p></section>
-      <TrendChart labels={periods.map(shortLabel)} metrics={chartMetrics} footnote={footnoteOf(scope, stats.total)} />
+      <section className={styles.bigCard + ' ' + metrics.salesSummary}><div className={styles.cardHead}><h3 className={styles.cardTitle}>מליד ללקוח</h3><span className={styles.cardSub}>לידים שנכנסו בתקופה הנבחרת</span></div><FunnelStats s={stats} title="מדדי מכירות" /></section>
+      <TrendChart compact title="מגמות לפי חודש האירוע" labels={periods.map(shortLabel)} metrics={chartMetrics} footnote={scope === 'month' ? '12 החודשים האחרונים · כל פעילות מוצגת בחודש שבו התרחשה, גם אם הליד נכנס קודם.' : 'חודשי השנה · כל פעילות מוצגת בחודש שבו התרחשה, גם אם הליד נכנס קודם.'} />
       <section className={styles.card}><div className={styles.cardHead}><h3 className={styles.cardTitle}>{scope === 'year' ? 'חודשי השנה' : scope === 'month' ? '12 החודשים האחרונים' : 'חודשי התקופה'}</h3></div><FunnelTable rows={rows} total={sumFunnel(months)} /><details className={metrics.calculationNote}><summary>איך מחושבים הנתונים בטבלה?</summary><p className={styles.note}>לידים נספרים לפי חודש הכניסה. פגישות, הגיעו ופגישות רלוונטיות נספרות לפי חודש הפגישה. סגירות נספרות לפי חודש הסגירה. שורת הסיכום מחשבת כל אחוז מתוך הסכומים של כל התקופה, ולא כממוצע של האחוזים החודשיים.</p></details></section>
     </>
   );

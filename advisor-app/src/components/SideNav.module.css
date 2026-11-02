@@ -29,7 +29,7 @@
 button.mode { border: none; background: transparent; font-family: inherit; cursor: pointer; }
 button.mode:hover { color: var(--workspace-text); }
 button.mode:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
-button.modeOn { background: rgba(var(--accent-rgb), 0.22); color: var(--workspace-mint); }
+button.modeOn { background: rgba(var(--accent-rgb), 0.22); color: var(--workspace-text); }
 
 .nav { display: flex; flex-direction: column; gap: var(--space-1); padding-block: var(--space-2) var(--space-4); min-height: 0; overflow-y: auto; scrollbar-width: thin; }
 
