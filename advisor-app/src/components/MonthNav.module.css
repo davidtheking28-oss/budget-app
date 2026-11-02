@@ -6,14 +6,6 @@
   padding: 0;
 }
 
-.email {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 14px;
-  word-break: break-word;
-}
-
 .row {
   display: flex;
   align-items: center;
@@ -74,22 +66,4 @@
 .label:disabled {
   cursor: default;
   color: var(--text);
-}
-
-.nextMeeting {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--text-xs);
-  color: var(--gold);
-  margin-bottom: 10px;
-}
-
-.openTasks {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--text-xs);
-  color: var(--red);
-  margin-bottom: 10px;
 }

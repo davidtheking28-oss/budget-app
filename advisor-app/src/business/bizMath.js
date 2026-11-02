@@ -2,7 +2,6 @@ export const DEPARTMENTS = ['שירות', 'שיווק', 'מכירות', 'פינ�
 export const PRIORITIES = ['גבוהה', 'בינונית', 'נמוכה'];
 export const DIFFICULTIES = ['קלה', 'בינונית', 'קשה'];
 export const BUSINESS_TYPES = ['עוסק מורשה', 'עוסק פטור', 'עוסק זעיר'];
-export const LEAD_SOURCES = ['דף נחיתה', 'הודעות בפרטי', 'פה לאוזן · לקוח ישן', 'המלצה'];
 
 export function num(value) {
   const n = parseFloat(value);

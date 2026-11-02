@@ -11,7 +11,6 @@ export function withCustomCats(list, settings) {
   const custom = (settings?.customCats || []).filter(c => typeof c === 'string' && c && !list.includes(c));
   return custom.length ? [...list.slice(0, -1), ...custom, list[list.length - 1]] : list;
 }
-export function expenseCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_BUSINESS : EXPENSE_CATS; }
 export function incomeCatsFor(mode) { return mode === 'business' ? INCOME_CATS_BUSINESS : INCOME_CATS; }
 export function budgetCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_BUSINESS : BUDGET_CATS; }
 // Category slices/bars. Kept to the brand's teal-slate family plus two muted
@@ -33,7 +32,6 @@ export const HASH_PALETTE = [
 // A category's colour must be stable everywhere — filtering or re-sorting a list
 // must never repaint it. Key the palette on the category's position in the
 // canonical arrays, not on its rank in whatever list is being rendered.
-const CAT_ORDER = [...BUDGET_CATS, ...INCOME_CATS.filter(c => !BUDGET_CATS.includes(c))];
 
 export function stableColor(key, order) {
   const k = String(key);
@@ -44,9 +42,6 @@ export function stableColor(key, order) {
   return HASH_PALETTE[h % HASH_PALETTE.length];
 }
 
-export function catColor(cat) {
-  return stableColor(cat, CAT_ORDER);
-}
 // Chart.js takes plain colour strings, so it cannot follow CSS variables.
 // Read the live computed values instead, and re-read them whenever the theme
 // changes (callers key their charts on the theme so this re-runs).

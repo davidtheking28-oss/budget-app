@@ -149,24 +149,6 @@ td + td {
   margin-bottom: var(--space-4);
 }
 
-.shareRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-inline-start: auto;
-}
-
-.shareLink {
-  font: inherit;
-  font-size: var(--text-sm);
-  color: var(--accent);
-  cursor: pointer;
-  text-decoration: underline;
-  background: none;
-  border: none;
-  padding: 0;
-}
-
 /* Browsers don't print background colors by default, and this report is meant
    to be printed/exported to send to a client — keep the physical output light
    and ink-safe regardless of the dark on-screen preview above. */

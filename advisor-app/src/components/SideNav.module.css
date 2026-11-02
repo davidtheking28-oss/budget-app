@@ -31,17 +31,6 @@ button.mode:hover { color: var(--workspace-text); }
 button.mode:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
 .modeOn { background: rgba(var(--accent-rgb), 0.22); color: var(--workspace-mint); }
 
-.client { padding: 16px 10px 4px; min-width: 0; }
-.clientName {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 800;
-  font-size: var(--text-md);
-  unicode-bidi: plaintext;
-}
-.clientSince { margin-top: 2px; color: var(--workspace-muted); font-size: var(--text-xs); }
-
 .nav { display: flex; flex-direction: column; gap: 4px; padding-top: var(--space-2); }
 
 .group {

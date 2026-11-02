@@ -1,20 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { taskMatches, lastHeldMeeting, meetingChanges, daysUntil } from './workflow.js';
+import { lastHeldMeeting, meetingChanges, daysUntil } from './workflow.js';
 
 describe('daily work and meeting preparation', () => {
-  it('does not mix completed documents or future tasks into overdue work', () => {
-    const today = '2026-10-15';
-    const rows = [
-      { id: 'old', due_date: '2026-10-14', task_kind: 'document' },
-      { id: 'today', due_date: today },
-      { id: 'future', due_date: '2026-10-16' },
-      { id: 'done', due_date: '2026-10-12', task_kind: 'document', done: true },
-      { id: 'undated', task_kind: 'document' }
-    ];
-    expect(rows.filter(t => taskMatches(t, 'overdue', today)).map(t => t.id)).toEqual(['old']);
-    expect(rows.filter(t => taskMatches(t, 'today', today)).map(t => t.id)).toEqual(['today']);
-    expect(rows.filter(t => taskMatches(t, 'documents', today)).map(t => t.id)).toEqual(['old', 'undated']);
-  });
   it('uses the nearest past meeting while excluding declined and future meetings', () => {
     const meetings = [
       { id: 'future', scheduled_at: '2026-10-20T10:00:00Z' },

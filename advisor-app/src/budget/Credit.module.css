@@ -39,13 +39,6 @@
   box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
 }
 
-.rowActions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-shrink: 0;
-}
-
 .countBadge {
   color: var(--text3);
   font-family: var(--font-body);
@@ -56,17 +49,6 @@
 /* Was CSS multi-column — it re-balanced which card lands in which column
    whenever a card's height changed (e.g. an accordion opening), reshuffling
    card positions. A grid keeps each card in its own fixed cell. */
-.sectionsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: var(--space-5);
-  margin-bottom: var(--space-6);
-}
-
-@media (max-width: 560px) {
-  .sectionsGrid { grid-template-columns: 1fr; }
-}
 
 .section {
   background: var(--surface);
@@ -76,95 +58,9 @@
   margin-bottom: var(--space-6);
 }
 
-.sectionsGrid .section {
-  margin-bottom: 0;
-}
-
 .sectionEmpty {
   color: var(--text3);
   font-size: var(--text-base);
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-width: 0;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-  animation: riseIn var(--motion) var(--ease-out-expo) both;
-  transition: transform 0.25s var(--ease-out-expo);
-}
-
-.rowCard {
-  padding: var(--space-3) 0;
-  border: none;
-  border-top: 1px solid var(--border);
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-}
-
-.grid > .rowCard:first-child {
-  border-top: none;
-}
-
-.rowStacked {
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--space-2);
-}
-
-.rowMain {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.loanBarRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.loanBar {
-  flex: 1;
-  height: 6px;
-  border-radius: var(--radius-xs);
-  background: var(--track);
-  overflow: hidden;
-}
-
-.loanBarFill {
-  height: 100%;
-  width: 100%;
-  border-radius: var(--radius-xs);
-  background: var(--accent);
-  transform-origin: right;
-  transition: transform 0.4s var(--ease-out-expo);
-}
-
-.loanBarPct {
-  flex-shrink: 0;
-  min-width: 2.4em;
-  text-align: left;
-  direction: ltr;
-  unicode-bidi: isolate;
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--text3);
-  font-variant-numeric: tabular-nums;
-}
-
-.rowCard:hover {
-  border-color: var(--border);
 }
 
 .name {
@@ -185,86 +81,6 @@
   direction: ltr;
   unicode-bidi: isolate;
   font-size: var(--text-md);
-}
-
-.rowDone {
-  opacity: 0.6;
-}
-
-.doneBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  margin-inline-start: var(--space-2);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  background: rgba(var(--green-rgb), 0.12);
-  color: var(--green);
-}
-
-.payoffLabel {
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text3);
-}
-
-.payoffDanger {
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--red);
-}
-
-.consolTableWrap { overflow-x: auto; }
-
-.consolTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
-}
-
-.consolTable th {
-  text-align: start;
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--text3);
-  border-bottom: 1px solid var(--border);
-}
-
-.consolTable td {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-sm);
-  color: var(--text2);
-  border-bottom: 1px solid var(--border);
-}
-
-.consolGroupRow td {
-  padding-top: var(--space-4);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--text3);
-}
-
-.consolCheckLabel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 24px;
-}
-
-.consolCheckLabel input {
-  width: 24px;
-  height: 24px;
-  margin: 0;
-  flex-shrink: 0;
-  accent-color: var(--accent);
-}
-
-@media (max-width: 860px) {
-  .consolCheckLabel { min-height: 44px; }
 }
 
 .loanTableWrap { position: relative; overflow-x: auto; }
@@ -297,8 +113,6 @@
 
 .loanTr:hover td { background: var(--hover); }
 
-.loanTrDanger td:first-child { box-shadow: inset -3px 0 0 var(--red); }
-
 .loanMonthly { color: var(--text); font-weight: 700; }
 
 .loanActions { white-space: nowrap; text-align: end; }
@@ -323,7 +137,6 @@
 .loanTable td:nth-child(3), .loanTable td.loanMonthly { color: var(--text); font-weight: 800; font-size: var(--text-md); white-space: nowrap; background: var(--surface2); }
 .loanTable td:nth-child(4), .loanTable td:nth-child(5), .loanTable td:nth-child(7) { font-size: var(--text-sm); }
 .loanTable tbody tr:last-child td { border-bottom: none; }
-.payoffLabel { margin-top: 8px; line-height: 1.6; }
 }
 
 @media (min-width: 861px) {

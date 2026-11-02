@@ -126,16 +126,6 @@
 
 /* Replaces the old standalone "דורש טיפול היום" panel — the same signal now
    lives right on the client it concerns instead of a separate list to cross-reference. */
-.alertDot {
-  position: absolute;
-  top: -1px;
-  inset-inline-end: -1px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--red);
-  border: 2px solid var(--surface);
-}
 
 .info {
   flex: 0 1 auto;
@@ -164,22 +154,6 @@
   white-space: nowrap;
 }
 
-.healthBadge {
-  flex-shrink: 0;
-  min-width: 30px;
-  padding: 2px 7px;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  border: 1px solid transparent;
-}
-
-.healthGood { color: var(--green); background: rgba(var(--green-rgb), 0.10); border-color: rgba(var(--green-rgb), 0.28); }
-.healthWarn { color: var(--yellow); background: rgba(var(--yellow-rgb), 0.10); border-color: rgba(var(--yellow-rgb), 0.28); }
-.healthBad  { color: var(--red);    background: rgba(var(--red-rgb), 0.10);   border-color: rgba(var(--red-rgb), 0.28); }
-
 .chips {
   display: flex;
   align-items: center;
@@ -189,58 +163,16 @@
   min-width: 0;
 }
 
-.remainingStat {
-  flex-shrink: 0;
-  margin-inline-start: auto;
-  padding-inline-start: var(--space-4);
-  text-align: left;
-}
-
-.remainingStatValue {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
-
-.remainingStatLabel {
-  font-size: var(--text-xs);
-  color: var(--text2);
-  margin-top: 2px;
-}
-
-.remainingStatOver .remainingStatValue {
-  color: var(--red);
-}
-
-.remainingStatEmpty .remainingStatLabel {
-  margin-top: 0;
-}
-
-.rowMeta {
-  font-size: var(--text-xs);
-  color: var(--text2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.overageChip, .taskChip, .uploadErrorChip {
+.uploadErrorChip {
   font-size: var(--text-xs);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
 }
 
-.overageChip, .uploadErrorChip {
+.uploadErrorChip {
   color: var(--red);
   background: rgba(var(--red-rgb), 0.09);
-}
-
-.taskChip {
-  color: var(--gold);
-  background: rgba(var(--gold-rgb), 0.09);
 }
 
 .empty {
@@ -277,112 +209,6 @@
   max-width: 340px;
   line-height: 1.6;
 }
-
-.emptyCta {
-  margin-top: 4px;
-}
-
-.statBar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: var(--space-3);
-  margin-bottom: var(--space-6);
-}
-
-.statSecondary {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  padding: var(--space-4);
-  transition: border-color .25s ease;
-}
-
-.statSecondary:hover { border-color: var(--border-strong); }
-
-.statSecondaryClickable {
-  cursor: pointer;
-  font-family: inherit;
-  text-align: inherit;
-  width: 100%;
-}
-
-.statSecondaryClickable:hover { border-color: var(--accent); }
-
-.statSecondaryActive {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
-}
-
-.filterBanner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-sm);
-  color: var(--text2);
-  padding: var(--space-2) var(--space-1);
-  margin-bottom: var(--space-2);
-}
-
-.filterClear {
-  border: none;
-  background: none;
-  padding: 0;
-  color: var(--accent);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.statSecondaryBody {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.statIcon {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text3);
-  background: var(--hover);
-}
-
-.statIcon.statAccent { color: var(--accent); background: var(--accent-dim); }
-.statIcon.statRed { color: var(--red); background: rgba(var(--red-rgb), 0.10); }
-.statIcon.statGold { color: var(--gold); background: rgba(var(--gold-rgb), 0.10); }
-
-.statSecondaryValue {
-  font-family: var(--font-body);
-  font-size: var(--text-display-sm);
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  color: var(--text);
-}
-
-.statSecondaryLabel {
-  color: var(--text3);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-@media (max-width: 720px) {
-  .statBar { grid-template-columns: 1fr; }
-}
-
-.statAccent { color: var(--accent); }
-.statRed { color: var(--red); }
-.statGold { color: var(--gold); }
 
 .sectionHead {
   display: flex;
@@ -422,57 +248,10 @@
   .kbdHint { display: none; }
 }
 
-.addForm {
-  display: flex;
-  gap: 10px;
-  flex-basis: 100%;
-}
-
 /* On a narrow screen the four controls shrank past their content and clipped
    their own labels mid-word. Give each pair its own full-width row instead. */
-@media (max-width: 860px) {
-  .addForm {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    width: 100%;
-  }
-  .addInput {
-    width: 100%;
-  }
-}
-
-.addInput {
-  width: min(200px, 100%);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--control-border);
-  background: var(--input-bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  outline: none;
-  text-transform: uppercase;
-}
 
 /* iOS Safari zooms the page on focus when an input's text is under 16px */
-@media (max-width: 860px) {
-  .addInput { font-size: 16px; }
-}
-
-.addInput:focus-visible {
-  border-color: rgba(var(--accent-rgb), 0.5);
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
-}
-
-.addInputCode {
-  text-align: center;
-  letter-spacing: 2px;
-}
-
-.addInputEmail {
-  width: min(220px, 100%);
-  text-transform: none;
-}
 
 /* --- pending invites --- */
 
@@ -572,121 +351,14 @@
 
 /* --- connected-clients table --- */
 
-.tableWrap {
-  overflow-x: auto;
-  margin-top: var(--space-6);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-.table th {
-  text-align: right;
-  color: var(--text3);
-  font-weight: 600;
-  font-size: var(--text-xs);
-  letter-spacing: 0.03em;
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-
-.table td {
-  padding: var(--space-3);
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.clientRow {
-  transition: background 0.15s ease;
-  cursor: pointer;
-}
-
-.clientRow:hover {
-  background: var(--hover);
-}
-
-.rowUrgent td:first-child {
-  box-shadow: inset -2px 0 0 rgba(var(--red-rgb), 0.5);
-}
-
-.clientCellBtn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-width: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: inherit;
-  text-align: inherit;
-  cursor: pointer;
-  color: inherit;
-}
-
-.remainingCell {
-  text-align: left;
-  white-space: nowrap;
-}
-
-.actionsCell {
-  width: 1%;
-  white-space: nowrap;
-  text-align: left;
-}
-
-.rowActions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-2);
-}
-
-.openCardBtn {
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--accent-2);
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: border-color 0.15s ease, transform 0.15s var(--ease-out-expo);
-}
-
-.openCardBtn:hover {
-  border-color: var(--accent);
-}
-
-.openCardBtn:active {
-  transform: scale(0.96);
-}
-
-.rowRemoveBtn {
-  position: static;
-  opacity: 1;
-}
-
 @media (max-width: 860px) {
   .removeBtn {
     width: 44px;
     height: 44px;
   }
 
-  .openCardBtn,
   .confirmRemoveBtn,
-  .cancelRemoveBtn,
-  .clientCellBtn {
+  .cancelRemoveBtn {
     min-height: 44px;
   }
 }
@@ -699,141 +371,9 @@
 /* Below 560px the 5-column table stops fitting even with horizontal scroll on
    a real 320px device — same fallback PipelineTable.module.css already uses:
    one card per client, each cell labeled via data-label. */
-@media (max-width: 560px) {
-  .tableWrap { overflow-x: visible; }
-
-  .table, .table thead, .table tbody, .table tr, .table td { display: block; width: 100%; }
-  .table thead { position: absolute; inset-inline-start: -9999px; }
-
-  .table tr {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: var(--space-2) var(--space-3);
-    margin-bottom: var(--space-3);
-  }
-
-  .table td {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    white-space: normal;
-    border-bottom: 1px solid var(--border);
-    padding: var(--space-2) 0;
-  }
-
-  .table td:last-child { border-bottom: none; justify-content: flex-end; }
-
-  .table td[data-label]:not([data-label=""])::before {
-    content: attr(data-label);
-    color: var(--text3);
-    font-size: var(--text-xs);
-    font-weight: 600;
-    flex-shrink: 0;
-  }
-
-  .clientCellBtn {
-    width: auto;
-  }
-
-  .remainingCell {
-    text-align: right;
-  }
-}
-
-
-.followCard {
-  margin-bottom: var(--space-6);
-}
-
-.followRow {
-  position: relative;
-  cursor: pointer;
-  border-top: 1px solid var(--border);
-}
-
-.followRow:first-of-type { border-top: none; }
-
-.followRowBtn {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  cursor: pointer;
-}
-
-.followRowBtn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
-
-.followRow:hover { background: var(--hover); }
-
-.followTemp {
-  margin-inline-start: 8px;
-  padding: 1px 8px;
-  border-radius: 6px;
-  font-size: var(--text-xs);
-  font-weight: 700;
-  vertical-align: middle;
-}
-
-.hot { background: rgba(var(--red-rgb), 0.12); color: var(--red); }
-.warm { background: rgba(var(--yellow-rgb), 0.14); color: var(--yellow); }
-.cold { background: var(--surface2); color: var(--text2); }
-
-.followSide {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px 14px;
-  font-size: var(--text-sm);
-}
-
-.followPhone {
-  position: relative;
-  color: var(--accent);
-  text-decoration: none;
-  unicode-bidi: isolate;
-}
-
-.followPhone:hover { text-decoration: underline; }
-
-.followLate {
-  color: var(--red);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.followLink {
-  margin-top: 10px;
-  min-height: 32px;
-  padding: 4px 12px;
-  font-size: var(--text-sm);
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-@media (max-width: 860px) {
-  .followLink { min-height: 44px; }
-}
 
 :root[data-theme="dark"] .initial,
-:root[data-theme="dark"] .pendingChipAccept,
-:root[data-theme="dark"] .openCardBtn {
+:root[data-theme="dark"] .pendingChipAccept {
   color: var(--accent);
 }
 
@@ -841,47 +381,7 @@
   color: var(--text3);
 }
 
-.identity {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.clientName {
-  color: var(--text);
-  font-size: var(--text-md);
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 @media (min-width: 861px) {
-  .tableWrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-  }
-
-  .table {
-    table-layout: fixed;
-  }
-
-  .table th:nth-child(1) { width: 28%; }
-  .table th:nth-child(2) { width: 28%; }
-  .table th:nth-child(3) { width: 14%; }
-  .table th:nth-child(4) { width: 14%; }
-  .table th:nth-child(5) { width: 16%; }
-
-  .table td {
-    padding-block: var(--space-4);
-  }
-
-  .identity .emailText {
-    font-size: var(--text-sm);
-    color: var(--text2);
-  }
 
   .info {
     flex: 1;
@@ -890,40 +390,6 @@
   .chips {
     margin-top: 0;
     gap: 6px;
-  }
-
-  .rowMeta {
-    flex-basis: 100%;
-    white-space: normal;
-    line-height: 1.5;
-  }
-
-  .clientRow:focus-within {
-    background: var(--hover);
-  }
-
-
-  .rowActions {
-    flex-wrap: wrap;
-  }
-
-  .openCardBtn {
-    min-height: 36px;
-    background: var(--accent-dim);
-    padding-inline: var(--space-2);
-  }
-
-  .remainingStat {
-    padding-inline-start: 0;
-  }
-
-  .statSecondary {
-    min-height: 100px;
-  }
-
-  .statSecondaryLabel {
-    line-height: 1.4;
-    letter-spacing: 0;
   }
 }
 
@@ -934,53 +400,10 @@
   .card:active { transform: none; }
   .initial { width: 48px; height: 48px; font-size: var(--text-lg); }
   .email { font-weight: 700; }
-}
-
-@media (min-width: 861px) {
-.tableWrap { max-height: min(65vh, 640px); overflow: auto; }
-.table th { position: sticky; top: 0; z-index: 2; background: var(--surface2); box-shadow: 0 1px 0 var(--border-strong); }
-}
-
-:root[data-density="compact"] .table td { padding-block: 10px; } :root[data-density="compact"] .card { padding: 16px; }
-
-.dailyQueue, .clientViews { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 22px; margin-block: 24px; }
-.queueHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
-.queueHeader h2 { font-size: var(--text-lg); margin: 0; }
-.queueHeader p, .queueHeader > span, .queueEmpty { color: var(--text2); font-size: var(--text-sm); line-height: 1.6; }
-.viewButtons { display: flex; flex-wrap: wrap; gap: 8px; }
-.viewButtons button, .savedViews button { min-height: 36px; padding: 7px 12px; font: inherit; font-size: var(--text-sm); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); cursor: pointer; }
-.viewButtons button[aria-pressed="true"] { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-.queueScroll { max-height: 340px; overflow: auto; margin-top: 16px; }
-.queueRow { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--border); }
-.queueRow > div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.queueRow strong, .queueRow small { display: block; }
-.queueRow small { color: var(--text2); line-height: 1.6; margin-top: 5px; }
-.queueRow input { accent-color: var(--accent); width: 18px; height: 18px; flex-shrink: 0; }
-.viewFields { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-block: 16px; }
-.viewFields label { display: grid; gap: 6px; font-size: var(--text-sm); color: var(--text2); flex: 1 1 180px; }
-.viewFields input, .viewFields select { width: 100%; min-height: var(--control-h); padding: 8px 12px; font: inherit; color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface2); }
-.savedViews { display: flex; gap: 10px; flex-wrap: wrap; }
-.savedViews > span { display: inline-flex; }
-.savedViews button { border-radius: 0; }
-.resumeBar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 12px 18px; background: var(--accent-dim); border-radius: var(--radius-sm); margin-bottom: 20px; }
-
-
-
-.clientViews { border: none; border-radius: 0; padding: 0; margin: 24px 0 12px; background: transparent; }
-.clientViews .queueHeader { margin-bottom: 8px; }
-.clientViews .viewFields { margin-block: 12px; }
-.dailyQueue { padding: 18px 22px; }
-.dailyQueue .queueHeader { margin-bottom: 0; }
-.dailyQueue .queueHeader p { margin: 4px 0 0; }
-.dailyQueue .viewButtons { margin-top: 16px; }
-
-.quietStatus { color: var(--text2); font-size: var(--text-sm); }
-.clientActions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.moreActions { min-width: 36px; min-height: 36px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: transparent; color: var(--text2); font: inherit; font-size: var(--text-lg); cursor: pointer; }
-.moreActions:hover, .moreActions[aria-expanded="true"] { color: var(--accent); background: var(--accent-dim); }
-.actionOptions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+} :root[data-density="compact"] .card { padding: 16px; }
+.queueEmpty { color: var(--text2); font-size: var(--text-sm); line-height: 1.6; }
 .secondarySection { margin-top: 24px; border-top: 1px solid var(--border); }
 .secondaryToggle { width: 100%; min-height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border: none; background: transparent; color: var(--text); font: inherit; text-align: start; cursor: pointer; }
 .secondaryToggle > span:first-child { font-weight: 700; }
 .secondaryToggle > span:last-child { color: var(--text2); font-size: var(--text-sm); }
-.secondaryToggle:focus-visible, .moreActions:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.secondaryToggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }

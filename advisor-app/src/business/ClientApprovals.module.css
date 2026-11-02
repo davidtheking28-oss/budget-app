@@ -7,6 +7,17 @@
 .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding-block: 12px; border-block: 1px solid var(--border); }
 .facts > div { display: grid; gap: 4px; }
 .panel { background: var(--surface2); }
-.panel > :first-child > div > * { white-space: normal; overflow-wrap: anywhere; }
+.identityBlock > :first-child > div > * { white-space: normal; overflow-wrap: anywhere; }
 @media (max-width: 1100px) { .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 0; } .metric:nth-child(2) { border-inline-end: 0; padding-inline-end: 0; } .metric:nth-child(3) { padding-inline-start: 0; } }
 @media (max-width: 600px) { .overview { padding: 16px; } .metric { padding-inline: 12px; } }
+
+.inviteCard, .management { padding: 16px 20px; }
+.identityBlock, .actionsBlock { display: grid; gap: 12px; min-width: 0; }
+.actionsBlock > div:first-child { margin: 0; }
+.shortList { grid-template-columns: minmax(0, 1fr); }
+.shortList .panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 24px; }
+.danger { margin-block-start: 4px; padding-block-start: 10px; border-top: 1px solid var(--border); }
+.danger summary { cursor: pointer; color: var(--text2); font-size: var(--text-sm); font-weight: 600; padding-block: 4px; }
+.danger summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.danger > button { margin-block-start: 8px; }
+@media (max-width: 700px) { .shortList .panel { grid-template-columns: minmax(0, 1fr); gap: 16px; } }

@@ -115,7 +115,7 @@ export default function ClientApprovals({ advisorId }) {
         ))}
       </div>
 
-      <section className={styles.card}>
+      <section className={styles.card + ' ' + layout.inviteCard}>
         <div className={styles.inviteRow}>
           <div className={styles.inviteText}>
             <h2 className={styles.cardTitle}>הזמן לקוח חדש</h2>
@@ -128,7 +128,7 @@ export default function ClientApprovals({ advisorId }) {
         </div>
       </section>
 
-      <section className={styles.card}>
+      <section className={styles.card + ' ' + layout.management}>
         <div className={styles.cardHead}>
           <h2 className={styles.cardTitle}>ניהול משתמשים</h2>
           <div className={styles.toolbar}>
@@ -140,7 +140,7 @@ export default function ClientApprovals({ advisorId }) {
           </div>
         </div>
         {visible.length === 0 ? <div className={styles.emptyState}><span>אין משתמשים להצגה</span></div> : (
-          <div className={styles.approvalsGrid}>
+          <div className={styles.approvalsGrid + (visible.length <= 3 ? ' ' + layout.shortList : '')}>
             <ul className={styles.userList} aria-label="רשימת משתמשים">
               {visible.map(r => (
                 <li key={r.key}>
@@ -157,6 +157,7 @@ export default function ClientApprovals({ advisorId }) {
             </ul>
             {selected && (
               <aside className={styles.userPanel + ' ' + layout.panel} aria-label="פרטי משתמש">
+                <div className={layout.identityBlock}>
                 <div className={styles.userPanelHead}>
                   <span className={styles.userAvatar + ' ' + styles.userAvatarBig} aria-hidden="true">{initial(selected)}</span>
                   <div className={styles.userMain}>
@@ -168,6 +169,8 @@ export default function ClientApprovals({ advisorId }) {
                   <div><div className={styles.statLabel}>סטטוס</div><div className={styles.rowTitle}>{STATUS_LABEL[selected.kind]}</div></div>
                   <div><div className={styles.statLabel}>נשלח</div><div className={styles.rowTitle}>{formatDate(selected.createdAt.slice(0, 10))}</div></div>
                 </div>
+                </div>
+                <div className={layout.actionsBlock}>
                 {confirming?.key === selected.key ? (
                   <div className={styles.userConfirm} role="alert">
                     <div className={styles.rowTitle}>{ACTIONS[confirming.action].confirm}</div>
@@ -190,15 +193,16 @@ export default function ClientApprovals({ advisorId }) {
                       </>
                     )}
                     {dangerActions(selected).length > 0 && (
-                      <>
-                        <div className={styles.sectionLabel}>זהירות</div>
+                      <details key={selected.key} className={layout.danger}>
+                        <summary>פעולות נוספות</summary>
                         {dangerActions(selected).map(a => (
                           <button key={a} type="button" className={styles.userAction + ' ' + styles.userActionDanger} aria-label={ACTIONS[a].label + ': ' + selected.email} onClick={() => chooseAction(selected, a)}><span className={styles.rowTitle}>{ACTIONS[a].label}</span><span className={styles.rowMeta}>{actionHint[a]}</span></button>
                         ))}
-                      </>
+                      </details>
                     )}
                   </>
                 )}
+                </div>
               </aside>
             )}
           </div>
