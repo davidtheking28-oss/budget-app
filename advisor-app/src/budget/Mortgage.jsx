@@ -30,7 +30,8 @@ function Field({ label, value, onSave, type = 'number', prefix }) {
   }, [value, saving, saveError]);
 
   async function submit() {
-    if (saving || draft === String(value ?? '')) return;
+    if (saving) return;
+    if (draft === String(value ?? '')) { setSaveError(false); return; }
     setSaving(true);
     setSaveError(false);
     try {
