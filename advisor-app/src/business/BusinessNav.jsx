@@ -30,7 +30,7 @@ export const DEPARTMENTS = [
     label: 'ניהול',
     icon: icons.briefcase,
     items: [
-      { key: 'tasks', label: 'לו״ז + משימות', icon: icons.calendarCheck, bare: true },
+      { key: 'tasks', label: 'משימות', icon: icons.calendarCheck, bare: true },
       { key: 'planner', label: 'יומן שבועי', icon: icons.calendar, bare: true, description: 'יומן ליום ולשבוע, וסיכום יום.' },
       { key: 'client-approvals', label: 'אישור לקוחות', icon: icons.users, bare: true, description: 'הזמנות פתוחות ולקוחות שמחכים לאישור.' },
       { key: 'projects', label: 'פרויקטים', icon: icons.folder, bare: true },
