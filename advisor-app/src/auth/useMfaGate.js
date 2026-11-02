@@ -3,11 +3,12 @@ import { supabase } from '../supabaseClient.js';
 
 export function useMfaGate(userId) {
   const [state, setState] = useState({ status: 'loading', factorId: null });
-  const request = useRef(0);
+  const request = useRef({ version: 0 });
 
   const check = useCallback(async () => {
-    const version = ++request.current;
-    const publish = next => { if (request.current === version) setState(next); };
+    const tracker = request.current;
+    const version = ++tracker.version;
+    const publish = next => { if (tracker.version === version) setState(next); };
     publish({ status: 'loading', factorId: null });
     try {
       const { data: aal, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -22,9 +23,10 @@ export function useMfaGate(userId) {
   }, []);
 
   useEffect(() => {
+    const tracker = request.current;
     if (!userId) setState({ status: 'loading', factorId: null });
     else check();
-    return () => { request.current++; };
+    return () => { tracker.version++; };
   }, [userId, check]);
 
   return { ...state, refresh: check };

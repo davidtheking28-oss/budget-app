@@ -42,16 +42,18 @@ export default function Login({ recovery, onRecoveryDone }) {
     if (!email.trim() || !password) { setError('הזן אימייל וסיסמה'); return; }
     if (password.length < 6) { setError('הסיסמה חייבת להיות באורך 6 תווים לפחות'); return; }
     setSending(true);
+    let created = false;
     try {
       const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
       if (error) { setError(error.message.includes('already registered') ? 'כבר קיים חשבון עם המייל הזה' : 'שגיאה בהרשמה, נסה שוב'); return; }
       if (data.user) {
+        created = true;
         const { error: requestError } = await supabase.from('advisor_access_requests').insert({ user_id: data.user.id, email: email.trim() });
         if (requestError) { setError('החשבון נוצר, אך בקשת הגישה לא נשמרה. התחבר כדי לנסות שוב.'); return; }
       }
       if (!data.session) setMode('signupSent');
     } catch {
-      setError('ההרשמה לא הושלמה. בדוק את החיבור ונסה שוב.');
+      setError(created ? 'החשבון נוצר, אך בקשת הגישה לא נשמרה. התחבר כדי לנסות שוב.' : 'ההרשמה לא הושלמה. בדוק את החיבור ונסה שוב.');
     } finally {
       setSending(false);
     }
