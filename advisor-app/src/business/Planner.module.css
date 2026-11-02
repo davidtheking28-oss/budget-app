@@ -1,7 +1,8 @@
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-block-end: var(--space-4); }
 .barGroup { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
 .barGroup:last-child { margin-inline-start: auto; }
-.title { flex: 1 1 160px; min-width: 0; }
+.title { flex: 1 1 200px; min-width: 0; white-space: nowrap; }
+@media (max-width: 600px) { .title { order: -1; flex-basis: 100%; white-space: normal; } .barGroup:last-child { margin-inline-start: 0; } }
 .scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
 .wide { min-width: calc(44px + 7 * 96px); }
 .head, .body { display: grid; grid-template-columns: 44px repeat(var(--n), minmax(0, 1fr)); }

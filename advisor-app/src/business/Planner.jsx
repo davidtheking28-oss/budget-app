@@ -235,7 +235,12 @@ export default function Planner({ advisorId }) {
   if (!data) return <Skeleton height="420px" radius="18px" />;
 
   const step = view === 'day' ? 1 : 7;
-  const title = view === 'day' ? longDate(cursor) : `${shortDate(columns[0])} – ${shortDate(columns[6])}, ${columns[6].getFullYear()}`;
+  const monthOf = d => d.toLocaleDateString('he-IL', { month: 'long' });
+  const first = columns[0];
+  const last = columns[columns.length - 1];
+  const title = view === 'day' ? longDate(cursor) : first.getMonth() === last.getMonth()
+    ? `${first.getDate()}–${last.getDate()} ב${monthOf(last)} ${last.getFullYear()}`
+    : `${first.getDate()} ב${monthOf(first)} – ${last.getDate()} ב${monthOf(last)} ${last.getFullYear()}`;
   const bodyH = (layout.eH - layout.sH) * HH;
   const nowM = now.getHours() * 60 + now.getMinutes();
   const history = Object.keys(data.notes).filter(k => k !== selectedIso && data.notes[k].trim()).sort().reverse();
@@ -250,8 +255,8 @@ export default function Planner({ advisorId }) {
         <div className={styles.bar}>
           <div className={styles.barGroup}>
             <button type="button" className={business.btnGhost} onClick={() => setCursor(new Date())}>היום</button>
-            <button type="button" className={business.iconBtn} aria-label={view === 'day' ? 'היום הקודם' : 'השבוע הקודם'} onClick={() => setCursor(addDays(cursor, -step))}>›</button>
-            <button type="button" className={business.iconBtn} aria-label={view === 'day' ? 'היום הבא' : 'השבוע הבא'} onClick={() => setCursor(addDays(cursor, step))}>‹</button>
+            <button type="button" className={business.iconBtn} aria-label={view === 'day' ? 'היום הקודם' : 'השבוע הקודם'} onClick={() => setCursor(addDays(cursor, -step))}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9,6 15,12 9,18" /></svg></button>
+            <button type="button" className={business.iconBtn} aria-label={view === 'day' ? 'היום הבא' : 'השבוע הבא'} onClick={() => setCursor(addDays(cursor, step))}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15,6 9,12 15,18" /></svg></button>
           </div>
           <h2 className={business.cardTitle + ' ' + styles.title}>{title}</h2>
           <div className={styles.barGroup}>
