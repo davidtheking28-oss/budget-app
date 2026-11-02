@@ -154,7 +154,7 @@ function MonthBody({ advisorId, period, monthLabel, onNavigate, header }) {
   const [growthRange, setGrowthRange] = useState('month');
 
   if (error) return <section className={styles.bigCard}>{header}<ErrorState onRetry={reload} /></section>;
-  if (loading || ideas.loading || allMonths.loading) return <section className={styles.bigCard}>{header}<Skeleton height="200px" radius="18px" /></section>;
+  if (loading || ideas.loading || (allMonths.loading && !allMonths.records.length)) return <section className={styles.bigCard}>{header}<Skeleton height="200px" radius="18px" /></section>;
 
   const record = records[0];
   const data = record?.data || {};
