@@ -6549,11 +6549,10 @@ function deleteBudget(cat){
   setTimeout(commit,180);
 }
 async function addCustomBudgetCat(){
-  const remaining=getEffectiveExpenseCats().filter(c=>budgets[c]==null);
-  const name=await promptSheet({title:'קטגוריה חדשה',label:'שם קטגוריית ההוצאה המשתנה:'+(remaining.length?' (לדוגמה: '+remaining.slice(0,3).join(', ')+')':'')});
+  const name=await promptSheet({title:'קטגוריה חדשה',label:'שם קטגוריית ההוצאה המשתנה:'});
   if(!name||!name.trim())return;
   const cat=name.trim();
-  const taken=[...Object.keys(budgets),...(userSettings.customCats||[])].some(c=>c.trim().toLowerCase()===cat.toLowerCase());
+  const taken=[...Object.keys(budgets),...getEffectiveExpenseCats()].some(c=>c.trim().toLowerCase()===cat.toLowerCase());
   if(taken){showToast('קטגוריה כבר קיימת');return;}
   const val=await promptSheet({title:'תקציב חודשי',label:'תקציב חודשי עבור '+cat+':',type:'number',value:budgets[cat]||''});
   if(val===null)return;
