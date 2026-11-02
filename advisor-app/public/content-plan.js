@@ -20,10 +20,10 @@ var out='';
 DATA.weeks.forEach(function(w){
 out+='<div class="week"><div class="whead"><h2>שבוע '+w.n+'</h2><span class="goal">'+esc(w.goal)+'</span></div><div class="cards">';
 w.items.forEach(function(id,i){
-var it=DATA.items[id],v=it.type==='v',nd=it.ready?'':needs(it);
-out+='<div class="c'+(v?' v':'')+(saved[id]?' done':'')+'" data-id="'+id+'"><div class="head"><span class="day">'+D[i]+'<small>'+w.dates[i]+'</small></span>'
+var it=DATA.items[id],kind=it.type==='v'?'v':it.type==='p'?'p':'h',nd=it.ready?'':needs(it);
+out+='<div class="c'+(kind==='h'?'':' '+kind)+(saved[id]?' done':'')+'" data-id="'+id+'"><div class="head"><span class="day">'+D[i]+'<small>'+w.dates[i]+'</small></span>'
 +'<label class="done-box"><input type="checkbox" aria-label="הועלה: '+esc(it.title)+'"'+(saved[id]?' checked':'')+'>הועלה</label></div>'
-+'<div class="tags"><span class="tag k">'+(v?'ערך':'חשיפה')+'</span><span class="tag f">'+esc(it.fmt)+'</span>'+(it.ready?'<span class="tag f">מוכן</span>':'')+'</div>'
++'<div class="tags"><span class="tag k">'+({v:'ערך',p:'אישי',h:'חשיפה'}[kind])+'</span><span class="tag f">'+esc(it.fmt)+'</span>'+(it.ready?'<span class="tag f">מוכן</span>':'')+'</div>'
 +'<div class="t">'+esc(it.title)+'</div>'
 +(it.formula?'<div class="fm">נוסחה: '+esc(it.formula.replace(/^\d+\.\s*/,''))+'</div>':'')
 +(it.ready?'<div class="nt">'+esc(it.note)+'</div>':'')

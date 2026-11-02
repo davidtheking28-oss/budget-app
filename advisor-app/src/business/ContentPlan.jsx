@@ -110,7 +110,7 @@ function PlanFrame({ doc, stored, onDone }) {
     <iframe
       ref={frameRef}
       title="לוח תוכן"
-      src={`${import.meta.env.BASE_URL}content-plan.html?v=compact-20261102`}
+      src={`${import.meta.env.BASE_URL}content-plan.html?v=kinds-20261102`}
       onLoad={attach}
       scrolling="no"
       style={{ display: 'block', width: '100%', height: 640, border: 0 }}
