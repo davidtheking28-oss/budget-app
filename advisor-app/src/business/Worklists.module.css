@@ -1,0 +1,31 @@
+.detailSummary { display: grid; gap: 8px; }
+.detailSummary > h2 { margin: 0; overflow-wrap: anywhere; }
+.detailSummary > p { max-width: 78ch; white-space: pre-wrap; }
+.stepCard { border-inline-start: 3px solid var(--accent); }
+.stepCard[data-complete="true"] { border-inline-start-color: var(--green); }
+.projectStepHead { display: grid; grid-template-columns: 30px auto minmax(160px, 1fr) minmax(150px, auto) auto auto; align-items: center; gap: 10px; }
+.systemStepHead { display: grid; grid-template-columns: 30px auto minmax(160px, 1fr) auto auto; align-items: center; gap: 10px; }
+.stepNumber { display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-full); background: var(--accent-dim); color: var(--accent); font-size: var(--text-sm); font-weight: 800; font-variant-numeric: tabular-nums; }
+.taskComposer { padding-block-start: 10px; border-top: 1px solid var(--border); }
+.projectCard { display: flex; flex-direction: column; gap: 12px; transition: border-color 150ms, background 150ms; }
+.projectCard:hover { border-color: var(--accent); }
+.projectCard:focus-visible, .systemLink:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.progressCaption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: var(--text2); font-size: var(--text-xs); margin-block-start: auto; }
+.openHint { color: var(--accent); font-size: var(--text-sm); font-weight: 700; white-space: nowrap; }
+.systemListItem { list-style: none; border-bottom: 1px solid var(--border); }
+.systemListItem:last-child { border-bottom: 0; }
+.systemLink { display: flex; align-items: center; gap: 20px; width: 100%; padding: 14px 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text); font: inherit; text-align: start; cursor: pointer; }
+.systemLink:hover { background: var(--surface2); }
+.systemContent { display: grid; gap: 4px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.listTitle { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.systemProgress { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+@media (max-width: 1100px) {
+ .projectStepHead { grid-template-columns: 30px auto minmax(120px, 1fr) auto; }
+ .projectStepHead > label { grid-column: 3; grid-row: 2; }
+}
+@media (max-width: 600px) {
+ .projectStepHead, .systemStepHead { grid-template-columns: 28px auto 1fr auto; }
+ .projectStepHead > input, .systemStepHead > input { grid-column: 1 / -1; grid-row: 2; }
+ .projectStepHead > label { grid-column: 1 / -1; grid-row: 3; }
+ .systemProgress { flex-direction: column; align-items: end; gap: 6px; }
+}

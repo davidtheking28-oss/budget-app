@@ -8,6 +8,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
 import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
+import work from './Worklists.module.css';
 
 const EMPTY_FORM = { name: '', description: '', deadline: '', importance: '', investment: false };
 
@@ -66,9 +67,9 @@ function StepCard({ step, index, onChange, onRemove }) {
   const patchTask = (id, patch) => onChange({ tasks: step.tasks.map(t => t.id === id ? { ...t, ...patch } : t) });
 
   return (
-    <section className={styles.card}>
-      <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
-        <span className={styles.tag}>{index + 1}</span>
+    <section className={styles.card + ' ' + work.stepCard} data-complete={step.done}>
+      <div className={work.projectStepHead}>
+        <span className={work.stepNumber}>{index + 1}</span>
         <button type="button" className={styles.pillBtn + ' ' + (step.done ? styles.pillGood : styles.pillBad)} aria-pressed={step.done} onClick={() => onChange({ done: !step.done })}>{step.done ? 'בוצע' : 'לא בוצע'}</button>
         <input className={styles.input + ' ' + styles.inputGrow} placeholder={'שלב ' + (index + 1)} aria-label={'שם שלב ' + (index + 1)} defaultValue={step.title} onBlur={e => { if (e.target.value.trim() !== step.title) onChange({ title: e.target.value.trim() }); }} />
         <label className={styles.rowMeta}>דדליין <input className={styles.input} type="date" aria-label={'דדליין שלב ' + (index + 1)} value={step.deadline} onChange={e => onChange({ deadline: e.target.value })} /></label>
@@ -84,7 +85,7 @@ function StepCard({ step, index, onChange, onRemove }) {
           </li>
         ))}
       </ul>
-      <form className={styles.toolbar} onSubmit={addTask}>
+      <form className={styles.toolbar + ' ' + work.taskComposer} onSubmit={addTask}>
         <input className={styles.input + ' ' + styles.inputGrow} placeholder="משימה חדשה בשלב הזה..." aria-label={'משימה חדשה בשלב ' + (index + 1)} value={task} onChange={e => setTask(e.target.value)} />
         <button type="submit" className={styles.btnGhost}>הוסף משימה</button>
       </form>
@@ -107,7 +108,7 @@ function ProjectDetail({ project, onBack, onUpdate, onRemove }) {
           <DeleteButton title={'מחק פרויקט: ' + project.name} onClick={onRemove} />
         </div>
       </div>
-      <section className={styles.bigCard}>
+      <section className={styles.bigCard + ' ' + work.detailSummary}>
         <h2 className={styles.viewHeading} style={{ fontSize: 'var(--text-xl)' }}>{project.name}</h2>
         <div className={styles.pills}>
           {metaOf(project).map(m => <span key={m} className={styles.tag}>{m}</span>)}
@@ -177,7 +178,7 @@ export default function Projects({ advisorId }) {
     <div className={styles.stack}>
       <section className={styles.card}>
         <div className={styles.cardHead} style={{ marginBottom: 0 }}>
-          <h3 className={styles.cardTitle}>הפרויקטים שלי</h3>
+          <div><h3 className={styles.cardTitle}>הפרויקטים שלי <span className={styles.tag}>{records.length}</span></h3><p className={styles.cardSub}>שלבים, משימות והתקדמות במקום אחד</p></div>
           <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ פתח פרויקט</button>
         </div>
       </section>
@@ -196,12 +197,13 @@ export default function Projects({ advisorId }) {
             const project = { id: r.id, ...r.data };
             const progress = projectProgress({ steps: normalizeSteps(project) });
             return (
-              <button key={r.id} type="button" className={styles.card} style={{ cursor: 'grab', textAlign: 'start', opacity: dragId === r.id ? 0.5 : 1 }} draggable onDragStart={() => setDragId(r.id)} onDragEnd={() => setDragId(null)} onDragOver={e => e.preventDefault()} onDrop={() => dropOn(r.id)} onClick={() => setOpenId(r.id)} aria-label={'פתח פרויקט: ' + project.name}>
+              <button key={r.id} type="button" className={styles.card + ' ' + work.projectCard} style={{ cursor: 'grab', textAlign: 'start', opacity: dragId === r.id ? 0.5 : 1 }} draggable onDragStart={() => setDragId(r.id)} onDragEnd={() => setDragId(null)} onDragOver={e => e.preventDefault()} onDrop={() => dropOn(r.id)} onClick={() => setOpenId(r.id)} aria-label={'פתח פרויקט: ' + project.name}>
                 <div className={styles.toolbar}>
                   <span className={styles.tag}>{i + 1}</span>
                   <h3 className={styles.cardTitle}>{project.name}</h3>
                 </div>
                 <p className={styles.cardSub}>{metaOf(project).slice(0, 2).join(' · ')}</p>
+                <div className={work.progressCaption}><span>{progress.total ? `${progress.done} מתוך ${progress.total} שלבים הושלמו` : 'עוד לא הוגדרו שלבים'}</span><span className={work.openHint}>פתיחת פרויקט ←</span></div>
                 <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
                   <div className={styles.progress} style={{ flex: 1 }}><div className={styles.progressFill} style={{ width: (progress.rate || 0) * 100 + '%' }} /></div>
                   <span className={styles.num}>{percentLabel(progress.rate ?? 0)}</span>

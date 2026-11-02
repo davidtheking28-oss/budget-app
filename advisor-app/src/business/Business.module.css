@@ -176,7 +176,7 @@
 .linkTileTitle { font-size: var(--text-base); font-weight: 700; }
 .linkTileValue { font-size: var(--text-stat); font-weight: 700; font-variant-numeric: tabular-nums; }
 .sectionLabel { margin: var(--space-4) 0 var(--space-2); color: var(--text2); font-size: 13.5px; font-weight: 600; }
-.emptyState { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 0; color: var(--text2); font-weight: 700; }
+.emptyState { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 12px; color: var(--text2); font-weight: 700; }
 .chartBox { height: 220px; position: relative; }
 
 @media (max-width: 960px) {

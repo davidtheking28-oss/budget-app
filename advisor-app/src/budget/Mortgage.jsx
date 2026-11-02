@@ -89,7 +89,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
 
       <div className={styles.group}>
         <h3 className={styles.groupTitle}>פרטי המשכנתא</h3>
-        <div className={styles.grid}>
+        <div className={styles.grid + ' ' + styles.detailsGrid}>
           <Field label="גוף מממן" type="text" value={scenario.financier} onSave={v => patch({ financier: v })} />
           <Field label="שווי הנכס" prefix="₪" value={scenario.propertyValue} onSave={v => patch({ propertyValue: v })} />
           <Field label="יתרת קרן" prefix="₪" value={scenario.principal} onSave={v => patch({ principal: v })} />
@@ -103,7 +103,7 @@ export default function Mortgage({ clientUserId, advisorId, year, month }) {
         <div className={styles.grid}>
           <Field label="החזר חודשי משכנתא" prefix="₪" value={scenario.monthly} onSave={v => patch({ monthly: v })} />
           <div className={styles.field}>
-            <span className={styles.fieldLabel}>החזר חודשי הלוואות</span>
+            <span className={styles.fieldLabel}>החזר חודשי הלוואות <span className={styles.calculated}>מחושב</span></span>
             <span className={styles.static}>{fmt(loansMonthly)}</span>
           </div>
           <Field label="הכנסות (לכושר החזר)" prefix="₪" value={scenario.income} onSave={v => patch({ income: v })} />

@@ -1,4 +1,5 @@
 .btn {
+  min-height: 36px;
   padding: 9px 18px;
   border-radius: var(--radius-full);
   border: none;
@@ -46,3 +47,5 @@
 @media (max-width: 860px) {
   .btn { min-height: 44px; }
 }
+
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }

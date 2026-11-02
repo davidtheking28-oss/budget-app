@@ -10,9 +10,9 @@
   --workspace-red: #ff9a8d;
   --workspace-line: rgba(255, 255, 255, 0.12);
   --workspace-glass: rgba(255, 255, 255, 0.08);
-  --primary: #14171a;
-  --primary-ink: #ffffff;
-  --primary-hover: #2c3237;
+  --primary: var(--accent);
+  --primary-ink: var(--accent-ink);
+  --primary-hover: #0058b5;
   --donut-1: #0078f8;
   --donut-2: #4da3fb;
   --donut-3: #99c9fc;

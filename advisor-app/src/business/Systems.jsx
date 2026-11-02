@@ -7,6 +7,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import { icons } from './BusinessNav.jsx';
 import HeaderAction from './HeaderAction.jsx';
 import styles from './Business.module.css';
+import work from './Worklists.module.css';
 
 const SYSTEM_DEPARTMENTS = [
   { key: 'שירות', icon: icons.headset },
@@ -46,9 +47,9 @@ function SystemForm({ initial, title, submitLabel, onSubmit, onClose }) {
 function SystemStep({ step, index, onChange, onRemove }) {
   const [closed, setClosed] = useState(false);
   return (
-    <section className={styles.card}>
-      <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
-        <span className={styles.tag}>{index + 1}</span>
+    <section className={styles.card + ' ' + work.stepCard} data-complete={step.done}>
+      <div className={work.systemStepHead}>
+        <span className={work.stepNumber}>{index + 1}</span>
         <button type="button" className={styles.pillBtn + ' ' + (step.done ? styles.pillGood : styles.pillBad)} aria-pressed={step.done} onClick={() => onChange({ done: !step.done })}>{step.done ? 'בוצע' : 'לא בוצע'}</button>
         <input className={styles.input + ' ' + styles.inputGrow} placeholder={'שלב ' + (index + 1)} aria-label={'שם שלב ' + (index + 1)} defaultValue={step.title} onBlur={e => { if (e.target.value.trim() !== step.title) onChange({ title: e.target.value.trim() }); }} />
         <button type="button" className={styles.btnGhost} aria-expanded={!closed} onClick={() => setClosed(!closed)}>{closed ? 'פתח' : 'סגור'}</button>
@@ -74,9 +75,9 @@ function SystemDetail({ system, onBack, onUpdate, onRemove }) {
           <DeleteButton title={'מחק סיסטם: ' + system.name} onClick={onRemove} />
         </div>
       </div>
-      <section className={styles.bigCard}>
+      <section className={styles.bigCard + ' ' + work.detailSummary}>
         <h2 className={styles.viewHeading} style={{ fontSize: 'var(--text-xl)' }}>{system.name}</h2>
-        <div className={styles.pills}><span className={styles.tag}>{system.dept}</span></div>
+        <div className={styles.pills}><span className={styles.tag}>{system.dept}</span><span className={styles.tag}>{doneCount} מתוך {steps.length} שלבים הושלמו</span></div>
         {system.summary ? <p className={styles.cardSub}>{system.summary}</p> : null}
       </section>
       <div className={styles.cardHead} style={{ marginBottom: 0 }}>
@@ -164,11 +165,11 @@ export default function Systems({ advisorId }) {
         ) : (
           <ul className={styles.rowList}>
             {visible.map(s => (
-              <li key={s.id} className={styles.rowItem}>
-                <button type="button" className={styles.rowMain} style={{ background: 'none', border: 0, padding: 0, font: 'inherit', color: 'inherit', textAlign: 'start', cursor: 'pointer' }} aria-label={'פתח סיסטם: ' + s.name} onClick={() => setOpenId(s.id)}>
-                  <div className={styles.rowTitle}>{s.name} <span className={styles.tag}>{s.dept}</span></div>
+              <li key={s.id} className={work.systemListItem}>
+                <button type="button" className={work.systemLink} aria-label={'פתח סיסטם: ' + s.name} onClick={() => setOpenId(s.id)}>
+                  <div className={work.systemContent}><div className={work.listTitle}><span className={styles.rowTitle}>{s.name}</span><span className={styles.tag}>{s.dept}</span></div>
                   {s.summary ? <div className={styles.cardSub}>{s.summary}</div> : null}
-                  <div className={styles.cardSub}>{(s.steps || []).length ? (s.steps || []).filter(x => x.done).length + '/' + (s.steps || []).length + ' שלבים' : 'אין שלבים'}</div>
+                  </div><span className={work.systemProgress}><span className={styles.cardSub}>{(s.steps || []).length ? (s.steps || []).filter(x => x.done).length + '/' + (s.steps || []).length + ' שלבים' : 'אין שלבים'}</span><span className={work.openHint} aria-hidden="true">←</span></span>
                 </button>
               </li>
             ))}

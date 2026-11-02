@@ -145,3 +145,9 @@
 .pillBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @media (min-width: 861px) { .input { font-size: 14px; font-weight: 600; } }
+
+.name { flex-wrap: wrap; gap: 4px 8px; line-height: 1.5; }
+.input { text-align: right; direction: ltr; font-variant-numeric: tabular-nums; }
+.fieldReadOnly { border-color: transparent; background: var(--surface2); }
+.fieldReadOnly .input { cursor: default; }
+.row:focus-within .name { color: var(--accent); }

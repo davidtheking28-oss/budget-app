@@ -11,6 +11,7 @@ import Button from '../components/Button.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import styles from './Business.module.css';
+import navigation from './ClientView.module.css';
 
 const Assets = lazy(() => import('../budget/Assets.jsx'));
 const Mortgage = lazy(() => import('../budget/Mortgage.jsx'));
@@ -118,9 +119,9 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
   );
 
   const chipBar = (
-    <div className={styles.pills} role="group" aria-label="תצוגות נוספות">
+    <div className={navigation.subviews} role="group" aria-label="תצוגות נוספות">
       {CHIPS.map(c => (
-        <button key={c.key} type="button" className={chip === c.key ? styles.pillOn : styles.pill} aria-pressed={chip === c.key} onClick={() => changeChip(c.key)}>{c.key === 'subs' && tab === 'budget' ? 'ביטוחים · מנויים · חינוך · קוסמטיקה · מתנות' : c.label}</button>
+        <button key={c.key} type="button" className={chip === c.key ? navigation.subviewActive : navigation.subview} aria-pressed={chip === c.key} onClick={() => changeChip(c.key)}>{c.key === 'subs' && tab === 'budget' ? 'ביטוחים · מנויים · חינוך · קוסמטיקה · מתנות' : c.label}</button>
       ))}
     </div>
   );
@@ -129,7 +130,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
 
   return (
     <div className={styles.stack}>
-      <div className={styles.viewHead}>
+      <div className={styles.viewHead + ' ' + navigation.context}>
         <h1 className={styles.viewTitle}>תצוגת לקוח</h1>
         <label className={styles.toolbar}>
           <span className={styles.statLabel}>לקוח:</span>
@@ -140,10 +141,10 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
         </label>
         {client && <span className={styles.cardSub}>מציג את המסכים של <b>{clientName}</b>, בדיוק כמו שהוא רואה אותם</span>}
       </div>
-      <div className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
-        <div className={styles.pills} role="group" aria-label="אזור בכרטיס הלקוח">
+      <div className={navigation.navigation}>
+        <div className={navigation.tabs} role="group" aria-label="אזור בכרטיס הלקוח">
           {TABS.map(t => (
-            <button key={t.key} type="button" className={tab === t.key ? styles.bigPillOn : styles.bigPill} aria-pressed={tab === t.key} onClick={() => changeTab(t.key)}>{t.label}</button>
+            <button key={t.key} type="button" className={tab === t.key ? navigation.tabActive : navigation.tab} aria-pressed={tab === t.key} onClick={() => changeTab(t.key)}>{t.label}</button>
           ))}
         </div>
         {client && <Button variant="ghost" onClick={openInNewWindow}>פתיחה בחלון חדש</Button>}
@@ -163,7 +164,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
               />
               {view === 'budget' && (
                 <div className={styles.toolbar}>
-                  <div className={styles.pills} role="group" aria-label="תצוגת תקופה">
+                  <div className={navigation.periods} role="group" aria-label="תצוגת תקופה">
                     <button type="button" className={period === 'month' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'month'} onClick={() => setPeriod('month')}>חודשי</button>
                     <button type="button" className={period === 'year' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'year'} onClick={() => setPeriod('year')}>שנתי</button>
                     <button type="button" className={period === 'avg' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'avg'} onClick={() => setPeriod('avg')}>חודש ממוצע</button>

@@ -485,14 +485,14 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
               <div className={styles.summaryNote}>הקרנה לפי התכנון החודשי הנוכחי, ללא ריבית ושינויים לאורך זמן.</div>
             </div>
           )}
-          <div className={styles.card} style={flowPeriod === 'long' ? { display: 'none' } : undefined}>
+          <div className={styles.summarySection} style={flowPeriod === 'long' ? { display: 'none' } : undefined}>
             <div className={styles.sumGrid}>
               {summaryCards.map(c => (
                 <div className={styles.sumCard} key={c.key}>
                   <div className={styles.sumTitle}>{c.title}</div>
                   <div className={styles.sumSub}>{c.sub}</div>
                   <div className={styles.summaryChart} role="img" aria-label={`${c.title}: הכנסות ${fmt(c.income * periodMul)}, הוצאות ${fmt(c.expenses * periodMul)}`}>
-                    <Bar data={chartDataOf(c.income * periodMul, c.expenses * periodMul)} plugins={[topLabels]} options={summaryChartOptions} />
+                    <Bar aria-hidden="true" data={chartDataOf(c.income * periodMul, c.expenses * periodMul)} plugins={[topLabels]} options={summaryChartOptions} />
                   </div>
                   <div className={styles.flowBox}>
                     <div className={styles.flowBoxHead}>

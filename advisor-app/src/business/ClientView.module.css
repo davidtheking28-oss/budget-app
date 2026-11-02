@@ -1,0 +1,15 @@
+.context { padding-block: 6px; }
+.navigation { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.tab, .tabActive { min-height: 44px; padding: 0 18px; border: 0; background: transparent; color: var(--text2); font: inherit; font-size: var(--text-base); font-weight: 700; cursor: pointer; }
+.tabActive { color: var(--accent); box-shadow: inset 0 -3px var(--accent); }
+.tab:hover { color: var(--text); background: var(--hover); }
+.subviews { display: flex; flex-wrap: wrap; gap: 8px; }
+.subview, .subviewActive { min-height: 34px; padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text2); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
+.subviewActive { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+.subview:hover { color: var(--text); border-color: var(--border-strong); }
+.periods { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface2); }
+.periods > button { min-height: 32px; padding: 4px 12px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text2); font-size: var(--text-sm); }
+.periods > button[aria-pressed="true"] { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-card); }
+.tab:focus-visible, .tabActive:focus-visible, .subview:focus-visible, .subviewActive:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 600px) { .tab, .tabActive { padding-inline: 12px; } }
