@@ -243,7 +243,7 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
   const breakdown = expenseBreakdown([...m.fixed, ...m.variable]);
   const vatPercent = businessType === 'עוסק מורשה' ? VAT_RATE * 100 : 0;
   const shareOfIncome = v => (m.income > 0 ? Math.min(1, Math.max(0, v / m.income)) : 0);
-  const IncomeBar = ({ value }) => <span className={styles.progress}><span className={styles.progressFill} style={{ width: shareOfIncome(value) * 100 + '%' }} /></span>;
+  const IncomeBar = ({ value }) => m.income > 0 ? <span className={styles.progress}><span className={styles.progressFill} style={{ width: shareOfIncome(value) * 100 + '%' }} /></span> : null;
 
   async function endFixed(e) {
     if (e.startPeriod === period) await ops.remove(e.id, 'ההוצאה הוסרה');
@@ -258,70 +258,66 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
 
   return (
     <div className={styles.stack}>
-      <section className={styles.bigCard}>
-        <div className={styles.cardHead}>
-          <BusinessTypeBar value={businessType} onChange={ops.setBusinessType} />
-          <MonthPicker year={ym.year} month={ym.month} onChange={(year, month) => onYm({ year, month })} />
+      <div className={layout.monthControls}>
+        <BusinessTypeBar value={businessType} onChange={ops.setBusinessType} />
+        <MonthPicker year={ym.year} month={ym.month} onChange={(year, month) => onYm({ year, month })} />
+      </div>
+      <section className={layout.monthSummary} aria-label="סיכום החודש">
+        <div className={layout.netFact}>
+          <span className={styles.cardSub}>{periodLabel(period)} · רווח נטו משוער</span>
+          <strong className={layout.netValue + ' ' + (m.net < 0 ? styles.statNeg : styles.statPos)}>{money(m.net)}</strong>
         </div>
-        <div className={styles.sectionLabel} style={{ marginTop: 0 }}>{periodLabel(period)} · רווח נטו משוער</div>
-        <div className={styles.bigNumber + ' ' + (m.net < 0 ? styles.statNeg : '')}>{money(m.net)}</div>
-        <StatTiles items={[
-          { label: 'הכנסות', value: money(m.income) },
-          { label: 'רווח תפעולי', value: money(m.operating), tone: m.operating < 0 ? 'statNeg' : '' },
+        {[
+          { label: 'רווח תפעולי', value: money(m.operating), tone: m.operating < 0 ? styles.statNeg : '' },
           { label: 'אחוז רווחיות', value: percentLabel(m.margin) },
-          { label: 'קבלות חסרות', value: String(m.missingReceipts), tone: m.missingReceipts ? 'statNeg' : '' }
-        ]} />
+          { label: 'קבלות חסרות', value: String(m.missingReceipts), tone: m.missingReceipts ? styles.statNeg : '' }
+        ].map(fact => <div key={fact.label} className={layout.fact}><span className={styles.cardSub}>{fact.label}</span><strong className={layout.factValue + ' ' + (fact.tone || '')}>{fact.value}</strong></div>)}
       </section>
-
-      <h2 className={styles.sectionHeading} style={{ margin: 'var(--space-4) 0 var(--space-2)' }}>פרטי החודש</h2>
-      <div className={styles.grid2}>
-      <div className={styles.stack}>
-      <div className={styles.grid2}>
-        <button type="button" className={styles.linkTile} onClick={() => setModal('income')}>
-          <span className={styles.iconTile} aria-hidden="true">{icons.coins}</span>
-          <span className={styles.linkTileTitle}>הכנסות</span>
-          <span className={styles.linkTileValue}>{money(m.income)}</span>
+      <section aria-label="פרטי החודש" className={layout.monthActions}>
+        <button type="button" className={layout.action} onClick={() => setModal('income')}>
+          <span className={layout.actionIcon} aria-hidden="true">{icons.coins}</span>
+          <span className={layout.actionTitle}>הכנסות</span>
+          <strong className={layout.actionValue}>{money(m.income)}</strong>
           <IncomeBar value={m.afterClearing} />
-          <span className={styles.rowMeta}>סליקה {money(m.clearing)} · אחרי ניכיון {money(m.afterClearing)}</span>
+          <span className={layout.actionNote}>סליקה {money(m.clearing)} · אחרי ניכיון {money(m.afterClearing)}</span>
         </button>
-        <button type="button" className={styles.linkTile} onClick={() => setModal('fixed')}>
-          <span className={styles.iconTile} aria-hidden="true">{icons.table}</span>
-          <span className={styles.linkTileTitle}>הוצאות קבועות</span>
-          <span className={styles.linkTileValue}>{money(m.fixedTotal)}</span>
+        <button type="button" className={layout.action} onClick={() => setModal('fixed')}>
+          <span className={layout.actionIcon} aria-hidden="true">{icons.table}</span>
+          <span className={layout.actionTitle}>הוצאות קבועות</span>
+          <strong className={layout.actionValue}>{money(m.fixedTotal)}</strong>
           <IncomeBar value={m.fixedTotal} />
-          <span className={styles.rowMeta}>{m.fixed.length} הוצאות · {percentLabel(shareOfIncome(m.fixedTotal))} מההכנסות</span>
+          <span className={layout.actionNote}>{m.fixed.length} הוצאות{m.income > 0 ? ` · ${percentLabel(shareOfIncome(m.fixedTotal))} מההכנסות` : ''}</span>
         </button>
-        <div className={styles.linkTile} style={{ cursor: 'default' }}>
-          <span className={styles.iconTile} aria-hidden="true">{icons.percent}</span>
-          <span className={styles.linkTileTitle}>מיסים</span>
-          <span className={styles.linkTileValue}>{money(m.taxes)}</span>
-          <IncomeBar value={m.taxes} />
-          <span className={styles.rowMeta}>מע״מ {vatPercent}% · מס {INCOME_TAX_RATE * 100}% · ב״ל {NATIONAL_INSURANCE_RATE * 100}%</span>
-        </div>
-        <button type="button" className={styles.linkTile} onClick={() => setModal('variable')}>
-          <span className={styles.iconTile} aria-hidden="true">{icons.table}</span>
-          <span className={styles.linkTileTitle}>הוצאות משתנות</span>
-          <span className={styles.linkTileValue}>{money(m.variableTotal)}</span>
+        <button type="button" className={layout.action} onClick={() => setModal('variable')}>
+          <span className={layout.actionIcon} aria-hidden="true">{icons.table}</span>
+          <span className={layout.actionTitle}>הוצאות משתנות</span>
+          <strong className={layout.actionValue}>{money(m.variableTotal)}</strong>
           <IncomeBar value={m.variableTotal} />
-          <span className={styles.rowMeta}>{m.variable.length} הוצאות · {percentLabel(shareOfIncome(m.variableTotal))} מההכנסות</span>
+          <span className={layout.actionNote}>{m.variable.length} הוצאות{m.income > 0 ? ` · ${percentLabel(shareOfIncome(m.variableTotal))} מההכנסות` : ''}</span>
         </button>
-      </div>
-        <section className={styles.card}>
-          <div className={styles.cardHead}><div><h3 className={styles.cardTitle}>פילוח הוצאות</h3><p className={styles.cardSub}>כמה הוצאתי ועל מה</p></div><span className={styles.statValue}>{money(m.expenses)}</span></div>
-          {breakdown.length === 0 ? <div className={styles.empty}>עוד אין הוצאות בחודש הזה</div> : (
-            <ul className={styles.rowList}>
-              {breakdown.map(b => (
-                <li key={b.category} className={styles.rowItem}>
-                  <div className={styles.rowMain}><div className={styles.rowTitle}>{b.category}</div><div className={styles.progress} style={{ marginTop: 6 }}><div className={styles.progressFill} style={{ width: (b.share || 0) * 100 + '%' }} /></div></div>
-                  <span className={styles.num}>{money(b.value)}</span><span className={styles.rowMeta}>{percentLabel(b.share)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-        <section className={styles.card}>
-          <div className={styles.cardHead}><h3 className={styles.cardTitle}>סיכום החודש</h3></div>
+        <div className={layout.action}>
+          <span className={layout.actionIcon} aria-hidden="true">{icons.percent}</span>
+          <span className={layout.actionTitle}>מיסים משוערים</span>
+          <strong className={layout.actionValue}>{money(m.taxes)}</strong>
+          <IncomeBar value={m.taxes} />
+          <span className={layout.actionNote}>מע״מ {vatPercent}% · מס {INCOME_TAX_RATE * 100}% · ב״ל {NATIONAL_INSURANCE_RATE * 100}%</span>
+        </div>
+      </section>
+      <section className={styles.card + ' ' + layout.breakdown}>
+        <div className={styles.cardHead}><div><h3 className={styles.cardTitle}>פילוח הוצאות</h3><p className={styles.cardSub}>כמה הוצאתי ועל מה</p></div><strong className={layout.factValue}>{money(m.expenses)}</strong></div>
+        {breakdown.length === 0 ? <div className={layout.emptyMonth}>עוד אין הוצאות בחודש הזה</div> : (
+          <ul className={layout.breakdownList}>
+            {breakdown.map(b => (
+              <li key={b.category} className={layout.breakdownRow}>
+                <div className={styles.rowMain}><div className={styles.rowTitle}>{b.category}</div><div className={styles.progress} style={{ marginTop: 6 }}><div className={styles.progressFill} style={{ width: (b.share || 0) * 100 + '%' }} /></div></div>
+                <span className={styles.num}>{money(b.value)}</span><span className={styles.rowMeta}>{percentLabel(b.share)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      <details className={layout.calculation}>
+        <summary>פירוט חישוב החודש</summary>
           <ul className={styles.rowList}>
             {[
               ['הכנסות', m.income], ['עלות ניכיון / סליקה', -m.clearing], ['הכנסות אחרי ניכיון', m.afterClearing],
@@ -331,10 +327,9 @@ function MonthView({ entries, ops, businessType, ym, onYm, initialModal }) {
             ].map(([label, value]) => (
               <li key={label} className={styles.rowItem}><div className={styles.rowMain}>{label}</div><span className={styles.num}>{money(value)}</span></li>
             ))}
-            <li className={styles.rowItem}><div className={styles.rowMain}><div className={styles.rowTitle}>רווח נטו משוער</div><div className={styles.rowMeta}>כמה באמת נשאר לך החודש</div></div><span className={styles.statValue + ' ' + (m.net < 0 ? styles.statNeg : styles.statPos)}>{money(m.net)}</span></li>
+            <li className={styles.rowItem}><div className={styles.rowMain}><div className={styles.rowTitle}>רווח נטו משוער</div><div className={styles.rowMeta}>כמה באמת נשאר לך החודש</div></div><span className={layout.ledgerNet + ' ' + (m.net < 0 ? styles.statNeg : styles.statPos)}>{money(m.net)}</span></li>
           </ul>
-        </section>
-      </div>
+      </details>
       <p className={styles.note}>המספרים הם הערכה בלבד לצורכי ניהול שוטף, ואינם תחליף לייעוץ מס או להנהלת חשבונות.</p>
 
       {modal === 'income' && <IncomeModal period={period} incomes={m.incomes} onAdd={ops.add} onUpdate={ops.update} onRemove={ops.remove} onClose={() => setModal(null)} />}
