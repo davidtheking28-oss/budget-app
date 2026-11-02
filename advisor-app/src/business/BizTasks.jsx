@@ -7,6 +7,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
+import layout from './BizTasks.module.css';
 
 const RECURRENCES = ['חד פעמית', 'יומית', 'שבועית', 'חודשית'];
 const SORTS = [
@@ -179,35 +180,23 @@ export default function BizTasks({ advisorId }) {
 
   return (
     <div className={styles.stack}>
-      <section className={styles.bigCard + ' ' + styles.compactOverview}>
-        <div className={styles.cardHead}>
-          <div className={styles.toolbar}>
-            <span className={styles.iconTile} aria-hidden="true">{icons.calendarCheck}</span>
-            <div><h3 className={styles.cardTitle}>היום שלי</h3><p className={styles.cardSub}>{hebrewDate(today)}</p></div>
-          </div>
-          <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ משימה חדשה</button>
-        </div>
-        <div className={styles.grid2 + ' ' + styles.cellGrid}>
-          <div className={styles.cell}>
-            <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true">{icons.tasks}</span><span className={styles.statLabel}>משימות היום</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 'var(--text-stat)' }}>{buckets.today.length}</div>
-            <div className={styles.statNote}>{buckets.today.length ? 'מה שמתוכנן להיום' : 'אין משימות להיום'}</div>
-          </div>
-          <div className={styles.cell}>
-            <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true">{icons.alert}</span><span className={styles.statLabel}>משימות באיחור</span></div>
-            <div className={styles.bigNumber + (buckets.overdue.length ? ' ' + styles.statNeg : '')} style={{ fontSize: 'var(--text-stat)' }}>{buckets.overdue.length}</div>
-            <div className={styles.statNote}>{buckets.overdue.length ? 'עברו את מועד הביצוע' : 'אין משימות באיחור'}</div>
-          </div>
-        </div>
+      <section className={layout.overview} aria-label="סיכום משימות היום">
+        <div className={layout.today}><h3 className={styles.cardTitle}>היום שלי</h3><span className={styles.rowMeta}>{hebrewDate(today)}</span></div>
+        <div className={layout.metric}><span>משימות היום</span><strong>{buckets.today.length}</strong></div>
+        <div className={layout.metric}><span>משימות באיחור</span><strong className={buckets.overdue.length ? styles.statNeg : undefined}>{buckets.overdue.length}</strong></div>
+        <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ משימה חדשה</button>
       </section>
 
-      <div className={styles.toolbar}>
+      <div className={layout.filters}>
+        <div className={layout.primaryFilters}>
         <div className={styles.segment} role="group" aria-label="סינון משימות">
           {segments.map(f => (
             <button key={f.key} type="button" className={filter === f.key ? styles.segBtnOn : styles.segBtn} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>{f.label}{f.count !== undefined ? ' ' + f.count : ''}</button>
           ))}
         </div>
         <input className={styles.input + ' ' + styles.inputGrow} type="search" placeholder="חיפוש משימה..." aria-label="חיפוש משימה" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <div className={layout.secondaryFilters}>
         <select className={styles.select} aria-label="מחלקה" value={dept} onChange={e => setDept(e.target.value)}>
           <option value="">כל המחלקות</option>
           {departments.map(d => <option key={d} value={d}>{d}</option>)}
@@ -220,20 +209,21 @@ export default function BizTasks({ advisorId }) {
           {SORTS.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
         </select>
         <button type="button" className={styles.iconBtn} aria-label={descending ? 'מיון יורד' : 'מיון עולה'} aria-pressed={descending} onClick={() => setDescending(d => !d)}>{descending ? '↓' : '↑'}</button>
+        </div>
       </div>
 
-      <section className={styles.card}>
+      <section className={styles.card + ' ' + layout.list}>
         {visible.length === 0 ? (
-          <div className={styles.emptyState}>
+          <div className={layout.empty}>
             <span className={styles.iconTile} aria-hidden="true">{icons.tasks}</span>
-            <span>אין משימות בתצוגה הזו</span>
-            <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ הוסף משימה</button>
+            <div><strong>{tasks.length ? 'אין משימות בתצוגה הזו' : 'עוד אין משימות'}</strong><p>{tasks.length ? 'אפשר לשנות את התצוגה או את הסינון כדי למצוא משימות אחרות.' : 'אפשר להוסיף משימה ראשונה באמצעות הכפתור למעלה.'}</p></div>
+            {tasks.length > 0 && <button type="button" className={styles.btnGhost} onClick={() => { setFilter('all'); setSearch(''); setDept(''); setPriority(''); }}>הצג את כל המשימות</button>}
           </div>
         ) : (
           <div className={styles.tableWrap}>
-            <table className={styles.table}>
+            <table className={styles.table + ' ' + layout.table}>
               <thead>
-                <tr><th>בוצע</th><th>שם המשימה</th><th>סטטוס</th><th>מחלקה</th><th>רמת קושי</th><th>עדיפות</th><th>דדליין</th><th>מועד ביצוע</th><th /></tr>
+                <tr><th>בוצע</th><th>שם המשימה</th><th>סטטוס</th><th>מחלקה</th><th>רמת קושי</th><th>עדיפות</th><th>דדליין</th><th>מועד ביצוע</th><th><span className={styles.srOnly}>פעולות</span></th></tr>
               </thead>
               <tbody>
                 {visible.map(t => (
@@ -244,8 +234,8 @@ export default function BizTasks({ advisorId }) {
                     <td><span className={styles.tag}>{t.dept}</span></td>
                     <td>{t.difficulty || '—'}</td>
                     <td><span className={styles.tag + ' ' + priorityClass(t.priority)}>{t.priority}</span></td>
-                    <td className={styles.num}>{t.deadline || '—'}</td>
-                    <td className={styles.num}>{t.dueDate || '—'}</td>
+                    <td className={styles.num}>{t.deadline ? <time dateTime={t.deadline}>{hebrewDate(t.deadline)}</time> : '—'}</td>
+                    <td className={styles.num}>{t.dueDate ? <time dateTime={t.dueDate}>{hebrewDate(t.dueDate)}</time> : '—'}</td>
                     <td><DeleteButton title={'מחק משימה: ' + t.name} onClick={() => remove(t.id, 'המשימה נמחקה')} /></td>
                   </tr>
                 ))}

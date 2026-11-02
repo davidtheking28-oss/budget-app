@@ -12,13 +12,13 @@ const monthLabel = key => key === 'none' ? 'ללא תאריך' : `${monthName(Nu
 
 function TaskList({ title, hint, empty, tasks, pending, onToggle, onOpen }) {
   return (
-    <section className={styles.stack}>
+    <section className={layout.taskSection}>
       <div className={layout.listHeading}>
         <h2 className={styles.sectionHeading}>{title} <span className={layout.count}>{tasks.length}</span></h2>
-        <p className={styles.note} style={{ marginTop: 4 }}>{hint}</p>
+        <p className={styles.note}>{hint}</p>
       </div>
-      <div className={styles.card}>
-        {tasks.length === 0 ? <div className={layout.empty}><span>{empty}</span></div> : (
+      <div className={tasks.length ? styles.card + ' ' + layout.taskCard : undefined}>
+        {tasks.length === 0 ? <p className={layout.empty}>{empty}</p> : (
           <ul className={styles.rowList}>
             {tasks.map(t => (
               <li key={t.id} className={styles.rowItem + ' ' + layout.taskRow}>
@@ -68,13 +68,13 @@ export default function ClientTasks({ advisorId, onSelect }) {
   return (
     <div className={styles.stack}>
       <section className={styles.card + ' ' + layout.selector}>
-        <div className={styles.stack}>
-          {months.length > 0 && (
+        <div className={layout.selectorContent}>
+          {(months.length > 1 || month !== 'all') ? (
             <div className={styles.segment} role="group" aria-label="סינון לפי חודש" style={{ flexWrap: 'wrap', alignSelf: 'flex-start' }}>
               <button type="button" className={month === 'all' ? styles.segBtnOn : styles.segBtn} aria-pressed={month === 'all'} onClick={() => setMonth('all')}>הכל {mine.length}</button>
               {months.map(m => <button key={m} type="button" className={month === m ? styles.segBtnOn : styles.segBtn} aria-pressed={month === m} onClick={() => setMonth(m)}>{monthLabel(m)} {mine.filter(t => monthKey(t) === m).length}</button>)}
             </div>
-          )}
+          ) : months.length === 1 ? <span className={styles.rowMeta}>{monthLabel(months[0])}</span> : null}
           <div className={layout.clientToolbar}>
             <button type="button" className={styles.iconBtn} aria-label="הלקוח הבא" disabled={!pool.length || index >= pool.length - 1} onClick={() => step(1)}><svg {...svgProps}><path d="m15 6-6 6 6 6" /></svg></button>
             <div className={layout.identity}>
