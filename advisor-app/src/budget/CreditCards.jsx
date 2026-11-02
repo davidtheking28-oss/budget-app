@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import AddForm from '../components/AddForm.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -16,12 +16,16 @@ export default function CreditCards({ settings, save }) {
   const cards = settings?.creditCards || [];
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState(null);
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   const write = next => save(cur => ({ settings: { ...(cur.settings || {}), creditCards: next(cur.settings?.creditCards || []) } }));
 
   function reset() { setForm(EMPTY); setEditingId(null); }
 
   async function submit() {
+    if (savingRef.current) return;
     const last4 = form.last4.replace(/\D/g, '').slice(-4);
     if (!last4 && !form.company.trim()) { toast('נדרש מספר כרטיס או חברה', 'error'); return; }
     const day = parseInt(form.billingDay) || 0;
@@ -34,12 +38,22 @@ export default function CreditCards({ settings, save }) {
       fee: parseFloat(form.fee) || 0,
       accumulated: parseFloat(form.accumulated) || 0
     };
+    savingRef.current = true;
+    setSaving(true);
+    setSaveError(false);
+    try {
     const ok = await write(list => editingId != null
       ? list.map(c => c.id === editingId ? { ...c, ...patch } : c)
       : [...list, { id: Date.now() + Math.random(), ...patch }]);
-    if (!ok) return;
+    if (!ok) { setSaveError(true); return; }
     toast(editingId != null ? 'הכרטיס עודכן' : 'הכרטיס נוסף', 'success');
     reset();
+    } catch {
+      setSaveError(true);
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   }
 
   function startEdit(c) {
@@ -97,7 +111,8 @@ export default function CreditCards({ settings, save }) {
           <label className={styles.formField}>מסגרת אשראי<input className={styles.input} type="number" inputMode="decimal" placeholder="מסגרת" aria-label="מסגרת אשראי" value={form.limit} onChange={e => setForm({ ...form, limit: e.target.value })} /></label>
           <label className={styles.formField}>דמי כרטיס לחודש<input className={styles.input} type="number" inputMode="decimal" placeholder="דמי כרטיס לחודש" aria-label="דמי כרטיס לחודש" value={form.fee} onChange={e => setForm({ ...form, fee: e.target.value })} /></label>
           <label className={styles.formField}>סל מצטבר<input className={styles.input} type="number" inputMode="decimal" placeholder="סל מצטבר" aria-label="סל מצטבר" value={form.accumulated} onChange={e => setForm({ ...form, accumulated: e.target.value })} /></label>
-          <Button onClick={submit}>{editingId != null ? 'שמור' : 'הוספת כרטיס'}</Button>
+          {saveError && <span className={styles.saveError} role="alert">הכרטיס לא נשמר. הפרטים נשארו בטופס — אפשר לנסות שוב.</span>}
+          <Button disabled={saving} onClick={submit}>{saving ? 'שומר…' : editingId != null ? 'שמור' : 'הוספת כרטיס'}</Button>
           {editingId != null && <Button variant="ghost" onClick={reset}>ביטול</Button>}
         </AddForm>
       </CollapsibleSection>

@@ -154,3 +154,6 @@
 .formField { display: flex; flex-direction: column; gap: 6px; min-width: 0; color: var(--text2); font-size: var(--text-sm); font-weight: 600; }
 .formField .input { width: 100%; min-width: 0; flex: none; }
 .form { align-items: end; }
+
+.saveError { grid-column: 1 / -1; flex-basis: 100%; color: var(--red); font-size: var(--text-sm); line-height: 1.5; }
+.saveError:empty { display: none; }

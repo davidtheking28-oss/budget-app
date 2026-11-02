@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
@@ -58,9 +58,13 @@ export default function Credit({ clientUserId, advisorId, focus }) {
   const [editingLoanId, setEditingLoanId] = useState(null);
   const [paymentForm, setPaymentForm] = useState(EMPTY_PAYMENT);
   const [editingPaymentId, setEditingPaymentId] = useState(null);
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState('');
+  const [saveError, setSaveError] = useState('');
 
   function resetLoanForm() { setLoanForm(EMPTY_LOAN); setEditingLoanId(null); }
   async function submitLoan() {
+    if (savingRef.current) return;
     const monthly = parseFloat(loanForm.monthly) || 0;
     if (!loanForm.name.trim() || !monthly) { toast('נדרשים שם החוב והחזר חודשי', 'error'); return; }
     const patch = {
@@ -71,25 +75,46 @@ export default function Credit({ clientUserId, advisorId, focus }) {
       rate: parseFloat(loanForm.rate) || 0,
       asOf: loanForm.asOf || localISODate()
     };
+    savingRef.current = true;
+    setSaving('loan');
+    setSaveError('');
+    try {
     const ok = editingLoanId != null ? await updateItem(save, 'loans', editingLoanId, patch) : await addItem(save, 'loans', patch);
-    if (!ok) return;
+    if (!ok) { setSaveError('loan'); return; }
     toast(editingLoanId != null ? 'ההלוואה עודכנה' : 'הלוואה נוספה', 'success');
     resetLoanForm();
+    } catch {
+      setSaveError('loan');
+    } finally {
+      savingRef.current = false;
+      setSaving('');
+    }
   }
   function startEditLoan(l) { setEditingLoanId(l.id); setLoanForm({ name: l.name || '', monthly: l.monthly || '', remaining: l.remaining || '', original: l.original || '', rate: l.rate || '', asOf: l.asOf || '' }); }
 
   function resetPaymentForm() { setPaymentForm(EMPTY_PAYMENT); setEditingPaymentId(null); }
   async function submitPayment() {
+    if (savingRef.current) return;
     const total = parseFloat(paymentForm.total) || 0;
     const amount = parseFloat(paymentForm.amount) || 0;
     if (!paymentForm.name.trim() || !total || !amount) { toast('נדרשים שם העסק, מספר תשלומים וסכום', 'error'); return; }
     const current = paymentForm.current === '' ? 0 : Math.max(0, Math.min(total, parseFloat(paymentForm.current) || 0));
     const now = new Date();
     const patch = { card: paymentForm.card, name: paymentForm.name.trim(), total, current, amount, currentAnchor: monthKey(now.getFullYear(), now.getMonth()) };
+    savingRef.current = true;
+    setSaving('payment');
+    setSaveError('');
+    try {
     const ok = editingPaymentId != null ? await updateItem(save, 'payments', editingPaymentId, patch) : await addItem(save, 'payments', patch);
-    if (!ok) return;
+    if (!ok) { setSaveError('payment'); return; }
     toast(editingPaymentId != null ? 'העסקה עודכנה' : 'העסקה נוספה', 'success');
     resetPaymentForm();
+    } catch {
+      setSaveError('payment');
+    } finally {
+      savingRef.current = false;
+      setSaving('');
+    }
   }
   function startEditPayment(p) { const total = parseFloat(p.total) || 0; setEditingPaymentId(p.id); setPaymentForm({ card: p.card || '', name: p.name || '', total: p.total || '', current: currentInstallments(p, total), amount: p.amount || '' }); }
 
@@ -158,7 +183,7 @@ export default function Credit({ clientUserId, advisorId, focus }) {
             <label className={styles.formField}>מספר תשלומים<input className={styles.input} type="number" inputMode="numeric" placeholder="מס׳ תשלומים" aria-label="מספר תשלומים" value={paymentForm.total} onChange={e => setPaymentForm({ ...paymentForm, total: e.target.value })} /></label>
             <label className={styles.formField}>תשלום נוכחי<input className={styles.input} type="number" inputMode="numeric" placeholder="תשלום נוכחי" aria-label="תשלום נוכחי" value={paymentForm.current} onChange={e => setPaymentForm({ ...paymentForm, current: e.target.value })} /></label>
             <label className={styles.formField}>סכום תשלום<input className={styles.input} type="number" inputMode="decimal" placeholder="סכום תשלום" aria-label="סכום תשלום" value={paymentForm.amount} onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} /></label>
-            <Button onClick={submitPayment}>{editingPaymentId != null ? 'שמור' : 'הוספת עסקה'}</Button>
+            <span className={styles.saveError} role={saveError === 'payment' ? 'alert' : undefined}>{saveError === 'payment' ? 'העסקה לא נשמרה. הפרטים נשארו בטופס — אפשר לנסות שוב.' : ''}</span><Button disabled={!!saving} onClick={submitPayment}>{saving === 'payment' ? 'שומר…' : editingPaymentId != null ? 'שמור' : 'הוספת עסקה'}</Button>
             {editingPaymentId != null && <Button variant="ghost" onClick={resetPaymentForm}>ביטול</Button>}
           </AddForm>
         </CollapsibleSection>
@@ -205,7 +230,7 @@ export default function Credit({ clientUserId, advisorId, focus }) {
           <label className={styles.formField}>נכון לתאריך<input className={styles.input} type="date" aria-label="נכון לתאריך" value={loanForm.asOf} onChange={e => setLoanForm({ ...loanForm, asOf: e.target.value })} /></label>
           <label className={styles.formField}>ריבית שנתית באחוזים<input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} /></label>
           <label className={styles.formField}>החזר חודשי<input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} /></label>
-          <Button onClick={submitLoan}>{editingLoanId != null ? 'שמור' : 'הוספת הלוואה'}</Button>
+          <span className={styles.saveError} role={saveError === 'loan' ? 'alert' : undefined}>{saveError === 'loan' ? 'ההלוואה לא נשמרה. הפרטים נשארו בטופס — אפשר לנסות שוב.' : ''}</span><Button disabled={!!saving} onClick={submitLoan}>{saving === 'loan' ? 'שומר…' : editingLoanId != null ? 'שמור' : 'הוספת הלוואה'}</Button>
           {editingLoanId != null && <Button variant="ghost" onClick={resetLoanForm}>ביטול</Button>}
         </AddForm>
       </CollapsibleSection>
