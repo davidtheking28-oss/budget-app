@@ -1,0 +1,20 @@
+.selector { padding: var(--space-4); }
+.clientToolbar { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.identity { flex: 0 1 260px; min-width: 0; text-align: center; overflow-wrap: anywhere; }
+.eyebrow { color: var(--text2); font-size: var(--text-xs); margin-bottom: var(--space-1); }
+.summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.stat { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
+.stat + .stat { border-inline-start: 1px solid var(--border); }
+.statValue { font-size: var(--text-xl); font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+.listHeading { display: flex; flex-direction: column; gap: var(--space-1); }
+.count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; padding: 2px 6px; margin-inline-start: var(--space-2); border-radius: var(--radius-sm); color: var(--text2); background: var(--surface2); font: 600 var(--text-xs) var(--font-body); vertical-align: middle; }
+.taskRow { padding-block: var(--space-3); }
+.taskRow:focus-within { background: var(--hover); }
+.empty { padding: var(--space-5) var(--space-4); color: var(--text2); font-size: var(--text-sm); }
+@media (max-width: 700px) {
+  .summary { grid-template-columns: 1fr; }
+  .stat + .stat { border-inline-start: 0; border-top: 1px solid var(--border); }
+  .identity { flex: 1; }
+  .clientToolbar > input { flex-basis: 100%; }
+  .taskRow { flex-wrap: wrap; }
+}

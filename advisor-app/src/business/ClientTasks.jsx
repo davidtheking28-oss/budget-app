@@ -5,6 +5,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
+import layout from './ClientTasks.module.css';
 
 const svgProps = { viewBox: '0 0 24 24', width: 16, height: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
 const monthLabel = key => key === 'none' ? 'ללא תאריך' : `${monthName(Number(key.slice(5)) - 1)} ${key.slice(0, 4)}`;
@@ -12,15 +13,15 @@ const monthLabel = key => key === 'none' ? 'ללא תאריך' : `${monthName(Nu
 function TaskList({ title, hint, empty, tasks, pending, onToggle, onOpen }) {
   return (
     <section className={styles.stack}>
-      <div>
-        <h2 className={styles.sectionHeading}>{title}</h2>
+      <div className={layout.listHeading}>
+        <h2 className={styles.sectionHeading}>{title} <span className={layout.count}>{tasks.length}</span></h2>
         <p className={styles.note} style={{ marginTop: 4 }}>{hint}</p>
       </div>
       <div className={styles.card}>
-        {tasks.length === 0 ? <div className={styles.emptyState}><span>{empty}</span></div> : (
+        {tasks.length === 0 ? <div className={layout.empty}><span>{empty}</span></div> : (
           <ul className={styles.rowList}>
             {tasks.map(t => (
-              <li key={t.id} className={styles.rowItem}>
+              <li key={t.id} className={styles.rowItem + ' ' + layout.taskRow}>
                 <input type="checkbox" className={styles.check} checked={false} disabled={pending.includes(t.id)} aria-label={'השלם: ' + t.title} onChange={() => onToggle(t)} />
                 <div className={styles.rowMain}>
                   <div className={styles.rowTitle}>{t.title}</div>
@@ -66,7 +67,7 @@ export default function ClientTasks({ advisorId, onSelect }) {
 
   return (
     <div className={styles.stack}>
-      <section className={styles.bigCard}>
+      <section className={styles.card + ' ' + layout.selector}>
         <div className={styles.stack}>
           {months.length > 0 && (
             <div className={styles.segment} role="group" aria-label="סינון לפי חודש" style={{ flexWrap: 'wrap', alignSelf: 'flex-start' }}>
@@ -74,9 +75,10 @@ export default function ClientTasks({ advisorId, onSelect }) {
               {months.map(m => <button key={m} type="button" className={month === m ? styles.segBtnOn : styles.segBtn} aria-pressed={month === m} onClick={() => setMonth(m)}>{monthLabel(m)} {mine.filter(t => monthKey(t) === m).length}</button>)}
             </div>
           )}
-          <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
+          <div className={layout.clientToolbar}>
             <button type="button" className={styles.iconBtn} aria-label="הלקוח הבא" disabled={!pool.length || index >= pool.length - 1} onClick={() => step(1)}><svg {...svgProps}><path d="m15 6-6 6 6 6" /></svg></button>
-            <div style={{ flex: '0 1 260px', textAlign: 'center', minWidth: 0 }}>
+            <div className={layout.identity}>
+              <div className={layout.eyebrow}>משימות לפי לקוח</div>
               <div className={styles.rowTitle}>{current ? (current.name || current.client_email) : 'אין לקוחות'}</div>
               {current && <div className={styles.rowMeta}>{Math.min(index, pool.length - 1) + 1} מתוך {pool.length}</div>}
             </div>
@@ -86,13 +88,13 @@ export default function ClientTasks({ advisorId, onSelect }) {
         </div>
       </section>
 
-      <div className={styles.grid3 + ' ' + styles.summaryStats}>
-        <div className={styles.stat}><div className={styles.statLabel}>משימות פתוחות במנה</div><div className={styles.statValue}>{mine.length}</div></div>
-        <div className={styles.stat}><div className={styles.statLabel}>סך המשימות במנה</div><div className={styles.statValue}>{totalForClient}</div></div>
-        <div className={styles.stat}><div className={styles.statLabel}>פתוחות אצל הלקוחות</div><div className={styles.statValue}>{openEverywhere}</div></div>
+      <div className={layout.summary} aria-label="סיכום משימות">
+        <div className={layout.stat}><div className={styles.statLabel}>פתוחות ללקוח הנבחר</div><div className={layout.statValue}>{mine.length}</div></div>
+        <div className={layout.stat}><div className={styles.statLabel}>כל המשימות של הלקוח</div><div className={layout.statValue}>{totalForClient}</div></div>
+        <div className={layout.stat}><div className={styles.statLabel}>פתוחות אצל הלקוחות</div><div className={layout.statValue}>{openEverywhere}</div></div>
       </div>
 
-      <TaskList title="המשימות שלך" hint="כל מה שהוגדר לו במסע השירות ובמשימות שלך. סימון כאן מתעדכן גם בשירות." empty="אין משימות פתוחות במנה." tasks={advisorTasks} pending={pending} onToggle={toggle} onOpen={open} />
+      <TaskList title="המשימות שלך" hint="כל מה שהוגדר לו במסע השירות ובמשימות שלך. סימון כאן מתעדכן גם בשירות." empty="אין משימות פתוחות ללקוח הנבחר." tasks={advisorTasks} pending={pending} onToggle={toggle} onOpen={open} />
       <TaskList title="משימות שהלקוח הוסיף לעצמו" hint="מה שהוא כתב לעצמו באזור האישי, כדי שתדע מה עוד על הראש שלו." empty="הלקוח עוד לא הוסיף לעצמו משימות באזור האישי." tasks={clientTasks} pending={pending} onToggle={toggle} onOpen={open} />
     </div>
   );

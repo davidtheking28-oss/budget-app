@@ -7,6 +7,7 @@ import { signupMessage } from './clientApp.js';
 import Skeleton from '../components/Skeleton.jsx';
 import { formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
+import layout from './ClientApprovals.module.css';
 
 const STATUS_LABEL = {
   active: 'פעיל',
@@ -108,9 +109,9 @@ export default function ClientApprovals({ advisorId }) {
 
   return (
     <div className={styles.stack}>
-      <div className={styles.grid4}>
+      <div className={layout.overview}>
         {tiles.map(t => (
-          <div key={t.label} className={styles.stat}><div className={styles.statLabel}>{t.label}</div><div className={styles.statValue}>{t.kinds.reduce((n, k) => n + count(k), 0)}</div><div className={styles.statNote}>{t.note}</div></div>
+          <div key={t.label} className={layout.metric}><div className={styles.statLabel}>{t.label}</div><div className={styles.statValue}>{t.kinds.reduce((n, k) => n + count(k), 0)}</div><div className={styles.statNote}>{t.note}</div></div>
         ))}
       </div>
 
@@ -155,7 +156,7 @@ export default function ClientApprovals({ advisorId }) {
               ))}
             </ul>
             {selected && (
-              <aside className={styles.userPanel} aria-label="פרטי משתמש">
+              <aside className={styles.userPanel + ' ' + layout.panel} aria-label="פרטי משתמש">
                 <div className={styles.userPanelHead}>
                   <span className={styles.userAvatar + ' ' + styles.userAvatarBig} aria-hidden="true">{initial(selected)}</span>
                   <div className={styles.userMain}>
@@ -163,9 +164,9 @@ export default function ClientApprovals({ advisorId }) {
                     {selected.name && <div dir="ltr" className={styles.rowMeta} style={{ textAlign: 'right' }}>{selected.email}</div>}
                   </div>
                 </div>
-                <div className={styles.grid2}>
-                  <div className={styles.stat}><div className={styles.statLabel}>סטטוס</div><div className={styles.rowTitle}>{STATUS_LABEL[selected.kind]}</div></div>
-                  <div className={styles.stat}><div className={styles.statLabel}>נשלח</div><div className={styles.rowTitle}>{formatDate(selected.createdAt.slice(0, 10))}</div></div>
+                <div className={layout.facts}>
+                  <div><div className={styles.statLabel}>סטטוס</div><div className={styles.rowTitle}>{STATUS_LABEL[selected.kind]}</div></div>
+                  <div><div className={styles.statLabel}>נשלח</div><div className={styles.rowTitle}>{formatDate(selected.createdAt.slice(0, 10))}</div></div>
                 </div>
                 {confirming?.key === selected.key ? (
                   <div className={styles.userConfirm} role="alert">

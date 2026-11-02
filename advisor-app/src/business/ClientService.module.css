@@ -1,0 +1,17 @@
+.overview { display: flex; flex-wrap: wrap; gap: 16px 28px; padding-block: 14px; }
+.overviewItem { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.overviewItem + .overviewItem { border-inline-start: 1px solid var(--border); padding-inline-start: 28px; }
+.overviewItem strong { font-size: var(--text-lg); font-variant-numeric: tabular-nums; color: var(--text); }
+.filters { gap: 12px; }
+.roster { padding-block-start: 16px; }
+.listHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-block-end: 14px; }
+.meetingCell { min-width: 185px; }
+.meetingEditor { display: grid; gap: 8px; min-width: 180px; }
+.meetingEditor input { width: 100%; min-width: 0; }
+.rowActions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+.scheduleButton { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+@media (max-width: 700px) {
+ .overview { gap: 12px; }
+ .overviewItem + .overviewItem { padding-inline-start: 12px; }
+ .listHeading { flex-wrap: wrap; }
+}

@@ -10,6 +10,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
+import service from './ClientService.module.css';
 
 const SERVICE_STATUSES = [
   { key: 'active', label: 'פעיל', tone: 'pillGood' },
@@ -64,22 +65,12 @@ export default function ClientService({ advisorId, onSelect }) {
 
   return (
     <div className={styles.stack}>
-      <section className={styles.bigCard}>
-        <div className={styles.grid2 + ' ' + styles.cellGrid}>
-          <div className={styles.cell}>
-            <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true"><svg {...svgProps}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3.5" /></svg></span><span className={styles.statLabel}>לקוחות פעילים</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 'var(--text-stat)' }}>{activeCount}</div>
-            <div className={styles.statNote}>בתהליך ליווי כרגע</div>
-          </div>
-          <div className={styles.cell}>
-            <div className={styles.toolbar}><span className={styles.iconTile} aria-hidden="true"><svg {...svgProps}><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-6" /></svg></span><span className={styles.statLabel}>סיימו את כל התהליך</span></div>
-            <div className={styles.bigNumber} style={{ fontSize: 'var(--text-stat)' }}>{endedCount}</div>
-            <button type="button" className={styles.linkNote} onClick={() => { setStatus('ended'); setView('all'); }}>עברו לרשימת הלקוחות שסיימו</button>
-          </div>
-        </div>
+      <section className={styles.card + ' ' + service.overview} aria-label="סיכום שירות לקוחות">
+        <div className={service.overviewItem}><span className={styles.statLabel}>בליווי פעיל</span><strong>{activeCount}</strong></div>
+        <div className={service.overviewItem}><span className={styles.statLabel}>סיימו את התהליך</span><strong>{endedCount}</strong><button type="button" className={styles.linkNote} onClick={() => { setStatus('ended'); setView('all'); }}>הצגת לקוחות שסיימו ←</button></div>
       </section>
 
-      <div className={styles.toolbar}>
+      <div className={styles.toolbar + ' ' + service.filters}>
         <div className={styles.segment} role="group" aria-label="תצוגה">
           <button type="button" className={view === 'all' ? styles.segBtnOn : styles.segBtn} aria-pressed={view === 'all'} onClick={() => setView('all')}>כל הלקוחות {clients.length}</button>
           <button type="button" className={view === 'attention' ? styles.segBtnOn : styles.segBtn} aria-pressed={view === 'attention'} onClick={() => setView('attention')}>דורשים טיפול {needing.length}</button>
@@ -91,11 +82,12 @@ export default function ClientService({ advisorId, onSelect }) {
         </select>
       </div>
 
-      <section className={styles.card}>
+      <section className={styles.card + ' ' + service.roster}>
+        <div className={service.listHeading}><h3 className={styles.cardTitle}>{view === 'attention' ? 'לקוחות לטיפול' : 'מעקב שירות'}</h3><span className={styles.rowMeta}>{visible.length} לקוחות בתצוגה</span></div>
         {visible.length === 0 ? <div className={styles.emptyState}><span>אין לקוחות בתצוגה הזו</span></div> : (
           <div className={styles.tableWrap}>
             <table className={styles.table + ' ' + styles.denseTable}>
-              <thead><tr><th>לקוח</th><th>הפגישה הבאה</th><th>אחוז התקדמות</th><th>דברים שדורשים טיפול</th><th>סטטוס</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
+              <thead><tr><th>לקוח</th><th>הפגישה הבאה</th><th>התקדמות</th><th>דברים שדורשים טיפול</th><th>סטטוס</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
               <tbody>
                 {visible.map(c => {
                   const progress = journeyProgress(journeyOf(c));
@@ -106,12 +98,12 @@ export default function ClientService({ advisorId, onSelect }) {
                   return (
                     <tr key={c.id}>
                       <td className={styles.nameCell} style={{ maxWidth: 200 }}><button type="button" className={styles.sortBtn} style={{ maxWidth: "100%" }} title={c.name || c.client_email} aria-label={"פתח מסע שירות: " + (c.name || c.client_email)} onClick={() => setOpenId(c.id)}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", unicodeBidi: "plaintext" }}>{c.name || c.client_email}</span></button><div className={styles.rowMeta}>{currentStage(journeyOf(c))}</div></td>
-                      <td>
+                      <td className={service.meetingCell}>
                         {meetingDraft?.id === c.id ? (
-                          <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
+                          <div className={service.meetingEditor}>
                             <input className={styles.input} type="date" aria-label={'מועד הפגישה הבאה: ' + (c.name || c.client_email)} value={meetingDraft.date} onChange={e => setMeetingDraft({ ...meetingDraft, date: e.target.value })} />
-                            <button type="button" className={styles.btn} onClick={() => registerMeeting(c)}>שמירה</button>
-                            <button type="button" className={styles.btnGhost} onClick={() => setMeetingDraft(null)}>ביטול</button>
+                            <div className={styles.toolbar}><button type="button" className={styles.btn} onClick={() => registerMeeting(c)}>שמירה</button>
+                            <button type="button" className={styles.btnGhost} onClick={() => setMeetingDraft(null)}>ביטול</button></div>
                           </div>
                         ) : meetingDate ? <span className={styles.pillBtn + ' ' + styles.pillGood} style={{ cursor: 'default' }}>{formatDate(meetingDate)}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title + ' · לא נקבעה' : 'הושלמו כל הפגישות'}</span>}
                       </td>
@@ -129,7 +121,7 @@ export default function ClientService({ advisorId, onSelect }) {
                           {SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
                       </td>
-                      <td><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>{upcoming && <button type="button" className={styles.iconBtn} aria-label={'רישום הפגישה הבאה של ' + (c.name || c.client_email)} title="רישום הפגישה הבאה" onClick={() => setMeetingDraft({ id: c.id, date: meetingDate })}><svg {...svgProps}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></svg></button>}</td>
+                      <td><div className={service.rowActions}><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M5 12h14M13 6l6 6-6 6" /></svg></button>{upcoming && <button type="button" className={styles.btnGhost + ' ' + service.scheduleButton} aria-label={'רישום הפגישה הבאה של ' + (c.name || c.client_email)} title="רישום הפגישה הבאה" onClick={() => setMeetingDraft({ id: c.id, date: meetingDate })}><svg {...svgProps}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>תיאום פגישה</button>}</div></td>
                     </tr>
                   );
                 })}
