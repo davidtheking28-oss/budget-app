@@ -354,25 +354,25 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
       </div>
       <section className={layout.monthSummary} aria-label="סיכום התקופה">
         <div className={layout.netFact}>
-          <span className={styles.cardSub}>{title} · רווח כולל</span>
-          <strong className={layout.netValue + ' ' + (range.net < 0 ? styles.statNeg : styles.statPos)}>{money(range.net)}</strong>
+          <span className={styles.cardSub}>{title} · רווח נטו משוער</span>
+          <strong className={layout.netValue + ' ' + (range.net < 0 ? styles.statNeg : range.net > 0 ? styles.statPos : '')}>{money(range.net)}</strong>
         </div>
         {[
           { label: 'הכנסה כוללת', value: money(range.income) },
           { label: 'הוצאה כוללת', value: money(range.expenses) },
-          { label: 'אחוז רווח', value: percentLabel(range.margin) }
+          { label: 'אחוז רווחיות', value: percentLabel(range.margin) }
         ].map(fact => <div key={fact.label} className={layout.fact}><span className={styles.cardSub}>{fact.label}</span><strong className={layout.factValue}>{fact.value}</strong></div>)}
       </section>
 
       <section className={styles.card}>
         <div className={styles.cardHead}><div><h3 className={styles.cardTitle}>הכנסות מול רווח נטו</h3><p className={styles.cardSub}>{periodLabel(from)} ועד {periodLabel(to)}</p></div></div>
-        {empty ? <div className={styles.empty}>אין עדיין נתונים להצגה</div> : <div className={layout.rangeChart}><Bar aria-label={`סיכום כספי: ${chartData.datasets.map(series => `${series.label}: ${series.data.map(money).join(' · ')}`).join(' · ')}`} data={chartData} options={chartOptions} /></div>}
+        {empty ? <div className={layout.reportEmpty}>אין עדיין הכנסות או הוצאות בתקופה שנבחרה.</div> : <div className={layout.rangeChart}><Bar aria-label={`סיכום כספי: ${chartData.datasets.map(series => `${series.label}: ${series.data.map(money).join(' · ')}`).join(' · ')}`} data={chartData} options={chartOptions} /></div>}
       </section>
 
       <section className={styles.card}>
         <div className={styles.cardHead}><h3 className={styles.cardTitle}>פירוט לפי חודש</h3><span className={styles.cardSub} role="status">{activeMonths.length} חודשים עם פעילות מתוך {range.rows.length}</span></div>
         {activeMonths.length < range.rows.length && <label className={styles.reportToolbar}><input type="checkbox" className={styles.check} checked={showAllMonths} onChange={e => setShowAllMonths(e.target.checked)} />הצג גם חודשים ללא פעילות</label>}
-        {!visibleMonths.length && <p className={styles.empty}>אין פעילות בתקופה שנבחרה</p>}
+        {!visibleMonths.length && <p className={layout.reportEmpty}>אין פעילות בתקופה שנבחרה</p>}
         <div className={styles.tableWrap + ' ' + styles.reportScroll} tabIndex={0} role="region" aria-label="פירוט כספי חודשי — גלול לצפייה בכל העמודות">
           <table className={styles.table + ' ' + styles.reportTable + ' ' + layout.rangeTable}>
             <thead><tr><th>חודש</th><th>הכנסות</th><th>סך הוצאות</th><th>מע״מ</th><th>רווח תפעולי</th><th>רווח נטו</th><th>קבלות חסרות</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
@@ -380,8 +380,8 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
               {[...visibleMonths].reverse().map(r => (
                 <tr key={r.period}>
                   <td>{periodLabel(r.period)}</td>
-                  <td className={styles.num}>{r.income ? money(r.income) : 'אין'}</td><td className={styles.num}>{r.expenses ? money(r.expenses) : 'אין'}</td><td className={styles.num}>{r.vat ? money(r.vat) : 'אין'}</td>
-                  <td className={styles.num}>{r.income || r.expenses ? money(r.operating) : 'אין'}</td><td className={styles.num}>{r.income || r.expenses ? money(r.net) : 'אין'}</td><td className={styles.num}>{r.missingReceipts || 'אין'}</td>
+                  <td className={styles.num}>{money(r.income)}</td><td className={styles.num}>{money(r.expenses)}</td><td className={styles.num}>{money(r.vat)}</td>
+                  <td className={styles.num}>{money(r.operating)}</td><td className={styles.num + ' ' + (r.net < 0 ? styles.statNeg : r.net > 0 ? styles.statPos : '')}>{money(r.net)}</td><td className={styles.num}>{r.missingReceipts}</td>
                   <td>
                     <div className={styles.toolbar} style={{ flexWrap: 'nowrap', gap: 2 }}>
                       <button type="button" className={styles.iconBtn} style={{ width: 30, height: 30, borderColor: 'transparent' }} aria-label={'עריכת ' + periodLabel(r.period)} title="עריכה" onClick={() => { openFinanceMonth(r.period, 'income'); onNavigate?.('fin-month'); }}><svg {...svgProps}><path d="M4 20h4L19 9l-4-4L4 16z" /></svg></button>
@@ -409,7 +409,7 @@ function RangeView({ entries, businessType, scope, from, to, title, controls, op
             </select>
           </div>
         </div>
-        {expenseRows.length === 0 ? <div className={styles.empty}>לא נמצאו הוצאות. נסה לשנות את הסינון.</div> : (
+        {expenseRows.length === 0 ? <div className={layout.reportEmpty}>{expMonth || expCategory ? <>לא נמצאו הוצאות בסינון הזה.<button type="button" className={styles.btnGhost} onClick={() => { setExpMonth(''); setExpCategory(''); }}>נקה סינון</button></> : 'אין עדיין הוצאות בתקופה שנבחרה.'}</div> : (
           <ul className={styles.rowList}>
             {expenseRows.map(e => (
               <li key={e.key} className={styles.rowItem}>
