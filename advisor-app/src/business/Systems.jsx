@@ -45,7 +45,7 @@ function SystemForm({ initial, title, submitLabel, onSubmit, onClose }) {
       <form className={styles.formGrid} onSubmit={submit} aria-busy={saving}>
         <label className={styles.fieldLabel}>שם הסיסטם · חובה<input name="systemName" className={styles.input} aria-invalid={nameError} aria-describedby={nameError ? "system-name-error" : undefined} value={form.name} onChange={e => { set({ name: e.target.value }); setNameError(false); }} />{nameError && <span id="system-name-error" className={styles.fieldError} role="alert">כתוב שם לסיסטם</span>}</label>
         <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} value={form.dept} onChange={e => set({ dept: e.target.value })}>{SYSTEM_DEPARTMENTS.map(d => <option key={d.key} value={d.key}>{d.key}</option>)}</select></label>
-        <label className={styles.fieldLabel}>תיאור קצר<input className={styles.input} placeholder="במשפט אחד: על מה הסיסטם הזה" value={form.summary} onChange={e => set({ summary: e.target.value })} /><span className={styles.cardSub}>את התוכן כותבים בשלבים, אחרי יצירת הסיסטם.</span></label>
+        <label className={styles.fieldLabel}>תיאור קצר<input className={styles.input} placeholder="למשל: תהליך קליטת לקוח חדש" value={form.summary} onChange={e => set({ summary: e.target.value })} /><span className={styles.cardSub}>לאחר היצירה אפשר להוסיף את שלבי העבודה.</span></label>
         <label className={styles.fieldLabel}>הערות<textarea className={styles.input + ' ' + styles.textarea} value={form.notes} onChange={e => set({ notes: e.target.value })} /></label>
         {saveError && <p className={styles.fieldError} role="alert">השינויים לא נשמרו. הפרטים נשארו כאן — אפשר לנסות שוב.</p>}
         <div className={styles.formActions}>
@@ -169,11 +169,11 @@ export default function Systems({ advisorId }) {
       </div>
 
       <section className={styles.card}>
-        {visible.length === 0 && (search.trim() || dept) ? <div className={styles.emptyState}><span>לא נמצאו סיסטמים בסינון הזה</span><button type="button" className={styles.btnGhost} onClick={() => { setSearch(''); setDept(''); }}>נקה סינון</button></div> : visible.length === 0 ? (
+        {visible.length === 0 && (search.trim() || dept) ? <div className={styles.emptyState}><span>לא נמצאו סיסטמים שמתאימים לחיפוש ולסינון</span><button type="button" className={styles.btnGhost} onClick={() => { setSearch(''); setDept(''); }}>נקה סינון</button></div> : visible.length === 0 ? (
           <div className={styles.emptyState}>
             <span className={styles.iconTile} aria-hidden="true">{icons.nodes}</span>
-            <span>אין סיסטמים כאן עדיין</span>
-            <span className={styles.cardSub}>כל תהליך שחוזר על עצמו בעסק שווה סיסטם</span>
+            <span>עוד לא נוצרו סיסטמים</span>
+            <span className={styles.cardSub}>רכז כאן את שלבי העבודה של תהליכים שחוזרים בעסק.</span>
             <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ הוסף סיסטם</button>
           </div>
         ) : (

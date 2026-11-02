@@ -1,8 +1,8 @@
 .detailSummary { display: grid; gap: 8px; }
 .detailSummary > h2 { margin: 0; overflow-wrap: anywhere; }
-.detailSummary > p { max-width: 78ch; white-space: pre-wrap; }
-.stepCard { border-inline-start: 3px solid var(--accent); }
-.stepCard[data-complete="true"] { border-inline-start-color: var(--green); }
+.detailSummary > p { max-width: 70ch; white-space: pre-wrap; }
+.stepCard { min-width: 0; }
+.stepCard[data-complete="true"] .stepNumber { background: rgba(var(--green-rgb), .12); color: var(--green); }
 .projectStepHead { display: grid; grid-template-columns: 30px auto minmax(160px, 1fr) minmax(150px, auto) auto auto; align-items: center; gap: 10px; }
 .systemStepHead { display: grid; grid-template-columns: 30px auto minmax(160px, 1fr) auto auto; align-items: center; gap: 10px; }
 .stepNumber { display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-full); background: var(--accent-dim); color: var(--accent); font-size: var(--text-sm); font-weight: 800; font-variant-numeric: tabular-nums; }

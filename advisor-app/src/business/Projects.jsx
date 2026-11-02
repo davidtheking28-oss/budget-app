@@ -14,7 +14,7 @@ const EMPTY_FORM = { name: '', description: '', deadline: '', importance: '', in
 
 const normalizeSteps = project => (project.steps || []).map(s => ({ id: s.id, title: s.title ?? s.text ?? '', deadline: s.deadline || '', done: !!s.done, tasks: s.tasks || [] }));
 
-const metaOf = project => [project.importance ? 'חשיבות ' + project.importance + '/10' : '', project.deadline ? 'דדליין ' + new Date(project.deadline).toLocaleDateString('he-IL') : 'אין דדליין', project.investment ? 'נדרשת השקעה' : 'לא נדרשת השקעה'].filter(Boolean);
+const metaOf = project => [project.importance ? 'חשיבות ' + project.importance + '/10' : '', project.deadline ? 'יעד: ' + new Date(project.deadline).toLocaleDateString('he-IL') : 'ללא תאריך יעד', project.investment ? 'נדרשת השקעה' : 'לא נדרשת השקעה'].filter(Boolean);
 
 function ProjectForm({ title, initial, submitLabel, onSubmit, onClose }) {
   const [form, setForm] = useState(initial);
@@ -47,7 +47,7 @@ function ProjectForm({ title, initial, submitLabel, onSubmit, onClose }) {
         <label className={styles.fieldLabel}>שם הפרויקט · חובה<input name="projectName" className={styles.input} placeholder="למשל: השקת קורס דיגיטלי" aria-invalid={nameError} aria-describedby={nameError ? "project-name-error" : undefined} value={form.name} onChange={e => { set({ name: e.target.value }); setNameError(false); }} />{nameError && <span id="project-name-error" className={styles.fieldError} role="alert">כתוב שם לפרויקט</span>}</label>
         <label className={styles.fieldLabel}>תיאור<textarea className={styles.input + ' ' + styles.textarea} value={form.description} onChange={e => set({ description: e.target.value })} placeholder="פרטים נוספים (לא חובה)" /></label>
         <div className={styles.formRow}>
-          <label className={styles.fieldLabel}>דדליין הפרויקט<input className={styles.input} type="date" value={form.deadline} onChange={e => set({ deadline: e.target.value })} /></label>
+          <label className={styles.fieldLabel}>תאריך יעד לפרויקט<input className={styles.input} type="date" value={form.deadline} onChange={e => set({ deadline: e.target.value })} /></label>
           <label className={styles.fieldLabel}>דירוג חשיבות (1 עד 10)<input className={styles.input} type="number" min="1" max="10" value={form.importance ?? ''} onChange={e => set({ importance: e.target.value })} /></label>
         </div>
         <label className={styles.fieldLabel}>נדרשת השקעה כספית?
@@ -85,7 +85,7 @@ function StepCard({ step, index, onChange, onRemove }) {
         <span className={work.stepNumber}>{index + 1}</span>
         <button type="button" className={styles.pillBtn + ' ' + (step.done ? styles.pillGood : styles.pillBad)} aria-pressed={step.done} onClick={() => onChange({ done: !step.done })}>{step.done ? 'בוצע' : 'לא בוצע'}</button>
         <input className={styles.input + ' ' + styles.inputGrow} placeholder={'שלב ' + (index + 1)} aria-label={'שם שלב ' + (index + 1)} defaultValue={step.title} onBlur={e => { if (e.target.value.trim() !== step.title) onChange({ title: e.target.value.trim() }); }} />
-        <label className={styles.rowMeta}>דדליין <input className={styles.input} type="date" aria-label={'דדליין שלב ' + (index + 1)} value={step.deadline} onChange={e => onChange({ deadline: e.target.value })} /></label>
+        <label className={styles.rowMeta}>תאריך יעד <input className={styles.input} type="date" aria-label={'תאריך יעד לשלב ' + (index + 1)} value={step.deadline} onChange={e => onChange({ deadline: e.target.value })} /></label>
         {step.tasks.length > 0 && <span className={styles.tag}>{doneTasks}/{step.tasks.length}</span>}
         <DeleteButton title={'מחק שלב ' + (index + 1)} onClick={onRemove} />
       </div>
@@ -193,16 +193,16 @@ export default function Projects({ advisorId }) {
       <section className={styles.card}>
         <div className={styles.cardHead} style={{ marginBottom: 0 }}>
           <div><h3 className={styles.cardTitle}>הפרויקטים שלי <span className={styles.tag}>{records.length}</span></h3><p className={styles.cardSub}>שלבים, משימות והתקדמות במקום אחד</p></div>
-          <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ פתח פרויקט</button>
+          <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ פרויקט חדש</button>
         </div>
       </section>
       {records.length === 0 ? (
         <section className={styles.card}>
           <div className={styles.emptyState}>
             <span className={styles.iconTile} aria-hidden="true">{icons.folder}</span>
-            <span>עוד אין פרויקטים</span>
+            <span>עוד לא נוצרו פרויקטים</span>
             <span className={styles.cardSub}>פרויקט הוא משהו גדול שמתחלק לשלבים ומשימות</span>
-            <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ פתח פרויקט</button>
+            <button type="button" className={styles.btn} onClick={() => setModal(true)}>+ פרויקט חדש</button>
           </div>
         </section>
       ) : (
