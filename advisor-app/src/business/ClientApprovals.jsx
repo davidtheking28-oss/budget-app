@@ -5,6 +5,7 @@ import { toast } from '../toast.js';
 import Families from './Families.jsx';
 import { signupMessage } from './clientApp.js';
 import Skeleton from '../components/Skeleton.jsx';
+import ErrorState from '../components/ErrorState.jsx';
 import { formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
 import layout from './ClientApprovals.module.css';
@@ -40,12 +41,15 @@ const ROW_ACTIONS = {
 };
 
 export default function ClientApprovals({ advisorId }) {
-  const { links, archive, loading, reload } = useClientApprovals(advisorId);
+  const { links, archive, loading, error, reload } = useClientApprovals(advisorId);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [confirming, setConfirming] = useState(null);
   const [selectedKey, setSelectedKey] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState(null);
 
+  if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="18px" />;
 
   const rows = [
@@ -60,20 +64,29 @@ export default function ClientApprovals({ advisorId }) {
   const visible = rows.filter(r => (filter === 'all' || r.kind === filter) && (!needle || (r.email + ' ' + (r.name || '')).toLowerCase().includes(needle)));
 
   async function run(row, action) {
-    setConfirming(null);
-    let error;
-    if (action === 'approve') {
-      const res = await supabase.rpc('approve_advisor_client', { p_link: row.id });
-      error = res.error || (res.data !== 'ok' ? { message: res.data } : null);
-    } else if (action === 'end' || action === 'remove' || action === 'cancel' || action === 'reject') {
-      ({ error } = await supabase.from('advisor_clients').delete().eq('id', row.id).eq('advisor_id', advisorId));
-    } else {
-      const res = await supabase.rpc('archive_advisor_client', { p_link: row.id, p_state: action === 'block' ? 'blocked' : 'trashed' });
-      error = res.error || (res.data !== 'ok' ? { message: res.data } : null);
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      let error;
+      if (action === 'approve') {
+        const res = await supabase.rpc('approve_advisor_client', { p_link: row.id });
+        error = res.error || (res.data !== 'ok' ? { message: res.data } : null);
+      } else if (action === 'end' || action === 'remove' || action === 'cancel' || action === 'reject') {
+        ({ error } = await supabase.from('advisor_clients').delete().eq('id', row.id).eq('advisor_id', advisorId));
+      } else {
+        const res = await supabase.rpc('archive_advisor_client', { p_link: row.id, p_state: action === 'block' ? 'blocked' : 'trashed' });
+        error = res.error || (res.data !== 'ok' ? { message: res.data } : null);
+      }
+      if (error) { setActionError(row.key); return; }
+      setConfirming(null);
+      toast(action === 'approve' ? 'הלקוח אושר' : action === 'remove' ? 'הלקוח נמחק' : action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
+      await reload();
+    } catch {
+      setActionError(row.key);
+    } finally {
+      setBusy(false);
     }
-    if (error) { toast('הפעולה נכשלה, נסה שוב', 'error'); return; }
-    toast(action === 'approve' ? 'הלקוח אושר' : action === 'remove' ? 'הלקוח נמחק' : action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
-    reload();
   }
 
   const selected = visible.find(r => r.key === selectedKey) || visible[0] || null;
@@ -84,10 +97,19 @@ export default function ClientApprovals({ advisorId }) {
   const chooseAction = (r, a) => (a === 'approve' ? run(r, a) : setConfirming({ key: r.key, action: a }));
 
   async function restore(row) {
-    const { data, error } = await supabase.rpc('restore_advisor_client', { p_archive: row.id });
-    if (error || data !== 'ok') { toast('הפעולה נכשלה, נסה שוב', 'error'); return; }
-    toast(row.kind === 'blocked' ? 'החסימה בוטלה' : 'שוחזר, נשלחה הזמנה חדשה ללקוח', 'success');
-    reload();
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      const { data, error } = await supabase.rpc('restore_advisor_client', { p_archive: row.id });
+      if (error || data !== 'ok') { setActionError(row.key); return; }
+      toast(row.kind === 'blocked' ? 'החסימה בוטלה' : 'שוחזר, נשלחה הזמנה חדשה ללקוח', 'success');
+      await reload();
+    } catch {
+      setActionError(row.key);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function copySignupLink() {
@@ -132,11 +154,11 @@ export default function ClientApprovals({ advisorId }) {
         <div className={styles.cardHead}>
           <h2 className={styles.cardTitle}>ניהול משתמשים</h2>
           <div className={styles.toolbar}>
-            <select className={styles.input} aria-label="סינון לפי סטטוס" value={filter} onChange={e => setFilter(e.target.value)}>
+            <select className={styles.input} disabled={busy} aria-label="סינון לפי סטטוס" value={filter} onChange={e => setFilter(e.target.value)}>
               <option value="all">כל הסטטוסים</option>
               {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <input className={styles.input} type="search" placeholder="חיפוש לפי מייל..." aria-label="חיפוש משתמש" value={search} onChange={e => setSearch(e.target.value)} />
+            <input className={styles.input} type="search" placeholder="חיפוש לפי מייל..." disabled={busy} aria-label="חיפוש משתמש" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
         </div>
         {visible.length === 0 ? <div className={styles.emptyState}><span>אין משתמשים להצגה</span></div> : (
@@ -144,7 +166,7 @@ export default function ClientApprovals({ advisorId }) {
             <ul className={styles.userList} aria-label="רשימת משתמשים">
               {visible.map(r => (
                 <li key={r.key}>
-                  <button type="button" className={styles.userRow + (selected?.key === r.key ? ' ' + styles.userRowOn : '')} aria-pressed={selected?.key === r.key} onClick={() => { setSelectedKey(r.key); setConfirming(null); }}>
+                  <button type="button" className={styles.userRow + (selected?.key === r.key ? ' ' + styles.userRowOn : '')} disabled={busy} aria-pressed={selected?.key === r.key} onClick={() => { setSelectedKey(r.key); setConfirming(null); }}>
                     <span className={styles.userAvatar} aria-hidden="true">{initial(r)}</span>
                     <span className={styles.userMain}>
                       <span className={styles.rowTitle}>{r.name || r.email}</span>
@@ -170,7 +192,9 @@ export default function ClientApprovals({ advisorId }) {
                   <div><div className={styles.statLabel}>נשלח</div><div className={styles.rowTitle}>{formatDate(selected.createdAt.slice(0, 10))}</div></div>
                 </div>
                 </div>
-                <div className={layout.actionsBlock}>
+                <fieldset className={layout.actionsBlock} disabled={busy} aria-busy={busy}>
+                {busy && <p className={styles.note} role="status">מבצע את הפעולה…</p>}
+                {actionError === selected.key && <p className={styles.fieldError} role="alert">הפעולה לא הושלמה. אפשר לנסות שוב.</p>}
                 {confirming?.key === selected.key ? (
                   <div className={styles.userConfirm} role="alert">
                     <div className={styles.rowTitle}>{ACTIONS[confirming.action].confirm}</div>
@@ -202,7 +226,7 @@ export default function ClientApprovals({ advisorId }) {
                     )}
                   </>
                 )}
-                </div>
+                </fieldset>
               </aside>
             )}
           </div>
