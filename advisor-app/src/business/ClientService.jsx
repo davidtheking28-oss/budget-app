@@ -36,6 +36,8 @@ export default function ClientService({ advisorId, onSelect }) {
   const [status, setStatus] = useState('active');
   const [openId, setOpenId] = useState(null);
   const [meetingDraft, setMeetingDraft] = useState(null);
+  const [savingMeeting, setSavingMeeting] = useState(false);
+  const [meetingError, setMeetingError] = useState(false);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (deals.error) return <ErrorState onRetry={deals.reload} />;
@@ -47,12 +49,23 @@ export default function ClientService({ advisorId, onSelect }) {
   const journeyOf = c => dealByLink[c.id]?.deal?.journey;
 
   async function registerMeeting(c) {
+    if (savingMeeting) return;
     if (!c.client_id) { toast('הלקוח עוד לא מחובר, אי אפשר לשתף איתו', 'error'); return; }
-    const journey = readJourney(journeyOf(c));
-    const key = MEETINGS.find(m => m.title === nextMeeting(journey).title).key;
-    const next = await scheduleJourneyMeeting(advisorId, c.client_id, journey, key, meetingDraft.date);
-    if (!next) return;
-    if (await deals.saveDeal(dealByLink[c.id], { journey: next })) { setMeetingDraft(null); toast('הפגישה נרשמה', 'success'); }
+    setSavingMeeting(true);
+    setMeetingError(false);
+    try {
+      const journey = meetingDraft.journey || readJourney(journeyOf(c));
+      const key = MEETINGS.find(m => m.title === nextMeeting(journey).title).key;
+      const next = await scheduleJourneyMeeting(advisorId, c.client_id, journey, key, meetingDraft.date);
+      if (!next) { setMeetingError(true); return; }
+      setMeetingDraft(prev => ({ ...prev, journey: next }));
+      if (await deals.saveDeal(dealByLink[c.id], { journey: next })) { setMeetingDraft(null); toast('הפגישה נרשמה', 'success'); }
+      else setMeetingError(true);
+    } catch {
+      setMeetingError(true);
+    } finally {
+      setSavingMeeting(false);
+    }
   }
   const allAttention = c => [...attentionOf(c), ...journeyAttention(journeyOf(c))];
   const statusOf = c => dealByLink[c.id]?.deal?.service_status || 'active';
@@ -101,9 +114,9 @@ export default function ClientService({ advisorId, onSelect }) {
                       <td className={service.meetingCell}>
                         {meetingDraft?.id === c.id ? (
                           <div className={service.meetingEditor}>
-                            <input className={styles.input} type="date" aria-label={'מועד הפגישה הבאה: ' + (c.name || c.client_email)} value={meetingDraft.date} onChange={e => setMeetingDraft({ ...meetingDraft, date: e.target.value })} />
-                            <div className={styles.toolbar}><button type="button" className={styles.btn} onClick={() => registerMeeting(c)}>שמירה</button>
-                            <button type="button" className={styles.btnGhost} onClick={() => setMeetingDraft(null)}>ביטול</button></div>
+                            <input className={styles.input} type="date" aria-label={'מועד הפגישה הבאה: ' + (c.name || c.client_email)} disabled={savingMeeting} value={meetingDraft.date} onChange={e => setMeetingDraft({ ...meetingDraft, date: e.target.value })} />
+                            <div className={styles.toolbar}><button type="button" className={styles.btn} disabled={savingMeeting} onClick={() => registerMeeting(c)}>{savingMeeting ? 'שומר…' : 'שמירה'}</button>
+                            <button type="button" className={styles.btnGhost} disabled={savingMeeting} onClick={() => { setMeetingDraft(null); setMeetingError(false); }}>ביטול</button>{meetingError && <span className={styles.fieldError} role="alert">לא הושלמה שמירת הפגישה. אפשר לנסות שוב.</span>}</div>
                           </div>
                         ) : meetingDate ? <span className={styles.pillBtn + ' ' + styles.pillGood} style={{ cursor: 'default' }}>{formatDate(meetingDate)}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title + ' · לא נקבעה' : 'הושלמו כל הפגישות'}</span>}
                       </td>

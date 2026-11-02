@@ -11,6 +11,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
   const [journey, setJourney] = useState(() => readJourney(row.deal?.journey));
   const [initial] = useState(journey);
   const [taskDraft, setTaskDraft] = useState({});
+  const [summaryState, setSummaryState] = useState({});
   const [opened, setOpened] = useState(() => Object.fromEntries(MEETINGS.map(m => [m.key, m.key === MEETINGS.find(next => !readJourney(row.deal?.journey).meetings[next.key].done)?.key])));
   const [intakeOpen, setIntakeOpen] = useState(() => !ONBOARDING.every(s => readJourney(row.deal?.journey).onboarding[s.key]));
   useEffect(() => {
@@ -61,9 +62,19 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
   }
 
   async function saveSummary(key) {
+    if (summaryState[key] === 'saving') return;
     const m = journey.meetings[key];
-    save();
-    if (m.meetingId) await supabase.from('advisor_meetings').update({ summary: m.summary || null }).eq('id', m.meetingId).eq('advisor_id', advisorId);
+    setSummaryState(prev => ({ ...prev, [key]: 'saving' }));
+    try {
+      if (!(await save())) { setSummaryState(prev => ({ ...prev, [key]: 'error' })); return; }
+      if (m.meetingId) {
+        const { error } = await supabase.from('advisor_meetings').update({ summary: m.summary || null }).eq('id', m.meetingId).eq('advisor_id', advisorId);
+        if (error) { setSummaryState(prev => ({ ...prev, [key]: 'error' })); return; }
+      }
+      setSummaryState(prev => ({ ...prev, [key]: 'saved' }));
+    } catch {
+      setSummaryState(prev => ({ ...prev, [key]: 'error' }));
+    }
   }
 
   async function addTask(key) {
@@ -171,9 +182,10 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
             )}
 
             <label className={styles.fieldLabel}>סיכום פגישה
-              <textarea className={styles.input} rows={3} value={data.summary} onChange={e => setMeeting(m.key, { summary: e.target.value }, false)} onBlur={() => saveSummary(m.key)} />
+              <textarea className={styles.input} rows={3} value={data.summary} onChange={e => setMeeting(m.key, { summary: e.target.value }, false)} onBlur={() => saveSummary(m.key)} disabled={summaryState[m.key] === 'saving'} />
             </label>
 
+            {summaryState[m.key] && <div className={styles.toolbar} role={summaryState[m.key] === 'error' ? 'alert' : 'status'}><span className={summaryState[m.key] === 'error' ? styles.fieldError : styles.note}>{summaryState[m.key] === 'error' ? 'לא הושלמה שמירת הסיכום. הטקסט נשאר כאן.' : summaryState[m.key] === 'saving' ? 'שומר סיכום…' : 'הסיכום נשמר'}</span>{summaryState[m.key] === 'error' && <button type="button" className={styles.btnGhost} onClick={() => saveSummary(m.key)}>נסה לשמור סיכום שוב</button>}</div>}
             <div className={styles.sectionLabel}>{m.balance}</div>
             <div className={styles.grid3}>
               <label className={styles.fieldLabel}>הכנסות

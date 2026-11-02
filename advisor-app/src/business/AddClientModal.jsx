@@ -7,20 +7,28 @@ const EMPTY = { name: '', phone: '', email: '', price: '', payment_method: '', s
 export default function AddClientModal({ methods, sources, onSave, onClose }) {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const set = patch => setForm(prev => ({ ...prev, ...patch }));
 
   async function submit(e) {
     e.preventDefault();
     if (!form.name.trim() || saving) return;
     setSaving(true);
-    const ok = await onSave(form);
-    setSaving(false);
-    if (ok) onClose();
+    setSaveError(false);
+    try {
+      const ok = await onSave(form);
+      if (ok) onClose();
+      else setSaveError(true);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <Modal title="לקוח חדש" onClose={onClose}>
-      <form className={styles.stack} onSubmit={submit}>
+      <form className={styles.stack} onSubmit={submit} aria-busy={saving}>
         <label className={styles.fieldLabel}>שם מלא · חובה
           <input className={styles.input} value={form.name} onChange={e => set({ name: e.target.value })} required />
         </label>
@@ -55,8 +63,9 @@ export default function AddClientModal({ methods, sources, onSave, onClose }) {
         </label>
           </div>
         </details>
+        {saveError && <p className={styles.fieldError} role="alert">לא התקבל אישור לשמירה. הפרטים נשארו כאן. בדוק אם הלקוח נוסף לרשימה לפני ניסיון נוסף.</p>}
         <div className={styles.formActions}>
-          <button type="submit" className={styles.btn} disabled={saving || !form.name.trim()}>הוספה</button>
+          <button type="submit" className={styles.btn} disabled={saving || !form.name.trim()}>{saving ? 'שומר…' : 'הוספה'}</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>
       </form>
