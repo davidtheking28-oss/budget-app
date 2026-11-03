@@ -53,10 +53,10 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
     setSaving(true);
     try {
       const saved = await onAdd({ type: 'income', amount: num(form.amount), clearing: num(form.clearing), desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
-      if (!saved) { setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' }); return; }
+      if (!saved) { setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס. אפשר לנסות שוב.' }); return; }
       setForm(prev => ({ ...prev, amount: '', clearing: '', desc: '' }));
     } catch {
-      setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' });
+      setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס. אפשר לנסות שוב.' });
     } finally { savingRef.current = false; setSaving(false); }
   }
   const [search, setSearch] = useState('');
@@ -81,10 +81,10 @@ function IncomeModal({ period, incomes, onAdd, onUpdate, onRemove, onClose }) {
         </ul>
       )}
       {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הכנסות</button>}
-      {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
+      {search.trim() && filtered.length === 0 && <div className={layout.searchEmpty} role="status"><span>לא נמצאו רשומות שמתאימות לחיפוש.</span><button type="button" className={styles.btnGhost} onClick={() => setSearch('')}>נקה חיפוש</button></div>}
       </section>
       <form className={styles.addForm + ' ' + styles.financeForm + ' ' + layout.entryForm} onSubmit={submit}>
-        <h3 className={layout.formHeading}>הוספת רשומה</h3>
+        <h3 className={layout.formHeading}>הוספת הכנסה</h3>
         <label className={styles.fieldLabel}>סכום ההכנסה<input className={styles.input + ' ' + styles.numInput} data-amount aria-invalid={formError?.field === 'amount'} aria-describedby={formError?.field === 'amount' ? 'finance-form-error' : undefined} inputMode="decimal" placeholder="סכום" aria-label="סכום ההכנסה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} /></label>
         <label className={styles.fieldLabel}>עלות סליקה וניכיון<input className={styles.input + ' ' + styles.numInput} inputMode="decimal" placeholder="עלות סליקה" aria-label="עלות סליקה וניכיון" value={form.clearing} onChange={e => setForm(prev => ({ ...prev, clearing: e.target.value }))} /></label>
         <label className={styles.fieldLabel}>תיאור ההכנסה<input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההכנסה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} /></label>
@@ -111,10 +111,10 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
     setSaving(true);
     try {
       const saved = await onAdd({ type: 'expense', fixed: true, amount: num(form.amount), category: form.category, desc: form.desc.trim(), startPeriod: period }, period);
-      if (!saved) { setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' }); return; }
+      if (!saved) { setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס. אפשר לנסות שוב.' }); return; }
       setForm(prev => ({ ...prev, amount: '', desc: '' }));
     } catch {
-      setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' });
+      setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס. אפשר לנסות שוב.' });
     } finally { savingRef.current = false; setSaving(false); }
   }
   const [search, setSearch] = useState('');
@@ -125,7 +125,7 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
     <Modal title={`הוצאות קבועות · ${periodLabel(period)}`} onClose={onClose} wide>
       <section className={layout.records}>
       <div className={layout.sectionHead}><h3 className={layout.heading}>רשומות בחודש</h3><span className={layout.recordCount}>{fixed.length} רשומות</span></div>
-      <input type="search" className={styles.input} aria-label="חיפוש בהוצאות קבועות" placeholder="חיפוש לפי תיאור, תאריך או סכום" value={search} onChange={e => { setSearch(e.target.value); setVisibleCount(100); }} />
+      <input type="search" className={styles.input} aria-label="חיפוש בהוצאות קבועות" placeholder="חיפוש לפי תיאור, קטגוריה או סכום" value={search} onChange={e => { setSearch(e.target.value); setVisibleCount(100); }} />
       {fixed.length === 0 ? <div className={styles.empty}>עוד לא הוגדרו הוצאות לחודש הזה.</div> : (
         <ul className={styles.rowList + ' ' + layout.entries}>
           {filtered.slice(0, visibleCount).map(e => (
@@ -138,10 +138,11 @@ function FixedModal({ period, fixed, onAdd, onChangeAmount, onEnd, onClose }) {
         </ul>
       )}
       {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הוצאות קבועות</button>}
-      {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
+      {search.trim() && filtered.length === 0 && <div className={layout.searchEmpty} role="status"><span>לא נמצאו רשומות שמתאימות לחיפוש.</span><button type="button" className={styles.btnGhost} onClick={() => setSearch('')}>נקה חיפוש</button></div>}
       </section>
       <form className={styles.addForm + ' ' + styles.financeForm + ' ' + layout.entryForm} onSubmit={submit}>
-        <h3 className={layout.formHeading}>הוספת רשומה</h3>
+        <h3 className={layout.formHeading}>הוספת הוצאה קבועה</h3>
+        <p className={layout.formHint}>הסכום יחזור בכל חודש החל מ־{periodLabel(period)}, עד להפסקת ההוצאה.</p>
         <label className={styles.fieldLabel}>סכום חודשי<input className={styles.input + ' ' + styles.numInput} data-amount aria-invalid={formError?.field === 'amount'} aria-describedby={formError?.field === 'amount' ? 'finance-form-error' : undefined} inputMode="decimal" placeholder="₪" aria-label="סכום חודשי" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} /></label>
         <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
         <label className={styles.fieldLabel}>תיאור ההוצאה<input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} /></label>
@@ -168,10 +169,10 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
     setSaving(true);
     try {
       const saved = await onAdd({ type: 'expense', amount: num(form.amount), category: form.category, desc: form.desc.trim(), date: form.date, receipt: form.receipt }, period);
-      if (!saved) { setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' }); return; }
+      if (!saved) { setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס. אפשר לנסות שוב.' }); return; }
       setForm(prev => ({ ...prev, amount: '', desc: '' }));
     } catch {
-      setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס — אפשר לנסות שוב.' });
+      setFormError({ field: 'save', message: 'השמירה נכשלה. הנתונים שהזנת נשארו בטופס. אפשר לנסות שוב.' });
     } finally { savingRef.current = false; setSaving(false); }
   }
   const [search, setSearch] = useState('');
@@ -196,10 +197,10 @@ function VariableModal({ period, variable, onAdd, onUpdate, onRemove, onClose })
         </ul>
       )}
       {filtered.length > visibleCount && <button type="button" className={styles.btnGhost} onClick={() => setVisibleCount(count => count + 100)}>הצג עוד הוצאות משתנות</button>}
-      {search.trim() && filtered.length === 0 && <div className={styles.empty}>לא נמצאו תוצאות לחיפוש</div>}
+      {search.trim() && filtered.length === 0 && <div className={layout.searchEmpty} role="status"><span>לא נמצאו רשומות שמתאימות לחיפוש.</span><button type="button" className={styles.btnGhost} onClick={() => setSearch('')}>נקה חיפוש</button></div>}
       </section>
       <form className={styles.addForm + ' ' + styles.financeForm + ' ' + layout.entryForm} onSubmit={submit}>
-        <h3 className={layout.formHeading}>הוספת רשומה</h3>
+        <h3 className={layout.formHeading}>הוספת הוצאה משתנה</h3>
         <label className={styles.fieldLabel}>סכום ההוצאה<input className={styles.input + ' ' + styles.numInput} data-amount aria-invalid={formError?.field === 'amount'} aria-describedby={formError?.field === 'amount' ? 'finance-form-error' : undefined} inputMode="decimal" placeholder="₪" aria-label="סכום ההוצאה" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} /></label>
         <label className={styles.fieldLabel}>קטגוריה<select className={styles.select} aria-label="קטגוריה" value={form.category} onChange={e => setForm(prev => ({ ...prev, category: e.target.value }))}>{EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></label>
         <label className={styles.fieldLabel}>תיאור ההוצאה<input className={styles.input + ' ' + styles.inputGrow} placeholder="תיאור" aria-label="תיאור ההוצאה" value={form.desc} onChange={e => setForm(prev => ({ ...prev, desc: e.target.value }))} /></label>
