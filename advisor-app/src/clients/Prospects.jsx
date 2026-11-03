@@ -13,7 +13,7 @@ import biz from '../business/Business.module.css';
 const STATUSES = [
   { key: 'new', label: 'חדש', color: 'var(--accent)' },
   { key: 'no_answer', label: 'אין מענה', color: 'var(--yellow)' },
-  { key: 'followup', label: 'פולואפ', color: 'var(--purple, #8b5cf6)' },
+  { key: 'followup', label: 'מעקב', color: 'var(--purple, #8b5cf6)' },
   { key: 'closed', label: 'נסגר', color: 'var(--green)' },
   { key: 'relevant_not_closed', label: 'רלוונטי ולא נסגר', color: 'var(--orange, #c27c0e)' },
   { key: 'not_relevant', label: 'לא רלוונטי ולא נסגר', color: 'var(--red)' }
@@ -168,7 +168,7 @@ export default function Prospects({ advisorId, onConvert }) {
 
       {visible.length === 0 ? (
         <div className={styles.emptyBoard} role="status">
-          <div><strong>{prospects.length ? 'לא נמצאו לידים שמתאימים לחיפוש' : 'עוד אין לידים בלוח'}</strong><p>{prospects.length ? 'אפשר לשנות את החיפוש או את מקור ההגעה.' : 'הוסף ליד ראשון, והלוח יתעדכן לפי שלבי המכירה.'}</p></div>
+          <div><strong>{prospects.length ? 'לא נמצאו לידים שמתאימים לחיפוש ולסינון' : 'עוד אין לידים בלוח'}</strong><p>{prospects.length ? 'אפשר לשנות את החיפוש או את מקור ההגעה.' : 'הוסף ליד ראשון, והלוח יתעדכן לפי שלבי המכירה.'}</p></div>
           {prospects.length > 0 && <button type="button" className={biz.btnGhost} onClick={() => { setSearch(''); setSourceFilter('all'); }}>ניקוי החיפוש והסינון</button>}
         </div>
       ) : <div className={styles.board}>
@@ -192,7 +192,7 @@ export default function Prospects({ advisorId, onConvert }) {
           );
         })}
       </div>}
-      <p className={biz.note}>כל המדדים למעלה מתעדכנים אוטומטית מטבלת הלידים.</p>
+      <p className={biz.note}>המדדים מחושבים מכל הלידים. החיפוש וסינון המקור משפיעים רק על הלוח.</p>
 
       {modalOpen && (
         <Modal title={editing ? 'עריכת ליד: ' + form.name : 'ליד חדש'} onClose={reset} wide>
@@ -235,7 +235,7 @@ export default function Prospects({ advisorId, onConvert }) {
                 <label key={key} className={biz.toolbar}><input type="checkbox" className={biz.check} checked={form[key]} onChange={e => patchForm({ [key]: e.target.checked })} />{label}</label>
               ))}
             </fieldset>
-            <label className={biz.fieldLabel}>פירוט שיחה<textarea className={biz.input + ' ' + biz.textarea} placeholder="מצב נוכחי, כאב מרכזי, מטרות, התנגדויות, מה סוכם..." value={form.notes} onChange={e => patchForm({ notes: e.target.value })} /></label>
+            <label className={biz.fieldLabel}>פירוט שיחה<textarea className={biz.input + ' ' + biz.textarea} placeholder="מטרות הלקוח, נקודות שעלו בשיחה והצעד הבא שסוכם" value={form.notes} onChange={e => patchForm({ notes: e.target.value })} /></label>
               </div>
             </details>
             {editing && <details className={biz.dangerDetails}><summary>פעולות נוספות</summary><button type="button" className={biz.btnGhost} onClick={remove}>מחיקת הליד</button></details>}
@@ -247,7 +247,7 @@ export default function Prospects({ advisorId, onConvert }) {
               </div>
             ) : (
               <div className={biz.formActions}>
-                <button type="submit" className={biz.btn} disabled={saving || !form.name.trim()}>הוספת ליד</button>
+                <button type="submit" className={biz.btn} disabled={saving || !form.name.trim()}>{saving ? 'מוסיף…' : 'הוספת ליד'}</button>
                 <button type="button" className={biz.btnGhost} onClick={reset}>ביטול</button>
               </div>
             )}

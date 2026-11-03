@@ -132,11 +132,12 @@
 .columnHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
 .columnTitle { margin: 0; display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: var(--text-md); }
 .columnCount { display: grid; place-items: center; min-width: 24px; padding: 2px 6px; border-radius: var(--radius-sm); background: var(--surface2); color: var(--text2); font-size: var(--text-xs); font-weight: 700; font-variant-numeric: tabular-nums; }
-.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; }
 .columnEmpty { margin: 0; padding-block: 4px; color: var(--text2); font-size: var(--text-xs); }
 .column[data-empty="false"] .columnHead { padding-block-end: 8px; border-bottom: 1px solid var(--border); }
-.leadCard { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: var(--space-3); border: 1px solid transparent; border-radius: var(--radius-sm); background: var(--surface2); color: var(--text); font: inherit; text-align: start; cursor: pointer; }
-.leadCard:hover { border-color: var(--accent); }
+.leadCard { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: var(--space-3) var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text); font: inherit; text-align: start; cursor: pointer; }
+.leadCard + .leadCard { border-top: 1px solid var(--border); }
+.leadCard:hover { background: var(--hover); }
 .leadCard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .leadName { font-weight: 700; }
 
