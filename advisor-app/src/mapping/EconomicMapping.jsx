@@ -233,6 +233,12 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [reviewOnly, setReviewOnly] = useState(false);
   const fileInputRef = useRef(null);
   const movingInsurance = useRef(false);
+  const autoChecked = useRef(false);
+  useEffect(() => {
+    if (loading || !data || autoChecked.current) return;
+    autoChecked.current = true;
+    if (data.skip_auto) save({ ...data, skip_auto: false });
+  }, [loading, data, save]);
   const opts = monthOptions();
 
   // Groups the mapping's recurring loan/savings transactions by description and
