@@ -8140,7 +8140,6 @@ function init(){
   renderMonthGrid();
   updateHeaderTitle();
   _initAuthGate();
-  try{showPage('dashboard',document.getElementById('nav-dashboard'));}catch(e){}
   initSheetSwipe();
   initTabSwipe();
   initPullRefresh();
@@ -8152,7 +8151,6 @@ function init(){
       setTimeout(()=>openAddTx(),350);
     }
   }catch(e){}
-  setTimeout(()=>animateHeroNums('dashboard'),200);
   (function(){
     function _syncOffline(){document.body.classList.toggle('offline',!navigator.onLine);_renderSyncStatus();}
     window.addEventListener('online',()=>{_syncOffline();if(_syncPending)scheduleCloudSave();});
@@ -8404,6 +8402,7 @@ function hideSplash(){
 // ── Auth gate ─────────────────────────────────────────────────────
 let _authGateTimer=null;
 let _gateDone=false;
+let _dashboardStarted=false;
 function _initAuthGate(){
   if(!_localAccountReady){hideSplash();showAuthScreen();return;}
   localStorage.removeItem('auth_skipped');
@@ -8477,6 +8476,11 @@ function _decideOnboarding(){
   else{try{checkFabHint();}catch(e){}}
 }
 function _proceedToApp(){
+  if(!_dashboardStarted){
+    _dashboardStarted=true;
+    showPage('dashboard',document.getElementById('nav-dashboard'));
+    setTimeout(()=>animateHeroNums('dashboard'),200);
+  }
   if(!_cloudUser)_decideOnboarding();
   updateModeSwitcher();
 }
@@ -9153,7 +9157,6 @@ setTimeout(autoCarryRecurring,500);
   }
   const _rd=window.renderDashboard;
   if(typeof _rd==='function'){ window.renderDashboard=function(){ const r=_rd.apply(this,arguments); scheduleDashCharts(); return r; }; }
-  document.addEventListener('DOMContentLoaded', scheduleDashCharts);
 
   document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, {passive:false});
   document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {passive:false});

@@ -828,3 +828,26 @@ test('budget pagination resets on month and mode changes',()=>{
  t.ctx._budgetTxVisibleCount=80;t.ctx._activeMode='business';t.render();
  assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,20);
 });
+
+
+function appEntryContext(user=null){
+ const calls=[];
+ const ctx=functions(['_proceedToApp','_authGateResolve'],{_cloudUser:user,_dashboardStarted:false,_gateDone:false,_gateShown:false,_authGateTimer:1,clearTimeout:()=>{},hideSplash:()=>calls.push('splash'),showAuthScreen:()=>calls.push('auth'),showPage:name=>calls.push(name),_decideOnboarding:()=>calls.push('onboarding'),updateModeSwitcher:()=>calls.push('mode'),setTimeout:()=>0,animateHeroNums:()=>{},document:{getElementById:()=>({})}});
+ return {ctx,calls};
+}
+
+test('signed-out startup does not build the hidden dashboard',()=>{
+ const t=appEntryContext();t.ctx._authGateResolve(null);
+ assert.equal(t.calls.includes('dashboard'),false);assert.equal(t.calls.includes('auth'),true);
+});
+
+test('entering the app builds the dashboard once and preserves later navigation',()=>{
+ const t=appEntryContext({id:'cached-client'});t.ctx._proceedToApp();t.ctx._proceedToApp();
+ assert.equal(t.calls.filter(call=>call==='dashboard').length,1);
+ assert.equal(t.calls.includes('onboarding'),false);
+});
+
+test('local-only entry still initializes the dashboard and onboarding',()=>{
+ const t=appEntryContext();t.ctx._proceedToApp();
+ assert.equal(t.calls.includes('dashboard'),true);assert.equal(t.calls.includes('onboarding'),true);
+});
