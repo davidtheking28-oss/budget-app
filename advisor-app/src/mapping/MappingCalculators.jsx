@@ -79,7 +79,7 @@ export default function MappingCalculators({ categories, addCats, rows, hidden, 
       <div className={styles.grid}>
         {shown.map(c => {
           const mine = rows.filter(r => r.category === c);
-          return <Calculator key={c} category={c} labelFor={labelFor} onRename={onRename} total={mine.reduce((s, r) => s + r.amount, 0)} entries={mine.filter(r => r.manual)} onAdd={onAdd} onDelete={onDelete} onRemove={mine.length === 0 ? () => onRemoveBox(c) : undefined} />;
+          return <Calculator key={c} category={c} labelFor={labelFor} onRename={onRename} total={mine.reduce((s, r) => s + (r.manual ? r.raw ?? r.amount : r.amount * 3), 0)} entries={mine.filter(r => r.manual)} onAdd={onAdd} onDelete={onDelete} onRemove={mine.length === 0 ? () => onRemoveBox(c) : undefined} />;
         })}
       </div>
       {available.length > 0 && (
