@@ -4,11 +4,12 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingTable.module.css';
 
-export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, quarterManual = false, separateRows = false, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
+export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, quarterManual = false, separateRows = false, onRenameRow, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
   const [adding, setAdding] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState([]);
   const [topUp, setTopUp] = useState(null);
+  const [renaming, setRenaming] = useState(null);
   const [category, setCategory] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
@@ -31,6 +32,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
       manual: single,
       id: single ? rs[0].id : undefined,
       desc: single ? rs[0].desc : '',
+      name: single ? rs[0].name : undefined,
       raw: single ? rs[0].raw : undefined,
       manualIds: manualRows.map(r => r.id)
     };
@@ -109,7 +111,14 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
           <div key={r.line} className={styles.row}>
             <span className={styles.name}>
               {selecting && r.manualIds.length > 0 && <input type="checkbox" className={styles.check} aria-label={'בחר שורה: ' + labelFor(r.category)} checked={r.manualIds.every(id => picked.includes(id))} onChange={() => togglePick(r.manualIds)} />}
-              <span className={styles.nameText}>{labelFor(r.category)}{r.desc ? ' · ' + r.desc : ''}</span>
+              {renaming === r.line ? (
+                <input className={styles.nameInput} autoFocus maxLength={40} aria-label="שם השורה" defaultValue={r.name || labelFor(r.category)} onBlur={e => { setRenaming(null); const v = e.target.value.trim(); if (v !== (r.name || labelFor(r.category))) onRenameRow(r.id, v === labelFor(r.category) ? '' : v); }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); else if (e.key === 'Escape') { e.currentTarget.value = r.name || labelFor(r.category); e.currentTarget.blur(); } }} />
+              ) : (
+                <>
+                  <span className={styles.nameText}>{r.name || labelFor(r.category)}{r.desc ? ' · ' + r.desc : ''}</span>
+                  {onRenameRow && r.manual && !r.auto && <button type="button" className={styles.renameBtn} title="שינוי שם" aria-label={'שינוי שם: ' + (r.name || labelFor(r.category))} onClick={() => setRenaming(r.line)}>✎</button>}
+                </>
+              )}
               {tag && templateKeys.includes(r.category) && <span className={styles.tag}>{tag}</span>}
             </span>
             {r.placeholder ? (

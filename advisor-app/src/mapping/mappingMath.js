@@ -95,7 +95,7 @@ export function computeMappingRows(allTransactions) {
   }
   for (const t of transactions) {
     if (!t.manual) continue;
-    rows[t.type === 'income' ? 'income' : 'expense'].push({ key: 'm:' + t.id, id: t.id, category: t.category, desc: t.desc, amount: manualMonthly(t), raw: Number(t.amount) || 0, manual: true, auto: !!t.auto });
+    rows[t.type === 'income' ? 'income' : 'expense'].push({ key: 'm:' + t.id, id: t.id, category: t.category, name: t.name, desc: t.desc, amount: manualMonthly(t), raw: Number(t.amount) || 0, manual: true, auto: !!t.auto });
   }
   return rows;
 }
