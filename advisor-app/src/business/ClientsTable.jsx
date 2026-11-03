@@ -101,7 +101,11 @@ export default function ClientsTable({ advisorId, onOpen, onRemove }) {
         <span className={workspace.resultCount} role="status">{visible.length} מתוך {rows.length} לקוחות</span>
       </div>
       <section className={workspace.roster} aria-label="רשימת לקוחות">
-        {visible.length === 0 ? <div className={styles.emptyState}><span>אין לקוחות בתצוגה הזו</span></div> : (
+        {visible.length === 0 ? <div className={styles.emptyState}>
+          <strong>{rows.length ? 'לא נמצאו לקוחות שמתאימים לחיפוש ולסינון' : 'עוד אין לקוחות ברשימה'}</strong>
+          <p className={styles.note}>{rows.length ? 'נסה שם, טלפון או אימייל אחר, או נקה את הסינון.' : 'אפשר להתחיל בהוספת לקוח חדש.'}</p>
+          {rows.length > 0 && <button type="button" className={styles.btnGhost} onClick={() => { setSearch(''); setStatus(''); }}>נקה חיפוש וסינון</button>}
+        </div> : (
           <div className={styles.tableWrap} ref={tableRef}>
             <table className={styles.table + ' ' + workspace.rosterTable}>
               <thead><tr>{sortHead('name', 'לקוח')}<th>מצב התהליך</th><th>השלב הבא</th>{sortHead('meeting', 'הפגישה הבאה')}<th><span className={styles.srOnly}>פרטים ועריכה</span></th></tr></thead>
@@ -127,7 +131,7 @@ export default function ClientsTable({ advisorId, onOpen, onRemove }) {
                       </tr>
                       {expandedId === r.id && <tr><td colSpan={5} className={workspace.detailCell}>
                         <div id={'client-details-' + r.id} className={workspace.inlineDetails}>
-                          <div className={workspace.detailsHead}><h3>פרטי לקוח ועסקה</h3><span className={styles.rowMeta}>השינויים נשמרים בעת העריכה · פרטי העסקה גלויים לך בלבד</span></div>
+                          <div className={workspace.detailsHead}><h3>פרטי לקוח ועסקה</h3><span className={styles.rowMeta}>שדות טקסט נשמרים ביציאה מהשדה. פרטי העסקה גלויים לך בלבד.</span></div>
                           <div className={workspace.detailGrid}>
                               <div className={workspace.detailField}><span className={styles.statLabel}>שם מלא ואימייל</span><input className={styles.input + ' ' + styles.ghostField + ' ' + styles.nameCell} data-name-of={r.id} placeholder="ללא שם" aria-label={'שם: ' + label(r)} defaultValue={r.name || ''} onBlur={e => { if (e.target.value.trim() !== (r.name || '')) saveContact(r, { name: e.target.value.trim() || null }); }} /><div dir="ltr" className={styles.rowMeta + ' ' + styles.emailUnder} title={r.client_email}>{r.client_email || '—'}</div></div>
                               <div className={workspace.detailField}><span className={styles.statLabel}>טלפון</span><input className={styles.input + ' ' + styles.ghostField} dir="ltr" placeholder="—" style={{ width: 112 }} aria-label={'טלפון: ' + label(r)} defaultValue={r.phone || ''} onBlur={e => { if (e.target.value.trim() !== (r.phone || '')) saveContact(r, { phone: e.target.value.trim() || null }); }} /></div>
@@ -141,7 +145,7 @@ export default function ClientsTable({ advisorId, onOpen, onRemove }) {
                           <option value="">—</option>
                           {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select></div>
-                              <div className={workspace.detailField}><span className={styles.statLabel}>קבלה</span><button type="button" className={styles.pillBtn + ' ' + (r.deal?.receipt_issued ? styles.pillGood : styles.pillWarn)} aria-pressed={!!r.deal?.receipt_issued} aria-label={'קבלה: ' + label(r)} onClick={() => saveDeal(r, { receipt_issued: !r.deal?.receipt_issued })}>{r.deal?.receipt_issued ? 'הונפקה' : 'לא בוצע'}</button></div>
+                              <div className={workspace.detailField}><span className={styles.statLabel}>קבלה</span><button type="button" className={styles.pillBtn + ' ' + (r.deal?.receipt_issued ? styles.pillGood : styles.pillWarn)} aria-pressed={!!r.deal?.receipt_issued} aria-label={'קבלה: ' + label(r)} onClick={() => saveDeal(r, { receipt_issued: !r.deal?.receipt_issued })}>{r.deal?.receipt_issued ? 'הונפקה' : 'לא הונפקה'}</button></div>
                               <div className={workspace.detailField}><span className={styles.statLabel}>מקור</span><select className={styles.select + ' ' + styles.ghostField} aria-label={'מקור: ' + label(r)} value={r.deal?.source || ''} onChange={e => saveDeal(r, { source: e.target.value || null })}>
                           <option value="">—</option>
                           {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}

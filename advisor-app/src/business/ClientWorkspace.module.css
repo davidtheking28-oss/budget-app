@@ -23,7 +23,7 @@
 .nextStep > span { color: var(--text3); }
 .nextStep:hover, .nextStep:hover > span { color: var(--accent); }
 .meetingDate { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.expandButton { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 36px; padding: var(--space-2) var(--space-3); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text2); font: inherit; font-size: var(--text-sm); cursor: pointer; }
+.expandButton { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text2); font: inherit; font-size: var(--text-sm); cursor: pointer; }
 .expandButton[aria-expanded="true"] { background: var(--surface2); color: var(--text); }
 .rosterTable .detailCell { padding: 0; }
 .inlineDetails { padding: var(--space-5); background: var(--bg-2); border-block: 1px solid var(--border); }
@@ -79,3 +79,5 @@
   .clientHeader { flex-wrap: wrap; }
   .cardNavigation { flex-wrap: wrap; }
 }
+
+.clientName:focus-visible, .nextStep:focus-visible, .expandButton:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
