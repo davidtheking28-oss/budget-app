@@ -404,6 +404,8 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       extra_categories: [],
       category_labels: {},
       skip_auto: true,
+      last_upload_error: null,
+      last_upload_at: null,
       snapshots
     });
     setResetting(false);
