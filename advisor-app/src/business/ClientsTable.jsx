@@ -9,7 +9,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import { localISODate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
 import workspace from './ClientWorkspace.module.css';
-import { currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
+import { currentStage, nextMeeting, journeyAttention, meetingStatusLabel } from './journeyMath.js';
 
 const PAYMENT_STATUSES = [
   { key: 'unpaid', label: 'לא שולם', tone: 'pillBad' },
@@ -126,7 +126,7 @@ export default function ClientsTable({ advisorId, onOpen, onRemove }) {
                         </td>
                         <td><select className={styles.pillSelect + (svc.tone ? ' ' + styles[svc.tone] : '')} aria-label={'סטטוס לקוח: ' + label(r)} value={svc.key} onChange={e => saveDeal(r, { service_status: e.target.value })}>{SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}</select><div className={workspace.stage}>{currentStage(r.deal?.journey)}</div></td>
                         <td><button type="button" className={workspace.nextStep} onClick={() => setJourneyId(r.id)} aria-label={'פתח מסע שירות: ' + label(r)}>{nextAction}<span aria-hidden="true">←</span></button></td>
-                        <td className={workspace.meetingDate}>{upcoming?.date ? formatDay(upcoming.date) : <span className={styles.rowMeta}>{upcoming ? 'טרם נקבעה' : 'הפגישות הושלמו'}</span>}</td>
+                        <td className={workspace.meetingDate}>{upcoming?.date ? <><span>{formatDay(upcoming.date)}</span><div className={styles.rowMeta}>{meetingStatusLabel(upcoming.status)}</div></> : <span className={styles.rowMeta}>{upcoming ? 'טרם נקבעה' : 'הפגישות הושלמו'}</span>}</td>
                         <td><button type="button" className={workspace.expandButton} aria-label={'פרטים ועריכה: ' + label(r)} aria-expanded={expandedId === r.id} aria-controls={'client-details-' + r.id} onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}>{expandedId === r.id ? 'סגירה' : 'פרטים'}<span aria-hidden="true">{expandedId === r.id ? '−' : '+'}</span></button></td>
                       </tr>
                       {expandedId === r.id && <tr><td colSpan={5} className={workspace.detailCell}>

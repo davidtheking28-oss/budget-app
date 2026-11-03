@@ -1,3 +1,5 @@
+import { localISODate } from '../budget/monthUtils.js';
+
 export const ONBOARDING = [
   { key: 'whatsapp', label: 'נפתחה קבוצת WhatsApp' },
   { key: 'questionnaire', label: 'מילא שאלון פתיחה' },
@@ -38,6 +40,37 @@ export function readJourney(raw) {
   };
 }
 
+export function syncJourneyMeetings(raw, appointments, now = new Date()) {
+  const journey = readJourney(raw);
+  const rows = (appointments || []).filter(row => Number.isFinite(Date.parse(row.scheduled_at))).sort((a, b) => Date.parse(a.scheduled_at) - Date.parse(b.scheduled_at));
+  const byId = new Map(rows.map(row => [row.id, row]));
+  const used = new Set();
+  const reserved = new Set(MEETINGS.map(step => journey.meetings[step.key].meetingId).filter(Boolean));
+  const completed = MEETINGS.filter(step => journey.meetings[step.key].done);
+  const past = rows.filter(row => row.status !== 'declined' && Date.parse(row.scheduled_at) <= now.getTime()).slice(-completed.length);
+  const assign = (step, row) => {
+    used.add(row.id);
+    journey.meetings[step.key] = { ...journey.meetings[step.key], date: localISODate(new Date(row.scheduled_at)), meetingId: row.id, meetingStatus: row.status === 'pending' && row.for_client === false ? 'scheduled' : row.status || 'pending' };
+  };
+  completed.forEach(step => {
+    const own = journey.meetings[step.key];
+    const row = byId.get(own.meetingId) || past.find(item => !used.has(item.id) && !reserved.has(item.id) && (!own.date || localISODate(new Date(item.scheduled_at)) === own.date));
+    if (row) assign(step, row);
+  });
+  MEETINGS.filter(step => !journey.meetings[step.key].done).forEach(step => {
+    const own = journey.meetings[step.key];
+    const linked = byId.get(own.meetingId);
+    const row = linked && linked.status !== 'declined' && Date.parse(linked.scheduled_at) >= now.getTime() ? linked : rows.find(item => !used.has(item.id) && (!reserved.has(item.id) || item.id === own.meetingId) && item.status !== 'declined' && Date.parse(item.scheduled_at) >= now.getTime());
+    if (row) assign(step, row);
+    else if (own.meetingId) journey.meetings[step.key] = { ...own, date: '', meetingId: linked?.id || null, meetingStatus: linked?.status === 'declined' ? 'declined' : null };
+  });
+  return journey;
+}
+
+export function meetingStatusLabel(status) {
+  return { pending: 'ממתינה לאישור הלקוח', confirmed: 'מאושרת', declined: 'נדחתה — נדרש תיאום חדש', scheduled: 'נקבעה' }[status] || '';
+}
+
 const num = v => { const n = Number(String(v ?? '').replace(/[^\d.-]/g, '')); return Number.isFinite(n) ? n : 0; };
 export const cashflow = m => num(m.income) - num(m.expenses);
 
@@ -65,7 +98,7 @@ export function currentStage(raw) {
 export function nextMeeting(raw) {
   const j = readJourney(raw);
   const next = MEETINGS.find(m => !j.meetings[m.key].done);
-  return next ? { title: next.title, date: j.meetings[next.key].date || '' } : null;
+  return next ? { title: next.title, date: j.meetings[next.key].date || '', status: j.meetings[next.key].meetingStatus || null } : null;
 }
 
 export function journeyAttention(raw) {

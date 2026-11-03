@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { syncJourneyMeetings } from './journeyMath.js';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 
@@ -7,27 +8,46 @@ export function useClientDeals(advisorId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const reload = useCallback(async () => {
-    if (!advisorId) return;
-    setLoading(true);
+  const requestRef = useRef(0);
+  const savingRef = useRef(0);
+  const reload = useCallback(async (background = false) => {
+    if (!advisorId || (background && savingRef.current)) return;
+    const request = ++requestRef.current;
+    if (!background) setLoading(true);
+    try {
     const { data: links, error: linkError } = await supabase
       .from('advisor_clients')
       .select('id, client_id, client_email, name, phone, created_at')
       .eq('advisor_id', advisorId)
       .in('status', ['active', 'manual'])
       .order('created_at', { ascending: false });
-    if (linkError) { setError(linkError); setLoading(false); return; }
-    const { data: deals, error: dealError } = await supabase.from('advisor_client_deals').select('*').eq('advisor_id', advisorId);
-    if (dealError) { setError(dealError); setLoading(false); return; }
+    if (linkError) throw linkError;
+    if (request !== requestRef.current) return;
+    const [{ data: deals, error: dealError }, { data: appointments, error: meetingError }] = await Promise.all([
+      supabase.from('advisor_client_deals').select('*').eq('advisor_id', advisorId),
+      supabase.from('advisor_meetings').select('id,client_id,scheduled_at,status,for_client').eq('advisor_id', advisorId)
+    ]);
+    if (request !== requestRef.current) return;
+    if (dealError || meetingError) throw dealError || meetingError;
     const byLink = Object.fromEntries((deals || []).map(d => [d.link_id, d]));
     setError(null);
-    setRows((links || []).map(l => ({ ...l, deal: byLink[l.id] || null })));
-    setLoading(false);
+    setRows((links || []).map(link => ({ ...link, deal: { ...(byLink[link.id] || {}), journey: syncJourneyMeetings(byLink[link.id]?.journey, (appointments || []).filter(row => row.client_id === link.client_id)) } })));
+    } catch (err) { if (request === requestRef.current && !background) setError(err); }
+    finally { if (request === requestRef.current) setLoading(false); }
   }, [advisorId]);
 
-  useEffect(() => { reload(); }, [reload]);
+  useEffect(() => { const requests = requestRef; reload(); return () => { requests.current++; }; }, [reload]);
+  useEffect(() => {
+    const refresh = () => { if (!document.hidden) reload(true); };
+    const timer = window.setInterval(refresh, 15000);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('online', refresh);
+    return () => { window.clearInterval(timer); window.removeEventListener('focus', refresh); window.removeEventListener('online', refresh); };
+  }, [reload]);
 
   async function saveDeal(link, patch) {
+    savingRef.current++;
+    requestRef.current++;
     const before = rows;
     const next = { link_id: link.id, advisor_id: advisorId, payment_status: 'unpaid', receipt_issued: false, ...(link.deal || {}), ...patch };
     setRows(prev => prev.map(r => r.id === link.id ? { ...r, deal: next } : r));
@@ -35,6 +55,8 @@ export function useClientDeals(advisorId) {
     try {
       ({ error: err } = await supabase.from('advisor_client_deals').upsert({ ...next, updated_at: new Date().toISOString() }));
     } catch { err = true; }
+    savingRef.current--;
+    requestRef.current++;
     if (err) { toast('שגיאה בשמירה', 'error'); setRows(before); return false; }
     return true;
   }

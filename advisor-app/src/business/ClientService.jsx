@@ -3,7 +3,7 @@ import { useClientList } from '../clients/useClientList.js';
 import { useClientDeals } from './useClientDeals.js';
 import { percentLabel } from './bizMath.js';
 import ClientJourney from './ClientJourney.jsx';
-import { MEETINGS, readJourney, journeyProgress, currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
+import { MEETINGS, readJourney, journeyProgress, currentStage, nextMeeting, journeyAttention, meetingStatusLabel } from './journeyMath.js';
 import { scheduleJourneyMeeting } from './journeyMeetings.js';
 import { toast } from '../toast.js';
 import Skeleton from '../components/Skeleton.jsx';
@@ -122,7 +122,7 @@ export default function ClientService({ advisorId, onSelect }) {
                             <div className={styles.toolbar}><button type="button" className={styles.btn} disabled={savingMeeting} onClick={() => registerMeeting(c)}>{savingMeeting ? 'שומר…' : 'שמירה'}</button>
                             <button type="button" className={styles.btnGhost} disabled={savingMeeting} onClick={() => { setMeetingDraft(null); setMeetingError(false); }}>ביטול</button>{meetingError && <span className={styles.fieldError} role="alert">לא הושלמה שמירת הפגישה. אפשר לנסות שוב.</span>}</div>
                           </div>
-                        ) : meetingDate ? <span className={service.meetingDate}>{formatDate(meetingDate)}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title + ' · לא נקבעה' : 'הושלמו כל הפגישות'}</span>}
+                        ) : meetingDate ? <span className={service.meetingDate}>{formatDate(meetingDate)}{upcoming?.status && <span className={styles.rowMeta}> · {meetingStatusLabel(upcoming.status)}</span>}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title + ' · לא נקבעה' : 'הושלמו כל הפגישות'}</span>}
                       </td>
                       <td style={{ minWidth: 170 }}>
                         <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>

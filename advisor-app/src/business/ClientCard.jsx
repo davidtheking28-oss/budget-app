@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { journeyProgress, currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
+import { journeyProgress, currentStage, nextMeeting, journeyAttention, meetingStatusLabel } from './journeyMath.js';
 import { percentLabel } from './bizMath.js';
 import { fmt } from '../format.js';
 import styles from './Business.module.css';
@@ -78,7 +78,7 @@ export default function ClientCard({ row, statuses, payments, saveDeal, onBack, 
           <div className={workspace.progressHeading}><span className={styles.statLabel}>מצב התהליך</span><strong>{percentLabel(progress.rate)}</strong></div>
           <div className={styles.progress} role="progressbar" aria-label="התקדמות בתהליך" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.rate * 100)}><div className={styles.progressFill} style={{ width: progress.rate * 100 + '%' }} /></div>
           <p className={workspace.currentStage}>{currentStage(journey)}</p>
-          <div className={workspace.nextMeeting}><span className={styles.statLabel}>הפגישה הבאה</span><strong>{upcoming?.date ? formatDay(upcoming.date) : upcoming ? 'טרם נקבע מועד' : 'הפגישות הושלמו'}</strong>{upcoming && <span className={styles.rowMeta}>{upcoming.title}</span>}</div>
+          <div className={workspace.nextMeeting}><span className={styles.statLabel}>הפגישה הבאה</span><strong>{upcoming?.date ? formatDay(upcoming.date) : upcoming ? 'טרם נקבע מועד' : 'הפגישות הושלמו'}</strong>{upcoming && <span className={styles.rowMeta}>{upcoming.title}</span>}{upcoming?.status && <span className={styles.rowMeta}>{meetingStatusLabel(upcoming.status)}</span>}</div>
         </div>
       </section>
       {attention.length > 0 && <div className={workspace.attentionLine}><span className={styles.statLabel}>להשלמת הקליטה</span>{attention.map(item => <span key={item} className={styles.pillBtn + ' ' + styles.pillWarn}>{item}</span>)}</div>}

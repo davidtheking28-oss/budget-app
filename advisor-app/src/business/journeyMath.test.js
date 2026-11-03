@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cashflow, currentStage, emptyJourney, journeyAttention, journeyProgress, nextMeeting, readJourney } from './journeyMath.js';
+import { cashflow, currentStage, emptyJourney, journeyAttention, journeyProgress, nextMeeting, readJourney, syncJourneyMeetings } from './journeyMath.js';
 
 describe('journeyMath', () => {
   it('counts fifteen steps and starts at zero', () => {
@@ -48,5 +48,37 @@ describe('journeyMath', () => {
     const j = readJourney({ meetings: { m2: { done: true } } });
     expect(j.meetings.m2.followups).toHaveLength(3);
     expect(j.meetings.m1.tasks).toEqual([]);
+  });
+});
+
+
+describe('journey and booked meetings synchronization', () => {
+  const now = new Date('2026-11-03T15:00:00Z');
+  const appointments = [{ id: 'first', scheduled_at: '2026-11-03T11:00:00Z', status: 'pending', for_client: true }, { id: 'next', scheduled_at: '2026-11-07T13:00:00Z', status: 'pending', for_client: true }];
+  it('keeps the held first meeting and shows the booked second meeting as awaiting confirmation', () => {
+    const raw = emptyJourney();raw.meetings.m1.done = true;
+    const journey = syncJourneyMeetings(raw, appointments, now);
+    expect(currentStage(journey)).toBe('אחרי פגישה 1');
+    expect(journey.meetings.m1.meetingId).toBe('first');
+    expect(nextMeeting(journey)).toMatchObject({ title: 'פגישה 2: בניית תוכנית כלכלית', date: '2026-11-07', status: 'pending' });
+    expect(raw.meetings.m1.date).toBe('');
+  });
+  it('does not mark a meeting as held merely because its date passed', () => {
+    const journey = syncJourneyMeetings(null, appointments, now);
+    expect(journey.meetings.m1.done).toBe(false);
+    expect(currentStage(journey)).toBe('קליטה: לפני פגישה 1');
+  });
+  it('tracks confirmation and rescheduling of the same appointment', () => {
+    const raw = emptyJourney();raw.meetings.m1.done = true;
+    const first = syncJourneyMeetings(raw, appointments, now);
+    const next = syncJourneyMeetings(first, [appointments[0], { ...appointments[1], scheduled_at: '2026-11-08T13:00:00Z', status: 'confirmed' }], now);
+    expect(nextMeeting(next)).toMatchObject({ date: '2026-11-08', status: 'confirmed' });
+    expect(next.meetings.m2.meetingId).toBe('next');
+  });
+  it('clears a deleted booking and does not offer a declined appointment as scheduled', () => {
+    const raw = emptyJourney();raw.meetings.m1.done = true;
+    const first = syncJourneyMeetings(raw, appointments, now);
+    expect(nextMeeting(syncJourneyMeetings(first, [appointments[0]], now)).date).toBe('');
+    expect(nextMeeting(syncJourneyMeetings(first, [appointments[0], { ...appointments[1], status: 'declined' }], now))).toMatchObject({ date: '', status: 'declined' });
   });
 });

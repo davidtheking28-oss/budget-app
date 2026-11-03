@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
-import { ONBOARDING, MEETINGS, readJourney, journeyProgress, cashflow, currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
+import { ONBOARDING, MEETINGS, readJourney, journeyProgress, cashflow, currentStage, nextMeeting, journeyAttention, meetingStatusLabel, syncJourneyMeetings } from './journeyMath.js';
 import { fmt } from '../format.js';
-import { localISODate } from '../budget/monthUtils.js';
 import { scheduleJourneyMeeting } from './journeyMeetings.js';
 import styles from './Business.module.css';
 
@@ -16,27 +15,29 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
   const [intakeOpen, setIntakeOpen] = useState(() => !ONBOARDING.every(s => readJourney(row.deal?.journey).onboarding[s.key]));
   useEffect(() => {
     const taskIds = MEETINGS.flatMap(m => initial.meetings[m.key].tasks.map(t => t.id).filter(Boolean));
-    const meetingIds = MEETINGS.map(m => initial.meetings[m.key].meetingId).filter(Boolean);
-    if (!taskIds.length && !meetingIds.length) return;
-    let alive = true;
-    Promise.all([
-      taskIds.length ? supabase.from('advisor_tasks').select('id, done').in('id', taskIds) : { data: [] },
-      meetingIds.length ? supabase.from('advisor_meetings').select('id, scheduled_at').in('id', meetingIds) : { data: [] }
-    ]).then(([tasksRes, meetingsRes]) => {
-      if (!alive) return;
-      const doneById = Object.fromEntries((tasksRes.data || []).map(t => [t.id, t.done]));
-      const dateById = Object.fromEntries((meetingsRes.data || []).map(m => [m.id, m.scheduled_at]));
-      setJourney(prev => ({
-        ...prev,
-        meetings: Object.fromEntries(MEETINGS.map(m => {
-          const cur = prev.meetings[m.key];
-          const at = cur.meetingId && dateById[cur.meetingId];
-          return [m.key, { ...cur, date: at ? localISODate(new Date(at)) : cur.date, tasks: cur.tasks.map(t => t.id && t.id in doneById ? { ...t, done: doneById[t.id] } : t) }];
-        }))
-      }));
-    });
-    return () => { alive = false; };
-  }, [initial]);
+    if (!row.client_id) return;
+    let alive = true, request = 0;
+    const refresh = async () => {
+      const current = ++request;
+      try {
+        const [tasksRes, meetingsRes] = await Promise.all([
+          taskIds.length ? supabase.from('advisor_tasks').select('id, done').in('id', taskIds) : { data: [] },
+          supabase.from('advisor_meetings').select('id, scheduled_at, status, for_client').eq('advisor_id', advisorId).eq('client_id', row.client_id)
+        ]);
+        if (!alive || current !== request || meetingsRes.error) return;
+        const doneById = Object.fromEntries((tasksRes.data || []).map(t => [t.id, t.done]));
+        setJourney(prev => {
+          const next = syncJourneyMeetings(prev, meetingsRes.data || []);
+          return { ...next, meetings: Object.fromEntries(MEETINGS.map(m => [m.key, { ...next.meetings[m.key], tasks: next.meetings[m.key].tasks.map(t => t.id && t.id in doneById ? { ...t, done: doneById[t.id] } : t) }])) };
+        });
+      } catch { return; }
+    };
+    refresh();
+    const onFocus = () => { if (!document.hidden) refresh(); };
+    const timer = window.setInterval(onFocus, 15000);
+    window.addEventListener('focus', onFocus);
+    return () => { alive = false; window.clearInterval(timer); window.removeEventListener('focus', onFocus); };
+  }, [initial, advisorId, row.client_id]);
 
   const progress = journeyProgress(journey);
   const percent = Math.round(progress.rate * 100);
@@ -128,7 +129,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
             <div className={styles.statLabel}>הפגישה הבאה בתהליך</div>
             <div className={styles.statValue} style={{ fontSize: 'var(--text-lg)' }}>{upcoming ? upcoming.title : 'הושלמו כל הפגישות'}</div>
             {upcoming && (
-              <label className={styles.fieldLabel}>מועד ביומן
+              <label className={styles.fieldLabel}>מועד ביומן {meetingStatusLabel(upcoming.status)}
                 <input className={styles.input} type="date" value={upcoming.date} onChange={e => { const k = MEETINGS.find(m => m.title === upcoming.title).key; setDate(k, e.target.value); }} />
               </label>
             )}
@@ -162,7 +163,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
         const data = journey.meetings[m.key];
         return (
           <details key={m.key} className={styles.card + ' ' + styles.journeySection} open={opened[m.key]} onToggle={e => { const open = e.currentTarget.open; setOpened(prev => ({ ...prev, [m.key]: open })); }}>
-            <summary><span>{index + 1} · {m.title}</span><span className={styles.rowMeta}>{data.done ? 'הושלמה' : 'להשלמה'}{data.date ? ' · ' + new Date(data.date).toLocaleDateString('he-IL') : ''}</span></summary>
+            <summary><span>{index + 1} · {m.title}</span><span className={styles.rowMeta}>{data.done ? 'הושלמה' : meetingStatusLabel(data.meetingStatus) || 'להשלמה'}{data.date ? ' · ' + new Date(data.date).toLocaleDateString('he-IL') : ''}</span></summary>
             <div className={styles.journeyBody}>
             <div className={styles.toolbar}>
               <h2 className={styles.sectionHeading} style={{ flex: 1 }}>{index + 1} · {m.title}</h2>
