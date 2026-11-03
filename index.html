@@ -9708,13 +9708,14 @@ setTimeout(autoCarryRecurring,500);
       _wasHidden = [];
       kids.forEach(function(c){
         if(c === el || c.tagName === 'SCRIPT') return;
-        _wasHidden.push([c, c.getAttribute('aria-hidden')]);
+        _wasHidden.push([c, c.getAttribute('aria-hidden'), c.hasAttribute('inert')]);
         c.setAttribute('inert', '');
         c.setAttribute('aria-hidden', 'true');
       });
     } else if(_wasHidden){
       _wasHidden.forEach(function(p){
-        p[0].removeAttribute('inert');
+        if(p[2]) p[0].setAttribute('inert', '');
+        else p[0].removeAttribute('inert');
         if(p[1] === null) p[0].removeAttribute('aria-hidden');
         else p[0].setAttribute('aria-hidden', p[1]);
       });

@@ -785,3 +785,17 @@ test('installed app back still closes the month picker when no sheet is open',()
   const ctx=functions(['initBackButton'],{window:{matchMedia:()=>({matches:true}),addEventListener:(name,fn)=>{if(name==='popstate')onBack=fn;}},navigator:{standalone:true},history:{pushState:()=>{}},_openSheets:new Set(),document:{querySelector:()=>({id:'monthSheetOverlay'})},closeMonthSheet:()=>{closed=true;}});
   ctx.initBackButton();onBack();assert.equal(closed,true);
 });
+
+
+test('resume lock restores pre-existing inert and accessibility states',()=>{
+  const element = initial => {
+    const attrs = new Map(Object.entries(initial));
+    return { tagName:'MAIN', getAttribute:key=>attrs.has(key)?attrs.get(key):null, hasAttribute:key=>attrs.has(key), setAttribute:(key,value)=>attrs.set(key,value), removeAttribute:key=>attrs.delete(key) };
+  };
+  const background=element({inert:'','aria-hidden':'true'});
+  const dialog=element({});const overlay=element({});
+  const ctx=functions(['hideBehind'],{_wasHidden:null,getEl:()=>overlay,document:{body:{children:[background,dialog,overlay]}}});
+  ctx.hideBehind(true);assert.equal(dialog.hasAttribute('inert'),true);
+  ctx.hideBehind(false);assert.equal(background.hasAttribute('inert'),true);assert.equal(background.getAttribute('aria-hidden'),'true');
+  assert.equal(dialog.hasAttribute('inert'),false);assert.equal(dialog.getAttribute('aria-hidden'),null);
+});
