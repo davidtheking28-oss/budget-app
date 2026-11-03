@@ -869,3 +869,36 @@ test('failed chart downloads can be retried instead of leaving a rejected cache'
  const t=chartLoaderContext();const failed=t.ctx._ensureChartLibrary();t.scripts[0].onerror();await assert.rejects(failed,/unavailable/);assert.equal(t.scripts[0].removed,true);
  const retry=t.ctx._ensureChartLibrary();assert.equal(t.scripts.length,2);t.ctx.Chart=function Chart(){};t.scripts[1].onload();assert.equal(await retry,t.ctx.Chart);
 });
+
+
+test('published configuration does not enable the local development entry path',()=>{
+ let entered=0;const published=html.replaceAll('__SUPABASE_ANON__','test-published-key');
+ const ctx=vm.createContext({_localAccountReady:true,localStorage:storage(),_sb:{},SUPA_ANON:'test-published-key',_gateDone:false,_authGateTimer:null,hideSplash:()=>{},showAuthScreen:()=>{},_proceedToApp:()=>{entered++;},setTimeout:()=>1,document:{getElementById:()=>null}});
+ vm.runInContext(published.match(/function _initAuthGate\([^]*?\n\}/)[0],ctx);ctx._initAuthGate();
+ assert.equal(entered,0);assert.equal(ctx._gateDone,false);assert.equal(ctx._authGateTimer,1);
+});
+
+
+test('bundled authentication SDK matches the pinned browser integrity signature',()=>{
+ const match=html.match(/<script src="\.\/assets\/vendor\/supabase-2\.108\.2\.min\.js" integrity="([^"]+)"/);assert.ok(match);
+ const code=fs.readFileSync(path.join(root,'assets/vendor/supabase-2.108.2.min.js'));
+ const actual='sha384-'+require('node:crypto').createHash('sha384').update(code).digest('base64');assert.equal(actual,match[1]);
+});
+
+test('new offline worker cannot activate without the bundled authentication SDK',async()=>{
+ const events={},items=new Map();let activated=false;const cache={add:async key=>{if(key.includes('/vendor/'))throw Error('network failed');items.set(key,{});},match:async key=>items.get(key),put:async(key,value)=>items.set(key,value)};
+ const ctx={URL,Response,Promise,self:{location:{origin:'https://app.test'},addEventListener:(name,fn)=>{events[name]=fn;},skipWaiting:async()=>{activated=true;}},caches:{open:async()=>cache,match:async()=>undefined},fetch:()=>{throw Error('offline');},setTimeout,clearTimeout};
+ vm.runInNewContext(fs.readFileSync(path.join(root,'sw.js'),'utf8'),ctx);let install;events.install({waitUntil:p=>{install=p;}});
+ await assert.rejects(install,/Required offline asset/);assert.equal(activated,false);
+});
+
+
+test('missing SDK in a configured app waits for retry instead of entering development mode',()=>{
+ let entered=0;const ctx=functions(['_initAuthGate'],{_localAccountReady:true,localStorage:storage(),_sb:null,SUPA_ANON:'published-key',_gateDone:false,_authGateTimer:null,hideSplash:()=>{},showAuthScreen:()=>{},_proceedToApp:()=>{entered++;},setTimeout:()=>1,document:{getElementById:()=>null}});
+ ctx._initAuthGate();assert.equal(entered,0);assert.equal(ctx._gateDone,false);assert.equal(ctx._authGateTimer,1);
+});
+
+test('cached users keep local access when the SDK is temporarily unavailable',()=>{
+ let entered=0;const ctx=functions(['_initAuthGate'],{_localAccountReady:true,localStorage:storage({'sb-local-auth-token':JSON.stringify({user:{id:'cached-client'}})}),_sb:null,SUPA_ANON:'published-key',_cloudUser:null,_gateDone:false,_authGateTimer:null,hideSplash:()=>{},showAuthScreen:()=>{},_proceedToApp:()=>{entered++;},_loadAdvisorStatus:async()=>{},_applyAdvisorGate:()=>{},_loadMeetingAlerts:()=>{},_hasRealData:()=>true,setTimeout:()=>1,document:{getElementById:()=>null}});
+ ctx._initAuthGate();assert.equal(entered,1);assert.equal(ctx._cloudUser.id,'cached-client');assert.equal(ctx._gateDone,true);
+});

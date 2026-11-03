@@ -2,7 +2,7 @@
    HTML is network-first (online users always get the latest app; cache is
    the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v85';
+const CACHE = 'budget-app-v86';
 const SHELL = [
   './',
   './index.html',
@@ -10,7 +10,7 @@ const SHELL = [
   './assets/icon-192.png',
   './assets/apple-touch-icon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js'
+  './assets/vendor/supabase-2.108.2.min.js'
 ];
 /* Deliberately NOT precached — fetched on demand, then runtime-cached:
    exceljs.min.js (201 KB, only on Excel export) and icon-512.png (389 KB,
@@ -26,7 +26,7 @@ self.addEventListener('install', (e) => {
         if (previous) await cache.put(url, previous);
       }
     }));
-    for (const url of SHELL.filter(url => url === './index.html' || url.startsWith('https://'))) {
+    for (const url of SHELL.filter(url => url === './index.html' || url.endsWith('.js') || url.startsWith('https://'))) {
       if (!(await cache.match(url))) throw new Error('Required offline asset unavailable');
     }
     await self.skipWaiting();
