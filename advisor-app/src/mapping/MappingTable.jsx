@@ -19,13 +19,12 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   const chosen = addCats.includes(category) ? category : addCats[0];
 
   const templateKeys = template.map(t => t.key);
-  const group = cat => {
-    const rs = rows.filter(r => r.category === cat);
+  const groupOf = (cat, rs, line) => {
     const manualRows = rs.filter(r => r.manual && !r.auto);
     const single = rs.length === 1 && rs[0].manual && !rs[0].auto;
     return {
       auto: rs.some(r => r.auto),
-      line: 'cat:' + cat,
+      line,
       category: cat,
       amount: rs.reduce((s, r) => s + r.amount, 0),
       manual: single,
@@ -34,13 +33,20 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
       manualIds: manualRows.map(r => r.id)
     };
   };
+  const groupLines = cat => {
+    const rs = rows.filter(r => r.category === cat);
+    const manualRows = rs.filter(r => r.manual && !r.auto);
+    if (quarterManual || manualRows.length <= 1) return [groupOf(cat, rs, 'cat:' + cat)];
+    const rest = rs.filter(r => !(r.manual && !r.auto));
+    return [...(rest.length ? [groupOf(cat, rest, 'cat:' + cat)] : []), ...manualRows.map(m => groupOf(cat, [m], 'row:' + m.id))];
+  };
   const extraKeys = [...new Set(rows.filter(r => !templateKeys.includes(r.category)).map(r => r.category))];
   const lines = [
     ...template.flatMap(t => {
-      if (rows.some(r => r.category === t.key)) return [group(t.key)];
+      if (rows.some(r => r.category === t.key)) return groupLines(t.key);
       return hidden.includes(t.key) ? [] : [{ placeholder: true, category: t.key, line: 'tpl:' + t.key, manualIds: [] }];
     }),
-    ...extraKeys.map(group)
+    ...extraKeys.flatMap(groupLines)
   ];
   const togglePick = ids => setPicked(prev => (ids.every(id => prev.includes(id)) ? prev.filter(x => !ids.includes(x)) : [...new Set([...prev, ...ids])]));
   function deleteGroup(ids) {
