@@ -44,3 +44,16 @@ export function addMonths(y, m, delta) {
   const d = new Date(y, m + delta, 1);
   return { year: d.getFullYear(), month: d.getMonth() };
 }
+
+function monthsElapsed(fromKey, toKey) {
+  const [fy, fm] = fromKey.split('-').map(Number);
+  const [ty, tm] = toKey.split('-').map(Number);
+  return (ty - fy) * 12 + (tm - fm);
+}
+
+export function currentInstallments(p, total) {
+  const base = parseFloat(p.current) || 0;
+  if (!p.currentAnchor) return base;
+  const now = new Date();
+  return Math.max(0, Math.min(total, base + monthsElapsed(p.currentAnchor, mk(now.getFullYear(), now.getMonth()))));
+}

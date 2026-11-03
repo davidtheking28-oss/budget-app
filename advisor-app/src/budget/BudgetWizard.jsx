@@ -166,13 +166,13 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const periodMul = flowPeriod === 'year' ? 12 : 1;
   const avg = useMemo(() => averageMonthSummary(data), [data]);
   const actualCard = flowPeriod === 'avg' && avg
-    ? { sub: `ממוצע חודשי על פני ${avg.months === 1 ? 'חודש אחד' : `${avg.months} חודשים`}`, income: avg.income, expenses: avg.fixed + avg.variable, flow: avg.income - avg.fixed - avg.variable, savings: avg.savings, fixed: avg.fixed, variable: avg.variable }
+    ? { sub: avg.mappedFixed ? 'קבועות מהמיפוי ומהמחשבונים · יתר התנועות בממוצע בפועל' : `ממוצע חודשי על פני ${avg.months === 1 ? 'חודש אחד' : `${avg.months} חודשים`}`, income: avg.income, expenses: avg.fixed + avg.variable, flow: avg.income - avg.fixed - avg.variable, savings: avg.savings, fixed: avg.fixed, variable: avg.variable }
     : { sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, savings: actualSavings, fixed: totalFixedActual, variable: totalVarActual };
   const planCategories = [...fixed.filter(r => !isSavingsRow(r)), ...variable].map(r => ({ label: r.name, value: parseFloat(r.amount) || 0 }));
   const actualCategories = [...Object.entries(fixedActualFinal), ...Object.entries(variableActual)].map(([label, value]) => ({ label, value }));
   const summaryCards = [
     { key: 'plan', title: 'תכנון', sub: 'מה תוכנן לחודש הזה', income: totalIncome, expenses: totalFixed + totalVar, flow: left, flowNoSavings: left + plannedSavings, breakdown: breakdownOf(totalFixed, totalVar, left), categories: planCategories },
-    { key: 'actual', title: 'ביצוע', sub: actualCard.sub, income: actualCard.income, expenses: actualCard.expenses, flow: actualCard.flow, flowNoSavings: actualCard.flow + actualCard.savings, breakdown: breakdownOf(actualCard.fixed, actualCard.variable, actualCard.flow), categories: flowPeriod === 'avg' ? null : actualCategories }
+    { key: 'actual', title: flowPeriod === 'avg' ? 'חודש ממוצע' : 'ביצוע', sub: actualCard.sub, income: actualCard.income, expenses: actualCard.expenses, flow: actualCard.flow, flowNoSavings: actualCard.flow + actualCard.savings, breakdown: breakdownOf(actualCard.fixed, actualCard.variable, actualCard.flow), categories: flowPeriod === 'avg' ? null : actualCategories }
   ];
   const [years, setYears] = useState(5);
   const [breakdownBy, setBreakdownBy] = useState('type');

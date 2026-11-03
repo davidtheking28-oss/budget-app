@@ -1,3 +1,7 @@
+import { computeMappingRows } from '../mapping/mappingMath.js';
+import { FIXED_KEYS } from '../mapping/mappingTemplates.js';
+import { useEconomicMapping } from '../mapping/useEconomicMapping.js';
+import { currentInstallments } from './monthUtils.js';
 import { createContext, useCallback, useContext, useEffect, useReducer, useRef } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
@@ -102,22 +106,41 @@ export function mergeBudgetPatch(fresh, patch) {
   return out;
 }
 
-export function linkedFixedBudgetPatch(data) {
+export function linkedFixedBudgetPatch(data, mapping) {
   const fixed = new Map((data?.fixed_expenses || []).map(row => [row.id, row]));
   const budgets = { ...(data?.budgets || {}) };
+  const mapped = mapping === undefined ? data?.settings?.mappingFixedExpenses || {} : computeMappingRows(mapping?.transactions || []).expense
+    .filter(row => FIXED_KEYS.includes(row.category))
+    .reduce((totals, row) => ({ ...totals, [row.category]: (totals[row.category] || 0) + row.amount }), {});
+  const sum = (rows, field) => (rows || []).reduce((total, row) => total + (Number(row[field]) || 0), 0);
+  const automatic = {
+    'ביטוחים': ['insurances', sum((data?.insurances || []).filter(row => !row.closed), 'monthly'), !!data?.insurances?.length],
+    'החזר הלוואות + חיוב קבוע': ['loans', sum((data?.loans || []).filter(row => !row.closed && !row.hidden), 'monthly'), !!data?.loans?.length],
+    'משכנתא': ['mortgage_scenario', data?.mortgage_scenario?.hidden ? 0 : Number(data?.mortgage_scenario?.monthly) || 0, !!data?.mortgage_scenario],
+    'עסקאות בתשלומים': ['payments', sum((data?.payments || []).filter(row => !row.closed && !row.hidden && (!(Number(row.total) > 0) || currentInstallments(row, Number(row.total)) < Number(row.total))), 'amount'), !!data?.payments?.length],
+    'מנויים ושירותים': ['subscriptions', (data?.subscriptions || []).reduce((total, row) => total + (row.active ? ({ annual: (Number(row.amount) || 0) / 12, weekly: (Number(row.amount) || 0) * 4.33 }[row.cycle] ?? (Number(row.amount) || 0)) : 0), 0), !!data?.subscriptions?.length],
+    'חינוך, חוגים וקייטנות': ['education', sum(data?.education, 'monthly'), !!data?.education?.length],
+    'הוצאות שנתיות (חלק חודשי)': ['annualExpenses', sum(data?.annualExpenses, 'annual') / 12, !!data?.annualExpenses?.length]
+  };
   let changed = false;
-  for (const [source, category] of [['insurances', 'ביטוחים'], ['loans', 'החזר הלוואות + חיוב קבוע']]) {
-    const rows = data?.[source] || [];
+  for (const category of new Set([...Object.keys(mapped), ...Object.keys(automatic), ...[...fixed.values()].filter(row => row.linkedSource === 'mapping').map(row => row.id)])) {
     const prior = fixed.get(category);
-    if (!rows.length && prior?.linkedSource !== source) continue;
-    const amount = Math.round(rows.filter(row => !row.closed && (source !== 'loans' || !row.hidden))
-      .reduce((sum, row) => sum + (Number(row.monthly) || 0), 0) * 100) / 100;
-    if (prior?.amount === amount && prior?.linkedSource === source && budgets[category] === amount) continue;
-    fixed.set(category, { ...prior, id: category, amount, linkedSource: source });
+    const [automaticSource, automaticAmount, hasSource] = automatic[category] || [];
+    const fromMapping = Object.hasOwn(mapped, category);
+    const source = fromMapping ? 'mapping' : automaticSource;
+    if (!fromMapping && !hasSource && !prior?.linkedSource) continue;
+    const amount = Math.round((fromMapping ? mapped[category] : automaticAmount || 0) * 100) / 100;
+    const linkedSource = source || prior?.linkedSource;
+    if (prior?.amount === amount && prior?.linkedSource === linkedSource && budgets[category] === amount) continue;
+    fixed.set(category, { ...prior, id: category, amount, linkedSource });
     budgets[category] = amount;
     changed = true;
   }
-  return changed ? { fixed_expenses: [...fixed.values()], budgets } : null;
+  const updateMapping = mapping !== undefined && JSON.stringify(mapped) !== JSON.stringify(data?.settings?.mappingFixedExpenses || {});
+  return changed || updateMapping ? {
+    fixed_expenses: [...fixed.values()], budgets,
+    ...(updateMapping ? { settings: { ...(data?.settings || {}), mappingFixedExpenses: mapped } } : {})
+  } : null;
 }
 
 export async function writeBudgetVersion(db, payload, previous) {
@@ -320,6 +343,7 @@ async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
 export function useClientBudget(clientUserId, advisorId) {
   const [, rerender] = useReducer(n => n + 1, 0);
   const mode = useContext(BudgetModeContext);
+  const mapping = useEconomicMapping(mode === 'personal' ? clientUserId : null, advisorId);
   const key = clientUserId ? keyOf(clientUserId, mode) : null;
   const entry = key ? cache.get(key) : null;
   if (key && entry) touch(key);
@@ -354,17 +378,18 @@ export function useClientBudget(clientUserId, advisorId) {
 
   const syncAttempt = useRef(null);
   const sourceData = entry?.data;
-  const linkedPatch = sourceData ? linkedFixedBudgetPatch(sourceData) : null;
+  const mappingData = mode === 'personal' && !mapping.loading && !mapping.error ? mapping.data : undefined;
+  const linkedPatch = sourceData ? linkedFixedBudgetPatch(sourceData, mappingData) : null;
   const syncSignature = linkedPatch ? JSON.stringify([key, sourceData.loans, sourceData.insurances, linkedPatch]) : null;
   useEffect(() => {
     if (!syncSignature || syncAttempt.current === syncSignature) return;
     syncAttempt.current = syncSignature;
-    save(current => linkedFixedBudgetPatch(current));
-  }, [syncSignature, save]);
+    save(current => linkedFixedBudgetPatch(current, mappingData));
+  }, [syncSignature, save, mappingData]);
 
   return {
     data: sourceData && linkedPatch ? { ...sourceData, ...linkedPatch } : sourceData ?? null,
-    loading: !!clientUserId && !entry,
+    loading: !!clientUserId && (!entry || (mode === 'personal' && mapping.loading)),
     error: entry?.error ?? null,
     save,
     reload

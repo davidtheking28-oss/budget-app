@@ -6,7 +6,7 @@ import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, c
 import { categorizeByDictionary } from './categorizeDict.js';
 import { learnCategory, lookupLearnedCategory, normalizeDescription, syncLearnedFromAccount, pushLearnedToAccount } from './learnedCategories.js';
 import { resizeImageToJpeg } from './resizeImage.js';
-import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, chartTheme } from '../categories.js';
+import { EXPENSE_CATS, INCOME_CATS, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
 import { addItem } from '../budget/itemHelpers.js';
 import { monthlyEquivalent } from '../budget/Subscriptions.jsx';
@@ -226,7 +226,6 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [confirmingRestoreIndex, setConfirmingRestoreIndex] = useState(null);
   const [linkForm, setLinkForm] = useState(null);
   const [linking, setLinking] = useState(false);
-  const [transferring, setTransferring] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [flowPeriod, setFlowPeriod] = useState('month');
   const [donutView, setDonutView] = useState('cat');
@@ -546,27 +545,6 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const savingsRows = mappingRows.expense.filter(r => SAVINGS_KEYS.includes(r.category));
   const fixedRows = mappingRows.expense.filter(r => FIXED_KEYS.includes(r.category));
 
-  const fixedTransfer = Object.entries(fixedRows.reduce((acc, r) => {
-    if (FIXED_CATS.includes(r.category) && r.amount > 0) acc[r.category] = (acc[r.category] || 0) + r.amount;
-    return acc;
-  }, {})).map(([cat, amount]) => ({ cat, amount: Math.round(amount) })).filter(r => r.amount > 0);
-  const fixedTransferTotal = fixedTransfer.reduce((sum, r) => sum + r.amount, 0);
-
-  async function pushFixedToBudget() {
-    if (!fixedTransfer.length || transferring) return;
-    const existing = Object.fromEntries((budgetData?.fixed_expenses || []).map(x => [x.id, Number(x.amount) || 0]));
-    const overwrites = fixedTransfer.filter(r => existing[r.cat] && existing[r.cat] !== r.amount).length;
-    if (overwrites && !window.confirm('בתקציב כבר יש סכומים שונים ל-' + overwrites + ' מהקטגוריות. להחליף אותם בסכומים מהמיפוי?')) return;
-    setTransferring(true);
-    const ok = await saveBudget(cur => {
-      const byId = Object.fromEntries((cur.fixed_expenses || []).map(x => [x.id, x]));
-      const nextBudgets = { ...(cur.budgets || {}) };
-      fixedTransfer.forEach(({ cat, amount }) => { byId[cat] = { ...(byId[cat] || {}), id: cat, amount }; nextBudgets[cat] = amount; });
-      return { fixed_expenses: Object.values(byId), budgets: nextBudgets };
-    });
-    setTransferring(false);
-    if (ok !== false) toast(fixedTransfer.length + ' הוצאות קבועות הועברו לתקציב', 'success');
-  }
   const variableRows = mappingRows.expense.filter(r => !SAVINGS_KEYS.includes(r.category) && !FIXED_KEYS.includes(r.category));
   const addManual = type => (category, desc, amount) => saveManual([...manualItems, { id: Date.now() + Math.random(), manual: true, type, category, desc, amount, entries: [amount], date: null, source_month: 'manual' }]);
   const setManualAmount = (id, value) => {
@@ -767,7 +745,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       <div className={layout.tables}>
         <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="הכנסות" note="סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" allowCustom quarterManual separateRows rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
         <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} showTotal title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} showTotal title="הוצאות חודשיות קבועות" note="מסתנכרנות אוטומטית לתקציב ולחודש ממוצע" rows={fixedRows} template={FIXED_TEMPLATE} addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
         <MappingTable showTotal title="הוצאות חודשיות משתנות" note="ממוצע חודשי. סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} allowCustom quarterManual hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
       </div>
 
@@ -775,14 +753,6 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         <div className={styles.resetRow}>
           {((data?.transactions || []).length > 0 || autoFixedTx.length > 0) && <Button variant="ghost" onClick={resetMapping} disabled={resetting}>{resetting ? 'מאפס…' : 'איפוס המיפוי'}</Button>}
         </div>
-      )}
-
-      {fixedTransfer.length > 0 && (
-        <section className={styles.card + ' ' + styles.cardStandalone}>
-          <h2 className={styles.cardTitle}>העברת הוצאות קבועות לתקציב</h2>
-          <div className={styles.actualSub}>{fixedTransfer.length} קטגוריות קבועות · {fmt(fixedTransferTotal)} לחודש. הסכומים יועתקו לתקציב של הלקוח, ואפשר להמשיך לערוך אותם שם. ההוצאות המשתנות לא מועברות.</div>
-          <Button onClick={pushFixedToBudget} disabled={transferring}>{transferring ? 'מעביר…' : 'העבר לתקציב'}</Button>
-        </section>
       )}
 
       <details className={styles.mappingDetails}>

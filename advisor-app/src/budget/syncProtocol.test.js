@@ -168,3 +168,41 @@ describe('automatic linked fixed budget', () => {
     expect(linkedFixedBudgetPatch({ fixed_expenses: [{ id: 'ביטוחים', amount: 300 }], budgets: { 'ביטוחים': 300 } })).toBeNull();
   });
 });
+
+
+describe('all mapping fixed expenses sync automatically', () => {
+  const mapping = { transactions: [
+    { id: 1, manual: true, type: 'expense', category: 'חשמל', amount: 420 },
+    { id: 2, manual: true, type: 'expense', category: 'משכנתא', amount: 3000 },
+    { id: 3, manual: true, type: 'expense', category: 'הוצאות שנתיות (חלק חודשי)', amount: 120 },
+    { id: 4, manual: true, type: 'expense', category: 'מזון לבית', amount: 900 }
+  ] };
+  it('includes every fixed category and excludes variable expenses', () => {
+    const patch = linkedFixedBudgetPatch({ budgets: { 'מזון לבית': 500 } }, mapping);
+    expect(patch.budgets).toMatchObject({ 'חשמל': 420, 'משכנתא': 3000, 'הוצאות שנתיות (חלק חודשי)': 120, 'מזון לבית': 500 });
+    expect(patch.settings.mappingFixedExpenses).toEqual({ 'חשמל': 420, 'משכנתא': 3000, 'הוצאות שנתיות (חלק חודשי)': 120 });
+    expect(patch.fixed_expenses.every(row => row.linkedSource === 'mapping')).toBe(true);
+  });
+  it('updates and removes mapped amounts while preserving unrelated budget rows', () => {
+    const initial = linkedFixedBudgetPatch({ fixed_expenses: [{ id: 'ידני', amount: 80 }] }, mapping);
+    const next = linkedFixedBudgetPatch(initial, { transactions: [] });
+    expect(next.budgets['חשמל']).toBe(0);
+    expect(next.fixed_expenses.find(row => row.id === 'ידני').amount).toBe(80);
+  });
+  it('uses mapped insurance instead of adding it again to the linked insurance total', () => {
+    const patch = linkedFixedBudgetPatch({ insurances: [{ monthly: 300 }] }, { transactions: [{ manual: true, type: 'expense', category: 'ביטוחים', amount: 450 }] });
+    expect(patch.budgets['ביטוחים']).toBe(450);
+    expect(linkedFixedBudgetPatch({ ...patch, insurances: [{ monthly: 300 }] })).toBeNull();
+  });
+});
+
+
+it('syncs all linked fixed sources with monthly equivalents and excludes finished installments', () => {
+  const patch = linkedFixedBudgetPatch({
+    mortgage_scenario: { monthly: 2000 },
+    payments: [{ amount: 100, total: 10, current: 2 }, { amount: 900, total: 10, current: 10 }, { amount: 800, hidden: true }],
+    subscriptions: [{ active: true, cycle: 'annual', amount: 120 }, { active: true, cycle: 'weekly', amount: 10 }, { active: false, amount: 900 }],
+    education: [{ monthly: 150 }], annualExpenses: [{ annual: 1000 }]
+  });
+  expect(patch.budgets).toMatchObject({ 'משכנתא': 2000, 'עסקאות בתשלומים': 100, 'מנויים ושירותים': 53.3, 'חינוך, חוגים וקייטנות': 150, 'הוצאות שנתיות (חלק חודשי)': 83.33 });
+});

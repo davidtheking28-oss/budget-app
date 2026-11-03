@@ -226,3 +226,25 @@ describe('budget actuals and average month reconciliation', () => {
     expect(averageMonthSummary({ transactions: [] })).toBeNull();
   });
 });
+
+
+describe('mapping fixed expenses in average month', () => {
+  it('replaces a matching recorded category instead of double counting', () => {
+    const avg = averageMonthSummary({ fixed_expenses: [{ id: 'חשמל', amount: 420, linkedSource: 'mapping' }], transactions: [
+      { type: 'expense', cat: 'חשמל', amount: 600, date: '2026-10-01' },
+      { type: 'expense', cat: 'מזון לבית', amount: 200, date: '2026-10-02' }
+    ] });
+    expect(avg.fixed).toBe(420);
+    expect(avg.variable).toBe(200);
+    expect(avg.mappedFixed).toBe(true);
+  });
+  it('shows mapped fixed amounts even before any transactions exist', () => {
+    expect(averageMonthSummary({ fixed_expenses: [{ id: 'משכנתא', amount: 3000, linkedSource: 'mapping' }], transactions: [] })).toMatchObject({ months: 0, income: 0, fixed: 3000, variable: 0, mappedFixed: true });
+  });
+});
+
+
+it('cleared mapped categories do not reappear from old transactions in the combined average', () => {
+  const avg = averageMonthSummary({ fixed_expenses: [{ id: 'חשמל', amount: 0, linkedSource: 'mapping' }], transactions: [{ type: 'expense', cat: 'חשמל', amount: 600, date: '2026-10-01' }] });
+  expect(avg.fixed).toBe(0);
+});

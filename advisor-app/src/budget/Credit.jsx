@@ -1,3 +1,5 @@
+import { currentInstallments } from './monthUtils.js';
+export { currentInstallments } from './monthUtils.js';
 import { useRef, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
 import Skeleton from '../components/Skeleton.jsx';
@@ -16,19 +18,6 @@ import styles from './Credit.module.css';
 import { fmt } from '../format.js';
 
 function monthKey(y, m) { return `${y}-${String(m + 1).padStart(2, '0')}`; }
-
-function monthsElapsed(fromKey, toKey) {
-  const [fy, fm] = fromKey.split('-').map(Number);
-  const [ty, tm] = toKey.split('-').map(Number);
-  return (ty - fy) * 12 + (tm - fm);
-}
-
-export function currentInstallments(p, total) {
-  const base = parseFloat(p.current) || 0;
-  if (!p.currentAnchor) return base;
-  const now = new Date();
-  return Math.max(0, Math.min(total, base + monthsElapsed(p.currentAnchor, monthKey(now.getFullYear(), now.getMonth()))));
-}
 
 export function loanPayoffMonths(remaining, monthly, annualRate) {
   if (!remaining || !monthly || remaining <= 0 || monthly <= 0) return null;

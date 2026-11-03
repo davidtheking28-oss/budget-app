@@ -95,8 +95,11 @@ export function budgetActuals(data, transactions) {
 export function averageMonthSummary(data) {
   const transactions = (data?.transactions || []).filter(transaction => transaction.date);
   const months = new Set(transactions.map(transaction => transaction.date.slice(0, 7))).size;
-  if (!months) return null;
+  const mapped = (data?.fixed_expenses || []).filter(row => row.linkedSource);
+  if (!months && !mapped.length) return null;
   const actual = budgetActuals(data, transactions);
-  const sum = bucket => Object.values(bucket).reduce((total, amount) => total + amount, 0) / months;
-  return { months, income: actual.income / months, fixed: sum(actual.fixed), variable: sum(actual.variable), savings: actual.savings / months };
+  const fixed = Object.fromEntries(Object.entries(actual.fixed).map(([category, amount]) => [category, amount / (months || 1)]));
+  mapped.forEach(row => { fixed[row.id] = Number(row.amount) || 0; });
+  const sum = bucket => Object.values(bucket).reduce((total, amount) => total + amount, 0);
+  return { months, income: actual.income / (months || 1), fixed: sum(fixed), variable: sum(actual.variable) / (months || 1), savings: actual.savings / (months || 1), ...(mapped.length ? { mappedFixed: true } : {}) };
 }
