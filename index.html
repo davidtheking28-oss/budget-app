@@ -51,7 +51,6 @@
   <style id="frameGuard">html{display:none!important}</style>
   <script>try{if(self===top){document.getElementById("frameGuard").remove()}else{top.location=self.location}}catch(e){}</script>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src fonts.gstatic.com data:; connect-src https://fnklrqxwyeibfptaxewf.supabase.co wss://fnklrqxwyeibfptaxewf.supabase.co https://fonts.googleapis.com; img-src 'self' data: blob: https://cdn.simpleicons.org; object-src 'none'; base-uri 'self'; form-action 'self';">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.min.js" integrity="sha384-JWEyvHh+lRf0sN/WWY+QTQwX+CyWqmNg4tkc8GQzAMEtR2wGNrCJlvnu1lHD1kDm" crossorigin="anonymous" defer></script>
   <!-- Tailwind: compiled locally and inlined below (replaces cdn.tailwindcss.com dev build) -->
   <style id="tailwind-compiled">
@@ -2257,6 +2256,7 @@
         <div id="netWorthList" style="margin-top:12px"></div>
       </div>
     </div>
+    <div id="chartLoadStatus" role="status" aria-live="polite" hidden style="padding:12px 0;color:var(--text2)"></div>
     <div class="analytics-summary" id="analyticsSummary">
       <div class="card balance"><span class="card-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span><div class="card-label">שיעור חיסכון</div><div class="card-amount" id="savingsRatePct" style="color:var(--green)">—</div></div>
       <div class="card avg"><span class="card-icon" style="font-size:1.3rem;font-weight:800;color:var(--accent)">₪</span><div class="card-label">ממוצע יומי</div><div class="card-amount" id="dailyAvgAmt" style="color:var(--purple)">—</div></div>
@@ -6301,6 +6301,22 @@ function renderTxPage(){
   if(_calendarMode)renderCalendarView();
 }
 
+let _chartLibraryPromise=null;
+let _chartsRenderPending=false;
+function _ensureChartLibrary(){
+  if(typeof Chart==='function')return Promise.resolve(Chart);
+  if(_chartLibraryPromise)return _chartLibraryPromise;
+  _chartLibraryPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+    script.integrity='sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD';
+    script.crossOrigin='anonymous';script.async=true;
+    script.onerror=()=>{_chartLibraryPromise=null;script.remove();reject(new Error('Chart library unavailable'));};
+    script.onload=()=>{if(typeof Chart==='function')resolve(Chart);else script.onerror();};
+    document.head.appendChild(script);
+  });
+  return _chartLibraryPromise;
+}
 function renderAnalytics(){
   const mTx=getMonthTx(currentYear,currentMonth);
   const inc=getMonthlyIncome();
@@ -6312,6 +6328,21 @@ function renderAnalytics(){
   const totalE=exp.reduce((s,t)=>s+t.amount,0);
   if(srEl){const sr=inc>0?Math.round((inc-totalE)/inc*100):null;srEl.textContent=sr!==null?(sr+'%'):'—';srEl.style.color=sr>=20?'var(--green)':sr>=0?'var(--yellow)':'var(--red)';}
   if(daEl){const days=Math.min(new Date().getDate(),daysInMonth(currentYear,currentMonth));daEl.textContent=days>0?fmt(totalE/days):'—';}
+  const chartStatus=document.getElementById('chartLoadStatus');
+  if(typeof Chart!=='function'){
+    if(_chartsRenderPending)return;
+    _chartsRenderPending=true;
+    chartStatus.hidden=false;chartStatus.textContent='טוען גרפים…';
+    _ensureChartLibrary().then(()=>{
+      _chartsRenderPending=false;chartStatus.hidden=true;
+      if(document.getElementById('page-insights').classList.contains('active'))renderAnalytics();
+    }).catch(()=>{
+      _chartsRenderPending=false;
+      chartStatus.innerHTML='לא ניתן לטעון את הגרפים כרגע. <button type="button" class="btn btn-outline" onclick="renderAnalytics()">נסה שוב</button>';
+    });
+    return;
+  }
+  chartStatus.hidden=true;
   const sorted=Object.entries(catT).sort((a,b)=>b[1]-a[1]);
   const ctx1=document.getElementById('categoryChart').getContext('2d');
   if(catChart)catChart.destroy();

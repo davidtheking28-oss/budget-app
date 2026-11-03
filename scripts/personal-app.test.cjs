@@ -851,3 +851,21 @@ test('local-only entry still initializes the dashboard and onboarding',()=>{
  const t=appEntryContext();t.ctx._proceedToApp();
  assert.equal(t.calls.includes('dashboard'),true);assert.equal(t.calls.includes('onboarding'),true);
 });
+
+
+function chartLoaderContext(){
+ const scripts=[];const ctx=functions(['_ensureChartLibrary'],{_chartLibraryPromise:null,document:{createElement:()=>({remove(){this.removed=true;}}),head:{appendChild:script=>scripts.push(script)}}});
+ return {ctx,scripts};
+}
+
+test('chart loading is deferred and concurrent requests share one download',async()=>{
+ const t=chartLoaderContext();assert.equal(t.scripts.length,0);
+ const first=t.ctx._ensureChartLibrary(),second=t.ctx._ensureChartLibrary();assert.equal(first,second);assert.equal(t.scripts.length,1);
+ t.ctx.Chart=function Chart(){};t.scripts[0].onload();assert.equal(await first,t.ctx.Chart);
+ await t.ctx._ensureChartLibrary();assert.equal(t.scripts.length,1);
+});
+
+test('failed chart downloads can be retried instead of leaving a rejected cache',async()=>{
+ const t=chartLoaderContext();const failed=t.ctx._ensureChartLibrary();t.scripts[0].onerror();await assert.rejects(failed,/unavailable/);assert.equal(t.scripts[0].removed,true);
+ const retry=t.ctx._ensureChartLibrary();assert.equal(t.scripts.length,2);t.ctx.Chart=function Chart(){};t.scripts[1].onload();assert.equal(await retry,t.ctx.Chart);
+});
