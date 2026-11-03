@@ -4,7 +4,7 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingTable.module.css';
 
-export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, quarterManual = false, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
+export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, quarterManual = false, separateRows = false, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
   const [adding, setAdding] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState([]);
@@ -31,13 +31,14 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
       manual: single,
       id: single ? rs[0].id : undefined,
       desc: single ? rs[0].desc : '',
+      raw: single ? rs[0].raw : undefined,
       manualIds: manualRows.map(r => r.id)
     };
   };
   const groupLines = cat => {
     const rs = rows.filter(r => r.category === cat);
     const manualRows = rs.filter(r => r.manual && !r.auto);
-    if (quarterManual || manualRows.length === 0) return [groupOf(cat, rs, 'cat:' + cat)];
+    if ((quarterManual && !separateRows) || manualRows.length === 0) return [groupOf(cat, rs, 'cat:' + cat)];
     const rest = rs.filter(r => !(r.manual && !r.auto));
     return [...(rest.length ? [groupOf(cat, rest, 'cat:' + cat)] : []), ...manualRows.map(m => groupOf(cat, [m], 'row:' + m.id))];
   };
@@ -62,7 +63,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   function commitTopUp(r, value) {
     setTopUp(null);
     const v = parseFloat(value);
-    if (v > 0) onAmount(r.id, String((Number(r.amount) || 0) + v));
+    if (v > 0) onAmount(r.id, String((Number(quarterManual ? r.raw ?? r.amount : r.amount) || 0) + v));
   }
   function stopSelecting() { setSelecting(false); setPicked([]); }
   function deletePicked() { onDeleteMany(picked); stopSelecting(); }
@@ -131,7 +132,14 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             ) : (
               <span className={styles.field + ' ' + styles.fieldReadOnly} title={quarterManual && r.manualIds.length > 0 ? 'סכום שהוזן ל-3 חודשים, מחולק ב-3. לעריכה מחק את השורה והזן מחדש' : r.auto && r.category === 'משכנתא' ? 'מתעדכן ממסך המשכנתא' : r.auto ? 'נמשך אוטומטית מהלשוניות הלוואות · תשלומים · ביטוחים · שנתיות · מנויים · חינוך. כדי לעקוף, הזן סכום בשורה' : 'סכום מצטבר, לעריכה השתמש במחשבונים'}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
-                <input key={"r:" + r.line + ":" + r.amount} className={styles.input} readOnly tabIndex={-1} aria-label={'סכום חודשי: ' + labelFor(r.category)} value={shown(r.amount)} />
+                {quarterManual && r.manual && topUp === r.line ? (
+                  <input key={"t:" + r.line} className={styles.input} inputMode="decimal" autoFocus placeholder="סכום ל-3 חודשים" aria-label={'הוספה לסכום: ' + labelFor(r.category)} onBlur={e => commitTopUp(r, e.target.value)} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); else if (e.key === 'Escape') { e.currentTarget.value = ''; e.currentTarget.blur(); } }} />
+                ) : (
+                  <>
+                    <input key={"r:" + r.line + ":" + r.amount} className={styles.input} readOnly tabIndex={-1} aria-label={'סכום חודשי: ' + labelFor(r.category)} value={shown(r.amount)} />
+                    {quarterManual && r.manual && <button type="button" className={styles.topUp} title="הוסף סכום ל-3 החודשים" aria-label={'הוסף סכום ל' + labelFor(r.category)} onClick={() => setTopUp(r.line)}>+</button>}
+                  </>
+                )}
               </span>
             )}
             {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelFor(r.category)} onClick={() => onHide(r.category)} /> : r.manualIds.length > 0 ? <DeleteButton title={'מחק שורה: ' + labelFor(r.category)} onClick={() => (r.manual ? onDelete(r.id) : deleteGroup(r.manualIds))} /> : <span aria-hidden="true" />}
