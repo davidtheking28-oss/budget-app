@@ -130,7 +130,7 @@ describe('computeExpenseTypeBreakdown', () => {
 });
 
 describe('manual mapping lines', () => {
-  it('counts a manual amount as a monthly figure next to multi-month statements', () => {
+  it('divides a manual variable-expense amount by 3 and keeps other manual amounts monthly', () => {
     const transactions = [
       { type: 'expense', category: 'מזון לבית', amount: 1000, source_month: '2026-01' },
       { type: 'expense', category: 'מזון לבית', amount: 1000, source_month: '2026-02' },
@@ -140,16 +140,42 @@ describe('manual mapping lines', () => {
     const { averages, monthsCovered } = computeCategoryAverages(transactions);
     expect(monthsCovered).toBe(2);
     expect(averages['מזון לבית']).toBe(1000);
-    expect(averages['שונות']).toBe(300);
+    expect(averages['שונות']).toBe(100);
     const cf = computeCashflowSummary(transactions);
     expect(cf.income).toBe(9000);
-    expect(cf.expense).toBe(1300);
+    expect(cf.expense).toBe(1100);
   });
 
   it('works with manual lines only', () => {
     const transactions = [{ manual: true, type: 'income', category: 'שכר', amount: 8000, source_month: 'manual' }];
     expect(computeCashflowSummary(transactions).income).toBe(8000);
     expect(computeCashflowSummary(transactions).hasIncomeData).toBe(true);
+  });
+});
+
+describe('manual amounts in variable categories', () => {
+  it('treats the typed amount as a three month total', () => {
+    const transactions = [
+      { manual: true, id: 1, type: 'expense', category: 'מזומן ללא מעקב', amount: 3200, source_month: 'manual' },
+      { manual: true, id: 2, type: 'expense', category: 'מזומן ללא מעקב', amount: 400, source_month: 'manual' }
+    ];
+    expect(computeCategoryAverages(transactions).averages['מזומן ללא מעקב']).toBeCloseTo(1200);
+    expect(computeCashflowSummary(transactions).expense).toBeCloseTo(1200);
+    const row = computeMappingRows(transactions).expense.find(r => r.id === 1);
+    expect(row.amount).toBeCloseTo(1066.67, 1);
+    expect(row.raw).toBe(3200);
+  });
+
+  it('leaves fixed, savings and income manual amounts as monthly figures', () => {
+    const transactions = [
+      { manual: true, id: 1, type: 'expense', category: 'חשמל', amount: 300, source_month: 'manual' },
+      { manual: true, id: 2, type: 'expense', category: 'הוראת קבע לחסכון', amount: 600, source_month: 'manual' },
+      { manual: true, id: 3, type: 'income', category: 'שכר', amount: 9000, source_month: 'manual' }
+    ];
+    const { averages } = computeCategoryAverages(transactions);
+    expect(averages['חשמל']).toBe(300);
+    expect(averages['הוראת קבע לחסכון']).toBe(600);
+    expect(computeCashflowSummary(transactions).income).toBe(9000);
   });
 });
 

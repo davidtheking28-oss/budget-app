@@ -47,9 +47,9 @@ function Calculator({ category, total, entries, labelFor, onRename, onAdd, onRem
         <ul className={styles.entries}>
           {[...entries].reverse().map(r => (
             <li key={r.id} className={styles.entryRow}>
-              <span className={styles.entryAmt}>{fmt(r.amount)}</span>
+              <span className={styles.entryAmt}>{fmt(r.raw ?? r.amount)}</span>
               {r.desc && <span className={styles.entryDesc}>{r.desc}</span>}
-              <button type="button" className={styles.remove} aria-label={'מחק סכום ' + fmt(r.amount)} onClick={() => onDelete(r.id)}>✕</button>
+              <button type="button" className={styles.remove} aria-label={'מחק סכום ' + fmt(r.raw ?? r.amount)} onClick={() => onDelete(r.id)}>✕</button>
             </li>
           ))}
         </ul>
@@ -75,7 +75,7 @@ export default function MappingCalculators({ categories, addCats, rows, hidden, 
   return (
     <section className={styles.card}>
       <h3 className={styles.title}>מחשבוני ההוצאות המשתנות</h3>
-      <p className={styles.note}>רשום סכום בכל פעם שיש הוצאה, והוא יתווסף לסכום החודשי של הקטגוריה.</p>
+      <p className={styles.note}>רשום סכום בכל פעם שיש הוצאה ב-3 החודשים האחרונים. סך הסכומים בכל קטגוריה מחולק ב-3 ומופיע בהוצאות החודשיות.</p>
       <div className={styles.grid}>
         {shown.map(c => {
           const mine = rows.filter(r => r.category === c);

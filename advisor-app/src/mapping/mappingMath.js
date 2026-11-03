@@ -2,6 +2,19 @@ import { FIXED_KEYS } from './mappingTemplates.js';
 
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
+export const MANUAL_PERIOD_MONTHS = 3;
+
+// The mapping covers the last three months, so an amount typed by hand into a variable
+// expense category is the total for that period and counts as a third of it per month.
+function isPeriodTotal(t) {
+  return t.manual && !t.auto && t.type !== 'income' && t.category !== SAVINGS_CATEGORY && !FIXED_KEYS.includes(t.category);
+}
+
+export function manualMonthly(t) {
+  const amount = Number(t.amount) || 0;
+  return isPeriodTotal(t) ? amount / MANUAL_PERIOD_MONTHS : amount;
+}
+
 const CARD_CHARGE = /כרטיס אשראי|ישראכרט|לאומי קארד|דיינרס|אמריקן אקספרס|חיוב\s+(ויזה|כאל|מקס)|visa cal|isracard|max it/i;
 
 export function looksLikeCardCharge(t) {
@@ -18,7 +31,7 @@ export function computeCategoryAverages(allTransactions) {
   const totals = {};
   for (const t of transactions) {
     if (t.type === 'income') continue;
-    totals[t.category] = (totals[t.category] || 0) + (Number(t.amount) || 0) * (t.manual ? monthCount : 1);
+    totals[t.category] = (totals[t.category] || 0) + (t.manual ? manualMonthly(t) * monthCount : (Number(t.amount) || 0));
   }
   const averages = {};
   for (const cat of Object.keys(totals)) averages[cat] = totals[cat] / monthCount;
@@ -36,7 +49,7 @@ export function computeCashflowSummary(allTransactions) {
   const transactions = allTransactions.filter(t => !t.excluded);
   const monthCount = statementMonthCount(allTransactions);
 
-  const sum = list => list.reduce((s, t) => s + (Number(t.amount) || 0) * (t.manual ? monthCount : 1), 0);
+  const sum = list => list.reduce((s, t) => s + (t.manual ? manualMonthly(t) * monthCount : (Number(t.amount) || 0)), 0);
 
   const income = sum(transactions.filter(isIncome)) / monthCount;
   const expense = sum(transactions.filter(isExpense)) / monthCount;
@@ -82,7 +95,7 @@ export function computeMappingRows(allTransactions) {
   }
   for (const t of transactions) {
     if (!t.manual) continue;
-    rows[t.type === 'income' ? 'income' : 'expense'].push({ key: 'm:' + t.id, id: t.id, category: t.category, desc: t.desc, amount: Number(t.amount) || 0, manual: true, auto: !!t.auto });
+    rows[t.type === 'income' ? 'income' : 'expense'].push({ key: 'm:' + t.id, id: t.id, category: t.category, desc: t.desc, amount: manualMonthly(t), raw: Number(t.amount) || 0, manual: true, auto: !!t.auto });
   }
   return rows;
 }
