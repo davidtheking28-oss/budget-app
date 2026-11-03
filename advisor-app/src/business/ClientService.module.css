@@ -16,4 +16,20 @@
  .listHeading { flex-wrap: wrap; }
 }
 
-.meetingDate { display: inline-block; padding: 6px 10px; border-radius: var(--radius-sm); background: var(--surface2); color: var(--text); font-size: var(--text-sm); font-weight: 600; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+.meetingDate { display: inline-block; padding: 6px 10px; border-radius: var(--radius-sm); background: var(--surface2); color: var(--text); font-size: var(--text-sm); font-weight: 600; direction: rtl; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+
+.serviceTable { table-layout: fixed; width: 100%; min-width: 1050px; }
+.serviceTable th, .serviceTable td { vertical-align: middle; }
+.serviceTable th:nth-child(1) { width: 16%; }
+.serviceTable th:nth-child(2) { width: 23%; }
+.serviceTable th:nth-child(3) { width: 18%; }
+.serviceTable th:nth-child(4) { width: 20%; }
+.serviceTable th:nth-child(5) { width: 8%; }
+.serviceTable th:nth-child(6) { width: 15%; }
+.serviceTable td { height: 74px; }
+.progressCell { min-width: 170px; }
+.progressRow { display: grid; grid-template-columns: minmax(0, 1fr) 4ch; align-items: center; gap: 12px; }
+.progressRow > span { text-align: end; font-variant-numeric: tabular-nums; }
+.meetingDate { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; max-width: 100%; }
+.rowActions { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; width: 100%; }
+.rowActions > .scheduleButton { justify-self: end; }

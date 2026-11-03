@@ -31,7 +31,11 @@ export function useClientDeals(advisorId) {
     if (dealError || meetingError) throw dealError || meetingError;
     const byLink = Object.fromEntries((deals || []).map(d => [d.link_id, d]));
     setError(null);
-    setRows((links || []).map(link => ({ ...link, deal: { ...(byLink[link.id] || {}), journey: syncJourneyMeetings(byLink[link.id]?.journey, (appointments || []).filter(row => row.client_id === link.client_id)) } })));
+    setRows((links || []).map(link => {
+      const clientMeetings = (appointments || []).filter(row => row.client_id === link.client_id);
+      const nextAppointment = clientMeetings.filter(row => row.status !== 'declined' && new Date(row.scheduled_at).getTime() > Date.now()).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))[0] || null;
+      return { ...link, nextAppointment, deal: { ...(byLink[link.id] || {}), journey: syncJourneyMeetings(byLink[link.id]?.journey, clientMeetings) } };
+    }));
     } catch (err) { if (request === requestRef.current && !background) setError(err); }
     finally { if (request === requestRef.current) setLoading(false); }
   }, [advisorId]);

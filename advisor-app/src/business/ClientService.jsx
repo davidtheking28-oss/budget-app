@@ -8,7 +8,7 @@ import { scheduleJourneyMeeting } from './journeyMeetings.js';
 import { toast } from '../toast.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
-import { formatDate } from '../budget/monthUtils.js';
+import { localISODate, formatDate } from '../budget/monthUtils.js';
 import styles from './Business.module.css';
 import service from './ClientService.module.css';
 
@@ -50,6 +50,7 @@ export default function ClientService({ advisorId, onSelect }) {
 
   async function registerMeeting(c) {
     if (savingMeeting) return;
+    if (dealByLink[c.id]?.nextAppointment) { setMeetingDraft(null); toast('כבר קיימת פגישה מתואמת ללקוח', 'error'); return; }
     if (!c.client_id) { toast('הלקוח עוד לא מחובר, אי אפשר לשתף איתו', 'error'); return; }
     setSavingMeeting(true);
     setMeetingError(false);
@@ -103,29 +104,31 @@ export default function ClientService({ advisorId, onSelect }) {
           {clients.length > 0 && <button type="button" className={styles.btnGhost} onClick={() => { setSearch(''); setStatus(''); setView('all'); }}>הצג את כל הלקוחות</button>}
         </div> : (
           <div className={styles.tableWrap}>
-            <table className={styles.table + ' ' + styles.denseTable}>
+            <table className={styles.table + ' ' + styles.denseTable + ' ' + service.serviceTable}>
               <thead><tr><th>לקוח</th><th>הפגישה הבאה</th><th>התקדמות</th><th>דברים שדורשים טיפול</th><th>סטטוס</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
               <tbody>
                 {visible.map(c => {
                   const progress = journeyProgress(journeyOf(c));
                   const attention = allAttention(c);
                   const upcoming = nextMeeting(journeyOf(c));
-                  const meetingDate = upcoming?.date || (c.nextMeetingAt ? c.nextMeetingAt.slice(0, 10) : '');
+                  const appointment = dealByLink[c.id]?.nextAppointment;
+                  const meetingDate = appointment ? localISODate(new Date(appointment.scheduled_at)) : '';
+                  const appointmentStatus = appointment?.status === 'pending' && !appointment.for_client ? 'scheduled' : appointment?.status;
                   const svc = SERVICE_STATUSES.find(s => s.key === statusOf(c));
                   return (
                     <tr key={c.id}>
                       <td className={styles.nameCell} style={{ maxWidth: 200 }}><button type="button" className={styles.sortBtn} style={{ maxWidth: "100%" }} title={c.name || c.client_email} aria-label={"פתח מסע שירות: " + (c.name || c.client_email)} onClick={() => setOpenId(c.id)}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", unicodeBidi: "plaintext" }}>{c.name || c.client_email}</span></button><div className={styles.rowMeta}>{currentStage(journeyOf(c))}</div></td>
                       <td className={service.meetingCell}>
-                        {meetingDraft?.id === c.id ? (
+                        {meetingDraft?.id === c.id && !appointment ? (
                           <div className={service.meetingEditor}>
                             <input className={styles.input} type="date" aria-label={'מועד הפגישה הבאה: ' + (c.name || c.client_email)} disabled={savingMeeting} value={meetingDraft.date} onChange={e => setMeetingDraft({ ...meetingDraft, date: e.target.value })} />
                             <div className={styles.toolbar}><button type="button" className={styles.btn} disabled={savingMeeting} onClick={() => registerMeeting(c)}>{savingMeeting ? 'שומר…' : 'שמירה'}</button>
                             <button type="button" className={styles.btnGhost} disabled={savingMeeting} onClick={() => { setMeetingDraft(null); setMeetingError(false); }}>ביטול</button>{meetingError && <span className={styles.fieldError} role="alert">לא הושלמה שמירת הפגישה. אפשר לנסות שוב.</span>}</div>
                           </div>
-                        ) : meetingDate ? <span className={service.meetingDate}>{formatDate(meetingDate)}{upcoming?.status && <span className={styles.rowMeta}> · {meetingStatusLabel(upcoming.status)}</span>}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title + ' · לא נקבעה' : 'הושלמו כל הפגישות'}</span>}
+                        ) : meetingDate ? <span className={service.meetingDate}><span dir="ltr">{formatDate(meetingDate)}</span>{appointmentStatus && <span className={styles.rowMeta}>{meetingStatusLabel(appointmentStatus)}</span>}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title + ' · לא נקבעה' : 'הושלמו כל הפגישות'}</span>}
                       </td>
-                      <td style={{ minWidth: 170 }}>
-                        <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
+                      <td className={service.progressCell}>
+                        <div className={service.progressRow}>
                           <div className={styles.progress} role="progressbar" aria-label={'התקדמות הליווי: ' + (c.name || c.client_email)} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.rate * 100)} style={{ flex: 1 }}><div className={styles.progressFill} style={{ width: progress.rate * 100 + '%' }} /></div>
                           <span className={styles.num}>{percentLabel(progress.rate)}</span>
                         </div>
@@ -138,7 +141,7 @@ export default function ClientService({ advisorId, onSelect }) {
                           {SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
                         </select>
                       </td>
-                      <td><div className={service.rowActions}><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>{upcoming && <button type="button" className={styles.btnGhost + ' ' + service.scheduleButton} aria-label={'רישום הפגישה הבאה של ' + (c.name || c.client_email)} title="רישום הפגישה הבאה" onClick={() => setMeetingDraft({ id: c.id, date: meetingDate })}><svg {...svgProps}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>תיאום פגישה</button>}</div></td>
+                      <td><div className={service.rowActions}><button type="button" className={styles.iconBtn} aria-label={'מסע שירות: ' + (c.name || c.client_email)} title="מסע שירות" onClick={() => setOpenId(c.id)}><svg {...svgProps}><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>{upcoming && !appointment && <button type="button" className={styles.btnGhost + ' ' + service.scheduleButton} aria-label={'רישום הפגישה הבאה של ' + (c.name || c.client_email)} title="רישום הפגישה הבאה" onClick={() => setMeetingDraft({ id: c.id, date: meetingDate })}><svg {...svgProps}><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>תיאום פגישה</button>}</div></td>
                     </tr>
                   );
                 })}
