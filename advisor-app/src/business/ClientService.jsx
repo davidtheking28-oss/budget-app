@@ -97,7 +97,11 @@ export default function ClientService({ advisorId, onSelect }) {
 
       <section className={styles.card + ' ' + service.roster}>
         <div className={service.listHeading}><h3 className={styles.cardTitle}>{view === 'attention' ? 'לקוחות לטיפול' : 'מעקב שירות'}</h3><span className={styles.rowMeta}>{visible.length} לקוחות בתצוגה</span></div>
-        {visible.length === 0 ? <div className={styles.emptyState}><span>אין לקוחות בתצוגה הזו</span></div> : (
+        {visible.length === 0 ? <div className={styles.emptyState}>
+          <strong>{clients.length ? 'אין לקוחות שמתאימים לתצוגה ולסינון' : 'עוד אין לקוחות במעקב השירות'}</strong>
+          <p className={styles.note}>{clients.length ? 'אפשר לנקות את החיפוש ולהציג לקוחות מכל הסטטוסים.' : 'לקוחות יופיעו כאן לאחר הוספתם למערכת.'}</p>
+          {clients.length > 0 && <button type="button" className={styles.btnGhost} onClick={() => { setSearch(''); setStatus(''); setView('all'); }}>הצג את כל הלקוחות</button>}
+        </div> : (
           <div className={styles.tableWrap}>
             <table className={styles.table + ' ' + styles.denseTable}>
               <thead><tr><th>לקוח</th><th>הפגישה הבאה</th><th>התקדמות</th><th>דברים שדורשים טיפול</th><th>סטטוס</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
@@ -118,16 +122,16 @@ export default function ClientService({ advisorId, onSelect }) {
                             <div className={styles.toolbar}><button type="button" className={styles.btn} disabled={savingMeeting} onClick={() => registerMeeting(c)}>{savingMeeting ? 'שומר…' : 'שמירה'}</button>
                             <button type="button" className={styles.btnGhost} disabled={savingMeeting} onClick={() => { setMeetingDraft(null); setMeetingError(false); }}>ביטול</button>{meetingError && <span className={styles.fieldError} role="alert">לא הושלמה שמירת הפגישה. אפשר לנסות שוב.</span>}</div>
                           </div>
-                        ) : meetingDate ? <span className={styles.pillBtn + ' ' + styles.pillGood} style={{ cursor: 'default' }}>{formatDate(meetingDate)}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title + ' · לא נקבעה' : 'הושלמו כל הפגישות'}</span>}
+                        ) : meetingDate ? <span className={service.meetingDate}>{formatDate(meetingDate)}</span> : <span className={styles.rowMeta}>{upcoming ? upcoming.title + ' · לא נקבעה' : 'הושלמו כל הפגישות'}</span>}
                       </td>
                       <td style={{ minWidth: 170 }}>
                         <div className={styles.toolbar} style={{ flexWrap: 'nowrap' }}>
-                          <div className={styles.progress} style={{ flex: 1 }}><div className={styles.progressFill} style={{ width: progress.rate * 100 + '%' }} /></div>
+                          <div className={styles.progress} role="progressbar" aria-label={'התקדמות הליווי: ' + (c.name || c.client_email)} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.rate * 100)} style={{ flex: 1 }}><div className={styles.progressFill} style={{ width: progress.rate * 100 + '%' }} /></div>
                           <span className={styles.num}>{percentLabel(progress.rate)}</span>
                         </div>
                       </td>
                       <td className={styles.attentionCell}>
-                        {attention.length ? <><div className={styles.attentionLead}>{attention[0]}</div>{attention.length > 1 && <details className={styles.attentionDetails}><summary>ועוד {attention.length - 1} לטיפול</summary><ul>{attention.slice(1).map(item => <li key={item}>{item}</li>)}</ul></details>}</> : <span className={styles.rowMeta}>הכול תקין</span>}
+                        {attention.length ? <><div className={styles.attentionLead}>{attention[0]}</div>{attention.length > 1 && <details className={styles.attentionDetails}><summary>ועוד {attention.length - 1} לטיפול</summary><ul>{attention.slice(1).map(item => <li key={item}>{item}</li>)}</ul></details>}</> : <span className={styles.rowMeta}>אין פריטים לטיפול</span>}
                       </td>
                       <td>
                         <select className={styles.pillSelect + (svc.tone ? ' ' + styles[svc.tone] : '')} aria-label={'סטטוס לקוח: ' + (c.name || c.client_email)} value={svc.key} onChange={e => deals.saveDeal(dealByLink[c.id], { service_status: e.target.value })}>

@@ -15,3 +15,5 @@
  .overviewItem + .overviewItem { padding-inline-start: 12px; }
  .listHeading { flex-wrap: wrap; }
 }
+
+.meetingDate { display: inline-block; padding: 6px 10px; border-radius: var(--radius-sm); background: var(--surface2); color: var(--text); font-size: var(--text-sm); font-weight: 600; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
