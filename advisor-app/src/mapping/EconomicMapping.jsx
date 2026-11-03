@@ -547,7 +547,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const fixedRows = mappingRows.expense.filter(r => FIXED_KEYS.includes(r.category));
 
   const fixedTransfer = Object.entries(fixedRows.reduce((acc, r) => {
-    if (FIXED_CATS.includes(r.category) && r.amount > 0 && !r.auto) acc[r.category] = (acc[r.category] || 0) + r.amount;
+    if (FIXED_CATS.includes(r.category) && r.amount > 0) acc[r.category] = (acc[r.category] || 0) + r.amount;
     return acc;
   }, {})).map(([cat, amount]) => ({ cat, amount: Math.round(amount) })).filter(r => r.amount > 0);
   const fixedTransferTotal = fixedTransfer.reduce((sum, r) => sum + r.amount, 0);
