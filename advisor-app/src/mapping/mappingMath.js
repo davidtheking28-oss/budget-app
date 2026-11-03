@@ -1,4 +1,4 @@
-import { FIXED_KEYS } from './mappingTemplates.js';
+import { FIXED_KEYS, SAVINGS_KEYS } from './mappingTemplates.js';
 
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
@@ -7,7 +7,7 @@ export const MANUAL_PERIOD_MONTHS = 3;
 // The mapping covers the last three months, so an amount typed by hand into a variable
 // expense category is the total for that period and counts as a third of it per month.
 function isPeriodTotal(t) {
-  return t.manual && !t.auto && t.category !== SAVINGS_CATEGORY && !FIXED_KEYS.includes(t.category);
+  return t.manual && !t.auto && !SAVINGS_KEYS.includes(t.category) && !FIXED_KEYS.includes(t.category);
 }
 
 export function manualMonthly(t) {

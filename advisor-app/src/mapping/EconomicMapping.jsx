@@ -539,7 +539,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   } : {};
   const autoFixedTx = Object.entries(autoFixedAmounts)
     .filter(([cat, amount]) => amount > 0 && !(data?.transactions || []).some(t => t.category === cat && !t.excluded))
-    .map(([category, amount]) => ({ id: 'auto:' + category, auto: true, manual: true, type: 'expense', category, desc: '', amount: Math.round(amount), date: null, source_month: 'manual' }));
+    .map(([category, amount]) => ({ id: 'auto:' + category, auto: true, manual: true, type: 'expense', category, desc: '', amount, date: null, source_month: 'manual' }));
   const mathTransactions = [...(data?.transactions || []), ...autoFixedTx];
   const cashflow = computeCashflowSummary(mathTransactions);
   const mappingRows = computeMappingRows(mathTransactions);
@@ -724,6 +724,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               <span className={styles.cashflowRowLabel}>בלי חיסכון</span>
               <span className={styles.cashflowRowValue + (cashflow.netExcludingSavings < 0 ? ' ' + styles.cashflowRowValueNeg : '')}>{fmt(cashflow.netExcludingSavings * periodMul)}</span>
             </div>
+            {flowPeriod === 'year' && <p className={styles.actualSub}>אומדן שנתי: הממוצע החודשי מוכפל ב־12.</p>}
           </div>
 
           <div className={layout.box + ' ' + layout.breakdownPanel}>

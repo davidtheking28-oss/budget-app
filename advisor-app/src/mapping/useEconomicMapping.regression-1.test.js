@@ -1,13 +1,13 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-const state = vi.hoisted(() => ({ effects: [], events: [], pending: [], denied: false, slow: false, writes: 0 }));
+const state = vi.hoisted(() => ({ effects: [], events: [], pending: [], denied: false, slow: false, writes: 0, readOffline: false, writeOffline: false }));
 vi.mock('react', () => ({ useCallback: fn => fn, useReducer: () => [0, () => {}], useEffect: fn => state.effects.push(fn) }));
 vi.mock('../toast.js', () => ({ toast: vi.fn() }));
 vi.mock('../supabaseClient.js', () => ({ supabase: {
   from: () => {
     const query = {
       select: () => query, eq: () => query,
-      maybeSingle: () => state.slow ? new Promise(resolve => state.pending.push(resolve)) : Promise.resolve(state.denied ? { data: null, error: { message: 'denied' } } : { data: { transactions: [{ id: 'private' }] }, error: null }),
-      upsert: async () => { state.writes++; return { error: null }; }
+      maybeSingle: () => state.readOffline ? Promise.reject(new TypeError('Failed to fetch')) : state.slow ? new Promise(resolve => state.pending.push(resolve)) : Promise.resolve(state.denied ? { data: null, error: { message: 'denied' } } : { data: { transactions: [{ id: 'private' }] }, error: null }),
+      upsert: async () => { state.writes++; if (state.writeOffline) throw new TypeError('Failed to fetch'); return { error: null }; }
     };
     return query;
   },
@@ -20,7 +20,7 @@ vi.mock('../supabaseClient.js', () => ({ supabase: {
 
 beforeEach(() => {
   vi.resetModules();
-  Object.assign(state, { effects: [], events: [], pending: [], denied: false, slow: false, writes: 0 });
+  Object.assign(state, { effects: [], events: [], pending: [], denied: false, slow: false, writes: 0, readOffline: false, writeOffline: false });
   vi.stubGlobal('window', new EventTarget());
 });
 afterEach(() => vi.unstubAllGlobals());
@@ -61,5 +61,29 @@ describe('economic mapping access revocation', () => {
     window.dispatchEvent(new Event('online'));
     await vi.waitFor(() => expect(current().error?.message).toBe('denied'));
     expect(current().data).toBeNull();
+  });
+});
+
+describe('economic mapping offline recovery', () => {
+  it('rolls back a rejected network write and permits a successful retry', async () => {
+    const current = await setup();
+    await vi.waitFor(() => expect(current().data?.transactions).toHaveLength(1));
+    state.writeOffline = true;
+    await expect(current().save({ transactions: [{ id: 'unsaved' }] })).resolves.toBe(false);
+    expect(current().data.transactions).toEqual([{ id: 'private' }]);
+    state.writeOffline = false;
+    expect(await current().save({ transactions: [{ id: 'saved' }] })).toBe(true);
+    expect(current().data.transactions).toEqual([{ id: 'saved' }]);
+  });
+
+  it('reports a rejected network read and reloads after reconnection', async () => {
+    state.readOffline = true;
+    const current = await setup();
+    await vi.waitFor(() => expect(current().error?.message).toBe('Failed to fetch'));
+    expect(current().loading).toBe(false);
+    state.readOffline = false;
+    await current().reload();
+    expect(current().error).toBeNull();
+    expect(current().data.transactions).toEqual([{ id: 'private' }]);
   });
 });

@@ -210,3 +210,42 @@ describe('mortgage and card synchronization', () => {
     expect(looksLikeCardCharge({ type: 'expense', desc: 'חיוב כאל' })).toBe(true);
   });
 });
+
+describe('mapping monthly row consistency', () => {
+  it('keeps financial guidance monthly like its editable table label', () => {
+    const transactions = [{ manual: true, id: 1, type: 'expense', category: 'ליווי פיננסי', amount: 450, source_month: 'manual' }];
+    expect(computeMappingRows(transactions).expense[0].amount).toBe(450);
+    expect(computeCategoryAverages(transactions).averages['ליווי פיננסי']).toBe(450);
+    expect(computeCashflowSummary(transactions).expense).toBe(450);
+    expect(computeCashflowSummary(transactions).savings).toBe(0);
+  });
+
+  it('keeps automatically supplied monthly amounts precise through annualization', () => {
+    const transactions = [{ manual: true, auto: true, id: 1, type: 'expense', category: 'הוצאות שנתיות (חלק חודשי)', amount: 1000 / 12, source_month: 'manual' }];
+    expect(computeCashflowSummary(transactions).expense * 12).toBeCloseTo(1000, 10);
+    expect(computeMappingRows(transactions).expense[0].amount * 12).toBeCloseTo(1000, 10);
+  });
+
+  it('reconciles mixed statement and manual rows with totals and savings', () => {
+    const transactions = [
+      { type: 'income', amount: 9000, category: 'שכר', source_month: '2026-01' },
+      { type: 'income', amount: 12000, category: 'שכר', source_month: '2026-02' },
+      { type: 'expense', amount: 900, category: 'מזון לבית', source_month: '2026-01' },
+      { type: 'expense', amount: 1200, category: 'מזון לבית', source_month: '2026-02' },
+      { manual: true, type: 'income', amount: 3000, category: 'מילואים' },
+      { manual: true, type: 'expense', amount: 900, category: 'שונות' },
+      { manual: true, type: 'expense', amount: 500, category: 'הוראת קבע לחסכון' },
+      { manual: true, type: 'expense', amount: 450, category: 'ליווי פיננסי' },
+      { type: 'expense', amount: 99999, category: 'שונות', source_month: '2026-01', excluded: true }
+    ];
+    const summary = computeCashflowSummary(transactions);
+    const rows = computeMappingRows(transactions);
+    expect(summary.income).toBe(11500);
+    expect(summary.expense).toBe(2300);
+    expect(summary.netInAccount).toBe(9200);
+    expect(summary.netExcludingSavings).toBe(9700);
+    expect(rows.income.reduce((sum, row) => sum + row.amount, 0)).toBe(summary.income);
+    expect(rows.expense.reduce((sum, row) => sum + row.amount, 0)).toBe(summary.expense);
+    expect(computeExpenseTypeBreakdown(computeCategoryAverages(transactions).averages).reduce((sum, part) => sum + part.value, 0)).toBe(summary.expense);
+  });
+});

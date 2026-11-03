@@ -50,6 +50,10 @@ function fetchEntry(clientUserId) {
       if ((generation.get(clientUserId) || 0) !== gen) return;
       if (error) { setEntry(clientUserId, { data: null, error, ts: Date.now() }); return; }
       setEntry(clientUserId, { data: row || null, error: null, ts: Date.now() });
+    }, error => {
+      if (inflight.get(clientUserId) === promise) inflight.delete(clientUserId);
+      if ((generation.get(clientUserId) || 0) !== gen) return;
+      setEntry(clientUserId, { data: null, error, ts: Date.now() });
     });
   inflight.set(clientUserId, promise);
   return promise;
@@ -119,9 +123,10 @@ export function useEconomicMapping(clientUserId, advisorId) {
     const next = { hidden_categories: prev?.hidden_categories, extra_categories: prev?.extra_categories, category_labels: prev?.category_labels, skip_auto: prev?.skip_auto, ...row, advisor_id: advisorId, client_id: clientUserId };
     invalidate(clientUserId);
     setEntry(clientUserId, { data: next, error: null, ts: Date.now() });
-    const { error } = await supabase
-      .from('economic_mappings')
-      .upsert(next, { onConflict: 'advisor_id,client_id' });
+    let error;
+    try {
+      ({ error } = await supabase.from('economic_mappings').upsert(next, { onConflict: 'advisor_id,client_id' }));
+    } catch (err) { error = err; }
     if (error) {
       // Roll back but leave `error` null: the cache is shared across tabs, and a failed
       // write must not replace every screen's valid data with a full-page error. The
