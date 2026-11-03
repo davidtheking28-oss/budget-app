@@ -121,7 +121,7 @@
 }
 
 .empty {
-  color: var(--text3);
+  color: var(--text2);
   font-size: var(--text-base);
   text-align: center;
   padding: 24px 0;
@@ -130,7 +130,7 @@
 .hint {
   padding: 10px 20px;
   border-top: 1px solid var(--border);
-  color: var(--text3);
+  color: var(--text2);
   font-size: var(--text-xs);
   text-align: center;
 }

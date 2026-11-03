@@ -30,6 +30,7 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
   const wasOpenRef = useRef(open);
 
   useEffect(() => {
+    if (open) setClosing(false);
     if (wasOpenRef.current && !open) {
       setClosing(true);
       const t = setTimeout(() => setClosing(false), EXIT_MS);
@@ -118,13 +119,13 @@ export default function QuickSwitcher({ advisorId, onSelect, open: openProp, onO
           value={query}
           onChange={e => { setQuery(e.target.value); setActive(0); }}
           role="combobox"
-          aria-expanded="true"
+          aria-expanded={!loading && !loadError && filtered.length > 0}
           aria-controls="qs-listbox"
-          aria-activedescendant={filtered[active] ? `qs-option-${filtered[active].client_id}` : undefined}
+          aria-activedescendant={!loading && !loadError && filtered[active] ? `qs-option-${filtered[active].client_id}` : undefined}
         />
         <button type="button" className={styles.closeButton} aria-label="סגור חיפוש" onClick={() => setOpen(false)}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
         </div>
-        <div id="qs-listbox" className={styles.list} role="listbox">
+        <div id="qs-listbox" className={styles.list} role={!loading && !loadError && filtered.length ? 'listbox' : undefined}>
           {loading ? <div className={styles.empty} role="status">טוען לקוחות…</div> : loadError ? <div className={styles.empty} role="alert">לא ניתן לטעון את הלקוחות כרגע. <Button variant="ghost" onClick={() => setRetry(n => n + 1)}>נסה שוב</Button></div> : filtered.length ? filtered.map((c, i) => (
             <button
               type="button"
