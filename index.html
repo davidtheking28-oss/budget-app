@@ -2906,6 +2906,7 @@ const _CAT_MIGRATE={
   'חינוך':'שונות','תיקונים ואחזקה':'שונות','ביטוח דירה':'שונות','גז':'שונות','צדקה':'שונות','אחר':'שונות'
 };
 function _mergeFixedCatInto(oldKeys,newKey){
+  oldKeys=oldKeys.filter(cat=>!fixedExpenses.some(row=>row.id===cat&&row.linkedSource));
   let changed=false;
   const oldFx=fixedExpenses.filter(f=>oldKeys.includes(f.id));
   if(oldFx.length){
@@ -2942,7 +2943,7 @@ function _mergeFixedCatInto(oldKeys,newKey){
 function _migrateInsuranceCats(){
   let changed=_mergeFixedCatInto(['ביטוחי בריאות וחיים','ביטוח בריאות'],'ביטוחים');
   const row=fixedExpenses.find(f=>f.id==='ביטוחים');
-  if(row){
+  if(row&&!row.linkedSource){
     const id=-2026100701;
     if(parseFloat(row.amount)>0&&!insurances.some(i=>i.id===id))insurances.push({id,name:'ביטוח',monthly:parseFloat(row.amount)});
     fixedExpenses=fixedExpenses.filter(f=>f.id!=='ביטוחים');
@@ -2957,12 +2958,12 @@ function _migrateCats(){
   transactions.forEach(t=>{
     if(t.fx&&SAVING_FIXED_CATS.includes(t.cat)&&t.type==='expense'){t.type='saving';changed=true;}
     if(t.type!=='expense'||t.fx)return;
-    const n=_CAT_MIGRATE[t.cat];
-    if(n){t.cat=n;changed=true;}
+    const n=fixedExpenses.some(row=>row.id===t.cat&&row.linkedSource)?t.cat:_CAT_MIGRATE[t.cat];
+    if(n&&n!==t.cat){t.cat=n;changed=true;}
   });
   const nb={};
   Object.entries(budgets).forEach(([c,v])=>{
-    const n=FIXED_CATS.includes(c)?c:(_CAT_MIGRATE[c]||c);
+    const n=FIXED_CATS.includes(c)||fixedExpenses.some(row=>row.id===c&&row.linkedSource)?c:(_CAT_MIGRATE[c]||c);
     nb[n]=(nb[n]||0)+v;                 // two old cats can merge into one new one
     if(n!==c)changed=true;
   });
@@ -3015,10 +3016,10 @@ const FIXED_CATS=['דיור','ועד בית','גז','ארנונה','מים וב�
 // every expense total (see _fxUpsert's transaction type and _fxRefreshTotal).
 const SAVING_FIXED_CATS=['הוראת קבע לחסכון'];
 const FIXED_AUTO={
-  'החזר הלוואות + חיוב קבוע':()=>activeLoans().reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
-  'עסקאות בתשלומים':()=>activePayments().reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&_payCalc(p).left>0?amt:0);},0),
+  'החזר הלוואות + חיוב קבוע':()=>activeLoans().filter(l=>!l.hidden).reduce((s,l)=>s+(parseFloat(l.monthly)||0),0),
+  'עסקאות בתשלומים':()=>activePayments().filter(p=>!p.hidden).reduce((s,p)=>{const tot=parseFloat(p.total)||0,amt=parseFloat(p.amount)||0;return s+(tot>0&&amt>0&&_payCalc(p).left>0?amt:0);},0),
   'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0),
-  'ביטוחים':()=>insurances.reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
+  'ביטוחים':()=>insurances.filter(i=>!i.closed).reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
 };
 function getEffectiveExpenseCats(){const base=_activeMode==='business'?EXPENSE_CATS_BUSINESS:EXPENSE_CATS;return [...base,...(userSettings.customCats||[]).filter(c=>!base.includes(c))];}
 function getEffectiveBudgetCats(){return getEffectiveExpenseCats();}
@@ -4025,7 +4026,7 @@ function renderSpendingFlow(income,fixedExp,varExp){
   labels.innerHTML=_sfItem('sf-income',fmt(income),'',incPct+'%','הכנסות')+_sfItem(isDeficit?'sf-deficit':'sf-savings',isDeficit?'−'+fmt(deficitAmt):fmt(savedAmt),isDeficit?'var(--red)':'var(--green)',(base?Math.round((isDeficit?deficitAmt:savedAmt)/base*100):0)+'%',isDeficit?'גירעון':'נחסך')+_sfItem('sf-fixed',fmt(fixedExp),'',fp2+'%','קבועות')+_sfItem('sf-variable',fmt(varExp),'',vp2+'%','משתנות');
 }
 
-function isFixed(t){if(t.fixed!==undefined)return t.fixed;return t.type==='income'||!!t.recurring;}
+function isFixed(t){if(t.fixed!==undefined)return t.fixed;return t.type==='income'||!!t.recurring||fixedExpenses.some(row=>row.id===t.cat&&row.linkedSource);}
 
 function haptic(ms=8){if(navigator.vibrate)navigator.vibrate(ms);}
 
@@ -4427,7 +4428,7 @@ function _sanitizeIds(m){
       if(!r||typeof r!=='object'||Array.isArray(r)||(k==='transactions'&&((r.date!==undefined&&typeof r.date!=='string')||(r.amount!==undefined&&!Number.isFinite(Number(r.amount))))))m[k].splice(i,1);
     }
     m[k].forEach(r=>{
-      const ok=typeof r.id==='number'?Number.isFinite(r.id):(typeof r.id==='string'&&/^[\p{L}\p{N} _.|:-]{1,80}$/u.test(r.id));
+      const ok=typeof r.id==='number'?Number.isFinite(r.id):(typeof r.id==='string'&&/^[\p{L}\p{N} _.|:,+()״׳\/-]{1,80}$/u.test(r.id));
       if(!ok)r.id=Date.now()+Math.random();
     });
   });
@@ -6822,7 +6823,7 @@ function renderPayments(){
   _payRefreshTotal();
 }
 // ── הוצאות קבועות ─────────────────────────────────────────────────
-function getEffectiveFixedCats(){return [...FIXED_CATS,...(userSettings.customFixedCats||[])];}
+function getEffectiveFixedCats(){return [...new Set([...FIXED_CATS,...(userSettings.customFixedCats||[]),...fixedExpenses.map(row=>row.id).filter(id=>typeof id==='string'&&id)])];}
 async function addCustomFixedCat(){
   const name=await promptSheet({title:'הוצאה קבועה חדשה',label:'שם ההוצאה הקבועה:'});
   if(!name||!name.trim())return;
@@ -6893,7 +6894,7 @@ function removeCustomFixedCat(cat){
 }
 function _fxRow(cat){return fixedExpenses.find(f=>f.id===cat);}
 function _fxRaw(cat){const r=_fxRow(cat);return r&&r.amount?r.amount:'';}
-function _fxMonthly(cat){return FIXED_AUTO[cat]?FIXED_AUTO[cat]():(parseFloat((_fxRow(cat)||{}).amount)||0);}
+function _fxMonthly(cat){const row=_fxRow(cat);return row?.linkedSource&&(row.linkedSource==='mapping'||!FIXED_AUTO[cat])?(parseFloat(row.amount)||0):FIXED_AUTO[cat]?FIXED_AUTO[cat]():(parseFloat(row?.amount)||0);}
 function _fxTxId(mkey,cat){return 'fx|'+mkey+'|'+cat;}
 function _curMonthKey(){const n=new Date();return mk(n.getFullYear(),n.getMonth());}
 function _fxUpsert(mkey,cat,amount,overwrite){
@@ -6910,7 +6911,9 @@ function _fxApply(){
   let changed=false;
   getEffectiveFixedCats().forEach(cat=>{
     if(_syncMeta.del.tx[_fxTxId(mkey,cat)])return;
-    changed=_fxUpsert(mkey,cat,_fxMonthly(cat),!!FIXED_AUTO[cat])||changed;
+    const linked=!!_fxRow(cat)?.linkedSource;
+    const recorded=linked&&transactions.some(t=>!t.fx&&(t.type==='expense'||t.type==='saving')&&t.cat===cat&&(t.date||'').startsWith(mkey)&&t.desc!=='התאמת ביצוע (אשף תקציב)');
+    changed=_fxUpsert(mkey,cat,recorded?0:_fxMonthly(cat),!!FIXED_AUTO[cat]||linked)||changed;
   });
   return changed;
 }
@@ -6938,8 +6941,9 @@ function renderFixed(){
   if(!body)return;
   const cats=getEffectiveFixedCats();
   body.innerHTML=cats.map((cat,i)=>{
-    const auto=!!FIXED_AUTO[cat];
-    const isCustom=!FIXED_CATS.includes(cat);
+    const linked=!!_fxRow(cat)?.linkedSource;
+    const auto=!!FIXED_AUTO[cat]||linked;
+    const isCustom=!FIXED_CATS.includes(cat)&&!linked;
     const cell=auto
       ? '<td class="pay-calc pay-num">'+_payFmt(_fxMonthly(cat))+'</td>'
       : '<td><input class="pay-num" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" aria-label="סכום חודשי עבור '+esc(cat)+'" value="'+esc(_fxRaw(cat))+'" onfocus="this.select()" oninput="setFixedAmount('+i+',this.value)"></td>';

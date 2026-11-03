@@ -673,3 +673,65 @@ test('the tasks badge counts only unseen, open advisor items and upcoming meetin
   });
   assert.equal(ctx._unseenAdvisorCount(),2);
 });
+
+
+function syncedFixedContext() {
+  const ctx=vm.createContext({Date,JSON,Map,Set,Math,Number,parseFloat,transactions:[],fixedExpenses:[],userSettings:{},FIXED_CATS:['חשמל','ביטוחים','החזר הלוואות + חיוב קבוע'],SAVING_FIXED_CATS:[],FIXED_AUTO:{'ביטוחים':()=>300,'החזר הלוואות + חיוב קבוע':()=>900},_syncMeta:{del:{tx:{}}},mk:(y,m)=>y+'-'+String(m+1).padStart(2,'0')});
+  vm.runInContext(html.split('\n').find(line=>line.startsWith('function getEffectiveFixedCats()')),ctx);
+  vm.runInContext(html.slice(html.indexOf('function _fxRow('),html.indexOf('function _fxRefreshTotal(')),ctx);
+  ctx._curMonthKey=()=> '2026-11';
+  return ctx;
+}
+
+test('synced fixed categories and amounts are available in client cash flow',()=>{
+  const ctx=syncedFixedContext();ctx.fixedExpenses=[{id:'משכנתא',amount:3000,linkedSource:'mapping'},{id:'הוצאות שנתיות (חלק חודשי)',amount:120,linkedSource:'mapping'},{id:'ביטוחים',amount:450,linkedSource:'mapping'}];
+  assert.ok(ctx.getEffectiveFixedCats().includes('משכנתא'));assert.ok(ctx.getEffectiveFixedCats().includes('הוצאות שנתיות (חלק חודשי)'));assert.equal(ctx._fxMonthly('ביטוחים'),450);
+});
+
+test('synced fixed amounts materialize once and update the current client month',()=>{
+  const ctx=syncedFixedContext();ctx.fixedExpenses=[{id:'חשמל',amount:420,linkedSource:'mapping'}];ctx._fxApply();
+  const id='fx|2026-11|חשמל';assert.equal(ctx.transactions.find(t=>t.id===id).amount,420);
+  ctx.fixedExpenses[0].amount=520;ctx._fxApply();assert.equal(ctx.transactions.find(t=>t.id===id).amount,520);assert.equal(ctx.transactions.filter(t=>t.id===id).length,1);
+  ctx.fixedExpenses[0].amount=0;ctx._fxApply();assert.equal(ctx.transactions.some(t=>t.id===id),false);
+});
+
+test('synced insurance remains a mapped fixed row instead of creating another policy',()=>{
+  const ctx=insuranceContext();ctx.fixedExpenses=[{id:'ביטוחים',amount:450,linkedSource:'mapping'}];ctx.insurances=[{id:'policy',monthly:300}];
+  ctx._migrateInsuranceCats();assert.equal(ctx.insurances.length,1);assert.equal(ctx.fixedExpenses[0].amount,450);
+});
+
+test('a recorded fixed expense is not charged again by mapped materialization',()=>{
+  const ctx=syncedFixedContext();ctx.fixedExpenses=[{id:'חשמל',amount:420,linkedSource:'mapping'}];ctx.transactions=[{id:'recorded',type:'expense',cat:'חשמל',amount:600,date:'2026-11-05'}];
+  ctx._fxApply();assert.equal(ctx.transactions.filter(t=>t.cat==='חשמל').reduce((sum,t)=>sum+t.amount,0),600);
+});
+
+
+test('cloud category ids with loan, education and annual-expense punctuation remain stable',()=>{
+  const ctx=functions(['_sanitizeIds']);const categories=['החזר הלוואות + חיוב קבוע','חינוך, חוגים וקייטנות','הוצאות שנתיות (חלק חודשי)'];
+  const bundle={fixed_expenses:categories.map(id=>({id,amount:100})),transactions:categories.map(cat=>({id:'fx|2026-11|'+cat,cat,type:'expense',amount:100,date:'2026-11-01'}))};
+  ctx._sanitizeIds(bundle);assert.deepEqual(bundle.fixed_expenses.map(row=>row.id),categories);assert.deepEqual(bundle.transactions.map(row=>row.id),categories.map(cat=>'fx|2026-11|'+cat));
+});
+
+test('linked mortgage survives legacy category migration unchanged',()=>{
+  const ctx=insuranceContext();Object.assign(ctx,{FIXED_CATS:['דיור'],EXPENSE_CATS:[],_CAT_MIGRATE:{'משכנתא':'דיור'},subscriptions:[],userSettings:{}});
+  ctx.fixedExpenses=[{id:'משכנתא',amount:3000,linkedSource:'mapping'}];ctx.budgets={'משכנתא':3000};
+  vm.runInContext(html.match(/function _migrateCats\([^]*?\n\}/)[0],ctx);ctx._migrateCats();assert.equal(ctx.fixedExpenses[0].id,'משכנתא');assert.equal(ctx.budgets['משכנתא'],3000);assert.equal(ctx.budgets['דיור'],undefined);
+});
+
+
+test('advisor actual adjustments retain the generated fixed baseline',()=>{
+  const ctx=syncedFixedContext();ctx.fixedExpenses=[{id:'חשמל',amount:420,linkedSource:'mapping'}];ctx._fxApply();ctx.transactions.push({id:'adjust',type:'expense',cat:'חשמל',amount:80,date:'2026-11-02',desc:'התאמת ביצוע (אשף תקציב)'});
+  ctx._fxApply();assert.equal(ctx.transactions.filter(t=>t.cat==='חשמל').reduce((sum,t)=>sum+t.amount,0),500);
+});
+
+
+test('re-reading unchanged linked categories does not schedule another normalization write',()=>{
+  const ctx=insuranceContext();Object.assign(ctx,{FIXED_CATS:['דיור'],EXPENSE_CATS:[],_CAT_MIGRATE:{'משכנתא':'דיור'},subscriptions:[],userSettings:{}});
+  ctx.fixedExpenses=[{id:'משכנתא',amount:3000,linkedSource:'mapping'}];ctx.budgets={'משכנתא':3000};ctx.transactions=[{id:'recorded',type:'expense',cat:'משכנתא',amount:3000}];
+  vm.runInContext(html.match(/function _migrateCats\([^]*?\n\}/)[0],ctx);assert.equal(ctx._migrateCats(),false);assert.equal(ctx._migrateCats(),false);
+});
+
+test('recorded expenses in linked fixed categories appear under fixed cash flow',()=>{
+  const ctx=vm.createContext({fixedExpenses:[{id:'חשמל',linkedSource:'mapping'}]});vm.runInContext(html.split('\n').find(line=>line.startsWith('function isFixed(')),ctx);
+  assert.equal(ctx.isFixed({type:'expense',cat:'חשמל'}),true);assert.equal(ctx.isFixed({type:'expense',cat:'מזון לבית'}),false);assert.equal(ctx.isFixed({type:'expense',cat:'חשמל',fixed:false}),false);
+});
