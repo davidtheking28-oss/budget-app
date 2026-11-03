@@ -14,7 +14,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
   const [quarter, setQuarter] = useState(periodSwitch);
-  const toMonthly = v => (quarter ? Math.round((v / 3) * 100) / 100 : v);
+  const toMonthly = v => (quarter ? Math.ceil(v / 3) : v);
   const amountLabel = quarter ? 'סכום ל-3 חודשים' : 'סכום חודשי';
   const total = rows.reduce((s, r) => s + r.amount, 0);
   const chosen = addCats.includes(category) ? category : addCats[0];
