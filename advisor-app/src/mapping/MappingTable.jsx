@@ -158,7 +158,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelFor(r.category)} onClick={() => onHide(r.category)} /> : r.manualIds.length > 0 ? <DeleteButton title={'מחק שורה: ' + labelFor(r.category)} onClick={() => (r.manual ? onDelete(r.id) : deleteGroup(r.manualIds))} /> : <span aria-hidden="true" />}
             {openList === r.line && r.entries && (
               <ul className={styles.entryList}>
-                {r.entries.map((amt, i) => (
+                {r.entries.map((amt, i) => [amt, i]).reverse().map(([amt, i]) => (
                   <li key={i} className={styles.entryItem}>
                     <span className={styles.entryAmt}>{fmt(amt)}</span>
                     <button type="button" className={styles.renameBtn} aria-label={'מחק סכום ' + fmt(amt)} onClick={() => onRemoveEntry(r.id, i)}>✕</button>
