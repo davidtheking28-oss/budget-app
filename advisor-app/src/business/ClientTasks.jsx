@@ -94,8 +94,14 @@ export default function ClientTasks({ advisorId, onSelect }) {
         <div className={layout.stat}><div className={styles.statLabel}>פתוחות אצל הלקוחות</div><div className={layout.statValue}>{openEverywhere}</div></div>
       </div>
 
-      <TaskList title="המשימות שלך" hint="כל מה שהוגדר לו במסע השירות ובמשימות שלך. סימון כאן מתעדכן גם בשירות." empty="אין משימות פתוחות ללקוח הנבחר." tasks={advisorTasks} pending={pending} onToggle={toggle} onOpen={open} />
-      <TaskList title="משימות שהלקוח הוסיף לעצמו" hint="מה שהוא כתב לעצמו באזור האישי, כדי שתדע מה עוד על הראש שלו." empty="הלקוח עוד לא הוסיף לעצמו משימות באזור האישי." tasks={clientTasks} pending={pending} onToggle={toggle} onOpen={open} />
+      {current ? <>
+      <TaskList title="משימות ממסע השירות" hint="השלמת משימה כאן מתעדכנת גם במסע השירות של הלקוח." empty="אין משימות פתוחות ללקוח הנבחר." tasks={advisorTasks} pending={pending} onToggle={toggle} onOpen={open} />
+      <TaskList title="משימות שהלקוח הוסיף לעצמו" hint="משימות אישיות שהלקוח יצר באזור האישי שלו." empty="הלקוח עוד לא הוסיף לעצמו משימות באזור האישי." tasks={clientTasks} pending={pending} onToggle={toggle} onOpen={open} />
+      </> : <section className={styles.emptyState}>
+        <strong>{search.trim() ? 'לא נמצאו לקוחות שמתאימים לחיפוש' : 'עוד אין לקוחות להצגת משימות'}</strong>
+        <p className={styles.note}>{search.trim() ? 'נסה לחפש לפי שם או כתובת אימייל.' : 'משימות יופיעו כאן לאחר הוספת לקוח והגדרת משימות עבורו.'}</p>
+        {search.trim() && <button type="button" className={styles.btnGhost} onClick={() => { setSearch(''); setIndex(0); }}>נקה חיפוש</button>}
+      </section>}
     </div>
   );
 }

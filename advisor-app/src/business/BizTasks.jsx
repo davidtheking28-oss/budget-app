@@ -12,7 +12,7 @@ import layout from './BizTasks.module.css';
 const RECURRENCES = ['חד פעמית', 'יומית', 'שבועית', 'חודשית'];
 const SORTS = [
   { key: 'dueDate', label: 'מועד ביצוע' },
-  { key: 'deadline', label: 'דדליין' },
+  { key: 'deadline', label: 'תאריך יעד' },
   { key: 'priority', label: 'עדיפות' },
   { key: 'difficulty', label: 'רמת קושי' },
   { key: 'dept', label: 'מחלקה' },
@@ -82,7 +82,7 @@ function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave })
             ))}
           </div>
           {form.dueKind === 'other' && <input className={styles.input} type="date" aria-label="תאריך ביצוע" value={form.dueDate} onChange={set('dueDate')} />}
-          <span className={styles.note}>קובע אם המשימה מופיעה בהיום / מחר / השבוע</span>
+          <span className={styles.note}>היום שבו תכננת לעבוד על המשימה.</span>
         </div>
           <label className={styles.fieldLabel}>עדיפות<select className={styles.select} value={form.priority} onChange={set('priority')}>{PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}</select></label>
         <details className={styles.formDetails}>
@@ -105,7 +105,7 @@ function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave })
             )}
           </div>
         </div>
-        <label className={styles.fieldLabel}>דדליין<input className={styles.input} type="date" value={form.deadline} onChange={set('deadline')} />{!form.deadline && <span className={styles.note}>אין דדליין למשימה הזו</span>}</label>
+        <label className={styles.fieldLabel}>תאריך יעד<input className={styles.input} type="date" value={form.deadline} onChange={set('deadline')} />{!form.deadline && <span className={styles.note}>המועד האחרון להשלמת המשימה, אם יש כזה.</span>}</label>
         <label className={styles.fieldLabel}>רמת קושי
           <select className={styles.select} value={form.difficulty} onChange={set('difficulty')}>
             <option value="לא הוגדרה">לא הוגדרה</option>
@@ -121,9 +121,9 @@ function TaskModal({ today, departments, onDepartmentsChange, onClose, onSave })
         <p className={styles.note}>תאריך ושעת היצירה נשמרים אוטומטית. אין צורך להזין אותם.</p>
           </div>
         </details>
-        {saveError && <p className={styles.fieldError} role="alert">המשימה לא נשמרה. הפרטים נשארו כאן — אפשר לנסות שוב.</p>}
+        {saveError && <p className={styles.fieldError} role="alert">המשימה לא נשמרה. הפרטים נשמרו בטופס. אפשר לנסות שוב.</p>}
         <div className={styles.formActions}>
-          <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוספה'}</button>
+          <button type="submit" className={styles.btn} disabled={saving}>{saving ? 'שומר…' : 'הוסף משימה'}</button>
           <button type="button" className={styles.btnGhost} onClick={onClose}>ביטול</button>
         </div>
       </form>
@@ -230,13 +230,13 @@ export default function BizTasks({ advisorId }) {
           <div className={layout.empty}>
             <span className={styles.iconTile} aria-hidden="true">{icons.tasks}</span>
             <div><strong>{tasks.length ? 'אין משימות בתצוגה הזו' : 'עוד אין משימות'}</strong><p>{tasks.length ? 'אפשר לשנות את התצוגה או את הסינון כדי למצוא משימות אחרות.' : 'אפשר להוסיף משימה ראשונה באמצעות הכפתור למעלה.'}</p></div>
-            {tasks.length > 0 && <button type="button" className={styles.btnGhost} onClick={() => { setFilter('all'); setSearch(''); setDept(''); setPriority(''); }}>הצג את כל המשימות</button>}
+            {tasks.length > 0 && <button type="button" className={styles.btnGhost} onClick={() => { setFilter('all'); setSearch(''); setDept(''); setPriority(''); }}>הצג משימות פתוחות</button>}
           </div>
         ) : (
           <div className={styles.tableWrap}>
             <table className={styles.table + ' ' + layout.table}>
               <thead>
-                <tr><th>בוצע</th><th>שם המשימה</th><th>סטטוס</th><th>מחלקה</th><th>רמת קושי</th><th>עדיפות</th><th>דדליין</th><th>מועד ביצוע</th><th><span className={styles.srOnly}>פעולות</span></th></tr>
+                <tr><th>בוצע</th><th>שם המשימה</th><th>סטטוס</th><th>מחלקה</th><th>רמת קושי</th><th>עדיפות</th><th>תאריך יעד</th><th>מועד ביצוע</th><th><span className={styles.srOnly}>פעולות</span></th></tr>
               </thead>
               <tbody>
                 {visible.map(t => (
