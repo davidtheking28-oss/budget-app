@@ -96,7 +96,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
           <div key={r.line} className={styles.row}>
             <span className={styles.name}>
               {selecting && r.manualIds.length > 0 && <input type="checkbox" className={styles.check} aria-label={'בחר שורה: ' + labelFor(r.category)} checked={r.manualIds.every(id => picked.includes(id))} onChange={() => togglePick(r.manualIds)} />}
-              {labelFor(r.category)}{r.desc ? ' · ' + r.desc : ''}
+              <span className={styles.nameText}>{labelFor(r.category)}{r.desc ? ' · ' + r.desc : ''}</span>
               {tag && templateKeys.includes(r.category) && <span className={styles.tag}>{tag}</span>}
             </span>
             {r.placeholder ? (

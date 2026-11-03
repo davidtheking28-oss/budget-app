@@ -149,6 +149,8 @@
 @media (min-width: 861px) { .input { font-size: 14px; font-weight: 600; } }
 
 .name { flex-wrap: wrap; gap: 4px 8px; line-height: 1.5; }
+.nameText { flex: 1 1 auto; min-width: 0; }
+.tag { min-width: 72px; text-align: center; white-space: nowrap; }
 .input { text-align: right; direction: ltr; font-variant-numeric: tabular-nums; }
 .fieldReadOnly { border-color: transparent; background: var(--surface2); }
 .fieldReadOnly .input { cursor: default; }
