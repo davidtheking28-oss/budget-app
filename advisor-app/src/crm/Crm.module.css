@@ -447,3 +447,5 @@
 .prepGrid ul { padding-inline-start: 20px; }
 .prepText { white-space: pre-wrap; }
 @media (max-width: 1000px) { .prepGrid { grid-template-columns: 1fr; } }
+
+.taskFilters { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 16px; }

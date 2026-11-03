@@ -82,6 +82,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
   const [savingTask, setSavingTask] = useState(false);
   const [savingMeeting, setSavingMeeting] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
+  const [showCompleted, setShowCompleted] = useState(false);
   const [taskDue, setTaskDue] = useState('');
   const [meetingAt, setMeetingAt] = useState('');
   const [meetingNotes, setMeetingNotes] = useState('');
@@ -147,6 +148,9 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
 
   const now = new Date();
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const openTaskCount = tasks.filter(t => !t.done).length;
+  const completedTaskCount = tasks.length - openTaskCount;
+  const visibleTasks = tasks.filter(t => showCompleted ? t.done : !t.done);
   const overdueTasks = tasks.filter(t => !t.done && t.due_date && t.due_date < todayIso).length;
   const soonMeetings = meetings.filter(m => { if (m.status === 'declined') return false; const d = daysUntil(m.scheduled_at); return d !== null && d >= 0 && d <= 3; }).length;
 
@@ -316,7 +320,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
       {view === 'tasks' && (
       <div id="client-tasks" className={styles.section}>
         <h2 className={styles.sectionTitle}>
-          רשימת המשימות{tasks.length > 0 && <span className={styles.countBadge}>{tasks.length}</span>}
+          {showCompleted ? 'משימות שהושלמו' : 'משימות פתוחות'}{visibleTasks.length > 0 && <span className={styles.countBadge}>{visibleTasks.length}</span>}
         </h2>
         <div>
         <div className={styles.sectionBodyInner}>
@@ -328,9 +332,13 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
           <label className={styles.fieldLabel}>סוג<select className={styles.input} disabled={savingTask} aria-label="סוג המשימות" value={taskKind} onChange={e => setTaskKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select></label>
           <Button disabled={!taskTitle.trim() || savingTask} onClick={submitTask}>הוסף משימה</Button>
         </AddForm>
-        {tasks.length ? (
+        <div className={styles.taskFilters} role="group" aria-label="תצוגת משימות">
+          <Button variant={showCompleted ? 'ghost' : 'primary'} disabled={taskChanged || savingTask} onClick={() => { setShowCompleted(false); setEditingTask(null); }} aria-pressed={!showCompleted}>פתוחות ({openTaskCount})</Button>
+          {completedTaskCount > 0 && <Button variant={showCompleted ? 'primary' : 'ghost'} disabled={taskChanged || savingTask} onClick={() => { setShowCompleted(true); setEditingTask(null); }} aria-pressed={showCompleted}>הושלמו ({completedTaskCount})</Button>}
+        </div>
+        {visibleTasks.length ? (
           <div className={styles.list}>
-            {tasks.map((t, i) => editingTask === t.id ? (
+            {visibleTasks.map((t, i) => editingTask === t.id ? (
               <div key={t.id} className={styles.row} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                 <div className={styles.form} style={{ margin: 0, flex: 1 }}>
                   <input className={styles.input} disabled={savingTask} aria-label="תיאור המשימה" value={editTaskTitle} onChange={e => setEditTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditTask(t.id)} />
@@ -350,7 +358,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
                 <div key={t.id} className={styles.row + ' ' + styles.taskRow + (t.done ? ' ' + styles.taskCompleted : overdue ? ' ' + styles.taskOverdue : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => { toggleTask(t.id, e.target.checked); notify(); }} />
                   <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
-                    <div className={styles.name}>{tasks.length > 1 && <span className={styles.taskNum}>{i + 1}.</span>}{t.title}{t.done && <span className={styles.completedBadge}>{t.done_by ? (t.done_by === 'client' ? 'הושלמה על ידי הלקוח' : 'הושלמה על ידך') + (t.done_at ? ' · ' + new Date(t.done_at).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }) : '') : 'הושלמה'}</span>}{overdue && <span className={styles.pastBadge}>באיחור</span>}</div>
+                    <div className={styles.name}>{visibleTasks.length > 1 && <span className={styles.taskNum}>{i + 1}.</span>}{t.title}{t.done && <span className={styles.completedBadge}>{t.done_by ? (t.done_by === 'client' ? 'הושלמה על ידי הלקוח' : 'הושלמה על ידך') + (t.done_at ? ' · ' + new Date(t.done_at).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }) : '') : 'הושלמה'}</span>}{overdue && <span className={styles.pastBadge}>באיחור</span>}</div>
                     <div className={styles.meta}>{t.responsible === 'client' ? 'באחריות הלקוח' : 'באחריות היועץ'}{t.task_kind === 'document' ? ' · ממתינים למסמך' : ''}</div>
                     {t.due_date && <div className={styles.meta}>יעד: {formatDate(t.due_date)}</div>}
                   </div>
@@ -359,7 +367,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
               );
             })())}
           </div>
-        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.tasks}</span>אין משימות</div>}
+        ) : <div className={styles.empty}><span className={styles.emptyMark}>{ICONS.tasks}</span>{showCompleted ? 'אין משימות שהושלמו' : 'אין משימות פתוחות'}</div>}
         </div>
         </div>
       </div>
