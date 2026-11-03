@@ -794,7 +794,8 @@ test('resume lock restores pre-existing inert and accessibility states',()=>{
   };
   const background=element({inert:'','aria-hidden':'true'});
   const dialog=element({});const overlay=element({});
-  const ctx=functions(['hideBehind'],{_wasHidden:null,getEl:()=>overlay,document:{body:{children:[background,dialog,overlay]}}});
+  const ctx=vm.createContext({_wasHidden:null,getEl:()=>overlay,document:{body:{children:[background,dialog,overlay]}}});
+  vm.runInContext(html.match(/  function hideBehind\(on\)\{[^]*?\n  \}/)[0],ctx);
   ctx.hideBehind(true);assert.equal(dialog.hasAttribute('inert'),true);
   ctx.hideBehind(false);assert.equal(background.hasAttribute('inert'),true);assert.equal(background.getAttribute('aria-hidden'),'true');
   assert.equal(dialog.hasAttribute('inert'),false);assert.equal(dialog.getAttribute('aria-hidden'),null);
