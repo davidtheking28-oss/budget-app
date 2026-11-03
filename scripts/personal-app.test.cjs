@@ -771,3 +771,17 @@ test('client task update failure restores the open state and allows retry',async
  let fail=true;const task={id:'task',done:false};const ctx=functions(['toggleAdvisorTask'],{_advisorTasks:[task],_cloudUser:{id:'client'},_advisorLink:{status:'active',advisor_id:'advisor'},_advisorTaskRequest:0,_advisorTaskPending:new Set(),renderTasksPage:()=>{},showToast:()=>{},_sb:{rpc:async()=>{if(fail)throw Error('offline');return{data:true};}}});
  await ctx.toggleAdvisorTask('task',true);assert.equal(task.done,false);assert.equal(ctx._advisorTaskPending.size,0);fail=false;await ctx.toggleAdvisorTask('task',true);assert.equal(task.done,true);assert.equal(task.done_by,'client');
 });
+
+
+test('installed app back closes the top nested sheet rather than its parent',()=>{
+  let onBack;const closed=[];const sheets=new Set(['addTxSheet','moveCatSheet']);
+  const ctx=functions(['initBackButton'],{window:{matchMedia:()=>({matches:true}),addEventListener:(name,fn)=>{if(name==='popstate')onBack=fn;}},navigator:{standalone:true},history:{pushState:()=>{}},_openSheets:sheets,document:{getElementById:id=>({id}),querySelector:()=>({id:'addTxSheet'})},closeSheet:id=>{closed.push(id);sheets.delete(id);},closeMonthSheet:()=>{}});
+  ctx.initBackButton();onBack();assert.deepEqual(closed,['moveCatSheet']);assert.equal(sheets.has('addTxSheet'),true);
+  onBack();assert.deepEqual(closed,['moveCatSheet','addTxSheet']);
+});
+
+test('installed app back still closes the month picker when no sheet is open',()=>{
+  let onBack;let closed=false;
+  const ctx=functions(['initBackButton'],{window:{matchMedia:()=>({matches:true}),addEventListener:(name,fn)=>{if(name==='popstate')onBack=fn;}},navigator:{standalone:true},history:{pushState:()=>{}},_openSheets:new Set(),document:{querySelector:()=>({id:'monthSheetOverlay'})},closeMonthSheet:()=>{closed=true;}});
+  ctx.initBackButton();onBack();assert.equal(closed,true);
+});

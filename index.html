@@ -8645,7 +8645,8 @@ function initBackButton(){
   if(!standalone) return;
   history.pushState({appGuard:true},'');
   window.addEventListener('popstate',()=>{
-    const openOverlay=document.querySelector('.sheet-overlay.open,.month-sheet-overlay.open');
+    const topSheetId=[..._openSheets].pop();
+    const openOverlay=topSheetId?document.getElementById(topSheetId):document.querySelector('.month-sheet-overlay.open');
     if(openOverlay){
       if(openOverlay.id==='monthSheetOverlay') closeMonthSheet(); else closeSheet(openOverlay.id);
       history.pushState({appGuard:true},'');
