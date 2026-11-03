@@ -371,3 +371,7 @@
 .familyConfirm { display: grid; gap: var(--space-2); }
 .familyConfirm p { margin: 0; max-width: 55ch; }
 .familyChoice strong { overflow-wrap: anywhere; }
+
+.journeySummaryHead { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); margin-block-end: var(--space-3); }
+.journeySummaryHead > div { min-width: 0; overflow-wrap: anywhere; }
+.journeyPercent { color: var(--accent); font-size: var(--text-xl); font-variant-numeric: tabular-nums; }

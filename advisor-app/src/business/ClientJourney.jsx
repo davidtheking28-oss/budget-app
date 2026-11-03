@@ -115,10 +115,11 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
         {row.client_id && <button type="button" className={styles.btnGhost} onClick={() => onOpenClient(row)}>כרטיס הלקוח</button>}
       </div>
 
-      <section className={styles.bigCard}>
-        <div className={styles.sectionLabel}>{name}</div>
-        <div className={styles.bigNumber}>{percent}%</div>
-        <p className={styles.cardSub}>{progress.done} מתוך {progress.total} שלבים הושלמו · {currentStage(journey)}</p>
+      <section className={styles.card}>
+        <div className={styles.journeySummaryHead}>
+          <div><h2 className={styles.cardTitle}>{name}</h2><p className={styles.cardSub}>{progress.done} מתוך {progress.total} שלבים הושלמו · {currentStage(journey)}</p></div>
+          <strong className={styles.journeyPercent}>{percent}%</strong>
+        </div>
         <div className={styles.progress} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label="התקדמות בתהליך">
           <div className={styles.progressFill} style={{ width: percent + '%' }} />
         </div>
@@ -134,11 +135,11 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
           </div>
           <div className={styles.cell}>
             <div className={styles.statLabel}>דברים שדורשים טיפול</div>
-            <div className={styles.pills}>{attention.length ? attention.map(a => <span key={a} className={styles.pillBtn + ' ' + styles.pillWarn} style={{ cursor: 'default' }}>{a}</span>) : <span className={styles.rowMeta}>הכול תקין</span>}</div>
+            <div className={styles.pills}>{attention.length ? attention.map(a => <span key={a} className={styles.pillBtn + ' ' + styles.pillWarn} style={{ cursor: 'default' }}>{a}</span>) : <span className={styles.rowMeta}>אין פריטים לטיפול</span>}</div>
           </div>
         </div>
-        <label className={styles.fieldLabel} style={{ marginTop: 14 }}>הערה חופשית
-          <textarea className={styles.input} rows={2} placeholder="מה שנכתב כאן יופיע בטבלת השירות הראשית" value={journey.note} onChange={e => edit({ ...journey, note: e.target.value })} onBlur={save} />
+        <label className={styles.fieldLabel} style={{ marginTop: 14 }}>הערה להמשך הליווי
+          <textarea className={styles.input} rows={2} placeholder="נקודות חשובות להמשך הליווי" aria-label="הערה להמשך הליווי" value={journey.note} onChange={e => edit({ ...journey, note: e.target.value })} onBlur={save} />
         </label>
       </section>
 
@@ -182,7 +183,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
             )}
 
             <label className={styles.fieldLabel}>סיכום פגישה
-              <textarea className={styles.input} rows={3} value={data.summary} onChange={e => setMeeting(m.key, { summary: e.target.value }, false)} onBlur={() => saveSummary(m.key)} disabled={summaryState[m.key] === 'saving'} />
+              <textarea className={styles.input} rows={3} aria-label={'סיכום פגישה: ' + m.title} value={data.summary} onChange={e => setMeeting(m.key, { summary: e.target.value }, false)} onBlur={() => saveSummary(m.key)} disabled={summaryState[m.key] === 'saving'} />
             </label>
 
             {summaryState[m.key] && <div className={styles.toolbar} role={summaryState[m.key] === 'error' ? 'alert' : 'status'}><span className={summaryState[m.key] === 'error' ? styles.fieldError : styles.note}>{summaryState[m.key] === 'error' ? 'לא הושלמה שמירת הסיכום. הטקסט נשאר כאן.' : summaryState[m.key] === 'saving' ? 'שומר סיכום…' : 'הסיכום נשמר'}</span>{summaryState[m.key] === 'error' && <button type="button" className={styles.btnGhost} onClick={() => saveSummary(m.key)}>נסה לשמור סיכום שוב</button>}</div>}
@@ -206,6 +207,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
             )}
 
             <div className={styles.sectionLabel}>{m.tasks}</div>
+            {data.tasks.length === 0 && <p className={styles.note}>עוד לא נוספו משימות לפגישה הזו. אפשר להוסיף משימה בשדה למטה.</p>}
             {data.tasks.length > 0 && (
               <ul className={styles.rowList}>
                 {data.tasks.map((t, ti) => (
