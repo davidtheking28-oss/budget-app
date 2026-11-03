@@ -209,6 +209,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const [linkForm, setLinkForm] = useState(null);
   const [linking, setLinking] = useState(false);
   const [transferring, setTransferring] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [flowPeriod, setFlowPeriod] = useState('month');
   const [donutView, setDonutView] = useState('cat');
   const [reviewOnly, setReviewOnly] = useState(false);
@@ -360,6 +361,35 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       category_averages: averages,
       months_covered: monthsCovered
     });
+  }
+
+  async function resetMapping() {
+    if (resetting || !data) return;
+    if (!window.confirm('לאפס את כל המיפוי של הלקוח? כל הסכומים, דפי החשבון וההתאמות יימחקו. המיפוי הנוכחי יישמר תחת "מיפויים קודמים" וניתן לשחזר אותו משם.')) return;
+    setResetting(true);
+    const now = new Date();
+    const fallbackStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    const snapshots = (data.transactions || []).length
+      ? [...(data.snapshots || []), {
+          period_start: data.period_start,
+          period_end: data.period_end,
+          transactions: data.transactions,
+          saved_at: data.updated_at || new Date().toISOString()
+        }].slice(-12)
+      : (data.snapshots || []);
+    const ok = await save({
+      period_start: fallbackStart,
+      period_end: fallbackStart,
+      transactions: [],
+      category_averages: {},
+      months_covered: 1,
+      snapshots
+    });
+    setResetting(false);
+    if (ok !== false) {
+      setQueue([]);
+      toast('המיפוי אופס', 'success');
+    }
   }
 
   async function restoreSnapshot(index, confirmed) {
@@ -673,6 +703,12 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         <MappingTable title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} tag="הוראת קבע" addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
         <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע מדפי החשבון, ואפשר להוסיף סכומים ידנית" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} allowCustom periodSwitch hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
       </div>
+
+      {(data?.transactions || []).length > 0 && (
+        <div className={styles.resetRow}>
+          <Button variant="ghost" onClick={resetMapping} disabled={resetting}>{resetting ? 'מאפס…' : 'איפוס המיפוי'}</Button>
+        </div>
+      )}
 
       {fixedTransfer.length > 0 && (
         <section className={styles.card + ' ' + styles.cardStandalone}>

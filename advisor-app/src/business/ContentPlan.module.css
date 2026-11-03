@@ -10,8 +10,11 @@
 .importFooter span { color: var(--text2); font-size: var(--text-xs); }
 .loading p { margin: 0 0 12px; color: var(--text2); font-size: var(--text-sm); }
 .workspace { min-width: 0; }
-.workspaceHeader { display: flex; justify-content: flex-end; margin-block-end: 12px; }
+.workspaceHeader { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); margin-block-end: var(--space-3); }
 @media (max-width: 600px) { .stateCard { padding: 20px; } .emptyHeading { align-items: flex-start; gap: 12px; } .fileName { margin-inline-start: 0; } }
 
 .saveState { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding-block: 8px; color: var(--text2); font-size: var(--text-sm); }
 .saveState[role="alert"] { color: var(--red); }
+
+.updateHint { margin: 0; max-width: 70ch; color: var(--text2); font-size: var(--text-xs); line-height: 1.6; }
+.importError { margin: var(--space-3) 0; color: var(--red); font-size: var(--text-sm); line-height: 1.6; }

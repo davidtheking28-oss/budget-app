@@ -130,6 +130,7 @@ export default function ContentPlan({ advisorId }) {
   const latestDone = useRef(null);
   const importingRef = useRef(false);
   const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState('');
   const [saveStatus, setSaveStatus] = useState('');
 
   const load = useCallback(async () => {
@@ -195,12 +196,13 @@ export default function ContentPlan({ advisorId }) {
     if (!file || importingRef.current) return;
     importingRef.current = true;
     setImporting(true);
+    setImportError('');
     try {
     let parsed;
-    try { parsed = JSON.parse(await file.text()); } catch { toast('הקובץ אינו קובץ תוכן תקין', 'error'); return; }
-    if (!validDoc(parsed)) { toast('הקובץ אינו קובץ תוכן תקין', 'error'); return; }
+    try { parsed = JSON.parse(await file.text()); } catch { setImportError('לא ניתן לקרוא את הקובץ. בחר קובץ תוכן תקין ונסה שוב.'); toast('הקובץ אינו קובץ תוכן תקין', 'error'); return; }
+    if (!validDoc(parsed)) { setImportError('הקובץ אינו בפורמט של תוכנית תוכן. בחר את קובץ התוכנית שקיבלת.'); toast('הקובץ אינו קובץ תוכן תקין', 'error'); return; }
     const payload = { html: parsed.html, DATA: parsed.DATA, BANK: parsed.BANK, GUIDES: parsed.GUIDES };
-    if (!(await save(DOC, payload))) { toast('שגיאה בשמירה', 'error'); return; }
+    if (!(await save(DOC, payload))) { setImportError('התוכנית החדשה לא נשמרה. בדוק את החיבור ובחר את הקובץ שוב.'); toast('שגיאה בשמירה', 'error'); return; }
     setDoc(payload);
     setVersion(v => v + 1);
     toast('התוכן נשמר', 'success');
@@ -213,7 +215,7 @@ export default function ContentPlan({ advisorId }) {
   if (error) return <section className={styles.stateCard}><ErrorState message="לא הצלחנו לטעון את לוח התוכן" onRetry={load} /></section>;
   if (doc === undefined) return <section className={styles.loading} aria-busy="true"><p role="status">טוען את לוח התוכן שלך…</p><Skeleton height="220px" radius="18px" /></section>;
 
-  const picker = <input ref={fileInput} type="file" accept="application/json,.json" onChange={importFile} hidden />;
+  const picker = <input ref={fileInput} type="file" accept="application/json,.json" onChange={importFile} aria-label="קובץ תוכנית תוכן" hidden />;
 
   if (doc === null) {
     return (
@@ -224,6 +226,7 @@ export default function ContentPlan({ advisorId }) {
         </div>
         <ol className={styles.importSteps}><li>בחר את קובץ התוכן שקיבלת <bdi className={styles.fileName}>content-plan-content.json</bdi></li><li>לאחר הטעינה אפשר לעבור על התוכן ולסמן מה כבר בוצע.</li></ol>
         <div className={styles.importFooter}><Button disabled={importing} onClick={() => fileInput.current?.click()}>{importing ? 'טוען ושומר…' : 'בחר קובץ תוכן'}</Button><span>התוכן וסימוני הביצוע נשמרים בחשבון שלך.</span></div>
+        {importError && <p className={styles.importError} role="alert">{importError}</p>}
         {picker}
       </section>
     );
@@ -231,8 +234,9 @@ export default function ContentPlan({ advisorId }) {
 
   return (
     <section className={styles.workspace}>
-      <div className={styles.workspaceHeader}><Button variant="ghost" disabled={importing} onClick={() => fileInput.current?.click()}>{importing ? 'טוען ושומר…' : 'טען קובץ תוכן מעודכן'}</Button>{picker}</div>
-      {saveStatus && <div className={styles.saveState} role={saveStatus === 'error' ? 'alert' : 'status'}><span>{saveStatus === 'error' ? 'סימוני הביצוע לא נשמרו. הם עדיין מוצגים כאן — נסה לשמור שוב.' : saveStatus === 'saving' ? 'שומר סימוני ביצוע…' : 'סימוני הביצוע נשמרו'}</span>{saveStatus === 'error' && <Button variant="ghost" onClick={saveProgress}>נסה לשמור שוב</Button>}</div>}
+      <div className={styles.workspaceHeader}><p className={styles.updateHint}>התוכנית הנוכחית תוחלף רק לאחר טעינה ושמירה מוצלחות של הקובץ החדש.</p><Button variant="ghost" disabled={importing} onClick={() => fileInput.current?.click()}>{importing ? 'טוען ושומר…' : 'טען קובץ תוכן מעודכן'}</Button>{picker}</div>
+      {importError && <p className={styles.importError} role="alert">{importError}</p>}
+      {saveStatus && <div className={styles.saveState} role={saveStatus === 'error' ? 'alert' : 'status'}><span>{saveStatus === 'error' ? 'סימוני הביצוע לא נשמרו. הם עדיין מוצגים כאן. נסה לשמור שוב.' : saveStatus === 'saving' ? 'שומר סימוני ביצוע…' : 'סימוני הביצוע נשמרו'}</span>{saveStatus === 'error' && <Button variant="ghost" onClick={saveProgress}>נסה לשמור שוב</Button>}</div>}
       <PlanFrame key={version} doc={doc} stored={stored} onDone={onDone} />
     </section>
   );
