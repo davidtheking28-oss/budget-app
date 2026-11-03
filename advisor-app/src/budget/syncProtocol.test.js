@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stampSync, mergeSyncMeta, mergeBudgetPatch, writeBudgetVersion } from './useClientBudget.js';
+import { stampSync, mergeSyncMeta, mergeBudgetPatch, writeBudgetVersion, linkedFixedBudgetPatch } from './useClientBudget.js';
 
 // Faithful copies of the client app's merge logic (index.html _mergeArrays / _mergeBudgets),
 // so these tests fail if the advisor ever stops speaking the same sync protocol.
@@ -138,5 +138,33 @@ describe('advisor merges fresh data before a versioned write', () => {
     const result = await writeBudgetVersion(db, { user_id: 'client' }, { updated_at: 'old' });
     expect(result.conflict).toBe(true);
     expect(filters).toContainEqual(['updated_at', 'old']);
+  });
+});
+
+
+describe('automatic linked fixed budget', () => {
+  const data = {
+    insurances: [{ id: 'a', monthly: 200 }, { id: 'b', monthly: 150 }, { id: 'c', monthly: 900, closed: true }],
+    loans: [{ id: 'l', monthly: 800 }, { id: 'closed', monthly: 400, closed: true }, { id: 'hidden', monthly: 300, hidden: true }],
+    fixed_expenses: [{ id: 'חשמל', amount: 220 }, { id: 'ביטוחים', amount: 50 }],
+    budgets: { 'חשמל': 220, 'מזון לבית': 500 }
+  };
+  it('copies active insurance and loan totals without changing other categories or adding transactions', () => {
+    const patch = linkedFixedBudgetPatch(data);
+    expect(patch.budgets).toEqual({ 'חשמל': 220, 'מזון לבית': 500, 'ביטוחים': 350, 'החזר הלוואות + חיוב קבוע': 800 });
+    expect(patch.fixed_expenses.filter(row => row.id === 'ביטוחים')).toHaveLength(1);
+    expect(patch.transactions).toBeUndefined();
+    expect(linkedFixedBudgetPatch({ ...data, ...patch })).toBeNull();
+  });
+  it('updates a changed source and clears the cost after the last source is deleted', () => {
+    const linked = { ...data, ...linkedFixedBudgetPatch(data) };
+    const changed = { ...linked, loans: [{ id: 'l', monthly: 950 }] };
+    expect(linkedFixedBudgetPatch(changed).budgets['החזר הלוואות + חיוב קבוע']).toBe(950);
+    const cleared = linkedFixedBudgetPatch({ ...linked, loans: [], insurances: [] });
+    expect(cleared.budgets['ביטוחים']).toBe(0);
+    expect(cleared.budgets['החזר הלוואות + חיוב קבוע']).toBe(0);
+  });
+  it('preserves manually entered categories when no linked sources exist', () => {
+    expect(linkedFixedBudgetPatch({ fixed_expenses: [{ id: 'ביטוחים', amount: 300 }], budgets: { 'ביטוחים': 300 } })).toBeNull();
   });
 });

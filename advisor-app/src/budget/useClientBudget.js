@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useReducer } from 'react';
+import { createContext, useCallback, useContext, useEffect, useReducer, useRef } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 
@@ -100,6 +100,24 @@ export function mergeBudgetPatch(fresh, patch) {
     }
   }
   return out;
+}
+
+export function linkedFixedBudgetPatch(data) {
+  const fixed = new Map((data?.fixed_expenses || []).map(row => [row.id, row]));
+  const budgets = { ...(data?.budgets || {}) };
+  let changed = false;
+  for (const [source, category] of [['insurances', 'ביטוחים'], ['loans', 'החזר הלוואות + חיוב קבוע']]) {
+    const rows = data?.[source] || [];
+    const prior = fixed.get(category);
+    if (!rows.length && prior?.linkedSource !== source) continue;
+    const amount = Math.round(rows.filter(row => !row.closed && (source !== 'loans' || !row.hidden))
+      .reduce((sum, row) => sum + (Number(row.monthly) || 0), 0) * 100) / 100;
+    if (prior?.amount === amount && prior?.linkedSource === source && budgets[category] === amount) continue;
+    fixed.set(category, { ...prior, id: category, amount, linkedSource: source });
+    budgets[category] = amount;
+    changed = true;
+  }
+  return changed ? { fixed_expenses: [...fixed.values()], budgets } : null;
 }
 
 export async function writeBudgetVersion(db, payload, previous) {
@@ -255,7 +273,9 @@ function retainChannel(clientUserId) {
 async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
   const prev = cache.get(k)?.data || { user_id: clientUserId, ...EMPTY };
   const rawPatch = typeof patchOrFn === 'function' ? patchOrFn(prev) : patchOrFn;
-  const patch = stampSync(prev, rawPatch);
+  if (!rawPatch) return true;
+  const linkedPatch = linkedFixedBudgetPatch({ ...prev, ...rawPatch });
+  const patch = stampSync(prev, { ...rawPatch, ...linkedPatch });
   const next = { ...prev, ...patch };
   invalidate(k);
   setEntry(k, { data: next, error: null, ts: Date.now() });
@@ -267,7 +287,9 @@ async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
         .from('budget_data').select('*').eq('user_id', clientUserId).maybeSingle();
       if (readError) { error = readError; break; }
       const freshBundle = mode === 'business' ? (freshRow?.business || {}) : (freshRow || {});
-      const mergedPatch = mergeBudgetPatch(freshBundle, patch);
+      const merged = mergeBudgetPatch(freshBundle, patch);
+      const linked = linkedFixedBudgetPatch({ ...freshBundle, ...merged });
+      const mergedPatch = linked ? stampSync(freshBundle, { ...merged, ...linked }) : merged;
       const row = {
         user_id: clientUserId, updated_by: advisorId,
         updated_at: new Date(Math.max(Date.now(), (Date.parse(freshRow?.updated_at) || 0) + 1)).toISOString(),
@@ -330,8 +352,18 @@ export function useClientBudget(clientUserId, advisorId) {
     return queued;
   }, [clientUserId, advisorId, mode]);
 
+  const syncAttempt = useRef(null);
+  const sourceData = entry?.data;
+  const linkedPatch = sourceData ? linkedFixedBudgetPatch(sourceData) : null;
+  const syncSignature = linkedPatch ? JSON.stringify([key, sourceData.loans, sourceData.insurances, linkedPatch]) : null;
+  useEffect(() => {
+    if (!syncSignature || syncAttempt.current === syncSignature) return;
+    syncAttempt.current = syncSignature;
+    save(current => linkedFixedBudgetPatch(current));
+  }, [syncSignature, save]);
+
   return {
-    data: entry?.data ?? null,
+    data: sourceData && linkedPatch ? { ...sourceData, ...linkedPatch } : sourceData ?? null,
     loading: !!clientUserId && !entry,
     error: entry?.error ?? null,
     save,
