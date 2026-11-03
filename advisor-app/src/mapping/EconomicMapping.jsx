@@ -750,6 +750,13 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         </div>
       </section>
 
+      {data?.skip_auto && (
+        <div className={styles.resetRow}>
+          <span className={styles.resetNote}>הסכומים מהתקציב (הלוואות, תשלומים, ביטוחים, מנויים, חינוך, שנתיות ומשכנתא) מוסתרים כי איפסת את המיפוי.</span>
+          <Button variant="ghost" onClick={restoreAutoAmounts} disabled={resetting}>החזר סכומים מהתקציב</Button>
+        </div>
+      )}
+
       <div className={layout.tables}>
         <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="הכנסות" note="סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" allowCustom quarterManual separateRows rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
         <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
@@ -757,15 +764,9 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         <MappingTable showTotal title="הוצאות חודשיות משתנות" note="ממוצע חודשי. סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} allowCustom quarterManual hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
       </div>
 
-      {((data?.transactions || []).length > 0 || autoFixedTx.length > 0 || data?.skip_auto) && (
+      {((data?.transactions || []).length > 0 || autoFixedTx.length > 0) && (
         <div className={styles.resetRow}>
           {((data?.transactions || []).length > 0 || autoFixedTx.length > 0) && <Button variant="ghost" onClick={resetMapping} disabled={resetting}>{resetting ? 'מאפס…' : 'איפוס המיפוי'}</Button>}
-          {data?.skip_auto && (
-            <>
-              <span className={styles.resetNote}>הסכומים האוטומטיים מהתקציב (הלוואות, תשלומים, ביטוחים, מנויים, חינוך, שנתיות ומשכנתא) לא מוצגים כרגע.</span>
-              <Button variant="ghost" onClick={restoreAutoAmounts} disabled={resetting}>החזר סכומים מהתקציב</Button>
-            </>
-          )}
         </div>
       )}
 
