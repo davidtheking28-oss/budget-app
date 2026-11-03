@@ -157,3 +157,10 @@
 
 .saveError { grid-column: 1 / -1; flex-basis: 100%; color: var(--red); font-size: var(--text-sm); line-height: 1.5; }
 .saveError:empty { display: none; }
+
+
+.loanHint { grid-column: 1 / -1; margin: 0; color: var(--text2); font-size: var(--text-sm); line-height: 1.6; }
+.formActions { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-2); }
+@media (min-width: 861px) {
+  .loanForm { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+}

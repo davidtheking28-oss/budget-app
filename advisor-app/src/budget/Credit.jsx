@@ -50,12 +50,16 @@ export default function Credit({ clientUserId, advisorId, focus }) {
   const savingRef = useRef(false);
   const [saving, setSaving] = useState('');
   const [saveError, setSaveError] = useState('');
+  const [loanError, setLoanError] = useState('');
 
-  function resetLoanForm() { setLoanForm(EMPTY_LOAN); setEditingLoanId(null); }
+  function resetLoanForm() { setLoanForm(EMPTY_LOAN); setEditingLoanId(null); setLoanError(''); }
   async function submitLoan() {
     if (savingRef.current) return;
     const monthly = parseFloat(loanForm.monthly) || 0;
-    if (!loanForm.name.trim() || !monthly) { toast('נדרשים שם החוב והחזר חודשי', 'error'); return; }
+    if (!loanForm.name.trim()) { setLoanError('יש להזין שם לחוב.'); return; }
+    if (monthly < 0) { setLoanError('ההחזר החודשי לא יכול להיות שלילי.'); return; }
+    if (monthly === 0 && !(parseFloat(loanForm.remaining) > 0)) { setLoanError('יש להזין יתרת קרן כשאין החזר חודשי קבוע.'); return; }
+    setLoanError('');
     const patch = {
       name: loanForm.name.trim(),
       monthly,
@@ -79,7 +83,7 @@ export default function Credit({ clientUserId, advisorId, focus }) {
       setSaving('');
     }
   }
-  function startEditLoan(l) { setEditingLoanId(l.id); setLoanForm({ name: l.name || '', monthly: l.monthly || '', remaining: l.remaining || '', original: l.original || '', rate: l.rate || '', asOf: l.asOf || '' }); }
+  function startEditLoan(l) { setLoanError(''); setEditingLoanId(l.id); setLoanForm({ name: l.name || '', monthly: l.monthly ?? '', remaining: l.remaining || '', original: l.original || '', rate: l.rate ?? '', asOf: l.asOf || '' }); }
 
   function resetPaymentForm() { setPaymentForm(EMPTY_PAYMENT); setEditingPaymentId(null); }
   async function submitPayment() {
@@ -212,15 +216,20 @@ export default function Credit({ clientUserId, advisorId, focus }) {
             </table>
           </div>
         )}
-        <AddForm label="הוספת הלוואה" open={editingLoanId != null} className={styles.form}>
+        <AddForm label="הוספת הלוואה" open={editingLoanId != null} className={styles.form + ' ' + styles.loanForm}>
           <label className={styles.formField}>שם החוב<input className={styles.input} placeholder="שם החוב" aria-label="שם החוב" value={loanForm.name} onChange={e => setLoanForm({ ...loanForm, name: e.target.value })} /></label>
           <label className={styles.formField}>סכום מקורי<input className={styles.input} type="number" inputMode="decimal" placeholder="סכום מקורי" aria-label="סכום מקורי" value={loanForm.original} onChange={e => setLoanForm({ ...loanForm, original: e.target.value })} /></label>
           <label className={styles.formField}>יתרת קרן<input className={styles.input} type="number" inputMode="decimal" placeholder="יתרת קרן" aria-label="יתרת קרן" value={loanForm.remaining} onChange={e => setLoanForm({ ...loanForm, remaining: e.target.value })} /></label>
           <label className={styles.formField}>נכון לתאריך<input className={styles.input} type="date" aria-label="נכון לתאריך" value={loanForm.asOf} onChange={e => setLoanForm({ ...loanForm, asOf: e.target.value })} /></label>
           <label className={styles.formField}>ריבית שנתית באחוזים<input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} /></label>
-          <label className={styles.formField}>החזר חודשי<input className={styles.input} type="number" inputMode="decimal" placeholder="החזר חודשי" aria-label="החזר חודשי" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} /></label>
-          <span className={styles.saveError} role={saveError === 'loan' ? 'alert' : undefined}>{saveError === 'loan' ? 'ההלוואה לא נשמרה. הפרטים נשארו בטופס — אפשר לנסות שוב.' : ''}</span><Button disabled={!!saving} onClick={submitLoan}>{saving === 'loan' ? 'שומר…' : editingLoanId != null ? 'שמור' : 'הוספת הלוואה'}</Button>
-          {editingLoanId != null && <Button variant="ghost" onClick={resetLoanForm}>ביטול</Button>}
+          <label className={styles.formField}>החזר חודשי (לא חובה)<input className={styles.input} type="number" inputMode="decimal" min="0" placeholder="0 — ללא החזר קבוע" aria-label="החזר חודשי" aria-describedby="loan-payment-hint" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} /></label>
+          <p id="loan-payment-hint" className={styles.loanHint}>אין החזר חודשי קבוע? אפשר להשאיר ריק או להזין 0. החוב יופיע ביתרת החובות בלי להוסיף הוצאה חודשית.</p>
+          {loanError && <p className={styles.saveError} role="alert">{loanError}</p>}
+          {saveError === 'loan' && <p className={styles.saveError} role="alert">ההלוואה לא נשמרה. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
+          <div className={styles.formActions}>
+            <Button disabled={!!saving} onClick={submitLoan}>{saving === 'loan' ? 'שומר…' : editingLoanId != null ? 'שמור' : 'הוספת הלוואה'}</Button>
+            {editingLoanId != null && <Button variant="ghost" onClick={resetLoanForm}>ביטול</Button>}
+          </div>
         </AddForm>
       </CollapsibleSection>
     </div>
