@@ -110,7 +110,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
                 <input key={"e:" + r.line + ":" + r.amount} className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
               </span>
             ) : (
-              <span className={styles.field + ' ' + styles.fieldReadOnly} title={quarterManual && r.manualIds.length > 0 ? 'סכום שהוזן ל-3 חודשים, מחולק ב-3. לעריכה מחק את השורה והזן מחדש' : r.auto && r.category === 'משכנתא' ? 'מתעדכן ממסך המשכנתא' : r.auto ? 'נמשך אוטומטית מהלשונית ביטוחים · שנתיות · מנויים · חינוך. כדי לעקוף, הזן סכום בשורה' : 'סכום מצטבר, לעריכה השתמש במחשבונים'}>
+              <span className={styles.field + ' ' + styles.fieldReadOnly} title={quarterManual && r.manualIds.length > 0 ? 'סכום שהוזן ל-3 חודשים, מחולק ב-3. לעריכה מחק את השורה והזן מחדש' : r.auto && r.category === 'משכנתא' ? 'מתעדכן ממסך המשכנתא' : r.auto ? 'נמשך אוטומטית מהלשוניות הלוואות · ביטוחים · שנתיות · מנויים · חינוך. כדי לעקוף, הזן סכום בשורה' : 'סכום מצטבר, לעריכה השתמש במחשבונים'}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
                 <input key={"r:" + r.line + ":" + r.amount} className={styles.input} readOnly tabIndex={-1} aria-label={'סכום חודשי: ' + labelFor(r.category)} value={shown(r.amount)} />
               </span>

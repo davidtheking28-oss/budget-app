@@ -523,6 +523,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const monthlyOf = (list, key) => (list || []).reduce((s, x) => s + (Number(x[key]) || 0), 0);
   const autoFixedAmounts = budgetData && !data?.skip_auto ? {
     'משכנתא': mortgageMappingAmount(budgetData, data?.transactions || []),
+    [LOAN_CATEGORY]: monthlyOf((budgetData.loans || []).filter(x => !x.closed && !x.hidden), 'monthly'),
     'ביטוחים': monthlyOf((budgetData.insurances || []).filter(x => !x.closed), 'monthly'),
     'מנויים ושירותים': (budgetData.subscriptions || []).reduce((s, x) => s + (x.active ? monthlyEquivalent(x.cycle, x.amount || 0) : 0), 0),
     'חינוך, חוגים וקייטנות': monthlyOf(budgetData.education, 'monthly'),
@@ -745,7 +746,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           {((data?.transactions || []).length > 0 || autoFixedTx.length > 0) && <Button variant="ghost" onClick={resetMapping} disabled={resetting}>{resetting ? 'מאפס…' : 'איפוס המיפוי'}</Button>}
           {data?.skip_auto && (
             <>
-              <span className={styles.resetNote}>הסכומים האוטומטיים מהתקציב (ביטוחים, מנויים, חינוך, שנתיות ומשכנתא) לא מוצגים כרגע.</span>
+              <span className={styles.resetNote}>הסכומים האוטומטיים מהתקציב (הלוואות, ביטוחים, מנויים, חינוך, שנתיות ומשכנתא) לא מוצגים כרגע.</span>
               <Button variant="ghost" onClick={restoreAutoAmounts} disabled={resetting}>החזר סכומים מהתקציב</Button>
             </>
           )}
