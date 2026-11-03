@@ -800,3 +800,31 @@ test('resume lock restores pre-existing inert and accessibility states',()=>{
   ctx.hideBehind(false);assert.equal(background.hasAttribute('inert'),true);assert.equal(background.getAttribute('aria-hidden'),'true');
   assert.equal(dialog.hasAttribute('inert'),false);assert.equal(dialog.getAttribute('aria-hidden'),null);
 });
+
+
+function budgetDetailContext(){
+ const detail={style:{},innerHTML:'',querySelector:()=>null};
+ const rows=Array.from({length:100},(_,i)=>({id:'tx-'+i,type:'expense',cat:'מזון לבית',date:'2026-11-03',desc:'עסקה '+i,amount:10}));
+ const ctx=functions(['renderBudgetDetail'],{_selectedBudgetCat:'מזון לבית',currentYear:2026,currentMonth:10,_activeMode:'personal',_budgetTxListOpen:true,_budgetTxViewKey:'',_budgetTxVisibleCount:20,budgets:{'מזון לבית':2000},getMonthTx:()=>rows,document:{getElementById:()=>detail},progState:()=>'',progBarHTML:()=>'',fmt:String,esc:String,heDate:String,_jsId:JSON.stringify});
+ return {ctx,detail,render:()=>ctx.renderBudgetDetail({'מזון לבית':1000},()=>2000)};
+}
+
+test('budget details limit rendered cards while keeping the full spending total',()=>{
+ const t=budgetDetailContext();t.render();
+ assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,20);
+ assert.match(t.detail.innerHTML,/budget-detail-planvalue">1000/);
+ assert.match(t.detail.innerHTML,/הצג עוד/);
+ t.ctx._budgetTxVisibleCount=40;t.render();assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,40);
+});
+
+test('collapsed budget details do not build hidden transaction cards',()=>{
+ const t=budgetDetailContext();t.ctx._budgetTxListOpen=false;t.render();
+ assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,0);
+});
+
+test('budget pagination resets on month and mode changes',()=>{
+ const t=budgetDetailContext();t.render();t.ctx._budgetTxVisibleCount=80;t.ctx.currentMonth=9;t.render();
+ assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,20);
+ t.ctx._budgetTxVisibleCount=80;t.ctx._activeMode='business';t.render();
+ assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,20);
+});

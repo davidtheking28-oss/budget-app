@@ -462,6 +462,7 @@
     .budget-tx-groupsum{font-family:var(--font-num);font-size:0.85rem;font-weight:700;color:var(--text2);flex-shrink:0;font-variant-numeric:tabular-nums lining-nums;}
     .budget-tx-grouplabel{font-size:0.85rem;font-weight:700;color:var(--text);flex:1;}
     .budget-detail-txlist{margin-top:12px;}
+    .budget-load-more{display:block;width:100%;min-height:44px;margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text);font:inherit;font-weight:700;cursor:pointer;}
     .budget-tx-card{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
     .budget-tx-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;min-height:44px;cursor:pointer;}
     .budget-tx-desc-wrap{text-align:right;min-width:0;}
@@ -6538,6 +6539,9 @@ function renderBudgetDetail(spent,effLim){
   const pct=lim?Math.min(Math.round(s/lim*100),100):(baseLim?100:0);
   const state=progState(pct,[[90,'danger'],[70,'warn'],[0,'ok']]);
   const mTx=getMonthTx(currentYear,currentMonth).filter(t=>t.type==='expense'&&t.cat===cat).sort((a,b)=>a.date<b.date?1:-1);
+  const viewKey=JSON.stringify([_activeMode,currentYear,currentMonth,cat]);
+  if(_budgetTxViewKey!==viewKey){_budgetTxViewKey=viewKey;_budgetTxVisibleCount=20;}
+  const visibleTx=_budgetTxListOpen?mTx.slice(0,_budgetTxVisibleCount):[];
   const trashSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
   const editSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
   const chartSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>';
@@ -6561,13 +6565,13 @@ function renderBudgetDetail(spent,effLim){
       +'</div>'
     +'</div>'
     +progBarHTML(pct,{wrapClass:'budget-prog-wrap',fillClass:'budget-prog-fill',stateClass:state})
-    +'<button type="button" class="budget-tx-grouphdr" onclick="toggleBudgetTxList()">'
+    +'<button type="button" class="budget-tx-grouphdr" aria-expanded="'+_budgetTxListOpen+'" aria-controls="budgetDetailTransactions" onclick="toggleBudgetTxList()">'
       +chevronSvg
       +'<span class="budget-tx-groupsum">'+fmt(s)+'</span>'
       +'<span class="budget-tx-grouplabel">עסקאות ב'+esc(cat)+'</span>'
     +'</button>'
-    +'<div class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
-      +(mTx.length?mTx.map(t=>
+    +'<div id="budgetDetailTransactions" class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
+      +(_budgetTxListOpen?(mTx.length?visibleTx.map(t=>
         '<div class="budget-tx-card" data-txid="'+t.id+'">'
           +'<div class="budget-tx-top" onclick="editTx('+_jsId(t.id)+')">'
             +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
@@ -6575,11 +6579,12 @@ function renderBudgetDetail(spent,effLim){
           +'</div>'
           +'<div class="budget-tx-bottom">'
             +'<button type="button" class="budget-tx-del" onclick="event.stopPropagation();deleteTx('+_jsId(t.id)+')" aria-label="מחק">'+trashSvg+'</button>'
-            +'<button type="button" class="budget-move-btn" onclick="event.stopPropagation();openMoveTxCat('+t.id+')">העברה לקטגוריה אחרת</button>'
+            +'<button type="button" class="budget-move-btn" onclick="event.stopPropagation();openMoveTxCat('+_jsId(t.id)+')">העברה לקטגוריה אחרת</button>'
           +'</div>'
         +'</div>'
-      ).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>')
+      ).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>'):'')
     +'</div>'
+    +(_budgetTxListOpen&&mTx.length>visibleTx.length?'<button type="button" class="budget-load-more" onclick="loadMoreBudgetTransactions()">הצג עוד '+Math.min(20,mTx.length-visibleTx.length)+' עסקאות · מוצגות '+visibleTx.length+' מתוך '+mTx.length+'</button>':'')
     +'</div>';
   if(detail._budgetHtml===detailHtml)return;
   detail.innerHTML=detailHtml;
@@ -6589,7 +6594,18 @@ function renderBudgetDetail(spent,effLim){
   const editBtn=detail.querySelector('[data-act="edit-budget"]');
   if(editBtn)editBtn.onclick=()=>editBudgetCat(cat);
 }
+let _budgetTxViewKey='';
+let _budgetTxVisibleCount=20;
 let _budgetTxListOpen=true;
+function loadMoreBudgetTransactions(){
+  _budgetTxVisibleCount+=20;
+  const el=document.getElementById('main-content'),y=el?el.scrollTop:0;
+  renderBudget();
+  const detail=document.getElementById('budgetCatDetail');
+  const button=detail.querySelector('.budget-load-more')||detail.querySelector('.budget-tx-grouphdr');
+  if(button)button.focus({preventScroll:true});
+  if(el)el.scrollTop=y;
+}
 function toggleBudgetTxList(){_budgetTxListOpen=!_budgetTxListOpen;const el=document.getElementById('main-content'),y=el?el.scrollTop:0;renderBudget();if(el)el.scrollTop=y;}
 function editBudgetCat(cat){
   _clearInputError('budgetLimit');
