@@ -142,13 +142,13 @@ describe('manual mapping lines', () => {
     expect(averages['מזון לבית']).toBe(1000);
     expect(averages['שונות']).toBe(100);
     const cf = computeCashflowSummary(transactions);
-    expect(cf.income).toBe(3000);
+    expect(cf.income).toBe(9000);
     expect(cf.expense).toBe(1100);
   });
 
   it('works with manual lines only', () => {
     const transactions = [{ manual: true, type: 'income', category: 'שכר', amount: 8000, source_month: 'manual' }];
-    expect(computeCashflowSummary(transactions).income).toBeCloseTo(2666.67, 1);
+    expect(computeCashflowSummary(transactions).income).toBe(8000);
     expect(computeCashflowSummary(transactions).hasIncomeData).toBe(true);
   });
 });
@@ -166,7 +166,7 @@ describe('manual amounts in variable categories', () => {
     expect(row.raw).toBe(3200);
   });
 
-  it('leaves fixed and savings manual amounts monthly and divides income by 3', () => {
+  it('leaves fixed, savings and income manual amounts as monthly figures', () => {
     const transactions = [
       { manual: true, id: 1, type: 'expense', category: 'חשמל', amount: 300, source_month: 'manual' },
       { manual: true, id: 2, type: 'expense', category: 'הוראת קבע לחסכון', amount: 600, source_month: 'manual' },
@@ -175,7 +175,7 @@ describe('manual amounts in variable categories', () => {
     const { averages } = computeCategoryAverages(transactions);
     expect(averages['חשמל']).toBe(300);
     expect(averages['הוראת קבע לחסכון']).toBe(600);
-    expect(computeCashflowSummary(transactions).income).toBe(3000);
+    expect(computeCashflowSummary(transactions).income).toBe(9000);
   });
 });
 
