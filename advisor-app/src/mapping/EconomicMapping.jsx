@@ -562,10 +562,10 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     if (ok !== false) toast(fixedTransfer.length + ' הוצאות קבועות הועברו לתקציב', 'success');
   }
   const variableRows = mappingRows.expense.filter(r => !SAVINGS_KEYS.includes(r.category) && !FIXED_KEYS.includes(r.category));
-  const addManual = type => (category, desc, amount) => saveManual([...manualItems, { id: Date.now() + Math.random(), manual: true, type, category, desc, amount, date: null, source_month: 'manual' }]);
+  const addManual = type => (category, desc, amount) => saveManual([...manualItems, { id: Date.now() + Math.random(), manual: true, type, category, desc, amount, entries: [amount], date: null, source_month: 'manual' }]);
   const setManualAmount = (id, value) => {
     const amount = parseFloat(value);
-    if (amount > 0) saveManual(manualItems.map(t => (t.id === id ? { ...t, amount } : t)));
+    if (amount > 0) saveManual(manualItems.map(t => (t.id === id ? { ...t, amount, entries: [amount] } : t)));
     else if (String(value).trim() === '' || amount === 0) saveManual(manualItems.filter(t => t.id !== id));
   };
   const hiddenCats = data?.hidden_categories || [];
@@ -600,6 +600,19 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   };
   const hideCategory = cat => saveCats([...new Set([...hiddenCats, cat])], extraCats.filter(c => c !== cat));
   const addBox = cat => saveCats(hiddenCats.filter(c => c !== cat), [...new Set([...extraCats, cat])]);
+  const sumOf = list => list.reduce((a, b) => a + b, 0);
+  const topUpManual = (id, value) => saveManual(manualItems.map(t => {
+    if (t.id !== id) return t;
+    const entries = [...(t.entries || [Number(t.amount) || 0]), value];
+    return { ...t, entries, amount: sumOf(entries) };
+  }));
+  const removeManualEntry = (id, index) => {
+    const t = manualItems.find(x => x.id === id);
+    if (!t) return;
+    const entries = (t.entries || [Number(t.amount) || 0]).filter((_, i) => i !== index);
+    if (entries.length === 0) { saveManual(manualItems.filter(x => x.id !== id)); return; }
+    saveManual(manualItems.map(x => (x.id === id ? { ...x, entries, amount: sumOf(entries) } : x)));
+  };
   const renameManual = (id, name) => saveManual(manualItems.map(t => (t.id === id ? { ...t, name: name || undefined } : t)));
   const deleteManual = id => saveManual(manualItems.filter(t => t.id !== id));
   const deleteManualMany = ids => saveManual(manualItems.filter(t => !ids.includes(t.id)));
@@ -738,9 +751,9 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       </section>
 
       <div className={layout.tables}>
-        <MappingTable onRenameRow={renameManual} title="הכנסות" note="סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" quarterManual separateRows rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable onRenameRow={renameManual} title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
-        <MappingTable onRenameRow={renameManual} title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} tag="הוראת קבע" addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="הכנסות" note="סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" quarterManual separateRows rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} tag="הוראת קבע" addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
         <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע חודשי. סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} allowCustom quarterManual hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
       </div>
 

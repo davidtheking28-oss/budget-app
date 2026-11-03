@@ -174,3 +174,8 @@
 .renameBtn { flex: none; border: none; background: transparent; color: var(--text3); font-size: 14px; cursor: pointer; padding: 2px 4px; }
 .renameBtn:hover { color: var(--accent); }
 .nameInput { flex: 1 1 auto; min-width: 0; min-height: 36px; padding: 0 10px; border: 1px solid var(--control-border); border-radius: var(--radius-sm); background: var(--input-bg); color: var(--text); font-family: inherit; font-size: 14px; font-weight: 700; }
+.countBtn { flex: none; min-width: 22px; height: 22px; padding: 0 6px; border: none; border-radius: var(--radius-full); background: var(--surface2); color: var(--text2); font-family: inherit; font-size: var(--text-xs); font-weight: 700; cursor: pointer; }
+.countBtn:hover { color: var(--accent); }
+.entryList { grid-column: 1 / -1; margin: 0; padding: 4px 0 2px; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.entryItem { display: flex; align-items: center; gap: 8px; color: var(--text2); font-size: var(--text-sm); }
+.entryAmt { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }

@@ -4,12 +4,13 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingTable.module.css';
 
-export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, quarterManual = false, separateRows = false, onRenameRow, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
+export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, quarterManual = false, separateRows = false, onRenameRow, onTopUp, onRemoveEntry, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
   const [adding, setAdding] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState([]);
   const [topUp, setTopUp] = useState(null);
   const [renaming, setRenaming] = useState(null);
+  const [openList, setOpenList] = useState(null);
   const [category, setCategory] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
@@ -34,6 +35,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
       desc: single ? rs[0].desc : '',
       name: single ? rs[0].name : undefined,
       raw: single ? rs[0].raw : undefined,
+      entries: single ? (rs[0].entries || [rs[0].raw ?? rs[0].amount]) : undefined,
       manualIds: manualRows.map(r => r.id)
     };
   };
@@ -65,7 +67,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   function commitTopUp(r, value) {
     setTopUp(null);
     const v = parseFloat(value);
-    if (v > 0) onAmount(r.id, String((Number(quarterManual ? r.raw ?? r.amount : r.amount) || 0) + v));
+    if (v > 0) onTopUp(r.id, v);
   }
   function stopSelecting() { setSelecting(false); setPicked([]); }
   function deletePicked() { onDeleteMany(picked); stopSelecting(); }
@@ -116,6 +118,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
               ) : (
                 <>
                   <span className={styles.nameText}>{r.name || labelFor(r.category)}{r.desc ? ' · ' + r.desc : ''}</span>
+                  {onTopUp && r.manual && !r.auto && r.entries && <button type="button" className={styles.countBtn} disabled={r.entries.length === 0} aria-expanded={openList === r.line} aria-label={'הצג את הסכומים שהוזנו: ' + (r.name || labelFor(r.category))} title="הסכומים שהוזנו" onClick={() => setOpenList(o => (o === r.line ? null : r.line))}>{r.entries.length}</button>}
                   {onRenameRow && r.manual && !r.auto && <button type="button" className={styles.renameBtn} title="שינוי שם" aria-label={'שינוי שם: ' + (r.name || labelFor(r.category))} onClick={() => setRenaming(r.line)}>✎</button>}
                 </>
               )}
@@ -152,6 +155,16 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
               </span>
             )}
             {r.placeholder ? <DeleteButton title={'הסתר שורה: ' + labelFor(r.category)} onClick={() => onHide(r.category)} /> : r.manualIds.length > 0 ? <DeleteButton title={'מחק שורה: ' + labelFor(r.category)} onClick={() => (r.manual ? onDelete(r.id) : deleteGroup(r.manualIds))} /> : <span aria-hidden="true" />}
+            {openList === r.line && r.entries && (
+              <ul className={styles.entryList}>
+                {r.entries.map((amt, i) => (
+                  <li key={i} className={styles.entryItem}>
+                    <span className={styles.entryAmt}>{fmt(amt)}</span>
+                    <button type="button" className={styles.renameBtn} aria-label={'מחק סכום ' + fmt(amt)} onClick={() => onRemoveEntry(r.id, i)}>✕</button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         ))}
       </div>
