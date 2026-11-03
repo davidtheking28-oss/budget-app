@@ -3,7 +3,7 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } fro
 import { Bar } from 'react-chartjs-2';
 import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE, chartTheme, withCustomCats } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
-import { monthKeyOf, incomeSourcesFor } from './budgetMath.js';
+import { monthKeyOf, incomeSourcesFor, budgetActuals, averageMonthSummary } from './budgetMath.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -73,23 +73,12 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   // showing this month's actual next to that plan, matched by name (income) / category
   // (fixed), the same way transactions already resolve against them elsewhere.
   const monthTx = useMemo(() => getMonthTx(data?.transactions, year, month), [data, year, month]);
-  const fixedActual = useMemo(() => {
-    const map = {};
-    monthTx.filter(t => (t.type === 'expense' || t.type === 'saving') && FIXED_CATS.includes(t.cat)).forEach(t => {
-      map[t.cat] = (map[t.cat] || 0) + t.amount;
-    });
-    return map;
-  }, [monthTx]);
+  const monthlyActual = useMemo(() => budgetActuals(data, monthTx), [data, monthTx]);
+  const fixedActual = monthlyActual.fixed;
   const fixedNameSet = useMemo(() => new Set([...FIXED_CATS, ...(data?.fixed_expenses || []).map(f => f.id)]), [data]);
   const [actualEdits, setActualEdits] = useState({});
   const [savedActualEdits, setSavedActualEdits] = useState({});
-  const variableActualBase = useMemo(() => {
-    const map = {};
-    monthTx.filter(t => t.type === 'expense' && !FIXED_CATS.includes(t.cat)).forEach(t => {
-      map[t.cat] = (map[t.cat] || 0) + t.amount;
-    });
-    return map;
-  }, [monthTx]);
+  const variableActualBase = monthlyActual.variable;
   const variableActual = useMemo(() => {
     const map = { ...variableActualBase };
     Object.entries(actualEdits).forEach(([name, v]) => {
@@ -108,7 +97,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   }, [fixedActual, actualEdits, fixedNameSet]);
 
   const [incomes, setIncomes] = useState(() => {
-    const existing = incomeSourcesFor(data?.settings, new Date().getFullYear(), new Date().getMonth());
+    const existing = incomeSourcesFor(data?.settings, year, month);
     return (existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '' })) : [{ name: 'שכר', amount: '', day: '' }]).map(trackRow);
   });
   const [fixed, setFixed] = useState(() => {
@@ -155,8 +144,9 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
 
   // "left"/actualFlow already have the savings standing-order subtracted as an ordinary
   // fixed expense — that's "with a savings deposit". Add it back for the "without" figure.
-  const plannedSavings = parseFloat(fixed.find(r => r.name.trim() === SAVINGS_CATEGORY)?.amount) || 0;
-  const actualSavings = fixedActualFinal[SAVINGS_CATEGORY] || 0;
+  const plannedSavings = totalSavings;
+  const savingsNames = new Set([SAVINGS_CATEGORY, ...fixed.filter(isSavingsRow).map(row => row.name.trim())]);
+  const actualSavings = monthlyActual.savings + Object.entries(actualEdits).reduce((sum, [name, value]) => savingsNames.has(name) ? sum + Math.max(0, (parseFloat(value) || 0) - (fixedActual[name] || 0)) : sum, 0);
 
   const CT = chartTheme();
   const summaryChartOptions = {
@@ -174,20 +164,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     datasets: [{ data: [income, expenses], backgroundColor: [CT.green, CT.red], hoverBackgroundColor: [CT.greenHover, CT.redHover], borderRadius: 6, barPercentage: 0.45, categoryPercentage: 0.9 }]
   });
   const periodMul = flowPeriod === 'year' ? 12 : 1;
-  const avg = useMemo(() => {
-    const all = (data?.transactions || []).filter(t => t.date);
-    const months = new Set(all.map(t => t.date.slice(0, 7))).size;
-    if (!months) return null;
-    const sum = list => list.reduce((s, t) => s + t.amount, 0) / months;
-    const expenses = all.filter(t => t.type === 'expense');
-    return {
-      months,
-      income: sum(all.filter(t => t.type === 'income')) || totalIncome,
-      fixed: sum(expenses.filter(t => FIXED_CATS.includes(t.cat))),
-      variable: sum(expenses.filter(t => !FIXED_CATS.includes(t.cat))),
-      savings: sum(expenses.filter(t => t.cat === SAVINGS_CATEGORY))
-    };
-  }, [data, totalIncome]);
+  const avg = useMemo(() => averageMonthSummary(data), [data]);
   const actualCard = flowPeriod === 'avg' && avg
     ? { sub: `ממוצע חודשי על פני ${avg.months === 1 ? 'חודש אחד' : `${avg.months} חודשים`}`, income: avg.income, expenses: avg.fixed + avg.variable, flow: avg.income - avg.fixed - avg.variable, savings: avg.savings, fixed: avg.fixed, variable: avg.variable }
     : { sub: 'מה קרה בפועל', income: totalIncomeActual, expenses: totalFixedActual + totalVarActual, flow: actualFlow, savings: actualSavings, fixed: totalFixedActual, variable: totalVarActual };
@@ -221,11 +198,11 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     if (!cleanIncomes.length) { toast('צריך לפחות מקור הכנסה אחד', 'error'); return; }
 
     const today = new Date();
-    const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const adjustmentDate = `${monthKeyOf(year, month)}-${year === today.getFullYear() && month === today.getMonth() ? String(today.getDate()).padStart(2, '0') : '01'}`;
     const adjustments = Object.entries(actualEdits)
       .map(([cat, v]) => ({ cat, delta: (parseFloat(v) || 0) - ((fixedNameSet.has(cat) ? fixedActual[cat] : variableActualBase[cat]) || 0) }))
       .filter(a => a.delta > 0)
-      .map((a, i) => ({ id: 'adj' + Date.now() + '_' + i, type: a.cat === SAVINGS_CATEGORY ? 'saving' : 'expense', cat: a.cat, desc: 'התאמת ביצוע (אשף תקציב)', amount: Math.round(a.delta * 100) / 100, date: todayIso, recurring: false }));
+      .map((a, i) => ({ id: 'adj' + Date.now() + '_' + i, type: savingsNames.has(a.cat) ? 'saving' : 'expense', cat: a.cat, desc: 'התאמת ביצוע (אשף תקציב)', amount: Math.round(a.delta * 100) / 100, date: adjustmentDate, recurring: false }));
 
     setSaving(true);
     setSaveStatus('saving');
@@ -243,7 +220,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
           incomeSources: cleanIncomes,
           incomeHistory: {
             ...(cur.settings?.incomeHistory || { '0000-00': cur.settings?.incomeSources || [] }),
-            [monthKeyOf(new Date().getFullYear(), new Date().getMonth())]: cleanIncomes
+            [monthKeyOf(year, month)]: cleanIncomes
           }
         },
         fixed_expenses: cleanFixed,

@@ -1,3 +1,4 @@
+import { FIXED_CATS } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
 
 // Mirrors _budgetCarry in the client app (index.html): when the client has budget rollover
@@ -72,4 +73,30 @@ export function monthSummary(data, year, month) {
     .map(x => ({ ...x, over: x.spent - x.limit }));
   const remaining = totalBudget > 0 ? totalBudget - expense : null;
   return { income, expense, net: income - expense, totalBudget, spentByCat, overCats, remaining };
+}
+
+
+export function budgetActuals(data, transactions) {
+  const fixedNames = new Set([...FIXED_CATS, ...(data?.fixed_expenses || []).map(row => row.id)]);
+  const savingsNames = new Set(['הוראת קבע לחסכון', ...(data?.fixed_expenses || []).filter(row => row.savings).map(row => row.id)]);
+  const result = { income: 0, fixed: {}, variable: {}, savings: 0 };
+  (transactions || []).forEach(transaction => {
+    const amount = parseFloat(transaction.amount) || 0;
+    if (transaction.type === 'income') result.income += amount;
+    if (transaction.type !== 'expense' && transaction.type !== 'saving') return;
+    const isSavings = transaction.type === 'saving' || savingsNames.has(transaction.cat);
+    const bucket = fixedNames.has(transaction.cat) || isSavings ? result.fixed : result.variable;
+    bucket[transaction.cat] = (bucket[transaction.cat] || 0) + amount;
+    if (isSavings) result.savings += amount;
+  });
+  return result;
+}
+
+export function averageMonthSummary(data) {
+  const transactions = (data?.transactions || []).filter(transaction => transaction.date);
+  const months = new Set(transactions.map(transaction => transaction.date.slice(0, 7))).size;
+  if (!months) return null;
+  const actual = budgetActuals(data, transactions);
+  const sum = bucket => Object.values(bucket).reduce((total, amount) => total + amount, 0) / months;
+  return { months, income: actual.income / months, fixed: sum(actual.fixed), variable: sum(actual.variable), savings: actual.savings / months };
 }

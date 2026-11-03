@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor } from './budgetMath.js';
+import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor, budgetActuals, averageMonthSummary } from './budgetMath.js';
 
 const data = {
   budgets: { 'מזון': 1000, 'בילויים': 500 },
@@ -191,5 +191,38 @@ describe('income for a month with no activity matches the client app', () => {
   it('the current month still counts unposted sources', () => {
     vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 9, 15));
     expect(monthSummary(data, 2026, 9).income).toBe(10000);
+  });
+});
+
+
+describe('budget actuals and average month reconciliation', () => {
+  const savings = 'קרן חיסכון';
+  const fixture = {
+    settings: { incomeSources: [{ name: 'שכר', amount: 10000 }] },
+    fixed_expenses: [{ id: 'הוצאה קבועה מותאמת', amount: 800 }, { id: savings, amount: 300, savings: true }],
+    transactions: [
+      { type: 'expense', cat: 'הוצאה קבועה מותאמת', amount: 800, date: '2026-10-01' },
+      { type: 'saving', cat: savings, amount: 300, date: '2026-10-02' },
+      { type: 'expense', cat: 'מזון לבית', amount: 900, date: '2026-09-01' }
+    ]
+  };
+  it('classifies custom fixed expenses once and includes savings transactions', () => {
+    const actual = budgetActuals(fixture, fixture.transactions);
+    expect(actual.fixed).toEqual({ 'הוצאה קבועה מותאמת': 800, [savings]: 300 });
+    expect(actual.variable).toEqual({ 'מזון לבית': 900 });
+    expect(actual.savings).toBe(300);
+  });
+  it('keeps zero actual income distinct from the planned income', () => {
+    expect(averageMonthSummary(fixture)).toEqual({ months: 2, income: 0, fixed: 550, variable: 450, savings: 150 });
+  });
+  it('reconciles a one-month average with monthly actual cash flow', () => {
+    const transactions = [...fixture.transactions.slice(0, 2), { type: 'income', amount: 10000, date: '2026-10-01' }];
+    const actual = budgetActuals(fixture, transactions);
+    const avg = averageMonthSummary({ ...fixture, transactions });
+    expect(avg.income - avg.fixed - avg.variable).toBe(actual.income - 1100);
+    expect(avg.savings).toBe(actual.savings);
+  });
+  it('returns no average when there are no recorded months', () => {
+    expect(averageMonthSummary({ transactions: [] })).toBeNull();
   });
 });
