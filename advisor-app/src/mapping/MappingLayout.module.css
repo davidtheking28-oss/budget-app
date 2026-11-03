@@ -14,7 +14,7 @@
   min-width: 0;
 }
 
-.boxTitle { margin: 0 0 12px; font-size: var(--text-base); font-weight: 800; color: var(--text); }
+.boxTitle { margin: 0 0 12px; font-size: 12.5px; font-weight: 800; color: var(--text); }
 .boxEmpty { margin: var(--space-3) 0 0; color: var(--text2); font-size: var(--text-sm); }
 
 .tables {
@@ -33,16 +33,16 @@
 .comparisonPanel > div:last-child { height: 200px; margin-bottom: 0; }
 .breakdownPanel { grid-area: breakdown; }
 .flowSummary.flowSummary { grid-area: flow; max-width: none; margin: 0; padding: 16px 18px; }
-.flowSummary.flowSummary > div:not(:first-child) > span:last-child { font-size: var(--text-xl); font-weight: 800; }
+.flowSummary.flowSummary > div:not(:first-child) > span:last-child { font-size: 15.5px; font-weight: 800; }
 .boxHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: 12px; flex-wrap: wrap; }
-.boxTitleInline { margin: 0; font-size: var(--text-base); font-weight: 800; color: var(--text); }
+.boxTitleInline { margin: 0; font-size: 12.5px; font-weight: 800; color: var(--text); }
 .breakdownBody { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr); align-items: center; gap: 16px; }
 .breakdownBody > div:first-child { height: 150px; }
 .legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.legendItem { display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); color: var(--text2); }
+.legendItem { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text2); }
 .legendDot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .legendName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.legendPct { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
+.legendPct { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--text); }
 @media (max-width: 1100px) {
   .summaryGrid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "flow" "comparison" "breakdown"; }
 }

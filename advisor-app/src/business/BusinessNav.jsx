@@ -31,7 +31,7 @@ export const DEPARTMENTS = [
     icon: icons.briefcase,
     items: [
       { key: 'tasks', label: 'משימות', icon: icons.calendarCheck, bare: true },
-      { key: 'planner', label: 'יומן שבועי', icon: icons.calendar, bare: true, description: 'יומן ליום ולשבוע, וסיכום יום.' },
+      { key: 'planner', label: 'יומן שבועי', icon: icons.calendar, bare: true, description: 'תכנון אירועים ופגישות בתצוגת יום או שבוע.' },
       { key: 'client-approvals', label: 'אישור לקוחות', icon: icons.users, bare: true, description: 'הזמנות פתוחות ולקוחות שמחכים לאישור.' },
       { key: 'projects', label: 'פרויקטים', icon: icons.folder, bare: true },
       { key: 'systems', label: 'סיסטמים', icon: icons.nodes, bare: true },
@@ -57,9 +57,9 @@ export const DEPARTMENTS = [
       { key: 'marketing', label: 'שיווק ראשי', icon: icons.tasks },
       { key: 'ideas', label: 'רעיונות לסרטונים', icon: icons.bulb },
       { key: 'content-plan', label: 'לוח תוכן', icon: icons.calendar },
-      { key: 'marketing-month', label: 'מדדים חודשי', icon: icons.table },
-      { key: 'marketing-year', label: 'מדדים שנתי', icon: icons.trend },
-      { key: 'marketing-full', label: 'מדדים מלא', icon: icons.pie }
+      { key: 'marketing-month', label: 'מדדים חודשיים', icon: icons.table },
+      { key: 'marketing-year', label: 'מדדים שנתיים', icon: icons.trend },
+      { key: 'marketing-full', label: 'מדדים לכל התקופה', icon: icons.pie }
     ]
   },
   {
@@ -68,8 +68,8 @@ export const DEPARTMENTS = [
     icon: icons.chart,
     items: [
       { key: 'prospects', label: 'לידים', icon: icons.userPlus },
-      { key: 'sales-month', label: 'מדדים חודשי', icon: icons.table },
-      { key: 'sales-year', label: 'מדדים שנתי', icon: icons.trend }
+      { key: 'sales-month', label: 'מדדים חודשיים', icon: icons.table },
+      { key: 'sales-year', label: 'מדדים שנתיים', icon: icons.trend }
     ]
   },
   {
@@ -79,8 +79,8 @@ export const DEPARTMENTS = [
     items: [
       { key: 'fin-month', label: 'חודשי', icon: icons.table },
       { key: 'fin-year', label: 'שנתי', icon: icons.trend },
-      { key: 'fin-full', label: 'מלא', icon: icons.pie },
-      { key: 'fin-custom', label: 'אחר', icon: icons.calendar }
+      { key: 'fin-full', label: 'כל התקופה', icon: icons.pie },
+      { key: 'fin-custom', label: 'טווח תאריכים', icon: icons.calendar }
     ]
   }
 ];
