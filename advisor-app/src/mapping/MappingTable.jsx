@@ -8,6 +8,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   const [adding, setAdding] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState([]);
+  const [topUp, setTopUp] = useState(null);
   const [category, setCategory] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
@@ -57,6 +58,11 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   function resetTable() {
     if (!window.confirm('למחוק את כל ' + manualIds.length + ' הסכומים שהוזנו ידנית בטבלה "' + title + '"?')) return;
     onDeleteMany(manualIds);
+  }
+  function commitTopUp(r, value) {
+    setTopUp(null);
+    const v = parseFloat(value);
+    if (v > 0) onAmount(r.id, String((Number(r.amount) || 0) + v));
   }
   function stopSelecting() { setSelecting(false); setPicked([]); }
   function deletePicked() { onDeleteMany(picked); stopSelecting(); }
@@ -113,7 +119,14 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             ) : r.manual && !quarterManual ? (
               <span className={styles.field}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
-                <input key={"e:" + r.line + ":" + r.amount} className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
+                {topUp === r.line ? (
+                  <input key={"t:" + r.line} className={styles.input} inputMode="decimal" autoFocus placeholder="סכום להוספה" aria-label={'הוספה לסכום: ' + labelFor(r.category)} onBlur={e => commitTopUp(r, e.target.value)} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); else if (e.key === 'Escape') { e.currentTarget.value = ''; e.currentTarget.blur(); } }} />
+                ) : (
+                  <>
+                    <input key={"e:" + r.line + ":" + r.amount} className={styles.input} inputMode="decimal" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue={r.amount} onBlur={e => onAmount(r.id, e.target.value)} />
+                    <button type="button" className={styles.topUp} title="הוסף סכום לשורה" aria-label={'הוסף סכום ל' + labelFor(r.category)} onClick={() => setTopUp(r.line)}>+</button>
+                  </>
+                )}
               </span>
             ) : (
               <span className={styles.field + ' ' + styles.fieldReadOnly} title={quarterManual && r.manualIds.length > 0 ? 'סכום שהוזן ל-3 חודשים, מחולק ב-3. לעריכה מחק את השורה והזן מחדש' : r.auto && r.category === 'משכנתא' ? 'מתעדכן ממסך המשכנתא' : r.auto ? 'נמשך אוטומטית מהלשוניות הלוואות · תשלומים · ביטוחים · שנתיות · מנויים · חינוך. כדי לעקוף, הזן סכום בשורה' : 'סכום מצטבר, לעריכה השתמש במחשבונים'}>

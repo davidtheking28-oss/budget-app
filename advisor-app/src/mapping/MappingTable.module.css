@@ -152,6 +152,21 @@
 .nameText { flex: 1 1 auto; min-width: 0; }
 .tag { min-width: 72px; text-align: center; white-space: nowrap; }
 .input { text-align: right; direction: ltr; font-variant-numeric: tabular-nums; }
+.topUp {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+.topUp:hover { background: var(--accent); color: var(--primary-ink); }
 .fieldReadOnly { border-color: transparent; background: var(--surface2); }
 .fieldReadOnly .input { cursor: default; }
 .row:focus-within .name { color: var(--accent); }
