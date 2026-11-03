@@ -34,12 +34,15 @@
 .breakdownPanel { grid-area: breakdown; }
 .flowSummary.flowSummary { grid-area: flow; max-width: none; margin: 0; padding: 16px 18px; }
 .flowSummary.flowSummary > div:not(:first-child) > span:last-child { font-size: var(--text-xl); font-weight: 800; }
-.breakdownBody { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 12px; margin-top: 12px; }
-.breakdownBody > div:first-child { height: 180px; }
+.boxHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: 12px; flex-wrap: wrap; }
+.boxTitleInline { margin: 0; font-size: var(--text-base); font-weight: 800; color: var(--text); }
+.breakdownBody { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr); align-items: center; gap: 16px; }
+.breakdownBody > div:first-child { height: 150px; }
+.legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.legendItem { display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); color: var(--text2); }
+.legendDot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.legendName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legendPct { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
 @media (max-width: 1100px) {
   .summaryGrid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "flow" "comparison" "breakdown"; }
-  .breakdownBody { grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 18px; }
-}
-@media (max-width: 600px) {
-  .breakdownBody { grid-template-columns: minmax(0, 1fr); }
 }

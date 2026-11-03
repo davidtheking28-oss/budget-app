@@ -673,11 +673,12 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           </div>
 
           <div className={layout.box + ' ' + layout.breakdownPanel}>
-            <h3 className={layout.boxTitle}>לאן הולך הכסף</h3>
-            <div className={styles.actualSub}>כך מתחלקת ההוצאה החודשית הממוצעת בין הקטגוריות</div>
-            <div className={styles.flowToggle} role="group" aria-label="חלוקה">
-              <button type="button" aria-pressed={donutView === 'cat'} className={donutView === 'cat' ? styles.flowToggleActive : ''} onClick={() => setDonutView('cat')}>לפי קטגוריה</button>
-              <button type="button" aria-pressed={donutView === 'type'} className={donutView === 'type' ? styles.flowToggleActive : ''} onClick={() => setDonutView('type')}>לפי סוג</button>
+            <div className={layout.boxHead}>
+              <h3 className={layout.boxTitleInline}>לאן הולך הכסף</h3>
+              <div className={styles.flowToggle} role="group" aria-label="חלוקה">
+                <button type="button" aria-pressed={donutView === 'cat'} className={donutView === 'cat' ? styles.flowToggleActive : ''} onClick={() => setDonutView('cat')}>לפי קטגוריה</button>
+                <button type="button" aria-pressed={donutView === 'type'} className={donutView === 'type' ? styles.flowToggleActive : ''} onClick={() => setDonutView('type')}>לפי סוג</button>
+              </div>
             </div>
             {donutItems.length > 0 ? <div className={layout.breakdownBody}>
               <div className={styles.donut} role="img" aria-label={`התפלגות ההוצאות: ${donutItems.map(item => `${item.name}: ${fmt(item.value)}`).join(' · ')}`}>
@@ -687,11 +688,15 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
                   <span className={styles.donutCenterValue}>{fmt(donutTotal)}</span>
                 </div>
               </div>
-              <p className={styles.donutInsight}>
-                {donutView === 'cat'
-                  ? `הקטגוריה הגדולה ביותר היא ${donutItems[0].name}, עם ${Math.round(donutItems[0].value / donutTotal * 100)}% מההוצאות.${donutItems.length > 2 ? ` שלוש הקטגוריות הגדולות יחד הן ${Math.round(donutItems.slice(0, 3).reduce((sum, i) => sum + i.value, 0) / donutTotal * 100)}% מהכסף שיוצא.` : ''}`
-                  : donutItems.map(i => `${i.name}: ${Math.round(i.value / donutTotal * 100)}%`).join(' · ')}
-              </p>
+              <ul className={layout.legend}>
+                {donutItems.map((item, i) => (
+                  <li key={item.name} className={layout.legendItem}>
+                    <span className={layout.legendDot} style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} aria-hidden="true" />
+                    <span className={layout.legendName}>{item.name}</span>
+                    <span className={layout.legendPct}>{Math.round(item.value / donutTotal * 100)}%</span>
+                  </li>
+                ))}
+              </ul>
             </div> : <p className={layout.boxEmpty}>עוד אין כאן הוצאות להציג.</p>}
           </div>
         </div>

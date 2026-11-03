@@ -38,12 +38,12 @@ function NewFamilyModal({ clients, onSave, onClose }) {
   return (
     <Modal title="משפחה חדשה" onClose={onClose}>
       <form className={styles.stack} onSubmit={submit} aria-busy={saving}>
-        <p className={styles.note} style={{ margin: 0 }}>שם למשפחה, ומי נמצא בה: הלקוחות שלך, ואם תרצה גם אתה. לפחות שניים.</p>
+        <p className={styles.note} style={{ margin: 0 }}>תן שם למשפחה ובחר לפחות שני חברים. אפשר לצרף לקוחות וגם את האזור האישי שלך.</p>
         <label className={styles.fieldLabel}>שם המשפחה
           <input className={styles.input} placeholder="למשל, משפחת כהן" value={name} onChange={e => setName(e.target.value)} />
         </label>
         <div className={styles.fieldLabel}>מי במשפחה
-          <input className={styles.input} type="search" placeholder="חיפוש לפי שם או מייל" aria-label="חיפוש חבר משפחה" value={search} onChange={e => setSearch(e.target.value)} />
+          <input className={styles.input} type="search" placeholder="חיפוש לפי שם או אימייל" aria-label="חיפוש חבר משפחה" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <label className={styles.familyChoice}><input className={styles.check} type="checkbox" checked={self} onChange={e => setSelf(e.target.checked)} /><span><strong>אני</strong><small>האזור האישי שלי יהיה חלק מהמשפחה</small></span></label>
         {visible.map(c => (
@@ -52,8 +52,8 @@ function NewFamilyModal({ clients, onSave, onClose }) {
             <span><strong>{labelOf(c)}</strong>{c.name && c.client_email && <small dir="ltr">{c.client_email}</small>}</span>
           </label>
         ))}
-        {!visible.length && <p className={styles.note}>לא נמצאו לקוחות בחיפוש הזה</p>}
-        {saveError && <p className={styles.fieldError} role="alert">המשפחה לא נשמרה. השם והבחירות נשארו כאן — אפשר לנסות שוב.</p>}
+        {!visible.length && <div className={styles.toolbar}><p className={styles.note}>{search.trim() ? 'לא נמצאו לקוחות שמתאימים לחיפוש' : 'אין לקוחות פעילים או ידניים לצירוף כרגע'}</p>{search.trim() && <button type="button" className={styles.btnGhost} onClick={() => setSearch('')}>נקה חיפוש</button>}</div>}
+        {saveError && <p className={styles.fieldError} role="alert">המשפחה לא נשמרה. השם והבחירות נשארו בטופס. אפשר לנסות שוב.</p>}
         <div className={styles.formActions}>
           <span className={styles.cardSub} role="status">נבחרו {total} · נדרשים לפחות שניים</span>
           <button type="submit" className={styles.btn} disabled={saving || !name.trim() || total < 2}>{saving ? 'שומר…' : 'יצירה'}</button>
@@ -123,23 +123,23 @@ export default function Families({ advisorId, links }) {
   return (
     <section className={styles.card}>
       <div className={styles.cardHead}>
-        <h2 className={styles.cardTitle}>משפחות</h2>
+        <div><h2 className={styles.cardTitle}>משפחות</h2><p className={styles.cardSub}>קיבוץ של כמה לקוחות תחת משפחה אחת.</p></div>
         <button type="button" className={styles.btn} onClick={() => setAdding(true)}>משפחה חדשה</button>
       </div>
       {error ? <ErrorState onRetry={load} /> : loading ? <Skeleton height="100px" /> : families.length === 0 ? <div className={styles.emptyState}><span>אין משפחות עדיין.</span></div> : (
         <div className={styles.stack}>
           {families.map(f => (
-            <div key={f.id} className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
+            <div key={f.id} className={styles.familyRow}>
               <div>
                 <strong>{f.name}</strong>
                 <div className={styles.rowMeta}>{members(f).join(' · ')}</div>
               </div>
               {removeError === f.id && <span className={styles.fieldError} role="alert">מחיקת המשפחה לא הושלמה. אפשר לנסות שוב.</span>}
               {confirmingId === f.id ? (
-                <div className={styles.toolbar}>
+                <div className={styles.familyConfirm}><p className={styles.note}>הקיבוץ המשפחתי יימחק. חשבונות הלקוחות לא יימחקו.</p><div className={styles.toolbar}>
                   <button type="button" className={styles.btnGhost} disabled={removing} onClick={() => remove(f.id)}>למחוק את המשפחה?</button>
                   <button type="button" className={styles.btnGhost} disabled={removing} onClick={() => setConfirmingId(null)}>חזרה</button>
-                </div>
+                </div></div>
               ) : <button type="button" className={styles.btnGhost} aria-label={'מחיקת משפחה: ' + f.name} disabled={removing} onClick={() => { setConfirmingId(f.id); setRemoveError(null); }}>מחיקה</button>}
             </div>
           ))}

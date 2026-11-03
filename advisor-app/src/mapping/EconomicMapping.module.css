@@ -439,13 +439,6 @@
 
 :global(#mapping-upload), :global(#mapping-results) { scroll-margin-top: 24px; }
 
-.donutInsight {
-  margin: var(--space-3) 0 0;
-  color: var(--text2);
-  font-size: var(--text-sm);
-  line-height: 1.6;
-}
-
 .donutCenter {
   position: absolute;
   inset: 0;
@@ -476,4 +469,3 @@
 :global(#mapping-results) .actualChart { height: 220px; margin: 0 auto; }
 :global(#mapping-results) .donut { width: 190px; max-width: 100%; height: 190px; margin: 0 auto; }
 :global(#mapping-results) .donutCenterValue { font-size: var(--text-xl); }
-:global(#mapping-results) .donutInsight { margin: 0; }
