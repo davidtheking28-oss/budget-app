@@ -335,6 +335,7 @@
 .settingsGroup { display: flex; flex-direction: column; gap: 12px; padding-block: 16px; border-top: 1px solid var(--border); }
 .settingsHeading { font-size: var(--text-base); color: var(--text); font-weight: 700; margin: 0; }
 .settingsPreview { display: flex; align-items: center; gap: 14px; }
+.settingsPreview > div { min-width: 0; overflow-wrap: anywhere; }
 .settingsPreview small { display: block; color: var(--text2); font-size: var(--text-sm); margin-top: 4px; }
 @media (max-width: 600px) { .settingsRow { grid-template-columns: minmax(0, 1fr); } }
 

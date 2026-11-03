@@ -12,7 +12,7 @@ async function copySignupLink(advisorId) {
   const message = signupMessage(advisorId);
   try {
     await navigator.clipboard.writeText(message);
-    toast('הקישור הועתק, אפשר להדביק ללקוח', 'success');
+    toast('הודעת ההרשמה הועתקה. אפשר לשלוח ללקוח.', 'success');
   } catch {
     window.prompt('העתק את ההודעה ושלח ללקוח:', message);
   }
@@ -62,8 +62,8 @@ export default function SiteSettings({ advisorId }) {
       <section className={styles.card} style={{ padding: 'var(--space-4)' }}>
         <div className={styles.toolbar} style={{ justifyContent: 'space-between' }}>
           <div>
-            <h2 className={styles.sectionHeading}>העתק קישור אתר</h2>
-            <p className={styles.cardSub}>הקישור שהלקוחות נרשמים דרכו. אחרי ההרשמה מזמינים אותם מהמערכת.</p>
+            <h2 className={styles.sectionHeading}>הרשמת לקוחות</h2>
+            <p className={styles.cardSub}>שלח ללקוח את הקישור. לאחר ההרשמה הבקשה תופיע במסך אישור לקוחות.</p>
           </div>
           <button type="button" className={styles.btn} onClick={() => copySignupLink(advisorId)}>העתק קישור</button>
         </div>
@@ -72,21 +72,21 @@ export default function SiteSettings({ advisorId }) {
         <div className={styles.brandingLayout}>
           <h2 className={styles.sectionHeading}>מיתוג</h2>
           <p className={styles.cardSub}>כך העסק שלך יופיע בדוחות שתשתף עם לקוחות.</p>
-          <div className={styles.settingsPreview} style={{ borderInlineStart: '4px solid ' + (profile.brand_color || DEFAULT_BRAND), padding: 14, background: 'var(--surface2)', borderRadius: 'var(--radius-md)' }}>
+          <div className={styles.settingsPreview} style={{ border: '1px solid ' + (profile.brand_color || DEFAULT_BRAND), padding: 14, background: 'var(--surface2)', borderRadius: 'var(--radius-md)' }}>
             {profile.logo_url && <img className={styles.logoPreviewBig} src={profile.logo_url} alt="הלוגו הנוכחי" />}
-            <div><strong>{profile.display_name || 'שם העסק שלך'}</strong><small>תצוגה מקדימה של פרטי המותג</small></div>
+            <div><strong>{profile.display_name || 'שם העסק שלך'}</strong><small>תצוגה מקדימה של המיתוג השמור</small></div>
           </div>
           <div className={styles.settingsGroup + ' ' + styles.settingsFull}>
             <div className={styles.settingsRow}>
               <label className={styles.fieldLabel}>שם העסק
-                <input className={styles.input} value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitName()} placeholder="שם העסק שיופיע בדוחות" />
+                <input className={styles.input} value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && submitName()} placeholder="למשל: כהן ייעוץ כלכלי" />
               </label>
               <button type="button" className={styles.btn} onClick={submitName} disabled={busy === 'name'}>{busy === 'name' ? 'שומר…' : 'שמור שם'}</button>
             </div>
           </div>
           <div className={styles.settingsGroup}>
             <h3 className={styles.settingsHeading}>לוגו העסק</h3>
-            <p className={styles.cardSub}>הלוגו יופיע לצד שם העסק בדוחות.</p>
+            <p className={styles.cardSub}>הלוגו יופיע לצד שם העסק בדוחות. ההעלאה נשמרת מיד.</p>
             <div className={styles.toolbar}>
               <input ref={fileRef} type="file" accept="image/*" className={styles.hiddenFile} onChange={pickLogo} aria-label="העלאת לוגו" />
               <button type="button" className={styles.btnGhost} onClick={() => fileRef.current?.click()} disabled={busy === 'logo'}>{busy === 'logo' ? 'מעלה…' : profile.logo_url ? 'החלף לוגו' : 'העלה לוגו'}</button>
@@ -97,8 +97,8 @@ export default function SiteSettings({ advisorId }) {
             <h3 className={styles.settingsHeading}>צבע המותג</h3>
             <div className={styles.toolbar}>
               <label className={styles.toolbar}>צבע מותג בדוחות<input type="color" className={styles.colorInput} aria-label="צבע מותג בדוחות" value={profile.brand_color || DEFAULT_BRAND} onChange={e => pickColor(e.target.value)} /></label>
-              <span className={styles.rowMeta}>השינוי נשמר אוטומטית</span>
-              {profile.brand_color && <button type="button" className={styles.btnGhost} onClick={() => pickColor(null)}>איפוס</button>}
+              <span className={styles.rowMeta}>בחירת צבע נשמרת מיד</span>
+              {profile.brand_color && <button type="button" className={styles.btnGhost} onClick={() => pickColor(null)}>החזר צבע ברירת מחדל</button>}
             </div>
           </div>
         </div>

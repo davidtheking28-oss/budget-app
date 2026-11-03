@@ -113,7 +113,7 @@ export default function MfaSettings() {
     <section className={styles.card} style={{ padding: 'var(--space-4)' }}>
       <div className={styles.formStack}>
         <h2 className={styles.sectionHeading}>אבטחת חשבון</h2>
-        <p className={styles.cardSub}>יועץ ניגש לנתונים הפיננסיים של לקוחות. אימות דו־שלבי מוסיף קוד מהטלפון לכל התחברות, כך שגם אם הסיסמה תודלף, אי אפשר להיכנס.</p>
+        <p className={styles.cardSub}>אימות דו־שלבי מוסיף קוד מאפליקציית אימות בעת ההתחברות ומסייע להגן על החשבון ועל נתוני הלקוחות.</p>
         {actionError && <p className={styles.fieldError} role="alert">{actionError}</p>}
         {busy && <p className={styles.note} role="status">מבצע את הפעולה…</p>}
         {!enrolling && (
