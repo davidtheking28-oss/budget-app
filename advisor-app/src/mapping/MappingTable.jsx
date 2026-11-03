@@ -36,7 +36,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   const groupLines = cat => {
     const rs = rows.filter(r => r.category === cat);
     const manualRows = rs.filter(r => r.manual && !r.auto);
-    if (quarterManual || manualRows.length <= 1) return [groupOf(cat, rs, 'cat:' + cat)];
+    if (quarterManual || manualRows.length === 0) return [groupOf(cat, rs, 'cat:' + cat)];
     const rest = rs.filter(r => !(r.manual && !r.auto));
     return [...(rest.length ? [groupOf(cat, rest, 'cat:' + cat)] : []), ...manualRows.map(m => groupOf(cat, [m], 'row:' + m.id))];
   };
