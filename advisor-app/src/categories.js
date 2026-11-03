@@ -8,8 +8,21 @@ export const EXPENSE_CATS_BUSINESS = ['שיווק ופרסום','מערכות ו
 export const INCOME_CATS_BUSINESS = ['הכנסות ממכירות','שירותים','פרויקטים','מנויים לקוחות','עמלות','ייעוץ','השקעות','אחר'];
 
 export function withCustomCats(list, settings) {
-  const custom = (settings?.customCats || []).filter(c => typeof c === 'string' && c && !list.includes(c));
+  const custom = [...new Set((settings?.customCats || []).filter(c => typeof c === 'string' && c && !list.includes(c)))];
   return custom.length ? [...list.slice(0, -1), ...custom, list[list.length - 1]] : list;
+}
+export function fixedCatsFor(data) {
+  return [...new Set([...FIXED_CATS, ...(data?.settings?.customFixedCats || []), ...(data?.fixed_expenses || []).map(row => row.id)])].filter(category => typeof category === 'string' && category);
+}
+export function expenseCatsFor(mode, data) {
+  const fixed = new Set(fixedCatsFor(data));
+  const base = mode === 'business' ? EXPENSE_CATS_BUSINESS : EXPENSE_CATS;
+  const customCats = [...(data?.settings?.customCats || []), ...Object.keys(data?.budgets || {}), ...(data?.transactions || []).filter(row => row.type === 'expense').map(row => row.cat)].filter(category => !fixed.has(category));
+  return withCustomCats(base, { customCats }).filter(category => !fixed.has(category));
+}
+export function transactionCatsFor(mode, data, type) {
+  if (type !== 'income') return [...new Set([...expenseCatsFor(mode, data), ...fixedCatsFor(data)])];
+  return withCustomCats(incomeCatsFor(mode), { customCats: [...(data?.settings?.customCats || []), ...(data?.transactions || []).filter(row => row.type === 'income').map(row => row.cat)] });
 }
 export function incomeCatsFor(mode) { return mode === 'business' ? INCOME_CATS_BUSINESS : INCOME_CATS; }
 export function budgetCatsFor(mode) { return mode === 'business' ? EXPENSE_CATS_BUSINESS : BUDGET_CATS; }

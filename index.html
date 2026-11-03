@@ -2906,7 +2906,7 @@ const _CAT_MIGRATE={
   'חינוך':'שונות','תיקונים ואחזקה':'שונות','ביטוח דירה':'שונות','גז':'שונות','צדקה':'שונות','אחר':'שונות'
 };
 function _mergeFixedCatInto(oldKeys,newKey){
-  oldKeys=oldKeys.filter(cat=>!fixedExpenses.some(row=>row.id===cat&&row.linkedSource));
+  oldKeys=oldKeys.filter(cat=>!(userSettings.customFixedCats||[]).includes(cat)&&!fixedExpenses.some(row=>row.id===cat&&row.linkedSource));
   let changed=false;
   const oldFx=fixedExpenses.filter(f=>oldKeys.includes(f.id));
   if(oldFx.length){
@@ -2952,29 +2952,30 @@ function _migrateInsuranceCats(){
   return changed;
 }
 function _migrateCats(){
+  const keepCategory=cat=>FIXED_CATS.includes(cat)||fixedExpenses.some(row=>row.id===cat&&row.linkedSource)||(userSettings.customCats||[]).includes(cat)||(userSettings.customFixedCats||[]).includes(cat)||(typeof _activeMode!=='undefined'&&_activeMode==='business'&&EXPENSE_CATS_BUSINESS.includes(cat));
   let changed=_mergeFixedCatInto(['משכנתא','שכר דירה'],'דיור');
   changed=_mergeFixedCatInto(['מניות'],'הוראת קבע לחסכון')||changed;
   changed=_migrateInsuranceCats()||changed;
   transactions.forEach(t=>{
     if(t.fx&&SAVING_FIXED_CATS.includes(t.cat)&&t.type==='expense'){t.type='saving';changed=true;}
     if(t.type!=='expense'||t.fx)return;
-    const n=fixedExpenses.some(row=>row.id===t.cat&&row.linkedSource)?t.cat:_CAT_MIGRATE[t.cat];
+    const n=keepCategory(t.cat)?t.cat:_CAT_MIGRATE[t.cat];
     if(n&&n!==t.cat){t.cat=n;changed=true;}
   });
   const nb={};
   Object.entries(budgets).forEach(([c,v])=>{
-    const n=FIXED_CATS.includes(c)||fixedExpenses.some(row=>row.id===c&&row.linkedSource)?c:(_CAT_MIGRATE[c]||c);
+    const n=keepCategory(c)?c:(_CAT_MIGRATE[c]||c);
     nb[n]=(nb[n]||0)+v;                 // two old cats can merge into one new one
     if(n!==c)changed=true;
   });
   if(changed)budgets=nb;
   subscriptions.forEach(s=>{
-    const n=_CAT_MIGRATE[s.category];
-    if(n){s.category=n;changed=true;}
+    const n=keepCategory(s.category)?s.category:_CAT_MIGRATE[s.category];
+    if(n&&n!==s.category){s.category=n;changed=true;}
   });
   if(userSettings.customCats&&userSettings.customCats.length){
     const kept=userSettings.customCats
-      .map(c=>_CAT_MIGRATE[c]||c)
+      .map(c=>keepCategory(c)?c:(_CAT_MIGRATE[c]||c))
       .filter(c=>!EXPENSE_CATS.includes(c));
     if(kept.length!==userSettings.customCats.length||kept.some((c,i)=>c!==userSettings.customCats[i])){
       userSettings.customCats=[...new Set(kept)];changed=true;
@@ -3021,16 +3022,21 @@ const FIXED_AUTO={
   'מנויים ושירותים':()=>subscriptions.reduce((s,x)=>s+subME(x),0),
   'ביטוחים':()=>insurances.filter(i=>!i.closed).reduce((s,i)=>s+(parseFloat(i.monthly)||0),0)
 };
-function getEffectiveExpenseCats(){const base=_activeMode==='business'?EXPENSE_CATS_BUSINESS:EXPENSE_CATS;return [...base,...(userSettings.customCats||[]).filter(c=>!base.includes(c))];}
+function getEffectiveExpenseCats(){
+  const base=_activeMode==='business'?EXPENSE_CATS_BUSINESS:EXPENSE_CATS;
+  const fixed=new Set(getEffectiveFixedCats());
+  const custom=[...new Set([...(userSettings.customCats||[]),...Object.keys(budgets),...transactions.filter(t=>t.type==='expense').map(t=>t.cat)].filter(c=>typeof c==='string'&&c&&!base.includes(c)&&!fixed.has(c)))];
+  return [...base.slice(0,-1),...custom,base[base.length-1]].filter(c=>!fixed.has(c));
+}
 function getEffectiveBudgetCats(){return getEffectiveExpenseCats();}
 const EXPENSE_CATS_BUSINESS=['שיווק ופרסום','מערכות ותוכנה','ציוד משרדי','שכר עובדים','חשבונאות ומשפטי','שכירות משרד','תקשורת עסקית','נסיעות עסקיות','ייצוג וארוח','אחסון ולוגיסטיקה','מסים ואגרות','ביטוח עסקי','הדרכות והשתלמויות','פיתוח ומחקר','קניות ציוד','אחר'];
 const INCOME_CATS_BUSINESS=['הכנסות ממכירות','שירותים','פרויקטים','מנויים לקוחות','עמלות','ייעוץ','השקעות','אחר'];
 const CAT_SUBCATS={};
 function getEffectiveCats(type){
-  const isB=_activeMode==='business';
-  const base=type==='income'?(isB?INCOME_CATS_BUSINESS:INCOME_CATS):(isB?EXPENSE_CATS_BUSINESS:EXPENSE_CATS);
-  const custom=(userSettings.customCats||[]).filter(c=>!base.includes(c));
-  return custom.length?[...base.slice(0,-1),...custom,base[base.length-1]]:base;
+  if(type!=='income')return [...new Set([...getEffectiveExpenseCats(),...getEffectiveFixedCats()])];
+  const base=_activeMode==='business'?INCOME_CATS_BUSINESS:INCOME_CATS;
+  const custom=[...new Set([...(userSettings.customCats||[]),...transactions.filter(t=>t.type==='income').map(t=>t.cat)].filter(c=>typeof c==='string'&&c&&!base.includes(c)))];
+  return [...base.slice(0,-1),...custom,base[base.length-1]];
 }
 const INCOME_CATS =['שכר','שכר בן/בת זוג','פרילנס','קצבת ילדים','קצבאות','הכנסה מנכס','מזונות','מתנות','השקעות','אחר'];
 /* Ordered so the largest slice lands on the brand teal/green rather than the indigo
@@ -4026,7 +4032,7 @@ function renderSpendingFlow(income,fixedExp,varExp){
   labels.innerHTML=_sfItem('sf-income',fmt(income),'',incPct+'%','הכנסות')+_sfItem(isDeficit?'sf-deficit':'sf-savings',isDeficit?'−'+fmt(deficitAmt):fmt(savedAmt),isDeficit?'var(--red)':'var(--green)',(base?Math.round((isDeficit?deficitAmt:savedAmt)/base*100):0)+'%',isDeficit?'גירעון':'נחסך')+_sfItem('sf-fixed',fmt(fixedExp),'',fp2+'%','קבועות')+_sfItem('sf-variable',fmt(varExp),'',vp2+'%','משתנות');
 }
 
-function isFixed(t){if(t.fixed!==undefined)return t.fixed;return t.type==='income'||!!t.recurring||fixedExpenses.some(row=>row.id===t.cat&&row.linkedSource);}
+function isFixed(t){if(t.fixed!==undefined)return t.fixed;return t.type==='income'||!!t.recurring||getEffectiveFixedCats().includes(t.cat);}
 
 function haptic(ms=8){if(navigator.vibrate)navigator.vibrate(ms);}
 

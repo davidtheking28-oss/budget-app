@@ -5,7 +5,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import EditButton from '../components/EditButton.jsx';
 import { toast } from '../toast.js';
 import { fmt } from '../format.js';
-import { budgetCatsFor, incomeCatsFor, withCustomCats } from '../categories.js';
+import { transactionCatsFor } from '../categories.js';
 import { formatDate, getMonthTx } from './monthUtils.js';
 import { updateItem, removeItem } from './itemHelpers.js';
 import { filterMonthTx, txPatchFromForm } from './txHelpers.js';
@@ -58,7 +58,7 @@ export default function MonthTransactions({ data, save, mode, year, month }) {
   }
 
   function catOptions(t) {
-    const base = t.type === 'income' ? incomeCatsFor(mode) : withCustomCats(budgetCatsFor(mode), data.settings);
+    const base = transactionCatsFor(mode, data, t.type);
     return base.includes(form.cat) ? base : [form.cat, ...base];
   }
 

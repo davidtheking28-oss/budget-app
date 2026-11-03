@@ -7,7 +7,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { addMonths, getMonthTx, localISODate } from '../budget/monthUtils.js';
 import { addItem } from '../budget/itemHelpers.js';
-import { budgetCatsFor, EXPENSE_CATS, FIXED_CATS, withCustomCats } from '../categories.js';
+import { budgetCatsFor, expenseCatsFor, transactionCatsFor } from '../categories.js';
 import { toast } from '../toast.js';
 import { fmt } from '../format.js';
 import styles from './Business.module.css';
@@ -30,8 +30,7 @@ export default function PersonalExpenses({ userId }) {
   const byCat = {};
   for (const t of month) if (t.type === 'expense') byCat[t.cat || 'שונות'] = (byCat[t.cat || 'שונות'] || 0) + (Number(t.amount) || 0);
 
-  const fixedNames = new Set([...FIXED_CATS, ...(data.fixed_expenses || []).map(f => f.id)]);
-  const tileCats = withCustomCats(EXPENSE_CATS, data.settings).filter(cat => !fixedNames.has(cat));
+  const tileCats = expenseCatsFor(MODE, data);
   const budgetTotal = tileCats.reduce((sum, cat) => sum + (Number(data.budgets?.[cat]) || 0), 0)
     + (data.fixed_expenses || []).reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
 
@@ -64,7 +63,7 @@ export default function PersonalExpenses({ userId }) {
             </label>
             <label className={styles.fieldLabel}>קטגוריה
               <select className={styles.select} value={form.cat} onChange={e => setForm(f => ({ ...f, cat: e.target.value }))}>
-                {withCustomCats(budgetCatsFor(MODE), data.settings).map(c => <option key={c} value={c}>{c}</option>)}
+                {transactionCatsFor(MODE, data, 'expense').map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
             <label className={styles.fieldLabel}>תאריך

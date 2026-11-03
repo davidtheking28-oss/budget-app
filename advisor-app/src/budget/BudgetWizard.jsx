@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { BudgetModeContext } from './useClientBudget.js';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { FIXED_CATS, EXPENSE_CATS, CHART_PALETTE, chartTheme, withCustomCats } from '../categories.js';
+import { FIXED_CATS, CHART_PALETTE, chartTheme, fixedCatsFor, expenseCatsFor, budgetCatsFor } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
 import { monthKeyOf, incomeSourcesFor, budgetActuals, averageMonthSummary } from './budgetMath.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
@@ -52,6 +53,7 @@ function sameCategory(a, b) {
 }
 
 export default function BudgetWizard({ data, save, year, month, focusCategory, onDirtyChange, period, onPeriodChange }) {
+  const mode = useContext(BudgetModeContext);
   const wizardRef = useRef(null);
   useEffect(() => {
     if (!focusCategory) return;
@@ -75,7 +77,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const monthTx = useMemo(() => getMonthTx(data?.transactions, year, month), [data, year, month]);
   const monthlyActual = useMemo(() => budgetActuals(data, monthTx), [data, monthTx]);
   const fixedActual = monthlyActual.fixed;
-  const fixedNameSet = useMemo(() => new Set([...FIXED_CATS, ...(data?.fixed_expenses || []).map(f => f.id)]), [data]);
+  const fixedNameSet = useMemo(() => new Set(fixedCatsFor(data)), [data]);
   const [actualEdits, setActualEdits] = useState({});
   const [savedActualEdits, setSavedActualEdits] = useState({});
   const variableActualBase = monthlyActual.variable;
@@ -102,12 +104,11 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   });
   const [fixed, setFixed] = useState(() => {
     const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
-    const extra = (data?.fixed_expenses || []).filter(f => !FIXED_CATS.includes(f.id));
-    return [...FIXED_CATS.map(name => trackRow({ name, amount: existing[name] ?? '' })), ...extra.map(f => trackRow({ name: f.id, amount: f.amount ?? '', ...(f.savings ? { savings: true } : {}) }))];
+    return fixedCatsFor(data).map(name => trackRow({ name, amount: existing[name] ?? '', ...((data?.fixed_expenses || []).find(row => row.id === name)?.savings ? { savings: true } : {}) }));
   });
   const [variable, setVariable] = useState(() => {
     const existing = data?.budgets || {};
-    return withCustomCats(EXPENSE_CATS, data?.settings).map(name => trackRow({ name, amount: existing[name] ?? '' }));
+    return expenseCatsFor(mode, data).map(name => trackRow({ name, amount: existing[name] ?? '' }));
   });
   const [goals] = useState(() =>
     (data?.goals || []).map(g => ({ id: g.id, name: g.name || '', target: g.target ?? '', months: g.months ?? '', saved: g.saved || 0 }))
@@ -217,6 +218,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       return {
         settings: {
           ...(cur.settings || {}),
+          customCats: [...new Set([...(cur.settings?.customCats || []), ...cleanVar.map(row => row.name.trim()).filter(name => !budgetCatsFor(mode).includes(name))])],
+          customFixedCats: [...new Set([...(cur.settings?.customFixedCats || []), ...cleanFixed.map(row => row.id).filter(name => !FIXED_CATS.includes(name))])],
           incomeSources: cleanIncomes,
           incomeHistory: {
             ...(cur.settings?.incomeHistory || { '0000-00': cur.settings?.incomeSources || [] }),

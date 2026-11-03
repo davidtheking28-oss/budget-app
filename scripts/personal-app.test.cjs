@@ -223,7 +223,7 @@ test('a successful cloud write leaves the displayed status synchronized rather t
 });
 
 function insuranceContext(){
- const ctx=functions(['_fxUpsert','_fxPushMonth','_expAddInsurance','_expEditInsurance','_expDeleteInsurance','_mergeFixedCatInto','_migrateInsuranceCats'],{transactions:[],insurances:[],fixedExpenses:[],budgets:{},SAVING_FIXED_CATS:[],_syncMeta:{del:{tx:{}}},_curMonthKey:()=> '2026-10',_fxTxId:(m,c)=>'fx|'+m+'|'+c,renderTxPage:()=>{},showToast:()=>{},promptSheet:async()=>['Health','120']});
+ const ctx=functions(['_fxUpsert','_fxPushMonth','_expAddInsurance','_expEditInsurance','_expDeleteInsurance','_mergeFixedCatInto','_migrateInsuranceCats'],{transactions:[],insurances:[],fixedExpenses:[],budgets:{},SAVING_FIXED_CATS:[],userSettings:{},_syncMeta:{del:{tx:{}}},_curMonthKey:()=> '2026-10',_fxTxId:(m,c)=>'fx|'+m+'|'+c,renderTxPage:()=>{},showToast:()=>{},promptSheet:async()=>['Health','120']});
  ctx._fxMonthly=()=>ctx.insurances.reduce((s,i)=>s+i.monthly,0);ctx.saveData=()=>{ctx.saved=ctx.transactions.reduce((s,t)=>s+t.amount,0);};ctx.showUndoToast=(_,undo)=>{ctx.undo=undo;};return ctx;
 }
 test('insurance add, edit, delete and undo persist the current cash flow immediately',async()=>{
@@ -732,6 +732,25 @@ test('re-reading unchanged linked categories does not schedule another normaliza
 });
 
 test('recorded expenses in linked fixed categories appear under fixed cash flow',()=>{
-  const ctx=vm.createContext({fixedExpenses:[{id:'חשמל',linkedSource:'mapping'}]});vm.runInContext(html.split('\n').find(line=>line.startsWith('function isFixed(')),ctx);
+  const ctx=vm.createContext({fixedExpenses:[{id:'חשמל',linkedSource:'mapping'}],getEffectiveFixedCats:()=>['חשמל']});vm.runInContext(html.split('\n').find(line=>line.startsWith('function isFixed(')),ctx);
   assert.equal(ctx.isFixed({type:'expense',cat:'חשמל'}),true);assert.equal(ctx.isFixed({type:'expense',cat:'מזון לבית'}),false);assert.equal(ctx.isFixed({type:'expense',cat:'חשמל',fixed:false}),false);
+});
+
+
+test('client variable and transaction category lists include synced custom categories without fixed duplicates',()=>{
+  const ctx=functions(['getEffectiveExpenseCats','getEffectiveCats'],{_activeMode:'personal',EXPENSE_CATS:['מזון לבית','שונות'],EXPENSE_CATS_BUSINESS:['שיווק ופרסום','אחר'],INCOME_CATS:['שכר','אחר'],INCOME_CATS_BUSINESS:['הכנסות ממכירות','אחר'],userSettings:{customCats:['לימוד אישי','חשמל','לימוד אישי']},budgets:{'תחזוקת אתר':300,'משכנתא':3000},transactions:[{type:'expense',cat:'טיול עבודה'}],getEffectiveFixedCats:()=>['חשמל','משכנתא','אחזקת ציוד']});
+  const variable=Array.from(ctx.getEffectiveExpenseCats());assert.ok(variable.includes('תחזוקת אתר'));assert.ok(variable.includes('טיול עבודה'));assert.ok(!variable.includes('חשמל'));assert.equal(new Set(variable).size,variable.length);
+  assert.ok(ctx.getEffectiveCats('expense').includes('משכנתא'));assert.ok(ctx.getEffectiveCats('expense').includes('אחזקת ציוד'));
+  ctx._activeMode='business';assert.ok(ctx.getEffectiveExpenseCats().includes('שיווק ופרסום'));assert.ok(!ctx.getEffectiveExpenseCats().includes('מזון לבית'));
+});
+
+test('business other and intentionally registered legacy names survive client migration',()=>{
+  const ctx=insuranceContext();Object.assign(ctx,{_activeMode:'business',EXPENSE_CATS_BUSINESS:['שיווק ופרסום','אחר'],FIXED_CATS:['חשמל'],EXPENSE_CATS:[],_CAT_MIGRATE:{'אחר':'שונות','חינוך':'שונות'},subscriptions:[],userSettings:{customCats:['חינוך']}});
+  ctx.transactions=[{type:'expense',cat:'אחר'},{type:'expense',cat:'חינוך'}];ctx.budgets={'אחר':300,'חינוך':100};
+  vm.runInContext(html.match(/function _migrateCats\([^]*?\n\}/)[0],ctx);assert.equal(ctx._migrateCats(),false);assert.equal(ctx.transactions[0].cat,'אחר');assert.equal(ctx.transactions[1].cat,'חינוך');assert.equal(ctx.budgets['אחר'],300);
+});
+
+
+test('explicit custom fixed names do not get merged into legacy housing names',()=>{
+ const ctx=insuranceContext();ctx.userSettings={customFixedCats:['משכנתא']};ctx.fixedExpenses=[{id:'משכנתא',amount:3000}];ctx._mergeFixedCatInto(['משכנתא'],'דיור');assert.equal(ctx.fixedExpenses[0].id,'משכנתא');
 });

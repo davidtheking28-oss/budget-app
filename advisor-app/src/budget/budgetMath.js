@@ -1,4 +1,4 @@
-import { FIXED_CATS } from '../categories.js';
+import { fixedCatsFor } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
 
 // Mirrors _budgetCarry in the client app (index.html): when the client has budget rollover
@@ -77,7 +77,7 @@ export function monthSummary(data, year, month) {
 
 
 export function budgetActuals(data, transactions) {
-  const fixedNames = new Set([...FIXED_CATS, ...(data?.fixed_expenses || []).map(row => row.id)]);
+  const fixedNames = new Set(fixedCatsFor(data));
   const savingsNames = new Set(['הוראת קבע לחסכון', ...(data?.fixed_expenses || []).filter(row => row.savings).map(row => row.id)]);
   const result = { income: 0, fixed: {}, variable: {}, savings: 0 };
   (transactions || []).forEach(transaction => {
