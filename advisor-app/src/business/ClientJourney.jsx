@@ -126,7 +126,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
         <div className={styles.progress} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label="התקדמות בתהליך">
           <div className={styles.progressFill} style={{ width: percent + '%' }} />
         </div>
-        <div className={styles.grid2 + ' ' + styles.cellGrid} style={{ marginTop: 18 }}>
+        <div className={styles.journeyOverview}>
           <div className={styles.cell}>
             <div className={styles.statLabel}>הפגישה הבאה בתהליך</div>
             <div className={styles.statValue} style={{ fontSize: 'var(--text-lg)' }}>{upcoming ? upcoming.title : 'הושלמו כל הפגישות'}</div>
@@ -165,13 +165,12 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
         const data = journey.meetings[m.key];
         return (
           <details key={m.key} className={styles.card + ' ' + styles.journeySection} open={opened[m.key]} onToggle={e => { const open = e.currentTarget.open; setOpened(prev => ({ ...prev, [m.key]: open })); }}>
-            <summary><span>{index + 1} · {m.title}</span><span className={styles.rowMeta}>{data.done ? 'הושלמה' : meetingStatusLabel(data.meetingStatus) || 'להשלמה'}{data.date ? ' · ' + new Date(data.date).toLocaleDateString('he-IL') : ''}</span></summary>
+            <summary><span>{m.title}</span><span className={styles.rowMeta}>{data.done ? 'הושלמה' : meetingStatusLabel(data.meetingStatus) || 'להשלמה'}{data.date ? ' · ' + new Date(data.date).toLocaleDateString('he-IL') : ''}</span></summary>
             <div className={styles.journeyBody}>
             <div className={styles.toolbar}>
-              <h2 className={styles.sectionHeading} style={{ flex: 1 }}>{index + 1} · {m.title}</h2>
               <label className={styles.toolbar} style={{ gap: 8 }}>
                 <input type="checkbox" className={styles.check} checked={data.done} onChange={e => setMeeting(m.key, { done: e.target.checked })} />
-                <span className={styles.rowMeta}>{data.done ? 'בוצעה' : 'לא בוצעה'}</span>
+                <span className={styles.rowMeta}>{data.done ? 'הפגישה הושלמה' : 'סימון הפגישה כהושלמה'}</span>
               </label>
             </div>
 

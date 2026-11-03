@@ -375,3 +375,11 @@
 .journeySummaryHead { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); margin-block-end: var(--space-3); }
 .journeySummaryHead > div { min-width: 0; overflow-wrap: anywhere; }
 .journeyPercent { color: var(--accent); font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+
+.journeyOverview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-block-start: var(--space-4); align-items: stretch; }
+.journeyOverview > .cell { padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-sm); display: flex; flex-direction: column; gap: var(--space-2); }
+.journeyOverview > .cell > .statValue { padding-inline-start: 0; }
+.journeyOverview .fieldLabel { margin-block-start: var(--space-2); }
+.journeySection > summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 1fr) 20px; }
+.journeySection > summary > .rowMeta { text-align: center; }
+@media (max-width: 760px) { .journeyOverview { grid-template-columns: minmax(0, 1fr); } .journeySection > summary { grid-template-columns: minmax(0, 1fr) auto; } .journeySection > summary > .rowMeta { grid-row: 2; text-align: start; } .journeySection > summary::after { grid-column: 2; grid-row: 1 / 3; } }

@@ -5,6 +5,8 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import business from './Business.module.css';
 import styles from './Planner.module.css';
+import { meetingStatusLabel } from './journeyMath.js';
+import { meetingEvents } from './plannerMeetings.js';
 
 const TABLE = 'advisor_biz_records';
 const KIND = 'planner';
@@ -107,6 +109,9 @@ export default function Planner({ advisorId }) {
   const [view, setView] = useState(() => (window.innerWidth < 700 ? 'day' : 'week'));
   const [cursor, setCursor] = useState(() => new Date());
   const [draft, setDraft] = useState(null);
+  const [meetings, setMeetings] = useState([]);
+  const [meetingError, setMeetingError] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [now, setNow] = useState(() => new Date());
   const recordId = useRef(null);
   const latest = useRef(EMPTY);
@@ -161,6 +166,36 @@ export default function Planner({ advisorId }) {
     saveChain.current = saveChain.current.then(persist);
   }, [persist]);
 
+  useEffect(() => {
+    if (!advisorId) return;
+    let alive = true, request = 0;
+    const refresh = async () => {
+      const current = ++request;
+      try {
+        const [appointments, clients] = await Promise.all([
+          supabase.from('advisor_meetings').select('id,client_id,scheduled_at,status,for_client,notes').eq('advisor_id', advisorId),
+          supabase.from('advisor_clients').select('client_id,name,client_email').eq('advisor_id', advisorId)
+        ]);
+        if (!alive || current !== request) return;
+        if (appointments.error || clients.error) { setMeetingError(true); return; }
+        setMeetings(meetingEvents(appointments.data || [], clients.data || []));
+        setMeetingError(false);
+      } catch { if (alive && current === request) setMeetingError(true); }
+    };
+    refresh();
+    const onFocus = () => { if (!document.hidden) refresh(); };
+    const timer = window.setInterval(onFocus, 15000);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('online', onFocus);
+    return () => { alive = false; window.clearInterval(timer); window.removeEventListener('focus', onFocus); window.removeEventListener('online', onFocus); };
+  }, [advisorId]);
+
+  const calendarEvents = useMemo(() => {
+    const events = Object.fromEntries(Object.entries(data?.events || {}).map(([date, items]) => [date, [...items]]));
+    for (const meeting of meetings) events[meeting.date] = [...(events[meeting.date] || []), meeting];
+    return events;
+  }, [data, meetings]);
+
   const weekStart = weekStartOf(cursor);
   const columns = useMemo(() => (view === 'day' ? [cursor] : Array.from({ length: 7 }, (_, i) => addDays(weekStartOf(cursor), i))), [view, cursor]);
   const todayIso = isoOf(now);
@@ -171,14 +206,14 @@ export default function Planner({ advisorId }) {
     let minS = 420;
     let maxE = 1320;
     const perDay = columns.map(d => {
-      const items = (data.events[isoOf(d)] || []).map(ev => ({ ev, s: mins(ev.s), e: mins(ev.e) }));
+      const items = (calendarEvents[isoOf(d)] || []).map(ev => ({ ev, s: mins(ev.s), e: mins(ev.e) }));
       for (const it of items) { minS = Math.min(minS, it.s); maxE = Math.max(maxE, it.e); }
       return { d, items };
     });
     const sH = Math.max(0, Math.floor(minS / 60));
     const eH = Math.min(24, Math.ceil(maxE / 60));
     return { sH, eH, perDay: perDay.map(p => ({ d: p.d, items: layoutDay(p.items) })) };
-  }, [data, columns]);
+  }, [data, columns, calendarEvents]);
 
   function openNew(date, start) {
     const s = Math.max(0, Math.min(1380, start));
@@ -186,7 +221,7 @@ export default function Planner({ advisorId }) {
   }
 
   function openAdd() {
-    const list = data.events[selectedIso] || [];
+    const list = calendarEvents[selectedIso] || [];
     let start = 540;
     for (const ev of list) { const e = mins(ev.e); if (e > start && e <= 1320) start = e; }
     openNew(cursor, start);
@@ -245,7 +280,7 @@ export default function Planner({ advisorId }) {
   const bodyH = (layout.eH - layout.sH) * HH;
   const nowM = now.getHours() * 60 + now.getMinutes();
   const totals = CATS.map(c => {
-    const total = columns.reduce((sum, d) => sum + (data.events[isoOf(d)] || []).filter(x => x.t === c.key).reduce((s, x) => s + mins(x.e) - mins(x.s), 0), 0);
+    const total = columns.reduce((sum, d) => sum + (calendarEvents[isoOf(d)] || []).filter(x => x.t === c.key).reduce((s, x) => s + mins(x.e) - mins(x.s), 0), 0);
     return { ...c, hours: Math.round(total / 6) / 10 };
   }).filter(c => c.hours > 0);
 
@@ -270,7 +305,8 @@ export default function Planner({ advisorId }) {
           </div>
         </div>
 
-        <p className={business.note + ' ' + styles.calendarHint}>לחיצה על משבצת ריקה מוסיפה אירוע. לחיצה על אירוע פותחת אותו לעריכה.</p>
+        {meetingError && <p className={business.fieldError} role="alert">לא ניתן לעדכן כרגע את פגישות הלקוחות. יתבצע ניסיון נוסף אוטומטית.</p>}
+        <p className={business.note + ' ' + styles.calendarHint}>לחיצה על משבצת ריקה מוסיפה אירוע. לחיצה על אירוע פותחת אותו לעריכה. פגישות לקוחות מופיעות אוטומטית; לשינוי המועד נכנסים לכרטיס הלקוח.</p>
         <div className={styles.scroll} tabIndex={0} role="region" aria-label="יומן שעות — גלילה לצפייה בכל השעות והימים">
           <div className={view === 'week' ? styles.wide : undefined}>
             <div className={styles.head} style={{ '--n': columns.length }}>
@@ -289,8 +325,9 @@ export default function Planner({ advisorId }) {
               {layout.perDay.map(({ d, items }) => (
                 <div key={isoOf(d)} className={styles.col + (d.getDay() >= 5 ? ' ' + styles.weekend : '') + (isoOf(d) === todayIso ? ' ' + styles.currentDay : '')} style={{ height: bodyH, backgroundSize: `100% ${HH}px` }} onClick={e => { if (e.target === e.currentTarget || e.target.dataset.now) slotClick(e, d); }}>
                   {items.map(it => (
-                    <button key={it.ev.id} type="button" aria-label={`${it.ev.n} · ${it.ev.s}–${it.ev.e} · ${CATS.find(c => c.key === it.ev.t)?.label || ''}`} title={`${it.ev.n} · ${it.ev.s}–${it.ev.e}`} className={styles.event + ' ' + styles['cat_' + it.ev.t]} style={{ top: ((it.s - layout.sH * 60) / 60) * HH, height: Math.max(22, ((it.e - it.s) / 60) * HH - 2), insetInlineStart: `calc(${it.col} * 100% / ${it.cols} + 2px)`, width: `calc(100% / ${it.cols} - 4px)` }} onClick={() => setDraft({ ...it.ev, date: isoOf(d) })}>
+                    <button key={it.ev.id} type="button" aria-label={`${it.ev.n} · ${it.ev.s}–${it.ev.e} · ${it.ev.statusLabel || ''} · ${CATS.find(c => c.key === it.ev.t)?.label || ''}`} title={`${it.ev.n} · ${it.ev.s}–${it.ev.e}`} className={styles.event + ' ' + styles['cat_' + it.ev.t]} style={{ top: ((it.s - layout.sH * 60) / 60) * HH, height: Math.max(22, ((it.e - it.s) / 60) * HH - 2), insetInlineStart: `calc(${it.col} * 100% / ${it.cols} + 2px)`, width: `calc(100% / ${it.cols} - 4px)` }} onClick={() => it.ev.meetingId ? setSelectedMeeting(it.ev) : setDraft({ ...it.ev, date: isoOf(d) })}>
                       <span className={styles.evTitle}>{it.ev.n}</span>
+                      {it.ev.meetingId && <span className={styles.evTitle}>{it.ev.statusLabel}</span>}
                       {it.e - it.s >= 45 && <span className={styles.evTime}>{it.ev.s}–{it.ev.e}</span>}
                     </button>
                   ))}
@@ -308,6 +345,15 @@ export default function Planner({ advisorId }) {
         )}
       </section>
 
+      {selectedMeeting && <Modal title={selectedMeeting.n} onClose={() => setSelectedMeeting(null)}>
+        <div className={business.formGrid}>
+          <p className={business.note}>{longDate(fromIso(selectedMeeting.date))} · {selectedMeeting.s}–{selectedMeeting.e}</p>
+          <strong>{meetingStatusLabel(selectedMeeting.status)}</strong>
+          {selectedMeeting.o && <p className={business.note}>{selectedMeeting.o}</p>}
+          <p className={business.note}>הפגישה מסונכרנת עם כרטיס הלקוח. שינוי מועד או ביטול נעשים בכרטיס הלקוח ומתעדכנים גם כאן. משבצת התצוגה היא שעה.</p>
+          <button type="button" className={business.btnGhost} onClick={() => setSelectedMeeting(null)}>סגירה</button>
+        </div>
+      </Modal>}
       {draft && <EventModal draft={draft} onClose={() => setDraft(null)} onSave={saveEvent} onDelete={deleteEvent} />}
     </div>
   );
