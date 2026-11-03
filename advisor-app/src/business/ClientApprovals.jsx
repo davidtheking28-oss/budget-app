@@ -80,7 +80,7 @@ export default function ClientApprovals({ advisorId }) {
       }
       if (error) { setActionError(row.key); return; }
       setConfirming(null);
-      toast(action === 'approve' ? 'הלקוח אושר' : action === 'remove' ? 'הלקוח נמחק' : action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
+      toast(action === 'approve' ? 'הלקוח אושר' : action === 'remove' ? 'הלקוח נמחק' : action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'reject' ? 'הבקשה נדחתה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
       await reload();
     } catch {
       setActionError(row.key);
@@ -116,7 +116,7 @@ export default function ClientApprovals({ advisorId }) {
     const message = signupMessage(advisorId);
     try {
       await navigator.clipboard.writeText(message);
-      toast('הקישור הועתק, אפשר להדביק ללקוח', 'success');
+      toast('הודעת ההרשמה הועתקה. אפשר לשלוח ללקוח.', 'success');
     } catch {
       window.prompt('העתק את ההודעה ושלח ללקוח:', message);
     }
@@ -158,10 +158,14 @@ export default function ClientApprovals({ advisorId }) {
               <option value="all">כל הסטטוסים</option>
               {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
-            <input className={styles.input} type="search" placeholder="חיפוש לפי מייל..." disabled={busy} aria-label="חיפוש משתמש" value={search} onChange={e => setSearch(e.target.value)} />
+            <input className={styles.input} type="search" placeholder="חיפוש לפי שם או אימייל" disabled={busy} aria-label="חיפוש משתמש" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
         </div>
-        {visible.length === 0 ? <div className={styles.emptyState}><span>אין משתמשים להצגה</span></div> : (
+        {visible.length === 0 ? <div className={styles.emptyState}>
+          <strong>{rows.length ? 'לא נמצאו לקוחות שמתאימים לחיפוש ולסינון' : 'עוד אין לקוחות או בקשות להצגה'}</strong>
+          <p className={styles.note}>{rows.length ? 'אפשר לחפש לפי שם או אימייל, או לחזור לכל הסטטוסים.' : 'שלח ללקוח את קישור ההרשמה. הבקשה תופיע כאן לאחר שיירשם.'}</p>
+          {rows.length > 0 && <button type="button" className={styles.btnGhost} onClick={() => { setSearch(''); setFilter('all'); }}>נקה חיפוש וסינון</button>}
+        </div> : (
           <div className={styles.approvalsGrid + (visible.length <= 3 ? ' ' + layout.shortList : '')}>
             <ul className={styles.userList} aria-label="רשימת משתמשים">
               {visible.map(r => (
@@ -189,7 +193,7 @@ export default function ClientApprovals({ advisorId }) {
                 </div>
                 <div className={layout.facts}>
                   <div><div className={styles.statLabel}>סטטוס</div><div className={styles.rowTitle}>{STATUS_LABEL[selected.kind]}</div></div>
-                  <div><div className={styles.statLabel}>נשלח</div><div className={styles.rowTitle}>{formatDate(selected.createdAt.slice(0, 10))}</div></div>
+                  <div><div className={styles.statLabel}>נוצר בתאריך</div><div className={styles.rowTitle}>{formatDate(selected.createdAt.slice(0, 10))}</div></div>
                 </div>
                 </div>
                 <fieldset className={layout.actionsBlock} disabled={busy} aria-busy={busy}>
