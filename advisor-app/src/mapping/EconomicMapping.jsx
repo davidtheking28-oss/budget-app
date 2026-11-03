@@ -10,6 +10,7 @@ import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, chartTheme } from '../categories
 import { useClientBudget } from '../budget/useClientBudget.js';
 import { addItem } from '../budget/itemHelpers.js';
 import { monthlyEquivalent } from '../budget/Subscriptions.jsx';
+import { currentInstallments } from '../budget/Credit.jsx';
 import MerchantRules from './MerchantRules.jsx';
 import MappingTable from './MappingTable.jsx';
 import MappingCalculators from './MappingCalculators.jsx';
@@ -524,6 +525,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const autoFixedAmounts = budgetData && !data?.skip_auto ? {
     'משכנתא': mortgageMappingAmount(budgetData, data?.transactions || []),
     [LOAN_CATEGORY]: monthlyOf((budgetData.loans || []).filter(x => !x.closed && !x.hidden), 'monthly'),
+    'עסקאות בתשלומים': (budgetData.payments || []).filter(x => !x.closed && !x.hidden && !((parseFloat(x.total) || 0) > 0 && (parseFloat(x.total) || 0) - currentInstallments(x, parseFloat(x.total) || 0) <= 0)).reduce((s, x) => s + (Number(x.amount) || 0), 0),
     'ביטוחים': monthlyOf((budgetData.insurances || []).filter(x => !x.closed), 'monthly'),
     'מנויים ושירותים': (budgetData.subscriptions || []).reduce((s, x) => s + (x.active ? monthlyEquivalent(x.cycle, x.amount || 0) : 0), 0),
     'חינוך, חוגים וקייטנות': monthlyOf(budgetData.education, 'monthly'),
@@ -746,7 +748,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
           {((data?.transactions || []).length > 0 || autoFixedTx.length > 0) && <Button variant="ghost" onClick={resetMapping} disabled={resetting}>{resetting ? 'מאפס…' : 'איפוס המיפוי'}</Button>}
           {data?.skip_auto && (
             <>
-              <span className={styles.resetNote}>הסכומים האוטומטיים מהתקציב (הלוואות, ביטוחים, מנויים, חינוך, שנתיות ומשכנתא) לא מוצגים כרגע.</span>
+              <span className={styles.resetNote}>הסכומים האוטומטיים מהתקציב (הלוואות, תשלומים, ביטוחים, מנויים, חינוך, שנתיות ומשכנתא) לא מוצגים כרגע.</span>
               <Button variant="ghost" onClick={restoreAutoAmounts} disabled={resetting}>החזר סכומים מהתקציב</Button>
             </>
           )}
