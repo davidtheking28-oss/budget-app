@@ -63,29 +63,50 @@ export function useClientCrm(advisorId, clientId, onRestore) {
   const activeRef = useRef(false);
   useEffect(() => { activeRef.current = true; return () => { activeRef.current = false; }; }, []);
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (background = false) => {
     if (!advisorId || !clientId) return;
     const requestId = ++requestIdRef.current;
-    setLoading(true);
-    const [tasksRes, meetingsRes] = await Promise.all([
-      supabase.from('advisor_tasks').select('*').eq('advisor_id', advisorId).eq('client_id', clientId).order('created_at', { ascending: false }),
-      supabase.from('advisor_meetings').select('*').eq('advisor_id', advisorId).eq('client_id', clientId).order('scheduled_at', { ascending: true })
-    ]);
-    if (requestId !== requestIdRef.current) return;
-    const firstError = tasksRes.error || meetingsRes.error;
-    if (firstError) { setError(firstError); setLoading(false); return; }
-    setError(null);
-    setTasks((tasksRes.data || []).sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
-    setMeetings(meetingsRes.data || []);
-    setLoading(false);
+    if (!background) setLoading(true);
+    try {
+      const [tasksRes, meetingsRes] = await Promise.all([
+        supabase.from('advisor_tasks').select('*').eq('advisor_id', advisorId).eq('client_id', clientId).order('created_at', { ascending: false }),
+        supabase.from('advisor_meetings').select('*').eq('advisor_id', advisorId).eq('client_id', clientId).order('scheduled_at', { ascending: true })
+      ]);
+      if (requestId !== requestIdRef.current) return;
+      const firstError = tasksRes.error || meetingsRes.error;
+      if (firstError) throw firstError;
+      setError(null);
+      setTasks((tasksRes.data || []).sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
+      setMeetings(meetingsRes.data || []);
+    } catch (err) {
+      if (requestId === requestIdRef.current && !background) setError(err);
+    } finally {
+      if (requestId === requestIdRef.current) setLoading(false);
+    }
   }, [advisorId, clientId]);
 
-  useEffect(() => { reload(); }, [reload]);
+  useEffect(() => { const requests = requestIdRef; reload(); return () => { requests.current++; }; }, [reload]);
+  useEffect(() => {
+    const refresh = () => { if (!document.hidden) reload(true); };
+    const timer = window.setInterval(refresh, 15000);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('online', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('online', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [reload]);
 
   async function addTask(title, dueDate, forClient, details = {}) {
     if (!title.trim()) return false;
-    const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible: details.responsible || 'advisor', task_kind: details.task_kind || 'action', meeting_id: details.meeting_id || null }).select().single();
+    let result;
+    try { result = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible: details.responsible || 'advisor', task_kind: details.task_kind || 'action', meeting_id: details.meeting_id || null }).select().single(); } catch { toast('שגיאה בהוספת המשימות — נסה שוב', 'error'); return false; }
+    const { data, error } = result;
     if (error) { toast('שגיאה בהוספת המשימה', 'error'); return false; }
+    requestIdRef.current++;
     toast('משימה נוספה', 'success');
     setTasks(prev => [data, ...prev].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
     if (data.for_client) notifyTasksInstant([data.id]);
@@ -98,8 +119,11 @@ export function useClientCrm(advisorId, clientId, onRestore) {
     const titles = titlesText.split('\n').map(t => t.trim()).filter(Boolean);
     if (!titles.length) return false;
     const rows = titles.map(title => ({ advisor_id: advisorId, client_id: clientId, title, due_date: dueDate || null, for_client: !!forClient, responsible: details.responsible || 'advisor', task_kind: details.task_kind || 'action', meeting_id: details.meeting_id || null }));
-    const { data, error } = await supabase.from('advisor_tasks').insert(rows).select();
+    let result;
+    try { result = await supabase.from('advisor_tasks').insert(rows).select(); } catch { toast('שגיאה בהוספת המשימות — נסה שוב', 'error'); return false; }
+    const { data, error } = result;
     if (error) { toast('שגיאה בהוספת המשימות', 'error'); return false; }
+    requestIdRef.current++;
     toast(titles.length > 1 ? `${titles.length} משימות נוספו` : 'משימה נוספה', 'success');
     setTasks(prev => [...data, ...prev].sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
     const forClientIds = data.filter(t => t.for_client).map(t => t.id);
@@ -109,9 +133,12 @@ export function useClientCrm(advisorId, clientId, onRestore) {
 
   async function toggleTask(id, done) {
     const before = tasks.find(t => t.id === id);
+    requestIdRef.current++;
     const stamp = done ? { done_at: new Date().toISOString(), done_by: 'advisor' } : { done_at: null, done_by: null };
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done, ...stamp } : t));
-    const { error } = await supabase.from('advisor_tasks').update({ done, ...stamp }).eq('id', id).eq('advisor_id', advisorId);
+    let error;
+    try { ({ error } = await supabase.from('advisor_tasks').update({ done, ...stamp }).eq('id', id).eq('advisor_id', advisorId)); } catch (err) { error = err; }
+    requestIdRef.current++;
     if (error) { setTasks(prev => prev.map(t => t.id === id ? before : t)); toast('שגיאה בעדכון המשימה', 'error'); return; }
     toast(done ? 'משימה סומנה כהושלמה' : 'משימה סומנה כפתוחה', 'success');
   }
@@ -119,19 +146,26 @@ export function useClientCrm(advisorId, clientId, onRestore) {
   async function editTask(id, title, dueDate, forClient, responsible, kind) {
     if (!title.trim()) return false;
     const before = tasks.find(t => t.id === id);
+    requestIdRef.current++;
     setTasks(prev => prev.map(t => t.id === id ? { ...t, title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible, task_kind: kind } : t));
-    const { error } = await supabase.from('advisor_tasks').update({ title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible, task_kind: kind }).eq('id', id).eq('advisor_id', advisorId);
+    let error;
+    try { ({ error } = await supabase.from('advisor_tasks').update({ title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible, task_kind: kind }).eq('id', id).eq('advisor_id', advisorId)); } catch (err) { error = err; }
+    requestIdRef.current++;
     if (error) { setTasks(prev => prev.map(t => t.id === id ? before : t)); toast('שגיאה בעדכון המשימה', 'error'); return false; }
     toast('המשימה עודכנה', 'success');
+    if (forClient && !before?.for_client) notifyTasksInstant([id]);
     return true;
   }
 
   async function deleteTask(id) {
     const removed = tasks.find(t => t.id === id);
-    const { error } = await supabase.from('advisor_tasks').delete().eq('id', id).eq('advisor_id', advisorId);
-    if (error) { toast('שגיאה במחיקה', 'error'); return; }
+    let error;
+    try { ({ error } = await supabase.from('advisor_tasks').delete().eq('id', id).eq('advisor_id', advisorId)); } catch (err) { error = err; }
+    if (error) { toast('שגיאה במחיקה', 'error'); return false; }
+    requestIdRef.current++;
     setTasks(prev => prev.filter(t => t.id !== id));
     toast('המשימה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addTask(removed.title, removed.due_date, removed.for_client, removed) } : null);
+    return true;
   }
 
   async function addMeeting(scheduledAt, notesText, forClient = true) {

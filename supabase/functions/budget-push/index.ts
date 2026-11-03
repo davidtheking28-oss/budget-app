@@ -116,12 +116,13 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     })
     const { data: tasks } = await userClient.from('advisor_tasks')
-      .select('id,client_id,title,for_client').in('id', taskIds).eq('for_client', true)
+      .select('id,client_id,title,for_client').in('id', taskIds).eq('for_client', true).eq('done', false)
     if (!tasks?.length) return new Response(JSON.stringify({ sent: 0 }), { headers: CORS })
 
     const clientId = tasks[0].client_id
-    const { data: subs } = await admin.from('push_subscriptions').select('*').eq('user_id', clientId)
-    if (!subs?.length) return new Response(JSON.stringify({ sent: 0 }), { headers: CORS })
+    const { data: allSubs } = await admin.from('push_subscriptions').select('*').eq('user_id', clientId)
+    const subs = (allSubs || []).filter((sub) => sub.prefs?.advisor !== false)
+    if (!subs.length) return new Response(JSON.stringify({ sent: 0 }), { headers: CORS })
 
     const fresh = []
     for (const t of tasks.filter((x) => x.client_id === clientId)) {
@@ -153,6 +154,9 @@ Deno.serve(async (req) => {
           await admin.from('push_subscriptions').delete().eq('endpoint', sub.endpoint)
         }
       }
+    }
+    if (!sent) {
+      await admin.from('push_log').delete().eq('user_id', clientId).eq('kind', 'advisor_task').in('key', fresh.map((task) => task.id))
     }
     return new Response(JSON.stringify({ sent }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
   }

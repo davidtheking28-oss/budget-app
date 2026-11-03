@@ -5030,18 +5030,24 @@ let _advisorOverdraft={balance:0};
 let _advisorTasks=[];
 let _advisorTasksError=false;
 let _advisorMeetings=[];
+let _advisorTaskRequest=0;
+const _advisorTaskPending=new Set();
 async function _loadAdvisorTasks(){
+  const request=++_advisorTaskRequest;
   _advisorTasksError=false;
   if(!_sb||!_cloudUser||!_advisorLink||_advisorLink.status!=='active'){_advisorTasks=[];_advisorMeetings=[];return;}
+  const clientId=_cloudUser.id,advisorId=_advisorLink.advisor_id;
+  const current=()=>request===_advisorTaskRequest&&_cloudUser?.id===clientId&&_advisorLink?.advisor_id===advisorId&&_advisorLink?.status==='active';
   try{
     const [tasksRes,meetingsRes]=await Promise.all([
-      _sb.from('advisor_tasks').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('due_date',{ascending:true,nullsFirst:false}),
-      _sb.from('advisor_meetings').select('*').eq('client_id',_cloudUser.id).eq('for_client',true).order('scheduled_at',{ascending:true})
+      _sb.from('advisor_tasks').select('*').eq('client_id',clientId).eq('advisor_id',advisorId).eq('for_client',true).order('due_date',{ascending:true,nullsFirst:false}),
+      _sb.from('advisor_meetings').select('*').eq('client_id',clientId).eq('advisor_id',advisorId).eq('for_client',true).order('scheduled_at',{ascending:true})
     ]);
+    if(!current())return;
     if(tasksRes.error||meetingsRes.error)throw tasksRes.error||meetingsRes.error;
-    _advisorTasks=tasksRes.data||[];
+    _advisorTasks=(tasksRes.data||[]).map(row=>{const pending=_advisorTaskPending.has(row.id)&&_advisorTasks.find(t=>t.id===row.id);return pending?{...row,done:pending.done,done_at:pending.done_at,done_by:pending.done_by}:row;});
     _advisorMeetings=meetingsRes.data||[];
-  }catch(e){_advisorTasksError=true;}
+  }catch(e){if(current())_advisorTasksError=true;}
 }
 function _advisorSeenSet(){
   try{return new Set(JSON.parse(localStorage.getItem('budget_advisor_seen')||'[]'));}catch(e){return new Set();}
@@ -5075,19 +5081,33 @@ async function _pollAdvisorItems(){
   const onPage=document.getElementById('page-analytics')?.classList.contains('active');
   if(onPage){renderTasksPage();_markAdvisorItemsSeen();}else _updateTasksBadge();
 }
-setInterval(()=>{if(!document.hidden)_pollAdvisorItems();},60000);
+setInterval(()=>{if(!document.hidden)_pollAdvisorItems();},15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)_pollAdvisorItems();});
+window.addEventListener('online',_pollAdvisorItems);
+window.addEventListener('focus',_pollAdvisorItems);
 function _heDateTime(iso){
   const d=new Date(iso);
   return d.getDate()+' ב'+HE_MONTHS_LONG[d.getMonth()]+', '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
 async function toggleAdvisorTask(id,done){
-  const t=_advisorTasks.find(x=>x.id===id);if(!t)return;
-  const prev=t.done;t.done=done;renderTasksPage();
+  const t=_advisorTasks.find(x=>x.id===id);if(!t||_advisorTaskPending.has(id)||!_cloudUser)return;
+  const clientId=_cloudUser.id,advisorId=_advisorLink?.advisor_id;
+  const current=()=>_cloudUser?.id===clientId&&_advisorLink?.advisor_id===advisorId;
+  const prev={done:t.done,done_at:t.done_at,done_by:t.done_by};
+  _advisorTaskPending.add(id);++_advisorTaskRequest;
+  Object.assign(t,{done,done_at:done?new Date().toISOString():null,done_by:done?'client':null});renderTasksPage();
   try{
     const {data,error}=await _sb.rpc('set_task_done',{p_task_id:id,p_done:done});
     if(error||!data)throw error||new Error('task update failed');
-  }catch(e){t.done=prev;renderTasksPage();showToast('❌ עדכון המשימה נכשל — נסה שוב');}
+  }catch(e){
+    if(current()){
+      const item=_advisorTasks.find(x=>x.id===id);if(item)Object.assign(item,prev);
+      showToast('❌ עדכון המשימה נכשל — נסה שוב');
+    }
+  }finally{
+    _advisorTaskPending.delete(id);
+    if(current()){++_advisorTaskRequest;renderTasksPage();}
+  }
 }
 function renderTasksPage(){
   const noAdvisor=document.getElementById('tasksNoAdvisor');
@@ -5123,7 +5143,7 @@ function renderTasksPage(){
   const _multiTasks=_openTasks.length>1;
   const _taskCard=(t,num,done)=>
     '<label class="budget-tx-card" style="display:flex;align-items:center;gap:12px;cursor:pointer'+(done?';opacity:.6':'')+'">'
-      +'<input type="checkbox" data-task-id="'+esc(t.id)+'"'+(done?' checked':'')+' style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0" aria-label="סמן '+esc(t.title)+(done?' כלא בוצע':' כבוצע')+'"/>'
+      +'<input type="checkbox" data-task-id="'+esc(t.id)+'"'+(done?' checked':'')+(_advisorTaskPending.has(t.id)?' disabled aria-busy="true"':'')+' style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0" aria-label="סמן '+esc(t.title)+(done?' כלא בוצע':' כבוצע')+'"/>'
       +'<div style="flex:1;min-width:0">'
         +'<div class="budget-tx-desc"'+(done?' style="text-decoration:line-through"':'')+'>'+(num?'<span style="color:var(--text3);font-weight:700">'+num+'. </span>':'')+esc(t.title)+'</div>'
         +(t.due_date?'<div class="budget-tx-date">יעד: '+heDate(t.due_date)+'</div>':'')

@@ -349,17 +349,17 @@ test('navigation highlight remains centered while the icon is pressed and accoun
 test('failed advisor task updates restore the task for response and network errors',async()=>{
  for(const rpc of [async()=>({error:{message:'denied'},data:null}),async()=>{throw new Error('offline');},async()=>({data:false,error:null})]){
   const task={id:'task',done:false};let notices=0;
-  const ctx=functions(['toggleAdvisorTask'],{_advisorTasks:[task],_sb:{rpc},renderTasksPage:()=>{},showToast:()=>{notices++;}});
+  const ctx=functions(['toggleAdvisorTask'],{_advisorTaskPending:new Set(),_advisorTaskRequest:0,_cloudUser:{id:'client'},_advisorLink:{status:'active',advisor_id:'advisor'},_advisorTasks:[task],_sb:{rpc},renderTasksPage:()=>{},showToast:()=>{notices++;}});
   await ctx.toggleAdvisorTask('task',true);assert.equal(task.done,false);assert.equal(notices,1);
  }
- const task={id:'task',done:false};const ctx=functions(['toggleAdvisorTask'],{_advisorTasks:[task],_sb:{rpc:async()=>({data:true,error:null})},renderTasksPage:()=>{},showToast:()=>{throw new Error('unexpected failure');}});
+ const task={id:'task',done:false};const ctx=functions(['toggleAdvisorTask'],{_advisorTaskPending:new Set(),_advisorTaskRequest:0,_cloudUser:{id:'client'},_advisorLink:{status:'active',advisor_id:'advisor'},_advisorTasks:[task],_sb:{rpc:async()=>({data:true,error:null})},renderTasksPage:()=>{},showToast:()=>{throw new Error('unexpected failure');}});
  await ctx.toggleAdvisorTask('task',true);assert.equal(task.done,true);
 });
 test('failed advisor reads preserve the last task and meeting lists',async()=>{
  for(const thrown of [false,true]){
   const tasks=[{id:'cached-task'}],meetings=[{id:'cached-meeting'}];
   const query={select(){return this;},eq(){return this;},order:async()=>({error:{message:'offline'},data:null})};
-  const ctx=functions(['_loadAdvisorTasks'],{_advisorTasks:tasks,_advisorMeetings:meetings,_advisorTasksError:false,_cloudUser:{id:'client'},_advisorLink:{status:'active'},_sb:{from:()=>{if(thrown)throw new Error('offline');return query;}}});
+  const ctx=functions(['_loadAdvisorTasks'],{_advisorTaskRequest:0,_advisorTaskPending:new Set(),_advisorTasks:tasks,_advisorMeetings:meetings,_advisorTasksError:false,_cloudUser:{id:'client'},_advisorLink:{status:'active'},_sb:{from:()=>{if(thrown)throw new Error('offline');return query;}}});
   await ctx._loadAdvisorTasks();assert.equal(ctx._advisorTasks,tasks);assert.equal(ctx._advisorMeetings,meetings);assert.equal(ctx._advisorTasksError,true);
  }
 });
@@ -753,4 +753,21 @@ test('business other and intentionally registered legacy names survive client mi
 
 test('explicit custom fixed names do not get merged into legacy housing names',()=>{
  const ctx=insuranceContext();ctx.userSettings={customFixedCats:['משכנתא']};ctx.fixedExpenses=[{id:'משכנתא',amount:3000}];ctx._mergeFixedCatInto(['משכנתא'],'דיור');assert.equal(ctx.fixedExpenses[0].id,'משכנתא');
+});
+
+
+test('advisor tasks from an earlier signed-in client cannot overwrite the current account',async()=>{
+ const pending=[];const sb={from:()=>{const query={select:()=>query,eq:()=>query,order:()=>new Promise(resolve=>pending.push(resolve))};return query;}};
+ const ctx=functions(['_loadAdvisorTasks'],{_sb:sb,_cloudUser:{id:'first'},_advisorLink:{status:'active',advisor_id:'advisor'},_advisorTasks:[],_advisorMeetings:[],_advisorTasksError:false,_advisorTaskRequest:0,_advisorTaskPending:new Set()});
+ const read=ctx._loadAdvisorTasks();ctx._cloudUser={id:'second'};pending[0]({data:[{id:'private-first-client'}]});pending[1]({data:[]});await read;assert.equal(ctx._advisorTasks.length,0);
+});
+
+test('rapid client task toggles send one update until the first one finishes',async()=>{
+ const pending=[];const task={id:'task',done:false};const ctx=functions(['toggleAdvisorTask'],{_advisorTasks:[task],_cloudUser:{id:'client'},_advisorLink:{status:'active',advisor_id:'advisor'},_advisorTaskRequest:0,_advisorTaskPending:new Set(),renderTasksPage:()=>{},showToast:()=>{},_sb:{rpc:()=>new Promise(resolve=>pending.push(resolve))}});
+ const first=ctx.toggleAdvisorTask('task',true);const second=ctx.toggleAdvisorTask('task',false);assert.equal(pending.length,1);pending[0]({data:true});await Promise.all([first,second]);assert.equal(task.done,true);assert.equal(task.done_by,'client');
+});
+
+test('client task update failure restores the open state and allows retry',async()=>{
+ let fail=true;const task={id:'task',done:false};const ctx=functions(['toggleAdvisorTask'],{_advisorTasks:[task],_cloudUser:{id:'client'},_advisorLink:{status:'active',advisor_id:'advisor'},_advisorTaskRequest:0,_advisorTaskPending:new Set(),renderTasksPage:()=>{},showToast:()=>{},_sb:{rpc:async()=>{if(fail)throw Error('offline');return{data:true};}}});
+ await ctx.toggleAdvisorTask('task',true);assert.equal(task.done,false);assert.equal(ctx._advisorTaskPending.size,0);fail=false;await ctx.toggleAdvisorTask('task',true);assert.equal(task.done,true);assert.equal(task.done_by,'client');
 });
