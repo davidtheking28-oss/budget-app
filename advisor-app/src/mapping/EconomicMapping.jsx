@@ -24,7 +24,7 @@ const LOAN_CATEGORY = 'החזר הלוואות + חיוב קבוע';
 const INSURANCE_MOVE_CATS = ['ביטוח חובה', 'ביטוח מקיף'];
 const FOREIGN_ORDERS_CATEGORY = 'הזמנות מחו״ל';
 const MAPPING_EXPENSE_CATS = [...EXPENSE_CATS.slice(0, -1), FOREIGN_ORDERS_CATEGORY, ...FIXED_KEYS.filter(c => !EXPENSE_CATS.includes(c)), 'שונות'];
-const INCOME_ADD_CATS = [...INCOME_TEMPLATE.map(t => t.key), ...INCOME_CATS.filter(c => !INCOME_TEMPLATE.some(t => t.key === c))];
+const INCOME_ADD_CATS = [...INCOME_TEMPLATE.map(t => t.key), ...INCOME_CATS.filter(c => c !== 'אחר' && !INCOME_TEMPLATE.some(t => t.key === c))];
 const FIXED_ADD_CATS = [...FIXED_TEMPLATE.map(t => t.key), ...FIXED_KEYS.filter(c => !FIXED_TEMPLATE.some(t => t.key === c))];
 const VARIABLE_ADD_CATS = [...VARIABLE_TEMPLATE.map(t => t.key), ...MAPPING_EXPENSE_CATS.filter(c => !FIXED_KEYS.includes(c) && !SAVINGS_KEYS.includes(c) && !VARIABLE_TEMPLATE.some(t => t.key === c))];
 import { supabase, SUPA_URL } from '../supabaseClient.js';
@@ -751,7 +751,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       </section>
 
       <div className={layout.tables}>
-        <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="הכנסות" note="סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" quarterManual separateRows rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
+        <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="הכנסות" note="סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" allowCustom quarterManual separateRows rows={mappingRows.income} template={INCOME_TEMPLATE} addLabel="מקור הכנסה" addCats={INCOME_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('income')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
         <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="חסכונות והשקעות" rows={savingsRows} template={SAVINGS_TEMPLATE} addLabel="שורה" addCats={SAVINGS_KEYS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
         <MappingTable onRenameRow={renameManual} onTopUp={topUpManual} onRemoveEntry={removeManualEntry} title="הוצאות חודשיות קבועות" rows={fixedRows} template={FIXED_TEMPLATE} tag="הוראת קבע" addLabel="הוצאה קבועה" addCats={FIXED_ADD_CATS} hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
         <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע חודשי. סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} allowCustom quarterManual hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />

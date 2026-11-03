@@ -64,6 +64,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
     if (!window.confirm('למחוק את כל ' + manualIds.length + ' הסכומים שהוזנו ידנית בטבלה "' + title + '"?')) return;
     onDeleteMany(manualIds);
   }
+  const shownName = r => (onRenameRow && r.manual && !r.auto ? r.name || r.desc : '') || labelFor(r.category);
   function commitTopUp(r, value) {
     setTopUp(null);
     const v = parseFloat(value);
@@ -89,7 +90,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
     if (allowCustom) {
       const typed = name.trim().replace(/\s+/g, ' ');
       if (!typed) { setError('כתוב שם לקטגוריה'); return; }
-      if (shownNames.includes(norm(typed))) { setError('קטגוריה בשם הזה כבר קיימת'); return; }
+      if (!separateRows && shownNames.includes(norm(typed))) { setError('קטגוריה בשם הזה כבר קיימת'); return; }
       target = addCats.find(c => norm(c) === norm(typed) || norm(labelFor(c)) === norm(typed)) || typed;
     }
     if (!(value > 0)) return;
@@ -114,12 +115,12 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             <span className={styles.name}>
               {selecting && r.manualIds.length > 0 && <input type="checkbox" className={styles.check} aria-label={'בחר שורה: ' + labelFor(r.category)} checked={r.manualIds.every(id => picked.includes(id))} onChange={() => togglePick(r.manualIds)} />}
               {renaming === r.line ? (
-                <input className={styles.nameInput} autoFocus maxLength={40} aria-label="שם השורה" defaultValue={r.name || labelFor(r.category)} onBlur={e => { setRenaming(null); const v = e.target.value.trim(); if (v !== (r.name || labelFor(r.category))) onRenameRow(r.id, v === labelFor(r.category) ? '' : v); }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); else if (e.key === 'Escape') { e.currentTarget.value = r.name || labelFor(r.category); e.currentTarget.blur(); } }} />
+                <input className={styles.nameInput} autoFocus maxLength={40} aria-label="שם השורה" defaultValue={shownName(r)} onBlur={e => { setRenaming(null); const v = e.target.value.trim(); if (v !== (shownName(r))) onRenameRow(r.id, v === labelFor(r.category) ? '' : v); }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); else if (e.key === 'Escape') { e.currentTarget.value = shownName(r); e.currentTarget.blur(); } }} />
               ) : (
                 <>
-                  <span className={styles.nameText}>{r.name || labelFor(r.category)}{r.desc ? ' · ' + r.desc : ''}</span>
-                  {onTopUp && r.manual && !r.auto && r.entries && <button type="button" className={styles.countBtn} disabled={r.entries.length === 0} aria-expanded={openList === r.line} aria-label={'הצג את הסכומים שהוזנו: ' + (r.name || labelFor(r.category))} title="הסכומים שהוזנו" onClick={() => setOpenList(o => (o === r.line ? null : r.line))}>{r.entries.length}</button>}
-                  {onRenameRow && r.manual && !r.auto && <button type="button" className={styles.renameBtn} title="שינוי שם" aria-label={'שינוי שם: ' + (r.name || labelFor(r.category))} onClick={() => setRenaming(r.line)}>✎</button>}
+                  <span className={styles.nameText}>{shownName(r)}{!onRenameRow && r.desc ? ' · ' + r.desc : ''}</span>
+                  {onTopUp && r.manual && !r.auto && r.entries && <button type="button" className={styles.countBtn} disabled={r.entries.length === 0} aria-expanded={openList === r.line} aria-label={'הצג את הסכומים שהוזנו: ' + (shownName(r))} title="הסכומים שהוזנו" onClick={() => setOpenList(o => (o === r.line ? null : r.line))}>{r.entries.length}</button>}
+                  {onRenameRow && r.manual && !r.auto && <button type="button" className={styles.renameBtn} title="שינוי שם" aria-label={'שינוי שם: ' + (shownName(r))} onClick={() => setRenaming(r.line)}>✎</button>}
                 </>
               )}
               {tag && templateKeys.includes(r.category) && <span className={styles.tag}>{tag}</span>}
@@ -180,7 +181,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
               {addCats.map(c => <option key={c} value={c}>{labelFor(c)}</option>)}
             </select>
           )}
-          <input className={styles.addField} aria-label="תיאור (לא חובה)" placeholder="תיאור (לא חובה)" value={desc} onChange={e => setDesc(e.target.value)} />
+          {!(allowCustom && separateRows) && <input className={styles.addField} aria-label={onRenameRow ? "שם (לא חובה)" : "תיאור (לא חובה)"} placeholder={onRenameRow ? "שם (לא חובה)" : "תיאור (לא חובה)"} value={desc} onChange={e => setDesc(e.target.value)} />}
           <input className={styles.addField} aria-label={amountLabel} placeholder={amountLabel} inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} />
           <button type="submit" className={styles.pillBtn + ' ' + styles.pillBtnOn}>הוסף</button>
           <button type="button" className={styles.pillBtn} onClick={closeForm}>ביטול</button>
