@@ -4,7 +4,7 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingTable.module.css';
 
-export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, quarterManual = false, separateRows = false, onRenameRow, onTopUp, onRemoveEntry, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
+export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, quarterManual = false, separateRows = false, showTotal = false, onRenameRow, onTopUp, onRemoveEntry, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
   const [adding, setAdding] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState([]);
@@ -169,6 +169,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
           </div>
         ))}
       </div>
+      {showTotal && <div className={styles.totalRow}><span>{'סה״כ ' + title}</span><span>{fmt(total)}</span></div>}
       {adding ? (
         <form className={styles.addForm} onSubmit={submit}>
           {allowCustom ? (
