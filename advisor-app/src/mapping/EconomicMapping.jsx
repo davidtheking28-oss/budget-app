@@ -382,7 +382,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
 
   async function resetMapping() {
     if (resetting || !data) return;
-    if (!window.confirm('לאפס את כל המיפוי של הלקוח? כל הסכומים, דפי החשבון וההתאמות יימחקו. המיפוי הנוכחי יישמר תחת "מיפויים קודמים" וניתן לשחזר אותו משם.')) return;
+    if (!window.confirm('לאפס את כל המיפוי של הלקוח? כל הסכומים, דפי החשבון וההתאמות יימחקו, וגם הסכומים שנמשכים אוטומטית מהתקציב (ביטוחים, מנויים, חינוך ועוד) לא יוצגו. המיפוי הנוכחי יישמר תחת "מיפויים קודמים" וניתן לשחזר אותו משם.')) return;
     setResetting(true);
     const now = new Date();
     const fallbackStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
@@ -400,6 +400,10 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       transactions: [],
       category_averages: {},
       months_covered: 1,
+      hidden_categories: [],
+      extra_categories: [],
+      category_labels: {},
+      skip_auto: true,
       snapshots
     });
     setResetting(false);
@@ -407,6 +411,14 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
       setQueue([]);
       toast('המיפוי אופס', 'success');
     }
+  }
+
+  async function restoreAutoAmounts() {
+    if (resetting || !data) return;
+    setResetting(true);
+    const ok = await save({ ...data, skip_auto: false });
+    setResetting(false);
+    if (ok !== false) toast('הסכומים מהתקציב חזרו למיפוי', 'success');
   }
 
   async function restoreSnapshot(index, confirmed) {
@@ -507,7 +519,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const cardChargesExcluded = cardCharges.length > 0 && cardCharges.every(t => t.excluded);
   const cardChargesTotal = cardCharges.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
   const monthlyOf = (list, key) => (list || []).reduce((s, x) => s + (Number(x[key]) || 0), 0);
-  const autoFixedAmounts = budgetData ? {
+  const autoFixedAmounts = budgetData && !data?.skip_auto ? {
     'משכנתא': mortgageMappingAmount(budgetData, data?.transactions || []),
     'ביטוחים': monthlyOf((budgetData.insurances || []).filter(x => !x.closed), 'monthly'),
     'מנויים ושירותים': (budgetData.subscriptions || []).reduce((s, x) => s + (x.active ? monthlyEquivalent(x.cycle, x.amount || 0) : 0), 0),
@@ -726,9 +738,15 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
         <MappingTable title="הוצאות חודשיות משתנות" note="ממוצע חודשי. סכום שמוזן ידנית הוא ל-3 החודשים האחרונים ומחולק ב-3" rows={variableRows} template={VARIABLE_TEMPLATE} addLabel="קטגוריה" addCats={VARIABLE_ADD_CATS} allowCustom quarterManual hidden={hiddenCats} onHide={hideCategory} labelFor={labelFor} onAdd={addManual('expense')} onAmount={setManualAmount} onDelete={deleteManual} onDeleteMany={deleteManualMany} />
       </div>
 
-      {(data?.transactions || []).length > 0 && (
+      {((data?.transactions || []).length > 0 || autoFixedTx.length > 0 || data?.skip_auto) && (
         <div className={styles.resetRow}>
-          <Button variant="ghost" onClick={resetMapping} disabled={resetting}>{resetting ? 'מאפס…' : 'איפוס המיפוי'}</Button>
+          {((data?.transactions || []).length > 0 || autoFixedTx.length > 0) && <Button variant="ghost" onClick={resetMapping} disabled={resetting}>{resetting ? 'מאפס…' : 'איפוס המיפוי'}</Button>}
+          {data?.skip_auto && (
+            <>
+              <span className={styles.resetNote}>הסכומים האוטומטיים מהתקציב (ביטוחים, מנויים, חינוך, שנתיות ומשכנתא) לא מוצגים כרגע.</span>
+              <Button variant="ghost" onClick={restoreAutoAmounts} disabled={resetting}>החזר סכומים מהתקציב</Button>
+            </>
+          )}
         </div>
       )}
 

@@ -11,8 +11,16 @@
 
 .resetRow {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-start;
+  gap: var(--space-3);
   margin-top: var(--space-3);
+}
+
+.resetNote {
+  color: var(--text2);
+  font-size: var(--text-sm);
 }
 
 .cardTitle {

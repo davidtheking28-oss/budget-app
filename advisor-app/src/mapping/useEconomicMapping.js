@@ -116,7 +116,7 @@ export function useEconomicMapping(clientUserId, advisorId) {
     if (!clientUserId) return;
     if (cache.get(clientUserId)?.error?.message === 'access_revoked') return false;
     const prev = cache.get(clientUserId)?.data || null;
-    const next = { hidden_categories: prev?.hidden_categories, extra_categories: prev?.extra_categories, category_labels: prev?.category_labels, ...row, advisor_id: advisorId, client_id: clientUserId };
+    const next = { hidden_categories: prev?.hidden_categories, extra_categories: prev?.extra_categories, category_labels: prev?.category_labels, skip_auto: prev?.skip_auto, ...row, advisor_id: advisorId, client_id: clientUserId };
     invalidate(clientUserId);
     setEntry(clientUserId, { data: next, error: null, ts: Date.now() });
     const { error } = await supabase
