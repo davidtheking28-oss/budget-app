@@ -1,5 +1,5 @@
 import { notifyTasksInstant } from '../crm/useClientCrm.js';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
 import { ONBOARDING, MEETINGS, readJourney, journeyProgress, cashflow, currentStage, nextMeeting, journeyAttention, meetingStatusLabel, syncJourneyMeetings } from './journeyMath.js';
@@ -12,6 +12,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
   const [initial] = useState(journey);
   const [taskDraft, setTaskDraft] = useState({});
   const [summaryState, setSummaryState] = useState({});
+  const summaryDirty = useRef(new Set());
   const [opened, setOpened] = useState(() => Object.fromEntries(MEETINGS.map(m => [m.key, m.key === MEETINGS.find(next => !readJourney(row.deal?.journey).meetings[next.key].done)?.key])));
   const [intakeOpen, setIntakeOpen] = useState(() => !ONBOARDING.every(s => readJourney(row.deal?.journey).onboarding[s.key]));
   useEffect(() => {
@@ -23,12 +24,13 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
       try {
         const [tasksRes, meetingsRes] = await Promise.all([
           taskIds.length ? supabase.from('advisor_tasks').select('id, done').in('id', taskIds) : { data: [] },
-          supabase.from('advisor_meetings').select('id, scheduled_at, status, for_client').eq('advisor_id', advisorId).eq('client_id', row.client_id)
+          supabase.from('advisor_meetings').select('id, scheduled_at, status, for_client, summary, decisions').eq('advisor_id', advisorId).eq('client_id', row.client_id)
         ]);
         if (!alive || current !== request || meetingsRes.error) return;
         const doneById = Object.fromEntries((tasksRes.data || []).map(t => [t.id, t.done]));
         setJourney(prev => {
           const next = syncJourneyMeetings(prev, meetingsRes.data || []);
+          for (const key of summaryDirty.current) next.meetings[key] = { ...next.meetings[key], summary: prev.meetings[key].summary, previousSummary: prev.meetings[key].previousSummary };
           return { ...next, meetings: Object.fromEntries(MEETINGS.map(m => [m.key, { ...next.meetings[m.key], tasks: next.meetings[m.key].tasks.map(t => t.id && t.id in doneById ? { ...t, done: doneById[t.id] } : t) }])) };
         });
       } catch { return; }
@@ -68,11 +70,12 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
     const m = journey.meetings[key];
     setSummaryState(prev => ({ ...prev, [key]: 'saving' }));
     try {
-      if (!(await save())) { setSummaryState(prev => ({ ...prev, [key]: 'error' })); return; }
       if (m.meetingId) {
         const { error } = await supabase.from('advisor_meetings').update({ summary: m.summary || null }).eq('id', m.meetingId).eq('advisor_id', advisorId);
         if (error) { setSummaryState(prev => ({ ...prev, [key]: 'error' })); return; }
       }
+      if (!(await save())) { setSummaryState(prev => ({ ...prev, [key]: 'error' })); return; }
+      summaryDirty.current.delete(key);
       setSummaryState(prev => ({ ...prev, [key]: 'saved' }));
     } catch {
       setSummaryState(prev => ({ ...prev, [key]: 'error' }));
@@ -165,7 +168,7 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
         const data = journey.meetings[m.key];
         return (
           <details key={m.key} className={styles.card + ' ' + styles.journeySection} open={opened[m.key]} onToggle={e => { const open = e.currentTarget.open; setOpened(prev => ({ ...prev, [m.key]: open })); }}>
-            <summary><span>{m.title}</span><span className={styles.rowMeta}>{data.done ? 'הושלמה' : meetingStatusLabel(data.meetingStatus) || 'להשלמה'}{data.date ? ' · ' + new Date(data.date).toLocaleDateString('he-IL') : ''}</span></summary>
+            <summary><span>{m.title}</span><span className={styles.rowMeta}>{data.done ? 'הושלמה' : meetingStatusLabel(data.meetingStatus) || 'להשלמה'}{data.date ? ' · ' + new Date(data.date).toLocaleDateString('he-IL') : ''}{data.summary?.trim() ? ' · יש סיכום' : ''}</span></summary>
             <div className={styles.journeyBody}>
             <div className={styles.toolbar}>
               <label className={styles.toolbar} style={{ gap: 8 }}>
@@ -185,9 +188,12 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
             )}
 
             <label className={styles.fieldLabel}>סיכום פגישה
-              <textarea className={styles.input} rows={3} aria-label={'סיכום פגישה: ' + m.title} value={data.summary} onChange={e => setMeeting(m.key, { summary: e.target.value }, false)} onBlur={() => saveSummary(m.key)} disabled={summaryState[m.key] === 'saving'} />
+              <textarea className={styles.input} rows={3} aria-label={'סיכום פגישה: ' + m.title} value={data.summary} onChange={e => { summaryDirty.current.add(m.key); setSummaryState(prev => ({ ...prev, [m.key]: '' })); setMeeting(m.key, { summary: e.target.value }, false); }} onBlur={() => saveSummary(m.key)} disabled={summaryState[m.key] === 'saving'} />
             </label>
 
+            <p className={styles.note}>זהו סיכום הפגישה שמופיע גם בכרטיס הלקוח, תחת פגישות. נשמר ביציאה מהשדה.</p>
+            {data.decisions && <div><div className={styles.sectionLabel}>החלטות שנשמרו בפגישה</div><p className={styles.note} style={{ whiteSpace: 'pre-wrap' }}>{data.decisions}</p></div>}
+            {data.previousSummary && data.previousSummary.trim() !== data.summary.trim() && <details><summary>נוסח נוסף שנשמר בעבר בתהליך</summary><p className={styles.note} style={{ whiteSpace: 'pre-wrap' }}>{data.previousSummary}</p></details>}
             {summaryState[m.key] && <div className={styles.toolbar} role={summaryState[m.key] === 'error' ? 'alert' : 'status'}><span className={summaryState[m.key] === 'error' ? styles.fieldError : styles.note}>{summaryState[m.key] === 'error' ? 'לא הושלמה שמירת הסיכום. הטקסט נשאר כאן.' : summaryState[m.key] === 'saving' ? 'שומר סיכום…' : 'הסיכום נשמר'}</span>{summaryState[m.key] === 'error' && <button type="button" className={styles.btnGhost} onClick={() => saveSummary(m.key)}>נסה לשמור סיכום שוב</button>}</div>}
             <div className={styles.sectionLabel}>{m.balance}</div>
             <div className={styles.grid3}>

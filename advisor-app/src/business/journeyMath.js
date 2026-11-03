@@ -49,6 +49,12 @@ export function syncJourneyMeetings(raw, appointments, now = new Date()) {
   const completed = MEETINGS.filter(step => journey.meetings[step.key].done);
   const past = rows.filter(row => row.status !== 'declined' && Date.parse(row.scheduled_at) <= now.getTime()).slice(-completed.length);
   const assign = (step, row) => {
+    const own = journey.meetings[step.key];
+    if ('summary' in row) {
+      const summary = row.summary || '';
+      const previousSummary = own.summary?.trim() && own.summary.trim() !== summary.trim() ? own.summary : own.previousSummary || '';
+      journey.meetings[step.key] = { ...own, summary, previousSummary: previousSummary.trim() === summary.trim() ? '' : previousSummary, decisions: row.decisions || '' };
+    }
     used.add(row.id);
     journey.meetings[step.key] = { ...journey.meetings[step.key], date: localISODate(new Date(row.scheduled_at)), meetingId: row.id, meetingStatus: row.status === 'pending' && row.for_client === false ? 'scheduled' : row.status || 'pending' };
   };

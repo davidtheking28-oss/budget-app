@@ -25,7 +25,7 @@ export function useClientDeals(advisorId) {
     if (request !== requestRef.current) return;
     const [{ data: deals, error: dealError }, { data: appointments, error: meetingError }] = await Promise.all([
       supabase.from('advisor_client_deals').select('*').eq('advisor_id', advisorId),
-      supabase.from('advisor_meetings').select('id,client_id,scheduled_at,status,for_client').eq('advisor_id', advisorId)
+      supabase.from('advisor_meetings').select('id,client_id,scheduled_at,status,for_client,summary,decisions').eq('advisor_id', advisorId)
     ]);
     if (request !== requestRef.current) return;
     if (dealError || meetingError) throw dealError || meetingError;

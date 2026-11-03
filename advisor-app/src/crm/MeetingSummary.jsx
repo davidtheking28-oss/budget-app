@@ -38,7 +38,7 @@ export default function MeetingSummary({ meeting, tasks, onSave, onAddTasks, onD
       }
     } finally { setBusy(false); }
   }
-  return <details className={styles.summaryBlock}><summary>סיכום, החלטות והמשך עבודה</summary>
+  return <details className={styles.summaryBlock}><summary>{meeting.summary?.trim() ? 'סיכום פגישה שמור, החלטות והמשך עבודה' : 'סיכום, החלטות והמשך עבודה'}</summary>
     <label className={styles.fieldLabel}>סיכום פגישה<textarea disabled={busy} className={styles.textarea} aria-label="סיכום פגישה" value={summary} onChange={e => setSummary(e.target.value)} /></label>
     <label className={styles.fieldLabel}>החלטות שהתקבלו<textarea disabled={busy} className={styles.textarea} aria-label="החלטות שהתקבלו" value={decisions} onChange={e => setDecisions(e.target.value)} /></label>
     <p className={styles.meta}>הסיכום מוצג ללקוח בהתאם להרשאת הפגישה. ההחלטות נשמרות בתיק הפגישה.</p>

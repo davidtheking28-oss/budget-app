@@ -82,3 +82,24 @@ describe('journey and booked meetings synchronization', () => {
     expect(nextMeeting(syncJourneyMeetings(first, [appointments[0], { ...appointments[1], status: 'declined' }], now))).toMatchObject({ date: '', status: 'declined' });
   });
 });
+
+describe('shared meeting summaries', () => {
+  const now = new Date('2026-11-03T15:00:00Z');
+  const booking = { id: 'first', scheduled_at: '2026-11-03T11:00:00Z', summary: 'סיכום שנשמר בכרטיס הפגישה', decisions: 'החלטה שמורה' };
+  it('loads the same saved summary and decisions into the completed journey meeting', () => {
+    const raw = emptyJourney(); raw.meetings.m1.done = true;
+    const result = syncJourneyMeetings(raw, [booking], now);
+    expect(result.meetings.m1).toMatchObject({ summary: booking.summary, decisions: booking.decisions, previousSummary: '' });
+    expect(raw.meetings.m1.summary).toBe('');
+  });
+  it('does not display identical summaries twice', () => {
+    const raw = emptyJourney(); raw.meetings.m1 = { ...raw.meetings.m1, done: true, summary: booking.summary + ' ' };
+    expect(syncJourneyMeetings(raw, [booking], now).meetings.m1.previousSummary).toBe('');
+  });
+  it('preserves different legacy text while displaying the canonical meeting summary', () => {
+    const raw = emptyJourney(); raw.meetings.m1 = { ...raw.meetings.m1, done: true, summary: 'נוסח ישן' };
+    const result = syncJourneyMeetings(raw, [booking], now);
+    expect(result.meetings.m1).toMatchObject({ summary: booking.summary, previousSummary: 'נוסח ישן' });
+    expect(syncJourneyMeetings(result, [{ ...booking, summary: '' }], now).meetings.m1.summary).toBe('');
+  });
+});
