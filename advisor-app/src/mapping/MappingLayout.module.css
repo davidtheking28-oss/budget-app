@@ -1,7 +1,7 @@
 .summaryGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-areas: "flow flow" "comparison breakdown";
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas: "comparison flow breakdown";
   gap: var(--space-4);
   margin-top: var(--space-4);
   align-items: stretch;
@@ -30,19 +30,16 @@
 }
 
 .comparisonPanel { grid-area: comparison; }
+.comparisonPanel > div:last-child { height: 200px; margin-bottom: 0; }
 .breakdownPanel { grid-area: breakdown; }
-.flowSummary.flowSummary { grid-area: flow; display: grid; grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, 1fr)); align-items: center; gap: 20px; max-width: none; margin: 0; padding: 16px 20px; }
-.flowSummary.flowSummary > div:not(:first-child) { padding: 0; padding-inline-start: 20px; border-top: 0; border-inline-start: 1px solid var(--border); }
-.breakdownBody { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr); align-items: center; gap: 18px; margin-top: 14px; }
+.flowSummary.flowSummary { grid-area: flow; max-width: none; margin: 0; padding: 16px 18px; }
+.flowSummary.flowSummary > div:not(:first-child) > span:last-child { font-size: var(--text-xl); font-weight: 800; }
+.breakdownBody { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 12px; margin-top: 12px; }
+.breakdownBody > div:first-child { height: 180px; }
 @media (max-width: 1100px) {
   .summaryGrid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "flow" "comparison" "breakdown"; }
+  .breakdownBody { grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 18px; }
 }
 @media (max-width: 600px) {
-  .flowSummary.flowSummary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .flowSummary.flowSummary > div:first-child { grid-column: 1 / -1; }
-  .flowSummary.flowSummary > div:nth-child(2) { border-inline-start: 0; padding-inline-start: 0; }
   .breakdownBody { grid-template-columns: minmax(0, 1fr); }
 }
-
-.flowSummary.flowSummary > div:not(:first-child) { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-.flowSummary.flowSummary > div:not(:first-child) > span:last-child { font-size: var(--text-xl); font-weight: 800; }

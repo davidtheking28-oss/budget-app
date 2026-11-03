@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { journeyProgress, currentStage, nextMeeting, journeyAttention } from './journeyMath.js';
 import { percentLabel } from './bizMath.js';
 import { fmt } from '../format.js';
@@ -15,6 +15,9 @@ export default function ClientCard({ row, statuses, payments, saveDeal, onBack, 
   const [confirming, setConfirming] = useState(false);
   const [summary, setSummary] = useState(row.deal?.call_summary || '');
   const [summaryStatus, setSummaryStatus] = useState('');
+  const savingSummary = useRef(false);
+  const summaryDraft = useRef(summary);
+  summaryDraft.current = summary;
   const name = row.name || row.client_email;
   const journey = row.deal?.journey;
   const progress = journeyProgress(journey);
@@ -24,6 +27,21 @@ export default function ClientCard({ row, statuses, payments, saveDeal, onBack, 
   const svc = statuses.find(s => s.key === (row.deal?.service_status || 'active'));
   const pay = payments.find(p => p.key === (row.deal?.payment_status || 'unpaid'));
   const initials = name.split(/\s+/).map(w => w[0]).slice(0, 2).join('');
+
+  async function saveSummary() {
+    if (savingSummary.current || summary === (row.deal?.call_summary || '')) return;
+    const value = summary;
+    savingSummary.current = true;
+    setSummaryStatus('saving');
+    try {
+      const saved = await saveDeal(row, { call_summary: value || null });
+      if (summaryDraft.current === value) setSummaryStatus(saved === false ? 'error' : 'saved');
+    } catch {
+      if (summaryDraft.current === value) setSummaryStatus('error');
+    } finally {
+      savingSummary.current = false;
+    }
+  }
 
   return (
     <div className={styles.stack}>
@@ -65,20 +83,16 @@ export default function ClientCard({ row, statuses, payments, saveDeal, onBack, 
       </section>
       {attention.length > 0 && <div className={workspace.attentionLine}><span className={styles.statLabel}>להשלמת הקליטה</span>{attention.map(item => <span key={item} className={styles.pillBtn + ' ' + styles.pillWarn}>{item}</span>)}</div>}
       <section className={workspace.notes}>
-        <div className={workspace.notesHead}><label htmlFor="client-call-summary">סיכום שיחת התאמה</label><span className={styles.rowMeta} role="status">{summaryStatus === 'saving' ? 'שומר…' : summaryStatus === 'saved' ? 'נשמר' : summaryStatus === 'error' ? 'לא נשמר · יש לנסות שוב' : 'נשמר ביציאה מהשדה'}</span></div>
-        <textarea id="client-call-summary" className={styles.input + ' ' + styles.textarea} value={summary} placeholder="מה חשוב לזכור לקראת השיחה הבאה?" onChange={e => { setSummary(e.target.value); setSummaryStatus(''); }} onBlur={async () => {
-          if (summary === (row.deal?.call_summary || '')) return;
-          setSummaryStatus('saving');
-          const saved = await saveDeal(row, { call_summary: summary || null });
-          setSummaryStatus(saved === false ? 'error' : 'saved');
-        }} />
+        <div className={workspace.notesHead}><label htmlFor="client-call-summary">סיכום שיחת התאמה</label><span className={styles.rowMeta} role={summaryStatus === 'error' ? 'alert' : 'status'}>{summaryStatus === 'saving' ? 'שומר…' : summaryStatus === 'saved' ? 'נשמר' : summaryStatus === 'error' ? 'לא נשמר · יש לנסות שוב' : 'נשמר ביציאה מהשדה'}</span></div>
+        <textarea id="client-call-summary" className={styles.input + ' ' + styles.textarea} value={summary} placeholder="מה חשוב לזכור לקראת השיחה הבאה?" onChange={e => { setSummary(e.target.value); setSummaryStatus(''); }} onBlur={saveSummary} />
+        {summaryStatus === 'error' && <button type="button" className={styles.btnGhost} onClick={saveSummary}>נסה לשמור את הסיכום שוב</button>}
       </section>
       <details className={workspace.billing}>
         <summary><span>פרטי העסקה והתשלום</span><span className={styles.pillBtn + ' ' + styles[pay.tone]}>{pay.label}</span></summary>
         <dl className={workspace.billingGrid}>
           <div><dt>מחיר העסקה</dt><dd>{row.deal?.price != null ? fmt(row.deal.price) : '—'}</dd></div>
           <div><dt>אמצעי תשלום</dt><dd>{row.deal?.payment_method || '—'}</dd></div>
-          <div><dt>קבלה</dt><dd>{row.deal?.receipt_issued ? 'הונפקה' : 'לא בוצע'}</dd></div>
+          <div><dt>קבלה</dt><dd>{row.deal?.receipt_issued ? 'הונפקה' : 'לא הונפקה'}</dd></div>
           <div><dt>תאריך הצטרפות</dt><dd>{formatDay(row.created_at)}</dd></div>
           <div><dt>תאריך סיום</dt><dd>{formatDay(row.deal?.ends_at)}</dd></div>
         </dl>

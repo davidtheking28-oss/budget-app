@@ -31,7 +31,10 @@ export function useClientDeals(advisorId) {
     const before = rows;
     const next = { link_id: link.id, advisor_id: advisorId, payment_status: 'unpaid', receipt_issued: false, ...(link.deal || {}), ...patch };
     setRows(prev => prev.map(r => r.id === link.id ? { ...r, deal: next } : r));
-    const { error: err } = await supabase.from('advisor_client_deals').upsert({ ...next, updated_at: new Date().toISOString() });
+    let err;
+    try {
+      ({ error: err } = await supabase.from('advisor_client_deals').upsert({ ...next, updated_at: new Date().toISOString() }));
+    } catch { err = true; }
     if (err) { toast('שגיאה בשמירה', 'error'); setRows(before); return false; }
     return true;
   }
