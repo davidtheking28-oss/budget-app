@@ -1,9 +1,9 @@
 .board { align-items: start; }
 .column { padding: 18px; min-width: 0; }
 .ideaRow { align-items: start; padding-block: 14px; }
-.ideaRow select { min-height: 32px; font-size: var(--text-sm); }
+.ideaRow select { min-height: var(--control-h); font-size: var(--text-sm); }
 .emptyColumn { padding-block: 6px; color: var(--text2); font-size: var(--text-sm); line-height: 1.6; }
-.daily { border-inline-start: 3px solid var(--accent); }
+.daily { background: var(--surface); }
 .dailyTitle { margin-block: 12px 16px; max-width: 70ch; font-size: var(--text-lg); line-height: 1.5; }
 .poolGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0 20px; margin-block-start: 16px; }
 .poolItem { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-block: 14px; border-bottom: 1px solid var(--border); }

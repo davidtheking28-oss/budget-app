@@ -13,8 +13,8 @@ import layout from './VideoIdeas.module.css';
 
 const STATUSES = [
   { key: 'idea', label: 'רעיון', dot: 'var(--text3)', hint: 'עוד אין כאן רעיונות. אפשר לקחת אחד מהמאגר למטה בלחיצה.' },
-  { key: 'filmed', label: 'בצילום', dot: 'var(--accent)', hint: 'טיפ: מצלמים שלושה סרטונים ברצף באותו יום וחוסכים זמן כל השבוע.' },
-  { key: 'published', label: 'פורסם', dot: 'var(--green)', hint: 'טיפ: סרטון שהצליח? מצלמים גרסה שנייה מזווית אחרת.' }
+  { key: 'filmed', label: 'בצילום', dot: 'var(--accent)', hint: 'אין כרגע סרטונים בצילום. כשמתחילים לעבוד על רעיון, מעדכנים את הסטטוס שלו.' },
+  { key: 'published', label: 'פורסם', dot: 'var(--green)', hint: 'סרטונים שסומנו כפורסמו יופיעו כאן.' }
 ];
 
 export default function VideoIdeas({ advisorId }) {
@@ -101,12 +101,12 @@ export default function VideoIdeas({ advisorId }) {
       </div>
 
       <section className={styles.card + ' ' + layout.daily}>
-        <div className={styles.toolbar}><span className={styles.cardSub}>רעיון של היום</span>{daily && <span className={styles.tag}>{daily.topic}</span>}</div>
+        <div className={styles.toolbar}><span className={styles.cardSub}>הצעה מהמאגר</span>{daily && <span className={styles.tag}>{daily.topic}</span>}</div>
         {daily ? (
           <>
             <h3 className={styles.cardTitle + ' ' + layout.dailyTitle}>{daily.text}</h3>
             <div className={styles.toolbar}>
-              <button type="button" className={styles.btn} disabled={adding} onClick={() => addIdea(daily.text, daily.topic)}>להוסיף לרעיונות שלי +</button>
+              <button type="button" className={styles.btn} disabled={adding} onClick={() => addIdea(daily.text, daily.topic)}>הוסף לרעיונות שלי</button>
               <button type="button" className={styles.btnGhost} onClick={() => setOffset(o => o + 1)}>רעיון אחר</button>
             </div>
           </>
@@ -117,7 +117,7 @@ export default function VideoIdeas({ advisorId }) {
         <div className={styles.cardHead}>
           <div className={styles.toolbar}>
             <span className={styles.iconTile} aria-hidden="true">{icons.bulb}</span>
-            <div><h3 className={styles.cardTitle}>מאגר השראה</h3><p className={styles.cardSub}>{available.length} רעיונות מוכנים לסרטונים, לפי נושא. לוחצים על "להוסיף" והרעיון עובר ללוח שלך.</p></div>
+            <div><h3 className={styles.cardTitle}>מאגר השראה</h3><p className={styles.cardSub}>{available.length} רעיונות מוכנים לסרטונים, לפי נושא. הוספה לרעיונות מעבירה את הרעיון ללוח שלך.</p></div>
           </div>
           <button type="button" className={styles.iconBtn} aria-expanded={poolOpen} aria-label={poolOpen ? 'כווץ את המאגר' : 'הרחב את המאגר'} onClick={() => setPoolOpen(o => !o)}>{poolOpen ? '⌃' : '⌄'}</button>
         </div>
@@ -133,7 +133,7 @@ export default function VideoIdeas({ advisorId }) {
                   <div key={p.text} className={layout.poolItem}>
                     <span className={styles.rowMeta}>{p.topic}</span>
                     <span className={styles.rowTitle} style={{ flex: 1 }}>{p.text}</span>
-                    <button type="button" className={styles.btnGhost} style={{ alignSelf: 'flex-start' }} disabled={adding} onClick={() => addIdea(p.text, p.topic)}>להוסיף +</button>
+                    <button type="button" className={styles.btnGhost} style={{ alignSelf: 'flex-start' }} disabled={adding} onClick={() => addIdea(p.text, p.topic)}>הוסף לרעיונות</button>
                   </div>
                 ))}
               </div>
@@ -149,10 +149,10 @@ export default function VideoIdeas({ advisorId }) {
       {modal && (
         <Modal title="רעיון חדש" onClose={() => setModal(false)}>
           <form className={styles.formGrid} onSubmit={submit} aria-busy={adding}>
-            <label className={styles.fieldLabel}>על מה הסרטון<input className={styles.input} value={text} onChange={e => setText(e.target.value)} /></label>
-            {saveError && <p className={styles.fieldError} role="alert">הרעיון לא נשמר. הטקסט נשאר כאן — אפשר לנסות שוב.</p>}
+            <label className={styles.fieldLabel}>על מה הסרטון<textarea className={styles.input + ' ' + styles.textarea} rows={3} placeholder="הנושא, המסר המרכזי או שאלה שהסרטון יענה עליה" value={text} onChange={e => setText(e.target.value)} /></label>
+            {saveError && <p className={styles.fieldError} role="alert">הרעיון לא נשמר. הטקסט נשאר בטופס. אפשר לנסות שוב.</p>}
             <div className={styles.formActions}>
-              <button type="submit" className={styles.btn} disabled={adding}>{adding ? 'שומר…' : 'הוסף'}</button>
+              <button type="submit" className={styles.btn} disabled={adding}>{adding ? 'שומר…' : 'הוסף רעיון'}</button>
               <button type="button" className={styles.btnGhost} onClick={() => setModal(false)}>ביטול</button>
             </div>
           </form>
