@@ -185,8 +185,13 @@ export function useClientCrm(advisorId, clientId, onRestore) {
   async function editMeeting(id, scheduledAt, notesText, forClient) {
     if (!scheduledAt) return false;
     const before = meetings.find(m => m.id === id);
-    setMeetings(prev => prev.map(m => m.id === id ? { ...m, scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient } : m).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
-    const { error } = await supabase.from('advisor_meetings').update({ scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient }).eq('id', id).eq('advisor_id', advisorId);
+    const needsConfirmation = !!forClient && (!before?.for_client || new Date(before.scheduled_at).getTime() !== new Date(scheduledAt).getTime());
+    const patch = { scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient, ...(needsConfirmation ? { status: 'pending', decline_note: null } : {}) };
+    requestIdRef.current++;
+    setMeetings(prev => prev.map(m => m.id === id ? { ...m, ...patch } : m).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
+    let error;
+    try { ({ error } = await supabase.from('advisor_meetings').update(patch).eq('id', id).eq('advisor_id', advisorId)); } catch (err) { error = err; }
+    requestIdRef.current++;
     if (error) { setMeetings(prev => prev.map(m => m.id === id ? before : m)); toast('שגיאה בעדכון הפגישה', 'error'); return false; }
     toast('הפגישה עודכנה', 'success');
     return true;

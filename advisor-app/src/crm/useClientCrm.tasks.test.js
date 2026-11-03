@@ -14,10 +14,10 @@ vi.mock('../supabaseClient.js', () => ({ SUPA_URL: '', supabase: {
     const q = { select: () => q, eq: () => q, order: () => q, single: () => q,
       insert: rows => { write = () => { const made = (Array.isArray(rows) ? rows : [rows]).map((row, i) => ({ id: 'new' + i, done: false, ...row })); state.tasks.push(...made); return made; }; return q; },
       delete: () => { write = () => { state.tasks = []; return []; }; return q; },
-      update: patch => { write = () => { state.tasks = state.tasks.map(row => ({ ...row, ...patch })); return state.tasks; }; return q; },
+      update: patch => { write = () => { const key = table === 'advisor_meetings' ? 'meetings' : 'tasks'; state[key] = state[key].map(row => ({ ...row, ...patch })); return state[key]; }; return q; },
       then: (ok, bad) => {
         if (write ? state.offlineWrite : state.offlineRead) return Promise.reject(new TypeError('Failed to fetch')).then(ok, bad);
-        return Promise.resolve({ data: write ? write() : structuredClone(table === 'advisor_tasks' ? state.tasks : []), error: null }).then(ok, bad);
+        return Promise.resolve({ data: write ? write() : structuredClone(table === 'advisor_tasks' ? state.tasks : table === 'advisor_meetings' ? state.meetings : []), error: null }).then(ok, bad);
       }
     };
     return q;
@@ -25,6 +25,7 @@ vi.mock('../supabaseClient.js', () => ({ SUPA_URL: '', supabase: {
 } }));
 beforeEach(() => {
   Object.assign(state, { values: [], refs: [], effects: [], si: 0, ri: 0, capture: true, offlineRead: false, offlineWrite: false, tasks: [{ id: 'task', title: 'בדיקה', done: false }] });
+  state.meetings = [{ id: 'meeting', scheduled_at: '2026-11-07T13:00:00Z', status: 'confirmed', for_client: true, notes: 'פגישה' }];
   const window = new EventTarget(); window.setInterval = vi.fn(() => 1); window.clearInterval = vi.fn();
   vi.stubGlobal('window', window); const document = new EventTarget(); document.hidden = false; vi.stubGlobal('document', document);
 });
@@ -66,5 +67,24 @@ describe('client task round-trip refresh and offline recovery', () => {
     expect(await view().addTasks('חדשה', '')).toBe(false); expect(view().tasks).toHaveLength(1);
     await view().toggleTask('task', true); expect(view().tasks[0].done).toBe(false);
     state.offlineWrite = false; await view().toggleTask('task', true); expect(view().tasks[0].done).toBe(true);
+  });
+});
+
+describe('meeting rescheduling confirmation', () => {
+  it('requires confirmation again when moving a shared meeting', async () => {
+    const view = await setup();
+    expect(await view().editMeeting('meeting', '2026-11-08T13:00:00Z', 'פגישה', true)).toBe(true);
+    expect(state.meetings[0]).toMatchObject({ status: 'pending', scheduled_at: '2026-11-08T13:00:00Z', decline_note: null });
+    expect(view().meetings[0].status).toBe('pending');
+  });
+  it('keeps confirmation for a notes-only edit', async () => {
+    const view = await setup();
+    expect(await view().editMeeting('meeting', '2026-11-07T13:00:00Z', 'הערה מעודכנת', true)).toBe(true);
+    expect(state.meetings[0].status).toBe('confirmed');
+  });
+  it('restores the original booking when a network write fails', async () => {
+    const view = await setup(); state.offlineWrite = true;
+    expect(await view().editMeeting('meeting', '2026-11-08T13:00:00Z', 'פגישה', true)).toBe(false);
+    expect(view().meetings[0]).toMatchObject({ status: 'confirmed', scheduled_at: '2026-11-07T13:00:00Z' });
   });
 });

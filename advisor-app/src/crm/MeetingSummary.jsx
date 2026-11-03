@@ -6,6 +6,7 @@ import styles from './Crm.module.css';
 
 export default function MeetingSummary({ meeting, tasks, onSave, onAddTasks, onDirtyChange, onChange }) {
   const followRef = useRef(null);
+  const textDirty = useRef(false);
   const [summary, setSummary] = useState(meeting.summary || '');
   const [decisions, setDecisions] = useState(meeting.decisions || '');
   const [titles, setTitles] = useState('');
@@ -13,13 +14,18 @@ export default function MeetingSummary({ meeting, tasks, onSave, onAddTasks, onD
   const [responsible, setResponsible] = useState('client');
   const [kind, setKind] = useState('action');
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (textDirty.current) return;
+    setSummary(meeting.summary || '');
+    setDecisions(meeting.decisions || '');
+  }, [meeting.summary, meeting.decisions]);
   const changed = summary !== (meeting.summary || '') || decisions !== (meeting.decisions || '');
   const dirty = changed || !!titles.trim() || busy;
   useEffect(() => { onDirtyChange(meeting.id, dirty); }, [meeting.id, dirty, onDirtyChange]);
   useEffect(() => { if (titles.trim() && followRef.current) followRef.current.open = true; }, [titles]);
   async function save() {
     setBusy(true);
-    try { if (await onSave(meeting.id, summary.trim(), decisions.trim())) { setSummary(summary.trim()); setDecisions(decisions.trim()); onChange(); } }
+    try { if (await onSave(meeting.id, summary.trim(), decisions.trim())) { textDirty.current = false; setSummary(summary.trim()); setDecisions(decisions.trim()); onChange(); } }
     finally { setBusy(false); }
   }
   async function suggest() {
@@ -39,8 +45,8 @@ export default function MeetingSummary({ meeting, tasks, onSave, onAddTasks, onD
     } finally { setBusy(false); }
   }
   return <details className={styles.summaryBlock}><summary>{meeting.summary?.trim() ? 'סיכום פגישה שמור, החלטות והמשך עבודה' : 'סיכום, החלטות והמשך עבודה'}</summary>
-    <label className={styles.fieldLabel}>סיכום פגישה<textarea disabled={busy} className={styles.textarea} aria-label="סיכום פגישה" value={summary} onChange={e => setSummary(e.target.value)} /></label>
-    <label className={styles.fieldLabel}>החלטות שהתקבלו<textarea disabled={busy} className={styles.textarea} aria-label="החלטות שהתקבלו" value={decisions} onChange={e => setDecisions(e.target.value)} /></label>
+    <label className={styles.fieldLabel}>סיכום פגישה<textarea disabled={busy} className={styles.textarea} aria-label="סיכום פגישה" value={summary} onChange={e => { textDirty.current = true; setSummary(e.target.value); }} /></label>
+    <label className={styles.fieldLabel}>החלטות שהתקבלו<textarea disabled={busy} className={styles.textarea} aria-label="החלטות שהתקבלו" value={decisions} onChange={e => { textDirty.current = true; setDecisions(e.target.value); }} /></label>
     <p className={styles.meta}>הסיכום מוצג ללקוח בהתאם להרשאת הפגישה. ההחלטות נשמרות בתיק הפגישה.</p>
     <div className={styles.workflowActions}><Button disabled={!changed || busy} onClick={save}>שמור סיכום והחלטות</Button><Button variant="ghost" disabled={!summary.trim() || busy} onClick={suggest}>הצע משימות המשך</Button></div>
     <details ref={followRef} className={styles.followup}>
