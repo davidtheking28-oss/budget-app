@@ -48,6 +48,11 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
     if (ids.length > 1 && !window.confirm('למחוק את כל ' + ids.length + ' הסכומים שהוזנו בקטגוריה?')) return;
     onDeleteMany(ids);
   }
+  const manualIds = rows.filter(r => r.manual && !r.auto).map(r => r.id);
+  function resetTable() {
+    if (!window.confirm('למחוק את כל ' + manualIds.length + ' הסכומים שהוזנו ידנית בטבלה "' + title + '"?')) return;
+    onDeleteMany(manualIds);
+  }
   function stopSelecting() { setSelecting(false); setPicked([]); }
   function deletePicked() { onDeleteMany(picked); stopSelecting(); }
 
@@ -152,6 +157,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             <>
               <button type="button" className={styles.pillBtn + ' ' + styles.pillBtnOn} onClick={() => setAdding(true)}>+ {addLabel}</button>
               <button type="button" className={styles.pillBtn} onClick={() => setSelecting(true)}>בחירה מרובה</button>
+              {manualIds.length > 0 && <button type="button" className={styles.pillBtn} onClick={resetTable}>איפוס טבלה</button>}
             </>
           )}
         </div>
