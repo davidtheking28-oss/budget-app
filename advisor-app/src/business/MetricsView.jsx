@@ -10,8 +10,8 @@ import { fmt } from '../format.js';
 import styles from './Business.module.css';
 import metrics from './MetricsView.module.css';
 
-const cost = value => (value === null ? 'אין' : fmt(value));
-const count = value => (value ? value : '—');
+const cost = value => (value === null ? 'לא זמין' : fmt(value));
+const count = value => value ?? 0;
 
 function MarketingStats({ m, title }) {
   return (
@@ -73,7 +73,7 @@ function FunnelStats({ s, title }) {
   );
 }
 
-const funnelCount = (s, value) => (s.total + s.meetings + s.showed + s.relevant + s.closed === 0 ? 'אין' : value);
+const funnelCount = (_s, value) => value ?? 0;
 
 function FunnelTable({ rows, total }) {
   const [showAll, setShowAll] = useState(false);
@@ -147,6 +147,7 @@ function MarketingBody({ advisorId, ym, scope, onNavigate }) {
         </div>
       )}
       <MarketingStats m={stats} title="מדדי שיווק" />
+      <p className={metrics.dataNote}>העלויות מחושבות מתקציב הבוסטים. ״לא זמין״ פירושו שאין עוקבים חדשים, פגישות או סגירות לחישוב העלות המתאימה.</p>
       {scope === 'month' && (
         <>
           <div className={styles.sectionLabel}>נתוני החודש</div>

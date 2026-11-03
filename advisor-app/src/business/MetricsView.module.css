@@ -33,3 +33,5 @@
 
 .salesSummary { padding: var(--space-4) var(--space-5); }
 .salesSummary > div:first-child { margin-bottom: var(--space-3); }
+
+.dataNote { margin: 0; max-width: 70ch; color: var(--text2); font-size: var(--text-xs); line-height: 1.6; }
