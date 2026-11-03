@@ -27,6 +27,8 @@ export const SAVINGS_TEMPLATE = [
 export const FIXED_TEMPLATE = [
   entry('דיור', 'שכר דירה'),
   entry('משכנתא'),
+  entry('החזר הלוואות + חיוב קבוע', 'החזר הלוואות'),
+  entry('עסקאות בתשלומים', 'תשלומים'),
   entry('ועד בית'),
   entry('גז'),
   entry('ארנונה'),
