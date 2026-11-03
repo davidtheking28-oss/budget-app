@@ -10,9 +10,8 @@ export default function MeetingSummary({ meeting, tasks, onSave, onAddTasks, onD
   const [decisions, setDecisions] = useState(meeting.decisions || '');
   const [titles, setTitles] = useState('');
   const [due, setDue] = useState('');
-  const [responsible, setResponsible] = useState('advisor');
+  const [responsible, setResponsible] = useState('client');
   const [kind, setKind] = useState('action');
-  const [visible, setVisible] = useState(false);
   const [busy, setBusy] = useState(false);
   const changed = summary !== (meeting.summary || '') || decisions !== (meeting.decisions || '');
   const dirty = changed || !!titles.trim() || busy;
@@ -34,7 +33,7 @@ export default function MeetingSummary({ meeting, tasks, onSave, onAddTasks, onD
   async function add() {
     setBusy(true);
     try {
-      if (await onAddTasks(titles, due, visible, { responsible, task_kind: kind, meeting_id: meeting.id })) {
+      if (await onAddTasks(titles, due, { responsible, task_kind: kind, meeting_id: meeting.id })) {
         setTitles(''); setDue(''); onChange();
       }
     } finally { setBusy(false); }
@@ -53,7 +52,6 @@ export default function MeetingSummary({ meeting, tasks, onSave, onAddTasks, onD
         <label className={styles.fieldLabel}>אחראי<select disabled={busy} className={styles.input} aria-label="אחראי למשימות ההמשך" value={responsible} onChange={e => setResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select></label>
         <label className={styles.fieldLabel}>סוג<select disabled={busy} className={styles.input} aria-label="סוג משימות ההמשך" value={kind} onChange={e => setKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select></label>
       </div>
-      <label className={styles.forClientLabel}><input disabled={busy} type="checkbox" checked={visible} onChange={e => setVisible(e.target.checked)} />גלוי ללקוח</label>
       <Button disabled={!titles.trim() || busy} onClick={add}>הוסף משימות המשך</Button>
     </details>
   </details>;

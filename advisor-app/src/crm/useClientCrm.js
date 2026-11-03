@@ -21,7 +21,7 @@ async function notifyMeetingInstant(meetingId) {
   } catch { return null; }
 }
 
-async function notifyTasksInstant(taskIds) {
+export async function notifyTasksInstant(taskIds) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return null;
@@ -100,10 +100,10 @@ export function useClientCrm(advisorId, clientId, onRestore) {
     };
   }, [reload]);
 
-  async function addTask(title, dueDate, forClient, details = {}) {
+  async function addTask(title, dueDate, details = {}) {
     if (!title.trim()) return false;
     let result;
-    try { result = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible: details.responsible || 'advisor', task_kind: details.task_kind || 'action', meeting_id: details.meeting_id || null }).select().single(); } catch { toast('שגיאה בהוספת המשימות — נסה שוב', 'error'); return false; }
+    try { result = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: title.trim(), due_date: dueDate || null, for_client: true, responsible: details.responsible || 'client', task_kind: details.task_kind || 'action', meeting_id: details.meeting_id || null }).select().single(); } catch { toast('שגיאה בהוספת המשימות — נסה שוב', 'error'); return false; }
     const { data, error } = result;
     if (error) { toast('שגיאה בהוספת המשימה', 'error'); return false; }
     requestIdRef.current++;
@@ -115,10 +115,10 @@ export function useClientCrm(advisorId, clientId, onRestore) {
 
   // `titlesText` is the raw multi-line textarea value — one task per non-empty line,
   // so the advisor can paste/type a whole list at once instead of one field per task.
-  async function addTasks(titlesText, dueDate, forClient, details = {}) {
+  async function addTasks(titlesText, dueDate, details = {}) {
     const titles = titlesText.split('\n').map(t => t.trim()).filter(Boolean);
     if (!titles.length) return false;
-    const rows = titles.map(title => ({ advisor_id: advisorId, client_id: clientId, title, due_date: dueDate || null, for_client: !!forClient, responsible: details.responsible || 'advisor', task_kind: details.task_kind || 'action', meeting_id: details.meeting_id || null }));
+    const rows = titles.map(title => ({ advisor_id: advisorId, client_id: clientId, title, due_date: dueDate || null, for_client: true, responsible: details.responsible || 'client', task_kind: details.task_kind || 'action', meeting_id: details.meeting_id || null }));
     let result;
     try { result = await supabase.from('advisor_tasks').insert(rows).select(); } catch { toast('שגיאה בהוספת המשימות — נסה שוב', 'error'); return false; }
     const { data, error } = result;
@@ -143,17 +143,17 @@ export function useClientCrm(advisorId, clientId, onRestore) {
     toast(done ? 'משימה סומנה כהושלמה' : 'משימה סומנה כפתוחה', 'success');
   }
 
-  async function editTask(id, title, dueDate, forClient, responsible, kind) {
+  async function editTask(id, title, dueDate, responsible, kind) {
     if (!title.trim()) return false;
     const before = tasks.find(t => t.id === id);
     requestIdRef.current++;
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible, task_kind: kind } : t));
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, title: title.trim(), due_date: dueDate || null, for_client: true, responsible, task_kind: kind } : t));
     let error;
-    try { ({ error } = await supabase.from('advisor_tasks').update({ title: title.trim(), due_date: dueDate || null, for_client: !!forClient, responsible, task_kind: kind }).eq('id', id).eq('advisor_id', advisorId)); } catch (err) { error = err; }
+    try { ({ error } = await supabase.from('advisor_tasks').update({ title: title.trim(), due_date: dueDate || null, for_client: true, responsible, task_kind: kind }).eq('id', id).eq('advisor_id', advisorId)); } catch (err) { error = err; }
     requestIdRef.current++;
     if (error) { setTasks(prev => prev.map(t => t.id === id ? before : t)); toast('שגיאה בעדכון המשימה', 'error'); return false; }
     toast('המשימה עודכנה', 'success');
-    if (forClient && !before?.for_client) notifyTasksInstant([id]);
+    if (!before?.for_client) notifyTasksInstant([id]);
     return true;
   }
 
@@ -164,7 +164,7 @@ export function useClientCrm(advisorId, clientId, onRestore) {
     if (error) { toast('שגיאה במחיקה', 'error'); return false; }
     requestIdRef.current++;
     setTasks(prev => prev.filter(t => t.id !== id));
-    toast('המשימה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addTask(removed.title, removed.due_date, removed.for_client, removed) } : null);
+    toast('המשימה נמחקה', 'success', removed ? { label: 'בטל', onClick: () => addTask(removed.title, removed.due_date, removed) } : null);
     return true;
   }
 

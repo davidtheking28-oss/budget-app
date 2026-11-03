@@ -1,3 +1,4 @@
+import { notifyTasksInstant } from '../crm/useClientCrm.js';
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
@@ -81,8 +82,9 @@ export default function ClientJourney({ advisorId, row, saveDeal, onBack, onOpen
   async function addTask(key) {
     const text = (taskDraft[key] || '').trim();
     if (!text || needClient()) return;
-    const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: text, for_client: true, responsible: 'advisor', meeting_id: journey.meetings[key].meetingId || null }).select().single();
+    const { data, error } = await supabase.from('advisor_tasks').insert({ advisor_id: advisorId, client_id: clientId, title: text, for_client: true, responsible: 'client', meeting_id: journey.meetings[key].meetingId || null }).select().single();
     if (error) { toast('שגיאה בהוספת המשימה', 'error'); return; }
+    notifyTasksInstant([data.id]);
     setMeeting(key, { tasks: [...journey.meetings[key].tasks, { id: data.id, text, done: false }] });
     setTaskDraft(prev => ({ ...prev, [key]: '' }));
   }

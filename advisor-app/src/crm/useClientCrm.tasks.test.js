@@ -50,9 +50,20 @@ describe('client task round-trip refresh and offline recovery', () => {
     expect(await view().deleteTask('task')).toBe(false); expect(view().tasks).toHaveLength(1);
     state.offlineWrite = false; expect(await view().deleteTask('task')).toBe(true); expect(view().tasks).toHaveLength(0);
   });
+  it('shares new client tasks automatically without a visibility argument', async () => {
+    const view = await setup();
+    expect(await view().addTasks('משימה ראשונה\nמשימה שנייה', '2026-11-10')).toBe(true);
+    const added = state.tasks.filter(task => task.id !== 'task');
+    expect(added).toHaveLength(2); expect(added.every(task => task.for_client === true)).toBe(true);
+  });
+  it('shares an edited task without a visibility control', async () => {
+    const view = await setup();
+    expect(await view().editTask('task', 'משימה מעודכנת', '', 'client', 'document')).toBe(true);
+    expect(view().tasks[0]).toMatchObject({ title: 'משימה מעודכנת', for_client: true, responsible: 'client', task_kind: 'document' });
+  });
   it('rejects failed creates and rolls back failed completion before retry', async () => {
     const view = await setup(); state.offlineWrite = true;
-    expect(await view().addTasks('חדשה', '', true)).toBe(false); expect(view().tasks).toHaveLength(1);
+    expect(await view().addTasks('חדשה', '')).toBe(false); expect(view().tasks).toHaveLength(1);
     await view().toggleTask('task', true); expect(view().tasks[0].done).toBe(false);
     state.offlineWrite = false; await view().toggleTask('task', true); expect(view().tasks[0].done).toBe(true);
   });

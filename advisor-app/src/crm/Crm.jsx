@@ -75,7 +75,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
   }
   const [meetingDirty, setMeetingDirty] = useState({});
   const markMeetingDirty = useCallback((id, dirty) => setMeetingDirty(prev => prev[id] === dirty ? prev : { ...prev, [id]: dirty }), []);
-  const [taskResponsible, setTaskResponsible] = useState('advisor');
+  const [taskResponsible, setTaskResponsible] = useState('client');
   const [taskKind, setTaskKind] = useState('action');
   const [editResponsible, setEditResponsible] = useState('advisor');
   const [editKind, setEditKind] = useState('action');
@@ -83,7 +83,6 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
   const [savingMeeting, setSavingMeeting] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDue, setTaskDue] = useState('');
-  const [taskForClient, setTaskForClient] = useState(false);
   const [meetingAt, setMeetingAt] = useState('');
   const [meetingNotes, setMeetingNotes] = useState('');
   const [meetingForClient, setMeetingForClient] = useState(true);
@@ -101,8 +100,8 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
     if (!taskTitle.trim() || savingTask) return;
     setSavingTask(true);
     try {
-      const ok = await addTasks(taskTitle, taskDue, taskForClient, { responsible: taskResponsible, task_kind: taskKind });
-      if (ok) { setTaskTitle(''); setTaskDue(''); setTaskForClient(false); notify(); }
+      const ok = await addTasks(taskTitle, taskDue, { responsible: taskResponsible, task_kind: taskKind });
+      if (ok) { setTaskTitle(''); setTaskDue(''); notify(); }
     } finally { setSavingTask(false); }
   }
   async function removeMeeting(id) { await deleteMeeting(id); notify(); }
@@ -111,23 +110,22 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
   const [editingTask, setEditingTask] = useState(null);
   const [editTaskTitle, setEditTaskTitle] = useState('');
   const [editTaskDue, setEditTaskDue] = useState('');
-  const [editTaskForClient, setEditTaskForClient] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [editMeetingAt, setEditMeetingAt] = useState('');
   const [editMeetingNotes, setEditMeetingNotes] = useState('');
   const [editMeetingForClient, setEditMeetingForClient] = useState(true);
   const currentTask = tasks.find(t => t.id === editingTask);
-  const taskChanged = !!currentTask && (editTaskTitle !== currentTask.title || editTaskDue !== (currentTask.due_date || '') || editTaskForClient !== !!currentTask.for_client || editResponsible !== (currentTask.responsible || 'advisor') || editKind !== (currentTask.task_kind || 'action'));
+  const taskChanged = !!currentTask && (editTaskTitle !== currentTask.title || editTaskDue !== (currentTask.due_date || '') || editResponsible !== (currentTask.responsible || 'advisor') || editKind !== (currentTask.task_kind || 'action'));
   const currentMeeting = meetings.find(m => m.id === editingMeeting);
   const meetingChanged = !!currentMeeting && (editMeetingAt !== toLocalInput(currentMeeting.scheduled_at) || editMeetingNotes !== (currentMeeting.notes || '') || editMeetingForClient !== !!currentMeeting.for_client);
   const profileChanged = profileDirty && (nameDraft !== (profile?.name || '') || phoneDraft !== (profile?.phone || '') || backgroundDraft !== (profile?.background || ''));
   const signal = type => (action?.type === type ? action.id : 0);
 
-  function startEditTask(t) { if (savingTask || taskChanged) { toast('שמור או בטל את עריכת המשימה הנוכחית לפני מעבר למשימה אחרת', 'info'); return; } setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditTaskForClient(!!t.for_client); setEditResponsible(t.responsible || 'advisor'); setEditKind(t.task_kind || 'action'); }
+  function startEditTask(t) { if (savingTask || taskChanged) { toast('שמור או בטל את עריכת המשימה הנוכחית לפני מעבר למשימה אחרת', 'info'); return; } setEditingTask(t.id); setEditTaskTitle(t.title); setEditTaskDue(t.due_date || ''); setEditResponsible(t.responsible || 'advisor'); setEditKind(t.task_kind || 'action'); }
   async function saveEditTask(id) {
     if (savingTask) return;
     setSavingTask(true);
-    try { if (await editTask(id, editTaskTitle, editTaskDue, editTaskForClient, editResponsible, editKind)) { setEditingTask(null); notify(); } }
+    try { if (await editTask(id, editTaskTitle, editTaskDue, editResponsible, editKind)) { setEditingTask(null); notify(); } }
     finally { setSavingTask(false); }
   }
   // datetime-local speaks LOCAL time; toISOString() emits UTC. Converting one way without
@@ -325,10 +323,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
         <AddForm label="הוסף משימות" openSignal={signal('task')} className={styles.form}>
           <textarea className={styles.textarea} disabled={savingTask} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
           <input className={styles.input} type="date" disabled={savingTask} aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
-          <label className={styles.forClientLabel}>
-            <input type="checkbox" className={styles.checkbox} disabled={savingTask} checked={taskForClient} onChange={e => setTaskForClient(e.target.checked)} />
-            גלוי ללקוח
-          </label>
+
           <label className={styles.fieldLabel}>אחראי<select className={styles.input} disabled={savingTask} aria-label="אחראי למשימות" value={taskResponsible} onChange={e => setTaskResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select></label>
           <label className={styles.fieldLabel}>סוג<select className={styles.input} disabled={savingTask} aria-label="סוג המשימות" value={taskKind} onChange={e => setTaskKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select></label>
           <Button disabled={!taskTitle.trim() || savingTask} onClick={submitTask}>הוסף משימה</Button>
@@ -340,10 +335,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
                 <div className={styles.form} style={{ margin: 0, flex: 1 }}>
                   <input className={styles.input} disabled={savingTask} aria-label="תיאור המשימה" value={editTaskTitle} onChange={e => setEditTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEditTask(t.id)} />
                   <input className={styles.input} type="date" disabled={savingTask} aria-label="תאריך יעד למשימה" value={editTaskDue} onChange={e => setEditTaskDue(e.target.value)} />
-                  <label className={styles.forClientLabel}>
-                    <input type="checkbox" className={styles.checkbox} disabled={savingTask} checked={editTaskForClient} onChange={e => setEditTaskForClient(e.target.checked)} />
-                    גלוי ללקוח
-                  </label>
+
                   <select className={styles.input} disabled={savingTask} aria-label="אחראי למשימה" value={editResponsible} onChange={e => setEditResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select>
                   <select className={styles.input} disabled={savingTask} aria-label="סוג המשימה" value={editKind} onChange={e => setEditKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select>
                   <Button disabled={savingTask} onClick={() => saveEditTask(t.id)}>שמור</Button>
@@ -358,7 +350,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
                 <div key={t.id} className={styles.row + ' ' + styles.taskRow + (t.done ? ' ' + styles.taskCompleted : overdue ? ' ' + styles.taskOverdue : '')} style={{ animationDelay: Math.min(i * 0.022, 0.12) + 's' }}>
                   <input className={styles.checkbox} type="checkbox" aria-label={`סמן "${t.title}" כהושלמה`} checked={t.done} onChange={e => { toggleTask(t.id, e.target.checked); notify(); }} />
                   <div role="button" tabIndex={0} className={styles.taskBody + (t.done ? ' ' + styles.done : '')} onClick={() => startEditTask(t)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), startEditTask(t))}>
-                    <div className={styles.name}>{tasks.length > 1 && <span className={styles.taskNum}>{i + 1}.</span>}{t.title}{t.done && <span className={styles.completedBadge}>{t.done_by ? (t.done_by === 'client' ? 'הושלמה על ידי הלקוח' : 'הושלמה על ידך') + (t.done_at ? ' · ' + new Date(t.done_at).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }) : '') : 'הושלמה'}</span>}{overdue && <span className={styles.pastBadge}>באיחור</span>}{t.for_client && <span className={styles.clientBadge}>גלוי ללקוח</span>}</div>
+                    <div className={styles.name}>{tasks.length > 1 && <span className={styles.taskNum}>{i + 1}.</span>}{t.title}{t.done && <span className={styles.completedBadge}>{t.done_by ? (t.done_by === 'client' ? 'הושלמה על ידי הלקוח' : 'הושלמה על ידך') + (t.done_at ? ' · ' + new Date(t.done_at).toLocaleString('he-IL', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }) : '') : 'הושלמה'}</span>}{overdue && <span className={styles.pastBadge}>באיחור</span>}</div>
                     <div className={styles.meta}>{t.responsible === 'client' ? 'באחריות הלקוח' : 'באחריות היועץ'}{t.task_kind === 'document' ? ' · ממתינים למסמך' : ''}</div>
                     {t.due_date && <div className={styles.meta}>יעד: {formatDate(t.due_date)}</div>}
                   </div>
