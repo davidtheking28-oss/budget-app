@@ -149,7 +149,7 @@ export default function VideoIdeas({ advisorId }) {
       {modal && (
         <Modal title="רעיון חדש" onClose={() => setModal(false)}>
           <form className={styles.formGrid} onSubmit={submit} aria-busy={adding}>
-            <label className={styles.fieldLabel}>על מה הסרטון<textarea className={styles.input + ' ' + styles.textarea} rows={3} placeholder="הנושא, המסר המרכזי או שאלה שהסרטון יענה עליה" value={text} onChange={e => setText(e.target.value)} /></label>
+            <label className={styles.fieldLabel}>על מה הסרטון<textarea className={styles.input + ' ' + styles.textarea} rows={3} aria-label="על מה הסרטון" placeholder="הנושא, המסר המרכזי או שאלה שהסרטון יענה עליה" value={text} onChange={e => setText(e.target.value)} /></label>
             {saveError && <p className={styles.fieldError} role="alert">הרעיון לא נשמר. הטקסט נשאר בטופס. אפשר לנסות שוב.</p>}
             <div className={styles.formActions}>
               <button type="submit" className={styles.btn} disabled={adding}>{adding ? 'שומר…' : 'הוסף רעיון'}</button>

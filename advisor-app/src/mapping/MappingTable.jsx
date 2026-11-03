@@ -4,7 +4,7 @@ import { fmt } from '../format.js';
 import { labelOf } from './mappingTemplates.js';
 import styles from './MappingTable.module.css';
 
-export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
+export default function MappingTable({ title, note, rows, template = [], tag, addLabel, addCats, allowCustom = false, periodSwitch = false, hidden, onHide, labelFor = labelOf, onAdd, onAmount, onDelete, onDeleteMany }) {
   const [adding, setAdding] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState([]);
@@ -13,6 +13,9 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
   const [error, setError] = useState('');
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
+  const [quarter, setQuarter] = useState(periodSwitch);
+  const toMonthly = v => (quarter ? Math.round((v / 3) * 100) / 100 : v);
+  const amountLabel = quarter ? 'סכום ל-3 חודשים' : 'סכום חודשי';
   const total = rows.reduce((s, r) => s + r.amount, 0);
   const chosen = addCats.includes(category) ? category : addCats[0];
 
@@ -69,7 +72,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
       target = addCats.find(c => norm(c) === norm(typed) || norm(labelFor(c)) === norm(typed)) || typed;
     }
     if (!(value > 0)) return;
-    onAdd(target, desc.trim(), value);
+    onAdd(target, desc.trim(), toMonthly(value));
     setAmount('');
     setDesc('');
     closeForm();
@@ -82,6 +85,14 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
         <span className={styles.total}>{fmt(total)}</span>
       </div>
       {note && <p className={styles.note}>{note}</p>}
+      {periodSwitch && (
+        <div className={styles.period} role="group" aria-label="תקופת ההקלדה">
+          <span className={styles.note}>הקלדת סכום חדש:</span>
+          <button type="button" className={styles.pillBtn + (quarter ? '' : ' ' + styles.pillBtnOn)} aria-pressed={!quarter} onClick={() => setQuarter(false)}>לחודש</button>
+          <button type="button" className={styles.pillBtn + (quarter ? ' ' + styles.pillBtnOn : '')} aria-pressed={quarter} onClick={() => setQuarter(true)}>ל-3 חודשים</button>
+        </div>
+      )}
+      {periodSwitch && quarter && <p className={styles.note}>הסכום שתקליד יחולק ב-3, והטבלה מציגה תמיד ממוצע חודשי.</p>}
       <div className={styles.colHead}><span>קטגוריה</span><span>סכום חודשי</span></div>
       <div className={styles.rows}>
         {lines.length === 0 && <div className={styles.empty}>אין שורות עדיין</div>}
@@ -95,7 +106,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             {r.placeholder ? (
               <span className={styles.field}>
                 <span className={styles.currency} aria-hidden="true">₪</span>
-                <input key={"p:" + r.line} className={styles.input} inputMode="decimal" placeholder="0" aria-label={'סכום חודשי: ' + labelFor(r.category)} defaultValue="" onBlur={e => { const v = parseFloat(e.target.value); if (v > 0) onAdd(r.category, '', v); }} />
+                <input key={"p:" + r.line} className={styles.input} inputMode="decimal" placeholder="0" aria-label={amountLabel + ': ' + labelFor(r.category)} defaultValue="" onBlur={e => { const v = parseFloat(e.target.value); if (v > 0) onAdd(r.category, '', toMonthly(v)); }} />
               </span>
             ) : r.manual ? (
               <span className={styles.field}>
@@ -125,7 +136,7 @@ export default function MappingTable({ title, note, rows, template = [], tag, ad
             </select>
           )}
           <input className={styles.addField} aria-label="תיאור (לא חובה)" placeholder="תיאור (לא חובה)" value={desc} onChange={e => setDesc(e.target.value)} />
-          <input className={styles.addField} aria-label="סכום חודשי" placeholder="סכום חודשי" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} />
+          <input className={styles.addField} aria-label={amountLabel} placeholder={amountLabel} inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} />
           <button type="submit" className={styles.pillBtn + ' ' + styles.pillBtnOn}>הוסף</button>
           <button type="button" className={styles.pillBtn} onClick={closeForm}>ביטול</button>
           {error && <p className={styles.addError} role="alert">{error}</p>}
