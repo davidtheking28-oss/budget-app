@@ -449,3 +449,14 @@
 @media (max-width: 1000px) { .prepGrid { grid-template-columns: 1fr; } }
 
 .taskFilters { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 16px; }
+
+.form.taskForm { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: end; gap: 16px; width: 100%; max-width: none; box-sizing: border-box; }
+.taskForm > .fieldLabel { margin: 0; min-width: 0; }
+.taskForm > .taskDescription { grid-column: 1 / -1; }
+.taskForm .textarea { min-width: 0; min-height: 96px; width: 100%; box-sizing: border-box; }
+.taskForm .input, .form.taskForm input[type="date"] { min-width: 0; width: 100%; height: 44px; box-sizing: border-box; }
+.form.taskForm > .taskSubmit { align-self: end; height: 44px; min-height: 44px; margin: 0; padding-inline: 24px; border-radius: var(--radius-sm); }
+@media (max-width: 1000px) { .form.taskForm { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .form.taskForm { grid-template-columns: minmax(0, 1fr); } }
+
+:root[data-theme="dark"] .taskForm .input[type="date"]::-webkit-calendar-picker-indicator { filter: none; opacity: .85; }

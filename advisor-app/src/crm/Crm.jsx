@@ -324,13 +324,13 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
         </h2>
         <div>
         <div className={styles.sectionBodyInner}>
-        <AddForm label="הוסף משימות" openSignal={signal('task')} className={styles.form}>
-          <textarea className={styles.textarea} disabled={savingTask} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} />
-          <input className={styles.input} type="date" disabled={savingTask} aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} />
+        <AddForm label="הוסף משימות" openSignal={signal('task')} className={styles.form + ' ' + styles.taskForm}>
+          <label className={styles.fieldLabel + ' ' + styles.taskDescription}>תיאור המשימות<textarea className={styles.textarea} disabled={savingTask} aria-label="משימות" placeholder="כתוב כאן את המשימות, כל משימה בשורה נפרדת" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && submitTask()} /></label>
+          <label className={styles.fieldLabel}>תאריך יעד<input className={styles.input} type="date" disabled={savingTask} aria-label="תאריך יעד למשימות" value={taskDue} onChange={e => setTaskDue(e.target.value)} /></label>
 
           <label className={styles.fieldLabel}>אחראי<select className={styles.input} disabled={savingTask} aria-label="אחראי למשימות" value={taskResponsible} onChange={e => setTaskResponsible(e.target.value)}><option value="advisor">היועץ</option><option value="client">הלקוח</option></select></label>
           <label className={styles.fieldLabel}>סוג<select className={styles.input} disabled={savingTask} aria-label="סוג המשימות" value={taskKind} onChange={e => setTaskKind(e.target.value)}><option value="action">פעולה</option><option value="document">מסמך שממתינים לו</option></select></label>
-          <Button disabled={!taskTitle.trim() || savingTask} onClick={submitTask}>הוסף משימה</Button>
+          <Button className={styles.taskSubmit} disabled={!taskTitle.trim() || savingTask} onClick={submitTask}>הוסף משימה</Button>
         </AddForm>
         <div className={styles.taskFilters} role="group" aria-label="תצוגת משימות">
           <Button variant={showCompleted ? 'ghost' : 'primary'} disabled={taskChanged || savingTask} onClick={() => { setShowCompleted(false); setEditingTask(null); }} aria-pressed={!showCompleted}>פתוחות ({openTaskCount})</Button>
