@@ -6,7 +6,7 @@ import { computeCategoryAverages, computeCashflowSummary, looksLikeCardCharge, c
 import { categorizeByDictionary } from './categorizeDict.js';
 import { learnCategory, lookupLearnedCategory, normalizeDescription, syncLearnedFromAccount, pushLearnedToAccount } from './learnedCategories.js';
 import { resizeImageToJpeg } from './resizeImage.js';
-import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, CHART_PALETTE, chartTheme } from '../categories.js';
+import { EXPENSE_CATS, FIXED_CATS, INCOME_CATS, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
 import { addItem } from '../budget/itemHelpers.js';
 import { monthlyEquivalent } from '../budget/Subscriptions.jsx';
@@ -193,6 +193,23 @@ function addFiles(setQueue, fileList, defaultMonth, onDropped) {
     if (added.length > room && onDropped) onDropped(added.length - room);
     return [...q, ...added.slice(0, room)];
   });
+}
+
+// One teal family, darkest for the largest slice and lighter down the ranks, so the ring
+// reads as an ordered list. The catch-all "אחר" slice is neutral grey, never a hue.
+const DONUT_RAMP = ['#0b665d', '#157e73', '#2a978b', '#4aaea2', '#72c3b8', '#9bd5cc', '#bfe5df'];
+const DONUT_OTHER = '#8b95a1';
+function isDarkSurface(color) {
+  const m = String(color).match(/#([0-9a-f]{6})/i);
+  const rgb = m ? [0, 2, 4].map(k => parseInt(m[1].slice(k, k + 2), 16)) : (String(color).match(/\d+/g) || [255, 255, 255]).slice(0, 3).map(Number);
+  return (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000 < 128;
+}
+function donutColor(items, i, dark) {
+  if (items[i].name === 'אחר') return DONUT_OTHER;
+  const ranked = items.filter(x => x.name !== 'אחר').length;
+  const step = ranked <= 3 ? 2 : 1;
+  const at = Math.min(i * step, DONUT_RAMP.length - 1);
+  return dark ? DONUT_RAMP[DONUT_RAMP.length - 1 - at] : DONUT_RAMP[at];
 }
 
 const monthsLabel = n => (n === 1 ? 'חודש אחד' : `${n} חודשים`);
@@ -605,7 +622,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const donutTotal = donutItems.reduce((sum, i) => sum + i.value, 0) || 1;
   const donutData = {
     labels: donutItems.map(i => i.name),
-    datasets: [{ data: donutItems.map(i => i.value), backgroundColor: donutItems.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]), borderColor: CT.surface, borderWidth: 2 }]
+    datasets: [{ data: donutItems.map(i => i.value), backgroundColor: donutItems.map((_, i) => donutColor(donutItems, i, isDarkSurface(CT.surface))), borderColor: CT.surface, borderWidth: 2 }]
   };
   const donutOptions = {
     maintainAspectRatio: false,
@@ -691,7 +708,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
               <ul className={layout.legend}>
                 {donutItems.map((item, i) => (
                   <li key={item.name} className={layout.legendItem}>
-                    <span className={layout.legendDot} style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} aria-hidden="true" />
+                    <span className={layout.legendDot} style={{ background: donutColor(donutItems, i, isDarkSurface(CT.surface)) }} aria-hidden="true" />
                     <span className={layout.legendName}>{item.name}</span>
                     <span className={layout.legendPct}>{Math.round(item.value / donutTotal * 100)}%</span>
                   </li>
