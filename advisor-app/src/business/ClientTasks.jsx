@@ -10,7 +10,7 @@ import layout from './ClientTasks.module.css';
 const svgProps = { viewBox: '0 0 24 24', width: 16, height: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
 const monthLabel = key => key === 'none' ? 'ללא תאריך' : `${monthName(Number(key.slice(5)) - 1)} ${key.slice(0, 4)}`;
 
-function TaskList({ title, hint, empty, tasks, pending, onToggle, onOpen }) {
+function TaskList({ title, hint, empty, tasks, pending, onToggle }) {
   return (
     <section className={layout.taskSection}>
       <div className={layout.listHeading}>
@@ -25,9 +25,9 @@ function TaskList({ title, hint, empty, tasks, pending, onToggle, onOpen }) {
                 <input type="checkbox" className={styles.check} checked={false} disabled={pending.includes(t.id)} aria-label={'השלם: ' + t.title} onChange={() => onToggle(t)} />
                 <div className={styles.rowMain}>
                   <div className={styles.rowTitle}>{t.title}</div>
-                  <div className={styles.rowMeta}>{t.due_date ? formatDate(t.due_date) : 'ללא תאריך יעד'}{t.task_kind === 'document' ? ' · מסמך' : ''}</div>
+                  {t.task_kind === 'document' && <div className={styles.rowMeta}>מסמך</div>}
                 </div>
-                <button type="button" className={styles.btnGhost} onClick={() => onOpen(t)}>פתח לקוח</button>
+                <span className={layout.dueDate}>{t.due_date ? <time dateTime={t.due_date}>{formatDate(t.due_date)}</time> : 'ללא תאריך יעד'}</span>
               </li>
             ))}
           </ul>
@@ -63,7 +63,7 @@ export default function ClientTasks({ advisorId, onSelect }) {
     setPending(prev => [...prev, task.id]);
     try { await completeTask(task); } finally { setPending(prev => prev.filter(id => id !== task.id)); }
   }
-  const open = t => onSelect(t.client_id, current?.client_email, { nav: 'tasks' });
+  const open = () => onSelect(current.client_id, current.client_email, { nav: 'tasks' });
 
   return (
     <div className={styles.stack}>
@@ -83,7 +83,8 @@ export default function ClientTasks({ advisorId, onSelect }) {
               {current && <div className={styles.rowMeta}>{Math.min(index, pool.length - 1) + 1} מתוך {pool.length}</div>}
             </div>
             <button type="button" className={styles.iconBtn} aria-label="הלקוח הבא" disabled={!pool.length || index >= pool.length - 1} onClick={() => step(1)}><svg {...svgProps}><path d="m15 6-6 6 6 6" /></svg></button>
-            <input className={styles.input + ' ' + styles.inputGrow} type="search" placeholder="חיפוש לקוח..." aria-label="חיפוש לקוח" value={search} onChange={e => { setSearch(e.target.value); setIndex(0); }} />
+            <input className={styles.input + ' ' + styles.inputGrow} type="search" placeholder="חיפוש לפי שם או אימייל..." aria-label="חיפוש לקוח" value={search} onChange={e => { setSearch(e.target.value); setIndex(0); }} />
+            {current && <button type="button" className={styles.btnGhost + ' ' + layout.openClient} onClick={open}>פתח תיק לקוח</button>}
           </div>
         </div>
       </section>
@@ -95,8 +96,8 @@ export default function ClientTasks({ advisorId, onSelect }) {
       </div>
 
       {current ? <>
-      <TaskList title="משימות ממסע השירות" hint="השלמת משימה כאן מתעדכנת גם במסע השירות של הלקוח." empty="אין משימות פתוחות ללקוח הנבחר." tasks={advisorTasks} pending={pending} onToggle={toggle} onOpen={open} />
-      <TaskList title="משימות שהלקוח הוסיף לעצמו" hint="משימות אישיות שהלקוח יצר באזור האישי שלו." empty="הלקוח עוד לא הוסיף לעצמו משימות באזור האישי." tasks={clientTasks} pending={pending} onToggle={toggle} onOpen={open} />
+      <TaskList title="משימות ממסע השירות" hint="השלמת משימה כאן מתעדכנת גם במסע השירות של הלקוח." empty="אין משימות פתוחות ללקוח הנבחר." tasks={advisorTasks} pending={pending} onToggle={toggle} />
+      <TaskList title="משימות שהלקוח הוסיף לעצמו" hint="משימות אישיות שהלקוח יצר באזור האישי שלו." empty="הלקוח עוד לא הוסיף לעצמו משימות באזור האישי." tasks={clientTasks} pending={pending} onToggle={toggle} />
       </> : <section className={styles.emptyState}>
         <strong>{search.trim() ? 'לא נמצאו לקוחות שמתאימים לחיפוש' : 'עוד אין לקוחות להצגת משימות'}</strong>
         <p className={styles.note}>{search.trim() ? 'נסה לחפש לפי שם או כתובת אימייל.' : 'משימות יופיעו כאן לאחר הוספת לקוח והגדרת משימות עבורו.'}</p>
