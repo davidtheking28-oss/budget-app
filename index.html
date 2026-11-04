@@ -509,6 +509,18 @@
     .exp-pay-row{display:flex;gap:5px;color:var(--text2);}
     .exp-pay-row b{color:var(--text);font-weight:700;}
     .exp-add-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1.5px dashed var(--border);border-radius:16px;color:var(--text2);font-weight:700;cursor:pointer;margin-bottom:14px;background:none;width:100%;font-family:inherit;font-size:0.87rem;-webkit-tap-highlight-color:transparent;}
+    #page-transactions .exp-row{display:block;padding:0;overflow:hidden;cursor:default;box-shadow:none}
+    .exp-row-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:72px;padding:14px 12px;border:0;background:none;color:var(--text);font:inherit;text-align:start;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    #page-transactions .exp-row-right{gap:10px}
+    #page-transactions .exp-name{display:flex;flex-direction:column;gap:3px}
+    #page-transactions .exp-row-left{flex-wrap:nowrap;gap:10px}
+    .exp-row-actions{display:flex;justify-content:flex-end;gap:8px;padding:0 12px;border-top:1px solid var(--border);background:var(--surface2)}
+    .exp-row-action{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;min-width:72px;padding:0 8px;border:0;background:none;color:var(--text2);font:inherit;font-size:0.75rem;cursor:pointer}
+    .exp-row-action svg{width:15px;height:15px}
+    .exp-row-summary:active,.exp-row-action:active{background:rgba(var(--accent-rgb),0.08)}
+    .cashflow-page .section-header{padding:20px 2px 10px}
+    .cashflow-page .section-title{display:flex;align-items:center;gap:8px}
+    .cashflow-page .exp-add-row{min-height:48px;margin:4px 0 8px;padding:10px 12px;border-style:solid;border-width:1px;font-size:0.82rem;color:var(--accent-text)}
     .dash-toprow{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;}
     .dash-greet{text-align:center;}
     .dash-greet-name{font-size:1rem;font-weight:800;color:var(--text);}
@@ -4124,14 +4136,14 @@ function _expStructListHtml(kind){
 const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs','ביטוחים':'insurance'};
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key);
-  return '<button type="button" class="exp-row" onclick="toggleExpGroup(\''+attrArg(key)+'\')" aria-expanded="'+open+'">'
-    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.iconCat||opts.cat)+'</span><span class="exp-name">'+esc(opts.cat)+(opts.auto?'<span class="exp-auto-badge"> · אוטומטי</span>':'')+'</span></div>'
+  return '<div class="exp-row"><button type="button" class="exp-row-summary" onclick="toggleExpGroup(\''+attrArg(key)+'\')" aria-expanded="'+open+'">'
+    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.iconCat||opts.cat)+'</span><span class="exp-name">'+esc(opts.cat)+(opts.auto?'<span class="exp-auto-badge">אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
       +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
-      +(opts.editable?'<span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'</span><span class="exp-icon-sm" role="button" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'</span>':'')+_expChevron(open)
-    +'</div>'
-  +'</button>'
+      +_expChevron(open)+'</div></button>'
+    +(opts.editable?'<div class="exp-row-actions"><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'עריכה</button><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'מחיקה</button></div>':'')
+  +'</div>'
   +(open?'<div class="exp-body">'+opts.body+'</div>':'');
 }
 function _viewingPastMonth(){const n=new Date();return currentYear<n.getFullYear()||(currentYear===n.getFullYear()&&currentMonth<n.getMonth());}
