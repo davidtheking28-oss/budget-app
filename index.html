@@ -1044,6 +1044,14 @@
     .confirm-overlay{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);padding:24px;}
     .confirm-overlay.show{display:flex;animation:cfFade .2s cubic-bezier(0.22,1,0.36,1);}
     .confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;max-width:340px;width:100%;padding:24px 22px 18px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:cfPop .26s cubic-bezier(.22,1,.36,1);}
+    #promptOverlay{padding:16px}
+    #promptOverlay .confirm-box{display:flex;flex-direction:column;max-width:400px;max-height:100%;padding:20px 16px 16px;text-align:start;overflow:hidden}
+    #promptTitle{flex-shrink:0;padding-bottom:12px;border-bottom:1px solid var(--border);margin:0}
+    #promptForm{min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding-block:12px}
+    #promptFields{gap:16px!important;margin:16px 0!important}
+    #promptFields input{min-height:48px;width:100%;min-width:0;font-size:16px;padding:12px;border-radius:12px}
+    #promptFields input[type="number"]{font-family:var(--font-num);font-size:22px;font-weight:700;direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+    #promptOverlay .confirm-actions{flex-shrink:0;border-top:1px solid var(--border);padding-top:12px}
     .confirm-icon{font-size:2.4rem;line-height:1;margin-bottom:10px;}
     .confirm-title{font-size:1.12rem;font-weight:800;color:var(--text);margin-bottom:6px;}
     .confirm-msg{font-size:0.92rem;color:var(--text2);line-height:1.5;margin-bottom:20px;}
@@ -1681,7 +1689,7 @@
   </div>
 </div>
 <div id="promptOverlay" class="confirm-overlay">
-  <div class="confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="promptTitle">
+  <div class="confirm-box" role="dialog" aria-modal="true" aria-labelledby="promptTitle">
     <div class="confirm-title" id="promptTitle"></div>
     <form id="promptForm" onsubmit="return false">
       <div id="promptFields" style="display:flex;flex-direction:column;gap:10px;margin:14px 0;text-align:right"></div>
@@ -9524,7 +9532,8 @@ setTimeout(autoCarryRecurring,500);
         inp.value=(f.value!=null?f.value:'');
         inp.placeholder=f.placeholder||'';
         inp.setAttribute('aria-label',f.label||'');
-        if(i===0) inp.id='promptFieldFirst';
+        inp.id=i===0?'promptFieldFirst':'promptField'+i;
+        lbl.htmlFor=inp.id;
         ff.appendChild(lbl); ff.appendChild(inp); wrap.appendChild(ff);
         return inp;
       });
@@ -9723,6 +9732,11 @@ setTimeout(autoCarryRecurring,500);
     var h=vv.height;
     var kbH=window.innerHeight-vv.offsetTop-h;
     if(kbH<20)kbH=0;
+    document.querySelectorAll('#promptOverlay.show').forEach(function(ov){
+      ov.style.top=Math.max(0,vv.offsetTop)+'px';
+      ov.style.bottom='auto';
+      ov.style.height=h+'px';
+    });
     document.querySelectorAll('.sheet-overlay.open').forEach(function(ov){
       var sh=ov.querySelector('.sheet,.wiz-sheet');
       if(!sh)return;
