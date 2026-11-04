@@ -521,6 +521,22 @@
     .cashflow-page .section-header{padding:20px 2px 10px}
     .cashflow-page .section-title{display:flex;align-items:center;gap:8px}
     .cashflow-page .exp-add-row{min-height:48px;margin:4px 0 8px;padding:10px 12px;border-style:solid;border-width:1px;font-size:0.82rem;color:var(--accent-text)}
+    .exp-row-value{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+    #page-transactions .exp-body{padding:8px 10px 10px;margin-top:-9px;border:1px solid var(--border);border-top:0;border-radius:0 0 16px 16px;background:var(--surface)}
+    #page-transactions .exp-row:has(.exp-row-summary[aria-expanded="true"]){border-radius:16px 16px 0 0;margin-bottom:0;border-bottom-color:transparent}
+    #page-transactions .exp-struct-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);box-shadow:none}
+    #page-transactions .exp-struct-edit{display:flex;align-items:center;gap:8px;padding:0 4px;font-weight:600;line-height:1.5}
+    #page-transactions .exp-struct-edit::after{content:'עריכה';font-size:0.66rem;color:var(--text3);font-weight:400;white-space:nowrap;flex-shrink:0}
+    #page-transactions .exp-pay-icons{align-items:center;gap:8px}
+    #page-transactions .exp-struct-row .exp-amt{font-size:15px}
+    #page-transactions .exp-icon-sm{border-radius:12px;background:var(--surface);color:var(--text2)}
+    #page-transactions .exp-pay-top{gap:10px}
+    #page-transactions .exp-pay-name{min-width:0;overflow-wrap:anywhere;line-height:1.5}
+    #page-transactions .exp-pay-top .exp-pay-icons{flex-shrink:0}
+    #page-transactions .exp-pay-bottom{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border-top:1px solid var(--border);padding-top:12px;margin-top:12px}
+    #page-transactions .exp-pay-row{flex-wrap:wrap;align-items:baseline}
+    #page-transactions .exp-pay-row b{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+    #page-transactions .exp-body .exp-add-row{margin:8px 0 0}
     .dash-toprow{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;}
     .dash-greet{text-align:center;}
     .dash-greet-name{font-size:1rem;font-weight:800;color:var(--text);}
@@ -4139,9 +4155,9 @@ function _expRowHtml(opts){
   return '<div class="exp-row"><button type="button" class="exp-row-summary" onclick="toggleExpGroup(\''+attrArg(key)+'\')" aria-expanded="'+open+'">'
     +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.iconCat||opts.cat)+'</span><span class="exp-name">'+esc(opts.cat)+(opts.auto?'<span class="exp-auto-badge">אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
-      +'<span class="exp-amt">'+fmt(opts.amount)+'</span>'
+      +'<span class="exp-row-value"><bdi dir="ltr" class="exp-amt">'+fmt(opts.amount)+'</bdi>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
-      +_expChevron(open)+'</div></button>'
+      +'</span>'+_expChevron(open)+'</div></button>'
     +(opts.editable?'<div class="exp-row-actions"><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'עריכה</button><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'מחיקה</button></div>':'')
   +'</div>'
   +(open?'<div class="exp-body">'+opts.body+'</div>':'');
