@@ -941,3 +941,44 @@ test('budget category changes restore keyboard focus to the new category',()=>{
   assert.equal(ctx._selectedBudgetCat,'new');
   assert.equal(selected,true);
 });
+test('advisor budget settings without a profile name are applied and refresh the client',async()=>{
+  const cloudRow={updated_at:'2026-11-04T08:00:00Z',sync_meta:{},settings:{customCats:['תקציב מותאם'],incomeSources:[{name:'שכר',amount:4000}]}};
+  const query={select:()=>query,eq:()=>query,maybeSingle:async()=>({data:cloudRow,error:null})};let refreshes=0;
+  const ctx=functions(['_loadFromCloud'],{localStorage:storage({budget_local_owner:'u1'}),_cloudUser:{id:'u1'},_sb:{from:()=>query},_localAccountReady:true,_getDataUserId:()=>'u1',_activeMode:'personal',_modeKey:k=>k,_syncMeta:{},_mergeMeta:a=>a,_buildMerged:()=>({}),_applyMerged:()=>false,userSettings:{},_seedIncomeHistory:()=>{},_syncCurrentIncome:()=>{},refreshAll:()=>{refreshes++;},_decideOnboarding:()=>{},_syncPending:false,_setSyncState:()=>{},renderCloudSection:()=>{},scheduleCloudSave:()=>{},_householdOwner:null,_doCloudSave:async()=>{},_DEBUG:false});
+  await ctx._loadFromCloud(true);
+  assert.deepEqual(Array.from(ctx.userSettings.customCats||[]),['תקציב מותאם']);
+  assert.equal(ctx.userSettings.incomeSources[0].amount,4000);
+  assert.equal(refreshes,1);
+});
+test('automatic budget refresh coalesces duplicate reads and allows a new mode to refresh',async()=>{
+  const resolvers=[];let reads=0;
+  const ctx=functions(['_refreshCloudBudget'],{navigator:{onLine:true},document:{hidden:false},_cloudUser:{id:'u1'},_sb:{},_localAccountReady:true,_getDataUserId:()=>'u1',_activeMode:'personal',_cloudBudgetRefresh:null,_loadFromCloud:()=>{reads++;return new Promise(resolve=>resolvers.push(resolve));}});
+  const first=ctx._refreshCloudBudget();
+  assert.equal(ctx._refreshCloudBudget(),first);
+  assert.equal(reads,1);
+  ctx._activeMode='business';
+  const second=ctx._refreshCloudBudget();
+  assert.equal(reads,2);
+  resolvers[0]();await first;
+  assert.equal(ctx._refreshCloudBudget(),second);
+  resolvers[1]();await second;
+  assert.equal(ctx._cloudBudgetRefresh,null);
+});
+test('automatic budget refresh stays idle while hidden, offline or signed out',async()=>{
+  let reads=0;
+  const ctx=functions(['_refreshCloudBudget'],{navigator:{onLine:false},document:{hidden:false},_cloudUser:{id:'u1'},_sb:{},_localAccountReady:true,_cloudBudgetRefresh:null,_loadFromCloud:async()=>{reads++;}});
+  await ctx._refreshCloudBudget();ctx.navigator.onLine=true;ctx.document.hidden=true;
+  await ctx._refreshCloudBudget();ctx.document.hidden=false;ctx._cloudUser=null;
+  await ctx._refreshCloudBudget();
+  assert.equal(reads,0);
+});
+test('budget subscription refreshes on reconnection and external advisor updates',()=>{
+  let changed,status,reads=0,toasts=0;const filters=[];
+  const channel={on:(_event,filter,callback)=>{filters.push(filter);changed=callback;return channel;},subscribe:callback=>{status=callback;return channel;}};
+  const ctx=functions(['_subscribeHousehold'],{_sb:{channel:()=>channel},_getDataUserId:()=>'client',_realtimeChannel:null,_cloudUser:{id:'client'},_advisorLink:{status:'active',advisor_id:'advisor'},_refreshCloudBudget:()=>{reads++;},showToast:()=>{toasts++;}});
+  ctx._subscribeHousehold();
+  assert.equal(filters[0].filter,'user_id=eq.client');
+  status('SUBSCRIBED');assert.equal(reads,1);
+  changed({new:{updated_by:'advisor'}});assert.equal(reads,2);assert.equal(toasts,1);
+  changed({new:{updated_by:'client'}});assert.equal(reads,2);
+});

@@ -4689,13 +4689,25 @@ async function _loadFromCloud(silent){
       const cloudMeta=isBiz?bundle.sync_meta:data.sync_meta;
       const localBu={...(_syncMeta.bu||{})};
       if(cloudMeta)_syncMeta=_mergeMeta(_syncMeta,cloudMeta);
-      const changed=_applyMerged(_buildMerged(bundle,localBu,cloudMeta&&cloudMeta.bu));
+      let changed=_applyMerged(_buildMerged(bundle,localBu,cloudMeta&&cloudMeta.bu));
       // read-only mirror of the advisor's asset list — never part of _collections()/_buildMerged,
       // so a client save can never touch or wipe what the advisor entered (see commit 4d0c8a8)
       _advisorAssets=bundle.assets||[];
       _advisorOverdraft=bundle.overdraft||{balance:0};
       const cloudSettings=bundle.settings;
-      if(cloudSettings&&cloudSettings.name!==undefined){const _cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;const _localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');if(_cloudTs>=_localTs||(!userSettings.name&&cloudSettings.name)){userSettings={...userSettings,...cloudSettings};if(!cloudSettings.incomeHistory){delete userSettings.incomeHistory;_seedIncomeHistory();}_syncCurrentIncome();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(_cloudTs||Date.now()));}}
+      if(cloudSettings&&typeof cloudSettings==='object'&&!Array.isArray(cloudSettings)){
+        const cloudTs=data.updated_at?new Date(data.updated_at).getTime():0;
+        const localTs=parseInt(localStorage.getItem(_modeKey('budget_settings_ts'))||'0');
+        if(cloudTs>=localTs||(!userSettings.name&&cloudSettings.name)){
+          const before=JSON.stringify(userSettings);
+          userSettings={...userSettings,...cloudSettings};
+          if(!cloudSettings.incomeHistory){delete userSettings.incomeHistory;_seedIncomeHistory();}
+          _syncCurrentIncome();
+          changed=changed||before!==JSON.stringify(userSettings);
+          localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));
+          localStorage.setItem(_modeKey('budget_settings_ts'),String(cloudTs||Date.now()));
+        }
+      }
       if(!silent||changed){refreshAll();}
       _decideOnboarding();
     } else {
@@ -5243,18 +5255,31 @@ function renderTasksPage(){
     el.onchange=()=>toggleAdvisorTask(el.dataset.taskId,el.checked);
   });
 }
+let _cloudBudgetRefresh=null;
+function _refreshCloudBudget(){
+  if(!navigator.onLine||document.hidden||!_cloudUser||!_sb||!_localAccountReady)return Promise.resolve();
+  const key=JSON.stringify([_cloudUser.id,_getDataUserId(),_activeMode]);
+  if(_cloudBudgetRefresh?.key===key)return _cloudBudgetRefresh.promise;
+  const entry={key,promise:null};
+  entry.promise=_loadFromCloud(true).finally(()=>{if(_cloudBudgetRefresh===entry)_cloudBudgetRefresh=null;});
+  _cloudBudgetRefresh=entry;
+  return entry.promise;
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)_refreshCloudBudget();});
+window.addEventListener('online',()=>_refreshCloudBudget());
+setInterval(()=>_refreshCloudBudget(),60000);
 function _subscribeHousehold(){
   if(!_sb||!_getDataUserId())return;
   if(_realtimeChannel){_sb.removeChannel(_realtimeChannel);_realtimeChannel=null;}
   _realtimeChannel=_sb.channel('budget-sync')
     .on('postgres_changes',{event:'*',schema:'public',table:'budget_data',filter:`user_id=eq.${_getDataUserId()}`},(payload)=>{
       if(payload.new?.updated_by&&payload.new.updated_by!==_cloudUser?.id){
-        _loadFromCloud(true);
+        _refreshCloudBudget();
         const byAdvisor=_advisorLink&&_advisorLink.status==='active'&&payload.new.updated_by===_advisorLink.advisor_id;
         showToast(byAdvisor?'🔄 עודכן על ידי היועץ הפיננסי שלך':'🔄 עודכן על ידי בן/בת הזוג');
       }
     })
-    .subscribe();
+    .subscribe(status=>{if(status==='SUBSCRIBED')_refreshCloudBudget();});
 }
 function copyInviteCode(){
   const code=_cloudHousehold?.invite_code;if(!code)return;
