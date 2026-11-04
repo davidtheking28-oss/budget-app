@@ -537,6 +537,16 @@
     #page-transactions .exp-pay-row{flex-wrap:wrap;align-items:baseline}
     #page-transactions .exp-pay-row b{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
     #page-transactions .exp-body .exp-add-row{margin:8px 0 0}
+    #page-transactions #txFilterChips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) 44px 44px;gap:6px;padding:12px;overflow:visible}
+    #page-transactions #txFilterChips .filter-chip{min-width:0;padding-inline:4px;font-size:14px;border-radius:12px}
+    #page-transactions #txFilterChips>div{margin-inline-start:0!important}
+    #txAdvancedToggle{width:44px;justify-content:center;border-radius:12px!important;padding:0!important}
+    #txAdvancedToggle .tx-filter-label{display:none}
+    #txAdvancedToggle[aria-expanded="true"]{background:rgba(var(--accent-rgb),0.12)!important;border-color:var(--accent)!important;color:var(--accent-text)!important}
+    #page-transactions #txOverflowBtn{width:44px;border-radius:12px!important;padding-inline:0!important}
+    #txAdvancedFilters{padding-bottom:8px;background:var(--surface2);border-bottom:1px solid var(--border)}
+    #txFilterStatus{flex-wrap:wrap;line-height:1.5}
+    #txFilterStatusText{flex:1;min-width:120px}
     .dash-toprow{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;}
     .dash-greet{text-align:center;}
     .dash-greet-name{font-size:1rem;font-weight:800;color:var(--text);}
@@ -2208,7 +2218,7 @@
             <button onclick="scanReceipt();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;">📷 סרוק קבלה</button>
           </div>
         </div>
-        <button type="button" onclick="toggleAdvancedFilters()" style="display:flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--border);border-radius:999px;padding:8px 14px;font-size:0.8rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0;min-height:44px"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>סנן</button>
+        <button type="button" id="txAdvancedToggle" aria-label="חיפוש וסינון תזרים" aria-expanded="false" aria-controls="txAdvancedFilters" onclick="toggleAdvancedFilters()" style="display:flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--border);border-radius:999px;padding:8px 14px;font-size:0.8rem;font-weight:700;color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0;min-height:44px"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg><span class="tx-filter-label">סנן</span></button>
       </div>
       <div id="txFilterStatus" hidden><span id="txFilterStatusText"></span><button type="button" class="btn btn-outline" onclick="resetTxFilters()">אפס סינון</button></div>
       <div id="txAdvancedFilters" style="display:none">
@@ -4282,7 +4292,10 @@ async function addIncomeSource(){
 }
 function toggleAdvancedFilters(){
   const el=document.getElementById('txAdvancedFilters');
-  if(el)el.style.display=el.style.display==='none'?'':'none';
+  if(!el)return;
+  const open=el.style.display==='none';
+  el.style.display=open?'':'none';
+  document.getElementById('txAdvancedToggle')?.setAttribute('aria-expanded',String(open));
 }
 async function _expEditManual(cat){
   const cur=_fxRaw(cat);
