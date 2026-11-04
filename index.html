@@ -573,6 +573,8 @@
     #page-budget .budget-detail-txlist{margin-top:4px}
     #page-budget .budget-tx-empty{padding:12px 0;font-size:14px;line-height:1.5}
     #page-budget .budget-chip:not(.budget-chip-sel):not(.budget-chip-add){opacity:0.9}
+    button.budget-tx-top{width:100%;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start}
+    .budget-tx-top:focus-visible,.budget-chip:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
     .dash-toprow{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;}
     .dash-greet{text-align:center;}
     .dash-greet-name{font-size:1rem;font-weight:800;color:var(--text);}
@@ -4154,10 +4156,10 @@ function toggleExpGroup(key){
 }
 function _expTxCardHtml(t){
   return '<div class="budget-tx-card" data-txid="'+t.id+'">'
-    +'<div class="budget-tx-top" onclick="event.stopPropagation();editTx('+_jsId(t.id)+')">'
+    +'<button type="button" class="budget-tx-top" onclick="event.stopPropagation();editTx('+_jsId(t.id)+')">'
       +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
       +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
-    +'</div>'
+    +'</button>'
     +'<div class="budget-tx-bottom">'
       +'<button type="button" class="budget-tx-del" onclick="event.stopPropagation();deleteTx('+_jsId(t.id)+')" aria-label="מחק">'+_expTrashSvg+'</button>'
       +'<button type="button" class="budget-move-btn" onclick="event.stopPropagation();openMoveTxCat('+t.id+')">העברה לקטגוריה אחרת</button>'
@@ -6582,7 +6584,7 @@ function renderBudget(){
   const stripHtml=allCats.map(cat=>{
     const hex=budgetChipColor(cat);
     const sel=cat===_selectedBudgetCat;
-    return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" data-cat="'+esc(cat)+'" style="background:'+(sel?hex.sel:hex.base)+'">'
+    return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" aria-pressed="'+sel+'" data-cat="'+esc(cat)+'" style="background:'+(sel?hex.sel:hex.base)+'">'
       +'<span class="budget-chip-icon">'+catIconSvg(cat)+'</span>'
       +'<span class="budget-chip-name">'+esc(cat)+'</span>'
     +'</button>';
@@ -6606,7 +6608,11 @@ function renderBudget(){
   _bindBudgetStripScroll(strip);
 }
 let _selectedBudgetCat=null;
-function selectBudgetCat(cat){_selectedBudgetCat=cat;renderBudget();}
+function selectBudgetCat(cat){
+  const restoreFocus=!!document.activeElement?.matches('#budgetChipStrip .budget-chip');
+  _selectedBudgetCat=cat;renderBudget();
+  if(restoreFocus)Array.from(document.querySelectorAll('#budgetChipStrip .budget-chip[data-cat]')).find(el=>el.dataset.cat===cat)?.focus({preventScroll:true});
+}
 let _budgetStripScrollBound=false;
 function _bindBudgetStripScroll(strip){
   if(_budgetStripScrollBound||!strip)return;
@@ -6632,8 +6638,9 @@ function _syncBudgetStripToScroll(){
   const cat=best.dataset.cat;
   if(!cat||cat===_selectedBudgetCat)return;
   const prevEl=strip.querySelector('.budget-chip-sel');
-  if(prevEl){prevEl.classList.remove('budget-chip-sel');prevEl.style.background=budgetChipColor(prevEl.dataset.cat).base;}
+  if(prevEl){prevEl.setAttribute('aria-pressed','false');prevEl.classList.remove('budget-chip-sel');prevEl.style.background=budgetChipColor(prevEl.dataset.cat).base;}
   best.classList.add('budget-chip-sel');
+  best.setAttribute('aria-pressed','true');
   best.style.background=budgetChipColor(cat).sel;
   strip._budgetHtml=null;
   _selectedBudgetCat=cat;
@@ -6688,10 +6695,10 @@ function renderBudgetDetail(spent,effLim){
     +'<div id="budgetDetailTransactions" class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
       +(_budgetTxListOpen?(mTx.length?visibleTx.map(t=>
         '<div class="budget-tx-card" data-txid="'+t.id+'">'
-          +'<div class="budget-tx-top" onclick="editTx('+_jsId(t.id)+')">'
+          +'<button type="button" class="budget-tx-top" onclick="editTx('+_jsId(t.id)+')">'
             +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
             +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
-          +'</div>'
+          +'</button>'
           +'<div class="budget-tx-bottom">'
             +'<button type="button" class="budget-tx-del" onclick="event.stopPropagation();deleteTx('+_jsId(t.id)+')" aria-label="מחק">'+trashSvg+'</button>'
             +'<button type="button" class="budget-move-btn" onclick="event.stopPropagation();openMoveTxCat('+_jsId(t.id)+')">העברה לקטגוריה אחרת</button>'
@@ -6721,7 +6728,13 @@ function loadMoreBudgetTransactions(){
   if(button)button.focus({preventScroll:true});
   if(el)el.scrollTop=y;
 }
-function toggleBudgetTxList(){_budgetTxListOpen=!_budgetTxListOpen;const el=document.getElementById('main-content'),y=el?el.scrollTop:0;renderBudget();if(el)el.scrollTop=y;}
+function toggleBudgetTxList(){
+  const restoreFocus=!!document.activeElement?.matches('.budget-tx-grouphdr');
+  _budgetTxListOpen=!_budgetTxListOpen;
+  const el=document.getElementById('main-content'),y=el?el.scrollTop:0;
+  renderBudget();if(el)el.scrollTop=y;
+  if(restoreFocus)document.querySelector('.budget-tx-grouphdr')?.focus({preventScroll:true});
+}
 function editBudgetCat(cat){
   _clearInputError('budgetLimit');
   document.getElementById('budgetCat').value=cat;

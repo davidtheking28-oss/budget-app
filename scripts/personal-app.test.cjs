@@ -918,3 +918,26 @@ test('cash flow expansion restores keyboard focus without changing the scroll po
   assert.equal(ctx._expOpenGroups.has(key),false);
   assert.equal(main.scrollTop,240);
 });
+test('budget transaction expansion keeps keyboard focus and scroll position',()=>{
+  const main={scrollTop:180};let restored=false;
+  const ctx=functions(['toggleBudgetTxList'],{
+    _budgetTxListOpen:true,
+    document:{activeElement:{matches:()=>true},getElementById:()=>main,querySelector:()=>({focus:options=>{restored=options.preventScroll;}})},
+    renderBudget:()=>{main.scrollTop=0;},
+  });
+  ctx.toggleBudgetTxList();
+  assert.equal(ctx._budgetTxListOpen,false);
+  assert.equal(main.scrollTop,180);
+  assert.equal(restored,true);
+});
+test('budget category changes restore keyboard focus to the new category',()=>{
+  let selected;
+  const ctx=functions(['selectBudgetCat'],{
+    _selectedBudgetCat:'old',
+    document:{activeElement:{matches:()=>true},querySelectorAll:()=>[{dataset:{cat:'new'},focus:options=>{selected=options.preventScroll;}}]},
+    renderBudget:()=>{},
+  });
+  ctx.selectBudgetCat('new');
+  assert.equal(ctx._selectedBudgetCat,'new');
+  assert.equal(selected,true);
+});
