@@ -556,6 +556,23 @@
     #txAdvancedFilters{padding-bottom:8px;background:var(--surface2);border-bottom:1px solid var(--border)}
     #txFilterStatus{flex-wrap:wrap;line-height:1.5}
     #txFilterStatusText{flex:1;min-width:120px}
+    #page-budget .budget-detail-inner{position:relative;padding:16px}
+    #page-budget .budget-detail-header{display:block;position:relative;margin-bottom:12px}
+    #page-budget .budget-detail-text{width:100%}
+    #page-budget .budget-detail-name{display:flex;align-items:center;min-height:44px;padding-inline-end:56px;margin-bottom:12px;overflow-wrap:anywhere}
+    #page-budget .budget-detail-actions{position:absolute;inset-inline-end:0;top:0}
+    #page-budget .budget-detail-actions .exp-row-menu{margin:0}
+    #page-budget .budget-detail-planrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}
+    #page-budget .budget-detail-planbox{padding:12px 8px;border-radius:14px}
+    #page-budget .budget-detail-planvalue{font-size:22px;direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere}
+    #page-budget .budget-detail-planlabel{margin-bottom:4px}
+    .budget-balance-note{display:block;text-align:start;margin-top:8px;font-size:0.8rem;color:var(--text2)}
+    .budget-balance-over{color:var(--red)}
+    #page-budget .budget-tx-grouphdr{margin-top:14px;padding:12px 0;gap:8px}
+    #page-budget .budget-tx-grouplabel{font-size:14px;line-height:1.5}
+    #page-budget .budget-detail-txlist{margin-top:4px}
+    #page-budget .budget-tx-empty{padding:12px 0;font-size:14px;line-height:1.5}
+    #page-budget .budget-chip:not(.budget-chip-sel):not(.budget-chip-add){opacity:0.9}
     .dash-toprow{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;}
     .dash-greet{text-align:center;}
     .dash-greet-name{font-size:1rem;font-weight:800;color:var(--text);}
@@ -6655,13 +6672,14 @@ function renderBudgetDetail(spent,effLim){
           +'</div>'
           :'<div class="budget-detail-amount">'+fmt(s)+' <span class="budget-detail-limit">· ללא תקציב</span></div>')
       +'</div>'
-      +'<div class="budget-detail-actions">'
-        +'<button type="button" class="budget-icon-btn" data-act="del-budget" aria-label="מחק תקציב">'+trashSvg+'</button>'
-        +'<button type="button" class="budget-icon-btn" data-act="edit-budget" aria-label="ערוך תקציב">'+editSvg+'</button>'
-        +'<button type="button" class="budget-icon-btn" onclick="showPage(\'insights\')" aria-label="ניתוח">'+chartSvg+'</button>'
-      +'</div>'
+      +'<div class="budget-detail-actions"><details class="exp-row-menu" onkeydown="if(event.key===\'Escape\'){this.open=false;this.querySelector(\'summary\').focus();event.stopPropagation();}"><summary aria-label="פעולות תקציב '+esc(cat)+'">⋯</summary><div class="exp-row-actions">'
+        +'<button type="button" class="exp-row-action" data-act="edit-budget" aria-label="ערוך תקציב">'+editSvg+'עריכת תקציב</button>'
+        +'<button type="button" class="exp-row-action" onclick="this.closest(\'details\').open=false;showPage(\'insights\')" aria-label="ניתוח">'+chartSvg+'ניתוח הוצאות</button>'
+        +'<button type="button" class="exp-row-action" data-act="del-budget" aria-label="מחק תקציב">'+trashSvg+'מחיקת תקציב</button>'
+      +'</div></details></div>'
     +'</div>'
     +progBarHTML(pct,{wrapClass:'budget-prog-wrap',fillClass:'budget-prog-fill',stateClass:state})
+    +(baseLim?'<div class="budget-balance-note'+(s>lim?' budget-balance-over':'')+'">'+(s>lim?'חריגה של ':'נותרו ')+ '<bdi dir="ltr">'+fmt(Math.abs(lim-s))+'</bdi>'+(s>lim?' מהתקציב':' בתקציב')+'</div>':'')
     +'<button type="button" class="budget-tx-grouphdr" aria-expanded="'+_budgetTxListOpen+'" aria-controls="budgetDetailTransactions" onclick="toggleBudgetTxList()">'
       +chevronSvg
       +'<span class="budget-tx-groupsum">'+fmt(s)+'</span>'
@@ -6687,9 +6705,9 @@ function renderBudgetDetail(spent,effLim){
   detail.innerHTML=detailHtml;
   detail._budgetHtml=detailHtml;
   const delBtn=detail.querySelector('[data-act="del-budget"]');
-  if(delBtn)delBtn.onclick=()=>deleteBudget(cat);
+  if(delBtn)delBtn.onclick=()=>{delBtn.closest('details').open=false;deleteBudget(cat);};
   const editBtn=detail.querySelector('[data-act="edit-budget"]');
-  if(editBtn)editBtn.onclick=()=>editBudgetCat(cat);
+  if(editBtn)editBtn.onclick=()=>{editBtn.closest('details').open=false;editBtn.closest('details').querySelector('summary').focus();editBudgetCat(cat);};
 }
 let _budgetTxViewKey='';
 let _budgetTxVisibleCount=20;
