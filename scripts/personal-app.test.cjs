@@ -902,3 +902,19 @@ test('cached users keep local access when the SDK is temporarily unavailable',()
  let entered=0;const ctx=functions(['_initAuthGate'],{_localAccountReady:true,localStorage:storage({'sb-local-auth-token':JSON.stringify({user:{id:'cached-client'}})}),_sb:null,SUPA_ANON:'published-key',_cloudUser:null,_gateDone:false,_authGateTimer:null,hideSplash:()=>{},showAuthScreen:()=>{},_proceedToApp:()=>{entered++;},_loadAdvisorStatus:async()=>{},_applyAdvisorGate:()=>{},_loadMeetingAlerts:()=>{},_hasRealData:()=>true,setTimeout:()=>1,document:{getElementById:()=>null}});
  ctx._initAuthGate();assert.equal(entered,1);assert.equal(ctx._cloudUser.id,'cached-client');assert.equal(ctx._gateDone,true);
 });
+test('cash flow expansion restores keyboard focus without changing the scroll position',()=>{
+  const key='fx:insurance',id='exp-toggle-'+encodeURIComponent(key);
+  const main={scrollTop:240};let focusOptions;
+  const ctx=functions(['toggleExpGroup'],{
+    _expOpenGroups:new Set(),
+    document:{activeElement:{id},getElementById:value=>value==='main-content'?main:value===id?{focus:options=>{focusOptions=options;}}:null},
+    renderTxPage:()=>{main.scrollTop=0;},
+  });
+  ctx.toggleExpGroup(key);
+  assert.equal(ctx._expOpenGroups.has(key),true);
+  assert.equal(main.scrollTop,240);
+  assert.equal(focusOptions.preventScroll,true);
+  ctx.toggleExpGroup(key);
+  assert.equal(ctx._expOpenGroups.has(key),false);
+  assert.equal(main.scrollTop,240);
+});

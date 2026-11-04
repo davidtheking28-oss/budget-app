@@ -522,7 +522,7 @@
     .cashflow-page .section-title{display:flex;align-items:center;gap:8px}
     .cashflow-page .exp-add-row{min-height:48px;margin:4px 0 8px;padding:10px 12px;border-style:solid;border-width:1px;font-size:0.82rem;color:var(--accent-text)}
     .exp-row-value{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
-    #page-transactions .exp-body{padding:8px 10px 10px;margin-top:-9px;border:1px solid var(--border);border-top:0;border-radius:0 0 16px 16px;background:var(--surface)}
+    #page-transactions .exp-body{padding:8px 10px 10px;margin-top:0;border:1px solid var(--border);border-top:0;border-radius:0 0 16px 16px;background:var(--surface)}
     #page-transactions .exp-row:has(.exp-row-summary[aria-expanded="true"]){border-radius:16px 16px 0 0;margin-bottom:0;border-bottom-color:transparent}
     #page-transactions .exp-struct-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);box-shadow:none}
     #page-transactions .exp-struct-edit{display:flex;align-items:center;gap:8px;padding:0 4px;font-weight:600;line-height:1.5}
@@ -4099,7 +4099,14 @@ const _expTrashSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24
 const _expEditSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
 function _expChevron(open){return '<svg aria-hidden="true" focusable="false" class="exp-chevron'+(open?' exp-chevron-open':'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';}
 let _expOpenGroups=new Set();
-function toggleExpGroup(key){_expOpenGroups.has(key)?_expOpenGroups.delete(key):_expOpenGroups.add(key);const el=document.getElementById('main-content'),y=el?el.scrollTop:0;renderTxPage();if(el)el.scrollTop=y;}
+function toggleExpGroup(key){
+  const id='exp-toggle-'+encodeURIComponent(key),restoreFocus=document.activeElement?.id===id;
+  _expOpenGroups.has(key)?_expOpenGroups.delete(key):_expOpenGroups.add(key);
+  const el=document.getElementById('main-content'),y=el?el.scrollTop:0;
+  renderTxPage();
+  if(el)el.scrollTop=y;
+  if(restoreFocus)document.getElementById(id)?.focus({preventScroll:true});
+}
 function _expTxCardHtml(t){
   return '<div class="budget-tx-card" data-txid="'+t.id+'">'
     +'<div class="budget-tx-top" onclick="event.stopPropagation();editTx('+_jsId(t.id)+')">'
@@ -4151,16 +4158,16 @@ function _expStructListHtml(kind){
 }
 const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','עסקאות בתשלומים':'payments','מנויים ושירותים':'subs','ביטוחים':'insurance'};
 function _expRowHtml(opts){
-  const key=opts.key,open=_expOpenGroups.has(key);
-  return '<div class="exp-row"><button type="button" class="exp-row-summary" onclick="toggleExpGroup(\''+attrArg(key)+'\')" aria-expanded="'+open+'">'
+  const key=opts.key,open=_expOpenGroups.has(key),id=encodeURIComponent(key);
+  return '<div class="exp-row"><button type="button" class="exp-row-summary" id="exp-toggle-'+id+'" aria-controls="exp-detail-'+id+'" onclick="toggleExpGroup(\''+attrArg(key)+'\')" aria-expanded="'+open+'">'
     +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.iconCat||opts.cat)+'</span><span class="exp-name">'+esc(opts.cat)+(opts.auto?'<span class="exp-auto-badge">אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
       +'<span class="exp-row-value"><bdi dir="ltr" class="exp-amt">'+fmt(opts.amount)+'</bdi>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
       +'</span>'+_expChevron(open)+'</div></button>'
-    +(opts.editable?'<div class="exp-row-actions"><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך">'+_expEditSvg+'עריכה</button><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק">'+_expTrashSvg+'מחיקה</button></div>':'')
+    +(opts.editable?'<div class="exp-row-actions"><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך '+esc(opts.cat)+'">'+_expEditSvg+'עריכה</button><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק '+esc(opts.cat)+'">'+_expTrashSvg+'מחיקה</button></div>':'')
   +'</div>'
-  +(open?'<div class="exp-body">'+opts.body+'</div>':'');
+  +'<div class="exp-body" id="exp-detail-'+id+'"'+(open?'':' hidden')+'>'+ (open?opts.body:'')+'</div>';
 }
 function _viewingPastMonth(){const n=new Date();return currentYear<n.getFullYear()||(currentYear===n.getFullYear()&&currentMonth<n.getMonth());}
 function renderTxCategorized(byCat){
