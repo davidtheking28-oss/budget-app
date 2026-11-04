@@ -509,14 +509,23 @@
     .exp-pay-row{display:flex;gap:5px;color:var(--text2);}
     .exp-pay-row b{color:var(--text);font-weight:700;}
     .exp-add-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1.5px dashed var(--border);border-radius:16px;color:var(--text2);font-weight:700;cursor:pointer;margin-bottom:14px;background:none;width:100%;font-family:inherit;font-size:0.87rem;-webkit-tap-highlight-color:transparent;}
-    #page-transactions .exp-row{display:block;padding:0;overflow:hidden;cursor:default;box-shadow:none}
-    .exp-row-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:72px;padding:14px 12px;border:0;background:none;color:var(--text);font:inherit;text-align:start;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    #page-transactions .exp-row{display:flex;align-items:center;padding:0;position:relative;overflow:visible;cursor:default;box-shadow:none}
+    .exp-row-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-width:0;flex:1;min-height:72px;padding:14px 12px;border:0;background:none;color:var(--text);font:inherit;text-align:start;cursor:pointer;-webkit-tap-highlight-color:transparent}
     #page-transactions .exp-row-right{gap:10px}
-    #page-transactions .exp-name{display:flex;flex-direction:column;gap:3px}
+    #page-transactions .exp-name{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;white-space:normal}
     #page-transactions .exp-row-left{flex-wrap:nowrap;gap:10px}
-    .exp-row-actions{display:flex;justify-content:flex-end;gap:8px;padding:0 12px;border-top:1px solid var(--border);background:var(--surface2)}
-    .exp-row-action{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;min-width:72px;padding:0 8px;border:0;background:none;color:var(--text2);font:inherit;font-size:0.75rem;cursor:pointer}
-    .exp-row-action svg{width:15px;height:15px}
+    #page-transactions .exp-row-summary{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+    #page-transactions .exp-row-left{justify-content:space-between;width:100%}
+    #page-transactions .section:has(.exp-row-menu[open]){overflow:visible}
+    .exp-row-menu{position:relative;flex-shrink:0;margin-inline-end:8px}
+    .exp-row-menu>summary{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:1px solid var(--border);border-radius:12px;color:var(--text2);cursor:pointer;list-style:none;font-size:22px;letter-spacing:1px}
+    .exp-row-menu>summary::-webkit-details-marker{display:none}
+    .exp-row:has(.exp-row-menu[open]){z-index:20}
+    .exp-row-menu[open]>summary{color:var(--accent-text);background:rgba(var(--accent-rgb),0.1);border-color:var(--accent)}
+    .exp-row-actions{position:absolute;inset-inline-end:0;top:calc(100% + 6px);z-index:21;display:flex;flex-direction:column;min-width:160px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 28px rgba(0,0,0,0.18)}
+    .exp-row-action{display:inline-flex;align-items:center;justify-content:flex-start;gap:10px;min-height:44px;width:100%;padding:0 12px;border-radius:10px;border:0;background:none;color:var(--text2);font:inherit;font-size:0.75rem;cursor:pointer}
+    .exp-row-action svg{width:17px;height:17px}
+    .exp-row-action:last-child{color:var(--red)}
     .exp-row-summary:active,.exp-row-action:active{background:rgba(var(--accent-rgb),0.08)}
     .cashflow-page .section-header{padding:20px 2px 10px}
     .cashflow-page .section-title{display:flex;align-items:center;gap:8px}
@@ -4117,6 +4126,7 @@ const _expTrashSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24
 const _expEditSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
 function _expChevron(open){return '<svg aria-hidden="true" focusable="false" class="exp-chevron'+(open?' exp-chevron-open':'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';}
 let _expOpenGroups=new Set();
+document.addEventListener('click',function(event){document.querySelectorAll('.exp-row-menu[open]').forEach(function(menu){if(!menu.contains(event.target))menu.open=false;});});
 function toggleExpGroup(key){
   const id='exp-toggle-'+encodeURIComponent(key),restoreFocus=document.activeElement?.id===id;
   _expOpenGroups.has(key)?_expOpenGroups.delete(key):_expOpenGroups.add(key);
@@ -4183,7 +4193,7 @@ function _expRowHtml(opts){
       +'<span class="exp-row-value"><bdi dir="ltr" class="exp-amt">'+fmt(opts.amount)+'</bdi>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
       +'</span>'+_expChevron(open)+'</div></button>'
-    +(opts.editable?'<div class="exp-row-actions"><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onEdit+'" aria-label="ערוך '+esc(opts.cat)+'">'+_expEditSvg+'עריכה</button><button type="button" class="exp-row-action" onclick="event.stopPropagation();'+opts.onDelete+'" aria-label="מחק '+esc(opts.cat)+'">'+_expTrashSvg+'מחיקה</button></div>':'')
+    +(opts.editable?'<details class="exp-row-menu" onkeydown="if(event.key===\'Escape\'){this.open=false;this.querySelector(\'summary\').focus();event.stopPropagation();}" ontoggle="if(this.open)document.querySelectorAll(\'.exp-row-menu[open]\').forEach(el=>{if(el!==this)el.open=false;})"><summary aria-label="פעולות עבור '+esc(opts.cat)+'">⋯</summary><div class="exp-row-actions"><button type="button" class="exp-row-action" onclick="event.stopPropagation();this.closest(\'details\').open=false;this.closest(\'details\').querySelector(\'summary\').focus();'+opts.onEdit+'" aria-label="ערוך '+esc(opts.cat)+'">'+_expEditSvg+'עריכה</button><button type="button" class="exp-row-action" onclick="event.stopPropagation();this.closest(\'details\').open=false;this.closest(\'details\').querySelector(\'summary\').focus();'+opts.onDelete+'" aria-label="מחק '+esc(opts.cat)+'">'+_expTrashSvg+'מחיקה</button></div></details>':'')
   +'</div>'
   +'<div class="exp-body" id="exp-detail-'+id+'"'+(open?'':' hidden')+'>'+ (open?opts.body:'')+'</div>';
 }
