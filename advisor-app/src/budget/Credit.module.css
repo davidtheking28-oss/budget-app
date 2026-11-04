@@ -164,3 +164,12 @@
 @media (min-width: 861px) {
   .loanForm { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
 }
+
+.loanSummary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 8px 0 16px; }
+.loanSummary > div { display: flex; flex-direction: column; gap: 8px; padding: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.loanSummary span { color: var(--text2); font-size: var(--text-sm); }
+.loanSummary strong { color: var(--text); font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+.loanTable th:last-child, .loanTable td:last-child { width: 64px; text-align: center; }
+.loanTable th:nth-last-child(2), .loanTable td:nth-last-child(2) { width: 64px; text-align: center; }
+.statusBtn { width: 40px; height: 40px; }
+@media (max-width: 860px) { .loanSummary { grid-template-columns: 1fr; } }

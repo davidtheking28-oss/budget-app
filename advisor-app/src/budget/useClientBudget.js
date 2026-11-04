@@ -239,7 +239,7 @@ function fetchEntry(clientUserId, mode) {
       if (inflight.get(key) === promise) inflight.delete(key);
       if ((generation.get(key) || 0) !== gen) return;
       if (error) { setEntry(key, { data: null, error, ts: Date.now() }); return; }
-      setEntry(key, { data: unwrap(row, clientUserId, mode), error: null, ts: Date.now() });
+      setEntry(key, { data: unwrap(row, clientUserId, mode), row, error: null, ts: Date.now() });
     });
   inflight.set(key, promise);
   return promise;
@@ -294,21 +294,27 @@ function retainChannel(clientUserId) {
 // client+mode always run in order, each starting from the true prior result rather than
 // a snapshot taken before an earlier queued save finished.
 async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
-  const prev = cache.get(k)?.data || { user_id: clientUserId, ...EMPTY };
+  const previousEntry = cache.get(k);
+  const prev = previousEntry?.data || { user_id: clientUserId, ...EMPTY };
+  const baseRow = previousEntry?.row;
   const rawPatch = typeof patchOrFn === 'function' ? patchOrFn(prev) : patchOrFn;
   if (!rawPatch) return true;
   const linkedPatch = linkedFixedBudgetPatch({ ...prev, ...rawPatch });
   const patch = stampSync(prev, { ...rawPatch, ...linkedPatch });
   const next = { ...prev, ...patch };
   invalidate(k);
-  setEntry(k, { data: next, error: null, ts: Date.now() });
+  setEntry(k, { data: next, row: baseRow, error: null, ts: Date.now() });
   let error = null;
   let savedBundle;
+  let savedRow;
   try {
     for (let attempt = 0; attempt < 4; attempt++) {
-      const { data: freshRow, error: readError } = await supabase
-        .from('budget_data').select('*').eq('user_id', clientUserId).maybeSingle();
-      if (readError) { error = readError; break; }
+      let freshRow = attempt === 0 && baseRow?.updated_at ? baseRow : null;
+      if (!freshRow) {
+        const result = await supabase.from('budget_data').select('*').eq('user_id', clientUserId).maybeSingle();
+        if (result.error) { error = result.error; break; }
+        freshRow = result.data;
+      }
       const freshBundle = mode === 'business' ? (freshRow?.business || {}) : (freshRow || {});
       const merged = mergeBudgetPatch(freshBundle, patch);
       const linked = linkedFixedBudgetPatch({ ...freshBundle, ...merged });
@@ -322,7 +328,8 @@ async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
       const result = await writeBudgetVersion(supabase, row, freshRow);
       if (result.conflict) { error = { message: 'sync conflict' }; continue; }
       error = result.error;
-      savedBundle = { ...freshBundle, ...mergedPatch, user_id: clientUserId };
+      savedRow = { ...freshRow, ...row };
+      savedBundle = unwrap(savedRow, clientUserId, mode);
       break;
     }
   } catch (err) {
@@ -332,11 +339,11 @@ async function doSave(k, clientUserId, mode, advisorId, patchOrFn) {
     // Roll back but leave `error` null: the cache is shared across tabs, and a failed
     // write must not replace every screen's valid data with a full-page error. The
     // toast carries the failure; `error` stays reserved for a failed read.
-    if (cache.get(k)?.data === next) setEntry(k, { data: prev, error: null, ts: Date.now() });
+    if (cache.get(k)?.data === next) setEntry(k, { data: prev, row: baseRow, error: null, ts: Date.now() });
     toast('שגיאה בשמירה, נסה שוב', 'error');
     return false;
   }
-  if (cache.get(k)?.data === next) setEntry(k, { data: savedBundle, error: null, ts: Date.now() });
+  if (cache.get(k)?.data === next) setEntry(k, { data: savedBundle, row: savedRow, error: null, ts: Date.now() });
   return true;
 }
 

@@ -1,8 +1,10 @@
 .actions { flex-shrink: 0; }
-.actions > summary { list-style: none; cursor: pointer; min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-size: var(--text-lg); }
+.actions > summary { list-style: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-size: var(--text-lg); }
 .actions > summary::-webkit-details-marker { display: none; }
 .actions > summary:hover, .actions[open] > summary { background: var(--accent-dim); color: var(--accent); }
 .actions > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.items { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.items > button { width: auto; min-height: 36px; padding: 6px 10px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-family: inherit; }
-.items > button::after { content: attr(aria-label); font-size: var(--text-sm); white-space: nowrap; }
+.items { position: fixed; z-index: 10000; display: flex; flex-direction: column; gap: 2px; min-width: 180px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow-y: auto; padding: 6px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); box-shadow: 0 12px 32px rgba(0,0,0,.22); }
+.items > button { width: 100%; min-height: 40px; border-radius: var(--radius-sm); padding: 6px 10px; display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-family: inherit; }
+.items > button::after { content: attr(aria-label); font-size: var(--text-sm); white-space: normal; overflow-wrap: anywhere; text-align: start; }
+
+.items > button:hover, .items > button:focus-visible { background: var(--hover); outline: 2px solid var(--accent); outline-offset: -2px; }

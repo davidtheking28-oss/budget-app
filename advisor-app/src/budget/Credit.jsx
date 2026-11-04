@@ -63,7 +63,7 @@ export default function Credit({ clientUserId, advisorId, focus }) {
     const patch = {
       name: loanForm.name.trim(),
       monthly,
-      remaining: parseFloat(loanForm.remaining) || 0,
+      remaining: loanForm.remaining === '' ? null : (parseFloat(loanForm.remaining) || 0),
       original: parseFloat(loanForm.original) || 0,
       rate: parseFloat(loanForm.rate) || 0,
       asOf: loanForm.asOf || localISODate()
@@ -83,7 +83,7 @@ export default function Credit({ clientUserId, advisorId, focus }) {
       setSaving('');
     }
   }
-  function startEditLoan(l) { setLoanError(''); setEditingLoanId(l.id); setLoanForm({ name: l.name || '', monthly: l.monthly ?? '', remaining: l.remaining || '', original: l.original || '', rate: l.rate ?? '', asOf: l.asOf || '' }); }
+  function startEditLoan(l) { setLoanError(''); setEditingLoanId(l.id); setLoanForm({ name: l.name || '', monthly: l.monthly ?? '', remaining: l.remaining ?? '', original: l.original ?? '', rate: l.rate ?? '', asOf: l.asOf || '' }); }
 
   function resetPaymentForm() { setPaymentForm(EMPTY_PAYMENT); setEditingPaymentId(null); }
   async function submitPayment() {
@@ -187,7 +187,11 @@ export default function Credit({ clientUserId, advisorId, focus }) {
   return (
     <div className={styles.section}>
       <CollapsibleSection title={<>חובות והלוואות<span className={styles.countBadge}>{loans.length}</span></>}>
-        <p className={styles.summaryLine}>החזר חודשי {fmt(loansMonthly)} · יתרת קרן {fmt(loansBalance)} · נותר לשלם {fmt(loansLeft)}</p>
+        <div className={styles.loanSummary} aria-label="סיכום הלוואות">
+          <div><span>החזר חודשי</span><strong>{fmt(loansMonthly)}</strong></div>
+          <div><span>יתרת קרן שדווחה</span><strong>{activeLoans.some(l => l.remaining != null && l.remaining !== '') ? fmt(loansBalance) : 'לא הוזנה'}</strong></div>
+          <div><span>נותר לשלם לפי הנתונים</span><strong>{activeLoans.some(l => l.remaining > 0 && l.monthly > 0) ? fmt(loansLeft) : 'חסרים נתונים'}</strong></div>
+        </div>
         <p className={styles.sectionEmpty} style={{ textAlign: 'right' }}>ההחזר של ההלוואות הפעילות נכלל בחישוב, והעין מסתירה הלוואה מהחישוב.</p>
         {loans.length > 0 && (
           <div className={styles.loanTableWrap} role="region" aria-label="טבלת הלוואות, גלול לצפייה בכל השורות" tabIndex={0}>
@@ -200,7 +204,7 @@ export default function Credit({ clientUserId, advisorId, focus }) {
                     <tr key={l.id} className={styles.loanTr + (l.hidden ? ' ' + styles.rowHidden : '')} onClick={() => startEditLoan(l)}>
                       <td><div className={styles.name}>{l.name || 'הלוואה'}</div>{l.lender && <div className={styles.meta}>{l.lender}</div>}</td>
                       <td>{l.original ? fmt(l.original) : '—'}</td>
-                      <td>{l.remaining ? fmt(l.remaining) : '—'}</td>
+                      <td>{l.remaining != null && l.remaining !== '' ? fmt(l.remaining) : '—'}</td>
                       <td>{l.asOf ? formatDate(l.asOf) : '—'}</td>
                       <td>{l.rate || '—'}</td>
                       <td>{left === null ? '—' : left === Infinity ? '∞' : left}</td>
