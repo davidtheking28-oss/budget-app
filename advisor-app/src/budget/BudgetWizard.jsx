@@ -198,6 +198,15 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       .map(g => ({ id: g.id, name: g.name.trim(), target: parseFloat(g.target), months: parseFloat(g.months) || 0, saved: g.saved || 0 }));
 
     if (!cleanIncomes.length) { toast('צריך לפחות מקור הכנסה אחד', 'error'); return; }
+    const incomeNames = new Set();
+    const duplicateIncome = cleanIncomes.find(row => {
+      const name = row.name.toLowerCase();
+      if (incomeNames.has(name)) return true;
+      incomeNames.add(name);
+      return false;
+    });
+    if (duplicateIncome) { toast('מקור הכנסה כפול: ' + duplicateIncome.name + '. יש לתת שם שונה לכל מקור.', 'error'); return; }
+
 
     const today = new Date();
     const adjustmentDate = `${monthKeyOf(year, month)}-${year === today.getFullYear() && month === today.getMonth() ? String(today.getDate()).padStart(2, '0') : '01'}`;

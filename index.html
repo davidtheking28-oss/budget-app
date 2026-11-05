@@ -3973,8 +3973,13 @@ function checkRecurringIncome(){
   const todayDay=now.getDate();
   const sources=(userSettings.incomeSources||[]).filter(s=>s.name&&s.amount&&s.day&&todayDay>=parseInt(s.day));
   if(!sources.length)return;
-  const thisMonthIncomeNames=new Set(transactions.filter(t=>t.type==='income'&&(t.date||'').startsWith(monthKey)).map(t=>(t.desc||'').toLowerCase()));
-  const pending=sources.filter(s=>!thisMonthIncomeNames.has((s.name||'').toLowerCase()));
+  const thisMonthIncomeNames=new Set(transactions.filter(t=>t.type==='income'&&(t.date||'').startsWith(monthKey)).map(t=>(t.desc||'').trim().toLowerCase()));
+  const pending=sources.filter(s=>{
+    const name=(s.name||'').trim().toLowerCase();
+    if(thisMonthIncomeNames.has(name))return false;
+    thisMonthIncomeNames.add(name);
+    return true;
+  });
   if(!pending.length)return;
   const storKey=_modeKey('budget_ri_'+monthKey);
   if(localStorage.getItem(storKey))return;
@@ -5396,8 +5401,8 @@ function monthlyIncomeFor(y,m){
   const now=new Date();
   const isCurrent=(y===now.getFullYear()&&m===now.getMonth());
   if(!isCurrent&&!monthTx.length)return txIncome;
-  const postedNames=new Set(incomeTx.map(t=>(t.desc||'').toLowerCase()));
-  const unpostedSourcesIncome=_incomeSourcesFor(y,m).filter(src=>!postedNames.has((src.name||'').toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
+  const postedNames=new Set(incomeTx.map(t=>(t.desc||'').trim().toLowerCase()));
+  const unpostedSourcesIncome=_incomeSourcesFor(y,m).filter(src=>!postedNames.has((src.name||'').trim().toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
   return txIncome+unpostedSourcesIncome;
 }
 function getMonthlyIncome(){return monthlyIncomeFor(currentYear,currentMonth);}

@@ -263,3 +263,6 @@ describe('income actuals by source',()=>{
     expect(result.amounts.reduce((sum,n)=>sum+n,0)+result.unmatched).toBe(1000);
   });
 });
+it('matches posted income despite surrounding spaces and accepts stored numeric amounts',()=>{
+  expect(effectiveIncome([{type:'income',desc:' DJ ',amount:'500'}],[{name:'dj',amount:1000}])).toEqual({manualIncome:500,unpostedIncome:0,income:500});
+});

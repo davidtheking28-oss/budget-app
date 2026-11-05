@@ -982,3 +982,15 @@ test('budget subscription refreshes on reconnection and external advisor updates
   changed({new:{updated_by:'advisor'}});assert.equal(reads,2);assert.equal(toasts,1);
   changed({new:{updated_by:'client'}});assert.equal(reads,2);
 });
+test('income summaries match names with surrounding spaces without counting the plan again',()=>{
+  const now=new Date();
+  const ctx=functions(['monthlyIncomeFor'],{getMonthTx:()=>[{type:'income',desc:' DJ ',amount:500}],_incomeSourcesFor:()=>[{name:'dj',amount:1000}]});
+  assert.equal(ctx.monthlyIncomeFor(now.getFullYear(),now.getMonth()),500);
+});
+test('automatic income posting recognizes normalized names and never posts duplicate source names twice',()=>{
+  const now=new Date();const key=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');let saves=0;
+  const ctx=functions(['checkRecurringIncome'],{currentYear:now.getFullYear(),currentMonth:now.getMonth(),mk:()=>key,_modeKey:k=>k,userSettings:{incomeSources:[{name:'שכר',amount:1000,day:1},{name:' שכר ',amount:1000,day:1}]},transactions:[],localISO:()=>key+'-01',saveData:()=>{saves++;},refreshAll:()=>{},showUndoToast:()=>{},esc:s=>s});
+  ctx.checkRecurringIncome();assert.equal(ctx.transactions.length,1);assert.equal(saves,1);
+  saves=0;ctx.transactions=[{id:1,type:'income',desc:' שכר ',amount:1000,date:key+'-01'}];ctx.localStorage=storage();
+  ctx.checkRecurringIncome();assert.equal(ctx.transactions.length,1);assert.equal(saves,0);
+});
