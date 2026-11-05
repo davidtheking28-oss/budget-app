@@ -14,7 +14,6 @@ import { fmt } from '../format.js';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip);
 
-const SUGGESTED_INCOME = ['שכר', 'שכר בן/בת זוג', 'קצבת ילדים', 'פרילנס'];
 const SAVINGS_CATEGORY = 'הוראת קבע לחסכון';
 
 const topLabels = {
@@ -369,6 +368,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       <>
         <div className={styles.itemAmountBox}>
           <div className={styles.itemAmountBoxLabel}>{actualOf ? 'תכנון' : 'סכום'}</div>
+          <div className={styles.formattedAmount}>
           <input
             className={styles.itemAmountInput}
             type="number"
@@ -379,6 +379,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                   value={r.amount}
             onChange={e => updateRow(setter, i, { amount: e.target.value })}
           />
+          <span className={styles.amountPreview} aria-hidden="true">{fmt(Number(r.amount) || 0)}</span>
+          </div>
         </div>
         {actualOf && (
           <div className={styles.itemActualBox}>
@@ -548,7 +550,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 <span className={styles.cardTitle}>מאיפה מגיע הכסף?</span>
                 <div className={styles.incomeTotals}><span>תכנון <bdi>{fmt(totalIncome)}</bdi></span><span>ביצוע <bdi>{fmt(totalIncomeActual)}</bdi></span></div>
               </div>
-              {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, (_name, _amount, index) => incomeActual.amounts[index], true)}
+              {rowList(incomes, setIncomes, 'שם מקור ההכנסה', [], (_name, _amount, index) => incomeActual.amounts[index], true)}
               <p className={styles.incomeHint}>הביצוע מחושב מההכנסות שנרשמו בחודש הנבחר.</p>
               {incomeActual.unmatched !== 0 && <p className={styles.incomeHint}>הכנסות בפועל ללא שיוך למקורות האלה: <bdi>{fmt(incomeActual.unmatched)}</bdi></p>}
             </div>

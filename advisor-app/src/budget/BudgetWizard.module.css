@@ -539,3 +539,11 @@
 .incomeTotals { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px 14px; color: var(--text2); font-size: var(--text-sm); }
 .incomeTotals bdi { color: var(--text); font-weight: 700; white-space: nowrap; }
 .incomeHint { margin: 12px 0 0; color: var(--text2); font-size: var(--text-xs); line-height: 1.6; }
+
+.formattedAmount { display: grid; }
+.formattedAmount > * { grid-area: 1 / 1; min-width: 0; }
+.formattedAmount:not(:focus-within) > input { color: transparent; }
+.formattedAmount:not(:focus-within) > input::placeholder { color: transparent; }
+.amountPreview { pointer-events: none; align-self: center; font-size: var(--text-base); font-weight: 700; font-variant-numeric: tabular-nums; direction: ltr; }
+.formattedAmount:focus-within > .amountPreview { visibility: hidden; }
+@media (min-width: 861px) { .amountPreview { font-size: var(--text-lg); } }
