@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor, budgetActuals, averageMonthSummary } from './budgetMath.js';
+import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor, budgetActuals, averageMonthSummary, incomeActualsBySource } from './budgetMath.js';
 
 const data = {
   budgets: { 'מזון': 1000, 'בילויים': 500 },
@@ -247,4 +247,19 @@ describe('mapping fixed expenses in average month', () => {
 it('cleared mapped categories do not reappear from old transactions in the combined average', () => {
   const avg = averageMonthSummary({ fixed_expenses: [{ id: 'חשמל', amount: 0, linkedSource: 'mapping' }], transactions: [{ type: 'expense', cat: 'חשמל', amount: 600, date: '2026-10-01' }] });
   expect(avg.fixed).toBe(0);
+});
+describe('income actuals by source',()=>{
+  it('shows actual transactions rather than copying planned income',()=>{
+    expect(incomeActualsBySource([],[{name:'שכר',amount:10000}])).toEqual({amounts:[0],unmatched:0});
+  });
+  it('sums partial income postings and ignores expenses',()=>{
+    expect(incomeActualsBySource([{type:'income',desc:'שכר',amount:4000},{type:'income',desc:'שכר',amount:2500},{type:'expense',desc:'שכר',amount:900}],[{name:'שכר'}])).toEqual({amounts:[6500],unmatched:0});
+  });
+  it('normalizes case and spaces but does not guess a different income source',()=>{
+    expect(incomeActualsBySource([{type:'income',desc:' DJ ',amount:500},{type:'income',desc:'העברה',amount:200}],[{name:'dj'},{name:'משכורת שלי'}])).toEqual({amounts:[500,0],unmatched:200});
+  });
+  it('never counts the same transaction twice when source names are duplicated',()=>{
+    const result=incomeActualsBySource([{type:'income',desc:'שכר',amount:1000}],[{name:'שכר'},{name:'שכר'}]);
+    expect(result.amounts.reduce((sum,n)=>sum+n,0)+result.unmatched).toBe(1000);
+  });
 });

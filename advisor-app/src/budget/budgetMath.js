@@ -42,6 +42,23 @@ export function incomeSourcesFor(settings, year, month) {
   return keys.length ? history[keys[keys.length - 1]] : (settings?.incomeSources || []);
 }
 
+export function incomeActualsBySource(transactions, sources) {
+  const amounts = sources.map(() => 0);
+  const indexes = new Map();
+  sources.forEach((source, index) => {
+    const name = (source.name || '').trim().toLowerCase();
+    if (name && !indexes.has(name)) indexes.set(name, index);
+  });
+  let unmatched = 0;
+  (transactions || []).filter(row => row.type === 'income').forEach(row => {
+    const index = indexes.get((row.desc || '').trim().toLowerCase());
+    const amount = parseFloat(row.amount) || 0;
+    if (index === undefined) unmatched += amount;
+    else amounts[index] += amount;
+  });
+  return { amounts, unmatched };
+}
+
 export function effectiveIncome(transactions, incomeSources) {
   const incomeTx = (transactions || []).filter(t => t.type === 'income');
   const manualIncome = incomeTx.reduce((s, t) => s + t.amount, 0);

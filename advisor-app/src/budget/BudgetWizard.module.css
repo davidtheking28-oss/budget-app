@@ -535,3 +535,7 @@
   .itemAmountBox, .itemActualBox { padding: 8px 10px; }
 }
 .itemCard:focus-within { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+.incomeTotals { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px 14px; color: var(--text2); font-size: var(--text-sm); }
+.incomeTotals bdi { color: var(--text); font-weight: 700; white-space: nowrap; }
+.incomeHint { margin: 12px 0 0; color: var(--text2); font-size: var(--text-xs); line-height: 1.6; }

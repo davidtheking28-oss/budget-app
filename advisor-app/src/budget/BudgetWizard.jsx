@@ -4,7 +4,7 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } fro
 import { Bar } from 'react-chartjs-2';
 import { FIXED_CATS, CHART_PALETTE, chartTheme, fixedCatsFor, expenseCatsFor, budgetCatsFor } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
-import { monthKeyOf, incomeSourcesFor, budgetActuals, averageMonthSummary } from './budgetMath.js';
+import { monthKeyOf, incomeSourcesFor, incomeActualsBySource, budgetActuals, averageMonthSummary } from './budgetMath.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -102,6 +102,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const existing = incomeSourcesFor(data?.settings, year, month);
     return (existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '' })) : [{ name: 'שכר', amount: '', day: '' }]).map(trackRow);
   });
+  const incomeActual = useMemo(() => incomeActualsBySource(monthTx, incomes), [monthTx, incomes]);
   const [fixed, setFixed] = useState(() => {
     const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
     return fixedCatsFor(data).map(name => trackRow({ name, amount: existing[name] ?? '', ...((data?.fixed_expenses || []).find(row => row.id === name)?.savings ? { savings: true } : {}) }));
@@ -360,7 +361,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             className={styles.itemAmountInput}
             type="number"
             inputMode="decimal"
-            aria-label="סכום חודשי"
+            aria-label={actualOf ? 'תכנון הכנסה · ' + (r.name || 'מקור חדש') : 'סכום חודשי'}
             placeholder="0"
             data-changed={String(r.amount ?? '') !== String(r._before?.amount ?? '')}
                   value={r.amount}
@@ -383,7 +384,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
               />
             ) : (
-              <div className={styles.itemActualValue}>{fmt(actualOf(r.name, r.amount))}</div>
+              <output className={styles.itemActualValue} aria-label={'ביצוע הכנסה · ' + (r.name || 'מקור חדש')}>{fmt(actualOf(r.name, r.amount, i))}</output>
             )}
           </div>
         )}
@@ -533,9 +534,11 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             <div className={styles.card}>
               <div className={styles.cardTitleRow}>
                 <span className={styles.cardTitle}>מאיפה מגיע הכסף?</span>
-                <span className={styles.cardTotal}>{fmt(totalIncome)}</span>
+                <div className={styles.incomeTotals}><span>תכנון <bdi>{fmt(totalIncome)}</bdi></span><span>ביצוע <bdi>{fmt(totalIncomeActual)}</bdi></span></div>
               </div>
-              {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, null, true)}
+              {rowList(incomes, setIncomes, 'שם מקור ההכנסה', SUGGESTED_INCOME, (_name, _amount, index) => incomeActual.amounts[index], true)}
+              <p className={styles.incomeHint}>הביצוע מחושב מההכנסות שנרשמו בחודש הנבחר.</p>
+              {incomeActual.unmatched !== 0 && <p className={styles.incomeHint}>הכנסות בפועל ללא שיוך למקורות האלה: <bdi>{fmt(incomeActual.unmatched)}</bdi></p>}
             </div>
             <div className={styles.card}>
               <div className={styles.cardTitleRow}>
