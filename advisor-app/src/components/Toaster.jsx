@@ -56,7 +56,13 @@ export default function Toaster() {
             <button
               type="button"
               className={styles.undo}
-              onClick={e => { e.currentTarget.disabled = true; i.action.onClick(); dismiss(i.id); }}
+              onClick={async e => {
+                const button = e.currentTarget;
+                button.disabled = true;
+                const ok = await i.action.onClick();
+                if (ok === false) { button.disabled = false; return; }
+                dismiss(i.id);
+              }}
             >
               {i.action.label}
             </button>
