@@ -111,9 +111,6 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const existing = data?.budgets || {};
     return expenseCatsFor(mode, data).map(name => trackRow({ name, amount: existing[name] ?? '' }));
   });
-  const [goals] = useState(() =>
-    (data?.goals || []).map(g => ({ id: g.id, name: g.name || '', target: g.target ?? '', months: g.months ?? '', saved: g.saved || 0 }))
-  );
 
   const draftSignature = JSON.stringify({ incomes: incomes.map(r => [r.name, String(r.amount ?? ''), String(r.day ?? '')]), fixed: fixed.map(r => [r.name, String(r.amount ?? '')]), variable: variable.map(r => [r.name, String(r.amount ?? '')]), actualEdits });
   const [savedDraft, setSavedDraft] = useState(draftSignature);
@@ -194,8 +191,6 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const cleanFixed = fixed.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
       .map(r => ({ id: r.name.trim(), amount: parseFloat(r.amount), ...(r.savings ? { savings: true } : {}) }));
     const cleanVar = variable.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
-    const cleanGoals = goals.filter(g => g.name.trim() && parseFloat(g.target) > 0)
-      .map(g => ({ id: g.id, name: g.name.trim(), target: parseFloat(g.target), months: parseFloat(g.months) || 0, saved: g.saved || 0 }));
 
     if (!cleanIncomes.length) { toast('צריך לפחות מקור הכנסה אחד', 'error'); return; }
     const incomeNames = new Set();
@@ -206,6 +201,15 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       return false;
     });
     if (duplicateIncome) { toast('מקור הכנסה כפול: ' + duplicateIncome.name + '. יש לתת שם שונה לכל מקור.', 'error'); return; }
+    const categoryNames = new Set();
+    const duplicateCategory = [...cleanFixed.map(row => row.id), ...cleanVar.map(row => row.name.trim())].find(name => {
+      const key = name.toLowerCase();
+      if (categoryNames.has(key)) return true;
+      categoryNames.add(key);
+      return false;
+    });
+    if (duplicateCategory) { toast('קטגוריה כפולה: ' + duplicateCategory + '. יש להשאיר שורה אחת לכל קטגוריה.', 'error'); return; }
+
 
 
     const today = new Date();
@@ -238,8 +242,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
         },
         fixed_expenses: cleanFixed,
         budgets: nextBudgets,
-        ...(adjustments.length ? { transactions: [...adjustments, ...(cur.transactions || [])] } : {}),
-        goals: cleanGoals
+        ...(adjustments.length ? { transactions: [...adjustments, ...(cur.transactions || [])] } : {})
       };
     });
     setSaving(false);
@@ -536,7 +539,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
               ))}
             </div>
 
-            <div className={styles.summaryNote}>השמירה תעדכן את התקציב, ההוצאות הקבועות, מקורות ההכנסה והיעדים באפליקציה של הלקוח.</div>
+            <div className={styles.summaryNote}>השמירה תעדכן את התקציב, ההוצאות הקבועות ומקורות ההכנסה באפליקציה של הלקוח.</div>
           </div>
 
           <div className={styles.expGrid}>
