@@ -79,7 +79,6 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const fixedActual = monthlyActual.fixed;
   const fixedNameSet = useMemo(() => new Set(fixedCatsFor(data)), [data]);
   const [actualEdits, setActualEdits] = useState({});
-  const [savedActualEdits, setSavedActualEdits] = useState({});
   const variableActualBase = monthlyActual.variable;
   const variableActual = useMemo(() => {
     const map = { ...variableActualBase };
@@ -255,11 +254,11 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     setSaving(false);
     setSaveStatus(ok === false ? 'error' : 'saved');
     if (ok === false) return;
-    setSavedDraft(draftSignature);
+    setSavedDraft(JSON.stringify({ ...JSON.parse(draftSignature), actualEdits: {} }));
     setIncomes(rows => rows.map(trackRow));
     setFixed(rows => rows.map(trackRow));
     setVariable(rows => rows.map(trackRow));
-    setSavedActualEdits({ ...actualEdits });
+    setActualEdits(current => Object.fromEntries(Object.entries(current).filter(([name, value]) => value !== actualEdits[name])));
     toast('התקציב נשמר ועבר לאפליקציה של הלקוח', 'success');
   }
 
@@ -361,7 +360,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     min={(fixedNameSet.has(r.name) ? fixedActual[r.name] : variableActualBase[r.name]) || 0}
                     aria-label={'ביצוע · ' + (r.name || 'שורה חדשה')}
                     placeholder="0"
-                    data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String(savedActualEdits[r.name] ?? (actualOf(r.name, r.amount) || ''))}
+                    data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String((actualOf(r.name, r.amount) || ''))}
                     value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
                     onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
                   />
@@ -429,7 +428,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 inputMode="decimal"
                 min={(fixedNameSet.has(r.name) ? fixedActual[r.name] : variableActualBase[r.name]) || 0}
                 aria-label="ביצוע בפועל"
-                data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String(savedActualEdits[r.name] ?? (actualOf(r.name, r.amount) || ''))}
+                data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String((actualOf(r.name, r.amount) || ''))}
                     value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
                 placeholder="0"
                 onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
