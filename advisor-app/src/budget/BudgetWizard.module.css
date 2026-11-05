@@ -547,3 +547,8 @@
 .amountPreview { pointer-events: none; align-self: center; font-size: var(--text-base); font-weight: 700; font-variant-numeric: tabular-nums; direction: ltr; }
 .formattedAmount:focus-within > .amountPreview { visibility: hidden; }
 @media (min-width: 861px) { .amountPreview { font-size: var(--text-lg); } }
+
+.tableAmount { min-width: 0; }
+.tableAmount > .amountPreview { font-size: var(--text-base); }
+.tableAmount > input[aria-invalid="true"] { border-color: var(--red); }
+.actualError { grid-column: 1 / -1; margin: 0; color: var(--red); font-size: var(--text-sm); line-height: 1.5; }

@@ -211,6 +211,13 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
 
 
 
+    const belowRecorded = Object.entries(actualEdits).find(([name, value]) => (parseFloat(value) || 0) < ((fixedNameSet.has(name) ? fixedActual[name] : variableActualBase[name]) || 0));
+    if (belowRecorded) {
+      toast('לא ניתן להקטין ביצוע מתחת לסכום שכבר נרשם. יש לערוך או למחוק את העסקאות בתזרים.', 'error');
+      wizardRef.current?.querySelector('input[aria-invalid="true"]')?.focus();
+      return;
+    }
+
     const today = new Date();
     const adjustmentDate = `${monthKeyOf(year, month)}-${year === today.getFullYear() && month === today.getMonth() ? String(today.getDate()).padStart(2, '0') : '01'}`;
     const adjustments = Object.entries(actualEdits)
@@ -296,6 +303,9 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
           {list.map((r, i) => rowFilter(r) && ((() => {
             const actual = actualEdits[r.name] ?? (actualOf(r.name, r.amount) || 0);
             const over = (parseFloat(actual) || 0) > (parseFloat(r.amount) || 0);
+            const recorded = (fixedNameSet.has(r.name) ? fixedActual[r.name] : variableActualBase[r.name]) || 0;
+            const belowRecorded = (parseFloat(actual) || 0) < recorded;
+            const errorId = 'budget-actual-' + encodeURIComponent(r.name);
             return (
               <div className={styles.tblRow + (r.name === focusCategory ? ' ' + styles.categoryFocused : '')} data-budget-category={r.name} key={i}>
                 <div className={styles.tblName}>
@@ -310,6 +320,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                   />
                   <span className={styles.tblPct}>{pctOf(r)}</span>
                 </div>
+                <div className={styles.formattedAmount + " " + styles.tableAmount}>
                 <input
                   className={styles.tblInput}
                   type="number"
@@ -320,11 +331,16 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                   value={r.amount}
                   onChange={e => updateRow(setter, i, { amount: e.target.value })}
                 />
+                  <span className={styles.amountPreview} aria-hidden="true">{fmt(Number(r.amount) || 0)}</span>
+                </div>
                 {editableActual ? (
+                  <div className={styles.formattedAmount + " " + styles.tableAmount + (over ? " " + styles.tblOverText : "")}>
                   <input
                     className={styles.tblInput + (over ? ' ' + styles.tblOver : '')}
                     type="number"
                     inputMode="decimal"
+                    aria-invalid={belowRecorded || undefined}
+                    aria-describedby={belowRecorded ? errorId : undefined}
                     min={(fixedNameSet.has(r.name) ? fixedActual[r.name] : variableActualBase[r.name]) || 0}
                     aria-label={'ביצוע · ' + (r.name || 'שורה חדשה')}
                     placeholder="0"
@@ -332,10 +348,13 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
                     onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
                   />
+                    <span className={styles.amountPreview} aria-hidden="true">{fmt(Number(actual) || 0)}</span>
+                  </div>
                 ) : (
                   <div className={styles.tblValue + (over ? ' ' + styles.tblOverText : '')}>{fmt(actual)}</div>
                 )}
                 <DeleteButton title={`מחק · ${r.name || 'שורה'}`} onClick={() => removeRow(setter, i)} />
+                {belowRecorded && <p className={styles.actualError} id={errorId} role="alert">כבר נרשמו {fmt(recorded)}. להקטנת הביצוע יש לערוך או למחוק את העסקאות בתזרים.</p>}
               </div>
             );
           })()))}
