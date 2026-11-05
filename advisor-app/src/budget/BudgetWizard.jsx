@@ -4,7 +4,7 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } fro
 import { Bar } from 'react-chartjs-2';
 import { FIXED_CATS, CHART_PALETTE, chartTheme, fixedCatsFor, expenseCatsFor, budgetCatsFor } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
-import { monthKeyOf, incomeSourcesFor, incomeActualsBySource, budgetActuals, averageMonthSummary } from './budgetMath.js';
+import { monthKeyOf, incomeSourcesFor, incomeActualsBySource, budgetActuals, averageMonthSummary, renameExpenseCategories } from './budgetMath.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -38,7 +38,9 @@ const topLabels = {
 
 const isSavingsRow = r => r.savings || r.name === SAVINGS_CATEGORY;
 
-function trackRow(row) { return { ...row, _before: { name: row.name, amount: row.amount, day: row.day } }; }
+let rowSequence = 0;
+
+function trackRow(row) { return { ...row, _key: row._key ?? ++rowSequence, _before: { name: row.name, amount: row.amount, day: row.day } }; }
 
 function sumAmounts(list) {
   return list.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
@@ -70,15 +72,42 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const flowPeriod = period ?? localPeriod;
   const setFlowPeriod = onPeriodChange ?? setLocalPeriod;
 
+  const [incomes, setIncomes] = useState(() => {
+    const existing = incomeSourcesFor(data?.settings, year, month);
+    return (existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '' })) : [{ name: 'שכר', amount: '', day: '' }]).map(trackRow);
+  });
+  const [fixed, setFixed] = useState(() => {
+    const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
+    return fixedCatsFor(data).map(name => trackRow({ name, amount: existing[name] ?? '', ...((data?.fixed_expenses || []).find(row => row.id === name)?.savings ? { savings: true } : {}) }));
+  });
+  const [variable, setVariable] = useState(() => {
+    const existing = data?.budgets || {};
+    return expenseCatsFor(mode, data).map(name => trackRow({ name, amount: existing[name] ?? '' }));
+  });
+
+  const categoryRenames = useMemo(() => Object.fromEntries([...fixed, ...variable]
+    .filter(row => row._before?.name && row.name.trim() && row._before.name !== row.name.trim())
+    .map(row => [row._before.name, row.name.trim()])), [fixed, variable]);
+  const draftData = useMemo(() => ({
+    ...data,
+    transactions: renameExpenseCategories(data?.transactions, categoryRenames),
+    fixed_expenses: fixed.map(row => ({ ...(data?.fixed_expenses || []).find(item => item.id === (row._before?.name || row.name)), id: row.name.trim(), ...(isSavingsRow(row) ? { savings: true } : {}) })),
+    settings: { ...data?.settings, customFixedCats: (data?.settings?.customFixedCats || []).map(name => categoryRenames[name] || name) }
+  }), [data, categoryRenames, fixed]);
+
   // Income sources and fixed expenses aren't month-scoped in storage — they're the
   // recurring plan and already apply to every month by default. What's missing is
   // showing this month's actual next to that plan, matched by name (income) / category
   // (fixed), the same way transactions already resolve against them elsewhere.
-  const monthTx = useMemo(() => getMonthTx(data?.transactions, year, month), [data, year, month]);
-  const monthlyActual = useMemo(() => budgetActuals(data, monthTx), [data, monthTx]);
+  const monthTx = useMemo(() => getMonthTx(draftData.transactions, year, month), [draftData, year, month]);
+  const monthlyActual = useMemo(() => budgetActuals(draftData, monthTx), [draftData, monthTx]);
   const fixedActual = monthlyActual.fixed;
-  const fixedNameSet = useMemo(() => new Set(fixedCatsFor(data)), [data]);
-  const [actualEdits, setActualEdits] = useState({});
+  const fixedNameSet = useMemo(() => new Set(fixedCatsFor(draftData)), [draftData]);
+  const [rowActualEdits, setRowActualEdits] = useState({});
+  const actualEdits = useMemo(() => Object.fromEntries([...fixed, ...variable]
+    .filter(row => Object.hasOwn(rowActualEdits, row._key))
+    .map(row => [row.name.trim(), rowActualEdits[row._key]])), [fixed, variable, rowActualEdits]);
+  const incomeActual = useMemo(() => incomeActualsBySource(monthTx, incomes), [monthTx, incomes]);
   const variableActualBase = monthlyActual.variable;
   const variableActual = useMemo(() => {
     const map = { ...variableActualBase };
@@ -96,20 +125,6 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     });
     return map;
   }, [fixedActual, actualEdits, fixedNameSet]);
-
-  const [incomes, setIncomes] = useState(() => {
-    const existing = incomeSourcesFor(data?.settings, year, month);
-    return (existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '' })) : [{ name: 'שכר', amount: '', day: '' }]).map(trackRow);
-  });
-  const incomeActual = useMemo(() => incomeActualsBySource(monthTx, incomes), [monthTx, incomes]);
-  const [fixed, setFixed] = useState(() => {
-    const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
-    return fixedCatsFor(data).map(name => trackRow({ name, amount: existing[name] ?? '', ...((data?.fixed_expenses || []).find(row => row.id === name)?.savings ? { savings: true } : {}) }));
-  });
-  const [variable, setVariable] = useState(() => {
-    const existing = data?.budgets || {};
-    return expenseCatsFor(mode, data).map(name => trackRow({ name, amount: existing[name] ?? '' }));
-  });
 
   const draftSignature = JSON.stringify({ incomes: incomes.map(r => [r.name, String(r.amount ?? ''), String(r.day ?? '')]), fixed: fixed.map(r => [r.name, String(r.amount ?? '')]), variable: variable.map(r => [r.name, String(r.amount ?? '')]), actualEdits });
   const [savedDraft, setSavedDraft] = useState(draftSignature);
@@ -175,9 +190,17 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const [years, setYears] = useState(5);
   const [breakdownBy, setBreakdownBy] = useState('type');
 
-  function addRow(setter, name = '', extra = {}) { setter(prev => [...prev, { name, amount: '', _before: {}, ...extra }]); }
-  function updateRow(setter, i, patch) { setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...(patch.name !== undefined && isSavingsRow(r) ? { savings: true } : {}), ...patch } : r)); }
-  function removeRow(setter, i) { setter(prev => prev.filter((_, idx) => idx !== i)); }
+  function addRow(setter, name = '', extra = {}) { setter(prev => [...prev, { ...trackRow({ name, amount: '', ...extra }), _before: {} }]); }
+  function updateRow(setter, i, patch) {
+    setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...(patch.name !== undefined && isSavingsRow(r) ? { savings: true } : {}), ...patch } : r));
+  }
+  function removeRow(setter, i) {
+    if (setter !== setIncomes) {
+      const row = (setter === setFixed ? fixed : variable)[i];
+      setRowActualEdits(current => Object.fromEntries(Object.entries(current).filter(([key]) => key !== String(row._key))));
+    }
+    setter(prev => prev.filter((_, idx) => idx !== i));
+  }
 
   function pickSuggestion(setter, list, name) {
     if (list.some(r => sameCategory(r.name, name))) { toast('כבר ברשימה', 'info'); return; }
@@ -201,7 +224,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     });
     if (duplicateIncome) { toast('מקור הכנסה כפול: ' + duplicateIncome.name + '. יש לתת שם שונה לכל מקור.', 'error'); return; }
     const categoryNames = new Set();
-    const duplicateCategory = [...cleanFixed.map(row => row.id), ...cleanVar.map(row => row.name.trim())].find(name => {
+    const duplicateCategory = [...fixed, ...variable].map(row => row.name.trim()).filter(Boolean).find(name => {
       const key = name.toLowerCase();
       if (categoryNames.has(key)) return true;
       categoryNames.add(key);
@@ -210,6 +233,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     if (duplicateCategory) { toast('קטגוריה כפולה: ' + duplicateCategory + '. יש להשאיר שורה אחת לכל קטגוריה.', 'error'); return; }
 
 
+
+    if (Object.hasOwn(actualEdits, '')) { toast('יש לתת שם לקטגוריה לפני שמירת הביצוע.', 'error'); return; }
 
     const belowRecorded = Object.entries(actualEdits).find(([name, value]) => (parseFloat(value) || 0) < ((fixedNameSet.has(name) ? fixedActual[name] : variableActualBase[name]) || 0));
     if (belowRecorded) {
@@ -229,6 +254,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     setSaveStatus('saving');
     const ok = await save(cur => {
       const nextBudgets = { ...(cur.budgets || {}) };
+      Object.keys(categoryRenames).forEach(name => { delete nextBudgets[name]; });
       Object.keys(nextBudgets).forEach(c => { if (!FIXED_CATS.includes(c)) delete nextBudgets[c]; });
       // keep the Budget tab's per-category budgets in sync with this fixed-expenses list,
       // so the two screens don't show different numbers for the same fixed category
@@ -238,8 +264,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       return {
         settings: {
           ...(cur.settings || {}),
-          customCats: [...new Set([...(cur.settings?.customCats || []), ...cleanVar.map(row => row.name.trim()).filter(name => !budgetCatsFor(mode).includes(name))])],
-          customFixedCats: [...new Set([...(cur.settings?.customFixedCats || []), ...cleanFixed.map(row => row.id).filter(name => !FIXED_CATS.includes(name))])],
+          customCats: [...new Set([...(cur.settings?.customCats || []).map(name => categoryRenames[name] || name), ...cleanVar.map(row => row.name.trim()).filter(name => !budgetCatsFor(mode).includes(name))])],
+          customFixedCats: [...new Set([...(cur.settings?.customFixedCats || []).map(name => categoryRenames[name] || name), ...cleanFixed.map(row => row.id).filter(name => !FIXED_CATS.includes(name))])],
           incomeSources: cleanIncomes,
           incomeHistory: {
             ...(cur.settings?.incomeHistory || { '0000-00': cur.settings?.incomeSources || [] }),
@@ -248,7 +274,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
         },
         fixed_expenses: cleanFixed,
         budgets: nextBudgets,
-        ...(adjustments.length ? { transactions: [...adjustments, ...(cur.transactions || [])] } : {})
+        ...(adjustments.length || Object.keys(categoryRenames).length ? { transactions: [...adjustments, ...renameExpenseCategories(cur.transactions, categoryRenames)] } : {})
       };
     });
     setSaving(false);
@@ -258,7 +284,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     setIncomes(rows => rows.map(trackRow));
     setFixed(rows => rows.map(trackRow));
     setVariable(rows => rows.map(trackRow));
-    setActualEdits(current => Object.fromEntries(Object.entries(current).filter(([name, value]) => value !== actualEdits[name])));
+    setRowActualEdits(current => Object.fromEntries(Object.entries(current).filter(([key, value]) => value !== rowActualEdits[key])));
     toast('התקציב נשמר ועבר לאפליקציה של הלקוח', 'success');
   }
 
@@ -286,8 +312,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   function transactionDetails(name, income = false) {
     const matches = transaction => income
       ? transaction.type === 'income' && (transaction.desc || '').trim().toLowerCase() === name.trim().toLowerCase()
-      : (transaction.type === 'expense' || transaction.type === 'saving') && transaction.cat === name;
-    const count = monthTx.filter(matches).length;
+      : (transaction.type === 'expense' || transaction.type === 'saving') && (categoryRenames[transaction.cat] || transaction.cat) === name;
+    const count = getMonthTx(data?.transactions, year, month).filter(matches).length;
     return (
       <details className={styles.transactionDetails} data-budget-transactions>
         <summary aria-label={'עסקאות הביצוע · ' + (name || 'שורה חדשה')}>עסקאות הביצוע · {count}</summary>
@@ -317,18 +343,21 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             <span />
           </div>
           {list.map((r, i) => rowFilter(r) && ((() => {
-            const actual = actualEdits[r.name] ?? (actualOf(r.name, r.amount) || 0);
+            const actual = rowActualEdits[r._key] ?? (actualOf(r.name.trim(), r.amount) || 0);
             const over = (parseFloat(actual) || 0) > (parseFloat(r.amount) || 0);
-            const recorded = (fixedNameSet.has(r.name) ? fixedActual[r.name] : variableActualBase[r.name]) || 0;
+            const recorded = (fixedNameSet.has(r.name.trim()) ? fixedActual[r.name.trim()] : variableActualBase[r.name.trim()]) || 0;
             const belowRecorded = (parseFloat(actual) || 0) < recorded;
             const errorId = 'budget-actual-' + encodeURIComponent(r.name);
             return (
-              <div className={styles.tblRow + (r.name === focusCategory ? ' ' + styles.categoryFocused : '')} data-budget-category={r.name} key={i}>
+              <div className={styles.tblRow + (r.name === focusCategory ? ' ' + styles.categoryFocused : '')} data-budget-category={r.name} key={r._key}>
                 <div className={styles.tblName}>
                   <span className={styles.itemIcon} aria-hidden="true">{getCategoryIcon(r.name)}</span>
                   <input
                     className={styles.itemName}
                     aria-label="שם"
+                    onBlur={() => { if (r.name !== r.name.trim()) updateRow(setter, i, { name: r.name.trim() }); }}
+                    readOnly={!!data?.fixed_expenses?.find(item => item.id === (r._before?.name || r.name))?.linkedSource}
+                    title={data?.fixed_expenses?.find(item => item.id === (r._before?.name || r.name))?.linkedSource ? 'שם ההוצאה מסונכרן מהמקור שלה' : undefined}
                     placeholder={placeholder}
                     data-changed={String(r.name ?? '') !== String(r._before?.name ?? '')}
                     value={r.name}
@@ -357,12 +386,12 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     inputMode="decimal"
                     aria-invalid={belowRecorded || undefined}
                     aria-describedby={belowRecorded ? errorId : undefined}
-                    min={(fixedNameSet.has(r.name) ? fixedActual[r.name] : variableActualBase[r.name]) || 0}
+                    min={(fixedNameSet.has(r.name.trim()) ? fixedActual[r.name.trim()] : variableActualBase[r.name.trim()]) || 0}
                     aria-label={'ביצוע · ' + (r.name || 'שורה חדשה')}
                     placeholder="0"
-                    data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String((actualOf(r.name, r.amount) || ''))}
-                    value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
-                    onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
+                    data-changed={rowActualEdits[r._key] !== undefined && String(rowActualEdits[r._key]) !== String((actualOf(r.name.trim(), r.amount) || ''))}
+                    value={rowActualEdits[r._key] ?? (actualOf(r.name.trim(), r.amount) || '')}
+                    onChange={e => setRowActualEdits(prev => ({ ...prev, [r._key]: e.target.value }))}
                   />
                     <span className={styles.amountPreview} aria-hidden="true">{fmt(Number(actual) || 0)}</span>
                   </div>
@@ -371,7 +400,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 )}
                 <DeleteButton title={`מחק · ${r.name || 'שורה'}`} onClick={() => removeRow(setter, i)} />
                 {belowRecorded && <p className={styles.actualError} id={errorId} role="alert">כבר נרשמו {fmt(recorded)}. להקטנת הביצוע יש לערוך או למחוק את העסקאות בתזרים.</p>}
-                {transactionDetails(r.name)}
+                {transactionDetails(r.name.trim())}
               </div>
             );
           })()))}
@@ -426,15 +455,15 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 className={styles.itemAmountInput}
                 type="number"
                 inputMode="decimal"
-                min={(fixedNameSet.has(r.name) ? fixedActual[r.name] : variableActualBase[r.name]) || 0}
+                min={(fixedNameSet.has(r.name.trim()) ? fixedActual[r.name.trim()] : variableActualBase[r.name.trim()]) || 0}
                 aria-label="ביצוע בפועל"
-                data-changed={actualEdits[r.name] !== undefined && String(actualEdits[r.name]) !== String((actualOf(r.name, r.amount) || ''))}
-                    value={actualEdits[r.name] ?? (actualOf(r.name, r.amount) || '')}
+                data-changed={rowActualEdits[r._key] !== undefined && String(rowActualEdits[r._key]) !== String((actualOf(r.name.trim(), r.amount) || ''))}
+                    value={rowActualEdits[r._key] ?? (actualOf(r.name.trim(), r.amount) || '')}
                 placeholder="0"
-                onChange={e => setActualEdits(prev => ({ ...prev, [r.name]: e.target.value }))}
+                onChange={e => setRowActualEdits(prev => ({ ...prev, [r._key]: e.target.value }))}
               />
             ) : (
-              <output className={styles.itemActualValue} aria-label={'ביצוע הכנסה · ' + (r.name || 'מקור חדש')}>{fmt(actualOf(r.name, r.amount, i))}</output>
+              <output className={styles.itemActualValue} aria-label={'ביצוע הכנסה · ' + (r.name || 'מקור חדש')}>{fmt(actualOf(r.name.trim(), r.amount, i))}</output>
             )}
           </div>
         )}
@@ -454,7 +483,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
         )}
         <div className={compact ? styles.rowsGrid : styles.rows}>
           {list.map((r, i) => compact ? (
-            <div className={styles.itemCard} key={i}>
+            <div className={styles.itemCard} key={r._key}>
               <div className={styles.itemCardHead}>
                 <span className={styles.itemIcon} aria-hidden="true">{getCategoryIcon(r.name)}</span>
                 <input
@@ -471,7 +500,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
               {actualOf && transactionDetails(r.name, true)}
             </div>
           ) : (
-            <div className={styles.itemRow} key={i}>
+            <div className={styles.itemRow} key={r._key}>
               <span className={styles.itemIcon} aria-hidden="true">{getCategoryIcon(r.name)}</span>
               <input
                 className={styles.itemName}

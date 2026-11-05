@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor, budgetActuals, averageMonthSummary, incomeActualsBySource } from './budgetMath.js';
+import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor, budgetActuals, averageMonthSummary, incomeActualsBySource, renameExpenseCategories } from './budgetMath.js';
 
 const data = {
   budgets: { 'מזון': 1000, 'בילויים': 500 },
@@ -265,4 +265,19 @@ describe('income actuals by source',()=>{
 });
 it('matches posted income despite surrounding spaces and accepts stored numeric amounts',()=>{
   expect(effectiveIncome([{type:'income',desc:' DJ ',amount:'500'}],[{name:'dj',amount:1000}])).toEqual({manualIncome:500,unpostedIncome:0,income:500});
+});
+
+describe('renaming expense categories', () => {
+  it('keeps historical expenses and savings attached without changing income or amounts', () => {
+    const rows = [{ id: 1, type: 'expense', cat: 'ישן', amount: 500, date: '2025-01-01' }, { id: 2, type: 'saving', cat: 'ישן', amount: 100 }, { id: 3, type: 'income', cat: 'ישן', amount: 200 }];
+    const renamed = renameExpenseCategories(rows, { 'ישן': 'חדש' });
+    expect(renamed.map(row => row.cat)).toEqual(['חדש', 'חדש', 'ישן']);
+    expect(renamed.map(row => row.amount)).toEqual([500, 100, 200]);
+    expect(rows[0].cat).toBe('ישן');
+  });
+  it('applies simultaneous renames once and retains unrelated rows', () => {
+    const rows = [{ type: 'expense', cat: 'א' }, { type: 'expense', cat: 'ב' }, { type: 'expense', cat: 'ג' }];
+    expect(renameExpenseCategories(rows, { 'א': 'ב', 'ב': 'א' }).map(row => row.cat)).toEqual(['ב', 'א', 'ג']);
+    expect(renameExpenseCategories(undefined, {})).toEqual([]);
+  });
 });

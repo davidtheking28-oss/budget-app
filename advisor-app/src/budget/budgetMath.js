@@ -120,3 +120,11 @@ export function averageMonthSummary(data) {
   const sum = bucket => Object.values(bucket).reduce((total, amount) => total + amount, 0);
   return { months, income: actual.income / (months || 1), fixed: sum(fixed), variable: sum(actual.variable) / (months || 1), savings: actual.savings / (months || 1), ...(mapped.length ? { mappedFixed: true } : {}) };
 }
+
+export function renameExpenseCategories(transactions, renames) {
+  return (transactions || []).map(transaction =>
+    (transaction.type === 'expense' || transaction.type === 'saving') && Object.hasOwn(renames, transaction.cat)
+      ? { ...transaction, cat: renames[transaction.cat] }
+      : transaction
+  );
+}
