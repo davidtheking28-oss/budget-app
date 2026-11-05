@@ -8,6 +8,7 @@ import { monthKeyOf, incomeSourcesFor, incomeActualsBySource, budgetActuals, ave
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
+import MonthTransactions from './MonthTransactions.jsx';
 import { toast } from '../toast.js';
 import styles from './BudgetWizard.module.css';
 import { fmt } from '../format.js';
@@ -283,6 +284,22 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     return { items, total: items.reduce((sum, b) => sum + b.value, 0) || 1 };
   }
 
+  function transactionDetails(name, income = false) {
+    const matches = transaction => income
+      ? transaction.type === 'income' && (transaction.desc || '').trim().toLowerCase() === name.trim().toLowerCase()
+      : (transaction.type === 'expense' || transaction.type === 'saving') && transaction.cat === name;
+    const count = monthTx.filter(matches).length;
+    return (
+      <details className={styles.transactionDetails} data-budget-transactions>
+        <summary aria-label={'עסקאות הביצוע · ' + (name || 'שורה חדשה')}>עסקאות הביצוע · {count}</summary>
+        <div className={styles.transactionPanel}>
+          <p className={styles.incomeHint}>העסקאות שנרשמו בחודש הנבחר עבור {name}. שינויים בביצוע שטרם נשמרו אינם כלולים.</p>
+          <MonthTransactions data={data} save={save} mode={mode} year={year} month={month} transactionFilter={matches} embedded />
+        </div>
+      </details>
+    );
+  }
+
   function tableList(list, setter, placeholder, actualOf, editableActual = false, rowFilter = () => true, newRow = {}) {
     const total = sumAmounts(list);
     const pctOf = r => {
@@ -355,6 +372,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 )}
                 <DeleteButton title={`מחק · ${r.name || 'שורה'}`} onClick={() => removeRow(setter, i)} />
                 {belowRecorded && <p className={styles.actualError} id={errorId} role="alert">כבר נרשמו {fmt(recorded)}. להקטנת הביצוע יש לערוך או למחוק את העסקאות בתזרים.</p>}
+                {transactionDetails(r.name)}
               </div>
             );
           })()))}
@@ -451,6 +469,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 <DeleteButton title={`מחק · ${r.name || 'שורה'}`} onClick={() => removeRow(setter, i)} />
               </div>
               <div className={styles.itemCardAmounts}>{dayBox(r, i)}{amounts(r, i)}</div>
+              {actualOf && transactionDetails(r.name, true)}
             </div>
           ) : (
             <div className={styles.itemRow} key={i}>
@@ -475,7 +494,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   }
 
   return (
-    <div ref={wizardRef} className={styles.wrap} onChangeCapture={() => { if (!saving) setSaveStatus('dirty'); }}>
+    <div ref={wizardRef} className={styles.wrap} onChangeCapture={event => { if (!saving && !event.target.closest('[data-budget-transactions]')) setSaveStatus('dirty'); }}>
       <p className={styles.changeHint}>שדות ששונו מסומנים במסגרת מקווקוות עד לשמירה מוצלחת.</p>
       {left < 0 && <div className={styles.warn}>ההקצאה חורגת מההכנסות ב-{fmt(Math.abs(left))} לחודש</div>}
 

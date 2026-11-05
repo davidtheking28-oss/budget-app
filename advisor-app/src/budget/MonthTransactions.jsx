@@ -17,7 +17,7 @@ const FILTERS = [
   { key: 'income', label: 'הכנסות' }
 ];
 
-export default function MonthTransactions({ data, save, mode, year, month }) {
+export default function MonthTransactions({ data, save, mode, year, month, transactionFilter, embedded = false }) {
   const [filter, setFilter] = useState('all');
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(null);
@@ -35,7 +35,8 @@ export default function MonthTransactions({ data, save, mode, year, month }) {
   }, [editingId]);
 
   const originals = new Map((data.transactions || []).map(t => [t.id, t]));
-  const rows = filterMonthTx(getMonthTx(data.transactions, year, month), filter);
+  const monthRows = getMonthTx(data.transactions, year, month);
+  const rows = filterMonthTx(transactionFilter ? monthRows.filter(transactionFilter) : monthRows, filter);
 
   function startEdit(id) {
     const t = originals.get(id);
@@ -62,10 +63,9 @@ export default function MonthTransactions({ data, save, mode, year, month }) {
     return base.includes(form.cat) ? base : [form.cat, ...base];
   }
 
-  return (
-    <CardGrid single>
-      <Card title="עסקאות החודש">
-        <div className={styles.filters} role="group" aria-label="סינון עסקאות">
+  const content = (
+    <>
+        {!transactionFilter && <div className={styles.filters} role="group" aria-label="סינון עסקאות">
           {FILTERS.map(f => (
             <button
               key={f.key}
@@ -77,7 +77,7 @@ export default function MonthTransactions({ data, save, mode, year, month }) {
               {f.label}
             </button>
           ))}
-        </div>
+        </div>}
         {rows.length === 0 && <div className={styles.empty}>אין עסקאות להצגה בחודש הזה</div>}
         {rows.map(row => {
           const t = originals.get(row.id) || row;
@@ -111,7 +111,7 @@ export default function MonthTransactions({ data, save, mode, year, month }) {
             </Row>
           );
         })}
-      </Card>
-    </CardGrid>
+    </>
   );
+  return embedded ? <div>{content}</div> : <CardGrid single><Card title="עסקאות החודש">{content}</Card></CardGrid>;
 }

@@ -549,6 +549,11 @@
 @media (min-width: 861px) { .amountPreview { font-size: var(--text-lg); } }
 
 .tableAmount { min-width: 0; }
-.tableAmount > .amountPreview { font-size: var(--text-base); }
+.tableAmount > .amountPreview { font-size: var(--text-base); text-align: center; }
 .tableAmount > input[aria-invalid="true"] { border-color: var(--red); }
 .actualError { grid-column: 1 / -1; margin: 0; color: var(--red); font-size: var(--text-sm); line-height: 1.5; }
+
+.transactionDetails { grid-column: 1 / -1; width: 100%; min-width: 0; }
+.transactionDetails > summary { color: var(--accent); cursor: pointer; font-size: var(--text-sm); padding: 6px 0; width: fit-content; min-height: 32px; }
+.transactionDetails > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-xs); }
+.transactionPanel { border-top: 1px solid var(--border); padding-top: var(--space-2); }
