@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor, budgetActuals, averageMonthSummary, incomeActualsBySource, renameExpenseCategories } from './budgetMath.js';
+import { monthSummary, effectiveIncome, budgetCarry, effectiveLimit, incomeSourcesFor, budgetActuals, averageMonthSummary, incomeActualsBySource, renameExpenseCategories, incomeSourcePatch } from './budgetMath.js';
 
 const data = {
   budgets: { 'מזון': 1000, 'בילויים': 500 },
@@ -279,5 +279,24 @@ describe('renaming expense categories', () => {
     const rows = [{ type: 'expense', cat: 'א' }, { type: 'expense', cat: 'ב' }, { type: 'expense', cat: 'ג' }];
     expect(renameExpenseCategories(rows, { 'א': 'ב', 'ב': 'א' }).map(row => row.cat)).toEqual(['ב', 'א', 'ג']);
     expect(renameExpenseCategories(undefined, {})).toEqual([]);
+  });
+});
+
+describe('monthly income source persistence', () => {
+  const old = [{ name: 'שכר', amount: 10000 }], current = [{ name: 'שכר', amount: 12500 }];
+  it('preserves current income when an earlier month is edited', () => {
+    const patch = incomeSourcePatch({ incomeSources: current, incomeHistory: { '0000-00': old, '2026-11': current } }, [{ name: 'שכר', amount: 8000 }], 2026, 9, new Date(2026, 10, 6));
+    expect(patch.incomeSources).toEqual(current);
+    expect(patch.incomeHistory['2026-10'][0].amount).toBe(8000);
+  });
+  it('stores a future plan without replacing the current income', () => {
+    const patch = incomeSourcePatch({ incomeSources: old }, current, 2026, 11, new Date(2026, 10, 6));
+    expect(patch.incomeSources).toEqual(old);
+    expect(patch.incomeHistory['2026-12']).toEqual(current);
+  });
+  it('persists current income changes and an intentionally empty source list', () => {
+    const patch = incomeSourcePatch({ incomeSources: old }, current, 2026, 10, new Date(2026, 10, 6));
+    expect(patch.incomeSources).toEqual(current);
+    expect(incomeSourcePatch(patch, [], 2026, 10, new Date(2026, 10, 6)).incomeSources).toEqual([]);
   });
 });

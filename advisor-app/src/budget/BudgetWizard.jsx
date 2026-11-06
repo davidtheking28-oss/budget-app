@@ -4,7 +4,7 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } fro
 import { Bar } from 'react-chartjs-2';
 import { FIXED_CATS, CHART_PALETTE, chartTheme, fixedCatsFor, expenseCatsFor, budgetCatsFor } from '../categories.js';
 import { getMonthTx } from './monthUtils.js';
-import { monthKeyOf, incomeSourcesFor, incomeActualsBySource, budgetActuals, averageMonthSummary, renameExpenseCategories } from './budgetMath.js';
+import { monthKeyOf, incomeSourcesFor, incomeActualsBySource, budgetActuals, averageMonthSummary, renameExpenseCategories, incomeSourcePatch } from './budgetMath.js';
 import { getCategoryIcon } from '../categoryIcons.jsx';
 import Button from '../components/Button.jsx';
 import DeleteButton from '../components/DeleteButton.jsx';
@@ -198,11 +198,11 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
 
   function addRow(setter, name = '', extra = {}) { autoSaveRequested.current = false; setter(prev => [...prev, { ...trackRow({ name, amount: '', ...extra }), _before: {} }]); }
   function updateRow(setter, i, patch) {
-    autoSaveRequested.current = setter !== setIncomes && patch.amount !== undefined && String(patch.amount).trim() !== '';
+    autoSaveRequested.current = Object.values(patch).some(value => String(value).trim() !== '');
     setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...(patch.name !== undefined && isSavingsRow(r) ? { savings: true } : {}), ...patch } : r));
   }
   function removeRow(setter, i) {
-    autoSaveRequested.current = false;
+    autoSaveRequested.current = true;
     if (setter !== setIncomes) {
       const row = (setter === setFixed ? fixed : variable)[i];
       setRowActualEdits(current => Object.fromEntries(Object.entries(current).filter(([key]) => key !== String(row._key))));
@@ -224,22 +224,27 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       if (!automatic) toast(message, 'error');
     };
     const baseline = JSON.parse(savedDraft);
+    const submittedDraft = JSON.parse(draftSignature);
+    const incomeChanged = JSON.stringify(submittedDraft.incomes) !== JSON.stringify(baseline.incomes);
     const amountOnly = automatic && JSON.stringify(fixed.map(row => row.name)) === JSON.stringify(baseline.fixed.map(row => row[0])) && JSON.stringify(variable.map(row => row.name)) === JSON.stringify(baseline.variable.map(row => row[0]));
     const changedFixed = fixed.filter((row, index) => String(row.amount ?? '') !== baseline.fixed[index]?.[1]);
     const changedVariable = variable.filter((row, index) => String(row.amount ?? '') !== baseline.variable[index]?.[1]);
-    const fields = [...fixed, ...variable];
+    const fields = [...fixed, ...variable, ...incomes];
     if (fields.some(row => !row.name.trim() && Number(row.amount) > 0)) { invalid('יש לתת שם לקטגוריה לפני שמירת הסכום.'); return; }
     if (fields.some(row => row.amount !== '' && (!Number.isFinite(Number(row.amount)) || Number(row.amount) < 0)) || Object.values(actualEdits).some(value => !Number.isFinite(Number(value)) || Number(value) < 0)) {
       invalid('יש להזין סכום תקין שאינו שלילי.');
       return;
     }
-    const cleanIncomes = incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
+    if (fields.some(row => row.amount === '' && (row._before?.name !== row.name || String(row._before?.amount ?? '') !== ''))) {
+      invalid('יש להשלים את הסכום בשורה ששונתה. להזנת סכום אפס כתוב 0.');
+      return;
+    }
+    const cleanIncomes = incomes.filter(r => r.name.trim() && String(r.amount).trim() !== '' && Number.isFinite(Number(r.amount)) && Number(r.amount) >= 0)
       .map(r => ({ name: r.name.trim(), amount: parseFloat(r.amount), day: parseInt(r.day, 10) || undefined }));
     const cleanFixed = fixed.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
       .map(r => ({ id: r.name.trim(), amount: parseFloat(r.amount), ...(r.savings ? { savings: true } : {}) }));
     const cleanVar = variable.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
 
-    if (!amountOnly && !cleanIncomes.length && (!automatic || JSON.stringify(JSON.parse(savedDraft).incomes) !== JSON.stringify(JSON.parse(draftSignature).incomes))) { invalid('צריך לפחות מקור הכנסה אחד'); return; }
     const incomeNames = new Set();
     const duplicateIncome = cleanIncomes.find(row => {
       const name = row.name.toLowerCase();
@@ -247,7 +252,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       incomeNames.add(name);
       return false;
     });
-    if (duplicateIncome && !amountOnly) { invalid('מקור הכנסה כפול: ' + duplicateIncome.name + '. יש לתת שם שונה לכל מקור.'); return; }
+    if (duplicateIncome && (incomeChanged || !amountOnly)) { invalid('מקור הכנסה כפול: ' + duplicateIncome.name + '. יש לתת שם שונה לכל מקור.'); return; }
     const categoryNames = new Set();
     const duplicateCategory = [...fixed, ...variable].map(row => row.name.trim()).filter(Boolean).find(name => {
       const key = name.toLowerCase();
@@ -296,6 +301,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
         });
         return {
           budgets: nextBudgets,
+          ...(incomeChanged ? { settings: { ...(cur.settings || {}), ...incomeSourcePatch(cur.settings, cleanIncomes, year, month) } } : {}),
           ...(changedFixed.length ? { fixed_expenses: nextFixed } : {}),
           ...(adjustments.length ? { transactions: [...adjustments, ...(cur.transactions || [])] } : {})
         };
@@ -313,11 +319,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
           ...(cur.settings || {}),
           customCats: [...new Set([...(cur.settings?.customCats || []).map(name => categoryRenames[name] || name), ...cleanVar.map(row => row.name.trim()).filter(name => !budgetCatsFor(mode).includes(name))])],
           customFixedCats: [...new Set([...(cur.settings?.customFixedCats || []).map(name => categoryRenames[name] || name), ...cleanFixed.map(row => row.id).filter(name => !FIXED_CATS.includes(name))])],
-          ...(cleanIncomes.length ? { incomeSources: cleanIncomes,
-          incomeHistory: {
-            ...(cur.settings?.incomeHistory || { '0000-00': cur.settings?.incomeSources || [] }),
-            [monthKeyOf(year, month)]: cleanIncomes
-          } } : {})
+          ...(incomeChanged || !automatic || cleanIncomes.length ? incomeSourcePatch(cur.settings, cleanIncomes, year, month) : {})
         },
         fixed_expenses: cleanFixed,
         budgets: nextBudgets,
@@ -328,8 +330,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     setSaving(false);
     setSaveStatus(ok === false ? 'error' : 'saved');
     if (ok === false) return;
-    setSavedDraft(JSON.stringify({ ...(amountOnly ? { ...baseline, fixed: JSON.parse(draftSignature).fixed, variable: JSON.parse(draftSignature).variable } : JSON.parse(draftSignature)), actualEdits: {} }));
-    if (!amountOnly) setIncomes(rows => rows.map(row => { const submitted = incomes.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
+    setSavedDraft(JSON.stringify({ ...(amountOnly ? { ...baseline, incomes: incomeChanged ? submittedDraft.incomes : baseline.incomes, fixed: submittedDraft.fixed, variable: submittedDraft.variable } : JSON.parse(draftSignature)), actualEdits: {} }));
+    if (!amountOnly || incomeChanged) setIncomes(rows => rows.map(row => { const submitted = incomes.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
     setFixed(rows => rows.map(row => { const submitted = fixed.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
     setVariable(rows => rows.map(row => { const submitted = variable.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
     setRowActualEdits(current => Object.fromEntries(Object.entries(current).filter(([key, value]) => value !== rowActualEdits[key])));
@@ -580,7 +582,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
 
   return (
     <div ref={wizardRef} className={styles.wrap} onChangeCapture={event => { if (!saving && !event.target.closest('[data-budget-transactions]')) setSaveStatus('dirty'); }}>
-      <p className={styles.changeHint}>הסכומים בקטגוריות נשמרים אוטומטית לאחר ההקלדה. שדות ששונו מסומנים עד לשמירה מוצלחת.</p>
+      <p className={styles.changeHint}>הנתונים בתקציב, כולל ההכנסות, נשמרים אוטומטית לאחר ההקלדה. שדות ששונו מסומנים עד לשמירה מוצלחת.</p>
       {left < 0 && <div className={styles.warn}>ההקצאה חורגת מההכנסות ב-{fmt(Math.abs(left))} לחודש</div>}
 
       <div className={styles.body}>

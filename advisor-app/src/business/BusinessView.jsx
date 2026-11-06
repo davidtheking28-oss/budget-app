@@ -16,14 +16,14 @@ const ClientView = lazy(() => import('./ClientView.jsx'));
 const ClientApprovals = lazy(() => import('./ClientApprovals.jsx'));
 const SiteSettings = lazy(() => import('./SiteSettings.jsx'));
 
-function BusinessPage({ view, advisorId, onNavigate, onSelectClient, viewClientId, viewTab, onViewClient }) {
+function BusinessPage({ view, advisorId, onNavigate, onSelectClient, viewClientId, viewTab, onViewClient, onViewTab }) {
   if (view === 'tasks') return <BizTasks advisorId={advisorId} />;
   if (view === 'planner') return <Planner advisorId={advisorId} />;
   if (view === 'projects') return <Projects advisorId={advisorId} />;
   if (view === 'systems') return <Systems advisorId={advisorId} />;
   if (view === 'client-approvals') return <ClientApprovals advisorId={advisorId} />;
   if (view === 'site-settings') return <SiteSettings advisorId={advisorId} />;
-  if (view === 'client-view') return <ClientView advisorId={advisorId} clientId={viewClientId} initialTab={viewTab} onClientChange={onViewClient} />;
+  if (view === 'client-view') return <ClientView advisorId={advisorId} clientId={viewClientId} initialTab={viewTab} onClientChange={onViewClient} onTabChange={onViewTab} />;
   if (view === 'client-service') return <ClientService advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'client-tasks') return <ClientTasks advisorId={advisorId} onSelect={onSelectClient} />;
   if (view === 'marketing') return <MarketingPlan advisorId={advisorId} onNavigate={onNavigate} />;

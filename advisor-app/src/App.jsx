@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useSession } from './auth/useSession.js';
 import Login from './auth/Login.jsx';
 import NotAdvisor from './auth/NotAdvisor.jsx';
@@ -36,8 +36,8 @@ export default function App() {
   const [homeView, setHomeView] = useUrlParam('view', 'clients', legacyClient ? 'client-view' : 'clients', { history: true });
   const [workspace, setWorkspace] = useUrlParam('ws', 'advisor', 'advisor', { history: true });
   const [personalView, setPersonalView] = useUrlParam('pview', 'personal-expenses', 'personal-expenses', { history: true });
-  const [viewClientId, setViewClientId] = useState(legacyClient);
-  const [viewTab, setViewTab] = useState(legacyTab);
+  const [viewClientId, setViewClientId] = useUrlParam('client', null, legacyClient);
+  const [viewTab, setViewTab] = useUrlParam('nav', null, legacyTab);
   const [searchOpen, setSearchOpen] = useState(false);
   const [legalAccepted, markLegalAccepted] = useLegalConsent(session?.user?.id);
   const isAdvisor = useIsAdvisor(session?.user?.id);
@@ -45,13 +45,7 @@ export default function App() {
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const { theme, toggle: toggleTheme } = useTheme();
 
-  useEffect(() => {
-    if (!legacyClient) return;
-    const params = new URLSearchParams(window.location.search);
-    for (const key of ['client', 'nav', 'y', 'm', 'mode']) params.delete(key);
-    const query = params.toString();
-    window.history.replaceState(null, '', query ? `${window.location.pathname}?${query}` : window.location.pathname);
-  }, []);
+
 
   if (loading) return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
   if (isRecovery) return (<><Login recovery onRecoveryDone={clearRecovery} /><Toaster /></>);
@@ -108,7 +102,7 @@ export default function App() {
             : activeHome === 'prospects'
             ? <Prospects advisorId={session.user.id} onConvert={async () => { try { await navigator.clipboard.writeText(signupMessage(session.user.id)); toast('קישור ההרשמה הועתק, שלח אותו ללקוח', 'success'); } catch { toast('אפשר להעתיק את הקישור ממסך אישור לקוחות', 'info'); } setHomeView('client-approvals'); }} />
             : activeHome !== 'clients'
-            ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} />
+            ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} onViewTab={setViewTab} />
             : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => openInView(clientId)} />}
         </Suspense>
       </Shell>

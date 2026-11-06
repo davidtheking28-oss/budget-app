@@ -128,3 +128,8 @@ export function renameExpenseCategories(transactions, renames) {
       : transaction
   );
 }
+
+export function incomeSourcePatch(settings, sources, year, month, today = new Date()) {
+  const incomeHistory = { ...(settings?.incomeHistory || { '0000-00': settings?.incomeSources || [] }), [monthKeyOf(year, month)]: sources };
+  return { incomeHistory, incomeSources: incomeSourcesFor({ incomeHistory }, today.getFullYear(), today.getMonth()) };
+}

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useClientList } from '../clients/useClientList.js';
 import { BudgetModeContext } from '../budget/useClientBudget.js';
 import { addMonths } from '../budget/monthUtils.js';
@@ -46,15 +46,25 @@ export function Heading({ title, text }) {
   );
 }
 
-export default function ClientView({ advisorId, clientId, initialTab, onClientChange }) {
+export default function ClientView({ advisorId, clientId, initialTab, onClientChange, onTabChange }) {
   const { clients, loading, error, reload } = useClientList(advisorId);
   const now = new Date();
   const [tab, setTab] = useState(TABS.some(t => t.key === initialTab) ? initialTab : 'mapping');
   const [chip, setChip] = useState(CHIP_FOR_VIEW[initialTab] || 'main');
-  const [ym, setYm] = useState({ year: now.getFullYear(), month: now.getMonth() });
-  const [mode, setMode] = useState('personal');
+  const [ym, setYm] = useState(() => {
+    const params = new URLSearchParams(window.location.search), year = Number(params.get('y')), month = Number(params.get('m'));
+    return { year: params.has('y') && Number.isInteger(year) && year >= 1900 && year <= 2200 ? year : now.getFullYear(), month: params.has('m') && Number.isInteger(month) && month >= 0 && month < 12 ? month : now.getMonth() };
+  });
+  const [mode, setMode] = useState(() => new URLSearchParams(window.location.search).get('mode') === 'business' ? 'business' : 'personal');
   const [dirty, setDirty] = useState(false);
   const [period, setPeriod] = useState('month');
+  useEffect(() => { setTab(TABS.some(item => item.key === initialTab) ? initialTab : 'mapping'); }, [initialTab]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set('y', String(ym.year));params.set('m', String(ym.month));params.set('mode', mode);
+    window.history.replaceState(null, '', window.location.pathname + '?' + params.toString());
+  }, [ym, mode]);
+
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="18px" />;
@@ -78,6 +88,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
     setDirty(false);
     setChip('main');
     setTab(next);
+    onTabChange?.(next);
   }
 
   function changeChip(next) {
@@ -105,7 +116,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
   }
 
   function openInNewWindow() {
-    window.open(`${window.location.pathname}?view=client-view&client=${client.client_id}&nav=${tab}`, '_blank', 'noopener');
+    window.open(`${window.location.pathname}?view=client-view&client=${client.client_id}&nav=${tab}&y=${ym.year}&m=${ym.month}&mode=${mode}`, '_blank', 'noopener');
   }
 
   const monthModeBar = (
