@@ -82,7 +82,6 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
   if (loading) return <Skeleton height="220px" radius="18px" />;
 
   const client = clients.find(c => c.client_id === clientId);
-  const clientName = client?.name || client?.client_email;
 
   const chipView = CHIPS.find(c => c.key === chip)?.view || null;
   const showChips = tab === 'mapping' || tab === 'budget';
@@ -163,14 +162,8 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
       {headerHost && view === 'budget' && (period === 'month' || period === 'avg') && createPortal(<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />, headerHost)}
       <div className={styles.viewHead + ' ' + navigation.context}>
         <h1 className={styles.viewTitle}>תצוגת לקוח</h1>
-        <label className={styles.toolbar}>
-          <span className={styles.statLabel}>לקוח:</span>
-          <select className={styles.select} style={{ width: 280, maxWidth: '100%' }} value={clientId || ''} aria-label="בחירת לקוח" onChange={e => changeClient(e.target.value)}>
-            <option value="">בחירת לקוח</option>
-            {clients.map(c => <option key={c.id} value={c.client_id}>{c.name || c.client_email}</option>)}
-          </select>
-        </label>
-        {client && <span className={styles.cardSub}>מציג את המסכים של <b>{clientName}</b>, בדיוק כמו שהוא רואה אותם</span>}
+        <CategorySelect label="בחירת לקוח" value={clientId || ''} options={[{ key: '', label: 'בחירת לקוח' }, ...clients.map(c => ({ key: c.client_id, label: c.name || c.client_email }))]} onChange={changeClient} />
+        {client && <span className={navigation.contextHint}>המסכים כפי שהם מופיעים אצל הלקוח</span>}
       </div>
       <div className={navigation.navigation}>
         <div className={navigation.tabs} role="group" aria-label="אזור בכרטיס הלקוח">
