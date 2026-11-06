@@ -383,13 +383,6 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   }
 
   function tableList(list, setter, placeholder, actualOf, editableActual = false, rowFilter = () => true, newRow = {}) {
-    const total = sumAmounts(list);
-    const pctOf = r => {
-      const a = parseFloat(r.amount) || 0;
-      if (!total || !a) return '';
-      const p = a / total * 100;
-      return p < 1 ? '<1%' : Math.round(p) + '%';
-    };
     return (
       <>
         <div className={styles.tbl}>
@@ -420,13 +413,14 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     value={r.name}
                     onChange={e => updateRow(setter, i, { name: e.target.value })}
                   />
-                  <span className={styles.tblPct}>{pctOf(r)}</span>
                 </div>
                 <div className={styles.formattedAmount + " " + styles.tableAmount}>
                 <input
                   className={styles.tblInput}
                   type="number"
                   inputMode="decimal"
+                    onWheel={event => event.currentTarget.blur()}
+                    onKeyDown={event => { if (event.key === 'ArrowUp' || event.key === 'ArrowDown') event.preventDefault(); }}
                   aria-label={'תקציב · ' + (r.name || 'שורה חדשה')}
                   placeholder="0"
                   data-changed={String(r.amount ?? '') !== String(r._before?.amount ?? '')}
@@ -441,6 +435,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     className={styles.tblInput + (over ? ' ' + styles.tblOver : '')}
                     type="number"
                     inputMode="decimal"
+                    onWheel={event => event.currentTarget.blur()}
+                    onKeyDown={event => { if (event.key === 'ArrowUp' || event.key === 'ArrowDown') event.preventDefault(); }}
                     aria-invalid={belowRecorded || undefined}
                     aria-describedby={belowRecorded ? errorId : undefined}
                     min={(fixedNameSet.has(r.name.trim()) ? fixedActual[r.name.trim()] : variableActualBase[r.name.trim()]) || 0}
@@ -495,6 +491,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             className={styles.itemAmountInput}
             type="number"
             inputMode="decimal"
+                    onWheel={event => event.currentTarget.blur()}
+                    onKeyDown={event => { if (event.key === 'ArrowUp' || event.key === 'ArrowDown') event.preventDefault(); }}
             aria-label={actualOf ? 'תכנון הכנסה · ' + (r.name || 'מקור חדש') : 'סכום חודשי'}
             placeholder="0"
             data-changed={String(r.amount ?? '') !== String(r._before?.amount ?? '')}
@@ -512,6 +510,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 className={styles.itemAmountInput}
                 type="number"
                 inputMode="decimal"
+                    onWheel={event => event.currentTarget.blur()}
+                    onKeyDown={event => { if (event.key === 'ArrowUp' || event.key === 'ArrowDown') event.preventDefault(); }}
                 min={(fixedNameSet.has(r.name.trim()) ? fixedActual[r.name.trim()] : variableActualBase[r.name.trim()]) || 0}
                 aria-label="ביצוע בפועל"
                 data-changed={rowActualEdits[r._key] !== undefined && String(rowActualEdits[r._key]) !== String((actualOf(r.name.trim(), r.amount) || ''))}

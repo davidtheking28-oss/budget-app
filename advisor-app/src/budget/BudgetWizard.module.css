@@ -350,14 +350,7 @@
   min-width: 0;
 }
 
-.tblPct {
-  flex-shrink: 0;
-  min-width: 34px;
-  color: var(--text3);
-  font-size: var(--text-xs);
-  font-variant-numeric: tabular-nums;
-  text-align: end;
-}
+
 
 .tblInput {
   width: 100%;
