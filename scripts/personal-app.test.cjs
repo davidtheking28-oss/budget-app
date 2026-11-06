@@ -1035,3 +1035,51 @@ test('a late task creation response does not add a task to another account',asyn
 test('client task creation requires an active advisor connection',async()=>{
   let calls=0;const {ctx}=clientTaskContext(async()=>{calls++;});ctx._advisorLink.status='pending';await ctx.addClientTask();assert.equal(calls,0);
 });
+
+test('meeting booking dates use Israel working days and skip elapsed final starts',()=>{
+  const ctx=functions(['_clientMeetingClock','_clientMeetingDefaultDate']);
+  assert.equal(ctx._clientMeetingDefaultDate(new Date('2026-11-06T10:00:00Z')),'2026-11-06');
+  assert.equal(ctx._clientMeetingDefaultDate(new Date('2026-11-06T12:00:00Z')),'2026-11-08');
+  assert.equal(ctx._clientMeetingDefaultDate(new Date('2026-11-07T08:00:00Z')),'2026-11-08');
+  assert.equal(ctx._clientMeetingDefaultDate(new Date('2026-11-05T15:00:00Z')),'2026-11-06');
+  assert.equal(ctx._clientMeetingClock(new Date('2027-07-04T05:30:00Z')).minutes,510);
+});
+
+function clientMeetingContext(rpc) {
+  const startsAt='2030-01-06T07:00:00+00:00';
+  const fields=Object.fromEntries(['clientMeetingForm','clientMeetingDate','clientMeetingSlot','clientMeetingNotes','clientMeetingSubmit','clientMeetingError','clientMeetingComposer','clientMeetingSlotsStatus','clientMeetingRetry'].map(id=>[id,{value:'',hidden:true,disabled:false,setAttribute(){},removeAttribute(){},focus(){}}]));
+  fields.clientMeetingDate.value='2030-01-06';fields.clientMeetingSlot.value=startsAt;fields.clientMeetingNotes.value=' בדיקת תקציב ';
+  fields.clientMeetingForm.reset=()=>{fields.clientMeetingSlot.value='';fields.clientMeetingNotes.value='';};
+  const ctx=functions(['requestClientMeeting'],{crypto:{randomUUID:()=> 'meeting-request-id'},document:{getElementById:id=>fields[id],querySelector:()=>null},_clientMeetingSaving:false,_clientMeetingDraft:null,_clientMeetingSlots:[{starts_at:startsAt,label:'09:00–10:00'}],_advisorTaskRequest:0,_advisorMeetings:[],_cloudUser:{id:'client'},_advisorLink:{advisor_id:'advisor',status:'active'},_sb:{rpc},_advisorSeenSet:()=>new Set(),renderTasksPage(){},showToast(){},loadClientMeetingSlots(){ctx.reloaded=true;}});
+  return {ctx,fields,startsAt};
+}
+
+test('a client meeting request remains pending for advisor approval',async()=>{
+  const {ctx,fields,startsAt}=clientMeetingContext(async(name,p)=>{assert.equal(name,'request_client_meeting');assert.equal(p.p_notes,'בדיקת תקציב');return {data:{id:p.p_request_id,client_id:'client',advisor_id:'advisor',scheduled_at:p.p_starts_at,status:'pending',requested_by_client:true}};});
+  await ctx.requestClientMeeting();assert.equal(ctx._advisorMeetings.length,1);assert.equal(ctx._advisorMeetings[0].status,'pending');assert.equal(ctx._advisorMeetings[0].scheduled_at,startsAt);assert.equal(fields.clientMeetingNotes.value,'');
+});
+
+test('meeting request retries reuse their identity and keep the draft after a failed save',async()=>{
+  const ids=[];const {ctx,fields}=clientMeetingContext(async(_name,p)=>{ids.push(p.p_request_id);return ids.length===1?{error:{code:'network'}}:{data:{id:p.p_request_id,client_id:'client',advisor_id:'advisor',scheduled_at:p.p_starts_at,status:'pending',requested_by_client:true}};});
+  await ctx.requestClientMeeting();assert.equal(fields.clientMeetingNotes.value,' בדיקת תקציב ');assert.equal(fields.clientMeetingError.hidden,false);assert.equal(ctx._advisorMeetings.length,0);
+  await ctx.requestClientMeeting();assert.equal(ids[0],ids[1]);assert.equal(ctx._advisorMeetings.length,1);
+});
+
+test('a meeting slot conflict refreshes availability without losing the topic',async()=>{
+  const {ctx,fields}=clientMeetingContext(async()=>({error:{code:'23P01'}}));await ctx.requestClientMeeting();assert.equal(ctx.reloaded,true);assert.equal(fields.clientMeetingNotes.value,' בדיקת תקציב ');assert.equal(ctx._advisorMeetings.length,0);
+});
+
+test('client meeting creation ignores double clicks and late responses for another account',async()=>{
+  let complete,calls=0;const {ctx}=clientMeetingContext((_name,p)=>{calls++;return new Promise(resolve=>{complete=()=>resolve({data:{id:p.p_request_id,client_id:'client',advisor_id:'advisor',scheduled_at:p.p_starts_at,status:'pending',requested_by_client:true}});});});
+  const pending=ctx.requestClientMeeting();await ctx.requestClientMeeting();assert.equal(calls,1);ctx._cloudUser={id:'other'};complete();await pending;assert.equal(ctx._advisorMeetings.length,0);
+});
+
+test('a client cannot choose a meeting time not returned in the available slots',async()=>{
+  let calls=0;const {ctx,fields}=clientMeetingContext(async()=>{calls++;});fields.clientMeetingSlot.value='2030-01-06T04:00:00Z';await ctx.requestClientMeeting();assert.equal(calls,0);assert.equal(fields.clientMeetingError.hidden,false);
+});
+
+test('client-requested pending meetings never show the client an approval button',()=>{
+  const element={innerHTML:''};const ctx=functions(['_renderMeetingAlerts'],{document:{getElementById:()=>element},localISO:()=> '2030-01-06',esc:s=>s,_meetingReminderDismissed:()=>false});
+  ctx._renderMeetingAlerts([{id:'m',scheduled_at:'2030-01-06T07:00:00Z',status:'pending',requested_by_client:true}]);assert.equal(element.innerHTML,'');
+  ctx._renderMeetingAlerts([{id:'m',scheduled_at:'2030-01-06T07:00:00Z',status:'pending',requested_by_client:false}]);assert.match(element.innerHTML,/אשר/);
+});

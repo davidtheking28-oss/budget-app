@@ -226,9 +226,9 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
                       {soon && <span className={styles.soonBadge}>{days === 0 ? 'היום' : days === 1 ? 'מחר' : `בעוד ${days} ימים`}</span>}
                       {past && <span className={styles.pastBadge}>עברה</span>}
                       {!m.for_client && <span className={styles.clientBadge}>פרטי</span>}
-                      {m.for_client && m.status === 'confirmed' && <span className={styles.statusConfirmed}>אושרה ע"י הלקוח</span>}
-                      {m.for_client && m.status === 'declined' && <span className={styles.statusDeclined}>נדחתה ע"י הלקוח</span>}
-                      {m.for_client && m.status === 'pending' && !past && <span className={styles.statusPending}>ממתינה לאישור</span>}
+                      {m.for_client && m.status === 'confirmed' && <span className={styles.statusConfirmed}>{m.requested_by_client ? 'אושרה על ידך' : 'אושרה ע"י הלקוח'}</span>}
+                      {m.for_client && m.status === 'declined' && <span className={styles.statusDeclined}>נדחתה</span>}
+                      {m.for_client && m.status === 'pending' && !past && <span className={styles.statusPending}>{m.requested_by_client ? 'בקשת הלקוח · ממתינה לאישורך' : 'ממתינה לאישור'}</span>}
                     </div>
                     {m.notes && <div className={styles.meta}>{m.notes}</div>}
                     {m.status === 'declined' && m.decline_note && <div className={styles.meta}>הערת הלקוח: {m.decline_note}</div>}
@@ -236,7 +236,7 @@ export default function Crm({ view = 'client', action, advisorId, clientId, emai
                   <div className={styles.rowActions}><ActionMenu>
                     {m.for_client && m.status === 'pending' && !past && (
                       <>
-                        <button type="button" className={styles.icsButton} title="סמן כמאושרת (למשל אם הלקוח אישר בטלפון)" aria-label="סמן פגישה כמאושרת" onClick={async () => { if (await respondMeeting(m.id, 'confirmed')) notify(); }}>
+                        <button type="button" className={styles.icsButton} title={m.requested_by_client ? 'אשר את בקשת הפגישה' : 'סמן כמאושרת (למשל אם הלקוח אישר בטלפון)'} aria-label={m.requested_by_client ? 'אשר בקשת פגישה' : 'סמן פגישה כמאושרת'} onClick={async () => { if (await respondMeeting(m.id, 'confirmed')) notify(); }}>
                           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
                         </button>
                         <button type="button" className={styles.icsButton} title="סמן כנדחתה" aria-label="סמן פגישה כנדחתה" onClick={async () => { if (await respondMeeting(m.id, 'declined')) notify(); }}>

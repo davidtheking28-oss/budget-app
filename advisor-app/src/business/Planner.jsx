@@ -173,7 +173,7 @@ export default function Planner({ advisorId }) {
       const current = ++request;
       try {
         const [appointments, clients] = await Promise.all([
-          supabase.from('advisor_meetings').select('id,client_id,scheduled_at,status,for_client,notes').eq('advisor_id', advisorId),
+          supabase.from('advisor_meetings').select('id,client_id,scheduled_at,status,for_client,notes,requested_by_client').eq('advisor_id', advisorId),
           supabase.from('advisor_clients').select('client_id,name,client_email').eq('advisor_id', advisorId)
         ]);
         if (!alive || current !== request) return;

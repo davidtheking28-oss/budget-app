@@ -155,8 +155,9 @@
     .client-task-form{display:grid;gap:12px;padding-top:16px;}
     .client-task-form>button{background:var(--accent-solid);color:#fff;}
     .client-task-form label{display:grid;gap:6px;font-size:.85rem;color:var(--text2);}
-    .client-task-form input{width:100%;min-width:0;min-height:44px;font-size:16px;font-family:inherit;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);}
-    .client-task-form input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+    .client-task-form input,.client-task-form select,.client-task-form textarea{width:100%;min-width:0;min-height:44px;font-size:16px;font-family:inherit;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);}
+    .client-task-form input:focus-visible,.client-task-form select:focus-visible,.client-task-form textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+    .client-meeting-notes{grid-column:1/-1;}
     .client-task-hint,.client-task-error{margin:0;font-size:.8rem;line-height:1.5;}
     .client-task-hint{color:var(--text3);}.client-task-error{color:var(--red);}
     @media(min-width:560px){.client-task-form{grid-template-columns:minmax(0,1fr) 180px;}.client-task-hint,.client-task-error,.client-task-form>button{grid-column:1/-1;}}
@@ -2306,7 +2307,22 @@
       <div id="tasksPushPrompt" style="display:none;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;margin-bottom:12px;background:var(--surface)"><div style="flex:1;min-width:0;font-size:.9rem;color:var(--text2)">רוצה לקבל התראה כשהיועץ מוסיף משימה או קובע פגישה?</div><button type="button" class="btn btn-primary" onclick="togglePush(true).then(renderTasksPage)">הפעל התראות</button></div>
       <div class="section" id="meetingsSection">
         <div class="section-header"><h2 class="section-title"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--accent)"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>פגישות</h2></div>
-        <div class="section-body" id="meetingsList"></div>
+        <div class="section-body">
+          <details id="clientMeetingComposer" class="client-task-composer" ontoggle="if(this.open)openClientMeetingBooking()">
+            <summary class="btn btn-outline">+ בקשת פגישה</summary>
+            <form id="clientMeetingForm" class="client-task-form" onsubmit="event.preventDefault();requestClientMeeting()">
+              <label for="clientMeetingDate">תאריך<input id="clientMeetingDate" type="date" required onchange="loadClientMeetingSlots()"></label>
+              <label for="clientMeetingSlot">שעה פנויה<select id="clientMeetingSlot" required disabled onchange="document.getElementById('clientMeetingSubmit').disabled=!this.value||_clientMeetingSaving"><option value="">בחר תאריך</option></select></label>
+              <p id="clientMeetingSlotsStatus" class="client-task-hint" role="status"></p>
+              <button type="button" class="btn btn-outline" id="clientMeetingRetry" hidden onclick="loadClientMeetingSlots()">נסה לטעון שעות שוב</button>
+              <label for="clientMeetingNotes" class="client-meeting-notes">נושא הפגישה (לא חובה)<textarea id="clientMeetingNotes" rows="2" maxlength="500" placeholder="במה תרצה להתמקד בפגישה?"></textarea></label>
+              <p class="client-task-hint">פגישה של שעה, לפי שעון ישראל. ראשון–חמישי 09:00–18:00, שישי 09:00–15:00. הבקשה תמתין לאישור היועץ.</p>
+              <p id="clientMeetingError" class="client-task-error" role="alert" hidden></p>
+              <button id="clientMeetingSubmit" type="submit" class="btn btn-primary" disabled>שלח בקשת פגישה</button>
+            </form>
+          </details>
+          <div id="meetingsList"></div>
+        </div>
       </div>
       <div class="section" id="clientTasksSection">
         <div class="section-header"><h2 class="section-title"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--accent)"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>משימות</h2></div>
@@ -4415,7 +4431,7 @@ async function _loadMeetingAlerts(){
   if(!_cloudUser||!_sb)return;
   try{
     const todayStart=new Date();todayStart.setHours(0,0,0,0);
-    const {data,error}=await _sb.from('advisor_meetings').select('id,scheduled_at,notes,status')
+    const {data,error}=await _sb.from('advisor_meetings').select('id,scheduled_at,notes,status,requested_by_client')
       .eq('client_id',_cloudUser.id).eq('for_client',true).neq('status','declined')
       .gte('scheduled_at',todayStart.toISOString())
       .order('scheduled_at',{ascending:true});
@@ -4429,6 +4445,7 @@ function _renderMeetingAlerts(meetings){
   const todayStr=localISO();
   const html=meetings.map(m=>{
     const when=new Date(m.scheduled_at);
+    if(m.status==='pending'&&m.requested_by_client)return '';
     if(m.status==='pending'){
       const whenStr=when.toLocaleString('he-IL',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'});
       return '<div class="meeting-alert" data-meeting="'+m.id+'">'
@@ -5161,6 +5178,76 @@ let _advisorTasksError=false;
 let _advisorMeetings=[];
 let _advisorTaskRequest=0;
 const _advisorTaskPending=new Set();
+let _clientMeetingSaving=false;
+let _clientMeetingDraft=null;
+let _clientMeetingSlotRequest=0;
+let _clientMeetingSlots=[];
+function _clientMeetingClock(now=new Date()){
+  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).map(part=>[part.type,part.value]));
+  return {date:parts.year+'-'+parts.month+'-'+parts.day,minutes:Number(parts.hour)*60+Number(parts.minute)};
+}
+function _clientMeetingDefaultDate(now=new Date()){
+  const clock=_clientMeetingClock(now),date=new Date(clock.date+'T12:00:00Z');
+  for(let i=0;i<7;i++){
+    const day=date.getUTCDay(),key=date.toISOString().slice(0,10);
+    if(day!==6&&(key!==clock.date||clock.minutes<(day===5?840:1020)))return key;
+    date.setUTCDate(date.getUTCDate()+1);
+  }
+}
+function openClientMeetingBooking(){
+  const date=document.getElementById('clientMeetingDate');if(!date)return;
+  date.min=_clientMeetingClock().date;
+  if(!date.value||date.value<date.min)date.value=_clientMeetingDefaultDate();
+  loadClientMeetingSlots();
+}
+async function loadClientMeetingSlots(){
+  const date=document.getElementById('clientMeetingDate'),select=document.getElementById('clientMeetingSlot'),status=document.getElementById('clientMeetingSlotsStatus'),retry=document.getElementById('clientMeetingRetry'),button=document.getElementById('clientMeetingSubmit');
+  if(!date||!select||!status||!retry||!button)return;
+  const request=++_clientMeetingSlotRequest,clientId=_cloudUser?.id,advisorId=_advisorLink?.advisor_id,day=date.value;
+  _clientMeetingSlots=[];select.disabled=true;button.disabled=true;retry.hidden=true;
+  select.innerHTML='<option value="">בחר שעה פנויה</option>';
+  if(!day||!_sb||!clientId||_advisorLink?.status!=='active'){status.textContent='בחר תאריך כדי לראות שעות פנויות.';return;}
+  const current=()=>request===_clientMeetingSlotRequest&&_cloudUser?.id===clientId&&_advisorLink?.advisor_id===advisorId&&_advisorLink?.status==='active'&&date.value===day;
+  status.textContent='טוען שעות פנויות…';
+  try{
+    const {data,error}=await _sb.rpc('get_client_meeting_slots',{p_advisor_id:advisorId,p_date:day});
+    if(error||!Array.isArray(data))throw error||new Error('slots unavailable');
+    if(!current())return;
+    _clientMeetingSlots=data.filter(slot=>typeof slot.starts_at==='string'&&Number.isFinite(Date.parse(slot.starts_at))&&typeof slot.label==='string');
+    select.innerHTML='<option value="">בחר שעה פנויה</option>'+_clientMeetingSlots.map(slot=>'<option value="'+esc(slot.starts_at)+'">'+esc(slot.label)+'</option>').join('');
+    select.disabled=!_clientMeetingSlots.length;
+    status.textContent=_clientMeetingSlots.length?'השעות המוצגות פנויות לפי היומן. הבקשה ממתינה לאישור היועץ.':new Date(day+'T12:00:00Z').getUTCDay()===6?'בשבת אין פגישות. בחר תאריך אחר.':'אין שעות פנויות בתאריך הזה. בחר תאריך אחר.';
+  }catch(e){if(current()){status.textContent='לא ניתן לטעון שעות פנויות כרגע.';retry.hidden=false;}}
+}
+async function requestClientMeeting(){
+  if(_clientMeetingSaving)return;
+  const form=document.getElementById('clientMeetingForm'),date=document.getElementById('clientMeetingDate'),select=document.getElementById('clientMeetingSlot'),notes=document.getElementById('clientMeetingNotes'),button=document.getElementById('clientMeetingSubmit'),errorField=document.getElementById('clientMeetingError');
+  if(!form||!date||!select||!notes||!button||!errorField)return;
+  errorField.hidden=true;
+  const startsAt=select.value,text=notes.value.trim();
+  if(!_clientMeetingSlots.some(slot=>slot.starts_at===startsAt)||text.length>500){errorField.textContent='בחר שעה פנויה מהרשימה וכתוב נושא עד 500 תווים.';errorField.hidden=false;return;}
+  if(!_sb||!_cloudUser||_advisorLink?.status!=='active')return;
+  const clientId=_cloudUser.id,advisorId=_advisorLink.advisor_id,current=()=>_cloudUser?.id===clientId&&_advisorLink?.advisor_id===advisorId&&_advisorLink?.status==='active';
+  const key=JSON.stringify([clientId,advisorId,startsAt,text]);
+  if(_clientMeetingDraft?.key!==key)_clientMeetingDraft={key,id:crypto.randomUUID()};
+  const requestId=_clientMeetingDraft.id;
+  _clientMeetingSaving=true;++_advisorTaskRequest;
+  date.disabled=true;select.disabled=true;notes.disabled=true;button.disabled=true;button.textContent='שולח…';form.setAttribute('aria-busy','true');
+  try{
+    const {data,error}=await _sb.rpc('request_client_meeting',{p_advisor_id:advisorId,p_starts_at:startsAt,p_notes:text||null,p_request_id:requestId});
+    if(error){const failure=new Error('meeting request failed');failure.code=error.code;throw failure;}
+    if(!data||data.id!==requestId||data.client_id!==clientId||data.advisor_id!==advisorId||!data.requested_by_client)throw new Error('invalid meeting response');
+    if(!current())return;
+    ++_advisorTaskRequest;
+    _advisorMeetings=[..._advisorMeetings.filter(meeting=>meeting.id!==data.id),data].sort((a,b)=>Date.parse(a.scheduled_at)-Date.parse(b.scheduled_at));
+    const seen=_advisorSeenSet();seen.add(data.id);try{localStorage.setItem('budget_advisor_seen',JSON.stringify([...seen].slice(-500)));}catch(e){}
+    _clientMeetingDraft=null;form.reset();document.getElementById('clientMeetingComposer').open=false;renderTasksPage();showToast('בקשת הפגישה נשלחה וממתינה לאישור היועץ');document.querySelector('#clientMeetingComposer summary')?.focus();
+  }catch(e){
+    if(current()){errorField.textContent=e.code==='23P01'?'השעה הזאת כבר אינה פנויה. בחר שעה אחרת.':'הבקשה לא נשמרה. הפרטים נשארו כאן — נסה שוב.';errorField.hidden=false;if(e.code==='23P01')loadClientMeetingSlots();}
+  }finally{
+    _clientMeetingSaving=false;date.disabled=false;notes.disabled=false;select.disabled=!_clientMeetingSlots.length;button.disabled=!select.value;button.textContent='שלח בקשת פגישה';form.removeAttribute('aria-busy');
+  }
+}
 let _clientTaskSaving=false;
 let _clientTaskDraft=null;
 let _clientTaskOwner='';
@@ -5279,6 +5366,10 @@ function renderTasksPage(){
   const owner=(_cloudUser?.id||'')+'|'+(_advisorLink?.advisor_id||'');
   if(owner!==_clientTaskOwner){
     _clientTaskOwner=owner;_clientTaskDraft=null;
+    _clientMeetingDraft=null;_clientMeetingSlots=[];++_clientMeetingSlotRequest;
+    document.getElementById('clientMeetingForm')?.reset();
+    const meetingComposer=document.getElementById('clientMeetingComposer');if(meetingComposer)meetingComposer.open=false;
+    const meetingError=document.getElementById('clientMeetingError');if(meetingError)meetingError.hidden=true;
     document.getElementById('clientTaskForm')?.reset();
     const composer=document.getElementById('clientTaskComposer');if(composer)composer.open=false;
     const error=document.getElementById('clientTaskError');if(error)error.hidden=true;
@@ -5307,6 +5398,7 @@ function renderTasksPage(){
     '<div class="budget-tx-card"><div class="budget-tx-top"><div class="budget-tx-desc-wrap">'
       +'<div class="budget-tx-desc">'+esc(m.notes||'פגישת ייעוץ')+'</div>'
       +'<div class="budget-tx-date">'+_heDateTime(m.scheduled_at)+'</div>'
+      +'<div class="budget-tx-date">'+(m.status==='confirmed'?'הפגישה אושרה':m.status==='declined'?'הפגישה לא אושרה':m.requested_by_client?'ממתינה לאישור היועץ':'ממתינה לאישור שלך')+'</div>'
     +'</div></div>'
     +(m.summary?'<div class="meeting-summary"><div class="meeting-summary-label">סיכום הפגישה</div><div class="meeting-summary-body">'+esc(m.summary).replace(/\n/g,'<br>')+'</div></div>':'')
     +'</div>'

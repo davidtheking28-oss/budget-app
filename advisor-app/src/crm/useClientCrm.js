@@ -186,7 +186,7 @@ export function useClientCrm(advisorId, clientId, onRestore) {
     if (!scheduledAt) return false;
     const before = meetings.find(m => m.id === id);
     const needsConfirmation = !!forClient && (!before?.for_client || new Date(before.scheduled_at).getTime() !== new Date(scheduledAt).getTime());
-    const patch = { scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient, ...(needsConfirmation ? { status: 'pending', decline_note: null } : {}) };
+    const patch = { scheduled_at: scheduledAt, notes: notesText || null, for_client: !!forClient, ...(needsConfirmation ? { status: 'pending', decline_note: null, requested_by_client: false } : {}) };
     requestIdRef.current++;
     setMeetings(prev => prev.map(m => m.id === id ? { ...m, ...patch } : m).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
     let error;
@@ -234,7 +234,7 @@ export function useClientCrm(advisorId, clientId, onRestore) {
       setTasks(prev => prev.map(t => restored.has(t.id) ? { ...t, meeting_id: id } : t));
     }
     async function restore() {
-      const { data, error } = await supabase.from('advisor_meetings').insert({ id: removed.id, advisor_id: advisorId, client_id: clientId, scheduled_at: removed.scheduled_at, notes: removed.notes, for_client: removed.for_client, status: removed.status || 'pending', summary: removed.summary, decisions: removed.decisions, decline_note: removed.decline_note, created_at: removed.created_at }).select().single();
+      const { data, error } = await supabase.from('advisor_meetings').insert({ id: removed.id, advisor_id: advisorId, client_id: clientId, scheduled_at: removed.scheduled_at, notes: removed.notes, for_client: removed.for_client, status: removed.status || 'pending', requested_by_client: !!removed.requested_by_client, summary: removed.summary, decisions: removed.decisions, decline_note: removed.decline_note, created_at: removed.created_at }).select().single();
       if (error) { toast('לא ניתן לשחזר את הפגישה כרגע', 'error', { label: 'נסה שוב', onClick: restore }); return; }
       setMeetings(prev => [...prev.filter(m => m.id !== id), data].sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)));
       await restoreLinks();

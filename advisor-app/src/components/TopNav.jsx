@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Logo from './Logo.jsx';
+import CategorySelect from './CategorySelect.jsx';
 import styles from './TopNav.module.css';
 
 export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, onPresent, nav, activeNav, onNavChange, theme, onToggleTheme, end, hideBrand }) {
@@ -20,16 +21,13 @@ export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, o
       <div className={styles.bar}>
         {!hideBrand && <div className={styles.brand}><Logo size="sm" /><span>שקל שקל · יועץ</span></div>}
         <nav className={styles.links} aria-label="ניווט ראשי">
-          {tabs && tabs.map(t => (
-            <button key={t.key} type="button" className={styles.deptTab + (t.active ? ' ' + styles.deptTabOn : '')} onClick={t.onClick} aria-current={t.active ? 'page' : undefined}>
-              <span className={styles.deptIcon} aria-hidden="true">{t.icon}</span>{t.label}
-            </button>
-          ))}
+          {tabs?.length > 0 && <CategorySelect label="בחירת מחלקה" prominent value={tabs.find(tab => tab.active)?.key || tabs[0].key} options={tabs} onChange={key => tabs.find(tab => tab.key === key)?.onClick()} />}
           {!tabs && globals.map(g => (
             <button key={g.key} type="button" className={styles.pill + (g.active ? ' ' + styles.pillOn : '')} onClick={g.onClick} aria-current={g.active ? 'page' : undefined}>{g.label}</button>
           ))}
         </nav>
         <div className={styles.end}>
+          <div id="header-period-actions" className={styles.periodActions} />
           {onToggleTheme && (
             <button type="button" className={styles.themeBtn} onClick={onToggleTheme} aria-pressed={theme === 'dark'} aria-label={theme === 'dark' ? 'עבור למצב בהיר' : 'עבור למצב כהה'}>
               {theme === 'dark'

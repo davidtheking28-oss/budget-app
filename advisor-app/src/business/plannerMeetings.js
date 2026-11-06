@@ -1,4 +1,4 @@
-import { meetingStatusLabel } from './journeyMath.js';
+import { meetingStatusLabel, meetingPresentationStatus } from './journeyMath.js';
 
 const pad = n => String(n).padStart(2, '0');
 
@@ -8,7 +8,7 @@ export function meetingEvents(meetings, clients) {
     const start = new Date(m.scheduled_at);
     const minute = start.getHours() * 60 + start.getMinutes();
     const end = Math.min(1440, minute + 60);
-    const status = m.status === 'pending' && !m.for_client ? 'scheduled' : m.status || 'pending';
+    const status = meetingPresentationStatus(m);
     return {
       id: 'meeting-' + m.id, meetingId: m.id, clientId: m.client_id,
       date: `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`,

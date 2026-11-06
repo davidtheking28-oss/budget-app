@@ -21,3 +21,7 @@ describe('weekly calendar appointments', () => {
     expect(meetingEvents([{ ...row, scheduled_at: new Date(2026, 10, 7, 23, 30).toISOString() }], clients)[0].e).toBe('24:00');
   });
 });
+
+it('shows a client booking request as awaiting the advisor in the weekly calendar', () => {
+  expect(meetingEvents([{ id: 'request', client_id: 'client', scheduled_at: new Date(2026, 10, 8, 9).toISOString(), status: 'pending', for_client: true, requested_by_client: true }], [])[0]).toMatchObject({ status: 'pending_advisor', statusLabel: 'ממתינה לאישור שלך', s: '09:00', e: '10:00' });
+});

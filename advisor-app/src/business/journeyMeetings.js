@@ -14,7 +14,7 @@ export async function scheduleJourneyMeeting(advisorId, clientId, journey, key, 
     const scheduledAt = new Date(date + 'T10:00:00').toISOString();
     const title = MEETINGS.find(m => m.key === key).title;
     if (meetingId) {
-      const { error } = await supabase.from('advisor_meetings').update({ scheduled_at: scheduledAt, notes: title, status: 'pending' }).eq('id', meetingId).eq('advisor_id', advisorId);
+      const { error } = await supabase.from('advisor_meetings').update({ scheduled_at: scheduledAt, notes: title, status: 'pending', requested_by_client: false }).eq('id', meetingId).eq('advisor_id', advisorId);
       if (error) { toast('שגיאה בעדכון הפגישה', 'error'); return null; }
     } else {
       const { data, error } = await supabase.from('advisor_meetings').insert({ advisor_id: advisorId, client_id: clientId, scheduled_at: scheduledAt, notes: title, for_client: true }).select().single();

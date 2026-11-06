@@ -1,4 +1,4 @@
-import { syncJourneyMeetings } from './journeyMath.js';
+import { syncJourneyMeetings, meetingPresentationStatus } from './journeyMath.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
@@ -25,7 +25,7 @@ export function useClientDeals(advisorId) {
     if (request !== requestRef.current) return;
     const [{ data: deals, error: dealError }, { data: appointments, error: meetingError }] = await Promise.all([
       supabase.from('advisor_client_deals').select('*').eq('advisor_id', advisorId),
-      supabase.from('advisor_meetings').select('id,client_id,scheduled_at,status,for_client,summary,decisions').eq('advisor_id', advisorId)
+      supabase.from('advisor_meetings').select('id,client_id,scheduled_at,status,for_client,summary,decisions,requested_by_client').eq('advisor_id', advisorId)
     ]);
     if (request !== requestRef.current) return;
     if (dealError || meetingError) throw dealError || meetingError;
@@ -34,7 +34,7 @@ export function useClientDeals(advisorId) {
     setRows((links || []).map(link => {
       const clientMeetings = (appointments || []).filter(row => row.client_id === link.client_id);
       const nextAppointment = clientMeetings.filter(row => row.status !== 'declined' && new Date(row.scheduled_at).getTime() > Date.now()).sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))[0] || null;
-      return { ...link, nextAppointment, deal: { ...(byLink[link.id] || {}), journey: syncJourneyMeetings(byLink[link.id]?.journey, clientMeetings) } };
+      return { ...link, nextAppointment: nextAppointment ? { ...nextAppointment, status: meetingPresentationStatus(nextAppointment) } : null, deal: { ...(byLink[link.id] || {}), journey: syncJourneyMeetings(byLink[link.id]?.journey, clientMeetings) } };
     }));
     } catch (err) { if (request === requestRef.current && !background) setError(err); }
     finally { if (request === requestRef.current) setLoading(false); }

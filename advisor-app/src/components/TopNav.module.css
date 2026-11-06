@@ -111,3 +111,14 @@
 .deptTabOn, .deptTabOn:hover { background: var(--accent); color: var(--accent-ink); font-weight: 800; }
 .deptTab:focus-visible { outline: 2px solid var(--workspace-mint); outline-offset: 2px; }
 .deptIcon { display: inline-flex; }
+
+.periodActions { display: flex; align-items: center; flex: none; width: max-content; white-space: nowrap; }
+.periodActions:empty { display: none; }
+@media (max-width: 1100px) {
+  .bar { flex-wrap: wrap; gap: 12px; }
+  .end { flex-wrap: wrap; min-width: 0; max-width: 100%; }
+}
+@media (max-width: 560px) {
+  .end { width: 100%; }
+  .periodActions { flex: 1; }
+}

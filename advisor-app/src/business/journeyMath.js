@@ -56,7 +56,7 @@ export function syncJourneyMeetings(raw, appointments, now = new Date()) {
       journey.meetings[step.key] = { ...own, summary, previousSummary: previousSummary.trim() === summary.trim() ? '' : previousSummary, decisions: row.decisions || '' };
     }
     used.add(row.id);
-    journey.meetings[step.key] = { ...journey.meetings[step.key], date: localISODate(new Date(row.scheduled_at)), meetingId: row.id, meetingStatus: row.status === 'pending' && row.for_client === false ? 'scheduled' : row.status || 'pending' };
+    journey.meetings[step.key] = { ...journey.meetings[step.key], date: localISODate(new Date(row.scheduled_at)), meetingId: row.id, meetingStatus: meetingPresentationStatus(row) };
   };
   completed.forEach(step => {
     const own = journey.meetings[step.key];
@@ -73,8 +73,12 @@ export function syncJourneyMeetings(raw, appointments, now = new Date()) {
   return journey;
 }
 
+export function meetingPresentationStatus(meeting) {
+  return meeting.status === 'pending' && meeting.requested_by_client ? 'pending_advisor' : meeting.status === 'pending' && meeting.for_client === false ? 'scheduled' : meeting.status || 'pending';
+}
+
 export function meetingStatusLabel(status) {
-  return { pending: 'ממתינה לאישור הלקוח', confirmed: 'מאושרת', declined: 'נדחתה — נדרש תיאום חדש', scheduled: 'נקבעה' }[status] || '';
+  return { pending_advisor: 'ממתינה לאישור שלך', pending: 'ממתינה לאישור הלקוח', confirmed: 'מאושרת', declined: 'נדחתה — נדרש תיאום חדש', scheduled: 'נקבעה' }[status] || '';
 }
 
 const num = v => { const n = Number(String(v ?? '').replace(/[^\d.-]/g, '')); return Number.isFinite(n) ? n : 0; };

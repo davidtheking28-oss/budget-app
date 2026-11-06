@@ -1,5 +1,6 @@
+import { flushSync } from 'react-dom';
 import { BudgetModeContext } from './useClientBudget.js';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { FIXED_CATS, CHART_PALETTE, chartTheme, fixedCatsFor, expenseCatsFor, budgetCatsFor } from '../categories.js';
@@ -54,7 +55,7 @@ function sameCategory(a, b) {
   return words(a).some(wa => words(b).some(wb => wa.slice(0, 4) === wb.slice(0, 4)));
 }
 
-export default function BudgetWizard({ data, save, year, month, focusCategory, onDirtyChange, period, onPeriodChange }) {
+export default function BudgetWizard({ data, save, year, month, focusCategory, onDirtyChange, period, onPeriodChange, onEditLinkedExpense }) {
   const mode = useContext(BudgetModeContext);
   const wizardRef = useRef(null);
   useEffect(() => {
@@ -73,6 +74,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const saveInFlight = useRef(false);
   const retryAutoSave = useRef(false);
   const autoSaveAction = useRef(null);
+  const activeSave = useRef(null);
+  const flushDraft = useRef(null);
   const [localPeriod, setLocalPeriod] = useState('month');
   const flowPeriod = period ?? localPeriod;
   const setFlowPeriod = onPeriodChange ?? setLocalPeriod;
@@ -216,7 +219,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   }
 
   async function finish(automatic = false) {
-    if (saveInFlight.current) return;
+    if (saveInFlight.current) return false;
     autoSaveRequested.current = false;
     const invalid = message => {
       setSaveProblem(message);
@@ -230,14 +233,14 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const changedFixed = fixed.filter((row, index) => String(row.amount ?? '') !== baseline.fixed[index]?.[1]);
     const changedVariable = variable.filter((row, index) => String(row.amount ?? '') !== baseline.variable[index]?.[1]);
     const fields = [...fixed, ...variable, ...incomes];
-    if (fields.some(row => !row.name.trim() && Number(row.amount) > 0)) { invalid('יש לתת שם לקטגוריה לפני שמירת הסכום.'); return; }
+    if (fields.some(row => !row.name.trim() && Number(row.amount) > 0)) { invalid('יש לתת שם לקטגוריה לפני שמירת הסכום.'); return false; }
     if (fields.some(row => row.amount !== '' && (!Number.isFinite(Number(row.amount)) || Number(row.amount) < 0)) || Object.values(actualEdits).some(value => !Number.isFinite(Number(value)) || Number(value) < 0)) {
       invalid('יש להזין סכום תקין שאינו שלילי.');
-      return;
+      return false;
     }
     if (fields.some(row => row.amount === '' && (row._before?.name !== row.name || String(row._before?.amount ?? '') !== ''))) {
       invalid('יש להשלים את הסכום בשורה ששונתה. להזנת סכום אפס כתוב 0.');
-      return;
+      return false;
     }
     const cleanIncomes = incomes.filter(r => r.name.trim() && String(r.amount).trim() !== '' && Number.isFinite(Number(r.amount)) && Number(r.amount) >= 0)
       .map(r => ({ name: r.name.trim(), amount: parseFloat(r.amount), day: parseInt(r.day, 10) || undefined }));
@@ -252,7 +255,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       incomeNames.add(name);
       return false;
     });
-    if (duplicateIncome && (incomeChanged || !amountOnly)) { invalid('מקור הכנסה כפול: ' + duplicateIncome.name + '. יש לתת שם שונה לכל מקור.'); return; }
+    if (duplicateIncome && (incomeChanged || !amountOnly)) { invalid('מקור הכנסה כפול: ' + duplicateIncome.name + '. יש לתת שם שונה לכל מקור.'); return false; }
     const categoryNames = new Set();
     const duplicateCategory = [...fixed, ...variable].map(row => row.name.trim()).filter(Boolean).find(name => {
       const key = name.toLowerCase();
@@ -260,17 +263,17 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       categoryNames.add(key);
       return false;
     });
-    if (duplicateCategory) { invalid('קטגוריה כפולה: ' + duplicateCategory + '. יש להשאיר שורה אחת לכל קטגוריה.'); return; }
+    if (duplicateCategory) { invalid('קטגוריה כפולה: ' + duplicateCategory + '. יש להשאיר שורה אחת לכל קטגוריה.'); return false; }
 
 
 
-    if (Object.hasOwn(actualEdits, '')) { invalid('יש לתת שם לקטגוריה לפני שמירת הביצוע.'); return; }
+    if (Object.hasOwn(actualEdits, '')) { invalid('יש לתת שם לקטגוריה לפני שמירת הביצוע.'); return false; }
 
     const belowRecorded = Object.entries(actualEdits).find(([name, value]) => (parseFloat(value) || 0) < ((fixedNameSet.has(name) ? fixedActual[name] : variableActualBase[name]) || 0));
     if (belowRecorded) {
       invalid('לא ניתן להקטין ביצוע מתחת לסכום שכבר נרשם. יש לערוך או למחוק את העסקאות בתזרים.');
       if (!automatic) wizardRef.current?.querySelector('input[aria-invalid="true"]')?.focus();
-      return;
+      return false;
     }
 
     const today = new Date();
@@ -329,16 +332,47 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     saveInFlight.current = false;
     setSaving(false);
     setSaveStatus(ok === false ? 'error' : 'saved');
-    if (ok === false) return;
+    if (ok === false) return false;
+    flushSync(() => {
     setSavedDraft(JSON.stringify({ ...(amountOnly ? { ...baseline, incomes: incomeChanged ? submittedDraft.incomes : baseline.incomes, fixed: submittedDraft.fixed, variable: submittedDraft.variable } : JSON.parse(draftSignature)), actualEdits: {} }));
     if (!amountOnly || incomeChanged) setIncomes(rows => rows.map(row => { const submitted = incomes.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
     setFixed(rows => rows.map(row => { const submitted = fixed.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
     setVariable(rows => rows.map(row => { const submitted = variable.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
     setRowActualEdits(current => Object.fromEntries(Object.entries(current).filter(([key, value]) => value !== rowActualEdits[key])));
+    });
     if (!automatic) toast('התקציב נשמר ועבר לאפליקציה של הלקוח', 'success');
+    return true;
   }
 
-  useEffect(() => { autoSaveAction.current = () => finish(true); });
+  function requestSave(automatic = false) {
+    if (activeSave.current) return activeSave.current;
+    const pending = finish(automatic).catch(() => {
+      saveInFlight.current = false;
+      setSaving(false);
+      setSaveStatus('error');
+      return false;
+    }).finally(() => { if (activeSave.current === pending) activeSave.current = null; });
+    activeSave.current = pending;
+    return pending;
+  }
+  useLayoutEffect(() => {
+    autoSaveAction.current = () => requestSave(true);
+    flushDraft.current = async () => {
+      autoSaveRequested.current = false;
+      if (activeSave.current) {
+        if (await activeSave.current === false) return false;
+        return flushDraft.current();
+      }
+      if (!dirty) return true;
+      if (await requestSave(true) === false) return false;
+      return flushDraft.current();
+    };
+  });
+  useEffect(() => {
+    const beforeNavigate = event => event.detail.pending.push(flushDraft.current());
+    window.addEventListener('budget:before-navigate', beforeNavigate);
+    return () => window.removeEventListener('budget:before-navigate', beforeNavigate);
+  }, []);
   useEffect(() => {
     if (!dirty || saving || !autoSaveRequested.current) return;
     const timer = setTimeout(() => {
@@ -415,6 +449,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     value={r.name}
                     onChange={e => updateRow(setter, i, { name: e.target.value })}
                   />
+                  {data?.fixed_expenses?.find(item => item.id === (r._before?.name || r.name))?.linkedSource && <button type="button" onClick={() => onEditLinkedExpense?.(data.fixed_expenses.find(item => item.id === (r._before?.name || r.name)).linkedSource)}>עריכה במקור</button>}
                 </div>
                 <div className={styles.formattedAmount + " " + styles.tableAmount}>
                 <input
@@ -423,6 +458,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                   inputMode="decimal"
                     onWheel={event => event.currentTarget.blur()}
                     onKeyDown={event => { if (event.key === 'ArrowUp' || event.key === 'ArrowDown') event.preventDefault(); }}
+                  readOnly={!!data?.fixed_expenses?.find(item => item.id === (r._before?.name || r.name))?.linkedSource}
+                  title={data?.fixed_expenses?.find(item => item.id === (r._before?.name || r.name))?.linkedSource ? 'הסכום מסונכרן מהמקור. לעריכה פתח את מקור ההוצאה.' : undefined}
                   aria-label={'תקציב · ' + (r.name || 'שורה חדשה')}
                   placeholder="0"
                   data-changed={String(r.amount ?? '') !== String(r._before?.amount ?? '')}
@@ -710,7 +747,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
         {{invalid: saveProblem, dirty: 'יש שינויים שטרם נשמרו', saving: 'שומר את התקציב…', saved: 'התקציב נשמר בהצלחה', error: 'התקציב לא נשמר. השינויים עדיין בטופס — נסה לשמור שוב.'}[saveStatus]}
       </div>
       <div className={styles.footer}>
-        <Button onClick={() => finish(saveStatus === 'error' && retryAutoSave.current)} disabled={saving}>{saving ? 'שומר…' : 'שמור ושלח ללקוח'}</Button>
+        <Button onClick={() => requestSave(saveStatus === 'error' && retryAutoSave.current)} disabled={saving}>{saving ? 'שומר…' : 'שמור ושלח ללקוח'}</Button>
       </div>
     </div>
   );

@@ -18,6 +18,7 @@ import { signupMessage } from './business/clientApp.js';
 import { toast } from './toast.js';
 import { useTheme } from './useTheme.js';
 import { useUrlParam } from './useUrlParam.js';
+import { requestNavigation } from './navigationGuard.js';
 import Prospects from './clients/Prospects.jsx';
 import { PERSONAL_NAV, PERSONAL_KEYS } from './business/PersonalNav.jsx';
 import { BUSINESS_NAV, BUSINESS_KEYS, DEPARTMENTS, deptOf, pageTitle } from './business/BusinessNav.jsx';
@@ -62,7 +63,18 @@ export default function App() {
   if (mfa.status === 'error') return <div style={{ maxWidth: 480, margin: '20vh auto', padding: 16 }}><ErrorState message="לא ניתן להשלים את בדיקת האימות. בדוק את החיבור ונסה שוב." onRetry={mfa.refresh} /></div>;
   if (mfa.status === 'challenge') return (<><MfaChallenge factorId={mfa.factorId} onVerified={mfa.refresh} /><Toaster /></>);
 
-  const openInView = (clientId, clientEmail, destination) => {
+  const navigate = setter => async next => {
+    if (await requestNavigation()) setter(next);
+  };
+  const navigateHome = navigate(setHomeView);
+  const navigatePersonal = navigate(setPersonalView);
+  const changeWorkspace = async next => {
+    if (!await requestNavigation()) return;
+    setWorkspace(next);
+    if (next === 'advisor') setPersonalView('personal-expenses');
+  };
+  const openInView = async (clientId, clientEmail, destination) => {
+    if (!await requestNavigation()) return;
     setViewClientId(clientId);
     setViewTab(destination?.nav || null);
     setHomeView('client-view');
@@ -85,24 +97,24 @@ export default function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         inert={searchOpen}
-        onHomeClients={personal ? () => setWorkspace('advisor') : () => setHomeView('clients')}
+        onHomeClients={personal ? () => changeWorkspace('advisor') : () => navigateHome('clients')}
         workspace={workspace}
-        onWorkspaceChange={next => { setWorkspace(next); if (next === 'advisor') setPersonalView('personal-expenses'); }}
+        onWorkspaceChange={changeWorkspace}
         homeNav={personal ? PERSONAL_NAV : BUSINESS_NAV.filter(n => n.dept === activeDept.key)}
         homeActive={personal ? activePersonal : activeHome}
-        onHomeNavChange={personal ? setPersonalView : setHomeView}
-        homeTabs={personal ? [] : DEPARTMENTS.map(d => ({ key: d.key, label: d.label, icon: d.icon, active: d.key === activeDept.key, onClick: () => setHomeView(d.items[0].key) }))}
+        onHomeNavChange={personal ? navigatePersonal : navigateHome}
+        homeTabs={personal ? [] : DEPARTMENTS.map(d => ({ key: d.key, label: d.label, icon: d.icon, active: d.key === activeDept.key, onClick: () => navigateHome(d.items[0].key) }))}
         title={personal ? personalItem?.label || '' : activeHome === 'client-view' ? '' : pageTitle(homeItem)}
         description={personal ? personalItem?.description : activeHome === 'tasks' ? new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : homeItem?.description}
-        homeLinks={personal ? PERSONAL_NAV.map(n => ({ key: n.key, label: n.label, active: activePersonal === n.key, onClick: () => setPersonalView(n.key), icon: n.icon })) : BUSINESS_NAV.filter(n => n.key !== 'clients').map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => setHomeView(n.key), icon: n.icon }))}
+        homeLinks={personal ? PERSONAL_NAV.map(n => ({ key: n.key, label: n.label, active: activePersonal === n.key, onClick: () => navigatePersonal(n.key), icon: n.icon })) : BUSINESS_NAV.filter(n => n.key !== 'clients').map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => navigateHome(n.key), icon: n.icon }))}
       >
         <Suspense fallback={<Skeleton height="260px" radius="18px" />}>
           {personal
             ? <PersonalView view={activePersonal} userId={session.user.id} email={session.user.email} />
             : activeHome === 'prospects'
-            ? <Prospects advisorId={session.user.id} onConvert={async () => { try { await navigator.clipboard.writeText(signupMessage(session.user.id)); toast('קישור ההרשמה הועתק, שלח אותו ללקוח', 'success'); } catch { toast('אפשר להעתיק את הקישור ממסך אישור לקוחות', 'info'); } setHomeView('client-approvals'); }} />
+            ? <Prospects advisorId={session.user.id} onConvert={async () => { try { await navigator.clipboard.writeText(signupMessage(session.user.id)); toast('קישור ההרשמה הועתק, שלח אותו ללקוח', 'success'); } catch { toast('אפשר להעתיק את הקישור ממסך אישור לקוחות', 'info'); } await navigateHome('client-approvals'); }} />
             : activeHome !== 'clients'
-            ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={setHomeView} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} onViewTab={setViewTab} />
+            ? <BusinessView view={activeHome} advisorId={session.user.id} onNavigate={navigateHome} onSelectClient={openInView} viewClientId={viewClientId} viewTab={viewTab} onViewClient={setViewClientId} onViewTab={setViewTab} />
             : <ClientList key={session.user.id} advisorId={session.user.id} onSelect={clientId => openInView(clientId)} />}
         </Suspense>
       </Shell>

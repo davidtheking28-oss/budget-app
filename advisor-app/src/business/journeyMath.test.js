@@ -103,3 +103,8 @@ describe('shared meeting summaries', () => {
     expect(syncJourneyMeetings(result, [{ ...booking, summary: '' }], now).meetings.m1.summary).toBe('');
   });
 });
+
+it('keeps client-requested appointment approval assigned to the advisor in the journey', () => {
+  const journey = syncJourneyMeetings(emptyJourney(), [{ id: 'client-request', scheduled_at: new Date(2026, 10, 8, 9).toISOString(), status: 'pending', for_client: true, requested_by_client: true }], new Date(2026, 10, 6));
+  expect(journey.meetings.m1.meetingStatus).toBe('pending_advisor');
+});

@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { requestNavigation } from '../navigationGuard.js';
 import { useClientList } from '../clients/useClientList.js';
 import { BudgetModeContext } from '../budget/useClientBudget.js';
 import { addMonths } from '../budget/monthUtils.js';
@@ -7,6 +9,7 @@ import Credit from '../budget/Credit.jsx';
 import ObligationTiles from '../budget/ObligationTiles.jsx';
 import Crm from '../crm/Crm.jsx';
 import MonthNav from '../components/MonthNav.jsx';
+import CategorySelect from '../components/CategorySelect.jsx';
 import Button from '../components/Button.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -35,7 +38,7 @@ export const CHIPS = [
 
 export const CHIP_FOR_VIEW = { credit: 'loans', mortgage: 'mortgage', subs: 'subs' };
 
-const UNSAVED = 'יש שינויים שטרם נשמרו. להמשיך בלי לשמור?';
+
 
 export function Heading({ title, text }) {
   return (
@@ -50,20 +53,29 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
   const { clients, loading, error, reload } = useClientList(advisorId);
   const now = new Date();
   const [tab, setTab] = useState(TABS.some(t => t.key === initialTab) ? initialTab : 'mapping');
-  const [chip, setChip] = useState(CHIP_FOR_VIEW[initialTab] || 'main');
+  const [chip, setChip] = useState(() => {
+    const detail = new URLSearchParams(window.location.search).get('detail');
+    return CHIPS.some(item => item.key === detail) ? detail : CHIP_FOR_VIEW[initialTab] || 'main';
+  });
   const [ym, setYm] = useState(() => {
     const params = new URLSearchParams(window.location.search), year = Number(params.get('y')), month = Number(params.get('m'));
     return { year: params.has('y') && Number.isInteger(year) && year >= 1900 && year <= 2200 ? year : now.getFullYear(), month: params.has('m') && Number.isInteger(month) && month >= 0 && month < 12 ? month : now.getMonth() };
   });
   const [mode, setMode] = useState(() => new URLSearchParams(window.location.search).get('mode') === 'business' ? 'business' : 'personal');
-  const [dirty, setDirty] = useState(false);
-  const [period, setPeriod] = useState('month');
+  const [, setDirty] = useState(false);
+  const [headerHost, setHeaderHost] = useState(null);
+  useEffect(() => { setHeaderHost(document.getElementById('header-period-actions')); }, []);
+  const [period, setPeriod] = useState(() => {
+    const value = new URLSearchParams(window.location.search).get('period');
+    return ['month', 'year', 'avg', 'long'].includes(value) ? value : 'month';
+  });
   useEffect(() => { setTab(TABS.some(item => item.key === initialTab) ? initialTab : 'mapping'); }, [initialTab]);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     params.set('y', String(ym.year));params.set('m', String(ym.month));params.set('mode', mode);
+    params.set('period', period);params.set('detail', chip);
     window.history.replaceState(null, '', window.location.pathname + '?' + params.toString());
-  }, [ym, mode]);
+  }, [ym, mode, period, chip]);
 
 
   if (error) return <ErrorState onRetry={reload} />;
@@ -71,76 +83,81 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
 
   const client = clients.find(c => c.client_id === clientId);
   const clientName = client?.name || client?.client_email;
-  const leave = () => !dirty || window.confirm(UNSAVED);
+
   const chipView = CHIPS.find(c => c.key === chip)?.view || null;
   const showChips = tab === 'mapping' || tab === 'budget';
   const view = showChips && chipView ? chipView : tab;
   const clientIdOrNull = client?.client_id;
 
-  function changeClient(nextId) {
-    if (!leave()) return;
+  async function changeClient(nextId) {
+    if (!await requestNavigation()) return;
     setDirty(false);
     onClientChange(nextId || null);
   }
 
-  function changeTab(next) {
-    if (next === tab || !leave()) return;
+  async function changeTab(next) {
+    if (next === tab || !await requestNavigation()) return;
     setDirty(false);
     setChip('main');
     setTab(next);
     onTabChange?.(next);
   }
 
-  function changeChip(next) {
-    if (next === chip || !leave()) return;
+  async function changeChip(next) {
+    if (next === chip || !await requestNavigation()) return;
     setDirty(false);
     setChip(next);
   }
 
-  function changeMonth(delta) {
-    if (!leave()) return;
+  async function changeMonth(delta) {
+    if (!await requestNavigation()) return;
     setDirty(false);
     setYm(prev => addMonths(prev.year, prev.month, delta));
   }
 
-  function resetMonth() {
-    if (!leave()) return;
+  async function resetMonth() {
+    if (!await requestNavigation()) return;
     setDirty(false);
     setYm({ year: now.getFullYear(), month: now.getMonth() });
   }
 
-  function changeMode(next) {
-    if (next === mode || !leave()) return;
+  async function changeMode(next) {
+    if (next === mode || !await requestNavigation()) return;
     setDirty(false);
     setMode(next);
   }
 
+  async function changePeriod(next) {
+    if (next === period || !await requestNavigation()) return;
+    setPeriod(next);
+  }
+
+  function editLinkedExpense(source) {
+    if (source === 'mapping') return changeTab('mapping');
+    const details = { loans: 'loans', mortgage_scenario: 'mortgage', payments: 'installments' };
+    return changeChip(details[source] || 'subs');
+  }
+
   function openInNewWindow() {
-    window.open(`${window.location.pathname}?view=client-view&client=${client.client_id}&nav=${tab}&y=${ym.year}&m=${ym.month}&mode=${mode}`, '_blank', 'noopener');
+    window.open(`${window.location.pathname}?view=client-view&client=${client.client_id}&nav=${tab}&y=${ym.year}&m=${ym.month}&mode=${mode}&period=${period}&detail=${chip}`, '_blank', 'noopener');
   }
 
   const monthModeBar = (
     <div className={styles.toolbar}>
-      <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />
-      <div className={styles.segment} role="group" aria-label="סוג תקציב">
-        <button type="button" className={mode === 'personal' ? styles.segBtnOn : styles.segBtn} aria-pressed={mode === 'personal'} onClick={() => changeMode('personal')}>פרטי</button>
-        <button type="button" className={mode === 'business' ? styles.segBtnOn : styles.segBtn} aria-pressed={mode === 'business'} onClick={() => changeMode('business')}>עסקי</button>
-      </div>
+      {view !== 'budget' && <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
+      <CategorySelect label="סוג תקציב" value={mode} options={[{ key: 'personal', label: 'תקציב פרטי' }, { key: 'business', label: 'תקציב עסקי' }]} onChange={changeMode} />
     </div>
   );
 
   const chipBar = (
-    <div className={navigation.subviews} role="group" aria-label="תצוגות נוספות">
-      {CHIPS.map(c => (
-        <button key={c.key} type="button" className={chip === c.key ? navigation.subviewActive : navigation.subview} aria-pressed={chip === c.key} onClick={() => changeChip(c.key)}>{c.key === 'subs' && tab === 'budget' ? 'ביטוחים · מנויים · חינוך · קוסמטיקה · מתנות' : c.label}</button>
-      ))}
-    </div>
+    <CategorySelect label="תצוגת נתוני הלקוח" value={chip} options={CHIPS.map(item => ({ key: item.key, label: item.key === 'subs' && tab === 'budget' ? 'ביטוחים · מנויים · חינוך · קוסמטיקה · מתנות' : item.label }))} onChange={changeChip} />
   );
 
   const suspense = node => <Suspense fallback={<Skeleton height="220px" radius="18px" />}>{node}</Suspense>;
 
   return (
     <div className={styles.stack}>
+      {headerHost && view === 'budget' && (period === 'month' || period === 'avg') && createPortal(<MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />, headerHost)}
       <div className={styles.viewHead + ' ' + navigation.context}>
         <h1 className={styles.viewTitle}>תצוגת לקוח</h1>
         <label className={styles.toolbar}>
@@ -175,12 +192,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
               />
               {view === 'budget' && (
                 <div className={styles.toolbar}>
-                  <div className={navigation.periods} role="group" aria-label="תצוגת תקופה">
-                    <button type="button" className={period === 'month' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'month'} onClick={() => setPeriod('month')}>חודשי</button>
-                    <button type="button" className={period === 'year' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'year'} onClick={() => setPeriod('year')}>שנתי</button>
-                    <button type="button" className={period === 'avg' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'avg'} onClick={() => setPeriod('avg')}>חודש ממוצע</button>
-                    <button type="button" className={period === 'long' ? styles.bigPillOn : styles.bigPill} aria-pressed={period === 'long'} onClick={() => setPeriod('long')}>תכנון ארוך טווח</button>
-                  </div>
+                  <CategorySelect label="תצוגת תקופה" value={period} options={[{ key: 'month', label: 'חודשי' }, { key: 'year', label: 'שנתי' }, { key: 'avg', label: 'חודש ממוצע' }, { key: 'long', label: 'תכנון ארוך טווח' }]} onChange={changePeriod} />
                   {monthModeBar}
                 </div>
               )}
@@ -190,7 +202,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
           {view === 'mapping' && suspense(<EconomicMapping key={clientIdOrNull} clientUserId={clientIdOrNull} advisorId={advisorId} />)}
           {view === 'budget' && (
             <>
-              <Budget key={`${clientIdOrNull}:${mode}:${ym.year}:${ym.month}`} period={period} onPeriodChange={setPeriod} onDirtyChange={setDirty} focusCategory={null} clientUserId={clientIdOrNull} advisorId={advisorId} year={ym.year} month={ym.month} />
+              <Budget onEditLinkedExpense={editLinkedExpense} key={`${clientIdOrNull}:${mode}:${ym.year}:${ym.month}`} period={period} onPeriodChange={changePeriod} onDirtyChange={setDirty} focusCategory={null} clientUserId={clientIdOrNull} advisorId={advisorId} year={ym.year} month={ym.month} />
             </>
           )}
           {view === 'assets' && (
