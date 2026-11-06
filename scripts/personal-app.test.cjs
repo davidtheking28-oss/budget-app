@@ -994,3 +994,44 @@ test('automatic income posting recognizes normalized names and never posts dupli
   saves=0;ctx.transactions=[{id:1,type:'income',desc:' שכר ',amount:1000,date:key+'-01'}];ctx.localStorage=storage();
   ctx.checkRecurringIncome();assert.equal(ctx.transactions.length,1);assert.equal(saves,0);
 });
+
+function clientTaskContext(rpc) {
+  const fields = Object.fromEntries(['clientTaskForm','clientTaskTitle','clientTaskDue','clientTaskSubmit','clientTaskError','clientTaskComposer'].map(id => [id,{value:'',hidden:true,disabled:false,setAttribute(){},removeAttribute(){},focus(){}}]));
+  fields.clientTaskTitle.value=' לבדוק דמי ניהול ';
+  fields.clientTaskDue.value='2026-12-01';
+  fields.clientTaskForm.reset=()=>{fields.clientTaskTitle.value='';fields.clientTaskDue.value='';};
+  const ctx=functions(['addClientTask'],{crypto:{randomUUID:()=> 'request-id'},document:{getElementById:id=>fields[id],querySelector:()=>null},_clientTaskSaving:false,_clientTaskDraft:null,_advisorTaskRequest:0,_advisorTasks:[],_cloudUser:{id:'client'},_advisorLink:{advisor_id:'advisor',status:'active'},_sb:{rpc},_advisorSeenSet:()=>new Set(),renderTasksPage(){},showToast(){}});
+  return {ctx,fields};
+}
+
+test('client creates a task for the active advisor and clears the form only after success',async()=>{
+  let payload;
+  const {ctx,fields}=clientTaskContext(async(name,p)=>{assert.equal(name,'add_client_task');payload=p;return {data:{id:p.p_request_id,client_id:'client',advisor_id:'advisor',title:p.p_title,done:false}};});
+  await ctx.addClientTask();
+  assert.equal(payload.p_title,'לבדוק דמי ניהול');assert.equal(payload.p_due_date,'2026-12-01');assert.equal(ctx._advisorTasks.length,1);assert.equal(fields.clientTaskTitle.value,'');assert.equal(ctx._clientTaskSaving,false);
+});
+
+test('client task retry reuses the request identity and preserves the draft after a failed save',async()=>{
+  const ids=[];
+  const {ctx,fields}=clientTaskContext(async(_name,p)=>{ids.push(p.p_request_id);return ids.length===1?{error:{message:'lost response'}}:{data:{id:p.p_request_id,client_id:'client',advisor_id:'advisor',title:p.p_title}};});
+  await ctx.addClientTask();assert.equal(fields.clientTaskError.hidden,false);assert.equal(fields.clientTaskTitle.value,' לבדוק דמי ניהול ');assert.equal(fields.clientTaskSubmit.disabled,false);assert.equal(ctx._advisorTasks.length,0);
+  await ctx.addClientTask();assert.equal(ids[0],ids[1]);assert.equal(ctx._advisorTasks.length,1);
+});
+
+test('client task creation rejects an empty title and ignores double submission',async()=>{
+  let calls=0,complete;
+  const {ctx,fields}=clientTaskContext((_name,p)=>{calls++;return new Promise(resolve=>{complete=()=>resolve({data:{id:p.p_request_id,client_id:'client',advisor_id:'advisor'}});});});
+  fields.clientTaskTitle.value='  ';await ctx.addClientTask();assert.equal(calls,0);
+  fields.clientTaskTitle.value='משימה';const pending=ctx.addClientTask();await ctx.addClientTask();assert.equal(calls,1);assert.equal(fields.clientTaskSubmit.disabled,true);complete();await pending;
+});
+
+test('a late task creation response does not add a task to another account',async()=>{
+  let complete;
+  const {ctx,fields}=clientTaskContext((_name,p)=>new Promise(resolve=>{complete=()=>resolve({data:{id:p.p_request_id,client_id:'client',advisor_id:'advisor'}});}));
+  const pending=ctx.addClientTask();ctx._cloudUser={id:'other-client'};fields.clientTaskTitle.value='טיוטה אחרת';complete();await pending;
+  assert.equal(ctx._advisorTasks.length,0);assert.equal(fields.clientTaskTitle.value,'טיוטה אחרת');
+});
+
+test('client task creation requires an active advisor connection',async()=>{
+  let calls=0;const {ctx}=clientTaskContext(async()=>{calls++;});ctx._advisorLink.status='pending';await ctx.addClientTask();assert.equal(calls,0);
+});

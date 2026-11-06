@@ -148,6 +148,18 @@
     #appUpdateBanner .update-actions button{flex:1;min-height:44px;}
     #undoToast{bottom:calc(var(--nav-bottom) + 82px);visibility:hidden;pointer-events:none;}
     #undoToast.show{visibility:visible;pointer-events:auto;}
+    .client-task-composer{margin-bottom:16px;}
+    .client-task-composer>summary{width:fit-content;cursor:pointer;list-style:none;min-height:44px;}
+    .client-task-composer>summary::-webkit-details-marker{display:none;}
+    .client-task-composer>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+    .client-task-form{display:grid;gap:12px;padding-top:16px;}
+    .client-task-form>button{background:var(--accent-solid);color:#fff;}
+    .client-task-form label{display:grid;gap:6px;font-size:.85rem;color:var(--text2);}
+    .client-task-form input{width:100%;min-width:0;min-height:44px;font-size:16px;font-family:inherit;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);}
+    .client-task-form input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+    .client-task-hint,.client-task-error{margin:0;font-size:.8rem;line-height:1.5;}
+    .client-task-hint{color:var(--text3);}.client-task-error{color:var(--red);}
+    @media(min-width:560px){.client-task-form{grid-template-columns:minmax(0,1fr) 180px;}.client-task-hint,.client-task-error,.client-task-form>button{grid-column:1/-1;}}
   </style>
   <style>
     /* --bg/--surface/--surface2/--border/--text/--text2/--text3 for light mode live in the
@@ -2298,7 +2310,19 @@
       </div>
       <div class="section" id="clientTasksSection">
         <div class="section-header"><h2 class="section-title"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--accent)"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>משימות</h2></div>
-        <div class="section-body" id="clientTasksList"></div>
+        <div class="section-body">
+          <details id="clientTaskComposer" class="client-task-composer">
+            <summary class="btn btn-outline">+ משימה אישית</summary>
+            <form id="clientTaskForm" class="client-task-form" onsubmit="event.preventDefault();addClientTask()">
+              <label for="clientTaskTitle">מה צריך לעשות?<input id="clientTaskTitle" class="form-input" type="text" required maxlength="500" autocomplete="off" placeholder="למשל, לבדוק את דמי הניהול" aria-describedby="clientTaskHint clientTaskError"></label>
+              <label for="clientTaskDue">תאריך יעד (לא חובה)<input id="clientTaskDue" class="form-input" type="date"></label>
+              <p id="clientTaskHint" class="client-task-hint">המשימה תופיע גם אצל היועץ שלך.</p>
+              <p id="clientTaskError" class="client-task-error" role="alert" hidden></p>
+              <button id="clientTaskSubmit" type="submit" class="btn btn-primary">הוסף משימה</button>
+            </form>
+          </details>
+          <div id="clientTasksList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -5137,6 +5161,43 @@ let _advisorTasksError=false;
 let _advisorMeetings=[];
 let _advisorTaskRequest=0;
 const _advisorTaskPending=new Set();
+let _clientTaskSaving=false;
+let _clientTaskDraft=null;
+let _clientTaskOwner='';
+async function addClientTask(){
+  if(_clientTaskSaving)return;
+  const form=document.getElementById('clientTaskForm'),titleField=document.getElementById('clientTaskTitle'),dueField=document.getElementById('clientTaskDue'),button=document.getElementById('clientTaskSubmit'),errorField=document.getElementById('clientTaskError');
+  if(!form||!titleField||!dueField||!button||!errorField)return;
+  const title=titleField.value.trim(),dueDate=dueField.value||null;
+  errorField.hidden=true;
+  if(!title||title.length>500){errorField.textContent='יש לכתוב שם משימה עד 500 תווים.';errorField.hidden=false;titleField.focus();return;}
+  if(!_sb||!_cloudUser||_advisorLink?.status!=='active'){showToast('יש להתחבר ליועץ כדי להוסיף משימה');return;}
+  const clientId=_cloudUser.id,advisorId=_advisorLink.advisor_id;
+  const current=()=>_cloudUser?.id===clientId&&_advisorLink?.advisor_id===advisorId&&_advisorLink?.status==='active';
+  const key=JSON.stringify([clientId,advisorId,title,dueDate]);
+  if(_clientTaskDraft?.key!==key)_clientTaskDraft={key,id:crypto.randomUUID()};
+  const requestId=_clientTaskDraft.id;
+  _clientTaskSaving=true;++_advisorTaskRequest;
+  titleField.disabled=true;dueField.disabled=true;button.disabled=true;button.textContent='שומר…';form.setAttribute('aria-busy','true');
+  try{
+    const {data,error}=await _sb.rpc('add_client_task',{p_advisor_id:advisorId,p_title:title,p_due_date:dueDate,p_request_id:requestId});
+    if(error||!data||data.id!==requestId||data.client_id!==clientId||data.advisor_id!==advisorId)throw error||new Error('task creation failed');
+    if(!current())return;
+    ++_advisorTaskRequest;
+    _advisorTasks=[data,..._advisorTasks.filter(task=>task.id!==data.id)];
+    const seen=_advisorSeenSet();seen.add(data.id);
+    try{localStorage.setItem('budget_advisor_seen',JSON.stringify([...seen].slice(-500)));}catch(e){}
+    _clientTaskDraft=null;form.reset();
+    document.getElementById('clientTaskComposer').open=false;
+    renderTasksPage();showToast('המשימה נוספה');
+    document.querySelector('#clientTaskComposer summary')?.focus();
+  }catch(e){
+    if(current()){errorField.textContent='המשימה לא נשמרה. הפרטים נשארו כאן — נסה שוב.';errorField.hidden=false;}
+  }finally{
+    _clientTaskSaving=false;titleField.disabled=false;dueField.disabled=false;button.disabled=false;button.textContent='הוסף משימה';form.removeAttribute('aria-busy');
+  }
+}
+
 async function _loadAdvisorTasks(){
   const request=++_advisorTaskRequest;
   _advisorTasksError=false;
@@ -5215,6 +5276,14 @@ async function toggleAdvisorTask(id,done){
   }
 }
 function renderTasksPage(){
+  const owner=(_cloudUser?.id||'')+'|'+(_advisorLink?.advisor_id||'');
+  if(owner!==_clientTaskOwner){
+    _clientTaskOwner=owner;_clientTaskDraft=null;
+    document.getElementById('clientTaskForm')?.reset();
+    const composer=document.getElementById('clientTaskComposer');if(composer)composer.open=false;
+    const error=document.getElementById('clientTaskError');if(error)error.hidden=true;
+  }
+
   const noAdvisor=document.getElementById('tasksNoAdvisor');
   const content=document.getElementById('tasksContent');
   if(!noAdvisor||!content)return;
