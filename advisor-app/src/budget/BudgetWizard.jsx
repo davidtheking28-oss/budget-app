@@ -68,6 +68,11 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   }, [focusCategory]);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle');
+  const [saveProblem, setSaveProblem] = useState('');
+  const autoSaveRequested = useRef(false);
+  const saveInFlight = useRef(false);
+  const retryAutoSave = useRef(false);
+  const autoSaveAction = useRef(null);
   const [localPeriod, setLocalPeriod] = useState('month');
   const flowPeriod = period ?? localPeriod;
   const setFlowPeriod = onPeriodChange ?? setLocalPeriod;
@@ -138,6 +143,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     return () => window.removeEventListener('beforeunload', beforeUnload);
   }, [dirty, saving]);
   useEffect(() => { if (!dirty && saveStatus === 'dirty') setSaveStatus('idle'); }, [dirty, saveStatus]);
+  useEffect(() => { if (dirty && saveStatus === 'saved') setSaveStatus('dirty'); }, [dirty, saveStatus]);
 
   const totalIncome = useMemo(() => sumAmounts(incomes), [incomes]);
   const totalFixed = useMemo(() => sumAmounts(fixed), [fixed]);
@@ -190,11 +196,13 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const [years, setYears] = useState(5);
   const [breakdownBy, setBreakdownBy] = useState('type');
 
-  function addRow(setter, name = '', extra = {}) { setter(prev => [...prev, { ...trackRow({ name, amount: '', ...extra }), _before: {} }]); }
+  function addRow(setter, name = '', extra = {}) { autoSaveRequested.current = false; setter(prev => [...prev, { ...trackRow({ name, amount: '', ...extra }), _before: {} }]); }
   function updateRow(setter, i, patch) {
+    autoSaveRequested.current = setter !== setIncomes && patch.amount !== undefined && String(patch.amount).trim() !== '';
     setter(prev => prev.map((r, idx) => idx === i ? { ...r, ...(patch.name !== undefined && isSavingsRow(r) ? { savings: true } : {}), ...patch } : r));
   }
   function removeRow(setter, i) {
+    autoSaveRequested.current = false;
     if (setter !== setIncomes) {
       const row = (setter === setFixed ? fixed : variable)[i];
       setRowActualEdits(current => Object.fromEntries(Object.entries(current).filter(([key]) => key !== String(row._key))));
@@ -207,14 +215,31 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     addRow(setter, name);
   }
 
-  async function finish() {
+  async function finish(automatic = false) {
+    if (saveInFlight.current) return;
+    autoSaveRequested.current = false;
+    const invalid = message => {
+      setSaveProblem(message);
+      setSaveStatus('invalid');
+      if (!automatic) toast(message, 'error');
+    };
+    const baseline = JSON.parse(savedDraft);
+    const amountOnly = automatic && JSON.stringify(fixed.map(row => row.name)) === JSON.stringify(baseline.fixed.map(row => row[0])) && JSON.stringify(variable.map(row => row.name)) === JSON.stringify(baseline.variable.map(row => row[0]));
+    const changedFixed = fixed.filter((row, index) => String(row.amount ?? '') !== baseline.fixed[index]?.[1]);
+    const changedVariable = variable.filter((row, index) => String(row.amount ?? '') !== baseline.variable[index]?.[1]);
+    const fields = [...fixed, ...variable];
+    if (fields.some(row => !row.name.trim() && Number(row.amount) > 0)) { invalid('יש לתת שם לקטגוריה לפני שמירת הסכום.'); return; }
+    if (fields.some(row => row.amount !== '' && (!Number.isFinite(Number(row.amount)) || Number(row.amount) < 0)) || Object.values(actualEdits).some(value => !Number.isFinite(Number(value)) || Number(value) < 0)) {
+      invalid('יש להזין סכום תקין שאינו שלילי.');
+      return;
+    }
     const cleanIncomes = incomes.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
       .map(r => ({ name: r.name.trim(), amount: parseFloat(r.amount), day: parseInt(r.day, 10) || undefined }));
     const cleanFixed = fixed.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
       .map(r => ({ id: r.name.trim(), amount: parseFloat(r.amount), ...(r.savings ? { savings: true } : {}) }));
     const cleanVar = variable.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
 
-    if (!cleanIncomes.length) { toast('צריך לפחות מקור הכנסה אחד', 'error'); return; }
+    if (!amountOnly && !cleanIncomes.length && (!automatic || JSON.stringify(JSON.parse(savedDraft).incomes) !== JSON.stringify(JSON.parse(draftSignature).incomes))) { invalid('צריך לפחות מקור הכנסה אחד'); return; }
     const incomeNames = new Set();
     const duplicateIncome = cleanIncomes.find(row => {
       const name = row.name.toLowerCase();
@@ -222,7 +247,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       incomeNames.add(name);
       return false;
     });
-    if (duplicateIncome) { toast('מקור הכנסה כפול: ' + duplicateIncome.name + '. יש לתת שם שונה לכל מקור.', 'error'); return; }
+    if (duplicateIncome && !amountOnly) { invalid('מקור הכנסה כפול: ' + duplicateIncome.name + '. יש לתת שם שונה לכל מקור.'); return; }
     const categoryNames = new Set();
     const duplicateCategory = [...fixed, ...variable].map(row => row.name.trim()).filter(Boolean).find(name => {
       const key = name.toLowerCase();
@@ -230,16 +255,16 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       categoryNames.add(key);
       return false;
     });
-    if (duplicateCategory) { toast('קטגוריה כפולה: ' + duplicateCategory + '. יש להשאיר שורה אחת לכל קטגוריה.', 'error'); return; }
+    if (duplicateCategory) { invalid('קטגוריה כפולה: ' + duplicateCategory + '. יש להשאיר שורה אחת לכל קטגוריה.'); return; }
 
 
 
-    if (Object.hasOwn(actualEdits, '')) { toast('יש לתת שם לקטגוריה לפני שמירת הביצוע.', 'error'); return; }
+    if (Object.hasOwn(actualEdits, '')) { invalid('יש לתת שם לקטגוריה לפני שמירת הביצוע.'); return; }
 
     const belowRecorded = Object.entries(actualEdits).find(([name, value]) => (parseFloat(value) || 0) < ((fixedNameSet.has(name) ? fixedActual[name] : variableActualBase[name]) || 0));
     if (belowRecorded) {
-      toast('לא ניתן להקטין ביצוע מתחת לסכום שכבר נרשם. יש לערוך או למחוק את העסקאות בתזרים.', 'error');
-      wizardRef.current?.querySelector('input[aria-invalid="true"]')?.focus();
+      invalid('לא ניתן להקטין ביצוע מתחת לסכום שכבר נרשם. יש לערוך או למחוק את העסקאות בתזרים.');
+      if (!automatic) wizardRef.current?.querySelector('input[aria-invalid="true"]')?.focus();
       return;
     }
 
@@ -250,9 +275,31 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       .filter(a => a.delta > 0)
       .map((a, i) => ({ id: 'adj' + Date.now() + '_' + i, type: savingsNames.has(a.cat) ? 'saving' : 'expense', cat: a.cat, desc: 'התאמת ביצוע (אשף תקציב)', amount: Math.round(a.delta * 100) / 100, date: adjustmentDate, recurring: false }));
 
+    retryAutoSave.current = automatic;
+    saveInFlight.current = true;
+    setSaveProblem('');
     setSaving(true);
     setSaveStatus('saving');
     const ok = await save(cur => {
+      if (amountOnly) {
+        const nextBudgets = { ...(cur.budgets || {}) };
+        [...changedFixed, ...changedVariable].forEach(row => {
+          const amount = Number(row.amount) || 0;
+          if (amount > 0) nextBudgets[row.name.trim()] = amount;
+          else delete nextBudgets[row.name.trim()];
+        });
+        let nextFixed = [...(cur.fixed_expenses || [])];
+        changedFixed.forEach(row => {
+          const name = row.name.trim(), prior = nextFixed.find(item => item.id === name);
+          nextFixed = nextFixed.filter(item => item.id !== name);
+          if (Number(row.amount) > 0) nextFixed.push({ ...prior, id: name, amount: Number(row.amount), ...(isSavingsRow(row) ? { savings: true } : {}) });
+        });
+        return {
+          budgets: nextBudgets,
+          ...(changedFixed.length ? { fixed_expenses: nextFixed } : {}),
+          ...(adjustments.length ? { transactions: [...adjustments, ...(cur.transactions || [])] } : {})
+        };
+      }
       const nextBudgets = { ...(cur.budgets || {}) };
       Object.keys(categoryRenames).forEach(name => { delete nextBudgets[name]; });
       Object.keys(nextBudgets).forEach(c => { if (!FIXED_CATS.includes(c)) delete nextBudgets[c]; });
@@ -266,27 +313,37 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
           ...(cur.settings || {}),
           customCats: [...new Set([...(cur.settings?.customCats || []).map(name => categoryRenames[name] || name), ...cleanVar.map(row => row.name.trim()).filter(name => !budgetCatsFor(mode).includes(name))])],
           customFixedCats: [...new Set([...(cur.settings?.customFixedCats || []).map(name => categoryRenames[name] || name), ...cleanFixed.map(row => row.id).filter(name => !FIXED_CATS.includes(name))])],
-          incomeSources: cleanIncomes,
+          ...(cleanIncomes.length ? { incomeSources: cleanIncomes,
           incomeHistory: {
             ...(cur.settings?.incomeHistory || { '0000-00': cur.settings?.incomeSources || [] }),
             [monthKeyOf(year, month)]: cleanIncomes
-          }
+          } } : {})
         },
         fixed_expenses: cleanFixed,
         budgets: nextBudgets,
         ...(adjustments.length || Object.keys(categoryRenames).length ? { transactions: [...adjustments, ...renameExpenseCategories(cur.transactions, categoryRenames)] } : {})
       };
     });
+    saveInFlight.current = false;
     setSaving(false);
     setSaveStatus(ok === false ? 'error' : 'saved');
     if (ok === false) return;
-    setSavedDraft(JSON.stringify({ ...JSON.parse(draftSignature), actualEdits: {} }));
-    setIncomes(rows => rows.map(trackRow));
-    setFixed(rows => rows.map(trackRow));
-    setVariable(rows => rows.map(trackRow));
+    setSavedDraft(JSON.stringify({ ...(amountOnly ? { ...baseline, fixed: JSON.parse(draftSignature).fixed, variable: JSON.parse(draftSignature).variable } : JSON.parse(draftSignature)), actualEdits: {} }));
+    if (!amountOnly) setIncomes(rows => rows.map(row => { const submitted = incomes.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
+    setFixed(rows => rows.map(row => { const submitted = fixed.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
+    setVariable(rows => rows.map(row => { const submitted = variable.find(item => item._key === row._key); return submitted && row.name === submitted.name && row.amount === submitted.amount && row.day === submitted.day ? trackRow(row) : row; }));
     setRowActualEdits(current => Object.fromEntries(Object.entries(current).filter(([key, value]) => value !== rowActualEdits[key])));
-    toast('התקציב נשמר ועבר לאפליקציה של הלקוח', 'success');
+    if (!automatic) toast('התקציב נשמר ועבר לאפליקציה של הלקוח', 'success');
   }
+
+  useEffect(() => { autoSaveAction.current = () => finish(true); });
+  useEffect(() => {
+    if (!dirty || saving || !autoSaveRequested.current) return;
+    const timer = setTimeout(() => {
+      if (autoSaveRequested.current) autoSaveAction.current?.();
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [draftSignature, dirty, saving]);
 
   function breakdownOf(fixedValue, varValue, freeValue) {
     const items = [
@@ -391,7 +448,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     placeholder="0"
                     data-changed={rowActualEdits[r._key] !== undefined && String(rowActualEdits[r._key]) !== String((actualOf(r.name.trim(), r.amount) || ''))}
                     value={rowActualEdits[r._key] ?? (actualOf(r.name.trim(), r.amount) || '')}
-                    onChange={e => setRowActualEdits(prev => ({ ...prev, [r._key]: e.target.value }))}
+                    onChange={e => { autoSaveRequested.current = e.target.value !== ''; setRowActualEdits(prev => ({ ...prev, [r._key]: e.target.value })); }}
                   />
                     <span className={styles.amountPreview} aria-hidden="true">{fmt(Number(actual) || 0)}</span>
                   </div>
@@ -460,7 +517,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 data-changed={rowActualEdits[r._key] !== undefined && String(rowActualEdits[r._key]) !== String((actualOf(r.name.trim(), r.amount) || ''))}
                     value={rowActualEdits[r._key] ?? (actualOf(r.name.trim(), r.amount) || '')}
                 placeholder="0"
-                onChange={e => setRowActualEdits(prev => ({ ...prev, [r._key]: e.target.value }))}
+                onChange={e => { autoSaveRequested.current = e.target.value !== ''; setRowActualEdits(prev => ({ ...prev, [r._key]: e.target.value })); }}
               />
             ) : (
               <output className={styles.itemActualValue} aria-label={'ביצוע הכנסה · ' + (r.name || 'מקור חדש')}>{fmt(actualOf(r.name.trim(), r.amount, i))}</output>
@@ -523,7 +580,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
 
   return (
     <div ref={wizardRef} className={styles.wrap} onChangeCapture={event => { if (!saving && !event.target.closest('[data-budget-transactions]')) setSaveStatus('dirty'); }}>
-      <p className={styles.changeHint}>שדות ששונו מסומנים במסגרת מקווקוות עד לשמירה מוצלחת.</p>
+      <p className={styles.changeHint}>הסכומים בקטגוריות נשמרים אוטומטית לאחר ההקלדה. שדות ששונו מסומנים עד לשמירה מוצלחת.</p>
       {left < 0 && <div className={styles.warn}>ההקצאה חורגת מההכנסות ב-{fmt(Math.abs(left))} לחודש</div>}
 
       <div className={styles.body}>
@@ -648,10 +705,10 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       </div>
 
       <div className={styles.saveStatus} data-status={saveStatus} role="status" aria-live="polite" aria-atomic="true" hidden={saveStatus === 'idle'}>
-        {{dirty: 'יש שינויים שטרם נשמרו', saving: 'שומר את התקציב…', saved: 'התקציב נשמר בהצלחה', error: 'התקציב לא נשמר. השינויים עדיין בטופס — נסה לשמור שוב.'}[saveStatus]}
+        {{invalid: saveProblem, dirty: 'יש שינויים שטרם נשמרו', saving: 'שומר את התקציב…', saved: 'התקציב נשמר בהצלחה', error: 'התקציב לא נשמר. השינויים עדיין בטופס — נסה לשמור שוב.'}[saveStatus]}
       </div>
       <div className={styles.footer}>
-        <Button onClick={finish} disabled={saving}>{saving ? 'שומר…' : 'שמור ושלח ללקוח'}</Button>
+        <Button onClick={() => finish(saveStatus === 'error' && retryAutoSave.current)} disabled={saving}>{saving ? 'שומר…' : 'שמור ושלח ללקוח'}</Button>
       </div>
     </div>
   );
