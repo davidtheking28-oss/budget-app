@@ -145,7 +145,10 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
   const monthModeBar = (
     <div className={styles.toolbar}>
       {view !== 'budget' && <MonthNav year={ym.year} month={ym.month} onChange={changeMonth} onReset={resetMonth} />}
-      <CategorySelect label="סוג תקציב" value={mode} options={[{ key: 'personal', label: 'תקציב פרטי' }, { key: 'business', label: 'תקציב עסקי' }]} onChange={changeMode} />
+      <div className={styles.segment} role="group" aria-label="סוג תקציב">
+        <button type="button" className={mode === 'personal' ? styles.segBtnOn : styles.segBtn} aria-pressed={mode === 'personal'} onClick={() => changeMode('personal')}>פרטי</button>
+        <button type="button" className={mode === 'business' ? styles.segBtnOn : styles.segBtn} aria-pressed={mode === 'business'} onClick={() => changeMode('business')}>עסקי</button>
+      </div>
     </div>
   );
 
