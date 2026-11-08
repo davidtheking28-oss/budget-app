@@ -5282,7 +5282,7 @@ async function requestClientMeeting(){
     const seen=_advisorSeenSet();seen.add(data.id);try{localStorage.setItem('budget_advisor_seen',JSON.stringify([...seen].slice(-500)));}catch(e){}
     _clientMeetingDraft=null;form.reset();document.getElementById('clientMeetingComposer').open=false;renderTasksPage();showToast(data.status==='confirmed'?'הפגישה נקבעה ונשמרה ביומן היועץ':'בקשת הפגישה נשלחה וממתינה לאישור היועץ');document.querySelector('#clientMeetingComposer summary')?.focus();
   }catch(e){
-    if(current()){errorField.textContent=e.code==='23P01'?'השעה הזאת כבר אינה פנויה. בחר שעה אחרת.':'הבקשה לא נשמרה. הפרטים נשארו כאן — נסה שוב.';errorField.hidden=false;if(e.code==='23P01')loadClientMeetingSlots();}
+    if(current()){errorField.textContent=e.code==='23P01'?'השעה הזאת כבר אינה פנויה. בחר שעה אחרת.':e.code==='53400'?'יש לך כבר 3 פגישות קרובות. אפשר לקבוע עוד אחרי שאחת מהן תתקיים.':'הבקשה לא נשמרה. הפרטים נשארו כאן — נסה שוב.';errorField.hidden=false;if(e.code==='23P01')loadClientMeetingSlots();}
   }finally{
     _clientMeetingSaving=false;date.disabled=false;select.disabled=!_clientMeetingSlots.length;button.disabled=!select.value;button.textContent='שלח בקשת פגישה';form.removeAttribute('aria-busy');
   }

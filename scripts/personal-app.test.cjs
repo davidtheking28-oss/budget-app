@@ -1149,3 +1149,12 @@ test('the AI merchant lookup accepts only known expense categories and survives 
   answer={category:'קטגוריה מומצאת'};assert.equal(await ctx._aiCategorizeMerchant('B'),null);
   ok=false;assert.equal(await ctx._aiCategorizeMerchant('C'),null);
 });
+
+test('a client over the upcoming-meeting limit gets a clear message and keeps the slot list',async()=>{
+  const {ctx,fields}=clientMeetingContext(async()=>({error:{code:'53400'}}));
+  await ctx.requestClientMeeting();
+  assert.equal(fields.clientMeetingError.hidden,false);
+  assert.match(fields.clientMeetingError.textContent,/3 פגישות קרובות/);
+  assert.equal(ctx.reloaded,undefined);
+  assert.equal(ctx._advisorMeetings.length,0);
+});
