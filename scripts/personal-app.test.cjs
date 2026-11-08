@@ -1076,3 +1076,40 @@ test('client-requested pending meetings never show the client an approval button
   ctx._renderMeetingAlerts([{id:'m',scheduled_at:'2030-01-06T07:00:00Z',status:'pending',requested_by_client:true}]);assert.equal(element.innerHTML,'');
   ctx._renderMeetingAlerts([{id:'m',scheduled_at:'2030-01-06T07:00:00Z',status:'pending',requested_by_client:false}]);assert.match(element.innerHTML,/אשר/);
 });
+
+function applePayContext(rows,over={}) {
+  const log=[];
+  const query={select(){return query;},eq(){return query;},order(){return query;},limit(){return Promise.resolve({data:rows,error:null});},delete(){return {in(_c,ids){return {eq(){log.push('delete:'+ids.join(','));return Promise.resolve({error:null});}};}};}};
+  const ctx=functions(['pullIncomingExpenses'],{_applePayPulling:false,_sb:{from:()=>query},_cloudUser:{id:'u1'},_activeMode:'personal',_localAccountReady:true,document:{hidden:false},navigator:{onLine:true},transactions:[],categorize:d=>d.includes('שופרסל')?'מזון לבית':null,localISO:d=>d.toISOString().slice(0,10),saveData(){log.push('save');},refreshAll(){log.push('refresh');},showToast(m){log.push('toast:'+m);},...over});
+  return {ctx,log};
+}
+
+test('apple pay expenses are categorized, saved, and only then removed from the inbox',async()=>{
+  const {ctx,log}=applePayContext([{id:'a1',merchant:'שופרסל דיל',amount:'45.5',occurred_at:'2026-11-08T10:00:00Z'},{id:'a2',merchant:'מקום לא מוכר',amount:12,occurred_at:'2026-11-08T11:00:00Z'}]);
+  await ctx.pullIncomingExpenses();
+  assert.equal(ctx.transactions.length,2);
+  assert.equal(ctx.transactions.find(t=>t.srcId==='a1').cat,'מזון לבית');
+  assert.equal(ctx.transactions.find(t=>t.srcId==='a2').cat,'שונות');
+  assert.equal(ctx.transactions.every(t=>t.type==='expense'&&t.amount>0),true);
+  assert.ok(log.indexOf('save')>=0&&log.indexOf('save')<log.indexOf('delete:a1,a2'));
+});
+
+test('apple pay inbox rows already imported or invalid are dropped without duplicating or importing junk',async()=>{
+  const {ctx,log}=applePayContext([{id:'d1',merchant:'כפול',amount:5,occurred_at:'2026-11-08T10:00:00Z'},{id:'bad',merchant:'מינוס',amount:-3,occurred_at:'2026-11-08T10:00:00Z'},{id:'ctl',merchant:'שם\u0000עם\u0007בקרה',amount:9,occurred_at:'2026-11-08T10:00:00Z'}],{transactions:[{id:1,srcId:'d1',type:'expense',amount:5}]});
+  await ctx.pullIncomingExpenses();
+  assert.equal(ctx.transactions.filter(t=>t.srcId==='d1').length,1);
+  assert.equal(ctx.transactions.some(t=>t.srcId==='bad'),false);
+  assert.equal(ctx.transactions.find(t=>t.srcId==='ctl').desc.includes('\u0000'),false);
+  assert.ok(log.includes('delete:d1,bad,ctl'));
+});
+
+test('apple pay inbox is ignored outside the personal account and when the account changes mid-fetch',async()=>{
+  const business=applePayContext([{id:'b1',merchant:'x',amount:5,occurred_at:'2026-11-08T10:00:00Z'}],{_activeMode:'business'});
+  await business.ctx.pullIncomingExpenses();
+  assert.equal(business.ctx.transactions.length,0);assert.equal(business.log.length,0);
+  const rows=[{id:'s1',merchant:'x',amount:5,occurred_at:'2026-11-08T10:00:00Z'}];
+  const {ctx,log}=applePayContext(rows);
+  const original=ctx._sb.from;ctx._sb.from=()=>{const q=original();const limit=q.limit;q.limit=()=>{ctx._activeMode='business';return limit();};return q;};
+  await ctx.pullIncomingExpenses();
+  assert.equal(ctx.transactions.length,0);assert.equal(log.some(l=>l.startsWith('delete')),false);
+});

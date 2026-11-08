@@ -2622,6 +2622,11 @@
         <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1"/></svg></span><span>סיווג אוטומטי</span></h2>
         <button type="button" class="set-dd-trigger" onclick="openCatRules()"><span>🏷️ חוקי סיווג לפי בית עסק</span></button>
       </div>
+      <div class="settings-section" id="applePaySection">
+        <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h3"/></svg></span><span>Apple Pay</span></h2>
+        <div id="applePayBox" role="status" aria-live="polite"></div>
+        <div id="applePaySetup"></div>
+      </div>
       <div class="settings-section">
         <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg></span><span>גיבוי ושחזור</span></h2>
         <div class="set-dd" id="dataDD">
@@ -5607,7 +5612,88 @@ function openSettings(){
   if(pcb)pcb.checked=!!localStorage.getItem('budget_push_on');
   _renderPushPrefs();
   renderCloudSection();
+  renderApplePaySection();
 }
+let _applePayToken='';
+let _applePayBusy=false;
+let _applePayPulling=false;
+function _applePayShell(inner){const box=document.getElementById('applePayBox');if(box)box.innerHTML=inner;}
+async function renderApplePaySection(){
+  const box=document.getElementById('applePayBox');if(!box)return;
+  _applePayToken='';const setup=document.getElementById('applePaySetup');if(setup)setup.innerHTML='';
+  if(!_sb||!_cloudUser){_applePayShell('<p style="font-size:0.8125rem;color:var(--text3);margin:0">התחבר לחשבון כדי לחבר את Apple Pay.</p>');return;}
+  let st=null;
+  try{const {data,error}=await _sb.rpc('expense_hook_status');if(!error&&data)st=data;}catch(e){}
+  if(!st){_applePayShell('<p style="font-size:0.8125rem;color:var(--text3);margin:0">לא ניתן לטעון את מצב החיבור כרגע.</p>');return;}
+  const last=st.last_used_at?new Date(st.last_used_at).toLocaleString('he-IL',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+  _applePayShell('<p style="font-size:0.8125rem;color:var(--text3);margin:0 0 10px">כל תשלום ב-Apple Pay נרשם כאן כהוצאה לבד, דרך אוטומציה שמגדירים פעם אחת באייפון. נתפסים תשלומי הצמדה בטלפון או בשעון, לא קניות באינטרנט.</p>'
+    +(st.active?'<p style="font-size:0.875rem;margin:0 0 10px">✓ מחובר'+(last?' · תשלום אחרון נקלט: '+esc(last):' · עדיין לא נקלט תשלום')+'</p>':'')
+    +'<button type="button" class="set-dd-opt set-pill-btn" style="width:100%" onclick="createApplePayHook()"><span>🔗</span> '+(st.active?'צור קישור חדש (מבטל את הקודם)':'חבר Apple Pay')+'</button>'
+    +(st.active?'<button type="button" class="set-dd-opt set-pill-btn set-pill-danger" style="width:100%;color:var(--red)" onclick="revokeApplePayHook()">נתק את Apple Pay</button>':''));
+}
+async function createApplePayHook(){
+  if(_applePayBusy||!_sb||!_cloudUser)return;
+  _applePayBusy=true;
+  try{
+    const {data,error}=await _sb.rpc('create_expense_hook');
+    if(error||typeof data!=='string'||!/^ab1_[0-9a-f]{64}$/.test(data))throw error||new Error('bad token');
+    _applePayToken=data;
+    const setup=document.getElementById('applePaySetup');
+    if(setup)setup.innerHTML='<div class="form-stack" style="margin-top:12px">'
+      +'<p style="font-size:0.8125rem;line-height:1.6;color:var(--text2);margin:0"><b>הקישור הסודי מוצג רק עכשיו.</b> מי שמחזיק בו יכול להוסיף הוצאות לחשבון שלך, אבל לא לקרוא ממנו כלום. אל תשתף אותו. אפשר לבטל אותו בכל רגע.</p>'
+      +'<ol style="font-size:0.8125rem;line-height:1.8;color:var(--text2);margin:0;padding-inline-start:20px">'
+      +'<li>באייפון: קיצורי דרך ← אוטומציה ← + ← <b>עסקה (Transaction)</b>, בחר את הכרטיסים והפעל <b>הפעל מיד</b>.</li>'
+      +'<li>הוסף פעולה <b>קבל תוכן מכתובת URL</b>: שיטה POST, והדבק את הכתובת.</li>'
+      +'<li>כותרות: <b>apikey</b> עם המפתח, ו-<b>Content-Type</b> עם <b>application/json</b>.</li>'
+      +'<li>גוף הבקשה (JSON) בשלושה שדות: <b>p_token</b> הדבק את הקישור הסודי, <b>p_merchant</b> בחר את המשתנה "סוחר", <b>p_amount</b> בחר את המשתנה "סכום".</li></ol>'
+      +'<button type="button" class="set-dd-opt set-pill-btn" style="width:100%" onclick="copyApplePay(\'url\')">העתק כתובת</button>'
+      +'<button type="button" class="set-dd-opt set-pill-btn" style="width:100%" onclick="copyApplePay(\'key\')">העתק מפתח (apikey)</button>'
+      +'<button type="button" class="set-dd-opt set-pill-btn" style="width:100%" onclick="copyApplePay(\'token\')">העתק את הקישור הסודי (p_token)</button></div>';
+    showToast('✓ נוצר קישור. העתק אותו לקיצור הדרך');
+  }catch(e){showToast('❌ לא ניתן ליצור קישור כרגע');}
+  finally{_applePayBusy=false;}
+}
+async function copyApplePay(kind){
+  const value=kind==='url'?SUPA_URL+'/rest/v1/rpc/ingest_expense':kind==='key'?SUPA_ANON:_applePayToken;
+  if(!value){showToast('❌ צור קישור חדש כדי להעתיק');return;}
+  try{await navigator.clipboard.writeText(value);showToast('✓ הועתק');}catch(e){showToast('❌ ההעתקה נכשלה');}
+}
+async function revokeApplePayHook(){
+  if(_applePayBusy||!_sb||!_cloudUser)return;
+  if(!confirm('לנתק את Apple Pay? הוצאות חדשות מהאייפון יפסיקו להירשם.'))return;
+  _applePayBusy=true;
+  try{const {error}=await _sb.rpc('revoke_expense_hook');if(error)throw error;showToast('✓ Apple Pay נותק');await renderApplePaySection();}
+  catch(e){showToast('❌ הניתוק נכשל, נסה שוב');}
+  finally{_applePayBusy=false;}
+}
+async function pullIncomingExpenses(){
+  if(_applePayPulling||!_sb||!_cloudUser||document.hidden||_activeMode!=='personal'||!_localAccountReady||!navigator.onLine)return;
+  _applePayPulling=true;
+  const mode=_activeMode,uid=_cloudUser.id;
+  try{
+    const {data,error}=await _sb.from('incoming_expenses').select('id,merchant,amount,occurred_at').eq('user_id',uid).order('created_at',{ascending:true}).limit(100);
+    if(error||!Array.isArray(data)||!data.length)return;
+    if(_activeMode!==mode||_cloudUser?.id!==uid)return;
+    const ids=[];let added=0;
+    for(const row of data){
+      ids.push(row.id);
+      const amount=Number(row.amount),desc=String(row.merchant||'').replace(/[ -]/g,' ').trim().slice(0,80);
+      if(!Number.isFinite(amount)||amount<=0||amount>100000||!desc)continue;
+      if(transactions.some(t=>t.srcId===row.id))continue;
+      const cat=categorize(desc,'expense')||'שונות';
+      const when=new Date(row.occurred_at);
+      transactions.unshift({id:Date.now()+Math.random(),type:'expense',cat,desc,amount,date:localISO(Number.isFinite(when.getTime())?when:new Date()),recurring:false,fixed:false,note:'',srcId:row.id});
+      added++;
+    }
+    if(added)saveData();
+    if(ids.length)await _sb.from('incoming_expenses').delete().in('id',ids).eq('user_id',uid);
+    if(added){refreshAll();showToast('✓ נוספו '+added+(added===1?' הוצאה':' הוצאות')+' מ-Apple Pay');}
+  }catch(e){}finally{_applePayPulling=false;}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)pullIncomingExpenses();});
+window.addEventListener('online',()=>pullIncomingExpenses());
+setInterval(()=>pullIncomingExpenses(),60000);
+setTimeout(()=>pullIncomingExpenses(),4000);
 
 function updateSettingAvatar(){
   const name = document.getElementById('settingName').value || '';
