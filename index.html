@@ -542,7 +542,10 @@
     #page-transactions .exp-row:not(.exp-row-inc):not(.exp-row-sv) .exp-amt{color:var(--red)}
     #page-transactions .exp-row-sv .exp-amt{color:var(--green)}
     #txFilterStatus{display:none!important}
-    #page-transactions>.section{background:none;border:0;box-shadow:none}
+    #page-transactions>.section{background:none;border:0;box-shadow:none;overflow:visible}
+    #page-transactions>.section .section-body{padding-inline:0}
+    #page-transactions #txOverflowBtn{border:0!important;border-radius:999px!important;background:var(--surface);box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+    #page-transactions .exp-row-menu>summary{border:0;border-radius:999px;background:var(--surface2)}
     .exp-row-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-width:0;flex:1;min-height:72px;padding:14px 12px;border:0;background:none;color:var(--text);font:inherit;text-align:start;cursor:pointer;-webkit-tap-highlight-color:transparent}
     #page-transactions .exp-row-right{gap:10px}
     #page-transactions .exp-name{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;white-space:normal}
