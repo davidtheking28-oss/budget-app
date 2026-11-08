@@ -571,10 +571,10 @@
     .cf-hero-toggle button,#txFlowViewToggle button.active{border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:4px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:30px}
     .cf-hero-title{font-size:0.85rem;color:var(--text2);font-weight:600}
     .cf-hero-tray{display:flex;gap:4px;margin-top:14px;width:100%;padding:4px;background:var(--surface2);border-radius:16px}
-    .cf-hero-cell{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 10px;border-radius:12px}
+    .cf-hero-cell{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:2px;padding:8px 10px;border-radius:12px}
     .cf-hero-cell-inc .cf-hero-cell-val{color:var(--green)}
     .cf-hero-cell-exp .cf-hero-cell-val{color:var(--red)}
-    .cf-hero-cell-label{font-size:0.8125rem;color:var(--text2);font-weight:600}
+    .cf-hero-cell-label{font-size:0.8125rem;color:var(--text2);font-weight:600;text-align:center}
     .cf-hero-cell-val{font-family:var(--font-num);font-weight:800;color:var(--text);font-size:1rem;font-variant-numeric:tabular-nums}
     #page-transactions #txOverflowBtn{width:44px;padding-inline:0!important}
     #txAdvancedFilters{padding-bottom:8px;background:var(--surface2);border-bottom:1px solid var(--border)}
@@ -2290,6 +2290,10 @@
           <div class="cf-hero-cell cf-hero-cell-exp">
             <div class="cf-hero-cell-label">הוצאות</div>
             <div id="txPageExpense" class="cf-hero-cell-val">₪0</div>
+          </div>
+          <div class="cf-hero-cell">
+            <div class="cf-hero-cell-label">חיסכון והשקעות</div>
+            <div id="txPageSaving" class="cf-hero-cell-val">₪0</div>
           </div>
         </div>
       </div>
@@ -6564,19 +6568,21 @@ function renderTxPage(){
   const exp=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
   // "תכנון" — הכנסה חודשית מתוכננת פחות כל ההוצאות הקבועות המתוכננות (_fxMonthly)
   // ותקציבי הקטגוריות המשתנות (budgets), אותה נוסחה שמניבה את "תכנון" ב-advisor-app.
-  let dispInc=inc, dispExp=exp;
+  let dispInc=inc, dispExp=exp, dispSav=mTx.filter(t=>t.type==='saving').reduce((s,t)=>s+t.amount,0);
   if(!hasRange&&_txFlowView==='plan'){
     dispInc=getMonthlyIncome();
-    let plannedFixed=0;getEffectiveFixedCats().forEach(c=>plannedFixed+=_fxMonthly(c));
+    let plannedFixed=0;getEffectiveFixedCats().filter(c=>!SAVING_FIXED_CATS.includes(c)).forEach(c=>plannedFixed+=_fxMonthly(c));
+    dispSav=SAVING_FIXED_CATS.reduce((a,c)=>a+_fxMonthly(c),0);
     let plannedVar=0;getEffectiveExpenseCats().forEach(c=>{if(budgets[c])plannedVar+=budgets[c];});
     dispExp=plannedFixed+plannedVar;
   }
   const incEl=document.getElementById('txPageIncome');const expEl=document.getElementById('txPageExpense');const rngEl=document.getElementById('txRangeExpense');const flowEl=document.getElementById('txPageFlow');
   if(incEl)incEl.textContent=fmt(dispInc);
   if(expEl)expEl.textContent=fmt(dispExp);
+  const savEl=document.getElementById('txPageSaving');if(savEl)savEl.textContent=fmt(dispSav);
   if(rngEl)rngEl.textContent=fmt(exp);
   if(flowEl){
-    const net=dispInc-dispExp;
+    const net=dispInc-dispExp-dispSav;
     flowEl.textContent=(net<0?'-':'')+fmt(Math.abs(net));
     flowEl.style.color=net<0?'var(--red)':'var(--green)';
   }
