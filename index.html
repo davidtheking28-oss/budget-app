@@ -6861,7 +6861,7 @@ function renderBudget(){
   const tabsEl=document.getElementById('sumTabs'),cardEl=document.getElementById('sumCard');
   if(!tabsEl||!cardEl)return;
   const tab=['plan','actual','compare'].includes(_sumTab)?_sumTab:'plan';
-  const names={plan:'תכנון',actual:'ביצוע',compare:'תכנון מול ביצוע'};
+  const names={compare:'תכנון מול ביצוע',plan:'תכנון',actual:'ביצוע'};
   tabsEl.innerHTML='<div class="task-tabs sum-tabs" role="group" aria-label="תצוגת סיכום">'+Object.keys(names).map(k=>
     '<button type="button" class="task-tab" aria-pressed="'+(k===tab)+'" onclick="setSumTab(\''+k+'\')">'+names[k]+'</button>').join('')+'</div>';
   const f=_sumFigures();
