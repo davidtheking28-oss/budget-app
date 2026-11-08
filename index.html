@@ -136,8 +136,6 @@
     #page-analytics input[data-task-id]{width:24px!important;height:24px!important;}
     body.dark #page-analytics input[data-task-id]{color-scheme:dark;}
     #page-analytics .meeting-summary-label{color:var(--text2);font-weight:700;}
-    #page-budget .budget-detail-name{font-size:16px;color:var(--text);line-height:1.4;}
-    #page-budget .budget-detail-planvalue{font-size:19px;}
     #page-dashboard .dash-card-title{font-size:16px;font-weight:800;}
     #page-dashboard .dash-ring-item{border:1px solid var(--border);}
     #page-dashboard #recentTxList .tx-desc-name,#page-transactions .tx-desc-name{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.45;}
@@ -153,7 +151,7 @@
     .task-card.is-declined::before{background:var(--red)}
     .task-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:12px;background:var(--surface);border-radius:999px;box-shadow:0 2px 10px rgba(0,0,0,0.06)}
     .task-tab{min-height:44px;border:0;border-radius:999px;background:none;color:var(--text2);font:inherit;font-size:0.9rem;font-weight:700;cursor:pointer}
-    .task-tab[aria-selected="true"]{background:var(--text);color:var(--bg)}
+    .task-tab[aria-pressed="true"]{background:var(--text);color:var(--bg)}
     .task-card{position:relative;margin-bottom:10px;padding:16px 18px;padding-inline-start:22px;background:var(--surface);border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,0.06);overflow:hidden}
     .task-card::before{content:'';position:absolute;inset-block:16px;inset-inline-start:0;width:5px;border-radius:0 4px 4px 0;background:var(--yellow)}
     .task-card.is-done::before{background:var(--green)}
@@ -224,9 +222,6 @@
     body:not(.dark) .tx-tag.tag-fixed{color:#1d4ed8;}        /* blue on blue-tint, was 4.24:1 */
     body:not(.dark) .insight-highlight{color:#0063cc;}       /* accent on tinted card, was 4.33:1 */
     body.dark .text-slate-400{color:#a1a1aa;}                /* dark:text-zinc-500 was 3.67:1 */
-    body.dark .budget-chip-icon{color:var(--text2);}         /* was 4.46:1 */
-    body.dark .budget-chip-name{color:var(--text);}
-    body.dark .budget-chip-sel .budget-chip-name,body.dark .budget-chip-sel .budget-chip-icon{color:#0d0d0c;}
     /* Financial figures: tabular alignment everywhere */
     .card-amount,.tx-amount,.sub-price-amount,.upcoming-amount,.upcoming-day-num,.breakdown-amount,.sr-amount,.goal-amounts-text,.prog-label,#budgetSummaryTotal,#budgetSummaryPct{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:'tnum' 1,'lnum' 1;letter-spacing:var(--track-num);}
     /* Signed figures must read LTR inside RTL text — direction alone is inert without isolation */
@@ -449,37 +444,12 @@
     .budget-prog-fill.danger{background:var(--red);}
     /* Fade the carousel edges so off-screen chips read as "more to scroll" instead of
        being sliced flat against the viewport edge. */
-    .budget-chip-strip{display:flex;align-items:center;gap:10px;overflow-x:auto;padding:10px calc(50% - 47px) 20px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 42px,#000 calc(100% - 42px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 42px,#000 calc(100% - 42px),transparent 100%);}
-    .budget-chip-strip::-webkit-scrollbar{display:none;}
-    .budget-chip{flex:0 0 auto;width:88px;height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:14px 6px;border:none;border-radius:26px;cursor:pointer;font-family:inherit;scroll-snap-align:center;opacity:0.7;transform:scale(0.86);transition:transform 0.25s cubic-bezier(0.22,1,0.36,1),opacity 0.25s,box-shadow 0.15s,background 0.15s;-webkit-tap-highlight-color:transparent;}
-    .budget-chip:active{transform:scale(0.8);}
-    .budget-chip-icon{line-height:1;color:#1f2937;}
-    .budget-chip-icon svg{width:26px;height:26px;}
-    .budget-chip-name{font-size:0.72rem;font-weight:700;color:#1f2937;text-align:center;line-height:1.25;}
-    .budget-chip-sel{opacity:1;transform:scale(1);box-shadow:0 6px 16px rgba(0,0,0,0.18);}
-    .budget-chip-sel:active{transform:scale(0.96);}
-    .budget-chip-add{background:var(--surface2);border:1.5px dashed var(--border-strong,var(--border));opacity:1;transform:scale(0.86);}
-    .budget-chip-add .budget-chip-icon{color:var(--text3);}
-    .budget-chip-add .budget-chip-icon svg{width:22px;height:22px;}
-    .budget-detail-inner{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,0.05);}
     /* Dashboard cards: route through the design-token system instead of the
        Tailwind slate/zinc utilities they used to carry, so they theme the
        same way as the rest of the app instead of a parallel palette. */
     .dash-card{background:var(--surface);border-color:var(--border);}
     .dash-card-title{color:var(--text);}
     .dash-card-sub{color:var(--text3);}
-    .budget-detail-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
-    .budget-detail-text{min-width:0;}
-    .budget-detail-name{font-size:0.82rem;font-weight:700;color:var(--text2);margin-bottom:4px;}
-    .budget-detail-amount{font-family:var(--font-num);font-size:1.5rem;font-weight:800;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
-    .budget-detail-limit{font-size:1rem;font-weight:600;color:var(--text3);}
-    .budget-detail-planrow{display:flex;gap:8px;margin-top:6px;}
-    .budget-detail-planbox{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 12px;text-align:center;}
-    .budget-detail-planbox-over{border-color:var(--red);}
-    .budget-detail-planlabel{font-size:0.68rem;color:var(--text3);}
-    .budget-detail-planvalue{font-family:var(--font-num);font-size:1.05rem;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums lining-nums;}
-    .budget-detail-planbox-over .budget-detail-planvalue{color:var(--red);}
-    .budget-detail-actions{display:flex;gap:8px;flex-shrink:0;}
     .budget-icon-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:background 0.15s;-webkit-tap-highlight-color:transparent;}
     .budget-icon-btn:active{opacity:0.7;}
     .budget-icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -488,8 +458,6 @@
     .budget-tx-chevron-open{transform:rotate(180deg);}
     .budget-tx-groupsum{font-family:var(--font-num);font-size:0.85rem;font-weight:700;color:var(--text2);flex-shrink:0;font-variant-numeric:tabular-nums lining-nums;}
     .budget-tx-grouplabel{font-size:0.85rem;font-weight:700;color:var(--text);flex:1;}
-    .budget-detail-txlist{margin-top:12px;}
-    .budget-load-more{display:block;width:100%;min-height:44px;margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text);font:inherit;font-weight:700;cursor:pointer;}
     .budget-tx-card{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px 14px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
     .budget-tx-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;min-height:44px;cursor:pointer;}
     .budget-tx-desc-wrap{text-align:right;min-width:0;}
@@ -591,7 +559,7 @@
     #page-transactions #txFilterChips>div{margin-inline-start:0!important}
     .cf-hero{background:var(--surface);border-radius:24px;padding:16px;margin-bottom:14px;box-shadow:0 2px 14px rgba(0,0,0,0.06)}
     .cf-hero-toggle{display:flex;background:var(--accent-solid);border-radius:999px;padding:2px;margin-bottom:8px}
-    .cf-hero-toggle button{border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:4px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:30px}
+    .cf-hero-toggle button,#txFlowViewToggle button.active{border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:4px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:30px}
     .cf-hero-title{font-size:0.85rem;color:var(--text2);font-weight:600}
     .cf-hero-tray{display:flex;gap:4px;margin-top:14px;width:100%;padding:4px;background:var(--surface2);border-radius:16px}
     .cf-hero-cell{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 10px;border-radius:12px}
@@ -603,23 +571,6 @@
     #txAdvancedFilters{padding-bottom:8px;background:var(--surface2);border-bottom:1px solid var(--border)}
     #txFilterStatus{flex-wrap:wrap;line-height:1.5}
     #txFilterStatusText{flex:1;min-width:120px}
-    #page-budget .budget-detail-inner{position:relative;padding:16px}
-    #page-budget .budget-detail-header{display:block;position:relative;margin-bottom:12px}
-    #page-budget .budget-detail-text{width:100%}
-    #page-budget .budget-detail-name{display:flex;align-items:center;min-height:44px;padding-inline-end:56px;margin-bottom:12px;overflow-wrap:anywhere}
-    #page-budget .budget-detail-actions{position:absolute;inset-inline-end:0;top:0}
-    #page-budget .budget-detail-actions .exp-row-menu{margin:0}
-    #page-budget .budget-detail-planrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}
-    #page-budget .budget-detail-planbox{padding:12px 8px;border-radius:14px}
-    #page-budget .budget-detail-planvalue{font-size:22px;direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere}
-    #page-budget .budget-detail-planlabel{margin-bottom:4px}
-    .budget-balance-note{display:block;text-align:start;margin-top:8px;font-size:0.8rem;color:var(--text2)}
-    .budget-balance-over{color:var(--red)}
-    #page-budget .budget-tx-grouphdr{margin-top:14px;padding:12px 0;gap:8px}
-    #page-budget .budget-tx-grouplabel{font-size:14px;line-height:1.5}
-    #page-budget .budget-detail-txlist{margin-top:4px}
-    #page-budget .budget-tx-empty{padding:12px 0;font-size:14px;line-height:1.5}
-    #page-budget .budget-chip:not(.budget-chip-sel):not(.budget-chip-add){opacity:0.9}
     button.budget-tx-top{width:100%;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start}
     .budget-tx-top:focus-visible,.budget-chip:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
     .dash-toprow{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;}
@@ -1116,13 +1067,29 @@
     .sum-cols{position:absolute;inset:0;padding-inline-start:56px;display:flex;justify-content:space-around;align-items:flex-end}
     .sum-grp{height:100%;display:flex;align-items:flex-end;gap:8px}
     .sum-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;width:44px}
-    .sum-bv{font-size:0.68rem;font-weight:700;color:var(--text2);margin-bottom:4px;white-space:nowrap;font-variant-numeric:tabular-nums}
-    .sum-bar{width:100%;border-radius:10px 10px 4px 4px;transition:height 0.5s cubic-bezier(.22,1,.36,1)}
+    .sum-bv{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding-bottom:4px;font-size:0.68rem;font-weight:700;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums}
+    .sum-bar{position:relative;width:100%;border-radius:10px 10px 4px 4px;transition:height 0.5s cubic-bezier(.22,1,.36,1)}
     .sum-bar.inc{background:var(--green)}.sum-bar.exp{background:var(--red)}
     .sum-bar.inc.plan{background:color-mix(in srgb,var(--green) 35%,var(--surface))}
     .sum-bar.exp.plan{background:color-mix(in srgb,var(--red) 35%,var(--surface))}
     .sum-xl{display:flex;justify-content:space-around;padding-inline-start:56px;margin-top:10px}
     .sum-xl-item{flex:1;text-align:center;font-size:0.8rem;font-weight:700;color:var(--text)}
+    .sum-box{margin-top:12px;padding:14px 16px;background:var(--surface);border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,0.06)}
+    .sum-box-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+    .sum-box-title{font-size:0.95rem;font-weight:800;color:var(--text)}
+    .sum-toggle{display:inline-flex;padding:3px;gap:2px;background:var(--surface2);border-radius:999px}
+    .sum-toggle button{min-height:44px;padding:0 14px;border:0;border-radius:999px;background:none;color:var(--text2);font:inherit;font-size:0.8rem;font-weight:700;cursor:pointer}
+    .sum-toggle button[aria-pressed="true"]{background:var(--text);color:var(--bg)}
+    .sum-line{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--border);font-size:0.9rem;color:var(--text2);font-weight:600}
+    .sum-line .sum-fig{font-size:1.05rem}
+    .sum-stack{display:flex;height:12px;border-radius:999px;overflow:hidden;gap:2px;background:var(--surface2)}
+    .sum-stack span{display:block;height:100%}
+    .sum-legend-list{margin-top:12px;display:grid;gap:10px}
+    .sum-lrow{display:flex;align-items:center;gap:10px;font-size:0.85rem}
+    .sum-ldot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .sum-llabel{flex:1;min-width:0;color:var(--text2);font-weight:600;overflow-wrap:anywhere}
+    .sum-lval{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+    .sum-pct{min-width:46px;text-align:center;padding:3px 8px;border-radius:999px;background:var(--surface2);font-size:0.75rem;font-weight:800;color:var(--text)}
     /* ── Mode switcher ──────────────────────── */
     #modeSwitcher{display:none;align-items:center;justify-content:center;padding:0;margin-top:-10px;}
     .mode-pill-current{display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1.5px solid var(--border);border-radius:999px;padding:8px 18px;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent;}
@@ -1513,7 +1480,6 @@
     body.dark .filter-chip.active,
     body.dark .month-btn.active,
     body.dark .range-chip.active{background:rgba(0,120,248,0.13);color:#4da3fb;border-color:rgba(0,120,248,0.4);}
-    /* Rounded pill selectors: one tray, dark active pill */
     .wiz-fix-row,body.dark .wiz-fix-row{border:0;border-radius:999px;background:var(--surface);box-shadow:0 2px 10px rgba(0,0,0,0.06)}
     .wiz-fix-btn,body.dark .wiz-fix-btn{border-radius:999px;background:none}
     .wiz-fix-btn.active,body.dark .wiz-fix-btn.active{background:var(--text);color:var(--bg);box-shadow:none}
@@ -1664,9 +1630,6 @@
       #txFilterChips{flex-wrap:wrap;overflow:visible;gap:8px;padding:12px;}
       #txFilterChips .filter-chip{flex:1;padding-inline:10px;font-size:14px;}
       #rangeChips .range-chip{min-height:44px;font-size:14px;}
-      .budget-chip{height:108px;gap:8px;}
-      .budget-chip-name{font-size:14px;overflow-wrap:anywhere;}
-      .budget-detail-name,.budget-detail-planlabel{font-size:14px;}
       #page-analytics .budget-tx-card{padding:16px;}
       #page-analytics .budget-tx-desc{font-size:16px;line-height:1.5;overflow-wrap:anywhere;}
       #page-analytics .budget-tx-date{font-size:14px;line-height:1.5;margin-top:6px;}
@@ -3519,7 +3482,7 @@ function openSheet(id){
   const sheet=ov.querySelector('.sheet,.wiz-sheet');
   if(sheet){sheet.style.animation='';sheet.style.transition='';sheet.style.transform='';}
   ov._sheetReturnFocus=document.activeElement;
-  if(id==='addBudgetSheet'){const b=ov.querySelector('.btn-primary');if(b){b.textContent='שמור תקציב';b.disabled=false;}}
+  if(id==='addBudgetSheet'){const rt=document.getElementById('budgetRolloverToggle');if(rt)rt.checked=!!userSettings.budgetRollover;const b=ov.querySelector('.btn-primary');if(b){b.textContent='שמור תקציב';b.disabled=false;}}
   if(id==='addSubSheet'){const b=ov.querySelector('.btn-primary');if(b){b.textContent='הוסף מנוי';b.disabled=false;}}
   ov.classList.add('open');
   ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');
@@ -5480,13 +5443,13 @@ function renderTasksPage(){
       +'<div class="task-card-status">'+(done?'משימה סגורה':'משימה פתוחה')+'</div>'
       +'<div class="task-card-title">'+esc(t.title)+'</div>'
       +(t.due_date?'<div class="task-card-due">תאריך יעד לביצוע: '+esc(String(t.due_date).slice(0,10).split('-').reverse().join('/'))+'</div>':'')
-      +'<label class="task-card-action"><input type="checkbox" data-task-id="'+esc(t.id)+'"'+(done?' checked':'')+(_advisorTaskPending.has(t.id)?' disabled aria-busy="true"':'')+' aria-label="סמן '+esc(t.title)+(done?' כלא בוצע':' כבוצע')+'"/>'+(done?'בטל סימון':'סמן כבוצע')+'</label>'
+      +'<label class="task-card-action"><input type="checkbox" data-task-id="'+esc(t.id)+'"'+(done?' checked':'')+(_advisorTaskPending.has(t.id)?' disabled aria-busy="true"':'')+' aria-label="'+(done?'בטל סימון':'סמן כבוצע')+': '+esc(t.title)+'"/>'+(done?'בטל סימון':'סמן כבוצע')+'</label>'
     +'</div>';
   const _tab=_clientTaskTab==='done'?'done':'open';
   const _shown=_tab==='done'?_doneTasks:_openTasks;
-  document.getElementById('taskTabs').innerHTML='<div class="task-tabs" role="tablist">'
-      +'<button type="button" class="task-tab" role="tab" aria-selected="'+(_tab==='open')+'" onclick="setClientTaskTab(\'open\')">משימות פתוחות</button>'
-      +'<button type="button" class="task-tab" role="tab" aria-selected="'+(_tab==='done')+'" onclick="setClientTaskTab(\'done\')">משימות סגורות</button>'
+  document.getElementById('taskTabs').innerHTML='<div class="task-tabs" role="group" aria-label="סינון משימות">'
+      +'<button type="button" class="task-tab" aria-pressed="'+(_tab==='open')+'" onclick="setClientTaskTab(\'open\')">משימות פתוחות</button>'
+      +'<button type="button" class="task-tab" aria-pressed="'+(_tab==='done')+'" onclick="setClientTaskTab(\'done\')">משימות סגורות</button>'
     +'</div>';
   tasksList.innerHTML=(_shown.length?_shown.map(t=>_taskCard(t,_tab==='done')).join(''):'<div class="budget-tx-empty">'+(_tab==='done'?'אין משימות סגורות':'אין משימות פתוחות')+'</div>');
   tasksList.querySelectorAll('[data-task-id]').forEach(el=>{
@@ -6042,7 +6005,7 @@ async function openAddCustomCat(){
 let _aiCatTimer=null;
 let _wizLastSuggested=null;
 function showWizSuggestion(cat){
-  if(!cat)return;
+  if(!cat||!wizCats(txTypeFilter).includes(cat))return;
   const bar=document.getElementById('wizSuggestBar');
   if(!bar)return;
   txSelectedCat=cat;
@@ -6102,7 +6065,7 @@ async function _onReceiptPicked(input){
     document.getElementById('txDesc').value=data.description||'';
     document.getElementById('txAmount').value=data.amount;
     if(data.date&&/^\d{4}-\d{2}-\d{2}$/.test(data.date)){document.getElementById('txDate').value=data.date;wizUpdateDate();}
-    const cats=getEffectiveCats('expense');
+    const cats=wizCats('expense');
     txSelectedCat=(data.category&&cats.includes(data.category))?data.category:(categorize(data.description||'','expense')||(_activeMode==='business'?'אחר':'שונות'));
     wizStep=2;wizRender();
     haptic(6);
@@ -6115,7 +6078,7 @@ async function callAiCategorize(val){
   try{
     const {data:{session}}=_sb?await _sb.auth.getSession():{data:{session:null}};
     if(!session)return;
-    const allCats=getEffectiveCats(txTypeFilter);
+    const allCats=wizCats(txTypeFilter);
     const res=await fetch(`${SUPA_URL}/functions/v1/parse-expense`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`,'apikey':SUPA_ANON},
@@ -6829,12 +6792,57 @@ let _sumTab='plan';
 function setSumTab(tab){_sumTab=tab;renderBudget();}
 function _sumFigures(){
   const mTx=getMonthTx(currentYear,currentMonth);
-  const actInc=mTx.filter(t=>t.type==='income').reduce((s,t)=>s+(+t.amount||0),0);
-  const actExp=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+(+t.amount||0),0);
+  const sumOf=list=>list.reduce((s,t)=>s+(+t.amount||0),0);
+  const expTx=mTx.filter(t=>t.type==='expense');
+  const actInc=sumOf(mTx.filter(t=>t.type==='income'));
+  const actSav=sumOf(mTx.filter(t=>t.type==='saving'));
+  const byCat=(list)=>{const o={};list.forEach(t=>{o[t.cat]=(o[t.cat]||0)+(+t.amount||0);});return Object.entries(o).map(([label,value])=>({label,value}));};
+  const actFixedCats=byCat(expTx.filter(t=>isFixed(t))),actVarCats=byCat(expTx.filter(t=>!isFixed(t)));
   const srcInc=_incomeSourcesFor(currentYear,currentMonth).reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
-  let fixed=0;getEffectiveFixedCats().filter(c=>!SAVING_FIXED_CATS.includes(c)).forEach(c=>fixed+=_fxMonthly(c));
-  let vari=0;getEffectiveExpenseCats().forEach(c=>{if(budgets[c])vari+=budgets[c];});
-  return {planInc:srcInc||getMonthlyIncome(),planExp:fixed+vari,actInc,actExp};
+  const planFixedCats=getEffectiveFixedCats().filter(c=>!SAVING_FIXED_CATS.includes(c)).map(c=>({label:c,value:_fxMonthly(c)})).filter(c=>c.value>0);
+  const planVarCats=getEffectiveExpenseCats().filter(c=>budgets[c]).map(c=>({label:c,value:budgets[c]}));
+  const planSav=SAVING_FIXED_CATS.reduce((s,c)=>s+_fxMonthly(c),0);
+  const add=l=>l.reduce((s,c)=>s+c.value,0);
+  const planFixed=add(planFixedCats),planVar=add(planVarCats),actFixed=add(actFixedCats),actVar=add(actVarCats);
+  return {planInc:srcInc||getMonthlyIncome(),planExp:planFixed+planVar,actInc,actExp:actFixed+actVar,
+    plan:{inc:srcInc||getMonthlyIncome(),fixed:planFixed,vari:planVar,sav:planSav,fixedCats:planFixedCats,varCats:planVarCats,varLabel:'תקציב משתנה'},
+    actual:{inc:actInc,fixed:actFixed,vari:actVar,sav:actSav,fixedCats:actFixedCats,varCats:actVarCats,varLabel:'הוצאות משתנות'}};
+}
+let _sumPeriod='month',_sumBy='type';
+function setSumPeriod(p){_sumPeriod=p;renderBudget();}
+function setSumBy(b){_sumBy=b;renderBudget();}
+const SUM_PALETTE=['#0f766e','#4fb3a1','#2a5d8f','#7aa7d9','#8a7a4e','#6b7a83','#5e6bb3','#9bb56a'];
+function _sumToggleHtml(opts,cur,fn){
+  return '<div class="sum-toggle" role="group">'+opts.map(o=>'<button type="button" aria-pressed="'+(o[0]===cur)+'" onclick="'+fn+'(\''+o[0]+'\')">'+o[1]+'</button>').join('')+'</div>';
+}
+function _sumFlowOf(d){const flowNoSav=d.inc-d.fixed-d.vari;return {flow:flowNoSav-d.sav,flowNoSav};}
+function _sumDetailHtml(tab,f){
+  const mul=(tab==='plan'&&_sumPeriod==='year')?12:1;
+  const d=tab==='plan'?f.plan:f.actual;
+  const {flow,flowNoSav}=_sumFlowOf(d);
+  const lineHtml=(label,v)=>'<div class="sum-line"><span>'+label+'</span><span class="sum-fig '+(v<0?'neg':'pos')+'"><bdi dir="ltr">'+(v<0?'-':'')+fmt(Math.abs(v*mul))+'</bdi></span></div>';
+  const flowRows=tab==='compare'
+    ?lineHtml('בחשבון · תכנון',_sumFlowOf(f.plan).flow)+lineHtml('בחשבון · ביצוע',_sumFlowOf(f.actual).flow)
+    :lineHtml('בחשבון',flow)+lineHtml('בלי חיסכון',flowNoSav);
+  const b=tab==='compare'?f.actual:d;
+  const bFlow=_sumFlowOf(b).flow;
+  const free=Math.max(0,bFlow);
+  let items;
+  if(_sumBy==='category'){
+    const sorted=[...b.fixedCats,...b.varCats].filter(c=>c.value>0).sort((x,y)=>y.value-x.value);
+    const rest=sorted.slice(6).reduce((s,c)=>s+c.value,0);
+    items=[...sorted.slice(0,6).map((c,i)=>({label:catLabel(c.label),value:c.value,color:SUM_PALETTE[i]})),
+      ...(rest>0?[{label:'אחר',value:rest,color:SUM_PALETTE[6]}]:[]),
+      ...(b.sav>0?[{label:'חיסכון והשקעות',value:b.sav,color:SUM_PALETTE[7]}]:[]),
+      ...(free>0?[{label:'נותר פנוי',value:free,color:SUM_PALETTE[5]}]:[])];
+  } else {
+    items=[{label:'הוצאות קבועות',value:b.fixed,color:SUM_PALETTE[0]},{label:b.varLabel,value:b.vari,color:SUM_PALETTE[1]},{label:'חיסכון והשקעות',value:b.sav,color:SUM_PALETTE[2]},{label:'נותר פנוי',value:free,color:SUM_PALETTE[5]}].filter(x=>x.value>0);
+  }
+  const total=items.reduce((s,x)=>s+x.value,0)||1;
+  const breakdown=items.length?'<div class="sum-box"><div class="sum-box-head"><span class="sum-box-title">לאן הולך הכסף'+(tab==='compare'?' · ביצוע':'')+'</span>'+_sumToggleHtml([['type','לפי סוג'],['category','לפי קטגוריה']],_sumBy,'setSumBy')+'</div>'
+    +'<div class="sum-stack" aria-hidden="true">'+items.map(x=>'<span style="width:'+(x.value/total*100)+'%;background:'+x.color+'" title="'+esc(x.label)+'"></span>').join('')+'</div>'
+    +'<div class="sum-legend-list">'+items.map(x=>'<div class="sum-lrow"><i class="sum-ldot" style="background:'+x.color+'"></i><span class="sum-llabel">'+esc(x.label)+'</span><bdi dir="ltr" class="sum-lval">'+fmt(x.value*mul)+'</bdi><span class="sum-pct">'+Math.round(x.value/total*100)+'%</span></div>').join('')+'</div></div>':'';
+  return '<div class="sum-box"><div class="sum-box-head"><span class="sum-box-title">תזרים</span>'+(tab==='plan'?_sumToggleHtml([['month','חודשי'],['year','שנתי']],_sumPeriod,'setSumPeriod'):'')+'</div>'+flowRows+'</div>'+breakdown;
 }
 function _sumNiceMax(v){
   if(v<=0)return 100;
@@ -6844,18 +6852,18 @@ function _sumNiceMax(v){
 function _sumChartHtml(groups,max){
   const grid=[0,1,2,3,4].map(i=>'<div class="sum-gl" style="bottom:'+(i*25)+'%"><span>'+fmt(max*i/4)+'</span></div>').join('');
   const cols=groups.map(g=>'<div class="sum-grp">'+g.bars.map(b=>
-    '<div class="sum-col"><div class="sum-bv">'+fmt(b.val)+'</div><div class="sum-bar '+b.cls+'" style="height:'+Math.max(b.val/max*100,b.val>0?2:0)+'%"></div></div>'
+    '<div class="sum-col"><div class="sum-bar '+b.cls+'" style="height:'+Math.max(b.val/max*100,b.val>0?2:0)+'%"><span class="sum-bv">'+fmt(b.val)+'</span></div></div>'
   ).join('')+'</div>').join('');
   const labels=groups.map(g=>'<div class="sum-xl-item">'+esc(g.label)+'</div>').join('');
-  return '<div class="sum-chart"><div class="sum-plot">'+grid+'<div class="sum-cols">'+cols+'</div></div><div class="sum-xl">'+labels+'</div></div>';
+  return '<div class="sum-chart" role="img" aria-label="'+esc(groups.map(g=>g.label+': '+g.bars.map(b=>(g.bars.length>1?(b.cls.includes('plan')?'תכנון ':'ביצוע '):'')+fmt(b.val)).join(', ')).join('; '))+'"><div class="sum-plot" aria-hidden="true">'+grid+'<div class="sum-cols">'+cols+'</div></div><div class="sum-xl">'+labels+'</div></div>';
 }
 function renderBudget(){
   const tabsEl=document.getElementById('sumTabs'),cardEl=document.getElementById('sumCard');
   if(!tabsEl||!cardEl)return;
   const tab=['plan','actual','compare'].includes(_sumTab)?_sumTab:'plan';
   const names={plan:'תכנון',actual:'ביצוע',compare:'תכנון מול ביצוע'};
-  tabsEl.innerHTML='<div class="task-tabs sum-tabs" role="tablist">'+Object.keys(names).map(k=>
-    '<button type="button" class="task-tab" role="tab" aria-selected="'+(k===tab)+'" onclick="setSumTab(\''+k+'\')">'+names[k]+'</button>').join('')+'</div>';
+  tabsEl.innerHTML='<div class="task-tabs sum-tabs" role="group" aria-label="תצוגת סיכום">'+Object.keys(names).map(k=>
+    '<button type="button" class="task-tab" aria-pressed="'+(k===tab)+'" onclick="setSumTab(\''+k+'\')">'+names[k]+'</button>').join('')+'</div>';
   const f=_sumFigures();
   let title=names[tab],sub,fig,figCls,groups;
   if(tab==='compare'){
@@ -6874,7 +6882,7 @@ function renderBudget(){
   const empty=maxVal<=0?'<div class="budget-tx-empty">אין עדיין נתונים לחודש זה</div>':'';
   cardEl.innerHTML='<div class="sum-card"><div class="sum-title">'+title+'</div>'
     +'<div class="sum-fig-row"><span class="sum-sub">'+sub+'</span><span class="sum-fig '+figCls+'"><bdi dir="ltr">'+fig+'</bdi></span></div>'
-    +legend+_sumChartHtml(groups,_sumNiceMax(maxVal))+empty+'</div>';
+    +legend+_sumChartHtml(groups,_sumNiceMax(maxVal))+empty+'</div>'+_sumDetailHtml(tab,f);
 }
 function openVariableBudgets(){
   showPage('transactions',document.getElementById('nav-transactions'));

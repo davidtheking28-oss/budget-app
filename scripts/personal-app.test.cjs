@@ -567,7 +567,7 @@ test('category suggestions still accept a response for the current description',
   const ctx=functions(['callAiCategorize'],{
     txTypeFilter:'expense',_sb:{auth:{getSession:async()=>({data:{session:{access_token:'test'}}})}},
     SUPA_URL:'https://example.invalid',SUPA_ANON:'test',userSettings:{},
-    getEffectiveCats:()=>['מזון לבית'],document:{getElementById:()=>({value:'סופר'})},
+    wizCats:()=>['מזון לבית'],document:{getElementById:()=>({value:'סופר'})},
     fetch:async()=>({ok:true,json:async()=>({category:'מזון לבית'})}),
     showWizSuggestion:cat=>shown.push(cat)
   });
@@ -802,6 +802,27 @@ test('resume lock restores pre-existing inert and accessibility states',()=>{
 });
 
 
+test('summary figures keep savings out of expenses and split fixed from variable',()=>{
+  const tx=[
+    {type:'income',cat:'שכר',amount:10000},
+    {type:'expense',cat:'דיור',amount:3000,fixed:true},
+    {type:'expense',cat:'מזון לבית',amount:1200,fixed:false},
+    {type:'saving',cat:'הוראת קבע לחסכון',amount:500,fixed:true}
+  ];
+  const ctx=functions(['_sumFigures','_sumFlowOf'],{
+    currentYear:2026,currentMonth:10,getMonthTx:()=>tx,isFixed:t=>t.fixed,
+    _incomeSourcesFor:()=>[{amount:'11000'}],getMonthlyIncome:()=>0,
+    SAVING_FIXED_CATS:['הוראת קבע לחסכון'],getEffectiveFixedCats:()=>['דיור','הוראת קבע לחסכון'],
+    _fxMonthly:c=>c==='דיור'?3500:1000,getEffectiveExpenseCats:()=>['מזון לבית','פארם'],budgets:{'מזון לבית':1500}
+  });
+  const f=ctx._sumFigures();
+  assert.equal(f.planInc,11000);assert.equal(f.planExp,5000);
+  assert.equal(f.actInc,10000);assert.equal(f.actExp,4200);
+  assert.equal(f.plan.sav,1000);assert.equal(f.actual.sav,500);
+  const plan=ctx._sumFlowOf(f.plan),actual=ctx._sumFlowOf(f.actual);
+  assert.equal(plan.flowNoSav,6000);assert.equal(plan.flow,5000);
+  assert.equal(actual.flowNoSav,5800);assert.equal(actual.flow,5300);
+});
 test('summary chart scale rounds the largest value up to a clean axis maximum',()=>{
   const ctx=functions(['_sumNiceMax'],{Math});
   assert.equal(ctx._sumNiceMax(0),100);
