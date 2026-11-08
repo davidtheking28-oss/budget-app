@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient.js';
+import { REQUESTS_CHANGED } from './usePendingRequestsCount.js';
 import { useClientApprovals, TRASH_DAYS } from './useClientApprovals.js';
 import { toast } from '../toast.js';
 import Families from './Families.jsx';
@@ -82,6 +83,7 @@ export default function ClientApprovals({ advisorId }) {
       setConfirming(null);
       toast(action === 'approve' ? 'הלקוח אושר' : action === 'remove' ? 'הלקוח נמחק' : action === 'end' ? 'הליווי הסתיים' : action === 'cancel' ? 'ההזמנה בוטלה' : action === 'reject' ? 'הבקשה נדחתה' : action === 'block' ? 'הלקוח נחסם' : 'הועבר לפח', 'success');
       await reload();
+      window.dispatchEvent(new Event(REQUESTS_CHANGED));
     } catch {
       setActionError(row.key);
     } finally {

@@ -8,6 +8,7 @@ import MfaChallenge from './auth/MfaChallenge.jsx';
 import { useMfaGate } from './auth/useMfaGate.js';
 import { useIsAdvisor } from './auth/useIsAdvisor.js';
 import { useAdvisorRequest } from './auth/useAdvisorRequest.js';
+import { usePendingRequestsCount } from './business/usePendingRequestsCount.js';
 import Shell from './components/Shell.jsx';
 import Toaster from './components/Toaster.jsx';
 import QuickSwitcher from './components/QuickSwitcher.jsx';
@@ -45,6 +46,7 @@ export default function App() {
   const mfa = useMfaGate(session?.user?.id);
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const { theme, toggle: toggleTheme } = useTheme();
+  const pendingRequests = usePendingRequestsCount(isAdvisor ? session?.user?.id : null);
 
 
 
@@ -86,6 +88,7 @@ export default function App() {
   const personal = workspace === 'personal';
   const activePersonal = PERSONAL_KEYS.includes(personalView) ? personalView : 'personal-expenses';
   const personalItem = PERSONAL_NAV.find(n => n.key === activePersonal);
+  const withBadge = n => (n.key === 'client-approvals' && pendingRequests > 0 ? { ...n, label: `${n.label} (${pendingRequests})` } : n);
 
   return (
     <>
@@ -100,13 +103,13 @@ export default function App() {
         onHomeClients={personal ? () => changeWorkspace('advisor') : () => navigateHome('clients')}
         workspace={workspace}
         onWorkspaceChange={changeWorkspace}
-        homeNav={personal ? PERSONAL_NAV : BUSINESS_NAV.filter(n => n.dept === activeDept.key)}
+        homeNav={personal ? PERSONAL_NAV : BUSINESS_NAV.filter(n => n.dept === activeDept.key).map(withBadge)}
         homeActive={personal ? activePersonal : activeHome}
         onHomeNavChange={personal ? navigatePersonal : navigateHome}
         homeTabs={personal ? [] : DEPARTMENTS.map(d => ({ key: d.key, label: d.label, icon: d.icon, active: d.key === activeDept.key, onClick: () => navigateHome(d.items[0].key) }))}
         title={personal ? personalItem?.label || '' : activeHome === 'client-view' ? '' : pageTitle(homeItem)}
         description={personal ? personalItem?.description : activeHome === 'tasks' ? new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : homeItem?.description}
-        homeLinks={personal ? PERSONAL_NAV.map(n => ({ key: n.key, label: n.label, active: activePersonal === n.key, onClick: () => navigatePersonal(n.key), icon: n.icon })) : BUSINESS_NAV.filter(n => n.key !== 'clients').map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => navigateHome(n.key), icon: n.icon }))}
+        homeLinks={personal ? PERSONAL_NAV.map(n => ({ key: n.key, label: n.label, active: activePersonal === n.key, onClick: () => navigatePersonal(n.key), icon: n.icon })) : BUSINESS_NAV.filter(n => n.key !== 'clients').map(withBadge).map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => navigateHome(n.key), icon: n.icon }))}
       >
         <Suspense fallback={<Skeleton height="260px" radius="18px" />}>
           {personal
