@@ -6,8 +6,8 @@
 .chevron { position: absolute; inset-inline-end: 14px; top: calc(50% - 8px); pointer-events: none; }
 .icon { position: absolute; inset-inline-start: 16px; top: 50%; transform: translateY(-50%); display: flex; pointer-events: none; }
 .withIcon .select { padding-inline-start: 44px; }
-.prominent { width: 148px; min-width: 148px; flex: none; color: var(--accent-ink); }
-.prominent .select { min-height: 40px; padding-block: 7px; background: var(--accent); border-color: var(--accent); border-radius: var(--radius-full); font-family: var(--font-body); font-size: 14px; line-height: 1.4; font-weight: 600; }
+.prominent { width: 148px; min-width: 148px; flex: none; color: var(--workspace-text); }
+.prominent .select { min-height: 40px; padding-block: 7px; background: var(--workspace-glass); border-color: var(--workspace-line); border-radius: var(--radius-full); font-family: var(--font-body); font-size: 14px; line-height: 1.4; font-weight: 600; }
 .prominent .icon { inset-inline-start: 12px; }
 .prominent .icon svg { width: 17px; height: 17px; }
 .prominent.withIcon .select { padding-inline-start: 38px; }
