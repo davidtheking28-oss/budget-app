@@ -84,7 +84,7 @@ export default function ClientsTable({ advisorId, onOpen, onRemove }) {
   return (
     <div className={styles.stack}>
       <div className={workspace.listHead}>
-        <div><h2 className={workspace.listTitle}>כל הלקוחות</h2><p className={styles.cardSub}>מצב התהליך והצעד הבא, במקום אחד</p></div>
+        <p className={styles.cardSub}>מצב התהליך והצעד הבא, במקום אחד</p>
         <button type="button" className={styles.btn} onClick={() => setAdding(true)}>הוסף לקוח +</button>
       </div>
       <div className={workspace.summary} role="group" aria-label="סיכום לקוחות">

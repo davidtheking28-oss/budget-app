@@ -60,12 +60,13 @@ export default function IconRail({ homeLinks, clientName, clientSince, onBack, h
             type="button"
             className={styles.railBtn + ((a.key === 'clients' && homeActive) || a.active ? ' ' + styles.railBtnActive : '')}
             onClick={a.onClick}
-            aria-label={a.label}
+            aria-label={a.badge ? `${a.label} (${a.badge})` : a.label}
             title={a.label}
             aria-current={(a.key === 'clients' && homeActive) || a.active ? 'page' : undefined}
           >
             {a.icon}
             <span className={styles.label}>{a.label}</span>
+            {a.badge > 0 && <span className={styles.badge} aria-hidden="true">{a.badge}</span>}
           </button>
         ))}
 
@@ -81,12 +82,13 @@ export default function IconRail({ homeLinks, clientName, clientSince, onBack, h
               type="button"
               className={styles.railBtn + (n.key === activeNav ? ' ' + styles.railBtnActive : '')}
               onClick={() => onNavChange(n.key)}
-              aria-label={n.label}
+              aria-label={n.badge ? `${n.label} (${n.badge})` : n.label}
               title={n.label}
               aria-current={n.key === activeNav ? 'page' : undefined}
             >
               {n.icon}
               <span className={styles.label}>{n.label}</span>
+              {n.badge > 0 && <span className={styles.badge} aria-hidden="true">{n.badge}</span>}
             </button>
           ];
         })}

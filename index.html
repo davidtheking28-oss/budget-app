@@ -6799,8 +6799,7 @@ function _sumFigures(){
     plan:{inc:srcInc||getMonthlyIncome(),fixed:planFixed,vari:planVar,sav:planSav,fixedCats:planFixedCats,varCats:planVarCats,varLabel:'תקציב משתנה'},
     actual:{inc:actInc,fixed:actFixed,vari:actVar,sav:actSav,fixedCats:actFixedCats,varCats:actVarCats,varLabel:'הוצאות משתנות'}};
 }
-let _sumPeriod='month',_sumBy='type';
-function setSumPeriod(p){_sumPeriod=p;renderBudget();}
+let _sumBy='type';
 function setSumBy(b){_sumBy=b;renderBudget();}
 const SUM_PALETTE=['#0f766e','#4fb3a1','#2a5d8f','#7aa7d9','#8a7a4e','#6b7a83','#5e6bb3','#9bb56a'];
 function _sumToggleHtml(opts,cur,fn){
@@ -6808,12 +6807,11 @@ function _sumToggleHtml(opts,cur,fn){
 }
 function _sumFlowOf(d){const flowNoSav=d.inc-d.fixed-d.vari;return {flow:flowNoSav-d.sav,flowNoSav};}
 function _sumDetailHtml(tab,f){
-  const mul=(tab==='plan'&&_sumPeriod==='year')?12:1;
   const d=tab==='plan'?f.plan:f.actual;
   const {flow,flowNoSav}=_sumFlowOf(d);
-  const lineHtml=(label,v)=>'<div class="sum-line"><span>'+label+'</span><span class="sum-fig '+(v<0?'neg':'pos')+'"><bdi dir="ltr">'+(v<0?'-':'')+fmt(Math.abs(v*mul))+'</bdi></span></div>';
+  const lineHtml=(label,v)=>'<div class="sum-line"><span>'+label+'</span><span class="sum-fig '+(v<0?'neg':'pos')+'"><bdi dir="ltr">'+(v<0?'-':'')+fmt(Math.abs(v))+'</bdi></span></div>';
   const flowRows=tab==='compare'
-    ?lineHtml('בחשבון · תכנון',_sumFlowOf(f.plan).flow)+lineHtml('בחשבון · ביצוע',_sumFlowOf(f.actual).flow)
+    ?lineHtml('בחשבון · תכנון',_sumFlowOf(f.plan).flow)+lineHtml('בחשבון · ביצוע',_sumFlowOf(f.actual).flow)+lineHtml('בלי חיסכון · תכנון',_sumFlowOf(f.plan).flowNoSav)+lineHtml('בלי חיסכון · ביצוע',_sumFlowOf(f.actual).flowNoSav)
     :lineHtml('בחשבון',flow)+lineHtml('בלי חיסכון',flowNoSav);
   const b=tab==='compare'?f.actual:d;
   const bFlow=_sumFlowOf(b).flow;
@@ -6832,8 +6830,8 @@ function _sumDetailHtml(tab,f){
   const total=items.reduce((s,x)=>s+x.value,0)||1;
   const breakdown=items.length?'<div class="sum-box"><div class="sum-box-head"><span class="sum-box-title">לאן הולך הכסף'+(tab==='compare'?' · ביצוע':'')+'</span>'+_sumToggleHtml([['type','לפי סוג'],['category','לפי קטגוריה']],_sumBy,'setSumBy')+'</div>'
     +'<div class="sum-stack" aria-hidden="true">'+items.map(x=>'<span style="width:'+(x.value/total*100)+'%;background:'+x.color+'" title="'+esc(x.label)+'"></span>').join('')+'</div>'
-    +'<div class="sum-legend-list">'+items.map(x=>'<div class="sum-lrow"><i class="sum-ldot" style="background:'+x.color+'"></i><span class="sum-llabel">'+esc(x.label)+'</span><bdi dir="ltr" class="sum-lval">'+fmt(x.value*mul)+'</bdi><span class="sum-pct">'+Math.round(x.value/total*100)+'%</span></div>').join('')+'</div></div>':'';
-  return '<div class="sum-box"><div class="sum-box-head"><span class="sum-box-title">תזרים</span>'+(tab==='plan'?_sumToggleHtml([['month','חודשי'],['year','שנתי']],_sumPeriod,'setSumPeriod'):'')+'</div>'+flowRows+'</div>'+breakdown;
+    +'<div class="sum-legend-list">'+items.map(x=>'<div class="sum-lrow"><i class="sum-ldot" style="background:'+x.color+'"></i><span class="sum-llabel">'+esc(x.label)+'</span><bdi dir="ltr" class="sum-lval">'+fmt(x.value)+'</bdi><span class="sum-pct">'+Math.round(x.value/total*100)+'%</span></div>').join('')+'</div></div>':'';
+  return '<div class="sum-box"><div class="sum-box-head"><span class="sum-box-title">תזרים</span>'+'</div>'+flowRows+'</div>'+breakdown;
 }
 function _sumNiceMax(v){
   if(v<=0)return 100;

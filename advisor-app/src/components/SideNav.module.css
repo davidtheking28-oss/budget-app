@@ -69,3 +69,5 @@ button.modeOn, button.modeOn:hover { background: var(--accent); color: var(--acc
 .footer > div { width: 100%; }
 
 .brand, .modes { flex-shrink: 0; }
+
+.badge { margin-inline-start: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--workspace-mint); color: var(--workspace-bg, #10201c); font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; }

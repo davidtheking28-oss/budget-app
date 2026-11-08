@@ -43,7 +43,7 @@ export default function TopNav({ tabs, homeLinks, onBack, homeActive, onPrint, o
           {nav.map((n, i) => (
             <span key={n.key} className={styles.subItem}>
               {i > 0 && n.group !== nav[i - 1].group && <span className={styles.sep} aria-hidden="true" />}
-              <button type="button" className={styles.tab + (n.key === activeNav ? ' ' + styles.tabOn : '')} onClick={() => onNavChange(n.key)} aria-current={n.key === activeNav ? 'page' : undefined}>{n.label}</button>
+              <button type="button" className={styles.tab + (n.key === activeNav ? ' ' + styles.tabOn : '')} onClick={() => onNavChange(n.key)} aria-current={n.key === activeNav ? 'page' : undefined}>{n.label}{n.badge > 0 && <span className={styles.badge} aria-label={`${n.badge} ממתינים`}>{n.badge}</span>}</button>
             </span>
           ))}
         </nav>

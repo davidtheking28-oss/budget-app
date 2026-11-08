@@ -18,6 +18,7 @@ export default function SideNav({ nav, activeNav, onNavChange, footer, logoUrl, 
             <button type="button" className={styles.item + (n.key === activeNav ? ' ' + styles.itemOn : '')} onClick={() => onNavChange(n.key)} aria-current={n.key === activeNav ? 'page' : undefined} title={n.hint}>
               <span className={styles.icon} aria-hidden="true">{n.icon}</span>
               <span>{n.label}</span>
+              {n.badge > 0 && <span className={styles.badge} aria-label={`${n.badge} ממתינים`}>{n.badge}</span>}
             </button>
           </div>
         ))}

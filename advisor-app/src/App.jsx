@@ -88,7 +88,7 @@ export default function App() {
   const personal = workspace === 'personal';
   const activePersonal = PERSONAL_KEYS.includes(personalView) ? personalView : 'personal-expenses';
   const personalItem = PERSONAL_NAV.find(n => n.key === activePersonal);
-  const withBadge = n => (n.key === 'client-approvals' && pendingRequests > 0 ? { ...n, label: `${n.label} (${pendingRequests})` } : n);
+  const withBadge = n => (n.key === 'client-approvals' && pendingRequests > 0 ? { ...n, badge: pendingRequests } : n);
 
   return (
     <>
@@ -109,7 +109,7 @@ export default function App() {
         homeTabs={personal ? [] : DEPARTMENTS.map(d => ({ key: d.key, label: d.label, icon: d.icon, active: d.key === activeDept.key, onClick: () => navigateHome(d.items[0].key) }))}
         title={personal ? personalItem?.label || '' : activeHome === 'client-view' ? '' : pageTitle(homeItem)}
         description={personal ? personalItem?.description : activeHome === 'tasks' ? new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : homeItem?.description}
-        homeLinks={personal ? PERSONAL_NAV.map(n => ({ key: n.key, label: n.label, active: activePersonal === n.key, onClick: () => navigatePersonal(n.key), icon: n.icon })) : BUSINESS_NAV.filter(n => n.key !== 'clients').map(withBadge).map(n => ({ key: n.key, label: n.label, active: activeHome === n.key, onClick: () => navigateHome(n.key), icon: n.icon }))}
+        homeLinks={personal ? PERSONAL_NAV.map(n => ({ key: n.key, label: n.label, active: activePersonal === n.key, onClick: () => navigatePersonal(n.key), icon: n.icon })) : BUSINESS_NAV.filter(n => n.key !== 'clients').map(withBadge).map(n => ({ key: n.key, label: n.label, badge: n.badge, active: activeHome === n.key, onClick: () => navigateHome(n.key), icon: n.icon }))}
       >
         <Suspense fallback={<Skeleton height="260px" radius="18px" />}>
           {personal
