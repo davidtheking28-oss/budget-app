@@ -125,6 +125,8 @@
     #page-settings #settingName:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
     #settingsDangerSection .settings-heading-icon{background:var(--red-light);color:var(--red);}
     #page-settings .settings-section .btn-full{border-radius:999px;}
+    #page-settings .set-pill-btn{justify-content:center;min-height:48px;margin-top:8px;border:1.5px solid var(--border);border-radius:999px;background:var(--surface2)}
+    #page-settings .set-pill-danger{border-color:color-mix(in srgb,var(--red) 45%,var(--border))}
 
 
     .app-page-intro{margin:4px 4px 18px;}
@@ -2650,13 +2652,13 @@
       </div>
       <div class="settings-section">
         <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 4M12 17h.01"/></svg></span><span>עזרה ופרטיות</span></h2>
-        <button type="button" class="set-dd-opt" style="width:100%" onclick="openSupportSheet()"><span>✉️</span> צור קשר / דיווח על תקלה</button>
+        <button type="button" class="set-dd-opt set-pill-btn" style="width:100%" onclick="openSupportSheet()"><span>✉️</span> צור קשר / דיווח על תקלה</button>
       </div>
       <div class="settings-section" id="settingsDangerSection" style="border:1px solid var(--red)">
         <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></span><span>איפוס ומחיקה</span></h2>
         <p style="font-size:14px;line-height:1.5;color:var(--text2);margin:0 0 12px">פעולות אלה מוחקות נתונים. מומלץ להוריד גיבוי לפני שממשיכים.</p>
-        <button type="button" class="set-dd-opt" style="width:100%;color:var(--red)" onclick="resetAllData()">איפוס כל הנתונים</button>
-        <button type="button" class="set-dd-opt" style="width:100%;color:var(--red)" onclick="deleteAccount()">מחיקת חשבון לצמיתות</button>
+        <button type="button" class="set-dd-opt set-pill-btn set-pill-danger" style="width:100%;color:var(--red)" onclick="resetAllData()">איפוס כל הנתונים</button>
+        <button type="button" class="set-dd-opt set-pill-btn set-pill-danger" style="width:100%;color:var(--red)" onclick="deleteAccount()">מחיקת חשבון לצמיתות</button>
       </div>
       <div style="text-align:center;margin-top:14px;padding-bottom:4px">
         <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">🔒 מדיניות פרטיות</button>
