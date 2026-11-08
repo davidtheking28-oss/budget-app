@@ -519,6 +519,9 @@
     .exp-name{font-weight:700;color:var(--text);}
     .exp-cat-icon{display:flex;flex-shrink:0;line-height:1;color:var(--text2);}
     .exp-cat-icon svg{width:18px;height:18px;}
+    .cat-tile{width:40px;height:40px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;background:linear-gradient(145deg,color-mix(in srgb,var(--ct) 26%,var(--surface)),color-mix(in srgb,var(--ct) 10%,var(--surface)));color:color-mix(in srgb,var(--ct) 72%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ct) 24%,transparent)}
+    body.dark .cat-tile{color:var(--ct)}
+    .cat-tile svg{width:21px;height:21px;stroke-width:2}
     .cashflow-page{margin:calc(var(--main-px) * -1) calc(var(--main-px) * -1) calc((var(--nav-h) + var(--safe-bottom) + 80px) * -1);padding:var(--main-px) var(--main-px) calc(var(--nav-h) + var(--safe-bottom) + 80px);min-height:calc(100% + var(--main-px));}
     .cashflow-page .section-header{padding:22px 4px 6px}
     /* 10px/700 counter pills: --text2 on the tinted pill was 3.6:1 light / 3.1:1 dark. */
@@ -2992,7 +2995,7 @@ const CAT_SVGS={
   'צדקה':_sv('<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'),
   'הלוואות':_sv('<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>'),
   'ארנונה':_sv('<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'),
-  'גז':_sv('<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/>'),
+  'גז':_sv('<path d="M12 2c.5 3.5 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-1.8.8-3 1.8-4 .3 1.2 1 1.8 1.7 2C11 7.5 10.5 4.5 12 2z"/><path d="M10 17.5c0-1.2 1-2 2-2s2 .8 2 2"/>'),
   'שכר בן/בת זוג':_sv('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
   'קצבת ילדים':_sv('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="23 11 17 11 17 17"/>'),
   'קצבאות':_sv('<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'),
@@ -3168,6 +3171,12 @@ const BUDGET_CHIP_COLOR={
   'עזרת/שמרטף':'yellow','תיקוני רכב':'blue','בריאות':'teal','בעלי חיים':'yellow',
   'דמי כיס/ילדים':'yellow','יהדות/חגים':'purple','ביטוח לאומי':'blue','שונות':'gray'
 };
+Object.assign(BUDGET_CHIP_COLOR,{
+  'דיור':'blue','ועד בית':'blue','גז':'orange','ארנונה':'purple','מים וביוב':'teal','חשמל':'yellow',
+  'תרומות בהוראת קבע':'pink','חינוך, חוגים וקייטנות':'purple','ביטוחים':'teal','הוראת קבע לחסכון':'green',
+  'ריבית על המינוס':'orange','החזר הלוואות + חיוב קבוע':'pink','עסקאות בתשלומים':'blue','מנויים ושירותים':'purple','שכר':'green'
+});
+function catTile(cat){return '<span class="cat-tile" style="--ct:'+BUDGET_CHIP_HEX[BUDGET_CHIP_COLOR[cat]||'gray'].sel+'">'+catIconSvg(cat)+'</span>';}
 function budgetChipColor(cat){
   const table=document.body.classList.contains('dark')?BUDGET_CHIP_HEX_DARK:BUDGET_CHIP_HEX;
   return table[BUDGET_CHIP_COLOR[cat]||'gray'];
@@ -3648,7 +3657,7 @@ function wizRenderCats(cats){
   list.innerHTML=cats.map(c=>{
     const hasSub=!!CAT_SUBCATS[c];
     return '<button type="button" class="wiz-cat-row'+(c===txSelectedCat?' wiz-sel':'')+'" data-cat="'+esc(c)+'" data-expand="'+(hasSub?'1':'0')+'">'+
-      '<div class="wiz-cat-icon" style="--category-icon-bg:'+budgetChipColor(c).base+';--category-icon-color:'+budgetChipColor(c).sel+'">'+catIconSvg(c)+'</div>'+
+      '<div class="wiz-cat-icon" style="background:none">'+catTile(c)+'</div>'+
       '<span class="wiz-cat-name">'+esc(c)+'</span>'+
       (hasSub?'<span class="wiz-expand-arrow">›</span>':'<span class="wiz-sel-check">✓</span>')+
       '</button>';
@@ -4297,7 +4306,7 @@ const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','ע�
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key),id=encodeURIComponent(key);
   return '<div class="exp-row'+(key.startsWith('inc:')?' exp-row-inc':key.startsWith('sv:')?' exp-row-sv':'')+'"><button type="button" class="exp-row-summary" id="exp-toggle-'+id+'" aria-controls="exp-detail-'+id+'" onclick="toggleExpGroup(\''+attrArg(key)+'\')" aria-expanded="'+open+'">'
-    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catIconSvg(opts.iconCat||opts.cat)+'</span><span class="exp-name">'+esc(opts.label||opts.cat)+(opts.auto?'<span class="exp-auto-badge">אוטומטי</span>':'')+'</span></div>'
+    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catTile(opts.iconCat||opts.cat)+'</span><span class="exp-name">'+esc(opts.label||opts.cat)+(opts.auto?'<span class="exp-auto-badge">אוטומטי</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
       +'<span class="exp-row-value"><bdi dir="ltr" class="exp-amt">'+fmt(opts.amount)+'</bdi>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
@@ -6390,7 +6399,7 @@ function renderDashGoals(){
           +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-track"/>'
           +'<circle cx="40" cy="40" r="'+R+'" class="dash-ring-fill'+(state?' '+state:'')+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct))+'"/>'
         +'</svg>'
-        +'<div class="dash-ring-emoji" aria-hidden="true"><div class="dash-ring-emoji-chip" style="background:'+budgetChipColor(cat).base+';color:'+budgetChipColor(cat).sel+'">'+catIconSvg(cat)+'</div></div>'
+        +'<div class="dash-ring-emoji" aria-hidden="true"><div class="dash-ring-emoji-chip cat-tile" style="--ct:'+BUDGET_CHIP_HEX[BUDGET_CHIP_COLOR[cat]||'gray'].sel+'">'+catIconSvg(cat)+'</div></div>'
       +'</div>'
       +'<div class="dash-ring-label"><div class="dash-ring-name">'+esc(cat)+'</div></div>'
       +'<div class="dash-ring-meta">'
@@ -6986,7 +6995,7 @@ function openMoveTxCat(id){
   const moveList=document.getElementById('moveCatList');
   moveList.innerHTML=cats.map(c=>
     '<button type="button" class="wiz-cat-row'+(c===t.cat?' wiz-sel':'')+'" data-cat="'+esc(c)+'">'
-      +'<div class="wiz-cat-icon" style="--category-icon-bg:'+budgetChipColor(c).base+';--category-icon-color:'+budgetChipColor(c).sel+'">'+catIconSvg(c)+'</div>'
+      +'<div class="wiz-cat-icon" style="background:none">'+catTile(c)+'</div>'
       +'<span class="wiz-cat-name">'+esc(c)+'</span>'
     +'</button>'
   ).join('');
