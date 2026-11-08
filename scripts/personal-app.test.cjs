@@ -823,6 +823,20 @@ test('summary figures keep savings out of expenses and split fixed from variable
   assert.equal(plan.flowNoSav,6000);assert.equal(plan.flow,5000);
   assert.equal(actual.flowNoSav,5800);assert.equal(actual.flow,5300);
 });
+test('yearly summary adds the months up to the cutoff and merges categories',()=>{
+  const tx=[{type:'income',cat:'שכר',amount:10000},{type:'expense',cat:'דיור',amount:3000,fixed:true},{type:'expense',cat:'מזון לבית',amount:1200,fixed:false}];
+  const ctx=functions(['_sumFigures','_sumAddCats','_sumAddSide','_sumFiguresYear'],{
+    currentYear:2026,currentMonth:10,getMonthTx:()=>tx,isFixed:t=>t.fixed,
+    _incomeSourcesFor:()=>[{amount:'11000'}],getMonthlyIncome:()=>0,
+    SAVING_FIXED_CATS:[],getEffectiveFixedCats:()=>['דיור'],
+    _fxMonthly:()=>3500,getEffectiveExpenseCats:()=>['מזון לבית'],budgets:{'מזון לבית':1500}
+  });
+  const y=ctx._sumFiguresYear(2026,2);
+  assert.equal(y.planInc,33000);assert.equal(y.planExp,15000);
+  assert.equal(y.actInc,30000);assert.equal(y.actExp,12600);
+  assert.equal(y.actual.fixedCats.find(c=>c.label==='דיור').value,9000);
+  assert.equal(y.plan.varCats.length,1);
+});
 test('summary chart scale rounds the largest value up to a clean axis maximum',()=>{
   const ctx=functions(['_sumNiceMax'],{Math});
   assert.equal(ctx._sumNiceMax(0),100);

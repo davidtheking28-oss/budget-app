@@ -1087,6 +1087,7 @@
     .sum-box{margin-top:12px;padding:14px 16px;background:var(--surface);border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,0.06)}
     .sum-box-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
     .sum-box-title{font-size:0.95rem;font-weight:800;color:var(--text)}
+    .sum-period{display:flex;justify-content:center;margin-bottom:10px}
     .sum-toggle{display:inline-flex;padding:3px;gap:2px;background:var(--surface2);border-radius:999px}
     .sum-toggle button{min-height:44px;padding:0 14px;border:0;border-radius:999px;background:none;color:var(--text2);font:inherit;font-size:0.8rem;font-weight:700;cursor:pointer}
     .sum-toggle button[aria-pressed="true"]{background:var(--text);color:var(--bg)}
@@ -2432,7 +2433,7 @@
   </div>
 
   <div id="page-budget" class="page">
-    <div class="app-page-intro"><h1>סיכום</h1><p>תכנון מול ביצוע לחודש הנבחר</p></div>
+    <div class="app-page-intro"><h1>סיכום</h1><p id="sumIntro">תכנון מול ביצוע לחודש הנבחר</p></div>
     <div id="sumTabs"></div>
     <div id="sumCard"></div>
   </div>
@@ -6781,15 +6782,15 @@ function _budgetCarry(cat){
 }
 let _sumTab='compare';
 function setSumTab(tab){_sumTab=tab;renderBudget();}
-function _sumFigures(){
-  const mTx=getMonthTx(currentYear,currentMonth);
+function _sumFigures(y=currentYear,m=currentMonth){
+  const mTx=getMonthTx(y,m);
   const sumOf=list=>list.reduce((s,t)=>s+(+t.amount||0),0);
   const expTx=mTx.filter(t=>t.type==='expense');
   const actInc=sumOf(mTx.filter(t=>t.type==='income'));
   const actSav=sumOf(mTx.filter(t=>t.type==='saving'));
   const byCat=(list)=>{const o={};list.forEach(t=>{o[t.cat]=(o[t.cat]||0)+(+t.amount||0);});return Object.entries(o).map(([label,value])=>({label,value}));};
   const actFixedCats=byCat(expTx.filter(t=>isFixed(t))),actVarCats=byCat(expTx.filter(t=>!isFixed(t)));
-  const srcInc=_incomeSourcesFor(currentYear,currentMonth).reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
+  const srcInc=_incomeSourcesFor(y,m).reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
   const planFixedCats=getEffectiveFixedCats().filter(c=>!SAVING_FIXED_CATS.includes(c)).map(c=>({label:c,value:_fxMonthly(c)})).filter(c=>c.value>0);
   const planVarCats=getEffectiveExpenseCats().filter(c=>budgets[c]).map(c=>({label:c,value:budgets[c]}));
   const planSav=SAVING_FIXED_CATS.reduce((s,c)=>s+_fxMonthly(c),0);
@@ -6799,7 +6800,18 @@ function _sumFigures(){
     plan:{inc:srcInc||getMonthlyIncome(),fixed:planFixed,vari:planVar,sav:planSav,fixedCats:planFixedCats,varCats:planVarCats,varLabel:'תקציב משתנה'},
     actual:{inc:actInc,fixed:actFixed,vari:actVar,sav:actSav,fixedCats:actFixedCats,varCats:actVarCats,varLabel:'הוצאות משתנות'}};
 }
-let _sumBy='type';
+let _sumBy='type',_sumPeriod='month';
+function setSumPeriod(p){_sumPeriod=p;renderBudget();}
+function _sumAddCats(a,b){const o={};[...a,...b].forEach(c=>{o[c.label]=(o[c.label]||0)+c.value;});return Object.entries(o).map(([label,value])=>({label,value}));}
+function _sumAddSide(a,b){return {...a,inc:a.inc+b.inc,fixed:a.fixed+b.fixed,vari:a.vari+b.vari,sav:a.sav+b.sav,fixedCats:_sumAddCats(a.fixedCats,b.fixedCats),varCats:_sumAddCats(a.varCats,b.varCats)};}
+function _sumFiguresYear(y,upTo){
+  let acc=null;
+  for(let m=0;m<=upTo;m++){
+    const f=_sumFigures(y,m);
+    acc=acc?{planInc:acc.planInc+f.planInc,planExp:acc.planExp+f.planExp,actInc:acc.actInc+f.actInc,actExp:acc.actExp+f.actExp,plan:_sumAddSide(acc.plan,f.plan),actual:_sumAddSide(acc.actual,f.actual)}:f;
+  }
+  return acc;
+}
 function setSumBy(b){_sumBy=b;renderBudget();}
 const SUM_PALETTE=['#0f766e','#4fb3a1','#2a5d8f','#7aa7d9','#8a7a4e','#6b7a83','#5e6bb3','#9bb56a'];
 function _sumToggleHtml(opts,cur,fn){
@@ -6851,10 +6863,13 @@ function renderBudget(){
   if(!tabsEl||!cardEl)return;
   const tab=['plan','actual','compare'].includes(_sumTab)?_sumTab:'compare';
   const names={compare:'תכנון מול ביצוע',plan:'תכנון',actual:'ביצוע'};
-  tabsEl.innerHTML='<div class="task-tabs sum-tabs" role="group" aria-label="תצוגת סיכום">'+Object.keys(names).map(k=>
+  const yearly=_sumPeriod==='year';
+  const introEl=document.getElementById('sumIntro');if(introEl)introEl.textContent=yearly?'תכנון מול ביצוע לשנה הנבחרת':'תכנון מול ביצוע לחודש הנבחר';
+  tabsEl.innerHTML='<div class="sum-period">'+_sumToggleHtml([['month','חודשי'],['year','שנתי']],_sumPeriod,'setSumPeriod')+'</div><div class="task-tabs sum-tabs" role="group" aria-label="תצוגת סיכום">'+Object.keys(names).map(k=>
     '<button type="button" class="task-tab" aria-pressed="'+(k===tab)+'" onclick="setSumTab(\''+k+'\')">'+names[k]+'</button>').join('')+'</div>';
-  const f=_sumFigures();
-  let title=names[tab],sub,fig,figCls,groups;
+  const now=new Date();
+  const f=yearly?_sumFiguresYear(currentYear,tab==='compare'&&currentYear===now.getFullYear()?now.getMonth():11):_sumFigures();
+  let title=names[tab]+(yearly?' · '+currentYear:''),sub,fig,figCls,groups;
   if(tab==='compare'){
     const gap=f.planExp-f.actExp;
     sub=gap>=0?'נשארו בתקציב ההוצאות':'חריגה מתקציב ההוצאות';
@@ -6868,7 +6883,7 @@ function renderBudget(){
   }
   const maxVal=Math.max(...groups.flatMap(g=>g.bars.map(b=>b.val)));
   const legend=tab==='compare'?'<div class="sum-legend"><span><i class="sum-dot plan"></i>תכנון</span><span><i class="sum-dot"></i>ביצוע</span></div>':'';
-  const empty=maxVal<=0?'<div class="budget-tx-empty">אין עדיין נתונים לחודש זה</div>':'';
+  const empty=maxVal<=0?'<div class="budget-tx-empty">'+(yearly?'אין עדיין נתונים לשנה זו':'אין עדיין נתונים לחודש זה')+'</div>':'';
   cardEl.innerHTML='<div class="sum-card"><div class="sum-title">'+title+'</div>'
     +'<div class="sum-fig-row"><span class="sum-sub">'+sub+'</span><span class="sum-fig '+figCls+'"><bdi dir="ltr">'+fig+'</bdi></span></div>'
     +legend+_sumChartHtml(groups,_sumNiceMax(maxVal))+empty+'</div>'+_sumDetailHtml(tab,f);
