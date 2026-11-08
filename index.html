@@ -583,12 +583,15 @@
     #page-transactions #txFilterChips .filter-chip.active,body.dark #page-transactions #txFilterChips .filter-chip.active{background:var(--text);border-color:transparent;color:var(--bg)}
     #page-transactions #txFilterChips>div{margin-inline-start:0!important}
     .cf-hero{background:var(--surface);border-radius:24px;padding:16px;margin-bottom:14px;box-shadow:0 2px 14px rgba(0,0,0,0.06)}
-    .cf-hero-toggle{display:flex;background:var(--surface2);border-radius:999px;padding:2px;margin-bottom:8px}
-    .cf-hero-toggle button{border:none;background:none;color:var(--text2);font-family:inherit;font-size:0.8125rem;font-weight:700;padding:4px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:30px}
+    .cf-hero-toggle{display:flex;background:var(--accent-solid);border-radius:999px;padding:2px;margin-bottom:8px}
+    .cf-hero-toggle button{border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:4px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:30px}
     .cf-hero-title{font-size:0.85rem;color:var(--text2);font-weight:600}
     .cf-hero-tray{display:flex;gap:4px;margin-top:14px;width:100%;padding:4px;background:var(--surface2);border-radius:16px}
     .cf-hero-cell{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 10px;border-radius:12px}
-    .cf-hero-cell-on{background:var(--surface);box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+    .cf-hero-cell-inc{background:var(--green-light)}
+    .cf-hero-cell-inc .cf-hero-cell-label,.cf-hero-cell-inc .cf-hero-cell-val{color:var(--green)}
+    .cf-hero-cell-exp{background:var(--red-light)}
+    .cf-hero-cell-exp .cf-hero-cell-label,.cf-hero-cell-exp .cf-hero-cell-val{color:var(--red)}
     .cf-hero-cell-label{font-size:0.8125rem;color:var(--text2);font-weight:600}
     .cf-hero-cell-val{font-family:var(--font-num);font-weight:800;color:var(--text);font-size:1rem;font-variant-numeric:tabular-nums}
     #page-transactions #txOverflowBtn{width:44px;border-radius:12px!important;padding-inline:0!important}
@@ -2265,13 +2268,13 @@
         <div class="cf-hero-title">התזרים שלך החודשי</div>
         <div class="font-mono" id="txPageFlow" style="font-size:clamp(2rem,9vw,2.5rem);line-height:1.1;white-space:nowrap;margin-top:4px;letter-spacing:-0.02em;font-weight:800">₪0</div>
         <div class="cf-hero-tray">
-          <div class="cf-hero-cell cf-hero-cell-on">
-            <div class="cf-hero-cell-label">הוצאות</div>
-            <div id="txPageExpense" class="cf-hero-cell-val">₪0</div>
-          </div>
-          <div class="cf-hero-cell">
+          <div class="cf-hero-cell cf-hero-cell-inc">
             <div class="cf-hero-cell-label">הכנסות</div>
             <div id="txPageIncome" class="cf-hero-cell-val">₪0</div>
+          </div>
+          <div class="cf-hero-cell cf-hero-cell-exp">
+            <div class="cf-hero-cell-label">הוצאות</div>
+            <div id="txPageExpense" class="cf-hero-cell-val">₪0</div>
           </div>
         </div>
       </div>
@@ -6571,7 +6574,7 @@ function renderTxPage(){
   if(flowEl){
     const net=dispInc-dispExp;
     flowEl.textContent=(net<0?'-':'')+fmt(Math.abs(net));
-    flowEl.style.color=net<0?'var(--red)':'var(--text)';
+    flowEl.style.color=net<0?'var(--red)':'var(--green)';
   }
   let list=mTx.filter(t=>t.type==='expense'); // תצוגה מקוטלגת מבוססת הוצאות
   if(txListFilter==='fixed') list=list.filter(t=>isFixed(t));
