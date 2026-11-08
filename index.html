@@ -629,7 +629,7 @@
     .dash-bignum{text-align:center;margin-bottom:12px;}
     .dash-bignum-val{font-family:var(--font-num);font-size:2.6rem;font-weight:800;color:var(--accent);line-height:1.1;font-variant-numeric:tabular-nums lining-nums;}
     .dash-bignum-label{font-size:0.85rem;color:var(--text3);font-weight:600;margin-top:4px;}
-    .dash-goals-card{background:var(--surface);border-radius:18px;padding:18px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.05),0 10px 24px -8px rgba(0,0,0,0.09);}
+    .dash-goals-card{background:var(--surface);border-radius:24px;padding:18px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.05),0 10px 24px -8px rgba(0,0,0,0.09);}
     body.dark .dash-goals-card{box-shadow:0 1px 0 rgba(255,255,255,0.02);}
     .dash-goals-title{font-size:0.95rem;font-weight:800;color:var(--text);margin-bottom:14px;}
     .dash-rings-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;}
@@ -673,7 +673,7 @@
       .dash-ring-frac{grid-column:1/-1;flex-direction:row;justify-content:space-between;gap:4px;margin-top:2px;font-size:max(12px,0.8125rem);text-align:right;}
       .dash-ring-frac bdi{display:block;}
     }
-    .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px;}
+    .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:0;border-radius:24px;box-shadow:0 2px 14px rgba(0,0,0,0.06);padding:14px 20px;margin-bottom:12px;}
     .dash-insight-emoji{font-size:1.4rem;flex-shrink:0;}
     .dash-insight-text{display:flex;flex-direction:column;gap:4px;font-size:0.85rem;font-weight:700;color:var(--text);line-height:1.4;}
     .dash-balance-value{font-size:1.6rem;line-height:1.2;} .dash-balance-daily{font-weight:400;color:var(--text2);} .tx-date-range{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:0 16px 12px;align-items:center;} .tx-date-range input{min-width:0;width:100%;min-height:44px;} .tx-date-range #clearDateBtn{grid-column:1/-1;justify-self:end;} .dash-all-cats{display:block;width:100%;min-height:44px;margin-top:12px;color:var(--accent-text);font-weight:700;border:1px solid var(--border);border-radius:12px;background:var(--surface2);}
@@ -1829,7 +1829,6 @@
         <button class="wiz-next-btn" id="wizNextBtn" onclick="wizNext()" aria-label="הבא">›</button>
       </div>
       <div class="wiz-pill-outer" id="wizPillOuter">
-        <button onclick="scanReceipt()" aria-label="סרוק קבלה" style="background:rgba(255,255,255,0.14);border:none;border-radius:12px;width:42px;min-width:42px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">📷</button>
         <input type="text" id="txDesc" class="wiz-pill" placeholder="קפה, סופר, דלק..." oninput="wizDescNlp(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();wizNext();}" onfocus="this.select()" aria-label="תיאור הוצאה" autocomplete="off" autocorrect="off" spellcheck="false"/>
         <button class="wiz-next-inline" onclick="wizNext()">הבא</button>
       </div>
