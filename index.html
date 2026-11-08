@@ -2336,6 +2336,23 @@
     <div id="tasksNoAdvisor" class="empty" style="display:none"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><p>עוד אין יועץ מקושר</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">כשתתחבר ליועץ פיננסי, המשימות והפגישות שהוא קובע איתך יופיעו כאן</p></div>
     <div id="tasksContent" style="display:none">
       <div id="tasksPushPrompt" style="display:none;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;margin-bottom:12px;background:var(--surface)"><div style="flex:1;min-width:0;font-size:.9rem;color:var(--text2)">רוצה לקבל התראה כשהיועץ מוסיף משימה או קובע פגישה?</div><button type="button" class="btn btn-primary" onclick="togglePush(true).then(renderTasksPage)">הפעל התראות</button></div>
+      <div id="taskTabs"></div>
+      <div class="section" id="clientTasksSection">
+        <div class="section-header"><h2 class="section-title"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--accent)"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>משימות</h2></div>
+        <div class="section-body">
+          <details id="clientTaskComposer" class="client-task-composer">
+            <summary class="btn btn-outline">+ משימה אישית</summary>
+            <form id="clientTaskForm" class="client-task-form" onsubmit="event.preventDefault();addClientTask()">
+              <label for="clientTaskTitle">מה צריך לעשות?<input id="clientTaskTitle" class="form-input" type="text" required maxlength="500" autocomplete="off" placeholder="למשל, לבדוק את דמי הניהול" aria-describedby="clientTaskHint clientTaskError"></label>
+              <label for="clientTaskDue">תאריך יעד (לא חובה)<input id="clientTaskDue" class="form-input" type="date"></label>
+              <p id="clientTaskHint" class="client-task-hint">המשימה תופיע גם אצל היועץ שלך.</p>
+              <p id="clientTaskError" class="client-task-error" role="alert" hidden></p>
+              <button id="clientTaskSubmit" type="submit" class="btn btn-primary">הוסף משימה</button>
+            </form>
+          </details>
+          <div id="clientTasksList"></div>
+        </div>
+      </div>
       <div class="section" id="meetingsSection">
         <div class="section-header"><h2 class="section-title"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--accent)"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>פגישות</h2></div>
         <div class="section-body">
@@ -2353,22 +2370,6 @@
             </form>
           </details>
           <div id="meetingsList"></div>
-        </div>
-      </div>
-      <div class="section" id="clientTasksSection">
-        <div class="section-header"><h2 class="section-title"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--accent)"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>משימות</h2></div>
-        <div class="section-body">
-          <details id="clientTaskComposer" class="client-task-composer">
-            <summary class="btn btn-outline">+ משימה אישית</summary>
-            <form id="clientTaskForm" class="client-task-form" onsubmit="event.preventDefault();addClientTask()">
-              <label for="clientTaskTitle">מה צריך לעשות?<input id="clientTaskTitle" class="form-input" type="text" required maxlength="500" autocomplete="off" placeholder="למשל, לבדוק את דמי הניהול" aria-describedby="clientTaskHint clientTaskError"></label>
-              <label for="clientTaskDue">תאריך יעד (לא חובה)<input id="clientTaskDue" class="form-input" type="date"></label>
-              <p id="clientTaskHint" class="client-task-hint">המשימה תופיע גם אצל היועץ שלך.</p>
-              <p id="clientTaskError" class="client-task-error" role="alert" hidden></p>
-              <button id="clientTaskSubmit" type="submit" class="btn btn-primary">הוסף משימה</button>
-            </form>
-          </details>
-          <div id="clientTasksList"></div>
         </div>
       </div>
     </div>
@@ -5442,11 +5443,11 @@ function renderTasksPage(){
     +'</div>';
   const _tab=_clientTaskTab==='done'?'done':'open';
   const _shown=_tab==='done'?_doneTasks:_openTasks;
-  tasksList.innerHTML='<div class="task-tabs" role="tablist">'
+  document.getElementById('taskTabs').innerHTML='<div class="task-tabs" role="tablist">'
       +'<button type="button" class="task-tab" role="tab" aria-selected="'+(_tab==='open')+'" onclick="setClientTaskTab(\'open\')">משימות פתוחות</button>'
       +'<button type="button" class="task-tab" role="tab" aria-selected="'+(_tab==='done')+'" onclick="setClientTaskTab(\'done\')">משימות סגורות</button>'
-    +'</div>'
-    +(_shown.length?_shown.map(t=>_taskCard(t,_tab==='done')).join(''):'<div class="budget-tx-empty">'+(_tab==='done'?'אין משימות סגורות':'אין משימות פתוחות')+'</div>');
+    +'</div>';
+  tasksList.innerHTML=(_shown.length?_shown.map(t=>_taskCard(t,_tab==='done')).join(''):'<div class="budget-tx-empty">'+(_tab==='done'?'אין משימות סגורות':'אין משימות פתוחות')+'</div>');
   tasksList.querySelectorAll('[data-task-id]').forEach(el=>{
     el.onchange=()=>toggleAdvisorTask(el.dataset.taskId,el.checked);
   });
