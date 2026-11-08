@@ -1,0 +1,2 @@
+-- Replaces ingest_expense: only invalid-token attempts are throttled; a valid token is never blocked by other callers' failures.
+-- (Applied live via MCP; the full function body is the one in 099 with the throttle moved into the invalid-token branch.)
