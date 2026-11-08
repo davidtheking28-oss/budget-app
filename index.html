@@ -2370,8 +2370,7 @@
               <label for="clientMeetingSlot">שעה פנויה<select id="clientMeetingSlot" required disabled onchange="document.getElementById('clientMeetingSubmit').disabled=!this.value||_clientMeetingSaving"><option value="">בחר תאריך</option></select></label>
               <p id="clientMeetingSlotsStatus" class="client-task-hint" role="status"></p>
               <button type="button" class="btn btn-outline" id="clientMeetingRetry" hidden onclick="loadClientMeetingSlots()">נסה לטעון שעות שוב</button>
-              <label for="clientMeetingNotes" class="client-meeting-notes">נושא הפגישה (לא חובה)<textarea id="clientMeetingNotes" rows="2" maxlength="500" placeholder="במה תרצה להתמקד בפגישה?"></textarea></label>
-              <p class="client-task-hint">פגישה של שעה, לפי שעון ישראל. ראשון–חמישי 09:00–18:00, שישי 09:00–15:00. הבקשה תמתין לאישור היועץ.</p>
+              <p class="client-task-hint">פגישה של שעה עגולה, לפי שעון ישראל.</p>
               <p id="clientMeetingError" class="client-task-error" role="alert" hidden></p>
               <button id="clientMeetingSubmit" type="submit" class="btn btn-primary" disabled>שלח בקשת פגישה</button>
             </form>
@@ -5247,18 +5246,18 @@ async function loadClientMeetingSlots(silent){
 setInterval(()=>{if(document.hidden||_clientMeetingSaving)return;if(document.getElementById('clientMeetingComposer')?.open)loadClientMeetingSlots(true);},20000);
 async function requestClientMeeting(){
   if(_clientMeetingSaving)return;
-  const form=document.getElementById('clientMeetingForm'),date=document.getElementById('clientMeetingDate'),select=document.getElementById('clientMeetingSlot'),notes=document.getElementById('clientMeetingNotes'),button=document.getElementById('clientMeetingSubmit'),errorField=document.getElementById('clientMeetingError');
-  if(!form||!date||!select||!notes||!button||!errorField)return;
+  const form=document.getElementById('clientMeetingForm'),date=document.getElementById('clientMeetingDate'),select=document.getElementById('clientMeetingSlot'),button=document.getElementById('clientMeetingSubmit'),errorField=document.getElementById('clientMeetingError');
+  if(!form||!date||!select||!button||!errorField)return;
   errorField.hidden=true;
-  const startsAt=select.value,text=notes.value.trim();
-  if(!_clientMeetingSlots.some(slot=>slot.starts_at===startsAt)||text.length>500){errorField.textContent='בחר שעה פנויה מהרשימה וכתוב נושא עד 500 תווים.';errorField.hidden=false;return;}
+  const startsAt=select.value,text='';
+  if(!_clientMeetingSlots.some(slot=>slot.starts_at===startsAt)){errorField.textContent='בחר שעה פנויה מהרשימה.';errorField.hidden=false;return;}
   if(!_sb||!_cloudUser||_advisorLink?.status!=='active')return;
   const clientId=_cloudUser.id,advisorId=_advisorLink.advisor_id,current=()=>_cloudUser?.id===clientId&&_advisorLink?.advisor_id===advisorId&&_advisorLink?.status==='active';
   const key=JSON.stringify([clientId,advisorId,startsAt,text]);
   if(_clientMeetingDraft?.key!==key)_clientMeetingDraft={key,id:crypto.randomUUID()};
   const requestId=_clientMeetingDraft.id;
   _clientMeetingSaving=true;++_advisorTaskRequest;
-  date.disabled=true;select.disabled=true;notes.disabled=true;button.disabled=true;button.textContent='שולח…';form.setAttribute('aria-busy','true');
+  date.disabled=true;select.disabled=true;button.disabled=true;button.textContent='שולח…';form.setAttribute('aria-busy','true');
   try{
     const {data,error}=await _sb.rpc('request_client_meeting',{p_advisor_id:advisorId,p_starts_at:startsAt,p_notes:text||null,p_request_id:requestId});
     if(error){const failure=new Error('meeting request failed');failure.code=error.code;throw failure;}
@@ -5271,7 +5270,7 @@ async function requestClientMeeting(){
   }catch(e){
     if(current()){errorField.textContent=e.code==='23P01'?'השעה הזאת כבר אינה פנויה. בחר שעה אחרת.':'הבקשה לא נשמרה. הפרטים נשארו כאן — נסה שוב.';errorField.hidden=false;if(e.code==='23P01')loadClientMeetingSlots();}
   }finally{
-    _clientMeetingSaving=false;date.disabled=false;notes.disabled=false;select.disabled=!_clientMeetingSlots.length;button.disabled=!select.value;button.textContent='שלח בקשת פגישה';form.removeAttribute('aria-busy');
+    _clientMeetingSaving=false;date.disabled=false;select.disabled=!_clientMeetingSlots.length;button.disabled=!select.value;button.textContent='שלח בקשת פגישה';form.removeAttribute('aria-busy');
   }
 }
 let _clientTaskSaving=false;
