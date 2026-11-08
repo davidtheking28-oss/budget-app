@@ -3580,10 +3580,10 @@ function openAddTx(){
   wizUpdateDate();
   setTxType(restored&&draft.type==='income'?'income':'expense');
   if(restored){
-    if(getEffectiveCats(txTypeFilter).includes(draft.cat))txSelectedCat=draft.cat;
+    if(wizCats(txTypeFilter).includes(draft.cat))txSelectedCat=draft.cat;
     if(['fixed','variable'].includes(draft.fixedType))txFixedType=draft.fixedType;
     wizStep=draft.step===2&&draft.desc.trim()?2:1;
-    wizRenderCats(getEffectiveCats(txTypeFilter));
+    wizRenderCats(wizCats(txTypeFilter));
   }
   wizRender();
   document.getElementById('txDraftNotice').style.display=restored?'':'none';
@@ -3629,9 +3629,10 @@ function doSearch(q){
 }
 
 let wizStep=1;
+function wizCats(type){return type==="income"?getEffectiveCats(type):getEffectiveExpenseCats();}
 function setTxType(type){
   txTypeFilter=type;
-  const cats=getEffectiveCats(type);
+  const cats=wizCats(type);
   // Default to the catch-all, not the first category: anything the dictionary
   // didn't recognise used to be filed as מזון לבית without the user noticing.
   txSelectedCat=cats.find(c=>c==='שונות'||c==='אחר')||cats[0];
@@ -6000,7 +6001,7 @@ async function openAddCustomCat(){
   if(!userSettings.customCats)userSettings.customCats=[];
   userSettings.customCats.push(cat);
   saveSettingsData();
-  wizRenderCats(getEffectiveCats(txTypeFilter));
+  wizRenderCats(wizCats(txTypeFilter));
   showToast('✓ קטגוריה נוספה');
   setTimeout(()=>{
     const rows=document.querySelectorAll('#wizCatList .wiz-cat-row');
