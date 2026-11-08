@@ -1,4 +1,4 @@
-import { currentInstallments } from './monthUtils.js';
+import { currentInstallments, loanMonthsLeft, isLoanEnded } from './monthUtils.js';
 export { currentInstallments } from './monthUtils.js';
 import { useRef, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
@@ -27,7 +27,7 @@ export function loanPayoffMonths(remaining, monthly, annualRate) {
   return Math.ceil(Math.log(monthly / (monthly - remaining * r)) / Math.log(1 + r));
 }
 
-const EMPTY_LOAN = { name: '', monthly: '', remaining: '', original: '', rate: '', asOf: '' };
+const EMPTY_LOAN = { name: '', monthly: '', remaining: '', original: '', rate: '', asOf: '', monthsLeft: '' };
 const EMPTY_PAYMENT = { card: '', name: '', total: '', current: '', amount: '' };
 
 function StatusToggle({ hidden, name, onToggle }) {
@@ -59,14 +59,19 @@ export default function Credit({ clientUserId, advisorId, focus }) {
     if (!loanForm.name.trim()) { setLoanError('יש להזין שם לחוב.'); return; }
     if (monthly < 0) { setLoanError('ההחזר החודשי לא יכול להיות שלילי.'); return; }
     if (monthly === 0 && !(parseFloat(loanForm.remaining) > 0)) { setLoanError('יש להזין יתרת קרן כשאין החזר חודשי קבוע.'); return; }
+    const monthsLeft = parseInt(loanForm.monthsLeft, 10);
+    if (loanForm.monthsLeft !== '' && !(monthsLeft >= 0)) { setLoanError('מספר התשלומים שנותרו חייב להיות 0 או יותר.'); return; }
     setLoanError('');
+    const now = new Date();
     const patch = {
       name: loanForm.name.trim(),
       monthly,
       remaining: loanForm.remaining === '' ? null : (parseFloat(loanForm.remaining) || 0),
       original: parseFloat(loanForm.original) || 0,
       rate: parseFloat(loanForm.rate) || 0,
-      asOf: loanForm.asOf || localISODate()
+      asOf: loanForm.asOf || localISODate(),
+      monthsLeft: monthsLeft > 0 ? monthsLeft : null,
+      monthsLeftAnchor: monthsLeft > 0 ? monthKey(now.getFullYear(), now.getMonth()) : null
     };
     savingRef.current = true;
     setSaving('loan');
@@ -83,7 +88,7 @@ export default function Credit({ clientUserId, advisorId, focus }) {
       setSaving('');
     }
   }
-  function startEditLoan(l) { setLoanError(''); setEditingLoanId(l.id); setLoanForm({ name: l.name || '', monthly: l.monthly ?? '', remaining: l.remaining ?? '', original: l.original ?? '', rate: l.rate ?? '', asOf: l.asOf || '' }); }
+  function startEditLoan(l) { setLoanError(''); setEditingLoanId(l.id); setLoanForm({ name: l.name || '', monthly: l.monthly ?? '', remaining: l.remaining ?? '', original: l.original ?? '', rate: l.rate ?? '', asOf: l.asOf || '', monthsLeft: loanMonthsLeft(l) ?? '' }); }
 
   function resetPaymentForm() { setPaymentForm(EMPTY_PAYMENT); setEditingPaymentId(null); }
   async function submitPayment() {
@@ -124,7 +129,7 @@ export default function Credit({ clientUserId, advisorId, focus }) {
   if (focus === 'cards') return <CreditCards settings={data.settings} save={save} />;
 
   const cards = data.settings?.creditCards || [];
-  const loans = (data.loans || []).filter(l => !l.closed);
+  const loans = (data.loans || []).filter(l => !l.closed && !isLoanEnded(l));
   const activeLoans = loans.filter(l => !l.hidden);
   const loansMonthly = activeLoans.reduce((s, l) => s + (l.monthly || 0), 0);
   const loansBalance = activeLoans.reduce((s, l) => s + (l.remaining || 0), 0);
@@ -199,7 +204,7 @@ export default function Credit({ clientUserId, advisorId, focus }) {
               <thead><tr><th>שם החוב</th><th>סכום מקורי</th><th>יתרת קרן</th><th>נכון לתאריך</th><th>ריבית %</th><th>תשלומים שנותרו</th><th>החזר חודשי</th><th>מצב</th><th><span className={styles.srOnly}>פעולות</span></th></tr></thead>
               <tbody>
                 {loans.map(l => {
-                  const left = loanPayoffMonths(l.remaining, l.monthly, l.rate);
+                  const left = loanMonthsLeft(l) ?? loanPayoffMonths(l.remaining, l.monthly, l.rate);
                   return (
                     <tr key={l.id} className={styles.loanTr + (l.hidden ? ' ' + styles.rowHidden : '')} onClick={() => startEditLoan(l)}>
                       <td><div className={styles.name}>{l.name || 'הלוואה'}</div>{l.lender && <div className={styles.meta}>{l.lender}</div>}</td>
@@ -227,7 +232,8 @@ export default function Credit({ clientUserId, advisorId, focus }) {
           <label className={styles.formField}>נכון לתאריך<input className={styles.input} type="date" aria-label="נכון לתאריך" value={loanForm.asOf} onChange={e => setLoanForm({ ...loanForm, asOf: e.target.value })} /></label>
           <label className={styles.formField}>ריבית שנתית באחוזים<input className={styles.input} type="number" inputMode="decimal" placeholder="ריבית %" aria-label="ריבית שנתית באחוזים" value={loanForm.rate} onChange={e => setLoanForm({ ...loanForm, rate: e.target.value })} /></label>
           <label className={styles.formField}>החזר חודשי (לא חובה)<input className={styles.input} type="number" inputMode="decimal" min="0" placeholder="0 — ללא החזר קבוע" aria-label="החזר חודשי" aria-describedby="loan-payment-hint" value={loanForm.monthly} onChange={e => setLoanForm({ ...loanForm, monthly: e.target.value })} /></label>
-          <p id="loan-payment-hint" className={styles.loanHint}>אין החזר חודשי קבוע? אפשר להשאיר ריק או להזין 0. החוב יופיע ביתרת החובות בלי להוסיף הוצאה חודשית.</p>
+          <label className={styles.formField}>תשלומים שנותרו (לא חובה)<input className={styles.input} type="number" inputMode="numeric" min="0" step="1" placeholder="מספר חודשים" aria-label="תשלומים שנותרו" aria-describedby="loan-payment-hint" value={loanForm.monthsLeft} onChange={e => setLoanForm({ ...loanForm, monthsLeft: e.target.value })} /></label>
+          <p id="loan-payment-hint" className={styles.loanHint}>אין החזר חודשי קבוע? אפשר להשאיר ריק או להזין 0. החוב יופיע ביתרת החובות בלי להוסיף הוצאה חודשית. כשמזינים תשלומים שנותרו, הם יורדים לבד כל חודש, וכשהם נגמרים ההלוואה יורדת מהחישוב ומהתזרים באפליקציה.</p>
           {loanError && <p className={styles.saveError} role="alert">{loanError}</p>}
           {saveError === 'loan' && <p className={styles.saveError} role="alert">ההלוואה לא נשמרה. הפרטים נשארו בטופס — אפשר לנסות שוב.</p>}
           <div className={styles.formActions}>

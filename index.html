@@ -3273,7 +3273,16 @@ let payments      = _readStored(_modeKey('budget_payments'),[]);
 // history and the advisor's before/after comparison survive — every display and
 // total must read through these instead of the raw arrays, or a closed item
 // keeps counting toward balances after it was folded into a new consolidated loan.
-function activeLoans(){ return loans.filter(l=>!l.closed); }
+function _loanMonthsLeft(l){
+  const n=parseInt(l&&l.monthsLeft,10);
+  if(!(n>0))return null;
+  if(!l.monthsLeftAnchor)return n;
+  return Math.max(0,n-_monthsElapsed(l.monthsLeftAnchor,_curMonthKey()));
+}
+function _loanEnded(l){
+  return _loanMonthsLeft(l)===0;
+}
+function activeLoans(){ return loans.filter(l=>!l.closed&&!_loanEnded(l)); }
 function activePayments(){ return payments.filter(p=>!p.closed); }
 let fixedExpenses = _readStored(_modeKey('budget_fixed'),[]);
 let insurances    = _readStored(_modeKey('budget_insurances'),[]);
@@ -7818,7 +7827,7 @@ function editLoan(id){
   document.getElementById('loanLender').value=l.lender||'';
   document.getElementById('loanOriginal').value=l.original||'';
   document.getElementById('loanRate').value=l.rate||'';
-  document.getElementById('loanMonthsLeft').value=l.monthsLeft||'';
+  document.getElementById('loanMonthsLeft').value=_loanMonthsLeft(l)||'';
   document.getElementById('loanNotes').value=l.notes||'';
   if(l.lender||l.original||l.rate||l.monthsLeft||l.notes){
     const extras=document.getElementById('loanExtras');if(extras)extras.style.display='flex';
@@ -7838,7 +7847,7 @@ function saveLoan(){
     remaining:parseFloat(document.getElementById('loanRemaining').value)||0,
     monthly,
     rate:parseFloat(document.getElementById('loanRate').value)||0,
-    monthsLeft:parseInt(document.getElementById('loanMonthsLeft').value)||0,
+    monthsLeft:parseInt(document.getElementById('loanMonthsLeft').value)||0,monthsLeftAnchor:(parseInt(document.getElementById('loanMonthsLeft').value)||0)>0?_curMonthKey():null,
     notes:document.getElementById('loanNotes').value.trim()
   };
   const editingId=_editingLoanId;
@@ -7913,7 +7922,7 @@ function renderLoans(){
     const pct=l.original>0?Math.min(Math.round((l.original-l.remaining)/l.original*100),100):0;
     const emoji=loanEmoji(l.name);
     const loanBarCls=progState(pct,[[90,'near-done'],[0,'']]);
-    const progBar=l.original>0?progBarHTML(pct,{wrapClass:'loan-prog-wrap',fillClass:'loan-prog-fill',stateClass:loanBarCls})+`<div class="loan-prog-label">${pct}% שולם${l.monthsLeft>0?' · עוד '+l.monthsLeft+' חודשים':''}</div>`:'';
+    const progBar=l.original>0?progBarHTML(pct,{wrapClass:'loan-prog-wrap',fillClass:'loan-prog-fill',stateClass:loanBarCls})+`<div class="loan-prog-label">${pct}% שולם${_loanMonthsLeft(l)>0?' · עוד '+_loanMonthsLeft(l)+' חודשים':''}</div>`:'';
     const stats=[
       `<div class="loan-stat"><div class="loan-stat-val">${fmt(l.monthly)}</div><div class="loan-stat-label">לחודש</div></div>`,
       l.rate>0?`<div class="loan-stat"><div class="loan-stat-val">${l.rate}%</div><div class="loan-stat-label">ריבית</div></div>`:'',

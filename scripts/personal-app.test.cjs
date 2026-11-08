@@ -1119,3 +1119,13 @@ test('index.html contains no raw control characters that corrupt inline scripts'
   const bad=[...html].filter(c=>{const n=c.charCodeAt(0);return n<32&&n!==9&&n!==10&&n!==13;});
   assert.equal(bad.length,0);
 });
+
+test('a loan with remaining payments counts down monthly and leaves the cashflow when it ends',()=>{
+  const key=n=>{const d=new Date();d.setMonth(d.getMonth()-n,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');};
+  const loans=[{id:1,monthly:500,monthsLeft:6,monthsLeftAnchor:key(2)},{id:2,monthly:300,monthsLeft:3,monthsLeftAnchor:key(3)},{id:3,monthly:200},{id:4,monthly:100,monthsLeft:9}];
+  const ctx=functions(['_monthsElapsed','_loanMonthsLeft','_loanEnded'],{_curMonthKey:()=>key(0)});
+  assert.equal(ctx._loanMonthsLeft(loans[0]),4);
+  assert.equal(ctx._loanEnded(loans[1]),true);
+  assert.deepEqual(loans.filter(l=>!ctx._loanEnded(l)).map(l=>l.id),[1,3,4]);assert.ok(html.includes('function activeLoans(){ return loans.filter(l=>!l.closed&&!_loanEnded(l)); }'))
+  assert.equal(ctx._loanMonthsLeft(loans[3]),9);
+});

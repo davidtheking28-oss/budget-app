@@ -51,6 +51,16 @@ function monthsElapsed(fromKey, toKey) {
   return (ty - fy) * 12 + (tm - fm);
 }
 
+export function loanMonthsLeft(l) {
+  const n = parseInt(l?.monthsLeft, 10);
+  if (!(n > 0)) return null;
+  if (!l.monthsLeftAnchor) return n;
+  const now = new Date();
+  return Math.max(0, n - monthsElapsed(l.monthsLeftAnchor, mk(now.getFullYear(), now.getMonth())));
+}
+
+export function isLoanEnded(l) { return loanMonthsLeft(l) === 0; }
+
 export function currentInstallments(p, total) {
   const base = parseFloat(p.current) || 0;
   if (!p.currentAnchor) return base;

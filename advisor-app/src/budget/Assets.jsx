@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useClientBudget } from './useClientBudget.js';
+import { isLoanEnded } from './monthUtils.js';
 import Skeleton from '../components/Skeleton.jsx';
 import AddForm from '../components/AddForm.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -42,7 +43,7 @@ export default function Assets({ clientUserId, advisorId }) {
   const assets = data.assets || [];
   const mortgage = data.mortgage_scenario;
   const mortgageBalance = !mortgage?.hidden ? Math.max(0, parseFloat(mortgage?.principal) || 0) : 0;
-  const loans = [...(data.loans || []).filter(l => !l.closed), ...(mortgageBalance > 0 ? [{ id: 'mortgage-scenario', fromMortgage: true, name: 'משכנתא', remaining: mortgageBalance, monthly: parseFloat(mortgage.monthly) || 0 }] : [])];
+  const loans = [...(data.loans || []).filter(l => !l.closed && !isLoanEnded(l)), ...(mortgageBalance > 0 ? [{ id: 'mortgage-scenario', fromMortgage: true, name: 'משכנתא', remaining: mortgageBalance, monthly: parseFloat(mortgage.monthly) || 0 }] : [])];
   const totalAssets = assets.reduce((s, a) => s + (parseFloat(a.amount) || 0), 0);
   const totalLiabilities = loans.reduce((s, l) => s + (parseFloat(l.remaining) || 0), 0);
   const netWorth = totalAssets - totalLiabilities;

@@ -1,7 +1,7 @@
 import { computeMappingRows } from '../mapping/mappingMath.js';
 import { FIXED_KEYS } from '../mapping/mappingTemplates.js';
 import { useEconomicMapping } from '../mapping/useEconomicMapping.js';
-import { currentInstallments } from './monthUtils.js';
+import { currentInstallments, isLoanEnded } from './monthUtils.js';
 import { createContext, useCallback, useContext, useEffect, useReducer, useRef } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { toast } from '../toast.js';
@@ -115,7 +115,7 @@ export function linkedFixedBudgetPatch(data, mapping) {
   const sum = (rows, field) => (rows || []).reduce((total, row) => total + (Number(row[field]) || 0), 0);
   const automatic = {
     'ביטוחים': ['insurances', sum((data?.insurances || []).filter(row => !row.closed), 'monthly'), !!data?.insurances?.length],
-    'החזר הלוואות + חיוב קבוע': ['loans', sum((data?.loans || []).filter(row => !row.closed && !row.hidden), 'monthly'), !!data?.loans?.length],
+    'החזר הלוואות + חיוב קבוע': ['loans', sum((data?.loans || []).filter(row => !row.closed && !row.hidden && !isLoanEnded(row)), 'monthly'), !!data?.loans?.length],
     'משכנתא': ['mortgage_scenario', data?.mortgage_scenario?.hidden ? 0 : Number(data?.mortgage_scenario?.monthly) || 0, !!data?.mortgage_scenario],
     'עסקאות בתשלומים': ['payments', sum((data?.payments || []).filter(row => !row.closed && !row.hidden && (!(Number(row.total) > 0) || currentInstallments(row, Number(row.total)) < Number(row.total))), 'amount'), !!data?.payments?.length],
     'מנויים ושירותים': ['subscriptions', (data?.subscriptions || []).reduce((total, row) => total + (row.active ? ({ annual: (Number(row.amount) || 0) / 12, weekly: (Number(row.amount) || 0) * 4.33 }[row.cycle] ?? (Number(row.amount) || 0)) : 0), 0), !!data?.subscriptions?.length],

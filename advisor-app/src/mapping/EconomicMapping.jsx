@@ -10,6 +10,7 @@ import { EXPENSE_CATS, INCOME_CATS, chartTheme } from '../categories.js';
 import { useClientBudget } from '../budget/useClientBudget.js';
 import { addItem } from '../budget/itemHelpers.js';
 import { monthlyEquivalent } from '../budget/Subscriptions.jsx';
+import { isLoanEnded } from '../budget/monthUtils.js';
 import { currentInstallments } from '../budget/Credit.jsx';
 import MerchantRules from './MerchantRules.jsx';
 import MappingTable from './MappingTable.jsx';
@@ -513,7 +514,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
     setLinkForm(null);
   }
 
-  const loanCandidates = recurringCandidates(LOAN_CATEGORY, (budgetData?.loans || []).filter(l => !l.closed).map(l => l.name));
+  const loanCandidates = recurringCandidates(LOAN_CATEGORY, (budgetData?.loans || []).filter(l => !l.closed && !isLoanEnded(l)).map(l => l.name));
   const savingsCandidates = recurringCandidates(SAVINGS_CATEGORY, (budgetData?.assets || []).map(a => a.name));
 
   const categories = data?.category_averages
@@ -529,7 +530,7 @@ export default function EconomicMapping({ clientUserId, advisorId }) {
   const monthlyOf = (list, key) => (list || []).reduce((s, x) => s + (Number(x[key]) || 0), 0);
   const autoFixedAmounts = budgetData && !data?.skip_auto ? {
     'משכנתא': mortgageMappingAmount(budgetData, data?.transactions || []),
-    [LOAN_CATEGORY]: monthlyOf((budgetData.loans || []).filter(x => !x.closed && !x.hidden), 'monthly'),
+    [LOAN_CATEGORY]: monthlyOf((budgetData.loans || []).filter(x => !x.closed && !x.hidden && !isLoanEnded(x)), 'monthly'),
     'עסקאות בתשלומים': (budgetData.payments || []).filter(x => !x.closed && !x.hidden && !((parseFloat(x.total) || 0) > 0 && (parseFloat(x.total) || 0) - currentInstallments(x, parseFloat(x.total) || 0) <= 0)).reduce((s, x) => s + (Number(x.amount) || 0), 0),
     'ביטוחים': monthlyOf((budgetData.insurances || []).filter(x => !x.closed), 'monthly'),
     'מנויים ושירותים': (budgetData.subscriptions || []).reduce((s, x) => s + (x.active ? monthlyEquivalent(x.cycle, x.amount || 0) : 0), 0),
