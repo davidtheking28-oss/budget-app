@@ -515,7 +515,7 @@
     #txFilterStatus{display:none!important}
     #page-transactions>.section{background:none;border:0;box-shadow:none;overflow:visible}
     #page-transactions>.section .section-body{padding-inline:0}
-    #page-transactions #txOverflowBtn{border:0!important;border-radius:999px!important;background:var(--surface);box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+    #page-transactions #txOverflowBtn{border:0!important;border-radius:999px!important;background:color-mix(in srgb,var(--text) 10%,var(--surface))!important;color:var(--text)!important}
     #page-transactions .exp-row-menu>summary{border:0;border-radius:999px;background:var(--surface2)}
     .exp-row-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-width:0;flex:1;min-height:72px;padding:14px 12px;border:0;background:none;color:var(--text);font:inherit;text-align:start;cursor:pointer;-webkit-tap-highlight-color:transparent}
     #page-transactions .exp-row-right{gap:10px}
@@ -567,7 +567,7 @@
     .cf-hero-cell-exp .cf-hero-cell-val{color:var(--red)}
     .cf-hero-cell-label{font-size:0.8125rem;color:var(--text2);font-weight:600}
     .cf-hero-cell-val{font-family:var(--font-num);font-weight:800;color:var(--text);font-size:1rem;font-variant-numeric:tabular-nums}
-    #page-transactions #txOverflowBtn{width:44px;border-radius:12px!important;padding-inline:0!important}
+    #page-transactions #txOverflowBtn{width:44px;padding-inline:0!important}
     #txAdvancedFilters{padding-bottom:8px;background:var(--surface2);border-bottom:1px solid var(--border)}
     #txFilterStatus{flex-wrap:wrap;line-height:1.5}
     #txFilterStatusText{flex:1;min-width:120px}
@@ -6873,7 +6873,7 @@ function renderBudget(){
     groups=[{label:'הכנסות',bars:[{val:f.planInc,cls:'inc plan'},{val:f.actInc,cls:'inc'}]},{label:'הוצאות',bars:[{val:f.planExp,cls:'exp plan'},{val:f.actExp,cls:'exp'}]}];
   } else {
     const inc=tab==='plan'?f.planInc:f.actInc,exp=tab==='plan'?f.planExp:f.actExp,net=inc-exp;
-    sub=tab==='plan'?'תזרים מתוכנן':'תזרים בפועל';
+    sub=(tab==='plan'?'תזרים מתוכנן':'תזרים בפועל')+((tab==='plan'?f.plan.sav:f.actual.sav)>0?' · לפני חיסכון':'');
     fig=(net<0?'-':'')+fmt(Math.abs(net));figCls=net<0?'neg':'pos';
     groups=[{label:'הכנסות',bars:[{val:inc,cls:'inc'}]},{label:'הוצאות',bars:[{val:exp,cls:'exp'}]}];
   }
