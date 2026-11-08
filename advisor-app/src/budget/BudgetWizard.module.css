@@ -239,6 +239,9 @@
 .summaryChart {
   height: 180px;
   min-width: 0;
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
   color: var(--text);
 }
 

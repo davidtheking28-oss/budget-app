@@ -183,7 +183,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   };
   const chartDataOf = (income, expenses) => ({
     labels: ['הכנסות', 'הוצאות'],
-    datasets: [{ data: [income, expenses], backgroundColor: [CT.green, CT.red], hoverBackgroundColor: [CT.greenHover, CT.redHover], borderRadius: 6, barPercentage: 0.7, categoryPercentage: 0.9, maxBarThickness: 96 }]
+    datasets: [{ data: [income, expenses], backgroundColor: [CT.green, CT.red], hoverBackgroundColor: [CT.greenHover, CT.redHover], borderRadius: 6, barPercentage: 0.45, categoryPercentage: 0.9 }]
   });
   const periodMul = flowPeriod === 'year' ? 12 : 1;
   const avg = useMemo(() => averageMonthSummary(data), [data]);
