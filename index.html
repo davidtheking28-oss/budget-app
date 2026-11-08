@@ -148,6 +148,21 @@
     #appUpdateBanner .update-actions button{flex:1;min-height:44px;}
     #undoToast{bottom:calc(var(--nav-bottom) + 82px);visibility:hidden;pointer-events:none;}
     #undoToast.show{visibility:visible;pointer-events:auto;}
+    #clientTasksSection,#meetingsSection{background:none;border:0;box-shadow:none}
+    #clientTasksSection .section-body,#meetingsSection .section-body{padding-inline:0}
+    .task-card.is-declined::before{background:var(--red)}
+    .task-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:12px;background:var(--surface);border-radius:999px;box-shadow:0 2px 10px rgba(0,0,0,0.06)}
+    .task-tab{min-height:44px;border:0;border-radius:999px;background:none;color:var(--text2);font:inherit;font-size:0.9rem;font-weight:700;cursor:pointer}
+    .task-tab[aria-selected="true"]{background:var(--text);color:var(--bg)}
+    .task-card{position:relative;margin-bottom:10px;padding:16px 18px;padding-inline-start:22px;background:var(--surface);border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,0.06);overflow:hidden}
+    .task-card::before{content:'';position:absolute;inset-block:16px;inset-inline-start:0;width:5px;border-radius:0 4px 4px 0;background:var(--yellow)}
+    .task-card.is-done::before{background:var(--green)}
+    .task-card-status{font-size:0.8rem;color:var(--text3);font-weight:600}
+    .task-card-title{margin-top:2px;font-size:1.05rem;font-weight:800;line-height:1.4;color:var(--text);overflow-wrap:anywhere}
+    .task-card.is-done .task-card-title{text-decoration:line-through;color:var(--text2)}
+    .task-card-due{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text2)}
+    .task-card-action{display:inline-flex;align-items:center;gap:8px;margin-top:12px;min-height:44px;padding:0 16px;border-radius:14px;background:var(--surface2);color:var(--text);font-size:0.85rem;font-weight:700;cursor:pointer}
+    .task-card-action input{width:20px;height:20px;accent-color:var(--green);flex-shrink:0}
     .client-task-composer{margin-bottom:16px;}
     .client-task-composer>summary{width:fit-content;cursor:pointer;list-style:none;min-height:44px;}
     .client-task-composer>summary::-webkit-details-marker{display:none;}
@@ -5364,6 +5379,8 @@ async function toggleAdvisorTask(id,done){
     if(current()){++_advisorTaskRequest;renderTasksPage();}
   }
 }
+let _clientTaskTab='open';
+function setClientTaskTab(tab){_clientTaskTab=tab;renderTasksPage();}
 function renderTasksPage(){
   const owner=(_cloudUser?.id||'')+'|'+(_advisorLink?.advisor_id||'');
   if(owner!==_clientTaskOwner){
@@ -5397,28 +5414,30 @@ function renderTasksPage(){
   const _now=Date.now();
   const _visibleMeetings=_advisorMeetings.filter(m=>new Date(m.scheduled_at).getTime()>=_now||m.summary);
   meetingsList.innerHTML=_visibleMeetings.length?_visibleMeetings.map(m=>
-    '<div class="budget-tx-card"><div class="budget-tx-top"><div class="budget-tx-desc-wrap">'
-      +'<div class="budget-tx-desc">'+esc(m.notes||'פגישת ייעוץ')+'</div>'
-      +'<div class="budget-tx-date">'+_heDateTime(m.scheduled_at)+'</div>'
-      +'<div class="budget-tx-date">'+(m.status==='confirmed'?'הפגישה אושרה':m.status==='declined'?'הפגישה לא אושרה':m.requested_by_client?'ממתינה לאישור היועץ':'ממתינה לאישור שלך')+'</div>'
-    +'</div></div>'
-    +(m.summary?'<div class="meeting-summary"><div class="meeting-summary-label">סיכום הפגישה</div><div class="meeting-summary-body">'+esc(m.summary).replace(/\n/g,'<br>')+'</div></div>':'')
+    '<div class="task-card'+(m.status==='confirmed'?' is-done':m.status==='declined'?' is-declined':'')+'">'
+      +'<div class="task-card-status">'+(m.status==='confirmed'?'הפגישה אושרה':m.status==='declined'?'הפגישה לא אושרה':m.requested_by_client?'ממתינה לאישור היועץ':'ממתינה לאישור שלך')+'</div>'
+      +'<div class="task-card-title" style="text-decoration:none;color:var(--text)">'+esc(m.notes||'פגישת ייעוץ')+'</div>'
+      +'<div class="task-card-due">מועד הפגישה: '+_heDateTime(m.scheduled_at)+'</div>'
+      +(m.summary?'<div class="meeting-summary"><div class="meeting-summary-label">סיכום הפגישה</div><div class="meeting-summary-body">'+esc(m.summary).replace(/\n/g,'<br>')+'</div></div>':'')
     +'</div>'
   ).join(''):'<div class="budget-tx-empty">אין פגישות מתוזמנות</div>';
   const tasksList=document.getElementById('clientTasksList');
   const _openTasks=_advisorTasks.filter(t=>!t.done);
   const _doneTasks=_advisorTasks.filter(t=>t.done);
-  const _multiTasks=_openTasks.length>1;
-  const _taskCard=(t,num,done)=>
-    '<label class="budget-tx-card" style="display:flex;align-items:center;gap:12px;cursor:pointer'+(done?';opacity:.6':'')+'">'
-      +'<input type="checkbox" data-task-id="'+esc(t.id)+'"'+(done?' checked':'')+(_advisorTaskPending.has(t.id)?' disabled aria-busy="true"':'')+' style="width:20px;height:20px;accent-color:var(--accent);flex-shrink:0" aria-label="סמן '+esc(t.title)+(done?' כלא בוצע':' כבוצע')+'"/>'
-      +'<div style="flex:1;min-width:0">'
-        +'<div class="budget-tx-desc"'+(done?' style="text-decoration:line-through"':'')+'>'+(num?'<span style="color:var(--text3);font-weight:700">'+num+'. </span>':'')+esc(t.title)+'</div>'
-        +(t.due_date?'<div class="budget-tx-date">יעד: '+heDate(t.due_date)+'</div>':'')
-      +'</div>'
-    +'</label>';
-  tasksList.innerHTML=(_openTasks.length?_openTasks.map((t,i)=>_taskCard(t,_multiTasks?i+1:0,false)).join(''):'<div class="budget-tx-empty">אין משימות פתוחות</div>')
-    +(_doneTasks.length?'<div class="budget-tx-date" style="margin:14px 4px 6px">הושלמו</div>'+_doneTasks.map(t=>_taskCard(t,0,true)).join(''):'');
+  const _taskCard=(t,done)=>
+    '<div class="task-card'+(done?' is-done':'')+'">'
+      +'<div class="task-card-status">'+(done?'משימה סגורה':'משימה פתוחה')+'</div>'
+      +'<div class="task-card-title">'+esc(t.title)+'</div>'
+      +(t.due_date?'<div class="task-card-due">תאריך יעד לביצוע: '+esc(String(t.due_date).slice(0,10).split('-').reverse().join('/'))+'</div>':'')
+      +'<label class="task-card-action"><input type="checkbox" data-task-id="'+esc(t.id)+'"'+(done?' checked':'')+(_advisorTaskPending.has(t.id)?' disabled aria-busy="true"':'')+' aria-label="סמן '+esc(t.title)+(done?' כלא בוצע':' כבוצע')+'"/>'+(done?'בטל סימון':'סמן כבוצע')+'</label>'
+    +'</div>';
+  const _tab=_clientTaskTab==='done'?'done':'open';
+  const _shown=_tab==='done'?_doneTasks:_openTasks;
+  tasksList.innerHTML='<div class="task-tabs" role="tablist">'
+      +'<button type="button" class="task-tab" role="tab" aria-selected="'+(_tab==='open')+'" onclick="setClientTaskTab(\'open\')">משימות פתוחות</button>'
+      +'<button type="button" class="task-tab" role="tab" aria-selected="'+(_tab==='done')+'" onclick="setClientTaskTab(\'done\')">משימות סגורות</button>'
+    +'</div>'
+    +(_shown.length?_shown.map(t=>_taskCard(t,_tab==='done')).join(''):'<div class="budget-tx-empty">'+(_tab==='done'?'אין משימות סגורות':'אין משימות פתוחות')+'</div>');
   tasksList.querySelectorAll('[data-task-id]').forEach(el=>{
     el.onchange=()=>toggleAdvisorTask(el.dataset.taskId,el.checked);
   });
