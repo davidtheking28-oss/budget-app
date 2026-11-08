@@ -2294,6 +2294,7 @@
         <div style="margin-inline-start:auto;flex-shrink:0;position:relative;">
           <button id="txOverflowBtn" onclick="toggleTxOverflow()" style="background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:999px;padding:8px 12px;font-size:1rem;cursor:pointer;line-height:1;min-width:44px;min-height:44px;" aria-label="אפשרויות">⋯</button>
           <div id="txOverflowMenu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:250;width:max-content;min-width:180px;overflow:hidden;">
+            <button onclick="toggleTxSearchPanel();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">🔍 חיפוש וסינון תאריכים</button>
             <button onclick="exportCSV();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📥 ייצוא CSV</button>
             <button onclick="toggleCalendarView();toggleTxOverflow()" id="calToggleBtn" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📅 לוח שנה</button>
             <button onclick="openSmsImport();toggleTxOverflow()" style="display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;background:none;border:none;color:var(--text);font-size:0.87rem;font-weight:600;cursor:pointer;font-family:inherit;text-align:right;border-bottom:1px solid var(--border)">📲 ייבא SMS</button>
@@ -7947,6 +7948,11 @@ function toggleTxOverflow(){
     const close=e=>{if(e&&e.type==='click'&&m.contains(e.target))return;m.style.display='none';document.removeEventListener('click',close);document.removeEventListener('scroll',close,true);};
     setTimeout(()=>{document.addEventListener('click',close);document.addEventListener('scroll',close,true);},0);
   }
+}
+function toggleTxSearchPanel(){
+  const p=document.getElementById('txAdvancedFilters');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block')document.getElementById('txSearch').focus();
 }
 function toggleCalendarView(){
   _calendarMode=!_calendarMode;
