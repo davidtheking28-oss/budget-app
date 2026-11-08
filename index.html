@@ -1097,7 +1097,32 @@
        #budgetCatDetail itself stays unstyled (no background/border) so this reserved
        height doesn't read as a visible card trailing off past its real content —
        the actual card look lives on the inner .budget-detail-inner wrapper instead. */
-    #budgetCatDetail,#goalsList,#subsList,#loansList,#tasksContent{min-height:100px;}
+    #sumCard,#goalsList,#subsList,#loansList,#tasksContent{min-height:100px;}
+    .sum-tabs{grid-template-columns:repeat(3,1fr)}
+    .sum-tabs .task-tab{font-size:0.8rem;padding-inline:4px}
+    .sum-card{background:var(--surface);border-radius:24px;padding:20px;box-shadow:0 2px 14px rgba(0,0,0,0.06)}
+    .sum-title{font-size:1.15rem;font-weight:800;color:var(--text)}
+    .sum-fig-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:6px 0 4px}
+    .sum-sub{font-size:0.85rem;font-weight:600;color:var(--text2)}
+    .sum-fig{font-family:var(--font-num);font-size:1.4rem;font-weight:800;font-variant-numeric:tabular-nums}
+    .sum-fig.pos{color:var(--green)}.sum-fig.neg{color:var(--red)}
+    .sum-legend{display:flex;gap:16px;font-size:0.8rem;color:var(--text2);font-weight:600;margin-top:8px}
+    .sum-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--text2);margin-inline-end:6px}
+    .sum-dot.plan{background:color-mix(in srgb,var(--text2) 35%,var(--surface))}
+    .sum-chart{margin-top:28px}
+    .sum-plot{position:relative;height:190px}
+    .sum-gl{position:absolute;inset-inline:0;border-bottom:1px dashed var(--border);height:0}
+    .sum-gl span{position:absolute;inset-inline-start:0;bottom:3px;font-size:0.65rem;color:var(--text3);font-variant-numeric:tabular-nums}
+    .sum-cols{position:absolute;inset:0;padding-inline-start:56px;display:flex;justify-content:space-around;align-items:flex-end}
+    .sum-grp{height:100%;display:flex;align-items:flex-end;gap:8px}
+    .sum-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;width:44px}
+    .sum-bv{font-size:0.68rem;font-weight:700;color:var(--text2);margin-bottom:4px;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .sum-bar{width:100%;border-radius:10px 10px 4px 4px;transition:height 0.5s cubic-bezier(.22,1,.36,1)}
+    .sum-bar.inc{background:var(--green)}.sum-bar.exp{background:var(--red)}
+    .sum-bar.inc.plan{background:color-mix(in srgb,var(--green) 35%,var(--surface))}
+    .sum-bar.exp.plan{background:color-mix(in srgb,var(--red) 35%,var(--surface))}
+    .sum-xl{display:flex;justify-content:space-around;padding-inline-start:56px;margin-top:10px}
+    .sum-xl-item{flex:1;text-align:center;font-size:0.8rem;font-weight:700;color:var(--text)}
     /* ── Mode switcher ──────────────────────── */
     #modeSwitcher{display:none;align-items:center;justify-content:center;padding:0;margin-top:-10px;}
     .mode-pill-current{display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1.5px solid var(--border);border-radius:999px;padding:8px 18px;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent;}
@@ -2137,7 +2162,7 @@
         <button onclick="showPage('goals')" style="background:none;border:none;color:var(--accent-text);font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;padding:8px;margin:-8px;min-height:44px">🎯 יעדי חיסכון</button>
       </div>
       <div class="dash-rings-grid" id="dashRingsGrid"></div>
-      <button type="button" class="dash-all-cats" onclick="selectBudgetCat(null);showPage('budget',document.getElementById('nav-budget'))">כל קטגוריות התקציב ←</button>
+      <button type="button" class="dash-all-cats" onclick="openVariableBudgets()">כל קטגוריות התקציב ←</button>
     </div>
 
 
@@ -2435,10 +2460,9 @@
   </div>
 
   <div id="page-budget" class="page">
-    <div class="app-page-intro"><h1>התקציב שלי</h1><p>בחר קטגוריה כדי לראות את התכנון וההוצאות בפועל</p></div>
-    <div id="budgetEmpty" class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="16" cy="14" r="1.5" fill="currentColor" stroke="none"/></svg></div><p>קבע תקרה חודשית לקטגוריה כמו "אוכל" או "קניות" ותדע מיד כשחרגת</p><button class="btn-empty" onclick="openSheet('addBudgetSheet')"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הגדר תקציב ראשון</button></div>
-    <div id="budgetChipStrip" class="budget-chip-strip" style="display:none"></div>
-    <div id="budgetCatDetail" style="display:none"></div>
+    <div class="app-page-intro"><h1>סיכום</h1><p>תכנון מול ביצוע לחודש הנבחר</p></div>
+    <div id="sumTabs"></div>
+    <div id="sumCard"></div>
   </div>
 
   <div id="page-goals" class="page">
@@ -2798,11 +2822,11 @@
   </button>
 
   <button class="fab" id="fab" onclick="hideFabHint();openAddTx();" aria-label="רשום הוצאה"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-  <button class="nav-item" onclick="showPage('budget',this)" id="nav-budget" aria-label="תקציב">
+  <button class="nav-item" onclick="showPage('budget',this)" id="nav-budget" aria-label="סיכום">
     <div class="nav-icon">
       <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
     </div>
-    <span class="nav-label">תקציב</span>
+    <span class="nav-label">סיכום</span>
   </button>
 
 <button class="nav-item" onclick="showPage('analytics',this)" id="nav-analytics" aria-label="משימות">
@@ -6408,7 +6432,7 @@ function renderDashGoals(){
     +'</button>';
   }).join(''):'<div class="budget-tx-empty" style="grid-column:1/-1">עדיין לא הוגדרו תקציבי קטגוריה</div>';
   grid.querySelectorAll('.dash-ring-item').forEach(el=>{
-    el.onclick=()=>{showPage('budget',document.getElementById('nav-budget'));selectBudgetCat(el.dataset.cat);};
+    el.onclick=openVariableBudgets;
   });
   const insight=document.getElementById('dashInsightCard');
   const insightText=document.getElementById('dashInsightText');
@@ -6804,181 +6828,60 @@ function _budgetCarry(cat){
   });
   return carry;
 }
+let _sumTab='plan';
+function setSumTab(tab){_sumTab=tab;renderBudget();}
+function _sumFigures(){
+  const mTx=getMonthTx(currentYear,currentMonth);
+  const actInc=mTx.filter(t=>t.type==='income').reduce((s,t)=>s+(+t.amount||0),0);
+  const actExp=mTx.filter(t=>t.type==='expense').reduce((s,t)=>s+(+t.amount||0),0);
+  const srcInc=_incomeSourcesFor(currentYear,currentMonth).reduce((s,x)=>s+(parseFloat(x.amount)||0),0);
+  let fixed=0;getEffectiveFixedCats().filter(c=>!SAVING_FIXED_CATS.includes(c)).forEach(c=>fixed+=_fxMonthly(c));
+  let vari=0;getEffectiveExpenseCats().forEach(c=>{if(budgets[c])vari+=budgets[c];});
+  return {planInc:srcInc||getMonthlyIncome(),planExp:fixed+vari,actInc,actExp};
+}
+function _sumNiceMax(v){
+  if(v<=0)return 100;
+  const p=Math.pow(10,Math.floor(Math.log10(v)));
+  return [1,2,2.5,5,10].map(k=>k*p).find(x=>x>=v);
+}
+function _sumChartHtml(groups,max){
+  const grid=[0,1,2,3,4].map(i=>'<div class="sum-gl" style="bottom:'+(i*25)+'%"><span>'+fmt(max*i/4)+'</span></div>').join('');
+  const cols=groups.map(g=>'<div class="sum-grp">'+g.bars.map(b=>
+    '<div class="sum-col"><div class="sum-bv">'+fmt(b.val)+'</div><div class="sum-bar '+b.cls+'" style="height:'+Math.max(b.val/max*100,b.val>0?2:0)+'%"></div></div>'
+  ).join('')+'</div>').join('');
+  const labels=groups.map(g=>'<div class="sum-xl-item">'+esc(g.label)+'</div>').join('');
+  return '<div class="sum-chart"><div class="sum-plot">'+grid+'<div class="sum-cols">'+cols+'</div></div><div class="sum-xl">'+labels+'</div></div>';
+}
 function renderBudget(){
-  const rollT=document.getElementById('budgetRolloverToggle');
-  if(rollT)rollT.checked=!!userSettings.budgetRollover;
-  const mTx=getMonthTx(currentYear,currentMonth);
-  const spent={};mTx.filter(t=>t.type==='expense').forEach(t=>{spent[t.cat]=(spent[t.cat]||0)+t.amount;});
-  const _budCats=getEffectiveBudgetCats();
-  // Spending in a category with no budget used to vanish from this page: the list
-  // was built from the budgets object alone. Fold in whatever was actually spent
-  // this month so money can never disappear from the user's view.
-  const allCats=[...new Set([...Object.keys(budgets),...Object.keys(spent)])]
-    .filter(c=>_budCats.includes(c)).sort();
-  const carry={};allCats.forEach(c=>{carry[c]=_budgetCarry(c);});
-  const effLim=c=>budgets[c]?Math.max(0,budgets[c]+(carry[c]||0)):0;
-  const empty=document.getElementById('budgetEmpty');
-  const strip=document.getElementById('budgetChipStrip');
-  const detail=document.getElementById('budgetCatDetail');
-  if(!allCats.length){
-    empty.style.display='';strip.style.display='none';detail.style.display='none';
-    return;
+  const tabsEl=document.getElementById('sumTabs'),cardEl=document.getElementById('sumCard');
+  if(!tabsEl||!cardEl)return;
+  const tab=['plan','actual','compare'].includes(_sumTab)?_sumTab:'plan';
+  const names={plan:'תכנון',actual:'ביצוע',compare:'תכנון מול ביצוע'};
+  tabsEl.innerHTML='<div class="task-tabs sum-tabs" role="tablist">'+Object.keys(names).map(k=>
+    '<button type="button" class="task-tab" role="tab" aria-selected="'+(k===tab)+'" onclick="setSumTab(\''+k+'\')">'+names[k]+'</button>').join('')+'</div>';
+  const f=_sumFigures();
+  let title=names[tab],sub,fig,figCls,groups;
+  if(tab==='compare'){
+    const gap=f.planExp-f.actExp;
+    sub=gap>=0?'נשארו בתקציב ההוצאות':'חריגה מתקציב ההוצאות';
+    fig=fmt(Math.abs(gap));figCls=gap>=0?'pos':'neg';
+    groups=[{label:'הכנסות',bars:[{val:f.planInc,cls:'inc plan'},{val:f.actInc,cls:'inc'}]},{label:'הוצאות',bars:[{val:f.planExp,cls:'exp plan'},{val:f.actExp,cls:'exp'}]}];
+  } else {
+    const inc=tab==='plan'?f.planInc:f.actInc,exp=tab==='plan'?f.planExp:f.actExp,net=inc-exp;
+    sub=tab==='plan'?'תזרים מתוכנן':'תזרים בפועל';
+    fig=(net<0?'-':'')+fmt(Math.abs(net));figCls=net<0?'neg':'pos';
+    groups=[{label:'הכנסות',bars:[{val:inc,cls:'inc'}]},{label:'הוצאות',bars:[{val:exp,cls:'exp'}]}];
   }
-  empty.style.display='none';strip.style.display='';detail.style.display='';
-  if(!_selectedBudgetCat||!allCats.includes(_selectedBudgetCat))_selectedBudgetCat=allCats[0];
-  const stripHtml=allCats.map(cat=>{
-    const hex=budgetChipColor(cat);
-    const sel=cat===_selectedBudgetCat;
-    return '<button type="button" class="budget-chip'+(sel?' budget-chip-sel':'')+'" aria-pressed="'+sel+'" data-cat="'+esc(cat)+'" style="background:'+(sel?hex.sel:hex.base)+'">'
-      +'<span class="budget-chip-icon">'+catIconSvg(cat)+'</span>'
-      +'<span class="budget-chip-name">'+esc(cat)+'</span>'
-    +'</button>';
-  }).join('')
-  +'<button type="button" class="budget-chip budget-chip-add" onclick="openSheet(\'addBudgetSheet\')" aria-label="הגדר תקציב לקטגוריה נוספת"><span class="budget-chip-icon">+</span></button>';
-  const stripChanged=strip._budgetHtml!==stripHtml;
-  if(stripChanged){
-    strip.innerHTML=stripHtml;
-    strip._budgetHtml=stripHtml;
-    strip.querySelectorAll('.budget-chip[data-cat]').forEach(el=>{
-      el.onclick=()=>selectBudgetCat(el.dataset.cat);
-    });
-  }
-  const selEl=strip.querySelector('.budget-chip-sel');
-  if(selEl&&stripChanged){
-    const stripRect=strip.getBoundingClientRect(),elRect=selEl.getBoundingClientRect();
-    const delta=(elRect.left+elRect.width/2)-(stripRect.left+stripRect.width/2);
-    if(Math.abs(delta)>2)strip.scrollBy({left:delta,behavior:'smooth'});
-  }
-  renderBudgetDetail(spent,effLim);
-  _bindBudgetStripScroll(strip);
+  const maxVal=Math.max(...groups.flatMap(g=>g.bars.map(b=>b.val)));
+  const legend=tab==='compare'?'<div class="sum-legend"><span><i class="sum-dot plan"></i>תכנון</span><span><i class="sum-dot"></i>ביצוע</span></div>':'';
+  const empty=maxVal<=0?'<div class="budget-tx-empty">אין עדיין נתונים לחודש זה</div>':'';
+  cardEl.innerHTML='<div class="sum-card"><div class="sum-title">'+title+'</div>'
+    +'<div class="sum-fig-row"><span class="sum-sub">'+sub+'</span><span class="sum-fig '+figCls+'"><bdi dir="ltr">'+fig+'</bdi></span></div>'
+    +legend+_sumChartHtml(groups,_sumNiceMax(maxVal))+empty+'</div>';
 }
-let _selectedBudgetCat=null;
-function selectBudgetCat(cat){
-  const restoreFocus=!!document.activeElement?.matches('#budgetChipStrip .budget-chip');
-  _selectedBudgetCat=cat;renderBudget();
-  if(restoreFocus)Array.from(document.querySelectorAll('#budgetChipStrip .budget-chip[data-cat]')).find(el=>el.dataset.cat===cat)?.focus({preventScroll:true});
-}
-let _budgetStripScrollBound=false;
-function _bindBudgetStripScroll(strip){
-  if(_budgetStripScrollBound||!strip)return;
-  _budgetStripScrollBound=true;
-  let t=null;
-  strip.addEventListener('scroll',()=>{
-    clearTimeout(t);
-    t=setTimeout(_syncBudgetStripToScroll,120);
-  },{passive:true});
-}
-function _syncBudgetStripToScroll(){
-  const strip=document.getElementById('budgetChipStrip');
-  if(!strip)return;
-  const rect=strip.getBoundingClientRect();
-  const centerX=rect.left+rect.width/2;
-  let best=null,bestDist=Infinity;
-  strip.querySelectorAll('.budget-chip[data-cat]').forEach(el=>{
-    const r=el.getBoundingClientRect();
-    const d=Math.abs((r.left+r.width/2)-centerX);
-    if(d<bestDist){bestDist=d;best=el;}
-  });
-  if(!best)return;
-  const cat=best.dataset.cat;
-  if(!cat||cat===_selectedBudgetCat)return;
-  const prevEl=strip.querySelector('.budget-chip-sel');
-  if(prevEl){prevEl.setAttribute('aria-pressed','false');prevEl.classList.remove('budget-chip-sel');prevEl.style.background=budgetChipColor(prevEl.dataset.cat).base;}
-  best.classList.add('budget-chip-sel');
-  best.setAttribute('aria-pressed','true');
-  best.style.background=budgetChipColor(cat).sel;
-  strip._budgetHtml=null;
-  _selectedBudgetCat=cat;
-  const mTx=getMonthTx(currentYear,currentMonth);
-  const spent={};mTx.filter(t=>t.type==='expense').forEach(t=>{spent[t.cat]=(spent[t.cat]||0)+t.amount;});
-  const carry=_budgetCarry(cat);
-  const effLim=c=>budgets[c]?Math.max(0,budgets[c]+(carry||0)):0;
-  renderBudgetDetail(spent,effLim);
-}
-function renderBudgetDetail(spent,effLim){
-  const cat=_selectedBudgetCat;
-  const detail=document.getElementById('budgetCatDetail');
-  if(!cat){detail.style.display='none';return;}
-  const s=spent[cat]||0;
-  const baseLim=budgets[cat]||0;
-  const lim=baseLim?effLim(cat):0;
-  const pct=lim?Math.min(Math.round(s/lim*100),100):(baseLim?100:0);
-  const state=progState(pct,[[90,'danger'],[70,'warn'],[0,'ok']]);
-  const mTx=getMonthTx(currentYear,currentMonth).filter(t=>t.type==='expense'&&t.cat===cat).sort((a,b)=>a.date<b.date?1:-1);
-  const viewKey=JSON.stringify([_activeMode,currentYear,currentMonth,cat]);
-  if(_budgetTxViewKey!==viewKey){_budgetTxViewKey=viewKey;_budgetTxVisibleCount=20;}
-  const visibleTx=_budgetTxListOpen?mTx.slice(0,_budgetTxVisibleCount):[];
-  const trashSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
-  const editSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>';
-  const chartSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>';
-  const chevronSvg='<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="budget-tx-chevron'+(_budgetTxListOpen?' budget-tx-chevron-open':'')+'"><polyline points="6 9 12 15 18 9"/></svg>';
-  const detailHtml=
-    '<div class="budget-detail-inner">'
-    +'<div class="budget-detail-header">'
-      +'<div class="budget-detail-text">'
-        +'<div class="budget-detail-name">'+esc(cat)+'</div>'
-        +(baseLim
-          ?'<div class="budget-detail-planrow">'
-            +'<div class="budget-detail-planbox"><div class="budget-detail-planlabel">תכנון</div><div class="budget-detail-planvalue">'+fmt(lim)+'</div></div>'
-            +'<div class="budget-detail-planbox'+(s>lim?' budget-detail-planbox-over':'')+'"><div class="budget-detail-planlabel">ביצוע</div><div class="budget-detail-planvalue">'+fmt(s)+'</div></div>'
-          +'</div>'
-          :'<div class="budget-detail-amount">'+fmt(s)+' <span class="budget-detail-limit">· ללא תקציב</span></div>')
-      +'</div>'
-      +'<div class="budget-detail-actions"><details class="exp-row-menu" onkeydown="if(event.key===\'Escape\'){this.open=false;this.querySelector(\'summary\').focus();event.stopPropagation();}"><summary aria-label="פעולות תקציב '+esc(cat)+'">⋯</summary><div class="exp-row-actions">'
-        +'<button type="button" class="exp-row-action" data-act="edit-budget" aria-label="ערוך תקציב">'+editSvg+'עריכת תקציב</button>'
-        +'<button type="button" class="exp-row-action" onclick="this.closest(\'details\').open=false;showPage(\'insights\')" aria-label="ניתוח">'+chartSvg+'ניתוח הוצאות</button>'
-        +'<button type="button" class="exp-row-action" data-act="del-budget" aria-label="מחק תקציב">'+trashSvg+'מחיקת תקציב</button>'
-      +'</div></details></div>'
-    +'</div>'
-    +progBarHTML(pct,{wrapClass:'budget-prog-wrap',fillClass:'budget-prog-fill',stateClass:state})
-    +(baseLim?'<div class="budget-balance-note'+(s>lim?' budget-balance-over':'')+'">'+(s>lim?'חריגה של ':'נותרו ')+ '<bdi dir="ltr">'+fmt(Math.abs(lim-s))+'</bdi>'+(s>lim?' מהתקציב':' בתקציב')+'</div>':'')
-    +'<button type="button" class="budget-tx-grouphdr" aria-expanded="'+_budgetTxListOpen+'" aria-controls="budgetDetailTransactions" onclick="toggleBudgetTxList()">'
-      +chevronSvg
-      +'<span class="budget-tx-groupsum">'+fmt(s)+'</span>'
-      +'<span class="budget-tx-grouplabel">עסקאות ב'+esc(cat)+'</span>'
-    +'</button>'
-    +'<div id="budgetDetailTransactions" class="budget-detail-txlist" style="display:'+(_budgetTxListOpen?'':'none')+'">'
-      +(_budgetTxListOpen?(mTx.length?visibleTx.map(t=>
-        '<div class="budget-tx-card" data-txid="'+t.id+'">'
-          +'<button type="button" class="budget-tx-top" onclick="editTx('+_jsId(t.id)+')">'
-            +'<div class="budget-tx-desc-wrap"><div class="budget-tx-desc">'+esc(t.desc)+'</div><div class="budget-tx-date">'+heDate(t.date)+'</div></div>'
-            +'<div class="budget-tx-amt">-'+fmt(t.amount)+'</div>'
-          +'</button>'
-          +'<div class="budget-tx-bottom">'
-            +'<button type="button" class="budget-tx-del" onclick="event.stopPropagation();deleteTx('+_jsId(t.id)+')" aria-label="מחק">'+trashSvg+'</button>'
-            +'<button type="button" class="budget-move-btn" onclick="event.stopPropagation();openMoveTxCat('+_jsId(t.id)+')">העברה לקטגוריה אחרת</button>'
-          +'</div>'
-        +'</div>'
-      ).join(''):'<div class="budget-tx-empty">אין עסקאות בקטגוריה זו החודש</div>'):'')
-    +'</div>'
-    +(_budgetTxListOpen&&mTx.length>visibleTx.length?'<button type="button" class="budget-load-more" onclick="loadMoreBudgetTransactions()">הצג עוד '+Math.min(20,mTx.length-visibleTx.length)+' עסקאות · מוצגות '+visibleTx.length+' מתוך '+mTx.length+'</button>':'')
-    +'</div>';
-  if(detail._budgetHtml===detailHtml)return;
-  detail.innerHTML=detailHtml;
-  detail._budgetHtml=detailHtml;
-  const delBtn=detail.querySelector('[data-act="del-budget"]');
-  if(delBtn)delBtn.onclick=()=>{delBtn.closest('details').open=false;deleteBudget(cat);};
-  const editBtn=detail.querySelector('[data-act="edit-budget"]');
-  if(editBtn)editBtn.onclick=()=>{editBtn.closest('details').open=false;editBtn.closest('details').querySelector('summary').focus();editBudgetCat(cat);};
-}
-let _budgetTxViewKey='';
-let _budgetTxVisibleCount=20;
-let _budgetTxListOpen=true;
-function loadMoreBudgetTransactions(){
-  _budgetTxVisibleCount+=20;
-  const el=document.getElementById('main-content'),y=el?el.scrollTop:0;
-  renderBudget();
-  const detail=document.getElementById('budgetCatDetail');
-  const button=detail.querySelector('.budget-load-more')||detail.querySelector('.budget-tx-grouphdr');
-  if(button)button.focus({preventScroll:true});
-  if(el)el.scrollTop=y;
-}
-function toggleBudgetTxList(){
-  const restoreFocus=!!document.activeElement?.matches('.budget-tx-grouphdr');
-  _budgetTxListOpen=!_budgetTxListOpen;
-  const el=document.getElementById('main-content'),y=el?el.scrollTop:0;
-  renderBudget();if(el)el.scrollTop=y;
-  if(restoreFocus)document.querySelector('.budget-tx-grouphdr')?.focus({preventScroll:true});
+function openVariableBudgets(){
+  showPage('transactions',document.getElementById('nav-transactions'));
+  setTxFilter('variable',document.querySelector('#txFilterChips [data-filter="variable"]'));
 }
 function editBudgetCat(cat){
   _clearInputError('budgetLimit');

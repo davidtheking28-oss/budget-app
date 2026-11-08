@@ -802,31 +802,12 @@ test('resume lock restores pre-existing inert and accessibility states',()=>{
 });
 
 
-function budgetDetailContext(){
- const detail={style:{},innerHTML:'',querySelector:()=>null};
- const rows=Array.from({length:100},(_,i)=>({id:'tx-'+i,type:'expense',cat:'מזון לבית',date:'2026-11-03',desc:'עסקה '+i,amount:10}));
- const ctx=functions(['renderBudgetDetail'],{_selectedBudgetCat:'מזון לבית',currentYear:2026,currentMonth:10,_activeMode:'personal',_budgetTxListOpen:true,_budgetTxViewKey:'',_budgetTxVisibleCount:20,budgets:{'מזון לבית':2000},getMonthTx:()=>rows,document:{getElementById:()=>detail},progState:()=>'',progBarHTML:()=>'',fmt:String,esc:String,heDate:String,_jsId:JSON.stringify});
- return {ctx,detail,render:()=>ctx.renderBudgetDetail({'מזון לבית':1000},()=>2000)};
-}
-
-test('budget details limit rendered cards while keeping the full spending total',()=>{
- const t=budgetDetailContext();t.render();
- assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,20);
- assert.match(t.detail.innerHTML,/budget-detail-planvalue">1000/);
- assert.match(t.detail.innerHTML,/הצג עוד/);
- t.ctx._budgetTxVisibleCount=40;t.render();assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,40);
-});
-
-test('collapsed budget details do not build hidden transaction cards',()=>{
- const t=budgetDetailContext();t.ctx._budgetTxListOpen=false;t.render();
- assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,0);
-});
-
-test('budget pagination resets on month and mode changes',()=>{
- const t=budgetDetailContext();t.render();t.ctx._budgetTxVisibleCount=80;t.ctx.currentMonth=9;t.render();
- assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,20);
- t.ctx._budgetTxVisibleCount=80;t.ctx._activeMode='business';t.render();
- assert.equal((t.detail.innerHTML.match(/data-txid=/g)||[]).length,20);
+test('summary chart scale rounds the largest value up to a clean axis maximum',()=>{
+  const ctx=functions(['_sumNiceMax'],{Math});
+  assert.equal(ctx._sumNiceMax(0),100);
+  assert.equal(ctx._sumNiceMax(14000),20000);
+  assert.equal(ctx._sumNiceMax(2192),2500);
+  assert.equal(ctx._sumNiceMax(100),100);
 });
 
 
@@ -917,29 +898,6 @@ test('cash flow expansion restores keyboard focus without changing the scroll po
   ctx.toggleExpGroup(key);
   assert.equal(ctx._expOpenGroups.has(key),false);
   assert.equal(main.scrollTop,240);
-});
-test('budget transaction expansion keeps keyboard focus and scroll position',()=>{
-  const main={scrollTop:180};let restored=false;
-  const ctx=functions(['toggleBudgetTxList'],{
-    _budgetTxListOpen:true,
-    document:{activeElement:{matches:()=>true},getElementById:()=>main,querySelector:()=>({focus:options=>{restored=options.preventScroll;}})},
-    renderBudget:()=>{main.scrollTop=0;},
-  });
-  ctx.toggleBudgetTxList();
-  assert.equal(ctx._budgetTxListOpen,false);
-  assert.equal(main.scrollTop,180);
-  assert.equal(restored,true);
-});
-test('budget category changes restore keyboard focus to the new category',()=>{
-  let selected;
-  const ctx=functions(['selectBudgetCat'],{
-    _selectedBudgetCat:'old',
-    document:{activeElement:{matches:()=>true},querySelectorAll:()=>[{dataset:{cat:'new'},focus:options=>{selected=options.preventScroll;}}]},
-    renderBudget:()=>{},
-  });
-  ctx.selectBudgetCat('new');
-  assert.equal(ctx._selectedBudgetCat,'new');
-  assert.equal(selected,true);
 });
 test('advisor budget settings without a profile name are applied and refresh the client',async()=>{
   const cloudRow={updated_at:'2026-11-04T08:00:00Z',sync_meta:{},settings:{customCats:['תקציב מותאם'],incomeSources:[{name:'שכר',amount:4000}]}};
