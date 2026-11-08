@@ -7,7 +7,7 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { addMonths, getMonthTx, localISODate } from '../budget/monthUtils.js';
 import { addItem } from '../budget/itemHelpers.js';
-import { budgetCatsFor, expenseCatsFor, transactionCatsFor } from '../categories.js';
+import { budgetCatsFor, expenseCatsFor, transactionCatsFor, catLabel } from '../categories.js';
 import { toast } from '../toast.js';
 import { fmt } from '../format.js';
 import styles from './Business.module.css';
@@ -63,7 +63,7 @@ export default function PersonalExpenses({ userId }) {
             </label>
             <label className={styles.fieldLabel}>קטגוריה
               <select className={styles.select} value={form.cat} onChange={e => setForm(f => ({ ...f, cat: e.target.value }))}>
-                {transactionCatsFor(MODE, data, 'expense').map(c => <option key={c} value={c}>{c}</option>)}
+                {transactionCatsFor(MODE, data, 'expense').map(c => <option key={c} value={c}>{catLabel(c)}</option>)}
               </select>
             </label>
             <label className={styles.fieldLabel}>תאריך
@@ -98,12 +98,12 @@ export default function PersonalExpenses({ userId }) {
           const over = budget > 0 && value > budget;
           return (
             <div key={cat} className={styles.tile}>
-              <svg className={styles.ring} viewBox="0 0 100 100" role="img" aria-label={`${cat}: ${fmt(value)}${budget > 0 ? ` מתוך ${fmt(budget)}` : ''}`}>
+              <svg className={styles.ring} viewBox="0 0 100 100" role="img" aria-label={`${catLabel(cat)}: ${fmt(value)}${budget > 0 ? ` מתוך ${fmt(budget)}` : ''}`}>
                 <circle cx="50" cy="50" r="42" className={styles.ringTrack} />
                 {pct > 0 && <circle cx="50" cy="50" r="42" className={over ? styles.ringOver : styles.ringFill} strokeDasharray={`${(pct * 263.9).toFixed(1)} 263.9`} transform="rotate(-90 50 50)" />}
                 <text x="50" y="55" textAnchor="middle" className={styles.ringText}>{fmt(value)}</text>
               </svg>
-              <div className={styles.tileLabel}>{cat}</div>
+              <div className={styles.tileLabel}>{catLabel(cat)}</div>
             </div>
           );
         })}

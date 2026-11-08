@@ -5,7 +5,7 @@ import DeleteButton from '../components/DeleteButton.jsx';
 import EditButton from '../components/EditButton.jsx';
 import { toast } from '../toast.js';
 import { fmt } from '../format.js';
-import { transactionCatsFor } from '../categories.js';
+import { transactionCatsFor, catLabel } from '../categories.js';
 import { formatDate, getMonthTx } from './monthUtils.js';
 import { updateItem, removeItem } from './itemHelpers.js';
 import { filterMonthTx, txPatchFromForm } from './txHelpers.js';
@@ -85,7 +85,7 @@ export default function MonthTransactions({ data, save, mode, year, month, trans
             return (
               <div key={t.id} ref={formRef} className={styles.editForm} onKeyDown={e => { if (e.key === 'Escape') cancelEdit(); }}>
                 <select className={styles.input} aria-label="קטגוריה" value={form.cat} onChange={e => setForm({ ...form, cat: e.target.value })}>
-                  {catOptions(t).map(c => <option key={c} value={c}>{c}</option>)}
+                  {catOptions(t).map(c => <option key={c} value={c}>{catLabel(c)}</option>)}
                 </select>
                 <input className={styles.input} aria-label="תיאור" placeholder="תיאור" value={form.desc} onChange={e => setForm({ ...form, desc: e.target.value })} />
                 <input className={styles.input} type="number" inputMode="decimal" aria-label="סכום" placeholder="סכום" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
@@ -102,7 +102,7 @@ export default function MonthTransactions({ data, save, mode, year, month, trans
             <Row
               key={t.id}
               name={t.desc || t.cat}
-              sub={<>{row.cat} · {formatDate(t.date)}{t.recurring && <span className={styles.tag}>חוזרת</span>}</>}
+              sub={<>{catLabel(row.cat)} · {formatDate(t.date)}{t.recurring && <span className={styles.tag}>חוזרת</span>}</>}
               amount={(isIncome ? '+' : '') + fmt(t.amount)}
               amountTone={isIncome ? 'pos' : undefined}
             >

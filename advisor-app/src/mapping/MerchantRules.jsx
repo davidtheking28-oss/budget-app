@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
-import { EXPENSE_CATS, FIXED_CATS } from '../categories.js';
+import { EXPENSE_CATS, FIXED_CATS, catLabel } from '../categories.js';
 import { learnCategory, forgetCategory } from './learnedCategories.js';
 import DeleteButton from '../components/DeleteButton.jsx';
 import { toast } from '../toast.js';
@@ -46,7 +46,7 @@ export default function MerchantRules() {
             <div key={r.merchant} className={styles.row}>
               <span className={styles.merchant} title={r.merchant}>{r.merchant}</span>
               <select className={styles.select} value={r.category} aria-label={'קטגוריה עבור ' + r.merchant} onChange={e => changeCategory(r.merchant, e.target.value)}>
-                {(CATS.includes(r.category) ? CATS : [r.category, ...CATS]).map(c => <option key={c} value={c}>{c}</option>)}
+                {(CATS.includes(r.category) ? CATS : [r.category, ...CATS]).map(c => <option key={c} value={c}>{catLabel(c)}</option>)}
               </select>
               <DeleteButton title={'מחק כלל ' + r.merchant} onClick={() => remove(r.merchant)} />
             </div>

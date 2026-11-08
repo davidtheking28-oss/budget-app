@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient.js';
 import { monthSummary, effectiveLimit } from './budgetMath.js';
+import { catLabel } from '../categories.js';
 import { computeInsights } from './insights.js';
 import { initials } from '../clientIdentity.js';
 import { brandStyle } from '../brandColor.js';
@@ -78,7 +79,7 @@ export default function SharedReport({ token }) {
             <tbody>
               {cats.map(c => (
                 <tr key={c}>
-                  <td>{c}</td>
+                  <td>{catLabel(c)}</td>
                   <td>{fmt(effectiveLimit(data, c, year, month))}</td>
                   <td>{fmt(summary.spentByCat[c] || 0)}</td>
                 </tr>
