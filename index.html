@@ -5241,7 +5241,7 @@ async function loadClientMeetingSlots(silent){
     if(keep&&_clientMeetingSlots.some(slot=>slot.starts_at===keep))select.value=keep;
     else if(keep){const errorField=document.getElementById('clientMeetingError');if(errorField){errorField.textContent='השעה שבחרת נתפסה בינתיים. בחר שעה אחרת.';errorField.hidden=false;}}
     button.disabled=!select.value;
-    status.textContent=_clientMeetingSlots.length?'השעות המוצגות פנויות לפי היומן. הבקשה ממתינה לאישור היועץ.':new Date(day+'T12:00:00Z').getUTCDay()===6?'בשבת אין פגישות. בחר תאריך אחר.':'אין שעות פנויות בתאריך הזה. בחר תאריך אחר.';
+    status.textContent=_clientMeetingSlots.length?'השעות המוצגות פנויות לפי היומן של היועץ.':new Date(day+'T12:00:00Z').getUTCDay()===6?'בשבת אין פגישות. בחר תאריך אחר.':'אין שעות פנויות בתאריך הזה. בחר תאריך אחר.';
   }catch(e){if(!silent&&current()){status.textContent='לא ניתן לטעון שעות פנויות כרגע.';retry.hidden=false;}}
 }
 setInterval(()=>{if(document.hidden||_clientMeetingSaving)return;if(document.getElementById('clientMeetingComposer')?.open)loadClientMeetingSlots(true);},20000);
@@ -5267,7 +5267,7 @@ async function requestClientMeeting(){
     ++_advisorTaskRequest;
     _advisorMeetings=[..._advisorMeetings.filter(meeting=>meeting.id!==data.id),data].sort((a,b)=>Date.parse(a.scheduled_at)-Date.parse(b.scheduled_at));
     const seen=_advisorSeenSet();seen.add(data.id);try{localStorage.setItem('budget_advisor_seen',JSON.stringify([...seen].slice(-500)));}catch(e){}
-    _clientMeetingDraft=null;form.reset();document.getElementById('clientMeetingComposer').open=false;renderTasksPage();showToast('בקשת הפגישה נשלחה וממתינה לאישור היועץ');document.querySelector('#clientMeetingComposer summary')?.focus();
+    _clientMeetingDraft=null;form.reset();document.getElementById('clientMeetingComposer').open=false;renderTasksPage();showToast(data.status==='confirmed'?'הפגישה נקבעה ונשמרה ביומן היועץ':'בקשת הפגישה נשלחה וממתינה לאישור היועץ');document.querySelector('#clientMeetingComposer summary')?.focus();
   }catch(e){
     if(current()){errorField.textContent=e.code==='23P01'?'השעה הזאת כבר אינה פנויה. בחר שעה אחרת.':'הבקשה לא נשמרה. הפרטים נשארו כאן — נסה שוב.';errorField.hidden=false;if(e.code==='23P01')loadClientMeetingSlots();}
   }finally{

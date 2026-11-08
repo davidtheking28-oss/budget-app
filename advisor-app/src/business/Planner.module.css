@@ -48,3 +48,10 @@
 .duration { margin: -4px 0 0; color: var(--text2); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
 .eventNote { resize: vertical; min-height: 72px; }
 .deleteEvent { margin-inline-start: auto; color: var(--red); }
+
+.availability { margin-top: 12px; padding: 14px 16px; }
+.availabilitySummary { cursor: pointer; font-weight: 600; }
+.autoConfirm { display: flex; align-items: center; gap: 8px; margin: 10px 0; cursor: pointer; }
+.availabilityDays { display: grid; gap: 8px; }
+.availabilityRow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.availabilityDay { display: flex; align-items: center; gap: 8px; min-width: 96px; cursor: pointer; }

@@ -21,6 +21,7 @@ const CATS = [
   { key: 'rest', label: 'מנוחה' }
 ];
 const EMPTY = { events: {}, notes: {} };
+const DEFAULT_AVAILABILITY = { auto: false, days: { 0: { on: true, s: '09:00', e: '18:00' }, 1: { on: true, s: '09:00', e: '18:00' }, 2: { on: true, s: '09:00', e: '18:00' }, 3: { on: true, s: '09:00', e: '18:00' }, 4: { on: true, s: '09:00', e: '18:00' }, 5: { on: true, s: '09:00', e: '15:00' }, 6: { on: false, s: '09:00', e: '18:00' } } };
 
 const pad = n => String(n).padStart(2, '0');
 const isoOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -102,6 +103,36 @@ function EventModal({ draft, onClose, onSave, onDelete }) {
   );
 }
 
+function AvailabilityPanel({ availability, onChange }) {
+  const times = useMemo(timeOptions, []);
+  const current = availability || DEFAULT_AVAILABILITY;
+  const day = i => current.days?.[i] || DEFAULT_AVAILABILITY.days[i];
+  const setDay = (i, patch) => onChange({ ...current, days: { ...DEFAULT_AVAILABILITY.days, ...current.days, [i]: { ...day(i), ...patch } } });
+  return (
+    <details className={business.card + ' ' + styles.availability}>
+      <summary className={styles.availabilitySummary}>זמינות לפגישות עם לקוחות</summary>
+      <p className={business.note}>לקוחות יכולים לקבוע פגישה של שעה בשעות המסומנות כאן. כל אירוע ביומן חוסם את השעות שלו ללקוחות, וגם פגישה שכבר נקבעה.</p>
+      <label className={styles.autoConfirm}>
+        <input type="checkbox" checked={!!current.auto} onChange={e => { if (e.target.checked) { try { if (typeof Notification !== 'undefined' && Notification.permission === 'default') Notification.requestPermission(); } catch { /* notifications unsupported */ } } onChange({ ...current, days: { ...DEFAULT_AVAILABILITY.days, ...current.days }, auto: e.target.checked }); }} />
+        <span>פגישה שלקוח קובע נקבעת מיד, בלי לחכות לאישור שלי (תקפוץ לי התראה)</span>
+      </label>
+      <div className={styles.availabilityDays}>
+        {DAY_NAMES.map((name, i) => {
+          const d = day(i);
+          return (
+            <div key={i} className={styles.availabilityRow}>
+              <label className={styles.availabilityDay}><input type="checkbox" checked={!!d.on} onChange={e => setDay(i, { on: e.target.checked })} /><span>{name}</span></label>
+              <select className={business.select + ' ' + styles.timeSelect} aria-label={`התחלה, יום ${name}`} disabled={!d.on} value={d.s} onChange={e => { const s = e.target.value; setDay(i, { s, e: mins(d.e) < mins(s) + 60 ? hhmm(Math.min(1440, mins(s) + 60)) : d.e }); }}>{times.slice(0, 47).map(t => <option key={t} value={t}>{t}</option>)}</select>
+              <span aria-hidden="true">–</span>
+              <select className={business.select + ' ' + styles.timeSelect} aria-label={`סיום, יום ${name}`} disabled={!d.on} value={d.e} onChange={e => setDay(i, { e: e.target.value })}>{times.slice(2).map(t => <option key={t} value={t}>{t}</option>)}</select>
+            </div>
+          );
+        })}
+      </div>
+    </details>
+  );
+}
+
 export default function Planner({ advisorId }) {
   const [data, setData] = useState(undefined);
   const [error, setError] = useState(false);
@@ -125,7 +156,7 @@ export default function Planner({ advisorId }) {
     if (err) { setError(true); return; }
     recordId.current = rows?.[0]?.id || null;
     const stored = rows?.[0]?.data;
-    const next = { events: stored?.events || {}, notes: stored?.notes || {} };
+    const next = { events: stored?.events || {}, notes: stored?.notes || {}, ...(stored?.availability ? { availability: stored.availability } : {}) };
     latest.current = next;
     setData(next);
   }, [advisorId]);
@@ -255,6 +286,13 @@ export default function Planner({ advisorId }) {
 
   }
 
+  function openBlock() {
+    const list = calendarEvents[selectedIso] || [];
+    let start = 540;
+    for (const ev of list) { const e = mins(ev.e); if (e > start && e <= 1320) start = e; }
+    setDraft({ id: null, date: selectedIso, s: hhmm(start), e: hhmm(Math.min(1440, start + 60)), t: 'rest', n: 'חסום לפגישות', o: '' });
+  }
+
   function copyWeek() {
     const events = { ...data.events };
     for (let i = 0; i < 7; i++) {
@@ -301,6 +339,7 @@ export default function Planner({ advisorId }) {
               <button type="button" className={view === 'week' ? business.segBtnOn : business.segBtn} aria-pressed={view === 'week'} onClick={() => setView('week')}>שבוע</button>
             </div>
             {view === 'week' && <button type="button" className={business.btnGhost} onClick={copyWeek}>העתק לשבוע הבא</button>}
+            <button type="button" className={business.btnGhost} onClick={openBlock}>חסימת שעות</button>
             <button type="button" className={business.btn} onClick={openAdd}>אירוע חדש</button>
           </div>
         </div>
@@ -345,6 +384,7 @@ export default function Planner({ advisorId }) {
         )}
       </section>
 
+      <AvailabilityPanel availability={data.availability} onChange={availability => commit({ ...data, availability }, 600)} />
       {selectedMeeting && <Modal title={selectedMeeting.n} onClose={() => setSelectedMeeting(null)}>
         <div className={business.formGrid}>
           <p className={business.note}>{longDate(fromIso(selectedMeeting.date))} · {selectedMeeting.s}–{selectedMeeting.e}</p>
