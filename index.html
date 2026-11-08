@@ -1067,9 +1067,6 @@
     .sum-sub{font-size:0.85rem;font-weight:600;color:var(--text2)}
     .sum-fig{font-family:var(--font-num);font-size:1.4rem;font-weight:800;font-variant-numeric:tabular-nums}
     .sum-fig.pos{color:var(--green)}.sum-fig.neg{color:var(--red)}
-    .sum-legend{display:flex;gap:16px;font-size:0.8rem;color:var(--text2);font-weight:600;margin-top:8px}
-    .sum-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--text2);margin-inline-end:6px}
-    .sum-dot.plan{background:color-mix(in srgb,var(--text2) 35%,var(--surface))}
     .sum-chart{margin-top:28px}
     .sum-plot{position:relative;height:190px}
     .sum-gl{position:absolute;inset-inline:0;border-bottom:1px dashed var(--border);height:0}
@@ -6882,11 +6879,10 @@ function renderBudget(){
     groups=[{label:'הכנסות',bars:[{val:inc,cls:'inc'}]},{label:'הוצאות',bars:[{val:exp,cls:'exp'}]}];
   }
   const maxVal=Math.max(...groups.flatMap(g=>g.bars.map(b=>b.val)));
-  const legend=tab==='compare'?'<div class="sum-legend"><span><i class="sum-dot plan"></i>תכנון</span><span><i class="sum-dot"></i>ביצוע</span></div>':'';
   const empty=maxVal<=0?'<div class="budget-tx-empty">'+(yearly?'אין עדיין נתונים לשנה זו':'אין עדיין נתונים לחודש זה')+'</div>':'';
   cardEl.innerHTML='<div class="sum-card"><div class="sum-title">'+title+'</div>'
     +'<div class="sum-fig-row"><span class="sum-sub">'+sub+'</span><span class="sum-fig '+figCls+'"><bdi dir="ltr">'+fig+'</bdi></span></div>'
-    +legend+_sumChartHtml(groups,_sumNiceMax(maxVal))+empty+'</div>'+_sumDetailHtml(tab,f);
+    +_sumChartHtml(groups,_sumNiceMax(maxVal))+empty+'</div>'+_sumDetailHtml(tab,f);
 }
 function openVariableBudgets(){
   showPage('transactions',document.getElementById('nav-transactions'));
