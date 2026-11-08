@@ -20,7 +20,7 @@ export const INCOME_TEMPLATE = [
 ];
 
 export const SAVINGS_TEMPLATE = [
-  entry(SAVINGS_CATEGORY, 'הוראת קבע לחיסכון'),
+  entry(SAVINGS_CATEGORY, 'חיסכון והשקעות'),
   entry(GUIDANCE_CATEGORY)
 ];
 
