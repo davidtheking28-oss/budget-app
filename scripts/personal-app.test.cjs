@@ -1113,3 +1113,9 @@ test('apple pay inbox is ignored outside the personal account and when the accou
   await ctx.pullIncomingExpenses();
   assert.equal(ctx.transactions.length,0);assert.equal(log.some(l=>l.startsWith('delete')),false);
 });
+
+test('index.html contains no raw control characters that corrupt inline scripts',()=>{
+  const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
+  const bad=[...html].filter(c=>{const n=c.charCodeAt(0);return n<32&&n!==9&&n!==10&&n!==13;});
+  assert.equal(bad.length,0);
+});
