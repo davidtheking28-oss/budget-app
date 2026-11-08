@@ -4289,7 +4289,7 @@ function renderTxCategorized(byCat){
         +savingEntries.map(e=>e.html).join('');
     }
   }
-  html+=_expIncomeSectionHtml();
+  if(txListFilter==='all')html+=_expIncomeSectionHtml();
   if(txListFilter!=='variable'){
     const fxEntries=[];
     const nonSavingFixed=allFixed.filter(cat=>!SAVING_FIXED_CATS.includes(cat));
