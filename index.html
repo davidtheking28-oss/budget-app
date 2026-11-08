@@ -5221,15 +5221,16 @@ function openClientMeetingBooking(){
   if(!date.value||date.value<date.min)date.value=_clientMeetingDefaultDate();
   loadClientMeetingSlots();
 }
-async function loadClientMeetingSlots(){
+async function loadClientMeetingSlots(silent){
   const date=document.getElementById('clientMeetingDate'),select=document.getElementById('clientMeetingSlot'),status=document.getElementById('clientMeetingSlotsStatus'),retry=document.getElementById('clientMeetingRetry'),button=document.getElementById('clientMeetingSubmit');
   if(!date||!select||!status||!retry||!button)return;
   const request=++_clientMeetingSlotRequest,clientId=_cloudUser?.id,advisorId=_advisorLink?.advisor_id,day=date.value;
-  _clientMeetingSlots=[];select.disabled=true;button.disabled=true;retry.hidden=true;
-  select.innerHTML='<option value="">בחר שעה פנויה</option>';
+  const keep=silent?select.value:'';
+  if(!silent){_clientMeetingSlots=[];select.disabled=true;button.disabled=true;retry.hidden=true;
+  select.innerHTML='<option value="">בחר שעה פנויה</option>';}
   if(!day||!_sb||!clientId||_advisorLink?.status!=='active'){status.textContent='בחר תאריך כדי לראות שעות פנויות.';return;}
   const current=()=>request===_clientMeetingSlotRequest&&_cloudUser?.id===clientId&&_advisorLink?.advisor_id===advisorId&&_advisorLink?.status==='active'&&date.value===day;
-  status.textContent='טוען שעות פנויות…';
+  if(!silent)status.textContent='טוען שעות פנויות…';
   try{
     const {data,error}=await _sb.rpc('get_client_meeting_slots',{p_advisor_id:advisorId,p_date:day});
     if(error||!Array.isArray(data))throw error||new Error('slots unavailable');
@@ -5237,9 +5238,13 @@ async function loadClientMeetingSlots(){
     _clientMeetingSlots=data.filter(slot=>typeof slot.starts_at==='string'&&Number.isFinite(Date.parse(slot.starts_at))&&typeof slot.label==='string');
     select.innerHTML='<option value="">בחר שעה פנויה</option>'+_clientMeetingSlots.map(slot=>'<option value="'+esc(slot.starts_at)+'">'+esc(slot.label)+'</option>').join('');
     select.disabled=!_clientMeetingSlots.length;
+    if(keep&&_clientMeetingSlots.some(slot=>slot.starts_at===keep))select.value=keep;
+    else if(keep){const errorField=document.getElementById('clientMeetingError');if(errorField){errorField.textContent='השעה שבחרת נתפסה בינתיים. בחר שעה אחרת.';errorField.hidden=false;}}
+    button.disabled=!select.value;
     status.textContent=_clientMeetingSlots.length?'השעות המוצגות פנויות לפי היומן. הבקשה ממתינה לאישור היועץ.':new Date(day+'T12:00:00Z').getUTCDay()===6?'בשבת אין פגישות. בחר תאריך אחר.':'אין שעות פנויות בתאריך הזה. בחר תאריך אחר.';
-  }catch(e){if(current()){status.textContent='לא ניתן לטעון שעות פנויות כרגע.';retry.hidden=false;}}
+  }catch(e){if(!silent&&current()){status.textContent='לא ניתן לטעון שעות פנויות כרגע.';retry.hidden=false;}}
 }
+setInterval(()=>{if(document.hidden||_clientMeetingSaving)return;if(document.getElementById('clientMeetingComposer')?.open)loadClientMeetingSlots(true);},20000);
 async function requestClientMeeting(){
   if(_clientMeetingSaving)return;
   const form=document.getElementById('clientMeetingForm'),date=document.getElementById('clientMeetingDate'),select=document.getElementById('clientMeetingSlot'),notes=document.getElementById('clientMeetingNotes'),button=document.getElementById('clientMeetingSubmit'),errorField=document.getElementById('clientMeetingError');
