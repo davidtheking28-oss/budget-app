@@ -26,7 +26,7 @@ export function useNewClientBookings(advisorId, active) {
     const names = new Map((clients || []).map(c => [c.client_id, c.name || c.client_email]));
     for (const m of fresh) {
       const when = new Date(m.scheduled_at).toLocaleString('he-IL', { weekday: 'long', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
-      const text = `${names.get(m.client_id) || 'לקוח'} ${m.status === 'confirmed' ? 'קבע פגישה' : 'ביקש פגישה'}: ${when}`;
+      const text = `${m.status === 'confirmed' ? 'פגישה חדשה נקבעה' : 'בקשת פגישה חדשה'}: ${names.get(m.client_id) || 'לקוח'} · ${when}`;
       toast(text, 'success');
       try { if (typeof Notification !== 'undefined' && Notification.permission === 'granted') new Notification('פגישה חדשה', { body: text }); } catch { /* notifications unsupported */ }
     }
