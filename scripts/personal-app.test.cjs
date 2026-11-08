@@ -1080,7 +1080,7 @@ test('client-requested pending meetings never show the client an approval button
 function applePayContext(rows,over={}) {
   const log=[];
   const query={select(){return query;},eq(){return query;},order(){return query;},limit(){return Promise.resolve({data:rows,error:null});},delete(){return {in(_c,ids){return {eq(){log.push('delete:'+ids.join(','));return Promise.resolve({error:null});}};}};}};
-  const ctx=functions(['pullIncomingExpenses'],{_applePayPulling:false,_sb:{from:()=>query},_cloudUser:{id:'u1'},_activeMode:'personal',_localAccountReady:true,document:{hidden:false},navigator:{onLine:true},transactions:[],categorize:d=>d.includes('שופרסל')?'מזון לבית':null,localISO:d=>d.toISOString().slice(0,10),saveData(){log.push('save');},refreshAll(){log.push('refresh');},showToast(m){log.push('toast:'+m);},...over});
+  const ctx=functions(['pullIncomingExpenses'],{_applePayPulling:false,_aiCatCache:new Map(),_aiCategorizeMerchant:async()=>null,_sb:{from:()=>query},_cloudUser:{id:'u1'},_activeMode:'personal',_localAccountReady:true,document:{hidden:false},navigator:{onLine:true},transactions:[],categorize:d=>d.includes('שופרסל')?'מזון לבית':null,localISO:d=>d.toISOString().slice(0,10),saveData(){log.push('save');},refreshAll(){log.push('refresh');},showToast(m){log.push('toast:'+m);},...over});
   return {ctx,log};
 }
 
@@ -1128,4 +1128,24 @@ test('a loan with remaining payments counts down monthly and leaves the cashflow
   assert.equal(ctx._loanEnded(loans[1]),true);
   assert.deepEqual(loans.filter(l=>!ctx._loanEnded(l)).map(l=>l.id),[1,3,4]);assert.ok(html.includes('function activeLoans(){ return loans.filter(l=>!l.closed&&!_loanEnded(l)); }'))
   assert.equal(ctx._loanMonthsLeft(loans[3]),9);
+});
+
+test('apple pay merchants the dictionary cannot place are categorized by the AI service, and bad AI answers fall back safely',async()=>{
+  const asked=[];
+  const {ctx,log}=applePayContext([{id:'q1',merchant:'MYSTERY CAFE',amount:20,occurred_at:'2026-11-08T10:00:00Z'},{id:'q2',merchant:'WEIRD SHOP',amount:30,occurred_at:'2026-11-08T10:00:00Z'},{id:'q3',merchant:'שופרסל דיל',amount:5,occurred_at:'2026-11-08T10:00:00Z'}],{_aiCategorizeMerchant:async d=>{asked.push(d);return d==='MYSTERY CAFE'?'אוכל בחוץ ובילויים':null;}});
+  await ctx.pullIncomingExpenses();
+  assert.equal(ctx.transactions.find(t=>t.srcId==='q1').cat,'אוכל בחוץ ובילויים');
+  assert.equal(ctx.transactions.find(t=>t.srcId==='q2').cat,'שונות');
+  assert.deepEqual(asked,['MYSTERY CAFE','WEIRD SHOP']);
+  assert.ok(log.includes('delete:q1,q2,q3'));
+});
+
+test('the AI merchant lookup accepts only known expense categories and survives failures',async()=>{
+  let answer={category:'אוכל בחוץ ובילויים'},calls=0,ok=true;
+  const make=()=>functions(['_aiCategorizeMerchant'],{_aiCatCache:new Map(),_sb:{auth:{getSession:async()=>({data:{session:{access_token:'tok'}}})}},SUPA_URL:'https://x.test',SUPA_ANON:'anon',userSettings:{},EXPENSE_CATS:['אוכל בחוץ ובילויים','שונות'],AbortController,setTimeout,clearTimeout,fetch:async()=>{calls++;if(!ok)throw new Error('offline');return {ok:true,json:async()=>answer};}});
+  const ctx=make();
+  assert.equal(await ctx._aiCategorizeMerchant('A'),'אוכל בחוץ ובילויים');
+  assert.equal(await ctx._aiCategorizeMerchant('A'),'אוכל בחוץ ובילויים');assert.equal(calls,1);
+  answer={category:'קטגוריה מומצאת'};assert.equal(await ctx._aiCategorizeMerchant('B'),null);
+  ok=false;assert.equal(await ctx._aiCategorizeMerchant('C'),null);
 });

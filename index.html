@@ -5675,6 +5675,26 @@ async function revokeApplePayHook(){
   catch(e){showToast('❌ הניתוק נכשל, נסה שוב');}
   finally{_applePayBusy=false;}
 }
+const _aiCatCache=new Map();
+async function _aiCategorizeMerchant(desc){
+  if(_aiCatCache.has(desc))return _aiCatCache.get(desc);
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),8000);
+  try{
+    const {data:{session}}=await _sb.auth.getSession();
+    if(!session)return null;
+    const res=await fetch(SUPA_URL+'/functions/v1/parse-expense',{
+      method:'POST',signal:ctl.signal,
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPA_ANON},
+      body:JSON.stringify({message:desc,customCats:userSettings.customCats||[]})
+    });
+    if(!res.ok)return null;
+    const data=await res.json();
+    const cat=EXPENSE_CATS.includes(data&&data.category)?data.category:null;
+    _aiCatCache.set(desc,cat);
+    return cat;
+  }catch(e){return null;}
+  finally{clearTimeout(timer);}
+}
 async function pullIncomingExpenses(){
   if(_applePayPulling||!_sb||!_cloudUser||document.hidden||_activeMode!=='personal'||!_localAccountReady||!navigator.onLine)return;
   _applePayPulling=true;
@@ -5683,13 +5703,19 @@ async function pullIncomingExpenses(){
     const {data,error}=await _sb.from('incoming_expenses').select('id,merchant,amount,occurred_at').eq('user_id',uid).order('created_at',{ascending:true}).limit(100);
     if(error||!Array.isArray(data)||!data.length)return;
     if(_activeMode!==mode||_cloudUser?.id!==uid)return;
-    const ids=[];let added=0;
+    const ids=[];let added=0,aiCalls=0;
     for(const row of data){
       ids.push(row.id);
       const amount=Number(row.amount),desc=String(row.merchant||'').replace(/[\u0000-\u001f]/g,' ').trim().slice(0,80);
       if(!Number.isFinite(amount)||amount<=0||amount>100000||!desc)continue;
       if(transactions.some(t=>t.srcId===row.id))continue;
-      const cat=categorize(desc,'expense')||'שונות';
+            let cat=categorize(desc,'expense');
+      if(!cat&&(_aiCatCache.has(desc)||aiCalls<8)){
+        if(!_aiCatCache.has(desc))aiCalls++;
+        cat=await _aiCategorizeMerchant(desc);
+        if(_activeMode!==mode||_cloudUser?.id!==uid)return;
+      }
+      cat=cat||'שונות';
       const when=new Date(row.occurred_at);
       transactions.unshift({id:Date.now()+Math.random(),type:'expense',cat,desc,amount,date:localISO(Number.isFinite(when.getTime())?when:new Date()),recurring:false,fixed:false,note:'',srcId:row.id});
       added++;
@@ -6252,7 +6278,7 @@ const _REFINEMENTS={
   "sonol":"דלק וחניה","delek":"דלק וחניה","dor alon":"דלק וחניה","alonit":"דלק וחניה","pango":"דלק וחניה","cellopark":"דלק וחניה","דור אלון":"דלק וחניה","אלונית":"דלק וחניה","סונול":"דלק וחניה","דלק":"דלק וחניה","סלופארק":"דלק וחניה",
   "rav-kav":"תחב״צ","rav kav":"תחב״צ","ravkav":"תחב״צ","israel railways":"תחב״צ","egged":"תחב״צ","metropoline":"תחב״צ","moovit":"תחב״צ","gett":"תחב״צ","uber":"תחב״צ","bolt":"תחב״צ","yango":"תחב״צ","גט טקסי":"תחב״צ","אובר":"תחב״צ","בולט":"תחב״צ","יאנגו":"תחב״צ","רכבת ישראל":"תחב״צ",
   "kvish 6":"כבישי אגרה","highway 6":"כבישי אגרה","derech eretz":"כבישי אגרה","carmelton":"כבישי אגרה","כביש אגרה":"כבישי אגרה",
-  "aroma":"אוכל בחוץ ובילויים","cafe cafe":"אוכל בחוץ ובילויים","cofix":"אוכל בחוץ ובילויים","greg":"אוכל בחוץ ובילויים","landwer":"אוכל בחוץ ובילויים","mcdonald":"אוכל בחוץ ובילויים","burger ranch":"אוכל בחוץ ובילויים","burger king":"אוכל בחוץ ובילויים","dominos":"אוכל בחוץ ובילויים","domino's":"אוכל בחוץ ובילויים","pizza hut":"אוכל בחוץ ובילויים","bolt food":"אוכל בחוץ ובילויים","uber eats":"אוכל בחוץ ובילויים","ten bis":"אוכל בחוץ ובילויים","10bis":"אוכל בחוץ ובילויים","cinema city":"אוכל בחוץ ובילויים","yes planet":"אוכל בחוץ ובילויים","lev cinema":"אוכל בחוץ ובילויים","דומינוס":"אוכל בחוץ ובילויים","דומינו":"אוכל בחוץ ובילויים","בורגר ראנץ":"אוכל בחוץ ובילויים","סינמה סיטי":"אוכל בחוץ ובילויים","יס פלאנט":"אוכל בחוץ ובילויים","לב קולנוע":"אוכל בחוץ ובילויים","תן ביס":"אוכל בחוץ ובילויים",
+  "aroma":"אוכל בחוץ ובילויים","cafe cafe":"אוכל בחוץ ובילויים","cofix":"אוכל בחוץ ובילויים","greg":"אוכל בחוץ ובילויים","landwer":"אוכל בחוץ ובילויים","mcdonald":"אוכל בחוץ ובילויים","burger ranch":"אוכל בחוץ ובילויים","burger king":"אוכל בחוץ ובילויים","dominos":"אוכל בחוץ ובילויים","domino's":"אוכל בחוץ ובילויים","pizza hut":"אוכל בחוץ ובילויים","bolt food":"אוכל בחוץ ובילויים","starbucks":"אוכל בחוץ ובילויים","סטארבקס":"אוכל בחוץ ובילויים","super yoda":"מזון לבית","סופר יודה":"מזון לבית","fresh market":"מזון לבית","פרש מרקט":"מזון לבית","uber eats":"אוכל בחוץ ובילויים","ten bis":"אוכל בחוץ ובילויים","10bis":"אוכל בחוץ ובילויים","cinema city":"אוכל בחוץ ובילויים","yes planet":"אוכל בחוץ ובילויים","lev cinema":"אוכל בחוץ ובילויים","דומינוס":"אוכל בחוץ ובילויים","דומינו":"אוכל בחוץ ובילויים","בורגר ראנץ":"אוכל בחוץ ובילויים","סינמה סיטי":"אוכל בחוץ ובילויים","יס פלאנט":"אוכל בחוץ ובילויים","לב קולנוע":"אוכל בחוץ ובילויים","תן ביס":"אוכל בחוץ ובילויים",
   "zara":"ביגוד והנעלה","h&m":"ביגוד והנעלה","castro":"ביגוד והנעלה","fox":"ביגוד והנעלה","golf":"ביגוד והנעלה","renuar":"ביגוד והנעלה","shein":"ביגוד והנעלה","terminal x":"ביגוד והנעלה","nike":"ביגוד והנעלה","adidas":"ביגוד והנעלה","פוקס":"ביגוד והנעלה","גולף":"ביגוד והנעלה","רנואר":"ביגוד והנעלה","שיין":"ביגוד והנעלה","נייקי":"ביגוד והנעלה","אדידס":"ביגוד והנעלה","טרמינל איקס":"ביגוד והנעלה",
   "steimatzky":"תחביבים","סטימצקי":"תחביבים","צומת ספרים":"תחביבים",
   "pet shop":"בעלי חיים","petshop":"בעלי חיים","פט שופ":"בעלי חיים","פט פלוס":"בעלי חיים","וטרינר":"בעלי חיים",
