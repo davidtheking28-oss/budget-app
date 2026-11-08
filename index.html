@@ -624,7 +624,7 @@
       .dash-ring-frac{grid-column:1/-1;flex-direction:row;justify-content:space-between;gap:4px;margin-top:2px;font-size:max(12px,0.8125rem);text-align:right;}
       .dash-ring-frac bdi{display:block;}
     }
-    .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:0;border-radius:24px;box-shadow:0 2px 14px rgba(0,0,0,0.06);padding:14px 20px;margin-bottom:12px;}
+    .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:0;border-radius:999px;box-shadow:0 2px 14px rgba(0,0,0,0.06);padding:16px 28px;margin-bottom:12px;}
     .dash-insight-emoji{font-size:1.4rem;flex-shrink:0;}
     .dash-insight-text{display:flex;flex-direction:column;gap:4px;font-size:0.85rem;font-weight:700;color:var(--text);line-height:1.4;}
     .dash-balance-value{font-size:1.6rem;line-height:1.2;} .dash-balance-daily{font-weight:400;color:var(--text2);} .tx-date-range{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:0 16px 12px;align-items:center;} .tx-date-range input{min-width:0;width:100%;min-height:44px;} .tx-date-range #clearDateBtn{grid-column:1/-1;justify-self:end;} .dash-all-cats{display:block;width:100%;min-height:44px;margin-top:12px;color:var(--accent-text);font-weight:700;border:1px solid var(--border);border-radius:12px;background:var(--surface2);}
@@ -2085,7 +2085,6 @@
 
 <main id="main-content">
   <div id="page-dashboard" class="page active">
-    <p id="saveStatus" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.875rem;font-weight:600;margin:0 4px 12px;color:var(--text2)"></p>
     <div id="meetingAlerts" role="status" aria-live="polite"></div>
     <!-- Mode switcher -->
     <div id="modeSwitcher" style="display:none;justify-content:center;margin:-10px 0 14px;position:relative;">
@@ -4650,7 +4649,7 @@ function _syncStatus(){
 }
 function _renderSyncStatus(){
   const status=_syncStatus();
-  document.querySelectorAll('#cloudStatus,#saveStatus,#settingsSaveStatus').forEach(el=>{
+  document.querySelectorAll('#cloudStatus,#settingsSaveStatus').forEach(el=>{
     el.textContent=status.text;
     el.style.color=status.color;
     el.dataset.state=status.state;
