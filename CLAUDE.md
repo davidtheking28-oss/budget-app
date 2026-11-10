@@ -22,11 +22,17 @@ twice after being deleted. It carries no credentials and is excluded from the
 production build. See the `verify` skill for how to drive both apps.
 
 **The Supabase project is shared with the trading-journal app.** Budget owns
-`budget_data`, `households`, `push_subscriptions`, `push_log`, and the
-`parse-receipt` / `parse-expense` / `budget-push` edge functions (renamed from `push-daily`, which the trading-journal CI redeploys over with its own stale copy). Everything else
+`budget_data`, `households`, `push_subscriptions`, `push_log`, `ai_requests`,
+`support_messages`, `client_errors`, `incoming_expenses`, `expense_hooks`,
+`economic_mappings`, `report_shares`, every `advisor*` table, and these edge
+functions: `parse-receipt`, `parse-expense`, `parse-statement` (statement
+pages → transactions), `summarize-meeting` (advisor meeting summaries),
+`apple-pay-ingest` (token-authenticated expense webhook), `delete-account`
+(uses the service role; deletes only budget-owned rows) and `budget-push`
+(renamed from `push-daily`, which the trading-journal CI redeploys over with its own stale copy). Everything else
 (`trades`, `screener_*`, `investments`, `market_cache`, `app_secrets`, `flex_*`)
 belongs to the trading journal — leave it alone. Edge-function secrets are shared;
-`parse-expense`/`parse-receipt` use `GROQ_API_KEY` (Groq's free tier — text +
+`parse-expense`/`parse-receipt`/`parse-statement`/`summarize-meeting` use `GROQ_API_KEY` (Groq's free tier — text +
 vision via the OpenAI-compatible `/openai/v1/chat/completions` endpoint). The
 `GEMINI_API_KEY` path was dropped after the key turned out to have zero free-tier
 quota on every model. The separate `inrmnhjxrwlrttbfhbly` project is named
@@ -41,14 +47,8 @@ then deploys both to Pages together.
 **Verify a deploy before claiming it works** — Pages has failed transiently:
 `curl -s https://davidtheking28-oss.github.io/budget-app/index.html | grep -c '>v2.8<'`
 
-**Actual theme (overrides the generic dark-navy spec in `frontend.md`, which
-describes the trading-journal app instead):** `index.html`'s light mode
-(`body:not(.dark)`, the "LIGHT-MODE POLISH" block) is a soft mint-grey theme
-(`--bg:#eef3f1`, `--surface:#fff`, `--accent:#0a7a62` green-teal), with a
-`body.dark` override (`--bg:#100f0d`, `--surface:#1a1916`, `--accent:#34d3a9`)
-toggled via `budget_theme` in localStorage. `frontend.md`'s "Data Flow" section
-(`db.stocks`, `_rowToTrade`, etc.) also doesn't apply here — that's
-trading-journal's model, not this app's.
+**Theme and data flow** are documented in `.claude/rules/frontend.md`; Supabase
+conventions in `.claude/rules/supabase.md`. Both load automatically.
 
 ---
 
@@ -56,9 +56,7 @@ trading-journal's model, not this app's.
 
 @C:\Users\david\.claude\rules\behavior.md
 @C:\Users\david\.claude\rules\code-style.md
-@C:\Users\david\.claude\rules\frontend.md
 @C:\Users\david\.claude\rules\git-workflow.md
-@C:\Users\david\.claude\rules\supabase.md
 
 ---
 
