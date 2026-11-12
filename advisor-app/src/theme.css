@@ -169,6 +169,7 @@ input[type="number"] {
 }
 
 html, body { height: 100%; }
+html { scrollbar-gutter: stable; }
 #root { display: flow-root; min-height: 100%; }
 
 body {

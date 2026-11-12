@@ -12,7 +12,7 @@ import { icons } from './BusinessNav.jsx';
 import styles from './Business.module.css';
 import layout from './MarketingPlan.module.css';
 
-const cost = value => (value === null ? 'אין' : fmt(value));
+const cost = value => (value === null ? 'לא זמין' : fmt(value));
 
 function NumberFields({ fields, data, onSave, onClose }) {
   const [values, setValues] = useState(() => Object.fromEntries(fields.map(f => [f.key, data[f.key] ?? ''])));

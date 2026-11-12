@@ -407,6 +407,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       ? transaction.type === 'income' && (transaction.desc || '').trim().toLowerCase() === name.trim().toLowerCase()
       : (transaction.type === 'expense' || transaction.type === 'saving') && (categoryRenames[transaction.cat] || transaction.cat) === name;
     const count = getMonthTx(data?.transactions, year, month).filter(matches).length;
+    if (!count) return null;
     return (
       <details className={styles.transactionDetails} data-budget-transactions>
         <summary aria-label={'עסקאות הביצוע · ' + (name || 'שורה חדשה')}>עסקאות הביצוע · {count}</summary>

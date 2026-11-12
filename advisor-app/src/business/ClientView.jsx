@@ -190,9 +190,10 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
                 <div className={styles.toolbar}>
                   <CategorySelect label="תצוגת תקופה" value={period} options={[{ key: 'month', label: 'חודשי' }, { key: 'year', label: 'שנתי' }, { key: 'avg', label: 'חודש ממוצע' }, { key: 'long', label: 'תכנון ארוך טווח' }]} onChange={changePeriod} />
                   {monthModeBar}
+                  {chipBar}
                 </div>
               )}
-              {chipBar}
+              {view !== 'budget' && chipBar}
             </div>
           )}
           {view === 'mapping' && suspense(<EconomicMapping key={clientIdOrNull} clientUserId={clientIdOrNull} advisorId={advisorId} />)}

@@ -21,6 +21,8 @@ const STATUS_LABEL = {
   trashed: 'בפח'
 };
 
+const STATUS_TONE = { active: 'tagGood', requested: 'tagWarn', blocked: 'tagHigh' };
+
 const ACTIONS = {
   approve: { label: 'אישור' },
   end: { label: 'סיום ליווי', confirm: 'לסיים ליווי? החשבון והנתונים של הלקוח נשארים' },
@@ -178,7 +180,7 @@ export default function ClientApprovals({ advisorId }) {
                       <span className={styles.rowTitle}>{r.name || r.email}</span>
                       {r.name && <span dir="ltr" className={styles.rowMeta} style={{ textAlign: 'right' }}>{r.email}</span>}
                     </span>
-                    <span className={styles.tag}>{STATUS_LABEL[r.kind]}</span>
+                    <span className={styles.tag + (STATUS_TONE[r.kind] ? ' ' + styles[STATUS_TONE[r.kind]] : '')}>{STATUS_LABEL[r.kind]}</span>
                   </button>
                 </li>
               ))}

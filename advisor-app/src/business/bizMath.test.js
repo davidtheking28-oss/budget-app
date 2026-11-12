@@ -26,7 +26,7 @@ describe('funnelStats', () => {
   it('returns null rates on an empty set instead of dividing by zero', () => {
     const s = funnelStats([]);
     expect(s.showRate).toBeNull();
-    expect(percentLabel(s.showRate)).toBe('אין');
+    expect(percentLabel(s.showRate)).toBe('—');
   });
 });
 

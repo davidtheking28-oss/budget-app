@@ -11,6 +11,7 @@ import { meetingEvents } from './plannerMeetings.js';
 const TABLE = 'advisor_biz_records';
 const KIND = 'planner';
 const HH = 48;
+const BLOCK_NAME = 'חסום לפגישות';
 const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const CATS = [
   { key: 'biz', label: 'בניית העסק' },
@@ -73,7 +74,7 @@ function EventModal({ draft, onClose, onSave, onDelete }) {
   }
 
   return (
-    <Modal title={draft.id ? 'עריכת אירוע' : 'אירוע חדש'} onClose={onClose}>
+    <Modal title={draft.id ? 'עריכת אירוע' : draft.n === BLOCK_NAME && draft.t === 'rest' ? 'חסימת שעות' : 'אירוע חדש'} onClose={onClose}>
       <form className={business.formGrid} onSubmit={submit}>
         <label className={business.fieldLabel}>כותרת<input className={business.input} value={form.n} maxLength={60} onChange={set('n')} /></label>
         <div className={business.fieldLabel} role="group" aria-label="קטגוריה">קטגוריה
@@ -290,7 +291,7 @@ export default function Planner({ advisorId }) {
     const list = calendarEvents[selectedIso] || [];
     let start = 540;
     for (const ev of list) { const e = mins(ev.e); if (e > start && e <= 1320) start = e; }
-    setDraft({ id: null, date: selectedIso, s: hhmm(start), e: hhmm(Math.min(1440, start + 60)), t: 'rest', n: 'חסום לפגישות', o: '' });
+    setDraft({ id: null, date: selectedIso, s: hhmm(start), e: hhmm(Math.min(1440, start + 60)), t: 'rest', n: BLOCK_NAME, o: '' });
   }
 
   function copyWeek() {

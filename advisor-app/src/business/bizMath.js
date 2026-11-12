@@ -13,7 +13,7 @@ export function ratio(part, whole) {
 }
 
 export function percentLabel(value) {
-  return value === null ? 'אין' : Math.round(value * 100) + '%';
+  return value === null ? '—' : Math.round(value * 100) + '%';
 }
 
 export function ymKey(year, monthIndex) {

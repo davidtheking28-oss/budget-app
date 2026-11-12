@@ -85,7 +85,7 @@ export default function PersonalExpenses({ userId }) {
         <div className={styles.stripStats}>
           <div className={styles.stripStat}><div className={styles.statLabel}>הוצאות החודש</div><div className={styles.stripValue}>{fmt(spent)}</div></div>
           <div className={styles.stripStat}><div className={styles.statLabel}>תקציב החודש (קבועות + משתנות)</div><div className={styles.stripValue}>{budgetTotal > 0 ? fmt(budgetTotal) : 'עוד לא נקבע'}</div></div>
-          <div className={styles.stripStat}><div className={styles.statLabel}>יתרה לחודש</div><div className={styles.stripValue}>{budgetTotal > 0 ? fmt(budgetTotal - spent) : 'אין'}</div></div>
+          <div className={styles.stripStat}><div className={styles.statLabel}>יתרה לחודש</div><div className={styles.stripValue}>{budgetTotal > 0 ? fmt(budgetTotal - spent) : '—'}</div></div>
         </div>
       </section>
 

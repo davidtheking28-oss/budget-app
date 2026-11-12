@@ -8,7 +8,7 @@ export default function Modal({ title, onClose, children, wide = false }) {
   closeRef.current = onClose;
   useEffect(() => {
     const previous = document.activeElement;
-    ref.current?.querySelector('input, select, textarea, button')?.focus();
+    (ref.current?.querySelector('input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])') || ref.current?.querySelector('button'))?.focus();
     const onKey = e => {
       if (e.key === 'Escape') closeRef.current();
       if (e.key !== 'Tab') return;
