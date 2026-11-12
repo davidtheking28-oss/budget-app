@@ -305,12 +305,14 @@
       #inlineMonthNav>button:not([data-month-arrow]) i{display:none;}
     }
     #inlineMonthNav.nav-hidden{top:-70px!important;}
+    #headerSettings{transition:top 0.3s ease;}
+    #headerSettings.nav-hidden{top:-70px;}
     .page{display:none;}.page.active{display:block;}
     @keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     .exp-row,.exp-struct-row,.exp-pay-card,.tx-item,.budget-tx-card,.sub-card{animation:rowIn 0.3s cubic-bezier(0.22,1,0.36,1) both;}
     .exp-row:nth-of-type(1){animation-delay:.02s}.exp-row:nth-of-type(2){animation-delay:.05s}.exp-row:nth-of-type(3){animation-delay:.08s}.exp-row:nth-of-type(4){animation-delay:.11s}.exp-row:nth-of-type(5){animation-delay:.14s}.exp-row:nth-of-type(6){animation-delay:.17s}
     .card{border-radius:var(--radius);padding:18px 16px;box-shadow:0 2px 14px rgba(0,0,0,0.07);position:relative;overflow:hidden;}
-    .card-label{font-size:0.72rem;color:var(--text2);font-weight:var(--fw-medium);letter-spacing:0;line-height:1.3;margin-bottom:8px;}
+    .card-label{font-size:0.75rem;color:var(--text2);font-weight:var(--fw-medium);letter-spacing:0;line-height:1.3;margin-bottom:8px;}
     body.dark .card-label{color:rgba(255,255,255,0.48);}
     .card-icon{font-size:1.5rem;margin-bottom:6px;display:block;line-height:1;}
     .card-amount{font-size:1.55rem;font-weight:800;margin-top:4px;line-height:1.1;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;letter-spacing:-0.5px;font-feature-settings:'tnum' 1,'lnum' 1;}
@@ -397,7 +399,7 @@
        goal must not read as "danger". Goals keep the accent at every level; the
        red/amber states stay for budget overspend, where they mean something. */
     .goal-card .prog-fill.low,.goal-card .prog-fill.mid{background:var(--accent);}
-    .prog-label{font-size:0.73rem;color:var(--text3);margin-top:6px;text-align:left;font-weight:600;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .prog-label{font-size:0.75rem;color:var(--text3);margin-top:6px;text-align:left;font-weight:600;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
     .goal-monthly{margin-top:10px;padding:9px 12px;background:var(--blue-light);border-radius:10px;font-size:0.85rem;font-weight:700;color:var(--blue);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;text-align:right;}
 
     /* payments: card per business — a 6-column table cannot fit a phone */
@@ -460,7 +462,7 @@
     .exp-row-left{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;}
     .exp-row-right{display:flex;align-items:center;gap:8px;}
     .exp-amt{font-family:var(--font-num);font-weight:800;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums lining-nums;}
-    .exp-plan-label{font-size:0.68rem;color:var(--text3);font-weight:600;margin-inline-end:2px;}
+    .exp-plan-label{font-size:0.75rem;color:var(--text3);font-weight:600;margin-inline-end:2px;}
     .exp-chevron{width:15px;height:15px;color:var(--text3);flex-shrink:0;transition:transform 0.2s;}
     .exp-chevron-open{transform:rotate(180deg);}
     .exp-icon-sm{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:none;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
@@ -621,24 +623,24 @@
     .sub-logo.small.has-img img{width:62%;height:62%;}
     #subLogoPreview .sub-logo,#editSubLogoPreview .sub-logo{width:52px;height:52px;border-radius:14px;}
     .sub-name-text{font-size:0.95rem;font-weight:700;}
-    .sub-cat-chip{font-size:0.72rem;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--blue-light);color:var(--blue);margin-top:2px;display:inline-block;}
+    .sub-cat-chip{font-size:0.75rem;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--blue-light);color:var(--blue);margin-top:2px;display:inline-block;}
     .sub-price{text-align:left;}
     .sub-price-amount{font-size:1.2rem;font-weight:800;color:var(--accent);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;letter-spacing:-0.4px;}
-    .sub-price-cycle{font-size:0.72rem;color:var(--text3);}
+    .sub-price-cycle{font-size:0.75rem;color:var(--text3);}
     .sub-row2{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;padding-top:10px;border-top:1px solid var(--border);}
     .sub-next-label{font-size:0.78rem;color:var(--text2);}
     .sub-next-label.soon-txt{color:var(--yellow);font-weight:700;}
     .sub-btns{display:flex;gap:6px;flex-wrap:wrap;}
     .sub-btns .btn-danger{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;}
     .sub-btns .btn-danger:active{color:var(--red);background:var(--red-light);}
-    .soon-tag{position:absolute;top:10px;right:10px;z-index:2;background:var(--yellow);color:white;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:10px;}
+    .soon-tag{position:absolute;top:10px;right:10px;z-index:2;background:var(--yellow);color:white;font-size:0.75rem;font-weight:700;padding:2px 7px;border-radius:10px;}
     /* The badge sat on top of the 50px service logo in the same corner and was half
        hidden behind it; give the flagged card extra head-room so both are readable. */
     .sub-card.soon{padding-top:38px;}
     .overdue-tag{position:absolute;top:10px;right:10px;background:var(--red);color:white;font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:10px;}
     .btn{min-height:44px;padding:10px 18px;border:none;border-radius:999px;font-size:0.92rem;font-weight:var(--fw-semibold);letter-spacing:var(--track-normal);cursor:pointer;font-family:inherit;transition:background 0.18s,color 0.18s,opacity 0.18s,transform 0.18s,box-shadow 0.18s;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
     .btn:active{transform:scale(0.95);}
-    .btn-primary{background:var(--accent);color:white;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.28);}
+    .btn-primary{background:var(--accent-solid);color:white;box-shadow:0 4px 16px rgba(var(--accent-rgb),0.28);}
     .btn-primary:active{opacity:0.88;box-shadow:none;}
     .btn:disabled,.btn[disabled]{opacity:0.45;pointer-events:none;cursor:not-allowed;}
     .btn-success{background:var(--green);color:white;}
@@ -1032,12 +1034,12 @@
     .sum-chart{margin-top:28px}
     .sum-plot{position:relative;height:190px}
     .sum-gl{position:absolute;inset-inline:0;border-bottom:1px dashed var(--border);height:0}
-    .sum-gl span{position:absolute;inset-inline-start:0;bottom:3px;font-size:0.65rem;color:var(--text3);font-variant-numeric:tabular-nums}
+    .sum-gl span{position:absolute;inset-inline-start:0;bottom:3px;font-size:0.75rem;color:var(--text3);font-variant-numeric:tabular-nums}
     .sum-cols{position:absolute;inset:0;padding-inline-start:56px;display:flex;justify-content:space-around;align-items:flex-end}
     .sum-grp{flex:1;height:100%;display:flex;align-items:flex-end;justify-content:center;gap:6px}
     .sum-col{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;width:50%}
     .sum-grp:has(.sum-col:nth-child(2)) .sum-col{width:36%}
-    .sum-bv{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding-bottom:4px;font-size:0.68rem;font-weight:700;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums}
+    .sum-bv{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);padding-bottom:4px;font-size:0.75rem;font-weight:700;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums}
     .sum-bar{position:relative;width:100%;border-radius:10px 10px 4px 4px;transition:height 0.5s cubic-bezier(.22,1,.36,1)}
     .sum-bar.inc{background:var(--green)}.sum-bar.exp{background:var(--red)}
     .sum-bar.inc.plan{background:color-mix(in srgb,var(--green) 35%,var(--surface))}
@@ -1106,7 +1108,7 @@
     .confirm-actions{display:flex;gap:10px;}
     .confirm-btn{flex:1;padding:12px;border-radius:999px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;min-height:48px;}
     .confirm-cancel{background:var(--surface2);color:var(--text);border:1.5px solid var(--border);}
-    .confirm-ok{background:var(--accent);color:#fff;}
+    .confirm-ok{background:var(--accent-solid);color:#fff;}
     .confirm-box.danger .confirm-ok{background:var(--red,#dc2626);}
     @keyframes cfFade{from{opacity:0}to{opacity:1}}
     @keyframes cfPop{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
@@ -1125,7 +1127,7 @@
     .meeting-alert-sub{color:var(--text2);font-size:0.8rem;margin-top:2px;overflow-wrap:break-word;}
     .meeting-alert-actions{display:flex;gap:8px;flex-shrink:0;}
     .meeting-alert-btn{min-height:44px;padding:8px 14px;border-radius:8px;font-size:0.78rem;font-weight:var(--fw-semibold);cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);transition:background 0.15s,color 0.15s,border-color 0.15s,opacity 0.15s;}
-    .meeting-alert-btn.confirm{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .meeting-alert-btn.confirm{background:var(--accent-solid);border-color:var(--accent-solid);color:#fff;}
     .meeting-alert-btn.decline:hover{color:var(--red);border-color:var(--red);}
     .meeting-alert-btn:disabled{opacity:0.5;pointer-events:none;cursor:not-allowed;}
     @media (max-width:480px){.meeting-alert{flex-wrap:wrap;}.meeting-alert-actions{width:100%;justify-content:flex-end;}}
@@ -1133,7 +1135,7 @@
     .install-txt{display:flex;flex-direction:column;flex:1;min-width:0;}
     .install-txt b{font-size:0.9rem;color:var(--text);font-weight:800;}
     .install-txt span{font-size:0.75rem;color:var(--text3);line-height:1.35;}
-    .install-go{background:var(--accent);color:#fff;border:none;border-radius:11px;padding:9px 16px;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit;flex-shrink:0;}
+    .install-go{background:var(--accent-solid);color:#fff;border:none;border-radius:11px;padding:9px 16px;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit;flex-shrink:0;}
     .install-x{background:none;border:none;color:var(--text3);font-size:1rem;cursor:pointer;padding:4px 6px;flex-shrink:0;line-height:1;}
 
     /* ── Smart insights ──────────────────────── */
@@ -2080,7 +2082,7 @@
     </div>
     <div class="dash-bignum">
       <div class="dash-bignum-val" id="dashBigNum">₪0</div>
-      <div class="dash-bignum-label" id="dashBigLabel">מתחילת החודש</div>
+      <div class="dash-bignum-label" id="dashBigLabel">הוצאות מתחילת החודש</div>
     </div>
     <div class="dash-insight-card" id="dashInsightCard" style="display:none">
       <span class="dash-insight-emoji">💰</span>
@@ -2206,7 +2208,7 @@
       <div id="recentTxList">
         <!-- Renders recent transactions from JavaScript -->
       </div>
-      <button type="button" id="recentTxMoreBtn" onclick="toggleDashRecentExpanded()" style="display:none;width:100%;text-align:center;background:none;border:none;color:var(--accent);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;padding:10px 0 4px">הצג עוד הוצאות</button>
+      <button type="button" id="recentTxMoreBtn" onclick="toggleDashRecentExpanded()" style="display:none;width:100%;text-align:center;background:none;border:none;color:var(--accent-text);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;min-height:44px;padding:10px 0 4px">הצג עוד הוצאות</button>
     </div>
 
     <!-- Spending Flow: הכנסה → חיסכון / קבועות / משתנות -->
@@ -6442,7 +6444,7 @@ function renderDashGoals(){
   const bigNum=document.getElementById('dashBigNum');
   const bigLabel=document.getElementById('dashBigLabel');
   if(bigNum){bigNum.textContent=fmt(total);bigNum.style.color='var(--accent)';}
-  if(bigLabel)bigLabel.textContent=_dashPeriod==='week'?'ב-7 הימים האחרונים':_dashPeriod==='all'?'סך הכל':'מתחילת החודש';
+  if(bigLabel)bigLabel.textContent=_dashPeriod==='week'?'הוצאות ב-7 הימים האחרונים':_dashPeriod==='all'?'סך כל ההוצאות':'הוצאות מתחילת החודש';
   const _dashCats=getEffectiveExpenseCats();
   const limitFor=cat=>(_dashPeriod==='month'&&budgets[cat])?Math.max(0,budgets[cat]+_budgetCarry(cat)):(budgets[cat]||0);
   const priority=cat=>{const spent=spentByCat[cat]||0;const limit=limitFor(cat);return _dashPeriod==='month'?(limit>0?spent/limit:(spent>0?Infinity:0)):spent;};
@@ -6463,7 +6465,7 @@ function renderDashGoals(){
       +'</div>'
       +'<div class="dash-ring-label"><div class="dash-ring-name">'+esc(cat)+'</div></div>'
       +'<div class="dash-ring-meta">'
-        +(_dashPeriod==='month'?'<span class="dash-ring-rem'+(s>lim?' danger':'')+'">'+(s>lim?'חריגה':'נשאר')+' <bdi dir="ltr">'+fmt(Math.abs(lim-s))+'</bdi></span>':'<span></span>')
+        +(_dashPeriod==='month'?'<span class="dash-ring-rem'+(state==='danger'?' danger':'')+'">'+(s>lim?'חריגה':'נשאר')+' <bdi dir="ltr">'+fmt(Math.abs(lim-s))+'</bdi></span>':'<span></span>')
         +'<span class="dash-ring-used"><bdi dir="ltr">'+fmt(s)+'</bdi> / <bdi dir="ltr">'+fmt(lim)+'</bdi></span>'
       +'</div>'
     +'</button>';
@@ -7978,7 +7980,7 @@ function renderMonthReview(){
   el.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05)">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
     +'<div style="font-weight:800;font-size:0.9rem;color:var(--text)">📋 סיכום '+heMonth(ly,lm)+'</div>'
-    +'<button onclick="dismissMonthReview()" style="background:none;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;padding:2px 6px" aria-label="סגור">✕</button></div>'
+    +'<button onclick="dismissMonthReview()" style="background:none;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;padding:0;margin:-12px;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center" aria-label="סגור">✕</button></div>'
     +'<div style="font-size:0.82rem;color:var(--text2);line-height:1.7">'
     +'סך הוצאות: <b style="color:var(--text)">'+fmt(lTot)+'</b>'+(delta?' · '+delta:'')
     +(hot?'<br>הקטגוריה שגדלה הכי הרבה: <b style="color:var(--text)">'+esc(hot)+'</b> (+'+fmt(hotD)+')':'')
@@ -9004,14 +9006,16 @@ function initBackButton(){
 // is transform:none!important on purpose, see the comment above its CSS rule).
 function initHeaderAutoHide(){
   const pill=document.getElementById('inlineMonthNav');
+  const gear=document.getElementById('headerSettings');
   const scrollEl=document.getElementById('main-content');
   if(!pill||!scrollEl) return;
+  const setHidden=hide=>{pill.classList.toggle('nav-hidden',hide);if(gear)gear.classList.toggle('nav-hidden',hide);};
   let lastY=scrollEl.scrollTop, ticking=false;
   function onScroll(){
     const y=scrollEl.scrollTop;
-    if(y<40){ pill.classList.remove('nav-hidden'); }
-    else if(y>lastY+4){ pill.classList.add('nav-hidden'); }
-    else if(y<lastY-4){ pill.classList.remove('nav-hidden'); }
+    if(y<40){ setHidden(false); }
+    else if(y>lastY+4){ setHidden(true); }
+    else if(y<lastY-4){ setHidden(false); }
     lastY=y; ticking=false;
   }
   scrollEl.addEventListener('scroll',()=>{
