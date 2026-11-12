@@ -390,6 +390,7 @@
     .goal-actions .btn-neutral{background:var(--surface2);border:1px solid var(--border);color:var(--text2);}
     .goal-actions .btn-danger{background:var(--surface2);border:1px solid var(--border);color:var(--text3);}
     .goal-actions .btn-danger:active{color:var(--red);background:var(--red-light);}
+    .goal-actions .btn-danger{margin-inline-start:14px;}
     .goal-amounts-text{font-size:0.82rem;color:var(--text2);margin-top:4px;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
     .prog-wrap{background:var(--border);border-radius:10px;height:10px;overflow:hidden;margin-top:12px;}
     .prog-fill{height:100%;border-radius:10px;background:var(--accent2);transition:background 0.3s;}
@@ -7379,7 +7380,7 @@ function renderGoals(){
     const remaining=g.target-g.saved;
     const monthlyNeeded=g.months&&g.months>0?Math.ceil(remaining/g.months):0;
     const monthlyStr=monthlyNeeded>0?'<div class="goal-monthly">'+fmt(monthlyNeeded)+' לחודש'+(g.months?' · '+g.months+' חודשים':'')+'</div>':'';
-    return '<div class="goal-card"><div class="goal-card-header"><div style="cursor:pointer" onclick="editGoal('+g.id+')"><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions">'+(g.saved>0?'<button class="btn btn-neutral btn-sm" onclick="withdrawFromGoal('+g.id+')" aria-label="משוך מהחיסכון">−</button>':'')+'<button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד">✕</button></div></div>'+progBar+'<div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(remaining)+'</div>'+monthlyStr+'</div>';
+    return '<div class="goal-card"><div class="goal-card-header"><div style="cursor:pointer" onclick="editGoal('+g.id+')"><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions">'+(g.saved>0?'<button class="btn btn-neutral btn-sm" onclick="withdrawFromGoal('+g.id+')" aria-label="משוך מהחיסכון" title="משוך מהחיסכון">−</button>':'')+'<button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון" title="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד" title="מחק יעד">✕</button></div></div>'+progBar+'<div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(remaining)+'</div>'+monthlyStr+'</div>';
   }).join('');
 }
 
