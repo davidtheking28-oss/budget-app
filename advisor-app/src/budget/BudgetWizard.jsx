@@ -112,6 +112,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   const fixedActual = monthlyActual.fixed;
   const fixedNameSet = useMemo(() => new Set(fixedCatsFor(draftData)), [draftData]);
   const [rowActualEdits, setRowActualEdits] = useState({});
+  const [emptyRowsOpen, setEmptyRowsOpen] = useState({});
   const actualEdits = useMemo(() => Object.fromEntries([...fixed, ...variable]
     .filter(row => Object.hasOwn(rowActualEdits, row._key))
     .map(row => [row.name.trim(), rowActualEdits[row._key]])), [fixed, variable, rowActualEdits]);
@@ -420,6 +421,9 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   }
 
   function tableList(list, setter, placeholder, actualOf, editableActual = false, rowFilter = () => true, newRow = {}) {
+    const isEmptyRow = r => !!r._before?.name && r._before.name !== focusCategory && !(parseFloat(r._before.amount) > 0) && !(parseFloat(actualOf(r._before.name.trim(), r._before.amount)) > 0);
+    const emptyOpen = !!emptyRowsOpen[placeholder];
+    const emptyCount = list.filter(r => rowFilter(r) && isEmptyRow(r)).length;
     return (
       <>
         <div className={styles.tbl}>
@@ -429,7 +433,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             <span>ביצוע</span>
             <span />
           </div>
-          {list.map((r, i) => rowFilter(r) && ((() => {
+          {list.map((r, i) => rowFilter(r) && (emptyOpen || !isEmptyRow(r)) && ((() => {
             const actual = rowActualEdits[r._key] ?? (actualOf(r.name.trim(), r.amount) || 0);
             const over = (parseFloat(actual) || 0) > (parseFloat(r.amount) || 0);
             const recorded = (fixedNameSet.has(r.name.trim()) ? fixedActual[r.name.trim()] : variableActualBase[r.name.trim()]) || 0;
@@ -498,6 +502,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
             );
           })()))}
         </div>
+        {emptyCount > 0 && <Button variant="ghost" aria-expanded={emptyOpen} onClick={() => setEmptyRowsOpen(prev => ({ ...prev, [placeholder]: !prev[placeholder] }))}>{emptyOpen ? 'הסתר קטגוריות ריקות' : emptyCount === 1 ? 'הצג קטגוריה ריקה אחת' : `הצג ${emptyCount} קטגוריות ריקות`}</Button>}
         <Button variant="ghost" onClick={() => addRow(setter, '', newRow)}>{editableActual && list === variable ? '+ קטגוריה' : '+ הוסף שורה'}</Button>
       </>
     );
