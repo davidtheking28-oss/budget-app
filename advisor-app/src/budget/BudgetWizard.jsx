@@ -454,7 +454,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                     value={r.name}
                     onChange={e => updateRow(setter, i, { name: e.target.value })}
                   />
-                  {data?.fixed_expenses?.find(item => item.id === (r._before?.name || r.name))?.linkedSource && <button type="button" onClick={() => onEditLinkedExpense?.(data.fixed_expenses.find(item => item.id === (r._before?.name || r.name)).linkedSource)}>עריכה במקור</button>}
+                  {data?.fixed_expenses?.find(item => item.id === (r._before?.name || r.name))?.linkedSource && <button type="button" onClick={() => onEditLinkedExpense?.(data.fixed_expenses.find(item => item.id === (r._before?.name || r.name)).linkedSource)} className={styles.sourceEdit}>עריכה במקור</button>}
                 </div>
                 <div className={styles.formattedAmount + " " + styles.tableAmount}>
                 <input
