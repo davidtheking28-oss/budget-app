@@ -820,7 +820,7 @@
     .onboard-footer .btn{flex:1;min-height:52px;font-size:1rem;}
     body.dark .search-bar-input{background:var(--surface2);}
     body.dark .sub-price-amount{color:var(--accent);}
-    body.dark .sub-cat-chip{background:var(--blue-light);color:var(--accent);}
+    body.dark .sub-cat-chip{background:var(--blue-light);color:var(--accent-text);}
     body.dark .cat-badge{background:var(--blue-light);color:var(--accent);}
     body.dark .nav-item .nav-icon svg{stroke:rgba(255,255,255,0.35);}
     body.dark #wizBody1{background:var(--bg)!important;}
@@ -1566,6 +1566,7 @@
        3.83:1 in light mode. --green on the same tint is 4.97:1 and keeps
        the green-on-green look. Dark mode already passes (10:1). */
     body:not(.dark) .dash-avatar{color:var(--green);}
+    body.dark .dash-avatar{color:var(--accent-text);}
 
     /* A5 · No prefers-reduced-motion guard existed anywhere, despite
        infinite loops (.empty-icon, .splash-logo) and slide/scale motion
@@ -4152,7 +4153,7 @@ function renderSpendingFlow(income,fixedExp,varExp){
   const deficitAmt=Math.max(0,fixedExp+varExp-income);
   const fp2=base?Math.round(fixedExp/base*100):0;
   const vp2=base?Math.round(varExp/base*100):0;
-  const _sfItem=(dotCls,val,valColor,pctTxt,name)=>'<div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:5px"><span class="sf-dot '+dotCls+'"></span><span style="color:var(--text3);font-size:0.7rem">'+name+'</span></div><div style="font-weight:700;color:'+(valColor||'var(--text)')+';font-size:0.82rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+val+'</div><div style="color:var(--text3);font-size:0.67rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+pctTxt+'</div></div>';
+  const _sfItem=(dotCls,val,valColor,pctTxt,name)=>'<div style="display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:5px"><span class="sf-dot '+dotCls+'"></span><span style="color:var(--text3);font-size:0.75rem">'+name+'</span></div><div style="font-weight:700;color:'+(valColor||'var(--text)')+';font-size:0.82rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+val+'</div><div style="color:var(--text3);font-size:0.75rem;direction:ltr;unicode-bidi:isolate;text-align:right">'+pctTxt+'</div></div>';
   const incPct=isDeficit?(base?Math.round(income/base*100):0):100;
   labels.innerHTML=_sfItem('sf-income',fmt(income),'',incPct+'%','הכנסות')+_sfItem(isDeficit?'sf-deficit':'sf-savings',isDeficit?'−'+fmt(deficitAmt):fmt(savedAmt),isDeficit?'var(--red)':'var(--green)',(base?Math.round((isDeficit?deficitAmt:savedAmt)/base*100):0)+'%',isDeficit?'גירעון':'נחסך')+_sfItem('sf-fixed',fmt(fixedExp),'',fp2+'%','קבועות')+_sfItem('sf-variable',fmt(varExp),'',vp2+'%','משתנות');
 }
@@ -4874,7 +4875,7 @@ function renderCloudSection(){
   // מחובר — בנה את ה-UI
   let html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
     +'<div><div style="font-size:0.88rem;font-weight:700;color:var(--text)">☁️ מחובר לענן</div>'
-    +'<div style="font-size:0.72rem;color:var(--text3);margin-top:2px">'+esc(_cloudUser.email)+'</div></div>'
+    +'<div style="font-size:0.75rem;color:var(--text3);margin-top:2px">'+esc(_cloudUser.email)+'</div></div>'
     +'<span id="cloudStatus" role="status" aria-live="polite" style="font-size:0.875rem;font-weight:700;max-width:48%;text-align:end"></span></div>';
 
   // household section
