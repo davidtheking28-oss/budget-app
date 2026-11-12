@@ -9,8 +9,9 @@ Applies to the personal app (`index.html`). `advisor-app/` is a separate React/V
 - RTL layout (Hebrew) — use `text-align: right`, be aware of flex/grid direction
 
 ## Design System
-- Light mode (`body:not(.dark)`, the "LIGHT-MODE POLISH" block): soft mint-grey — `--bg:#eef3f1`, `--surface:#fff`, `--accent:#0a7a62`
-- Dark mode (`body.dark`): `--bg:#100f0d`, `--surface:#1a1916`, `--accent:#34d3a9`; toggled via `budget_theme` in localStorage
+- Light mode (`body:not(.dark)`, the "LIGHT-MODE POLISH" block): cool grey-blue — `--bg:#eef2f8`, `--surface:#fff`
+- Dark mode (`body.dark`): `--bg:#100f0d`, `--surface:#1a1916`; toggled via `budget_theme` in localStorage
+- Accent is blue in both modes: `--accent:#0078f8`. White text on it fails contrast (4.16) — solid buttons with white text use `--accent-solid` (#0065d1), accent-coloured text uses `--accent-text`
 - Text hierarchy: `var(--text)` → `var(--text2)` → `var(--text3)`
 - Border radius: `var(--radius)` (18px), `var(--radius-sm)` (12px)
 - Font: Assistant, via `var(--font-sans)`; numbers use `var(--font-num)`
