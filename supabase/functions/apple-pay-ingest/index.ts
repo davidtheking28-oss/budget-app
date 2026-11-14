@@ -6,7 +6,7 @@ function reply(ok: boolean, status = 200) {
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return reply(false, 405)
-  const token = new URL(req.url).searchParams.get('t') ?? ''
+  const token = req.headers.get('x-budget-token') ?? ''
   if (!/^ab1_[0-9a-f]{64}$/.test(token)) return reply(false, 400)
   const raw = await req.text()
   if (raw.length > 2000) return reply(false, 413)
