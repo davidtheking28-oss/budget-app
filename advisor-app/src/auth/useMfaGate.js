@@ -13,7 +13,8 @@ export function useMfaGate(userId) {
     try {
       const { data: aal, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       if (error || !aal) { publish({ status: 'error', factorId: null }); return; }
-      if (aal.nextLevel !== 'aal2' || aal.currentLevel === 'aal2') { publish({ status: 'ok', factorId: null }); return; }
+      if (aal.currentLevel === 'aal2') { publish({ status: 'ok', factorId: null }); return; }
+      if (aal.nextLevel !== 'aal2') { publish({ status: 'enroll', factorId: null }); return; }
       const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
       const factor = factors?.totp?.[0];
       publish(factorsError || !factor ? { status: 'error', factorId: null } : { status: 'challenge', factorId: factor.id });

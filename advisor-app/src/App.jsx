@@ -5,6 +5,7 @@ import NotAdvisor from './auth/NotAdvisor.jsx';
 import LegalGate from './auth/LegalGate.jsx';
 import { useLegalConsent } from './auth/useLegalConsent.js';
 import MfaChallenge from './auth/MfaChallenge.jsx';
+import MfaEnroll from './auth/MfaEnroll.jsx';
 import { useMfaGate } from './auth/useMfaGate.js';
 import { useIsAdvisor } from './auth/useIsAdvisor.js';
 import { useAdvisorRequest } from './auth/useAdvisorRequest.js';
@@ -65,6 +66,7 @@ export default function App() {
 
   if (mfa.status === 'loading') return <div style={{ maxWidth: 360, margin: '20vh auto' }}><Skeleton height="64px" radius="14px" /></div>;
   if (mfa.status === 'error') return <div style={{ maxWidth: 480, margin: '20vh auto', padding: 16 }}><ErrorState message="לא ניתן להשלים את בדיקת האימות. בדוק את החיבור ונסה שוב." onRetry={mfa.refresh} /></div>;
+  if (mfa.status === 'enroll') return (<><MfaEnroll onEnabled={mfa.refresh} /><Toaster /></>);
   if (mfa.status === 'challenge') return (<><MfaChallenge factorId={mfa.factorId} onVerified={mfa.refresh} /><Toaster /></>);
 
   const navigate = setter => async next => {

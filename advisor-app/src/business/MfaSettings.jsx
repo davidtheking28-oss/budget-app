@@ -5,12 +5,11 @@ import ErrorState from '../components/ErrorState.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import styles from './Business.module.css';
 
-export default function MfaSettings() {
+export default function MfaSettings({ onEnabled }) {
   const [verified, setVerified] = useState(null);
   const [enrolling, setEnrolling] = useState(null);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
-  const [confirmOff, setConfirmOff] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [actionError, setActionError] = useState('');
 
@@ -60,6 +59,7 @@ export default function MfaSettings() {
       setCode('');
       toast('האימות הדו־שלבי הופעל', 'success');
       await load();
+      onEnabled?.();
     } catch {
       setActionError('האימות לא הושלם. בדוק את החיבור ונסה שוב.');
     } finally {
@@ -83,27 +83,6 @@ export default function MfaSettings() {
     }
   }
 
-  async function turnOff() {
-    if (busy) return;
-    setBusy(true);
-    setActionError('');
-    try {
-      let failed = false;
-      for (const f of verified) {
-        const { error } = await supabase.auth.mfa.unenroll({ factorId: f.id });
-        if (error) failed = true;
-      }
-      if (failed) setActionError('לא ניתן לכבות, נסה להתחבר מחדש.');
-      else { setConfirmOff(false); toast('האימות הדו־שלבי כובה', 'success'); }
-      await load();
-    } catch {
-      setActionError('הכיבוי לא הושלם. בדוק את החיבור ונסה שוב.');
-      await load();
-    } finally {
-      setBusy(false);
-    }
-  }
-
   if (loadError) return <ErrorState message="לא הצלחנו לטעון את הגדרות האימות" onRetry={load} />;
   if (verified === null) return <Skeleton height="100px" />;
 
@@ -120,13 +99,6 @@ export default function MfaSettings() {
           <div className={styles.toolbar}>
             <span className={styles.tag}>{on ? 'פעיל' : 'כבוי'}</span>
             {!on && <button type="button" className={styles.btn} onClick={start} disabled={busy}>הפעלה</button>}
-            {on && !confirmOff && <button type="button" className={styles.btnGhost} disabled={busy} onClick={() => setConfirmOff(true)}>כיבוי</button>}
-            {on && confirmOff && (
-              <>
-                <button type="button" className={styles.btnGhost} onClick={turnOff} disabled={busy}>לכבות את האימות הדו־שלבי?</button>
-                <button type="button" className={styles.btnGhost} disabled={busy} onClick={() => setConfirmOff(false)}>חזרה</button>
-              </>
-            )}
           </div>
         )}
         {enrolling && (
