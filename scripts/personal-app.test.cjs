@@ -1158,3 +1158,10 @@ test('a client over the upcoming-meeting limit gets a clear message and keeps th
   assert.equal(ctx.reloaded,undefined);
   assert.equal(ctx._advisorMeetings.length,0);
 });
+test('every category named in the extra dictionary exists in the personal expense categories',()=>{
+  const cats=vm.runInNewContext(html.match(/const EXPENSE_CATS=(\[[^\]]*\]);/)[1]);
+  const block=html.match(/const _DICT_EXTRA=\{([^]*?)\n\};/)[1];
+  const values=[...block.matchAll(/:'([^']+)'/g)].map(m=>m[1]);
+  assert.ok(values.length>50);
+  assert.deepEqual(values.filter(v=>!cats.includes(v)),[]);
+});
