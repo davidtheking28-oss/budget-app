@@ -658,6 +658,8 @@
     .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:flex-end;overflow-x:hidden;}
     .sheet-overlay.open{display:flex;animation:overlayIn 0.22s cubic-bezier(0.22,1,0.36,1);}
     @keyframes overlayIn{from{background:rgba(0,0,0,0);}to{background:rgba(0,0,0,0.5);}}
+    @keyframes overlayOut{to{background:rgba(0,0,0,0);}}
+    .sheet-overlay.open.closing{animation:overlayOut 0.22s cubic-bezier(0.4,0,1,1) both;}
     .sheet{background:var(--surface);width:100%;max-width:100%;box-sizing:border-box;border-radius:24px 24px 0 0;padding:12px 16px calc(16px + var(--safe-bottom));max-height:92vh;overflow-y:auto;overflow-x:hidden;animation:slideUp 0.2s cubic-bezier(0.22,1,0.36,1) both;}
     .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px;}
     .sheet-title{font-size:1.05rem;font-weight:var(--fw-bold);margin-bottom:12px;color:var(--text);letter-spacing:var(--track-normal);}
@@ -1209,8 +1211,8 @@
     main .shadow-sm{box-shadow:0 1px 3px rgba(0,0,0,0.05),0 10px 24px -8px rgba(0,0,0,0.09);}
     body.dark main .shadow-sm{box-shadow:0 1px 0 rgba(255,255,255,0.02);}
     /* Smoother, slightly richer page transition */
-    @keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    .page.active{animation:pageIn 0.22s cubic-bezier(0.22,1,0.36,1) both;}
+    @keyframes pageIn{from{opacity:0;transform:translateX(var(--page-dx,0px)) translateY(6px)}to{opacity:1;transform:translateX(0) translateY(0)}}
+    .page.active{animation:pageIn 0.26s cubic-bezier(0.22,1,0.36,1) both;}
     /* iOS black-translucent draws the page under the status bar and always keeps
        its icons white. The dark theme background is the same color as this strip,
        so the bar blends in; in light mode the strip stays dark so the icons
@@ -3448,6 +3450,7 @@ function openSheet(id){
   clearTimeout(ov._sheetFocusTimer);
   const sheet=ov.querySelector('.sheet,.wiz-sheet');
   if(sheet){sheet.style.animation='';sheet.style.transition='';sheet.style.transform='';}
+  ov.classList.remove('closing');ov.style.background='';ov.style.transition='';
   ov._sheetReturnFocus=document.activeElement;
   if(id==='addBudgetSheet'){const rt=document.getElementById('budgetRolloverToggle');if(rt)rt.checked=!!userSettings.budgetRollover;const b=ov.querySelector('.btn-primary');if(b){b.textContent='שמור תקציב';b.disabled=false;}}
   if(id==='addSubSheet'){const b=ov.querySelector('.btn-primary');if(b){b.textContent='הוסף מנוי';b.disabled=false;}}
@@ -3481,7 +3484,8 @@ function closeSheet(id){
     } else {
       sh.style.animation='sheetExit 0.22s cubic-bezier(0.4,0,1,1) both';
     }
-    ov._sheetCloseTimer=setTimeout(()=>{ov.classList.remove('open');sh.style.animation='';sh.style.transition='';sh.style.transform='';},220);
+    ov.classList.add('closing');
+    ov._sheetCloseTimer=setTimeout(()=>{ov.classList.remove('open','closing');ov.style.background='';ov.style.transition='';sh.style.animation='';sh.style.transition='';sh.style.transform='';},220);
   } else {
     ov.classList.remove('open');
   }
@@ -4162,7 +4166,22 @@ function renderSpendingFlow(income,fixedExp,varExp){
 
 function isFixed(t){if(t.fixed!==undefined)return t.fixed;return t.type==='income'||!!t.recurring||getEffectiveFixedCats().includes(t.cat);}
 
-function haptic(ms=8){if(navigator.vibrate)navigator.vibrate(ms);}
+let _hapticEl=null;
+function haptic(ms=8){
+  if(navigator.vibrate){navigator.vibrate(ms);return;}
+  try{
+    if(!_hapticEl){
+      const l=document.createElement('label');
+      l.setAttribute('aria-hidden','true');
+      l.setAttribute('data-haptic','');
+      l.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
+      const i=document.createElement('input');
+      i.type='checkbox';i.setAttribute('switch','');i.tabIndex=-1;
+      l.appendChild(i);document.body.appendChild(l);_hapticEl=l;
+    }
+    _hapticEl.click();
+  }catch(e){}
+}
 
 const HE_MONTHS_LONG=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 function heDate(dateStr){
@@ -8130,16 +8149,20 @@ let _pageScrollY={};
 function showPage(name,btn){
   clearTimeout(_txSearchTimer);
   _txSearchTimer=null;
-  haptic(4);
   const _mainEl=document.getElementById('main-content');
   const _prevPage=document.querySelector('.page.active');
   if(_prevPage)_pageScrollY[_prevPage.id]=_mainEl?_mainEl.scrollTop:0;
   requestAnimationFrame(()=>{if(_mainEl)_mainEl.scrollTop=_pageScrollY['page-'+name]||0;});
   const wasSettings=document.getElementById('page-settings')?.classList.contains('active');
   if(wasSettings&&name!=='settings'){try{saveSettings();refreshAll();}catch(e){}}
+  const _navs=[...document.querySelectorAll('.nav-item')];
+  const _fromIdx=_navs.findIndex(b=>b.classList.contains('active'));
+  const _toIdx=_navs.findIndex(b=>b.id==='nav-'+name);
+  const _pageDx=(_fromIdx>=0&&_toIdx>=0&&_fromIdx!==_toIdx)?(_toIdx>_fromIdx?28:-28):0;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>{b.classList.remove('active');b.removeAttribute('aria-current');});
   const pg=document.getElementById('page-'+name);
+  pg.style.setProperty('--page-dx',_pageDx+'px');
   pg.classList.add('active');
   const navBtn=btn||document.getElementById('nav-'+name);
   if(navBtn){navBtn.classList.add('active');navBtn.setAttribute('aria-current','page');}
@@ -9071,6 +9094,8 @@ function initSheetSwipe(){
       if(dy > 0 && startScrollTop <= 0){
         sheet.style.transform='translateY('+dy+'px)';
         sheet.style.transition='none';
+        const _ov=sheet.closest('.sheet-overlay');
+        if(_ov){_ov.style.transition='none';_ov.style.background='rgba(0,0,0,'+(0.5*Math.max(0,1-dy/Math.max(sheet.offsetHeight,1))).toFixed(3)+')';}
         // px/ms over the last segment, so a quick short flick still reads
         // as fast even though total travel distance stayed small.
         const dt=e.timeStamp-lastT;
@@ -9094,10 +9119,12 @@ function initSheetSwipe(){
         const dur=Math.max(0.15,Math.min(0.28,0.28-velocity*0.2));
         sheet.style.transition='transform '+dur+'s cubic-bezier(0.22,1,0.36,1)';
         sheet.style.transform='';
-        setTimeout(()=>{sheet.style.transition='';},dur*1000);
+        const _ov=sheet.closest('.sheet-overlay');
+        if(_ov){_ov.style.transition='background '+dur+'s cubic-bezier(0.22,1,0.36,1)';_ov.style.background='';}
+        setTimeout(()=>{sheet.style.transition='';if(_ov)_ov.style.transition='';},dur*1000);
       }
     },{passive:true});
-    sheet.addEventListener('touchcancel',()=>{skip=true;sheet.style.transform='';sheet.style.transition='';},{passive:true});
+    sheet.addEventListener('touchcancel',()=>{skip=true;sheet.style.transform='';sheet.style.transition='';const _ov=sheet.closest('.sheet-overlay');if(_ov){_ov.style.background='';_ov.style.transition='';}},{passive:true});
   });
 }
 
@@ -10152,10 +10179,9 @@ setTimeout(autoCarryRecurring,500);
 <script>
 /* ════ Haptic feedback on taps ════ */
 (function(){
-  if(!navigator.vibrate)return;
   document.addEventListener('click',function(e){
     var t=e.target.closest('button,[role="button"],.nav-item,input[type="checkbox"],input[type="radio"]');
-    if(t&&!t.disabled)navigator.vibrate(10);
+    if(t&&!t.disabled&&!t.closest('[data-haptic]'))haptic(10);
   },true);
 })();
 </script>

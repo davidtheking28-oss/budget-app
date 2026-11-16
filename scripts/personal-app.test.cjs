@@ -481,7 +481,7 @@ test('rapid sheet reopening cancels the previous close and focus callbacks',()=>
   const classes=new Set();const sheet={style:{}};
   const opener={focus:()=>{document.activeElement=opener;}};
   const field={getClientRects:()=>[{}],closest:()=>null,focus:()=>{document.activeElement=field;},blur:()=>{document.activeElement=opener;}};
-  const overlay={classList:{add:c=>classes.add(c),remove:c=>classes.delete(c)},setAttribute:()=>{},querySelector:()=>sheet,querySelectorAll:()=>[field],contains:el=>el===field};
+  const overlay={style:{},classList:{add:c=>classes.add(c),remove:(...cs)=>cs.forEach(c=>classes.delete(c))},setAttribute:()=>{},querySelector:()=>sheet,querySelectorAll:()=>[field],contains:el=>el===field};
   const document={activeElement:opener,getElementById:id=>id==='fixture'?overlay:null,contains:()=>true,addEventListener:()=>{},removeEventListener:()=>{}};
   const ctx=functions(['openSheet','closeSheet'],{document,_openSheets:new Set(),_sheetOpenerEl:null,_lockBodyScroll:()=>{},_unlockBodyScroll:()=>{},_sheetSetBackgroundInert:()=>{},_sheetKeydown:()=>{},getComputedStyle:()=>({visibility:'visible'}),setTimeout:fn=>{timers.set(++timerId,fn);return timerId;},clearTimeout:id=>timers.delete(id)});
   ctx.openSheet('fixture');ctx.closeSheet('fixture');ctx.openSheet('fixture');
