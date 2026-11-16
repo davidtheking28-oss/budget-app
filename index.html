@@ -541,15 +541,29 @@
     #page-transactions #txFilterChips .filter-chip{min-width:0;padding-inline:4px;font-size:14px;border-radius:999px;border-color:transparent;background:none;color:var(--text2)}
     #page-transactions #txFilterChips .filter-chip.active,body.dark #page-transactions #txFilterChips .filter-chip.active{background:var(--text);border-color:transparent;color:var(--bg)}
     #page-transactions #txFilterChips>div{margin-inline-start:0!important}
-    .cf-hero{background:var(--surface);border-radius:24px;padding:16px;margin-bottom:14px;box-shadow:0 2px 14px rgba(0,0,0,0.06)}
-    .cf-hero-toggle{display:flex;background:var(--accent-solid);border-radius:999px;padding:2px;margin-bottom:8px}
+    .cf-hero{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:18px 18px 16px;margin-bottom:14px;box-shadow:0 2px 14px rgba(0,0,0,0.06);text-align:right}
+    body.dark .cf-hero{background:linear-gradient(160deg,rgba(var(--accent-rgb),0.13),transparent 62%),var(--surface);border-color:rgba(255,255,255,0.1);box-shadow:0 12px 30px -18px rgba(0,0,0,0.8)}
+    .cf-hero-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .cf-hero #txPageFlow{text-align:right}
+    .cf-hero-meter{height:8px;border-radius:999px;background:var(--surface2);overflow:hidden;margin-top:14px}
+    body.dark .cf-hero-meter{background:rgba(255,255,255,0.08)}
+    .cf-hero-meter-fill{height:100%;width:0;border-radius:999px;background:var(--accent);transition:width 0.5s cubic-bezier(0.22,1,0.36,1),background 0.3s}
+    .cf-hero-meter-fill.over{background:var(--red)}
+    .cf-hero-note{font-size:0.8125rem;color:var(--text2);font-weight:600;margin-top:8px;min-height:1.2em}
+    .cf-hero-toggle{display:flex;background:var(--accent-solid);border-radius:999px;padding:2px}
     .cf-hero-toggle button,#txFlowViewToggle button.active{border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:4px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:30px}
     .cf-hero-title{font-size:0.85rem;color:var(--text2);font-weight:600}
-    .cf-hero-tray{display:flex;gap:4px;margin-top:14px;width:100%;padding:4px;background:var(--surface2);border-radius:16px}
-    .cf-hero-cell{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:2px;padding:8px 10px;border-radius:12px}
+    .cf-hero-tray{display:flex;gap:10px;margin-top:14px;width:100%}
+    .cf-hero-cell{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:var(--surface2)}
+    body.dark .cf-hero-cell{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06)}
+    .cf-hero-cell-icon{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .cf-hero-cell-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+    .cf-hero-cell-inc .cf-hero-cell-icon{color:var(--green);background:color-mix(in srgb,var(--green) 15%,transparent)}
+    .cf-hero-cell-exp .cf-hero-cell-icon{color:var(--red);background:color-mix(in srgb,var(--red) 15%,transparent)}
+    .cf-hero-cell-text{min-width:0}
     .cf-hero-cell-inc .cf-hero-cell-val{color:var(--green)}
     .cf-hero-cell-exp .cf-hero-cell-val{color:var(--red)}
-    .cf-hero-cell-label{font-size:0.8125rem;color:var(--text2);font-weight:600;text-align:center}
+    .cf-hero-cell-label{font-size:0.8125rem;color:var(--text2);font-weight:600}
     .cf-hero-cell-val{font-family:var(--font-num);font-weight:800;color:var(--text);font-size:1rem;font-variant-numeric:tabular-nums}
     #page-transactions #txOverflowBtn{width:44px;padding-inline:0!important}
     #txAdvancedFilters{padding-bottom:8px;background:var(--surface2);border-bottom:1px solid var(--border)}
@@ -2242,18 +2256,26 @@
 
   <div id="page-transactions" class="page cashflow-page">
     <div class="cf-hero">
-      <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
+      <div class="cf-hero-head">
+        <div class="cf-hero-title">התזרים החודשי שלך</div>
         <div id="txFlowViewToggle" class="cf-hero-toggle">
           <button type="button" class="active" id="txFlowSwitchBtn" data-view="actual" onclick="toggleTxFlowView()" aria-label="החלפה בין תכנון לבפועל"><span id="txFlowSwitchLabel">בפועל</span><span aria-hidden="true" style="opacity:.6">⇄</span></button>
         </div>
-        <div class="cf-hero-title">התזרים שלך החודשי</div>
-        <div class="font-mono" id="txPageFlow" style="font-size:clamp(2rem,9vw,2.5rem);line-height:1.1;white-space:nowrap;margin-top:4px;letter-spacing:-0.02em;font-weight:800">₪0</div>
-        <div class="cf-hero-tray">
-          <div class="cf-hero-cell cf-hero-cell-inc">
+      </div>
+      <div class="font-mono" id="txPageFlow" style="font-size:clamp(2.2rem,10vw,2.75rem);line-height:1.1;white-space:nowrap;margin-top:6px;letter-spacing:-0.02em;font-weight:800">₪0</div>
+      <div class="cf-hero-meter" aria-hidden="true"><div class="cf-hero-meter-fill" id="txPageMeter"></div></div>
+      <div class="cf-hero-note" id="txPageNote"></div>
+      <div class="cf-hero-tray">
+        <div class="cf-hero-cell cf-hero-cell-inc">
+          <span class="cf-hero-cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+          <div class="cf-hero-cell-text">
             <div class="cf-hero-cell-label">הכנסות</div>
             <div id="txPageIncome" class="cf-hero-cell-val">₪0</div>
           </div>
-          <div class="cf-hero-cell cf-hero-cell-exp">
+        </div>
+        <div class="cf-hero-cell cf-hero-cell-exp">
+          <span class="cf-hero-cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span>
+          <div class="cf-hero-cell-text">
             <div class="cf-hero-cell-label">הוצאות</div>
             <div id="txPageExpense" class="cf-hero-cell-val">₪0</div>
           </div>
@@ -6820,6 +6842,14 @@ function renderTxPage(){
     const net=dispInc-dispExp-dispSav;
     flowEl.textContent=(net<0?'-':'')+fmt(Math.abs(net));
     flowEl.style.color=net<0?'var(--red)':'var(--green)';
+  }
+  const meterEl=document.getElementById('txPageMeter');const noteEl=document.getElementById('txPageNote');
+  if(meterEl&&noteEl){
+    const used=dispExp+dispSav;
+    const over=dispInc>0&&used>dispInc;
+    meterEl.style.width=(dispInc>0?Math.min(100,Math.round(used/dispInc*100)):(used>0?100:0))+'%';
+    meterEl.classList.toggle('over',over||(dispInc<=0&&used>0));
+    noteEl.textContent=dispInc<=0&&used<=0?'עוד אין תנועות החודש':dispInc<=0?'עוד לא נרשמו הכנסות החודש':over?'חריגה של '+fmt(used-dispInc)+' מעבר להכנסות':'נוצלו '+Math.round(used/dispInc*100)+'% מההכנסות';
   }
   let list=mTx.filter(t=>t.type==='expense'); // תצוגה מקוטלגת מבוססת הוצאות
   if(txListFilter==='fixed') list=list.filter(t=>isFixed(t));
