@@ -206,6 +206,7 @@ export const supabase = {
   storage: {
     from: () => ({
       upload: async () => ({ error: null }),
+      createSignedUrl: async () => ({ data: { signedUrl: 'about:blank' }, error: null }),
       getPublicUrl: () => ({ data: { publicUrl: 'https://placehold.co/64x64' } })
     })
   },
@@ -214,7 +215,9 @@ export const supabase = {
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     signOut: async () => ({ error: null }),
     mfa: {
-      getAuthenticatorAssuranceLevel: async () => ({ data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null }),
+      getAuthenticatorAssuranceLevel: async () => params.get('mfa') === 'gate'
+        ? { data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null }
+        : { data: { currentLevel: 'aal2', nextLevel: 'aal2' }, error: null },
       listFactors: async () => ({ data: { totp: [], all: [] }, error: null }),
       enroll: async () => ({ data: { id: 'mock-factor', totp: { qr_code: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>', secret: 'MOCKSECRET' } }, error: null }),
       challengeAndVerify: async () => ({ data: {}, error: null }),

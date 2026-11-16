@@ -215,13 +215,18 @@ export function makeDb(mode) {
       { id: 'r1', advisor_id: ADVISOR, client_id: CLIENT_A, client_email: 'yael.abramovich@gmail.com', name: 'יעל אברמוביץ', status: 'active', created_at: iso(90) },
       { id: 'r2', advisor_id: ADVISOR, client_id: CLIENT_B, client_email: 'moshe@example.co.il', status: 'active', created_at: iso(60) },
       { id: 'r3', advisor_id: ADVISOR, client_id: CLIENT_C, client_email: 'a-very-long-client-email-address@some-long-domain-name.com', status: 'active', created_at: iso(30) },
-      { id: 'r4', advisor_id: ADVISOR, client_id: CLIENT_EMPTY, client_email: 'new.client@gmail.com', status: 'active', created_at: iso(1) },
+      { id: 'r4', advisor_id: ADVISOR, client_id: CLIENT_EMPTY, client_email: 'new.client@gmail.com', status: 'active', requested_by_client: true, created_at: iso(1) },
       { id: 'r5', advisor_id: ADVISOR, client_id: 'awaiting-accept-user', client_email: 'dana.cohen@gmail.com', invited_email: null, status: 'pending', created_at: iso(2) },
       { id: 'r7', advisor_id: ADVISOR, client_id: 'self-signup-user', client_email: 'ron.levi@gmail.com', status: 'pending', requested_by_client: true, created_at: iso(0) },
       { id: 'r6', advisor_id: ADVISOR, client_id: null, client_email: 'not.signed.up.yet@gmail.com', invited_email: 'not.signed.up.yet@gmail.com', status: 'pending', created_at: iso(1) }
     ],
     budget_data: empty ? [] : [full, thin, overspent],
     economic_mappings: empty ? [] : [economicMapping, economicMappingFailed],
+    client_documents: empty ? [] : [3, 2, 1].flatMap(back => {
+      const m = new Date(Date.now() - 86400000);
+      const month = `${new Date(m.getFullYear(), m.getMonth() - back, 1).getFullYear()}-${pad(new Date(m.getFullYear(), m.getMonth() - back, 1).getMonth() + 1)}-01`;
+      return back === 1 ? [] : [{ id: 'doc' + back, client_id: CLIENT_EMPTY, kind: 'bank', period_month: month, path: `${CLIENT_EMPTY}/bank/${month.slice(0, 7)}/a.pdf`, file_name: `עובר_ושב_${month.slice(0, 7)}.pdf`, created_at: iso(1) }];
+    }),
     advisor_notes: empty ? [] : [
       { id: 'n1', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'הלקוחה מעוניינת להגדיל הפרשה לפנסיה ב-2% החל מהרבעון הבא. לבדוק השלכות מס.', for_client: false, created_at: iso(5) },
       { id: 'n2', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'שיחת טלפון קצרה.', for_client: false, created_at: iso(20) }
