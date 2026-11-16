@@ -5,9 +5,9 @@ import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import styles from './Business.module.css';
 import docs from './ClientDocuments.module.css';
-import { DOC_KINDS, docsMonthLabel, docsMonths } from './clientDocuments.js';
+import { DOC_KINDS, docsMonthLabel, docsMonths, docsRequired } from './clientDocuments.js';
 
-export default function ClientDocuments({ clientId, startIso }) {
+export default function ClientDocuments({ clientId, client }) {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -34,8 +34,16 @@ export default function ClientDocuments({ clientId, startIso }) {
   if (error) return <ErrorState onRetry={() => setAttempt(n => n + 1)} />;
   if (!rows) return <Skeleton height="220px" radius="18px" />;
 
-  const months = docsMonths(startIso);
+  const months = docsRequired(client) ? docsMonths(client.created_at) : [];
   const extra = rows.filter(r => !months.includes(r.period_month));
+
+  if (!months.length && !rows.length) {
+    return (
+      <section className={styles.card}>
+        <div className={styles.emptyState}><span>הלקוח הזה לא נדרש להעלות מסמכי פתיחה.</span></div>
+      </section>
+    );
+  }
 
   return (
     <div className={styles.stack}>
