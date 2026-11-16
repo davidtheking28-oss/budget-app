@@ -5081,9 +5081,11 @@ async function _docsUpload(kind,mo,files){
   for(const f of files){
     const ext=((f.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,''))||'bin';
     const path=_cloudUser.id+'/'+kind+'/'+mo.slice(0,7)+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
-    const up=await _sb.storage.from('client-documents').upload(path,f,{contentType:f.type||undefined});
+    const mimeByExt={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',heic:'image/heic',csv:'text/csv',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
+    const mime=f.type||mimeByExt[ext]||'application/octet-stream';
+    const up=await _sb.storage.from('client-documents').upload(path,f,{contentType:mime});
     if(up.error){failed++;continue;}
-    const ins=await _sb.from('client_documents').insert({client_id:_cloudUser.id,kind,period_month:mo,path,file_name:f.name,mime:f.type||null,size:f.size}).select().single();
+    const ins=await _sb.from('client_documents').insert({client_id:_cloudUser.id,kind,period_month:mo,path,file_name:f.name,mime:mime,size:f.size}).select().single();
     if(ins.error){failed++;await _sb.storage.from('client-documents').remove([path]);}
   }
   _docsBusy=false;
