@@ -23,6 +23,7 @@ function attentionOf(c) {
   const items = [];
   if (c.overdueTasks) items.push(`${c.overdueTasks} משימות באיחור`);
   if (c.waitingDocuments) items.push(`${c.waitingDocuments} מסמכים חסרים`);
+  if (c.missingStatements) items.push(`חסרים ${c.missingStatements} דפי עו״ש/אשראי`);
   if (c.hasFailedUpload) items.push('העלאת מסמכים נכשלה');
   if (c.hasDeclinedMeeting) items.push('פגישה נדחתה');
   return items;

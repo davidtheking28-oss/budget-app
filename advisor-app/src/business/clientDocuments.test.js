@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { docsMissing, docsMonths } from './clientDocuments.js';
+import { docsMissing, docsMonths, docsRequired } from './clientDocuments.js';
+
+describe('docsRequired', () => {
+  it('applies only to self-signup links created after the cutoff', () => {
+    expect(docsRequired({ requested_by_client: true, created_at: '2026-11-20T10:00:00Z' })).toBe(true);
+    expect(docsRequired({ requested_by_client: true, created_at: '2026-05-01T10:00:00Z' })).toBe(false);
+    expect(docsRequired({ requested_by_client: false, created_at: '2026-11-20T10:00:00Z' })).toBe(false);
+  });
+});
 
 describe('docsMonths', () => {
   it('returns the three full months before the start month', () => {

@@ -5,6 +5,12 @@ export const DOC_KINDS = [
 
 const MONTHS_HE = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
+export const DOCS_CUTOFF = '2026-11-16';
+
+export function docsRequired(link) {
+  return !!(link && link.requested_by_client && String(link.created_at || '') >= DOCS_CUTOFF);
+}
+
 export function docsMonths(startIso) {
   const start = new Date(startIso);
   const out = [];

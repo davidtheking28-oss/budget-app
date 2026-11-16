@@ -4,6 +4,7 @@ import { monthSummary } from '../budget/budgetMath.js';
 import { toast } from '../toast.js';
 import { localISODate } from '../budget/monthUtils.js';
 import { computeHealthScore } from '../budget/insights.js';
+import { docsMissing, docsMonths, docsRequired } from '../business/clientDocuments.js';
 
 export function useClientList(advisorId) {
   const [clients, setClients] = useState([]);
@@ -20,7 +21,7 @@ export function useClientList(advisorId) {
 
     const { data: roster, error } = await supabase
       .from('advisor_clients')
-      .select('id, client_id, client_email, name, created_at')
+      .select('id, client_id, client_email, name, created_at, requested_by_client')
       .eq('advisor_id', advisorId)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
@@ -33,11 +34,12 @@ export function useClientList(advisorId) {
     const clientIds = roster.map(c => c.client_id);
     const now = new Date();
 
-    const [{ data: budgetRows }, { data: taskRows, error: taskError }, { data: meetingRows }, { data: uploadErrorRows }] = await Promise.all([
+    const [{ data: budgetRows }, { data: taskRows, error: taskError }, { data: meetingRows }, { data: uploadErrorRows }, { data: documentRows }] = await Promise.all([
       supabase.from('budget_data').select('user_id, transactions, budgets, settings, updated_at').in('user_id', clientIds),
       supabase.from('advisor_tasks').select('*').eq('advisor_id', advisorId).in('client_id', clientIds),
       supabase.from('advisor_meetings').select('client_id, scheduled_at, status').eq('advisor_id', advisorId).in('client_id', clientIds),
-      supabase.from('economic_mappings').select('client_id, last_upload_error').eq('advisor_id', advisorId).not('last_upload_error', 'is', null).in('client_id', clientIds)
+      supabase.from('economic_mappings').select('client_id, last_upload_error').eq('advisor_id', advisorId).not('last_upload_error', 'is', null).in('client_id', clientIds),
+      supabase.from('client_documents').select('client_id, kind, period_month').in('client_id', clientIds)
     ]);
 
     const budgetByUser = {};
@@ -73,6 +75,9 @@ export function useClientList(advisorId) {
     const uploadErrorByUser = {};
     (uploadErrorRows || []).forEach(r => { uploadErrorByUser[r.client_id] = true; });
 
+    const documentsByUser = {};
+    (documentRows || []).forEach(r => { (documentsByUser[r.client_id] ||= []).push(r); });
+
     const merged = roster.map(c => {
       const budgetRow = budgetByUser[c.client_id];
       const summary = budgetRow ? monthSummary(budgetRow, now.getFullYear(), now.getMonth()) : null;
@@ -90,6 +95,7 @@ export function useClientList(advisorId) {
         nextMeetingAt: nextMeetingByUser[c.client_id] ? new Date(nextMeetingByUser[c.client_id]).toISOString() : null,
         hasDeclinedMeeting: !!declinedByUser[c.client_id],
         hasFailedUpload: !!uploadErrorByUser[c.client_id],
+        missingStatements: docsRequired(c) ? docsMissing(documentsByUser[c.client_id] || [], docsMonths(c.created_at)).length : 0,
         healthScore: budgetRow ? computeHealthScore(budgetRow, now.getFullYear(), now.getMonth()) : null,
         updatedAt: budgetRow?.updated_at || null
       };
