@@ -543,14 +543,8 @@
     #page-transactions #txFilterChips>div{margin-inline-start:0!important}
     .cf-hero{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:18px 18px 16px;margin-bottom:14px;box-shadow:0 2px 14px rgba(0,0,0,0.06);text-align:right}
     body.dark .cf-hero{background:linear-gradient(160deg,rgba(var(--accent-rgb),0.13),transparent 62%),var(--surface);border-color:rgba(255,255,255,0.1);box-shadow:0 12px 30px -18px rgba(0,0,0,0.8)}
-    .cf-hero-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .cf-hero #txPageFlow{text-align:right}
-    .cf-hero-meter{height:8px;border-radius:999px;background:var(--surface2);overflow:hidden;margin-top:14px}
-    body.dark .cf-hero-meter{background:rgba(255,255,255,0.08)}
-    .cf-hero-meter-fill{height:100%;width:0;border-radius:999px;background:var(--accent);transition:width 0.5s cubic-bezier(0.22,1,0.36,1),background 0.3s}
-    .cf-hero-meter-fill.over{background:var(--red)}
-    .cf-hero-note{font-size:0.8125rem;color:var(--text2);font-weight:600;margin-top:8px;min-height:1.2em}
-    .cf-hero-toggle{display:flex;background:var(--accent-solid);border-radius:999px;padding:2px}
+    .cf-hero-head{display:flex;flex-direction:column;align-items:center;text-align:center}
+    .cf-hero-toggle{display:flex;background:var(--accent-solid);border-radius:999px;padding:2px;margin-bottom:8px}
     .cf-hero-toggle button,#txFlowViewToggle button.active{border:none;background:none;color:#fff;font-family:inherit;font-size:0.8125rem;font-weight:700;padding:4px 12px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:30px}
     .cf-hero-title{font-size:0.85rem;color:var(--text2);font-weight:600}
     .cf-hero-tray{display:flex;gap:10px;margin-top:14px;width:100%}
@@ -2257,14 +2251,12 @@
   <div id="page-transactions" class="page cashflow-page">
     <div class="cf-hero">
       <div class="cf-hero-head">
-        <div class="cf-hero-title">התזרים החודשי שלך</div>
         <div id="txFlowViewToggle" class="cf-hero-toggle">
           <button type="button" class="active" id="txFlowSwitchBtn" data-view="actual" onclick="toggleTxFlowView()" aria-label="החלפה בין תכנון לבפועל"><span id="txFlowSwitchLabel">בפועל</span><span aria-hidden="true" style="opacity:.6">⇄</span></button>
         </div>
+        <div class="cf-hero-title">התזרים החודשי שלך</div>
+        <div class="font-mono" id="txPageFlow" style="font-size:clamp(2.2rem,10vw,2.75rem);line-height:1.1;white-space:nowrap;margin-top:4px;letter-spacing:-0.02em;font-weight:800">₪0</div>
       </div>
-      <div class="font-mono" id="txPageFlow" style="font-size:clamp(2.2rem,10vw,2.75rem);line-height:1.1;white-space:nowrap;margin-top:6px;letter-spacing:-0.02em;font-weight:800">₪0</div>
-      <div class="cf-hero-meter" aria-hidden="true"><div class="cf-hero-meter-fill" id="txPageMeter"></div></div>
-      <div class="cf-hero-note" id="txPageNote"></div>
       <div class="cf-hero-tray">
         <div class="cf-hero-cell cf-hero-cell-inc">
           <span class="cf-hero-cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
@@ -6842,14 +6834,6 @@ function renderTxPage(){
     const net=dispInc-dispExp-dispSav;
     flowEl.textContent=(net<0?'-':'')+fmt(Math.abs(net));
     flowEl.style.color=net<0?'var(--red)':'var(--green)';
-  }
-  const meterEl=document.getElementById('txPageMeter');const noteEl=document.getElementById('txPageNote');
-  if(meterEl&&noteEl){
-    const used=dispExp+dispSav;
-    const over=dispInc>0&&used>dispInc;
-    meterEl.style.width=(dispInc>0?Math.min(100,Math.round(used/dispInc*100)):(used>0?100:0))+'%';
-    meterEl.classList.toggle('over',over||(dispInc<=0&&used>0));
-    noteEl.textContent=dispInc<=0&&used<=0?'עוד אין תנועות החודש':dispInc<=0?'עוד לא נרשמו הכנסות החודש':over?'חריגה של '+fmt(used-dispInc)+' מעבר להכנסות':'נוצלו '+Math.round(used/dispInc*100)+'% מההכנסות';
   }
   let list=mTx.filter(t=>t.type==='expense'); // תצוגה מקוטלגת מבוססת הוצאות
   if(txListFilter==='fixed') list=list.filter(t=>isFixed(t));
