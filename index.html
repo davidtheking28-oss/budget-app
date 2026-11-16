@@ -4984,7 +4984,119 @@ async function _loadAdvisorLink(){
   const {data}=await _sb.from('advisor_clients').select('*').eq('client_id',_cloudUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
   _advisorLink=data||null;
   _applyApprovalLock();
+  _applyDocsLock();
   _pollAdvisorItems();
+}
+const DOCS_CUTOFF='2026-11-16';
+const DOCS_KINDS=[['bank','עו"ש'],['credit','אשראי']];
+const DOCS_MONTHS_HE=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+function _docsRequired(l){return !!(l&&l.status==='active'&&l.requested_by_client&&String(l.created_at||'')>=DOCS_CUTOFF);}
+function _docsMonths(startIso){
+  const s=new Date(startIso);
+  const y=s.getFullYear(),m=s.getMonth();
+  const out=[];
+  for(let i=3;i>=1;i--){
+    const d=new Date(y,m-i,1);
+    out.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01');
+  }
+  return out;
+}
+function _docsMissing(rows,months){
+  const miss=[];
+  for(const [kind] of DOCS_KINDS)for(const mo of months){
+    if(!rows.some(r=>r.kind===kind&&r.period_month===mo))miss.push(kind+'|'+mo);
+  }
+  return miss;
+}
+function _docsMonthLabel(mo){const [y,m]=mo.split('-');return DOCS_MONTHS_HE[+m-1]+' '+y;}
+let _docsRows=[];
+let _docsBusy=false;
+async function _applyDocsLock(){
+  const need=!!_cloudUser&&_docsRequired(_advisorLink);
+  let el=document.getElementById('docsLock');
+  if(!need){
+    document.body.classList.remove('docs-locked');
+    if(el)el.remove();
+    return;
+  }
+  const {data,error}=await _sb.from('client_documents').select('id,kind,period_month,path,file_name').eq('client_id',_cloudUser.id).order('created_at');
+  if(error){return;}
+  _docsRows=data||[];
+  const months=_docsMonths(_advisorLink.created_at);
+  if(!_docsMissing(_docsRows,months).length){
+    document.body.classList.remove('docs-locked');
+    if(el)el.remove();
+    return;
+  }
+  document.body.classList.add('docs-locked');
+  if(!el){
+    el=document.createElement('div');
+    el.id='docsLock';
+    el.setAttribute('role','dialog');
+    el.setAttribute('aria-modal','true');
+    el.setAttribute('aria-label','העלאת מסמכים');
+    el.style.cssText='position:fixed;inset:0;z-index:235;background:var(--bg);display:flex;justify-content:center;padding:24px 16px;overflow-y:auto';
+    document.body.appendChild(el);
+  }
+  _renderDocsLock(el,months);
+}
+function _renderDocsLock(el,months){
+  const rowsHtml=DOCS_KINDS.map(([kind,label])=>{
+    const items=months.map(mo=>{
+      const files=_docsRows.filter(r=>r.kind===kind&&r.period_month===mo);
+      const done=files.length>0;
+      return '<div style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;background:var(--surface);display:flex;flex-direction:column;gap:8px">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+        +'<span style="font-weight:700;color:var(--text)">'+(done?'✓ ':'')+esc(_docsMonthLabel(mo))+'</span>'
+        +'<button type="button" class="btn" style="min-height:44px;cursor:pointer" data-docs-add="'+kind+'|'+mo+'">'+(done?'הוסף עוד':'העלאה')+'</button>'
+        +'</div>'
+        +files.map(f=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:0.82rem;color:var(--text2)"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.file_name)+'</span><button type="button" class="btn" style="min-height:44px;cursor:pointer" data-docs-del="'+f.id+'" aria-label="הסר קובץ">הסר</button></div>').join('')
+        +'</div>';
+    }).join('');
+    return '<div style="font-weight:800;color:var(--text);margin:8px 0">'+esc(label)+'</div><div style="display:flex;flex-direction:column;gap:8px">'+items+'</div>';
+  }).join('');
+  el.innerHTML='<div style="max-width:420px;width:100%;display:flex;flex-direction:column;gap:10px;text-align:right">'
+    +'<div style="font-size:1.25rem;font-weight:800;color:var(--text)">מסמכים להתחלת הליווי</div>'
+    +'<div style="font-size:0.92rem;line-height:1.6;color:var(--text2)">כדי שהיועץ יוכל להתחיל, יש להעלות דפי חשבון עו"ש ופירוט חיובי אשראי עבור שלושת החודשים המלאים האחרונים. אפשר להעלות PDF, צילום מסך, תמונה או קובץ אקסל.</div>'
+    +rowsHtml
+    +'<input type="file" id="docsFileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,.csv,.xls,.xlsx,application/pdf,image/*,text/csv" style="display:none">'
+    +'<button type="button" id="docsOut" class="btn btn-full" style="margin-top:12px">התנתקות</button>'
+    +'</div>';
+  const input=el.querySelector('#docsFileInput');
+  let target=null;
+  el.querySelectorAll('[data-docs-add]').forEach(b=>{b.onclick=()=>{target=b.dataset.docsAdd;input.click();};});
+  input.onchange=async()=>{
+    const files=[...input.files];input.value='';
+    if(!files.length||!target||_docsBusy)return;
+    const [kind,mo]=target.split('|');
+    await _docsUpload(kind,mo,files);
+  };
+  el.querySelectorAll('[data-docs-del]').forEach(b=>{b.onclick=()=>_docsRemove(b.dataset.docsDel);});
+  el.querySelector('#docsOut').onclick=async()=>{try{await _sb.auth.signOut();}catch(e){}};
+}
+async function _docsUpload(kind,mo,files){
+  _docsBusy=true;
+  showToast('מעלה...');
+  let failed=0;
+  for(const f of files){
+    const ext=((f.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,''))||'bin';
+    const path=_cloudUser.id+'/'+kind+'/'+mo.slice(0,7)+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+    const up=await _sb.storage.from('client-documents').upload(path,f,{contentType:f.type||undefined});
+    if(up.error){failed++;continue;}
+    const ins=await _sb.from('client_documents').insert({client_id:_cloudUser.id,kind,period_month:mo,path,file_name:f.name,mime:f.type||null,size:f.size}).select().single();
+    if(ins.error){failed++;await _sb.storage.from('client-documents').remove([path]);}
+  }
+  _docsBusy=false;
+  showToast(failed?'❌ חלק מהקבצים לא הועלו, נסה שוב':'✓ הקובץ הועלה');
+  await _applyDocsLock();
+}
+async function _docsRemove(id){
+  const row=_docsRows.find(r=>r.id===id);
+  if(!row||_docsBusy)return;
+  const {error}=await _sb.from('client_documents').delete().eq('id',id).eq('client_id',_cloudUser.id);
+  if(error){showToast('❌ ההסרה נכשלה, נסה שוב');return;}
+  await _sb.storage.from('client-documents').remove([row.path]);
+  await _applyDocsLock();
 }
 function _approvalLocked(l){return !!(l&&l.status==='pending'&&l.requested_by_client);}
 let _approvalTimer=null;
@@ -5499,7 +5611,7 @@ document.addEventListener('DOMContentLoaded',function(){
         return;
       }
       _cloudUser=session?.user||null;
-      if(!_cloudUser){_advisorLink=null;_applyApprovalLock();}
+      if(!_cloudUser){_advisorLink=null;_applyApprovalLock();_applyDocsLock();}
       _loadAdvisorStatus().then(_applyAdvisorGate);
       renderCloudSection();
       renderAdvisorLinkSection();

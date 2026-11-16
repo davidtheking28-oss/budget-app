@@ -57,6 +57,13 @@ Deno.serve(async (req) => {
     // If this user is an advisor, their client-facing rows go too.
     const { data: advisorRow } = await admin.from('advisors').select('user_id').eq('user_id', uid).maybeSingle()
 
+    const { data: docs } = await admin.from('client_documents').select('path').eq('client_id', uid)
+    if (docs?.length) {
+      const { error } = await admin.storage.from('client-documents').remove(docs.map((d) => d.path))
+      if (error) failed.push(`client-documents storage: ${error.message}`)
+    }
+    await del('client_documents', 'client_id')
+
     for (const t of BY_CLIENT) await del(t, 'client_id')
     if (advisorRow) {
       for (const t of BY_ADVISOR) await del(t, 'advisor_id')

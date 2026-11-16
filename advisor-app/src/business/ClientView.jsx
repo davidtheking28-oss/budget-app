@@ -8,6 +8,7 @@ import Budget from '../budget/Budget.jsx';
 import Credit from '../budget/Credit.jsx';
 import ObligationTiles from '../budget/ObligationTiles.jsx';
 import Crm from '../crm/Crm.jsx';
+import ClientDocuments from './ClientDocuments.jsx';
 import MonthNav from '../components/MonthNav.jsx';
 import CategorySelect from '../components/CategorySelect.jsx';
 import Button from '../components/Button.jsx';
@@ -24,7 +25,8 @@ const TABS = [
   { key: 'mapping', label: 'מיפוי' },
   { key: 'budget', label: 'תקציב' },
   { key: 'assets', label: 'שווי נקי' },
-  { key: 'tasks', label: 'משימות' }
+  { key: 'tasks', label: 'משימות' },
+  { key: 'documents', label: 'מסמכים' }
 ];
 
 export const CHIPS = [
@@ -212,6 +214,12 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
             <div className={styles.stack}>
               <Heading title="משימות" text="המשימות של הלקוח: מה הוגדר לו בתהליך ומה הוא הוסיף לעצמו." />
               <Crm view="tasks" key={`${clientIdOrNull}:tasks`} onDirtyChange={setDirty} action={null} advisorId={advisorId} clientId={clientIdOrNull} email={client.client_email} />
+            </div>
+          )}
+          {view === 'documents' && (
+            <div className={styles.stack}>
+              <Heading title="מסמכים" text="דפי עו״ש וחיובי אשראי של שלושת החודשים המלאים שלפני תחילת הליווי." />
+              <ClientDocuments key={clientIdOrNull} clientId={clientIdOrNull} startIso={client.created_at} />
             </div>
           )}
           {view === 'credit' && <Credit key={chip} focus={CHIPS.find(c => c.key === chip)?.focus} clientUserId={clientIdOrNull} advisorId={advisorId} />}

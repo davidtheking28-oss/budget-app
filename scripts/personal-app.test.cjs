@@ -640,6 +640,25 @@ test('the app is locked only while the client\'s own advisor request is pending'
   assert.equal(ctx._approvalLocked(null),false);
 });
 
+test('statement upload is required only from an active self-signup client created after the cutoff',()=>{
+  const ctx=functions(['_docsRequired'],{DOCS_CUTOFF:'2026-11-16'});
+  assert.equal(ctx._docsRequired({status:'active',requested_by_client:true,created_at:'2026-11-20T10:00:00Z'}),true);
+  assert.equal(ctx._docsRequired({status:'active',requested_by_client:true,created_at:'2026-05-01T10:00:00Z'}),false);
+  assert.equal(ctx._docsRequired({status:'active',requested_by_client:false,created_at:'2026-11-20T10:00:00Z'}),false);
+  assert.equal(ctx._docsRequired({status:'pending',requested_by_client:true,created_at:'2026-11-20T10:00:00Z'}),false);
+  assert.equal(ctx._docsRequired(null),false);
+});
+
+test('the required statement months are the three full months before the start month',()=>{
+  const ctx=functions(['_docsMonths','_docsMissing'],{DOCS_KINDS:[['bank','x'],['credit','y']]});
+  assert.equal(JSON.stringify(ctx._docsMonths('2026-07-15T10:00:00')),JSON.stringify(['2026-04-01','2026-05-01','2026-06-01']));
+  assert.equal(JSON.stringify(ctx._docsMonths('2026-01-10T10:00:00')),JSON.stringify(['2025-10-01','2025-11-01','2025-12-01']));
+  const months=['2026-04-01','2026-05-01','2026-06-01'];
+  const bankOnly=months.map(period_month=>({kind:'bank',period_month}));
+  assert.equal(ctx._docsMissing(bankOnly,months).length,3);
+  assert.equal(ctx._docsMissing(bankOnly.concat(months.map(period_month=>({kind:'credit',period_month}))),months).length,0);
+});
+
 test('the advisor link survives a lost local copy through the signup metadata, and is cleared once sent',async()=>{
   const ref='11111111-1111-1111-1111-111111111111';
   const calls=[];const updates=[];
