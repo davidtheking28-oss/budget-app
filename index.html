@@ -1097,8 +1097,8 @@
     .auth-app-icon{width:108px;height:108px;border-radius:25px;display:block;margin:0 auto 26px;box-shadow:0 0 0 1px rgba(var(--accent-rgb),0.3),0 18px 48px rgba(var(--accent-rgb),0.28),0 4px 14px rgba(0,0,0,0.25);}
     .auth-app-name{font-size:2.2rem;font-weight:800;color:var(--text);letter-spacing:-1px;margin-bottom:8px;line-height:1.1;}
     .auth-app-sub{font-size:0.95rem;color:var(--text2);line-height:1.5;margin-bottom:28px;max-width:220px;}
-    .auth-trust-row{display:flex;align-items:center;justify-content:center;gap:16px;}
-    .auth-trust-item{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--text2);font-weight:600;}
+    .auth-trust-row{display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,16px);}
+    .auth-trust-item{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--text2);font-weight:600;white-space:nowrap;}
     .auth-trust-item svg{color:var(--accent);}
     .auth-trust-dot{width:3px;height:3px;border-radius:50%;background:rgba(var(--accent-rgb),0.45);}
     .auth-cta-section{display:flex;flex-direction:column;gap:10px;}
@@ -4281,7 +4281,7 @@ function isFixed(t){if(t.fixed!==undefined)return t.fixed;return t.type==='incom
 
 let _hapticEl=null;
 function haptic(ms=8){
-  if(navigator.vibrate){navigator.vibrate(ms);return;}
+  if(navigator.vibrate){navigator.vibrate(Math.max(ms,15));return;}
   try{
     if(!_hapticEl){
       const l=document.createElement('label');
