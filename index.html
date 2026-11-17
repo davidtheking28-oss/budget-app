@@ -304,6 +304,7 @@
     @media(max-width:360px){
       #inlineMonthNav{left:calc(64px + env(safe-area-inset-left,0px))!important;right:calc(10px + env(safe-area-inset-right,0px))!important;width:auto!important;max-width:none!important;gap:4px!important;padding:5px 4px!important;}
       #inlineMonthNav>button:not([data-month-arrow]) i{display:none;}
+      #inlineMonthNav>button.mnav-label:not([data-month-arrow]){min-width:0;flex:1;padding:0 6px;}
     }
     #inlineMonthNav.nav-hidden{top:-70px!important;}
     .mnav{display:flex;align-items:center;gap:4px;padding:2px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.10)}
