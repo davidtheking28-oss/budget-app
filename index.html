@@ -1115,7 +1115,7 @@
     #promptOverlay .confirm-actions{flex-shrink:0;border-top:1px solid var(--border);padding-top:12px}
     .confirm-icon{font-size:2.4rem;line-height:1;margin-bottom:10px;}
     .confirm-title{font-size:1.12rem;font-weight:800;color:var(--text);margin-bottom:6px;}
-    .confirm-msg{font-size:0.92rem;color:var(--text2);line-height:1.5;margin-bottom:20px;}
+    .confirm-msg{font-size:0.92rem;color:var(--text2);line-height:1.5;margin-bottom:20px;white-space:pre-line;}
     .confirm-actions{display:flex;gap:10px;}
     .confirm-btn{flex:1;padding:12px;border-radius:999px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;min-height:48px;}
     .confirm-cancel{background:var(--surface2);color:var(--text);border:1.5px solid var(--border);}
@@ -1221,6 +1221,9 @@
     @keyframes pageIn{from{opacity:0;transform:translateX(var(--page-dx,0px)) translateY(6px)}to{opacity:1;transform:translateX(0) translateY(0)}}
     .page.active{animation:pageIn 0.26s cubic-bezier(0.22,1,0.36,1) both;}
     :where(button,[role="button"],.filter-chip,.nav-item){position:relative;}
+    :where(button:not(:disabled),[role="button"],[onclick]:not(.sheet-overlay,.month-sheet-overlay,#autoLockOverlay)){touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity .25s ease-out;}
+    :where(button:not(:disabled),[role="button"],[onclick]:not(.sheet-overlay,.month-sheet-overlay,#autoLockOverlay)):active{opacity:.72;transition:none;}
+    .cf-hero-toggle .hx-ov{inset:-7px -6px;}
     .hx-ov{position:absolute;inset:0;z-index:5;margin:0;padding:0;opacity:0;display:block;cursor:pointer;-webkit-tap-highlight-color:transparent;}
     .hx-ov input{position:absolute;left:0;top:0;width:1px;height:1px;margin:0;opacity:0;pointer-events:none;}
     /* iOS black-translucent draws the page under the status bar and always keeps
@@ -2293,7 +2296,7 @@
       </div>
       <div id="txFilterStatus" hidden><span id="txFilterStatusText"></span><button type="button" class="btn btn-outline" onclick="resetTxFilters()">אפס סינון</button></div>
       <div id="txAdvancedFilters" style="display:none">
-        <input type="search" class="search-input" id="txSearch" placeholder="חפש בעסקאות..." oninput="queueTxSearch(event)" oncompositionend="queueTxSearch(event)" onsearch="renderTxPage()" onfocus="this.select()" aria-label="חיפוש בעסקאות"/>
+        <input type="search" enterkeyhint="search" class="search-input" id="txSearch"placeholder="חפש בעסקאות..." oninput="queueTxSearch(event)" oncompositionend="queueTxSearch(event)" onsearch="renderTxPage()" onfocus="this.select()" aria-label="חיפוש בעסקאות"/>
         <div style="display:flex;gap:10px;padding:0 16px 10px;">
           <div style="flex:1;background:var(--red-light);border-radius:12px;padding:8px 12px;text-align:center">
             <div style="font-size:0.68rem;color:var(--red);font-weight:700">הוצאות בתקופה</div>
@@ -5810,7 +5813,7 @@ async function copyApplePay(kind){
 }
 async function revokeApplePayHook(){
   if(_applePayBusy||!_sb||!_cloudUser)return;
-  if(!confirm('לנתק את Apple Pay? הוצאות חדשות מהאייפון יפסיקו להירשם.'))return;
+  if(!await confirmSheet({icon:'📵',title:'ניתוק Apple Pay',message:'הוצאות חדשות מהאייפון יפסיקו להירשם.',confirmText:'נתק',danger:true}))return;
   _applePayBusy=true;
   try{const {error}=await _sb.rpc('revoke_expense_hook');if(error)throw error;showToast('✓ Apple Pay נותק');await renderApplePaySection();}
   catch(e){showToast('❌ הניתוק נכשל, נסה שוב');}
@@ -9807,7 +9810,7 @@ setTimeout(autoCarryRecurring,500);
       if(!fresh.length){ showToast(dup?'כל העסקאות כבר קיימות ('+dup+' כפילויות)':(failed?'❌ לא הצלחתי לקרוא את התמונות':'❌ לא נמצאו עסקאות בתמונות')); return; }
       var sumOf=function(type){ return Math.round(fresh.filter(function(t){return t.type===type;}).reduce(function(s,t){return s+t.amount;},0)); };
       var msg='נמצאו '+fresh.length+' עסקאות\nהוצאות: ₪'+sumOf('expense').toLocaleString('he-IL')+'\nהכנסות: ₪'+sumOf('income').toLocaleString('he-IL')+(dup?'\n'+dup+' כפילויות ידולגו':'')+(failed?'\n'+failed+' תמונות לא נקראו':'')+'\n\nלייבא?';
-      if(!confirm(msg)) return;
+      if(!await confirmSheet({icon:'📄',title:'ייבוא עסקאות',message:msg,confirmText:'ייבא'})) return;
       fresh.forEach(function(t){
         var cat=categorize(t.desc,t.type)||(t.type==='expense'?(_activeMode==='business'?'אחר':'שונות'):'אחר');
         transactions.push({id:Date.now()+Math.random(),type:t.type,cat:cat,desc:t.desc,amount:t.amount,date:t.date,recurring:false});
