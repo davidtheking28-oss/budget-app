@@ -339,14 +339,14 @@
     /* The dashboard's "תנועות אחרונות" card groups mostly single-item dates, so the
        base spacing (18px date label + 14px row padding) stacked into a card that felt
        far more spread out than the rest of the dashboard. Tighter here only. */
-    #recentTxList .tx-item{padding:12px 0;min-height:68px;gap:10px;}
+    #recentTxList .tx-item{padding:10px 0;min-height:60px;gap:10px;}
     #recentTxList .tx-item:hover{margin:0;padding:12px 0;}
     #recentTxList .tx-desc{font-size:1rem;font-weight:700;}
     #recentTxList .tx-meta{font-size:0.8rem;line-height:1.5;}
     #recentTxList .tx-amount{font-size:1.05rem;direction:ltr;unicode-bidi:isolate;}
     #recentTxList .tx-icon{width:38px;height:38px;border-radius:12px;}
     #recentTxMoreBtn{background:var(--surface2)!important;border:1px solid var(--border)!important;border-radius:12px;font-size:0.875rem!important;padding:12px!important;}
-    #recentTxList .tx-date-label{padding:14px 0 6px;font-size:0.8rem;letter-spacing:0;color:var(--text2);border-top:1px solid var(--border);margin-top:4px;}
+    #recentTxList .tx-date-label{padding:12px 0 2px;font-size:0.8rem;letter-spacing:0;color:var(--text2);border-top:1px solid var(--border);margin-top:4px;}
     #recentTxList .tx-date-label:first-child{padding-top:0;border-top:0;margin-top:0;}
     .tx-item:last-child{border-bottom:none;}
     .tx-del-btn{flex-shrink:0;min-width:44px;min-height:44px;border-radius:9px;border:none;background:transparent;color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.15s,color 0.15s;}
@@ -626,6 +626,14 @@
       .dash-ring-used{font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap;font-variant-numeric:tabular-nums;}
     }
     .dash-insight-card{display:flex;align-items:center;gap:12px;background:var(--surface);border:0;border-radius:999px;box-shadow:0 2px 14px rgba(0,0,0,0.06);padding:16px 28px;margin-bottom:12px;}
+    .dash-hero{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:18px 16px 16px;margin-bottom:12px;box-shadow:0 2px 14px rgba(0,0,0,0.06)}
+    body.dark .dash-hero{background:linear-gradient(160deg,rgba(var(--accent-rgb),0.13),transparent 62%),var(--surface);border-color:rgba(255,255,255,0.1);box-shadow:0 12px 30px -18px rgba(0,0,0,0.8)}
+    .dash-hero .dash-toprow{margin-bottom:10px}
+    .dash-hero .dash-bignum{margin-bottom:0}
+    .dash-hero .dash-insight-card{border-radius:16px;box-shadow:none;background:var(--surface2);padding:12px 16px;margin:16px 0 0;justify-content:center}
+    body.dark .dash-hero .dash-insight-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06)}
+    .dash-avatar svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    .dash-goals-card .dash-rings-grid>.budget-tx-empty{padding:6px 0 2px;font-size:0.85rem}
     .dash-insight-emoji{font-size:1.4rem;flex-shrink:0;}
     .dash-insight-text{display:flex;flex-direction:column;gap:4px;font-size:0.85rem;font-weight:700;color:var(--text);line-height:1.4;}
     .dash-balance-value{font-size:1.6rem;line-height:1.2;} .dash-balance-daily{font-weight:400;color:var(--text2);} .tx-date-range{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:0 16px 12px;align-items:center;} .tx-date-range input{min-width:0;width:100%;min-height:44px;} .tx-date-range #clearDateBtn{grid-column:1/-1;justify-self:end;} .dash-all-cats{display:block;width:100%;min-height:44px;margin-top:12px;color:var(--accent-text);font-weight:700;border:1px solid var(--border);border-radius:12px;background:var(--surface2);}
@@ -2106,19 +2114,21 @@
     </div>
 
     <!-- New minimal home: spend-so-far + category goal rings -->
-    <div class="dash-toprow">
-      <div class="dash-avatar" id="dashAvatar">?</div>
-      <div class="dash-greet">
-        <div class="dash-greet-name" id="dashGreetName">טוען...</div>
+    <div class="dash-hero">
+      <div class="dash-toprow">
+        <div class="dash-avatar" id="dashAvatar">?</div>
+        <div class="dash-greet">
+          <div class="dash-greet-name" id="dashGreetName">טוען...</div>
+        </div>
       </div>
-    </div>
-    <div class="dash-bignum">
-      <div class="dash-bignum-val" id="dashBigNum">₪0</div>
-      <div class="dash-bignum-label" id="dashBigLabel">הוצאות מתחילת החודש</div>
-    </div>
-    <div class="dash-insight-card" id="dashInsightCard" style="display:none">
-      <span class="dash-insight-emoji">💰</span>
-      <div class="dash-insight-text" id="dashInsightText"></div>
+      <div class="dash-bignum">
+        <div class="dash-bignum-val" id="dashBigNum">₪0</div>
+        <div class="dash-bignum-label" id="dashBigLabel">הוצאות מתחילת החודש</div>
+      </div>
+      <div class="dash-insight-card" id="dashInsightCard" style="display:none">
+        <span class="dash-insight-emoji">💰</span>
+        <div class="dash-insight-text" id="dashInsightText"></div>
+      </div>
     </div>
     <div class="dash-goals-card">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
@@ -6714,7 +6724,13 @@ function renderDashGoals(){
   const dateEl=document.getElementById('dashGreetDate');
   if(dateEl)dateEl.textContent=now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'});
   const avEl=document.getElementById('dashAvatar');
-  if(avEl)avEl.textContent=(userSettings.name||'?').trim().charAt(0)||'?';
+  if(avEl){
+    const initial=(userSettings.name||'').trim().charAt(0);
+    if(initial)avEl.textContent=initial;
+    else avEl.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>';
+  }
+  const allCatsBtn=document.querySelector('.dash-all-cats');
+  if(allCatsBtn)allCatsBtn.textContent=cats.length?'כל קטגוריות התקציב ←':'הגדר תקציב לקטגוריות +';
 }
 function renderDashboard(){
   const label=heMonth(currentYear,currentMonth);
