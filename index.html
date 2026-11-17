@@ -719,6 +719,26 @@
     .apg-phone.empty::after{content:'התמונה תתווסף בקרוב';font-size:0.8125rem;color:var(--text3)}
     .apg-nav{display:flex;gap:10px;margin-top:14px;flex-shrink:0}
     .apg-nav .btn{flex:1;min-height:52px;border-radius:999px;transition:none}
+    .ap-lead{font-size:0.8125rem;line-height:1.6;color:var(--text2);margin:0 2px 12px}
+    .ap-status{display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;padding:7px 14px;border-radius:999px;font-size:0.8125rem;font-weight:700;background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--green)}
+    .ap-status small{font-weight:600;color:var(--text2)}
+    .ap-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;margin-top:8px;border-radius:999px;font:inherit;font-weight:700;font-size:0.9375rem;cursor:pointer;border:1.5px solid var(--border);background:var(--surface2);color:var(--text)}
+    .ap-btn.primary{background:var(--accent-solid);border-color:var(--accent-solid);color:#fff}
+    .ap-btn.danger{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,var(--border))}
+    .ap-steps{margin-top:14px;border:1px solid var(--border);border-radius:22px;background:var(--surface2);overflow:hidden}
+    .ap-steps-title{font-weight:800;font-size:0.9375rem;color:var(--text);padding:14px 16px 12px}
+    .ap-step{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);min-height:62px}
+    .ap-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent-solid);color:#fff;font-weight:800;font-size:0.8125rem;display:flex;align-items:center;justify-content:center}
+    .ap-step-body{flex:1;min-width:0}
+    .ap-step-text{font-weight:700;font-size:0.875rem;line-height:1.4;color:var(--text)}
+    .ap-step-sub{font-size:0.78rem;line-height:1.5;color:var(--text2);margin-top:2px}
+    .ap-act{flex-shrink:0;min-height:40px;padding:0 16px;border-radius:999px;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent-text);font:inherit;font-size:0.8125rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+    .ap-note{margin-top:12px;padding:12px 14px;border-radius:18px;background:color-mix(in srgb,var(--accent) 8%,transparent);border:1px solid color-mix(in srgb,var(--accent) 22%,var(--border));font-size:0.8125rem;line-height:1.6;color:var(--text2)}
+    .ap-note b{color:var(--text)}
+    .ap-after{font-size:0.8125rem;line-height:1.6;color:var(--text2);margin:10px 4px 0}
+    .ap-manual{margin-top:8px}
+    .ap-manual>summary{list-style:none;display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:999px;border:1.5px dashed var(--border);font-size:0.8125rem;font-weight:700;color:var(--text2);cursor:pointer}
+    .ap-manual>summary::-webkit-details-marker{display:none}
     @keyframes slideUp{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}@keyframes sheetExit{from{transform:translateY(0);}to{transform:translateY(105%);}}@keyframes inputShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
     .form-stack{display:flex;flex-direction:column;gap:9px;}
     .form-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
@@ -5902,11 +5922,11 @@ async function renderApplePaySection(){
   try{const {data,error}=await _sb.rpc('expense_hook_status');if(!error&&data)st=data;}catch(e){}
   if(!st){_applePayShell('<p style="font-size:0.8125rem;color:var(--text3);margin:0">לא ניתן לטעון את מצב החיבור כרגע.</p>');return;}
   const last=st.last_used_at?new Date(st.last_used_at).toLocaleString('he-IL',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-  _applePayShell('<p style="font-size:0.8125rem;color:var(--text3);margin:0 0 10px">כל תשלום ב-Apple Pay שמבצעים בהצמדת האייפון או השעון נרשם כאן לבד כהוצאה, ומסווג לקטגוריה. קניות באינטרנט ובאפליקציות לא נקלטות. ההגדרה חד־פעמית.</p>'
-    +(st.active?'<p style="font-size:0.875rem;margin:0 0 10px">✓ מחובר'+(last?' · תשלום אחרון נקלט: '+esc(last):' · עדיין לא נקלט תשלום')+'</p>':'')
-    +'<button type="button" class="set-dd-opt set-pill-btn" style="width:100%" onclick="createApplePayHook()"><span>🔗</span> '+(st.active?'צור קישור חדש (מבטל את הקודם)':'חבר Apple Pay')+'</button>'
-    +(APPLE_PAY_SHORTCUT_URL?'<button type="button" class="set-dd-opt set-pill-btn" style="width:100%" onclick="openApGuide()"><span>📖</span> מדריך עם תמונות</button>':'')
-    +(st.active?'<button type="button" class="set-dd-opt set-pill-btn set-pill-danger" style="width:100%;color:var(--red)" onclick="revokeApplePayHook()">נתק את Apple Pay</button>':''));
+  _applePayShell('<p class="ap-lead">כל תשלום ב-Apple Pay שמבצעים בהצמדת האייפון או השעון נרשם כאן לבד כהוצאה, ומסווג לקטגוריה. קניות באינטרנט ובאפליקציות לא נקלטות. ההגדרה חד־פעמית.</p>'
+    +(st.active?'<div class="ap-status">✓ מחובר<small>'+(last?'· תשלום אחרון נקלט: '+esc(last):'· עדיין לא נקלט תשלום')+'</small></div>':'')
+    +'<button type="button" class="ap-btn'+(st.active?'':' primary')+'" onclick="createApplePayHook()"><span>🔗</span> '+(st.active?'צור קוד חדש (מבטל את הקודם)':'חבר Apple Pay')+'</button>'
+    +(APPLE_PAY_SHORTCUT_URL?'<button type="button" class="ap-btn" onclick="openApGuide()"><span>📖</span> מדריך עם תמונות</button>':'')
+    +(st.active?'<button type="button" class="ap-btn danger" onclick="revokeApplePayHook()">נתק את Apple Pay</button>':''));
 }
 async function createApplePayHook(){
   if(_applePayBusy||!_sb||!_cloudUser)return;
@@ -5919,7 +5939,13 @@ async function createApplePayHook(){
     const pillBtn='margin-inline-start:6px;border:1px solid var(--accent);background:var(--surface);border-radius:999px;padding:6px 14px;min-height:40px;font:inherit;font-size:0.8125rem;color:var(--accent);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center';
     const manual='<div class="form-stack" style="margin-top:12px"><p style="font-size:0.875rem;line-height:1.6;color:var(--text);margin:0 0 4px"><b>החיבור נוצר. עכשיו 5 שלבים באייפון, פעם אחת:</b></p><ol style="font-size:0.875rem;line-height:1.7;color:var(--text2);margin:0;padding:0;list-style:none"><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">1.</b> בקיצורי דרך: <b>אוטומציה</b> ← <b>+</b> ← <b>עסקה</b>. בחר כרטיסים, סמן <b>הפעל מיד</b> והקש <b>הבא</b>.</li><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">2.</b> הוסף פעולה <b>קבל תוכן של כתובת URL</b>. הדבק בשדה URL: <button type="button" onclick="copyApplePay(\'url\')" style="margin-inline-start:6px;border:1px solid var(--accent);background:var(--surface);border-radius:999px;padding:6px 14px;min-height:40px;font:inherit;font-size:0.8125rem;color:var(--accent);cursor:pointer">העתק כתובת</button><br>הקש <b>הצג עוד</b> ובשיטה בחר <b>POST</b>.</li><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">3.</b> תחת <b>כותרות</b> הוסף כותרת חדשה. בשם כתוב <b dir="ltr">X-Budget-Token</b> ובערך הדבק את הקוד הסודי: <button type="button" onclick="copyApplePay(\'token\')" style="margin-inline-start:6px;border:1px solid var(--accent);background:var(--surface);border-radius:999px;padding:6px 14px;min-height:40px;font:inherit;font-size:0.8125rem;color:var(--accent);cursor:pointer">העתק קוד</button></li><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">4.</b> בגוף הבקשה בחר <b>JSON</b> והוסף שני שדות <b>טקסט</b>:<br>• <b>merchant</b> ← בחירת משתנים ← <b>עסקה</b> ← <b>בית העסק</b><br>• <b>amount</b> ← בחירת משתנים ← <b>עסקה</b> ← <b>כמות</b></li><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">5.</b> הקש <b>סיום</b>. זהו.</li></ol><p style="font-size:0.8125rem;line-height:1.6;color:var(--text2);margin:0">אחרי התשלום הראשון בהצמדה, ההוצאה תופיע באפליקציה עד דקה, ופה יופיע "תשלום אחרון נקלט".</p><p style="font-size:0.8125rem;line-height:1.6;color:var(--text3);margin:0"><b>הקוד הסודי מוצג רק עכשיו.</b> אם לא הספקת להעתיק אותו, צור קישור חדש. מי שמחזיק בו יכול רק להוסיף הוצאות, לא לקרוא מידע. אל תשתף אותו.</p></div>';
     if(setup)setup.innerHTML=APPLE_PAY_SHORTCUT_URL
-      ?'<div class="form-stack" style="margin-top:12px"><p style="font-size:0.875rem;line-height:1.6;color:var(--text);margin:0 0 4px"><b>החיבור נוצר. 3 שלבים באייפון, פעם אחת:</b></p><ol style="font-size:0.875rem;line-height:1.7;color:var(--text2);margin:0;padding:0;list-style:none"><li style="margin-bottom:14px"><b style="color:var(--accent)">1.</b> העתק את הקוד הסודי: <button type="button" onclick="copyApplePay(\'token\')" style="'+pillBtn+'">העתק קוד</button></li><li style="margin-bottom:14px"><b style="color:var(--accent)">2.</b> הוסף את הקיצור: <a href="'+APPLE_PAY_SHORTCUT_URL+'" rel="noopener" style="'+pillBtn+'">הוסף קיצור דרך</a><br>כשנשאל על הקוד, הדבק אותו והקש <b>הוספה</b>.</li><li style="margin-bottom:14px"><b style="color:var(--accent)">3.</b> ודא שבקיצור המתג <b>פעולה אוטומטית</b> דלוק. זהו.</li></ol><p style="font-size:0.8125rem;line-height:1.6;color:var(--text2);margin:0">אחרי התשלום הראשון בהצמדה, ההוצאה תופיע באפליקציה עד דקה, ופה יופיע "תשלום אחרון נקלט".</p><p style="font-size:0.8125rem;line-height:1.6;color:var(--text3);margin:0"><b>הקוד הסודי מוצג רק עכשיו.</b> אם לא הספקת להעתיק אותו, צור קוד חדש. מי שמחזיק בו יכול רק להוסיף הוצאות, לא לקרוא מידע. אל תשתף אותו.</p><details style="margin-top:4px"><summary style="font-size:0.8125rem;color:var(--text2);cursor:pointer;min-height:44px;display:flex;align-items:center">הגדרה ידנית (אם הקיצור לא נפתח)</summary>'+manual+'</details></div>'
+      ?'<div class="ap-steps"><div class="ap-steps-title">החיבור נוצר. 3 שלבים באייפון, פעם אחת</div>'
+        +'<div class="ap-step"><span class="ap-num">1</span><div class="ap-step-body"><div class="ap-step-text">העתק את הקוד האישי</div></div><button type="button" class="ap-act" onclick="copyApplePay(\'token\')">העתק קוד</button></div>'
+        +'<div class="ap-step"><span class="ap-num">2</span><div class="ap-step-body"><div class="ap-step-text">הוסף את הקיצור</div><div class="ap-step-sub">כשנשאל על הקוד, הדבק אותו ולחץ "הוספת קיצור"</div></div><a class="ap-act" href="'+APPLE_PAY_SHORTCUT_URL+'" rel="noopener">הוסף קיצור</a></div>'
+        +'<div class="ap-step"><span class="ap-num">3</span><div class="ap-step-body"><div class="ap-step-text">בדוק שהמתג "פעולה אוטומטית" דלוק</div></div></div></div>'
+        +'<div class="ap-note"><b>הקוד מוצג רק עכשיו.</b> אם לא העתקת אותו, צור קוד חדש. מי שמחזיק בו יכול רק להוסיף הוצאות, לא לקרוא מידע. אל תשתף אותו.</div>'
+        +'<p class="ap-after">אחרי התשלום הראשון בהצמדה, ההוצאה תופיע באפליקציה תוך דקה, ופה יופיע "תשלום אחרון נקלט".</p>'
+        +'<details class="ap-manual"><summary>הגדרה ידנית (אם הקיצור לא נפתח)</summary>'+manual+'</details>'
       :manual;
     showToast('✓ נוצר קישור. העתק אותו לקיצור הדרך');
   }catch(e){showToast('❌ לא ניתן ליצור קישור כרגע');}
