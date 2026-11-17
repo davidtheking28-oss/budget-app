@@ -2301,14 +2301,14 @@
       </div>
       <div class="cf-hero-tray">
         <div class="cf-hero-cell cf-hero-cell-inc">
-          <span class="cf-hero-cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+          <span class="cf-hero-cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span>
           <div class="cf-hero-cell-text">
             <div class="cf-hero-cell-label">הכנסות</div>
             <div id="txPageIncome" class="cf-hero-cell-val">₪0</div>
           </div>
         </div>
         <div class="cf-hero-cell cf-hero-cell-exp">
-          <span class="cf-hero-cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span>
+          <span class="cf-hero-cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
           <div class="cf-hero-cell-text">
             <div class="cf-hero-cell-label">הוצאות</div>
             <div id="txPageExpense" class="cf-hero-cell-val">₪0</div>
@@ -2590,11 +2590,16 @@
       <div class="settings-section">
         <h2 class="settings-section-title"><span class="settings-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span><span>פרופיל</span></h2>
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
-          <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;flex-shrink:0;" id="settingAvatar"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg></div>
+          <div style="position:relative;width:52px;height:52px;flex-shrink:0;">
+          <div role="button" tabindex="0" aria-label="הוספת תמונת פרופיל" onclick="document.getElementById('avatarFileInput').click()" style="width:52px;height:52px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;color:white;cursor:pointer;" id="settingAvatar"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg></div>
+          <span aria-hidden="true" style="position:absolute;bottom:-2px;inset-inline-start:-2px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);color:var(--accent);display:flex;align-items:center;justify-content:center;pointer-events:none"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="pickAvatar(this)">
+          </div>
           <div style="flex:1;min-width:0;">
             <input id="settingName" type="text" placeholder="הכנס שם..." aria-label="שם" autocomplete="off" autocorrect="off" spellcheck="false" onfocus="this.select()" oninput="updateSettingAvatar();userSettings.name=this.value.trim();saveSettingsData();updateHeaderTitle()"
               style="font-size:1.15rem;font-weight:800;color:var(--text);background:transparent;border:none;border-bottom:2px solid var(--border);padding:4px 0;width:100%;outline:none;font-family:inherit;"/>
             <div style="font-size:0.8125rem;color:var(--text3);margin-top:3px;">השם נשמר אוטומטית בזמן העריכה</div>
+            <button type="button" id="avatarRemoveBtn" onclick="removeAvatar()" style="display:none;background:none;border:none;color:var(--red);font-family:inherit;font-size:0.8125rem;font-weight:700;padding:8px 0 0;cursor:pointer">הסר תמונה</button>
           </div>
         </div>
       </div>
@@ -5917,10 +5922,41 @@ window.addEventListener('online',()=>pullIncomingExpenses());
 setInterval(()=>pullIncomingExpenses(),60000);
 setTimeout(()=>pullIncomingExpenses(),4000);
 
+function _avatarImgHtml(){
+  const a=userSettings.avatar;
+  return (typeof a==='string'&&a.startsWith('data:image/jpeg;base64,'))?'<img alt="" src="'+a+'" style="width:100%;height:100%;object-fit:cover;display:block">':'';
+}
+async function pickAvatar(input){
+  const f=input.files&&input.files[0];
+  input.value='';
+  if(!f)return;
+  try{
+    const bmp=await createImageBitmap(f);
+    const S=192,side=Math.min(bmp.width,bmp.height);
+    const c=document.createElement('canvas');c.width=c.height=S;
+    c.getContext('2d').drawImage(bmp,(bmp.width-side)/2,(bmp.height-side)/2,side,side,0,0,S,S);
+    if(bmp.close)bmp.close();
+    userSettings.avatar=c.toDataURL('image/jpeg',0.82);
+    saveSettingsData();
+    updateSettingAvatar();
+    renderDashGoals();
+    showToast('✓ התמונה נשמרה');
+  }catch(e){showToast('❌ לא הצלחתי לקרוא את התמונה');}
+}
+function removeAvatar(){
+  userSettings.avatar='';
+  saveSettingsData();
+  updateSettingAvatar();
+  renderDashGoals();
+}
 function updateSettingAvatar(){
   const name = document.getElementById('settingName').value || '';
   const av = document.getElementById('settingAvatar');
   if(!av) return;
+  const rm=document.getElementById('avatarRemoveBtn');
+  const img=_avatarImgHtml();
+  if(rm)rm.style.display=img?'':'none';
+  if(img){av.innerHTML=img;return;}
   if(name) av.textContent = name[0].toUpperCase();
   else av.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>';
 }
@@ -6744,7 +6780,10 @@ function renderDashGoals(){
   const avEl=document.getElementById('dashAvatar');
   if(avEl){
     const initial=(userSettings.name||'').trim().charAt(0);
-    if(initial)avEl.textContent=initial;
+    const photo=_avatarImgHtml();
+    avEl.style.overflow=photo?'hidden':'';
+    if(photo)avEl.innerHTML=photo;
+    else if(initial)avEl.textContent=initial;
     else avEl.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>';
   }
   const allCatsBtn=document.querySelector('.dash-all-cats');
