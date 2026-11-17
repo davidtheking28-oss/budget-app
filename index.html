@@ -5874,24 +5874,26 @@ function openSettings(){
 }
 const APPLE_PAY_SHORTCUT_URL='https://www.icloud.com/shortcuts/6ebd088827554071a7ea5565df28c7b9';
 const AP_GUIDE=[
-  {t:'פתח את ההגדרות באפליקציה, ובכרטיס Apple Pay לחץ על "חבר Apple Pay".',img:'ap-1-settings.png'},
-  {t:'לחץ על "העתק קוד". זה הקוד האישי שלך, אז אל תשלח אותו לאף אחד.',img:'ap-2-copy.png'},
+  {t:'פתח את ההגדרות באפליקציה, ובכרטיס Apple Pay לחץ על "חבר Apple Pay".',img:'ap-1-settings',theme:1},
+  {t:'לחץ על "העתק קוד". זה הקוד האישי שלך, אז אל תשלח אותו לאף אחד.',img:'ap-2-copy',theme:1},
   {t:'לחץ על "הוסף קיצור דרך". תיפתח אפליקציית קיצורי הדרך, ושם לחץ על "הגדרת קיצור".',img:'ap-3-open.png',shot:1},
   {t:'לחץ על המילה האפורה "מלל" בשורה, והדבק שם את הקוד.',img:'ap-4-question.png',shot:1},
   {t:'לחץ על ה-V במקלדת, ואחר כך על "הוספת קיצור" בתחתית המסך.',img:'ap-5-paste.png',shot:1},
   {t:'בדוק שהמתג "פעולה אוטומטית" דלוק. כך הקיצור ירוץ לבד אחרי כל תשלום.',img:'ap-6-auto.png',shot:1},
-  {t:'עכשיו שלם עם האייפון או השעון, בהצמדה לקופה. תוך דקה ההוצאה תופיע באפליקציה.',img:'ap-7-done.png'}
+  {t:'עכשיו שלם עם האייפון או השעון, בהצמדה לקופה. תוך דקה ההוצאה תופיע באפליקציה.',img:'ap-7-done',theme:1}
 ];
-let _apgI=0,_apgBuilt=false;
+let _apgI=0,_apgBuilt=false,_apgDark=false;
 function _apgBuild(){
   const esc2=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const dark=document.body.classList.contains('dark');
+  _apgDark=dark;
   const st=document.getElementById('apgStage');
-  st.innerHTML=AP_GUIDE.map((s,i)=>'<div class="apg-slide" data-i="'+i+'"><div class="apg-text">'+esc2(s.t)+'</div><div class="apg-phonewrap"><div class="apg-phone'+(s.shot?' shot':'')+'"><img src="assets/guide/'+s.img+'" alt="" decoding="async"></div></div></div>').join('');
+  st.innerHTML=AP_GUIDE.map((s,i)=>'<div class="apg-slide" data-i="'+i+'"><div class="apg-text">'+esc2(s.t)+'</div><div class="apg-phonewrap"><div class="apg-phone'+(s.shot?' shot':'')+'"><img src="assets/guide/'+s.img+(s.theme?(dark?'-dark':'-light'):'')+(s.theme?'.png':'')+'" alt="" decoding="async"></div></div></div>').join('');
   st.querySelectorAll('img').forEach(im=>{im.onerror=()=>im.parentNode.classList.add('empty');});
   _apgBuilt=true;
 }
 function openApGuide(){
-  if(!_apgBuilt)_apgBuild();
+  if(!_apgBuilt||_apgDark!==document.body.classList.contains('dark'))_apgBuild();
   _apgShow(0,0);
   openSheet('apGuideSheet');
 }
