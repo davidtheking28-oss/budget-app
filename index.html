@@ -4413,7 +4413,7 @@ function _expStructListHtml(kind){
           +'<span class="exp-pay-icons"><button type="button" class="exp-icon-sm" onclick="event.stopPropagation();_expEditPayment('+p.id+')" aria-label="ערוך תשלום '+esc(p.name)+'">'+_expEditSvg+'</button><button type="button" class="exp-icon-sm" onclick="event.stopPropagation();deletePayment('+p.id+')" aria-label="מחק תשלום '+esc(p.name)+'">'+_expTrashSvg+'</button></span>'
         +'</div>'
         +'<div class="exp-pay-bottom">'
-          +'<div class="exp-pay-col"><div class="exp-pay-row">סה״כ: <b>'+_payFmt(total*amt)+'</b></div><div class="exp-pay-row"><b>'+c.current+'/'+total+'</b></div></div>'
+          +'<div class="exp-pay-col"><div class="exp-pay-row">סה״כ: <b>'+_payFmt(_payTxTotal(p))+'</b></div><div class="exp-pay-row"><b>'+c.current+'/'+total+'</b></div></div>'
           +'<div class="exp-pay-col"><div class="exp-pay-row">חודשי: <b>'+fmt(amt)+'</b></div><div class="exp-pay-row">נותר: <b>'+_payFmt(c.sum)+'</b></div></div>'
         +'</div>'
       +'</div>';
@@ -7503,6 +7503,8 @@ function _payCalc(p){
   return {left,sum:left*amt,current:cur};
 }
 function _payPct(p){const total=parseFloat(p.total)||0;return total>0?Math.round(_payCalc(p).current/total*100):0;}
+function _payMonthly(txTotal,n){const t=parseFloat(txTotal)||0,k=parseInt(n,10)||0;return t>0&&k>0?Math.round(t/k*100)/100:0;}
+function _payTxTotal(p){const t=parseFloat(p.txTotal)||0;return t>0?t:Math.round((parseFloat(p.amount)||0)*(parseFloat(p.total)||0)*100)/100;}
 function _payMeta(p){
   const total=parseFloat(p.total)||0, c=_payCalc(p);
   if(!total)return 'הזן מספר תשלומים';
@@ -7535,15 +7537,15 @@ async function _expEditPayment(id){
   const p=payments.find(x=>x.id===id);if(!p)return;
   const vals=await promptSheet({title:'עריכת תשלום',fields:[
     {label:'שם התשלום',value:p.name||''},
-    {label:'סכום תשלום חודשי',type:'number',value:p.amount||''},
+    {label:'סכום העסקה הכולל (יחולק במספר התשלומים)',type:'number',value:_payTxTotal(p)||''},
     {label:'מספר תשלומים סה״כ',type:'number',value:p.total||''},
     {label:'תשלומים שנותרו',type:'number',value:_payCalc(p).left}
   ]});
   if(!vals)return;
-  const[name,amount,total,remaining]=vals;
-  const tot=parseFloat(total)||0;
+  const[name,txTotal,total,remaining]=vals;
+  const tot=parseInt(total,10)||0;
   const r=remaining===''?tot:Math.max(0,Math.min(tot,parseFloat(remaining)||0));
-  p.name=name.trim();p.amount=parseFloat(amount)||0;p.total=tot;p.current=tot-r;p.currentAnchor=_curMonthKey();
+  p.name=name.trim();p.txTotal=parseFloat(txTotal)||0;p.amount=_payMonthly(txTotal,tot);p.total=tot;p.current=tot-r;p.currentAnchor=_curMonthKey();
   saveData();renderTxPage();renderPayments();
 }
 async function _expEditInsurance(id){
@@ -7578,12 +7580,13 @@ async function _expAddInsurance(){
 async function _expAddPayment(){
   const vals=await promptSheet({title:'תשלום חדש',fields:[
     {label:'שם התשלום החדש'},
-    {label:'סכום תשלום חודשי',type:'number'},
+    {label:'סכום העסקה הכולל (יחולק במספר התשלומים)',type:'number'},
     {label:'מספר תשלומים סה״כ',type:'number'}
   ]});
   if(!vals||!vals[0]||!vals[0].trim())return;
-  const[name,amount,total]=vals;
-  payments.push({id:Date.now(),name:name.trim(),total:parseFloat(total)||0,current:0,amount:parseFloat(amount)||0,currentAnchor:_curMonthKey()});
+  const[name,txTotal,total]=vals;
+  const n=parseInt(total,10)||1;
+  payments.push({id:Date.now(),name:name.trim(),total:n,current:0,txTotal:parseFloat(txTotal)||0,amount:_payMonthly(txTotal,n),currentAnchor:_curMonthKey()});
   saveData();renderTxPage();renderPayments();
   showToast('✓ תשלום נוסף');
 }
@@ -7595,6 +7598,7 @@ function updatePayment(id,field,val){
     p.current=tot-r;p.currentAnchor=_curMonthKey();
   }else{
     p[field]=field==='name'?val:(val===''?'':(parseFloat(val)||0));
+    if(field==='amount'||field==='total')delete p.txTotal;
   }
   const card=document.querySelector('#paymentsBody [data-pid="'+id+'"]');
   if(card){

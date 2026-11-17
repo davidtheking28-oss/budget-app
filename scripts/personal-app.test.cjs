@@ -277,6 +277,15 @@ test('payments finish across a year boundary and do not remain in cash flow',()=
  const ctx=functions(['_monthsElapsed','_payCalc'],{_curMonthKey:()=> '2027-01'});assert.equal(ctx._payCalc({total:12,current:11,currentAnchor:'2026-12',amount:100}).left,0);assert.equal(ctx._payCalc({total:12,current:10,currentAnchor:'2026-12',amount:100}).sum,100);
 });
 
+test('an installment deal is split by the number of payments and drops out of the cashflow when finished',()=>{
+ const ctx=functions(['_monthsElapsed','_payCalc','_payMonthly','_payTxTotal'],{_curMonthKey:()=> '2027-01'});
+ assert.equal(ctx._payMonthly(1000,4),250);assert.equal(ctx._payMonthly('1000',3),333.33);assert.equal(ctx._payMonthly(0,3),0);assert.equal(ctx._payMonthly(900,0),0);
+ const p={total:3,current:0,txTotal:900,amount:ctx._payMonthly(900,3),currentAnchor:'2026-11'};
+ assert.equal(ctx._payCalc(p).left,1);assert.equal(ctx._payCalc(p).sum,300);
+ assert.equal(ctx._payTxTotal(p),900);assert.equal(ctx._payTxTotal({total:6,amount:50}),300);
+ assert.equal(ctx._payCalc({...p,currentAnchor:'2026-10'}).left,0);
+});
+
 function autoRestoreContext(snapshot,localStorage=storage({budget_autobackup:JSON.stringify(snapshot),budget_tx:'[{"id":"keep"}]'})){
  const ctx=vm.createContext({JSON,Date,localStorage,window:{},BK_KEYS:['budget_tx','budget_insurances'],confirmSheet:async()=>true,location:{reload:()=>{ctx.reloaded=true;}},showToast:t=>{ctx.toast=t;}});
  const start=html.indexOf('window.restoreAutoBackup=async function()'),end=html.indexOf('  var _sd=',start);vm.runInContext(html.slice(start,end),ctx);return ctx;
