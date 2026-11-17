@@ -700,6 +700,17 @@
     .sheet{background:var(--surface);width:100%;max-width:100%;box-sizing:border-box;border-radius:24px 24px 0 0;padding:12px 16px calc(16px + var(--safe-bottom));max-height:92vh;overflow-y:auto;overflow-x:hidden;animation:slideUp 0.2s cubic-bezier(0.22,1,0.36,1) both;}
     .sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 12px;}
     .sheet-title{font-size:1.05rem;font-weight:var(--fw-bold);margin-bottom:12px;color:var(--text);letter-spacing:var(--track-normal);}
+    .apg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .apg-close{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:1.1rem;cursor:pointer}
+    .apg-step{font-size:0.8125rem;font-weight:700;color:var(--accent-text);text-align:center;margin:8px 0 6px}
+    .apg-text{font-size:1.1rem;font-weight:800;line-height:1.45;color:var(--text);text-align:center;margin:0 4px 14px;min-height:3.2em}
+    .apg-phone{width:min(230px,60vw);margin:0 auto;border:5px solid var(--text);border-radius:32px;overflow:hidden;background:var(--surface2);aspect-ratio:9/17;display:flex;align-items:center;justify-content:center}
+    body.dark .apg-phone{border-color:#3a3a3a}
+    .apg-phone img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+    .apg-phone.empty img{display:none}
+    .apg-phone.empty::after{content:'התמונה תתווסף בקרוב';font-size:0.8125rem;color:var(--text3)}
+    .apg-nav{display:flex;gap:10px;margin-top:16px}
+    .apg-nav .btn{flex:1;min-height:52px;border-radius:999px}
     @keyframes slideUp{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}@keyframes sheetExit{from{transform:translateY(0);}to{transform:translateY(105%);}}@keyframes inputShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
     .form-stack{display:flex;flex-direction:column;gap:9px;}
     .form-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
@@ -1914,6 +1925,16 @@
     <div class="sheet-handle"></div>
     <div class="sheet-title">↪ העברה לקטגוריה אחרת</div>
     <div id="moveCatList" class="cat-tile-grid" style="max-height:56vh;overflow-y:auto;"></div>
+  </div>
+</div>
+<div class="sheet-overlay" id="apGuideSheet" onclick="if(event.target===this)closeSheet('apGuideSheet')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="apg-head"><div class="sheet-title" style="margin:0">מדריך להתקנה</div><button type="button" class="apg-close" onclick="closeSheet('apGuideSheet')" aria-label="סגור">✕</button></div>
+    <div class="apg-step" id="apgStep"></div>
+    <div class="apg-text" id="apgText"></div>
+    <div class="apg-phone" id="apgPhone"><img id="apgImg" alt=""></div>
+    <div class="apg-nav"><button type="button" id="apgNext" class="btn btn-primary" onclick="apGuideGo(1)">הבא</button><button type="button" id="apgPrev" class="btn btn-outline" onclick="apGuideGo(-1)">הקודם</button></div>
   </div>
 </div>
 
@@ -5825,6 +5846,32 @@ function openSettings(){
   renderApplePaySection();
 }
 const APPLE_PAY_SHORTCUT_URL='https://www.icloud.com/shortcuts/c6d4c456de2f41dc8129affc0d85814f';
+const AP_GUIDE=[
+  {t:'בהגדרות של האפליקציה, בכרטיס Apple Pay, לחץ על "חבר Apple Pay".',img:'ap-1-settings.png'},
+  {t:'לחץ על "העתק קוד". זה הקוד האישי שלך, ואסור לשתף אותו עם אף אחד.',img:'ap-2-copy.png'},
+  {t:'לחץ על "הוסף קיצור דרך". אפליקציית קיצורי הדרך תיפתח.',img:'ap-3-open.png'},
+  {t:'הדבק את הקוד בשדה שמופיע, ולחץ על "הוספת קיצור".',img:'ap-4-paste.png'},
+  {t:'ודא שהמתג "פעולה אוטומטית" דלוק, כדי שהקיצור ירוץ לבד אחרי כל תשלום.',img:'ap-5-auto.png'},
+  {t:'שלם בהצמדת האייפון או השעון. ההוצאה תופיע באפליקציה תוך דקה.',img:'ap-6-done.png'}
+];
+let _apgI=0;
+function openApGuide(){_apgI=0;_apgRender();openSheet('apGuideSheet');}
+function apGuideGo(d){
+  if(d===1&&_apgI===AP_GUIDE.length-1){closeSheet('apGuideSheet');return;}
+  _apgI=Math.max(0,Math.min(AP_GUIDE.length-1,_apgI+d));
+  _apgRender();
+}
+function _apgRender(){
+  const s=AP_GUIDE[_apgI];
+  document.getElementById('apgStep').textContent='שלב '+(_apgI+1)+' מתוך '+AP_GUIDE.length;
+  document.getElementById('apgText').textContent=s.t;
+  const ph=document.getElementById('apgPhone'),im=document.getElementById('apgImg');
+  ph.classList.remove('empty');
+  im.onerror=()=>ph.classList.add('empty');
+  im.src='assets/guide/'+s.img;
+  document.getElementById('apgPrev').style.visibility=_apgI?'visible':'hidden';
+  document.getElementById('apgNext').textContent=_apgI===AP_GUIDE.length-1?'סיום':'הבא';
+}
 let _applePayToken='';
 let _applePayBusy=false;
 let _applePayPulling=false;
@@ -5840,6 +5887,7 @@ async function renderApplePaySection(){
   _applePayShell('<p style="font-size:0.8125rem;color:var(--text3);margin:0 0 10px">כל תשלום ב-Apple Pay שמבצעים בהצמדת האייפון או השעון נרשם כאן לבד כהוצאה, ומסווג לקטגוריה. קניות באינטרנט ובאפליקציות לא נקלטות. ההגדרה חד־פעמית.</p>'
     +(st.active?'<p style="font-size:0.875rem;margin:0 0 10px">✓ מחובר'+(last?' · תשלום אחרון נקלט: '+esc(last):' · עדיין לא נקלט תשלום')+'</p>':'')
     +'<button type="button" class="set-dd-opt set-pill-btn" style="width:100%" onclick="createApplePayHook()"><span>🔗</span> '+(st.active?'צור קישור חדש (מבטל את הקודם)':'חבר Apple Pay')+'</button>'
+    +(APPLE_PAY_SHORTCUT_URL?'<button type="button" class="set-dd-opt set-pill-btn" style="width:100%" onclick="openApGuide()"><span>📖</span> מדריך עם תמונות</button>':'')
     +(st.active?'<button type="button" class="set-dd-opt set-pill-btn set-pill-danger" style="width:100%;color:var(--red)" onclick="revokeApplePayHook()">נתק את Apple Pay</button>':''));
 }
 async function createApplePayHook(){
