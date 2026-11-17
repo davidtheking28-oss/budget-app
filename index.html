@@ -557,6 +557,20 @@
     .cf-hero-cell-inc .cf-hero-cell-val{color:var(--green)}
     .cf-hero-cell-exp .cf-hero-cell-val{color:var(--red)}
     .cf-hero-cell-label{font-size:0.8125rem;color:var(--text2);font-weight:600}
+    .cf-sec{margin-top:22px}
+    .cf-sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 8px 8px}
+    .cf-sec-title{font-size:0.95rem;font-weight:800;color:var(--text)}
+    .cf-sec-total{font-family:var(--font-num);font-size:0.9rem;font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums}
+    .cf-sec-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+    body.dark .cf-sec-card{box-shadow:0 10px 26px -18px rgba(0,0,0,0.8)}
+    .cf-sec-card:has(.exp-row-menu[open]){overflow:visible}
+    #page-transactions .cf-sec-card .exp-row{border-radius:0;margin:0;box-shadow:none;background:none}
+    #page-transactions .cf-sec-card .exp-row:not(:first-child){border-top:1px solid var(--border)}
+    #page-transactions .cf-sec-card .exp-row:has(.exp-row-summary[aria-expanded="true"]){border-radius:0;margin-bottom:0}
+    #page-transactions .cf-sec-card .exp-body{border:0;border-top:1px solid var(--border);border-radius:0;background:var(--surface2);padding:10px 12px 12px}
+    .cf-sec-card .budget-tx-empty{text-align:right;padding:18px 20px;font-size:0.85rem}
+    .cashflow-page .cf-sec-card>.exp-add-row{display:flex;justify-content:flex-start;gap:10px;width:100%;min-height:54px;margin:0;padding:0 20px;border:0;border-radius:0;background:none;color:var(--accent-text);font-weight:700}
+    .cashflow-page .cf-sec-card>.budget-tx-empty+.exp-add-row,.cashflow-page .cf-sec-card>.exp-row~.exp-add-row,.cashflow-page .cf-sec-card>.exp-body~.exp-add-row{border-top:1px solid var(--border)}
     .cf-hero-cell-val{font-family:var(--font-num);font-weight:800;color:var(--text);font-size:1rem;font-variant-numeric:tabular-nums}
     #page-transactions #txOverflowBtn{width:44px;padding-inline:0!important}
     #txAdvancedFilters{padding-bottom:8px;background:var(--surface2);border-bottom:1px solid var(--border)}
@@ -4341,6 +4355,9 @@ function _expRowHtml(opts){
   +'<div class="exp-body" id="exp-detail-'+id+'"'+(open?'':' hidden')+'>'+ (open?opts.body:'')+'</div>';
 }
 function _viewingPastMonth(){const n=new Date();return currentYear<n.getFullYear()||(currentYear===n.getFullYear()&&currentMonth<n.getMonth());}
+function _cfSectionHtml(title,total,inner){
+  return '<section class="cf-sec"><div class="cf-sec-head"><div class="cf-sec-title" role="heading" aria-level="3">'+title+'</div>'+(total>0?'<span class="cf-sec-total">'+fmt(total)+'</span>':'')+'</div><div class="cf-sec-card">'+inner+'</div></section>';
+}
 function renderTxCategorized(byCat){
   let html='';
   const allFixed=getEffectiveFixedCats();
@@ -4357,9 +4374,9 @@ function renderTxCategorized(byCat){
       savingEntries.push({amount,html:rowHtml});
     });
     if(savingEntries.length||txListFilter==='all'){
-      html+='<div class="section-header"><div class="section-title">חסכונות והשקעות <span class="badge">'+savingEntries.length+'</span></div></div>'
-        +(savingEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין חסכונות או השקעות עדיין</div>')
-        +((past||savingEntries.length)?'':'<button type="button" class="exp-add-row" onclick="_expEditManual(\''+attrArg(SAVING_FIXED_CATS[0])+'\')"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף חיסכון או השקעה</button>');
+      html+=_cfSectionHtml('חסכונות והשקעות',savingEntries.reduce((s,e)=>s+e.amount,0),
+        (savingEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין חסכונות או השקעות עדיין</div>')
+        +((past||savingEntries.length)?'':'<button type="button" class="exp-add-row" onclick="_expEditManual(\''+attrArg(SAVING_FIXED_CATS[0])+'\')"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף חיסכון או השקעה</button>'));
     }
   }
   if(txListFilter==='all')html+=_expIncomeSectionHtml();
@@ -4379,9 +4396,9 @@ function renderTxCategorized(byCat){
       fxEntries.push({amount,html:rowHtml});
     });
     fxEntries.sort((a,b)=>b.amount-a.amount);
-    html+='<div class="section-header"><div class="section-title">הוצאות קבועות <span class="badge">'+fxEntries.length+'/'+nonSavingFixed.length+'</span></div></div>'
-      +(fxEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות עדיין — הוסף שכירות, חשבונות או מנויים</div>')
-      +(past?'':'<button type="button" class="exp-add-row" onclick="openFixedCatPicker()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>');
+    html+=_cfSectionHtml('הוצאות קבועות',fxEntries.reduce((s,e)=>s+e.amount,0),
+      (fxEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות קבועות עדיין — הוסף שכירות, חשבונות או מנויים</div>')
+      +(past?'':'<button type="button" class="exp-add-row" onclick="openFixedCatPicker()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה קבועה</button>'));
 
   }
   if(txListFilter!=='fixed'){
@@ -4400,9 +4417,9 @@ function renderTxCategorized(byCat){
       varEntries.push({amount,html:rowHtml});
     });
     varEntries.sort((a,b)=>b.amount-a.amount);
-    html+='<div class="section-header"><div class="section-title">הוצאות משתנות <span class="badge">'+varEntries.length+'/'+_varCats.length+'</span></div></div>'
-      +(varEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות משתנות עדיין — הוסף הוצאה באמצעות הפלוס</div>')
-      +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>';
+    html+=_cfSectionHtml('הוצאות משתנות',varEntries.reduce((s,e)=>s+e.amount,0),
+      (varEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין הוצאות משתנות עדיין — הוסף הוצאה באמצעות הפלוס</div>')
+      +'<button type="button" class="exp-add-row" onclick="addCustomBudgetCat()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה משתנה</button>');
   }
   return html;
 }
@@ -4416,9 +4433,9 @@ function _expIncomeSectionHtml(){
       ?_expRowHtml({key:'inc:'+i,cat:src.name||'הכנסה',iconCat:'שכר',amount,body})
       :_expRowHtml({key:'inc:'+i,cat:src.name||'הכנסה',iconCat:'שכר',amount,editable:true,onEdit:'_expEditIncome('+i+')',onDelete:'_expDeleteIncome('+i+')',body});
   }).join('');
-  return '<div class="section-header"><div class="section-title">הכנסות <span class="badge">'+sources.length+'</span></div></div>'
-    +(rows||'<div class="budget-tx-empty">אין מקורות הכנסה מוגדרים</div>')
-    +(past?'':'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>');
+  return _cfSectionHtml('הכנסות',sources.reduce((s,x)=>s+(parseFloat(x.amount)||0),0),
+    (rows||'<div class="budget-tx-empty">אין מקורות הכנסה מוגדרים</div>')
+    +(past?'':'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>'));
 }
 function _incomeFields(src){return [{label:'שם המקור',value:src.name||'',placeholder:'משכורת'},{label:'סכום חודשי (₪)',type:'number',value:src.amount||''},{label:'יום קבלה בחודש (לתזכורת)',type:'number',value:src.day||''}];}
 function _cloneSources(a){return (a||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
