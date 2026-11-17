@@ -77,7 +77,7 @@
   #txPageIncome, #txPageExpense {
     font-family: var(--font-num);
     font-weight: 800;
-    font-size: 16px !important;
+    font-size: clamp(13px, 4.1vw, 16px) !important;
   }
   #page-transactions .exp-row {
     min-height: 64px;
@@ -565,6 +565,7 @@
     .cf-hero-cell-inc .cf-hero-cell-val{color:var(--green)}
     .cf-hero-cell-exp .cf-hero-cell-val{color:var(--red)}
     .cf-hero-cell-label{font-size:0.8125rem;color:var(--text2);font-weight:600}
+    @media (max-width:360px){.cf-hero-cell{gap:6px;padding:8px 12px 8px 14px}.cf-hero-cell-icon{width:28px;height:28px}}
     .page-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
     .page-head-title{flex:1;min-width:0;margin:0;font-size:1.35rem;font-weight:800;color:var(--text)}
     .page-back{flex-shrink:0;width:44px;height:44px;border:0;border-radius:50%;background:var(--surface);box-shadow:0 1px 6px rgba(0,0,0,0.08);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer}
