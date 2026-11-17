@@ -708,6 +708,8 @@
     body.dark .apg-phone{border-color:#3a3a3a}
     .apg-phone img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
     .apg-phone.empty img{display:none}
+    .apg-phone.shot{align-items:flex-start}
+    .apg-phone.shot img{height:auto;margin-top:-15%}
     .apg-phone.empty::after{content:'התמונה תתווסף בקרוב';font-size:0.8125rem;color:var(--text3)}
     .apg-nav{display:flex;gap:10px;margin-top:16px}
     .apg-nav .btn{flex:1;min-height:52px;border-radius:999px}
@@ -5849,10 +5851,11 @@ const APPLE_PAY_SHORTCUT_URL='https://www.icloud.com/shortcuts/6ebd088827554071a
 const AP_GUIDE=[
   {t:'בהגדרות של האפליקציה, בכרטיס Apple Pay, לחץ על "חבר Apple Pay".',img:'ap-1-settings.png'},
   {t:'לחץ על "העתק קוד". זה הקוד האישי שלך, ואסור לשתף אותו עם אף אחד.',img:'ap-2-copy.png'},
-  {t:'לחץ על "הוסף קיצור דרך". אפליקציית קיצורי הדרך תיפתח.',img:'ap-3-open.png'},
-  {t:'הדבק את הקוד בשדה שמופיע, ולחץ על "הוספת קיצור".',img:'ap-4-paste.png'},
-  {t:'ודא שהמתג "פעולה אוטומטית" דלוק, כדי שהקיצור ירוץ לבד אחרי כל תשלום.',img:'ap-5-auto.png'},
-  {t:'שלם בהצמדת האייפון או השעון. ההוצאה תופיע באפליקציה תוך דקה.',img:'ap-6-done.png'}
+  {t:'לחץ על "הוסף קיצור דרך". אפליקציית קיצורי הדרך תיפתח, ושם לחץ על "הגדרת קיצור".',img:'ap-3-open.png',shot:1},
+  {t:'הקש על השדה האפור "מלל" בשורה, והדבק בו את הקוד שהעתקת.',img:'ap-4-question.png',shot:1},
+  {t:'אחרי ההדבקה לחץ על ה-V במקלדת, ואז על "הוספת קיצור" בתחתית המסך.',img:'ap-5-paste.png',shot:1},
+  {t:'ודא שהמתג "פעולה אוטומטית" דלוק, כדי שהקיצור ירוץ לבד אחרי כל תשלום.',img:'ap-6-auto.png',shot:1},
+  {t:'שלם בהצמדת האייפון או השעון. ההוצאה תופיע באפליקציה תוך דקה.',img:'ap-7-done.png'}
 ];
 let _apgI=0;
 function openApGuide(){_apgI=0;_apgRender();openSheet('apGuideSheet');}
@@ -5866,7 +5869,7 @@ function _apgRender(){
   document.getElementById('apgStep').textContent='שלב '+(_apgI+1)+' מתוך '+AP_GUIDE.length;
   document.getElementById('apgText').textContent=s.t;
   const ph=document.getElementById('apgPhone'),im=document.getElementById('apgImg');
-  ph.classList.remove('empty');
+  ph.classList.remove('empty');ph.classList.toggle('shot',!!s.shot);
   im.onerror=()=>ph.classList.add('empty');
   im.src='assets/guide/'+s.img;
   document.getElementById('apgPrev').style.visibility=_apgI?'visible':'hidden';
