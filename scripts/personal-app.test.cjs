@@ -659,6 +659,27 @@ test('the required statement months are the three full months before the start m
   assert.equal(ctx._docsMissing(bankOnly.concat(months.map(period_month=>({kind:'credit',period_month}))),months).length,0);
 });
 
+test('iPhone haptic overlays go on every button once, never on buttons holding inputs, and stop the forwarded click',()=>{
+  const el=(extra={})=>({className:'',kids:[],attrs:{},listeners:{},setAttribute(k,v){this.attrs[k]=v;},appendChild(c){this.kids.push(c);},addEventListener(n,f){this.listeners[n]=f;},closest:()=>null,querySelector(sel){return sel===':scope > .hx-ov'?(this.kids.find(c=>c.className==='hx-ov')||null):(this.holdsInput?{}:null);},...extra});
+  const plain=el(),withInput=el({holdsInput:true}),already=el();
+  already.kids.push({className:'hx-ov'});
+  let observed=0;
+  const document={body:{},createElement:()=>el(),querySelectorAll:()=>[plain,withInput,already]};
+  const ctx=functions(['initIosHaptics'],{document,_iosHapticsOn:false,MutationObserver:class{observe(){observed++;}},requestAnimationFrame:fn=>fn()});
+  ctx.initIosHaptics();
+  ctx.initIosHaptics();
+  assert.equal(observed,1);
+  assert.equal(plain.kids.length,1);
+  assert.equal(plain.kids[0].className,'hx-ov');
+  assert.equal(plain.kids[0].attrs['aria-hidden'],'true');
+  assert.equal(plain.kids[0].kids[0].attrs.switch,'');
+  assert.equal(withInput.kids.length,0);
+  assert.equal(already.kids.length,1);
+  let stopped=false;
+  plain.kids[0].kids[0].listeners.click({stopPropagation(){stopped=true;}});
+  assert.equal(stopped,true);
+});
+
 test('the advisor link survives a lost local copy through the signup metadata, and is cleared once sent',async()=>{
   const ref='11111111-1111-1111-1111-111111111111';
   const calls=[];const updates=[];

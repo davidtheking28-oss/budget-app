@@ -1220,6 +1220,9 @@
     /* Smoother, slightly richer page transition */
     @keyframes pageIn{from{opacity:0;transform:translateX(var(--page-dx,0px)) translateY(6px)}to{opacity:1;transform:translateX(0) translateY(0)}}
     .page.active{animation:pageIn 0.26s cubic-bezier(0.22,1,0.36,1) both;}
+    :where(button,[role="button"],.filter-chip,.nav-item){position:relative;}
+    .hx-ov{position:absolute;inset:0;z-index:5;margin:0;padding:0;opacity:0;display:block;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .hx-ov input{position:absolute;left:0;top:0;width:1px;height:1px;margin:0;opacity:0;pointer-events:none;}
     /* iOS black-translucent draws the page under the status bar and always keeps
        its icons white. The dark theme background is the same color as this strip,
        so the bar blends in; in light mode the strip stays dark so the icons
@@ -4193,6 +4196,42 @@ function haptic(ms=8){
     }
     _hapticEl.click();
   }catch(e){}
+}
+let _iosHapticsOn=false;
+function initIosHaptics(){
+  if(_iosHapticsOn)return;
+  _iosHapticsOn=true;
+  const SEL='button,[role="button"],.fab,.filter-chip,.nav-item';
+  const make=()=>{
+    const l=document.createElement('label');
+    l.className='hx-ov';
+    l.setAttribute('aria-hidden','true');
+    l.setAttribute('data-haptic','');
+    const i=document.createElement('input');
+    i.type='checkbox';
+    i.setAttribute('switch','');
+    i.tabIndex=-1;
+    i.addEventListener('click',e=>e.stopPropagation());
+    l.appendChild(i);
+    return l;
+  };
+  const scan=()=>{
+    document.querySelectorAll(SEL).forEach(b=>{
+      if(b.querySelector(':scope > .hx-ov')||b.closest('[data-haptic]'))return;
+      if(b.querySelector('input,select,textarea'))return;
+      b.appendChild(make());
+    });
+  };
+  let queued=false;
+  const isOv=n=>n.nodeType===1&&n.classList&&n.classList.contains('hx-ov');
+  new MutationObserver(records=>{
+    if(queued)return;
+    const relevant=records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&!isOv(n))||[...r.removedNodes].some(isOv));
+    if(!relevant)return;
+    queued=true;
+    requestAnimationFrame(()=>{queued=false;scan();});
+  }).observe(document.body,{childList:true,subtree:true});
+  scan();
 }
 
 const HE_MONTHS_LONG=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
@@ -10191,7 +10230,9 @@ setTimeout(autoCarryRecurring,500);
 <script>
 /* ════ Haptic feedback on taps ════ */
 (function(){
+  if(!navigator.vibrate&&window.matchMedia&&matchMedia('(pointer:coarse)').matches)initIosHaptics();
   document.addEventListener('click',function(e){
+    if(_iosHapticsOn)return;
     var t=e.target.closest('button,[role="button"],.nav-item,input[type="checkbox"],input[type="radio"]');
     if(t&&!t.disabled&&!t.closest('[data-haptic]'))haptic(10);
   },true);
