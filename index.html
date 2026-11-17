@@ -6005,7 +6005,8 @@ async function pickAvatar(input){
     const bmp=await createImageBitmap(f);
     const S=192,side=Math.min(bmp.width,bmp.height);
     const c=document.createElement('canvas');c.width=c.height=S;
-    c.getContext('2d').drawImage(bmp,(bmp.width-side)/2,(bmp.height-side)/2,side,side,0,0,S,S);
+    const sy=bmp.height>bmp.width?(bmp.height-side)*0.15:(bmp.height-side)/2;
+    c.getContext('2d').drawImage(bmp,(bmp.width-side)/2,sy,side,side,0,0,S,S);
     if(bmp.close)bmp.close();
     userSettings.avatar=c.toDataURL('image/jpeg',0.82);
     saveSettingsData();
