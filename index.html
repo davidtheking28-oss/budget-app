@@ -702,17 +702,23 @@
     .sheet-title{font-size:1.05rem;font-weight:var(--fw-bold);margin-bottom:12px;color:var(--text);letter-spacing:var(--track-normal);}
     .apg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
     .apg-close{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:1.1rem;cursor:pointer}
-    .apg-step{font-size:0.8125rem;font-weight:700;color:var(--accent-text);text-align:center;margin:8px 0 6px}
-    .apg-text{font-size:1.1rem;font-weight:800;line-height:1.45;color:var(--text);text-align:center;margin:0 4px 14px;min-height:3.2em}
-    .apg-phone{width:min(230px,60vw);margin:0 auto;border:5px solid var(--text);border-radius:32px;overflow:hidden;background:var(--surface2);aspect-ratio:9/17;display:flex;align-items:center;justify-content:center}
+    .apg-sheet{height:calc(100dvh - env(safe-area-inset-top,0px) - 10px);max-height:none;display:flex;flex-direction:column;overflow:hidden}
+    .apg-step{font-size:0.8125rem;font-weight:700;color:var(--accent-text);text-align:center;margin:6px 0 4px;flex-shrink:0}
+    .apg-stage{flex:1;min-height:0;display:grid}
+    .apg-slide{grid-area:1/1;min-height:0;display:flex;flex-direction:column;visibility:hidden;opacity:0;pointer-events:none}
+    .apg-slide.on{visibility:visible;opacity:1;pointer-events:auto;animation:apgIn .24s cubic-bezier(0.22,1,0.36,1) both}
+    @keyframes apgIn{from{opacity:0;transform:translateX(var(--apg-dx,0px))}to{opacity:1;transform:none}}
+    .apg-text{font-size:1.1rem;font-weight:800;line-height:1.45;color:var(--text);text-align:center;margin:4px 4px 12px;flex-shrink:0}
+    .apg-phonewrap{flex:1;min-height:0;display:flex;justify-content:center}
+    .apg-phone{height:100%;max-width:100%;aspect-ratio:9/17;border:5px solid var(--text);border-radius:32px;overflow:hidden;background:var(--surface2);display:flex;align-items:center;justify-content:center}
     body.dark .apg-phone{border-color:#3a3a3a}
     .apg-phone img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
     .apg-phone.empty img{display:none}
     .apg-phone.shot{align-items:flex-start}
     .apg-phone.shot img{height:auto;margin-top:-15%}
     .apg-phone.empty::after{content:'התמונה תתווסף בקרוב';font-size:0.8125rem;color:var(--text3)}
-    .apg-nav{display:flex;gap:10px;margin-top:16px}
-    .apg-nav .btn{flex:1;min-height:52px;border-radius:999px}
+    .apg-nav{display:flex;gap:10px;margin-top:14px;flex-shrink:0}
+    .apg-nav .btn{flex:1;min-height:52px;border-radius:999px;transition:none}
     @keyframes slideUp{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}@keyframes sheetExit{from{transform:translateY(0);}to{transform:translateY(105%);}}@keyframes inputShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
     .form-stack{display:flex;flex-direction:column;gap:9px;}
     .form-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
@@ -1930,13 +1936,12 @@
   </div>
 </div>
 <div class="sheet-overlay" id="apGuideSheet" onclick="if(event.target===this)closeSheet('apGuideSheet')">
-  <div class="sheet">
+  <div class="sheet apg-sheet">
     <div class="sheet-handle"></div>
     <div class="apg-head"><div class="sheet-title" style="margin:0">מדריך להתקנה</div><button type="button" class="apg-close" onclick="closeSheet('apGuideSheet')" aria-label="סגור">✕</button></div>
     <div class="apg-step" id="apgStep"></div>
-    <div class="apg-text" id="apgText"></div>
-    <div class="apg-phone" id="apgPhone"><img id="apgImg" alt=""></div>
-    <div class="apg-nav"><button type="button" id="apgNext" class="btn btn-primary" onclick="apGuideGo(1)">הבא</button><button type="button" id="apgPrev" class="btn btn-outline" onclick="apGuideGo(-1)">הקודם</button></div>
+    <div class="apg-stage" id="apgStage"></div>
+    <div class="apg-nav"><button type="button" id="apgPrev" class="btn btn-outline" onclick="apGuideGo(-1)">הקודם</button><button type="button" id="apgNext" class="btn btn-primary" onclick="apGuideGo(1)">הבא</button></div>
   </div>
 </div>
 
@@ -5857,29 +5862,39 @@ const AP_GUIDE=[
   {t:'בדוק שהמתג "פעולה אוטומטית" דלוק. כך הקיצור ירוץ לבד אחרי כל תשלום.',img:'ap-6-auto.png',shot:1},
   {t:'עכשיו שלם עם האייפון או השעון, בהצמדה לקופה. תוך דקה ההוצאה תופיע באפליקציה.',img:'ap-7-done.png'}
 ];
-let _apgI=0;
-function openApGuide(){_apgI=0;_apgRender();openSheet('apGuideSheet');}
+let _apgI=0,_apgBuilt=false;
+function _apgBuild(){
+  const esc2=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const st=document.getElementById('apgStage');
+  st.innerHTML=AP_GUIDE.map((s,i)=>'<div class="apg-slide" data-i="'+i+'"><div class="apg-text">'+esc2(s.t)+'</div><div class="apg-phonewrap"><div class="apg-phone'+(s.shot?' shot':'')+'"><img src="assets/guide/'+s.img+'" alt="" decoding="async"></div></div></div>').join('');
+  st.querySelectorAll('img').forEach(im=>{im.onerror=()=>im.parentNode.classList.add('empty');});
+  _apgBuilt=true;
+}
+function openApGuide(){
+  if(!_apgBuilt)_apgBuild();
+  _apgShow(0,0);
+  openSheet('apGuideSheet');
+}
 function apGuideGo(d){
   if(d===1&&_apgI===AP_GUIDE.length-1){closeSheet('apGuideSheet');return;}
-  _apgI=Math.max(0,Math.min(AP_GUIDE.length-1,_apgI+d));
-  _apgRender();
+  const n=Math.max(0,Math.min(AP_GUIDE.length-1,_apgI+d));
+  if(n!==_apgI)_apgShow(n,d);
 }
-function _apgRender(){
-  const s=AP_GUIDE[_apgI];
-  document.getElementById('apgStep').textContent='שלב '+(_apgI+1)+' מתוך '+AP_GUIDE.length;
-  document.getElementById('apgText').textContent=s.t;
-  const ph=document.getElementById('apgPhone'),im=document.getElementById('apgImg');
-  ph.classList.remove('empty');ph.classList.toggle('shot',!!s.shot);
-  im.onerror=()=>ph.classList.add('empty');
-  im.src='assets/guide/'+s.img;
-  document.getElementById('apgPrev').style.visibility=_apgI?'visible':'hidden';
-  document.getElementById('apgNext').textContent=_apgI===AP_GUIDE.length-1?'סיום':'הבא';
+function _apgShow(n,d){
+  _apgI=n;
+  const st=document.getElementById('apgStage');
+  st.style.setProperty('--apg-dx',(d===1?-40:d===-1?40:0)+'px');
+  st.querySelectorAll('.apg-slide').forEach(el=>el.classList.toggle('on',+el.dataset.i===n));
+  document.getElementById('apgStep').textContent='שלב '+(n+1)+' מתוך '+AP_GUIDE.length;
+  document.getElementById('apgPrev').style.visibility=n?'visible':'hidden';
+  document.getElementById('apgNext').textContent=n===AP_GUIDE.length-1?'סיום':'הבא';
 }
 let _applePayToken='';
 let _applePayBusy=false;
 let _applePayPulling=false;
 function _applePayShell(inner){const box=document.getElementById('applePayBox');if(box)box.innerHTML=inner;}
 async function renderApplePaySection(){
+  if(APPLE_PAY_SHORTCUT_URL&&!_apgBuilt)_apgBuild();
   const box=document.getElementById('applePayBox');if(!box)return;
   _applePayToken='';const setup=document.getElementById('applePaySetup');if(setup)setup.innerHTML='';
   if(!_sb||!_cloudUser){_applePayShell('<p style="font-size:0.8125rem;color:var(--text3);margin:0">התחבר לחשבון כדי לחבר את Apple Pay.</p>');return;}
@@ -10341,6 +10356,11 @@ setTimeout(autoCarryRecurring,500);
         sh.style.height=h+'px';
         sh.style.maxHeight=h+'px';
         ov.style.paddingTop=Math.max(0,vv.offsetTop)+'px';
+        ov.style.paddingBottom=kbH>0?kbH+'px':'';
+      } else if(sh.classList.contains('apg-sheet')){
+        ov.style.paddingTop='';
+        sh.style.height='';
+        sh.style.maxHeight=h+'px';
         ov.style.paddingBottom=kbH>0?kbH+'px':'';
       } else {
         ov.style.paddingTop='';
