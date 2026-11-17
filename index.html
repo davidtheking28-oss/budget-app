@@ -10421,7 +10421,14 @@ setTimeout(autoCarryRecurring,500);
     });
     sync();
   }
+  function unshift(){
+    var a=document.activeElement;
+    if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;
+    if(window.scrollY||document.documentElement.scrollTop||document.body.scrollTop)window.scrollTo(0,0);
+  }
   document.addEventListener('focusin',()=>requestAnimationFrame(sync));
+  document.addEventListener('focusout',()=>setTimeout(unshift,120));
+  vv.addEventListener('resize',()=>setTimeout(unshift,120));
   vv.addEventListener('resize',sync);
   vv.addEventListener('scroll',sync);
   var _orig=window.openSheet;
