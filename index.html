@@ -557,6 +557,11 @@
     .cf-hero-cell-inc .cf-hero-cell-val{color:var(--green)}
     .cf-hero-cell-exp .cf-hero-cell-val{color:var(--red)}
     .cf-hero-cell-label{font-size:0.8125rem;color:var(--text2);font-weight:600}
+    .page-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .page-head-title{flex:1;min-width:0;margin:0;font-size:1.35rem;font-weight:800;color:var(--text)}
+    .page-back{flex-shrink:0;width:44px;height:44px;border:0;border-radius:50%;background:var(--surface);box-shadow:0 1px 6px rgba(0,0,0,0.08);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer}
+    body.dark .page-back{border:1px solid var(--border);box-shadow:none}
+    .page-back svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
     .cf-sec{margin-top:22px}
     .cf-sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 8px 8px}
     .cf-sec-title{font-size:0.95rem;font-weight:800;color:var(--text)}
@@ -2445,7 +2450,9 @@
   </div>
 
   <div id="page-goals" class="page">
-    <div style="margin-bottom:14px;display:flex;justify-content:flex-start">
+    <div class="page-head">
+      <button type="button" class="page-back" onclick="showPage('dashboard')" aria-label="חזרה למסך הראשי"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2 class="page-head-title">יעדי חיסכון</h2>
       <button class="btn btn-primary btn-sm" onclick="openAddGoalSheet()">+ יעד חדש</button>
     </div>
     <div id="goalsList">
