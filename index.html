@@ -8255,7 +8255,7 @@ function showPage(name,btn){
   const _navs=[...document.querySelectorAll('.nav-item')];
   const _fromIdx=_navs.findIndex(b=>b.classList.contains('active'));
   const _toIdx=_navs.findIndex(b=>b.id==='nav-'+name);
-  const _pageDx=(_fromIdx>=0&&_toIdx>=0&&_fromIdx!==_toIdx)?(_toIdx>_fromIdx?28:-28):0;
+  const _pageDx=(_fromIdx>=0&&_toIdx>=0&&_fromIdx!==_toIdx)?(_toIdx>_fromIdx?28:-28):(_prevPage&&_fromIdx>=0&&_toIdx<0)?-56:(_prevPage&&_fromIdx<0&&_toIdx>=0)?56:0;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b=>{b.classList.remove('active');b.removeAttribute('aria-current');});
   const pg=document.getElementById('page-'+name);
