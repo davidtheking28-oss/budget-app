@@ -306,6 +306,12 @@
       #inlineMonthNav>button:not([data-month-arrow]) i{display:none;}
     }
     #inlineMonthNav.nav-hidden{top:-70px!important;}
+    .mnav{display:flex;align-items:center;gap:4px;padding:2px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.10)}
+    #inlineMonthNav .mnav-arrow{position:relative;width:38px!important;height:38px!important;flex-shrink:0;border:none;border-radius:50%;background:var(--surface2);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer}
+    #inlineMonthNav .mnav-arrow::after{content:'';position:absolute;inset:-4px}
+    #inlineMonthNav .mnav-arrow svg{width:16px;height:16px}
+    #inlineMonthNav .mnav-label{display:flex;align-items:center;justify-content:center;gap:6px;min-width:128px;min-height:38px;padding:0 12px;border:none;border-radius:999px;background:none;color:var(--text);font:inherit;font-size:0.9375rem;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer}
+    #inlineMonthNav .mnav-label svg{width:14px;height:14px;color:var(--text3);flex-shrink:0}
     #headerSettings{transition:top 0.3s ease;}
     #headerSettings.nav-hidden{top:-70px;}
     .page{display:none;}.page.active{display:block;}
@@ -2145,14 +2151,10 @@
   </div>
 </div>
 
-<div id="inlineMonthNav" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:5px 8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.10);">
-  <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(-1)" aria-label="חודש קודם" data-month-arrow><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="9 18 15 12 9 6"/></svg></button>
-  <button class="bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-slate-200/60 dark:border-zinc-700/50 rounded-full px-4 py-1.5 text-sm font-medium flex items-center gap-2 transition-all cursor-pointer" onclick="openMonthSheet()">
-    <i aria-hidden="true" data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-zinc-400"></i>
-    <span id="headerMonthLabel">טוען...</span>
-    <i aria-hidden="true" data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
-  </button>
-  <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-all cursor-pointer" onclick="shiftMonth(1)" aria-label="חודש הבא" data-month-arrow><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="15 18 9 12 15 6"/></svg></button>
+<div id="inlineMonthNav" class="mnav">
+  <button type="button" class="mnav-arrow" onclick="shiftMonth(-1)" aria-label="חודש קודם" data-month-arrow><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+  <button type="button" class="mnav-label" onclick="openMonthSheet()" aria-label="בחירת חודש"><span id="headerMonthLabel">טוען...</span><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+  <button type="button" class="mnav-arrow" onclick="shiftMonth(1)" aria-label="חודש הבא" data-month-arrow><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
 </div>
 
 <main id="main-content">
