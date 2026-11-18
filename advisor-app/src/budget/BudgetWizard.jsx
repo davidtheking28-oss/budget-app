@@ -113,15 +113,19 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   // A fixed expense is entered once and applies every month, so it counts as this month's
   // actual even when no transaction was posted for it (same as income sources). A posted
   // amount at or above the plan wins, so nothing is counted twice.
-  const fixedActual = useMemo(() => {
+  const { fixedActual, savingsAutoActual } = useMemo(() => {
     const now = new Date();
-    if (!monthTx.length && !(year === now.getFullYear() && month === now.getMonth())) return fixedRecorded;
+    if (!monthTx.length && !(year === now.getFullYear() && month === now.getMonth())) return { fixedActual: fixedRecorded, savingsAutoActual: 0 };
     const map = { ...fixedRecorded };
-    (draftData.fixed_expenses || []).filter(row => !row.savings).forEach(row => {
+    let savingsExtra = 0;
+    (draftData.fixed_expenses || []).forEach(row => {
       const planned = parseFloat(row.amount) || 0;
-      if (planned > (map[row.id] || 0)) map[row.id] = planned;
+      const recorded = map[row.id] || 0;
+      if (planned <= recorded) return;
+      map[row.id] = planned;
+      if (row.savings || row.id === SAVINGS_CATEGORY) savingsExtra += planned - recorded;
     });
-    return map;
+    return { fixedActual: map, savingsAutoActual: savingsExtra };
   }, [fixedRecorded, draftData, monthTx, year, month]);
   const fixedNameSet = useMemo(() => new Set(fixedCatsFor(draftData)), [draftData]);
   const [rowActualEdits, setRowActualEdits] = useState({});
@@ -182,7 +186,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   // fixed expense — that's "with a savings deposit". Add it back for the "without" figure.
   const plannedSavings = totalSavings;
   const savingsNames = new Set([SAVINGS_CATEGORY, ...fixed.filter(isSavingsRow).map(row => row.name.trim())]);
-  const actualSavings = monthlyActual.savings + Object.entries(actualEdits).reduce((sum, [name, value]) => savingsNames.has(name) ? sum + Math.max(0, (parseFloat(value) || 0) - (fixedActual[name] || 0)) : sum, 0);
+  const actualSavings = monthlyActual.savings + savingsAutoActual + Object.entries(actualEdits).reduce((sum, [name, value]) => savingsNames.has(name) ? sum + Math.max(0, (parseFloat(value) || 0) - (fixedActual[name] || 0)) : sum, 0);
 
   const CT = chartTheme();
   const summaryChartOptions = {
