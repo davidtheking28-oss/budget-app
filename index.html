@@ -5883,7 +5883,7 @@ const AP_GUIDE=[
   {t:'לחץ על "הוסף קיצור דרך". תיפתח אפליקציית קיצורי הדרך, ושם לחץ על "הגדרת קיצור".',img:'ap-3-open.png',shot:1},
   {t:'לחץ על המילה האפורה "מלל" בשורה, והדבק שם את הקוד.',img:'ap-4-question.png',shot:1},
   {t:'לחץ על ה-V במקלדת, ואחר כך על "הוספת קיצור" בתחתית המסך.',img:'ap-5-paste.png',shot:1},
-  {t:'בדוק שהמתג "פעולה אוטומטית" דלוק. כך הקיצור ירוץ לבד אחרי כל תשלום.',img:'ap-6-auto.png',shot:1},
+  {t:'בדוק שבראש הקיצור יש את הכרטיס "כאשר מתבצעת קריאה של כל כרטיס", ושהמתג "פעולה אוטומטית" דלוק. אם הכרטיס חסר, גרסת המערכת ישנה: סגור את המדריך ופעל לפי "הגדרה ידנית".',img:'ap-6-auto.png',shot:1},
   {t:'אם בראש המסך מופיע הפס "הפעולה האוטומטית מכובה", לחץ על החץ שליד "כרטיס" והדלק את המתג. בלי זה הקיצור לא ירוץ.',img:'ap-6b-off.png',shot:1},
   {t:'עכשיו שלם סכום קטן עם האייפון או השעון, בהצמדה לקופה. תוך דקה ההוצאה תופיע באפליקציה, ובהגדרות יופיע \"תשלום אחרון נקלט\".',img:'ap-7-done',theme:1}
 ];
@@ -5949,10 +5949,10 @@ async function createApplePayHook(){
       ?'<div class="ap-steps"><div class="ap-steps-title">החיבור נוצר. 3 שלבים באייפון, פעם אחת</div>'
         +'<div class="ap-step"><span class="ap-num">1</span><div class="ap-step-body"><div class="ap-step-text">העתק את הקוד האישי</div></div><button type="button" class="ap-act" onclick="copyApplePay(\'token\')">העתק קוד</button></div>'
         +'<div class="ap-step"><span class="ap-num">2</span><div class="ap-step-body"><div class="ap-step-text">הוסף את הקיצור</div><div class="ap-step-sub">כשנשאל על הקוד, הדבק אותו ולחץ "הוספת קיצור"</div></div><a class="ap-act" href="'+APPLE_PAY_SHORTCUT_URL+'" rel="noopener">הוסף קיצור</a></div>'
-        +'<div class="ap-step"><span class="ap-num">3</span><div class="ap-step-body"><div class="ap-step-text">בדוק שהמתג "פעולה אוטומטית" דלוק ושאין פס "הפעולה האוטומטית מכובה"</div></div></div></div>'
+        +'<div class="ap-step"><span class="ap-num">3</span><div class="ap-step-body"><div class="ap-step-text">בדוק שיש בראש הקיצור "כאשר מתבצעת קריאה" ושהמתג "פעולה אוטומטית" דלוק. אם אין, השתמש בהגדרה ידנית</div></div></div></div>'
         +'<div class="ap-note"><b>הקוד מוצג רק עכשיו.</b> אם לא העתקת אותו, צור קוד חדש. מי שמחזיק בו יכול רק להוסיף הוצאות, לא לקרוא מידע. אל תשתף אותו.</div>'
         +'<p class="ap-after">אחרי התשלום הראשון בהצמדה, ההוצאה תופיע באפליקציה תוך דקה, ופה יופיע "תשלום אחרון נקלט".</p>'
-        +'<details class="ap-manual"><summary>הגדרה ידנית (אם הקיצור לא נפתח)</summary>'+manual+'</details>'
+        +'<details class="ap-manual"><summary>הגדרה ידנית (אם הקיצור לא נפתח, או שבראשו אין "כאשר מתבצעת קריאה")</summary>'+manual+'</details>'
       :manual;
     showToast('✓ נוצר קישור. העתק אותו לקיצור הדרך');
   }catch(e){showToast('❌ לא ניתן ליצור קישור כרגע');}
