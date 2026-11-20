@@ -4537,7 +4537,15 @@ async function _expEditIncome(i){
   const list=_incomeWorkList();const src=list[i];if(!src)return;
   const v=await promptSheet({title:'עריכת מקור הכנסה',fields:_incomeFields(src)});
   if(v===null)return;
+  const oldName=(src.name||'').trim().toLowerCase();
   src.name=v[0].trim();src.amount=v[1];src.day=v[2];
+  const amt=parseFloat(src.amount);
+  const monthKey=mk(currentYear,currentMonth);
+  let synced=false;
+  if(oldName&&amt>0)transactions.forEach(t=>{
+    if(t.type==='income'&&t.recurring&&(t.date||'').startsWith(monthKey)&&(t.desc||'').trim().toLowerCase()===oldName){t.amount=amt;t.desc=src.name;synced=true;}
+  });
+  if(synced)saveData();
   _incomeCommit(list);
 }
 function _expDeleteIncome(i){

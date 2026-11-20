@@ -286,6 +286,14 @@ test('an installment deal is split by the number of payments and drops out of th
  assert.equal(ctx._payCalc({...p,currentAnchor:'2026-10'}).left,0);
 });
 
+test('editing an income source also updates the income it already posted this month',async()=>{
+ const src={name:'משכורת שלי',amount:'10000',day:'1'};let saved=0,committed=null;
+ const ctx=functions(['_expEditIncome'],{_incomeWorkList:()=>[src],promptSheet:async()=>['משכורת שלי','8055','1'],mk:(y,m)=>y+'-'+String(m+1).padStart(2,'0'),currentYear:2026,currentMonth:10,saveData:()=>{saved++;},_incomeCommit:l=>{committed=l;},_incomeFields:()=>[],
+  transactions:[{type:'income',recurring:true,desc:'משכורת שלי',amount:10000,date:'2026-11-01'},{type:'income',recurring:true,desc:'משכורת שלי',amount:10000,date:'2026-10-01'},{type:'income',desc:'בונוס',amount:500,date:'2026-11-05'}]});
+ await ctx._expEditIncome(0);
+ assert.equal(ctx.transactions[0].amount,8055);assert.equal(ctx.transactions[1].amount,10000);assert.equal(ctx.transactions[2].amount,500);assert.equal(saved,1);assert.ok(committed);
+});
+
 function autoRestoreContext(snapshot,localStorage=storage({budget_autobackup:JSON.stringify(snapshot),budget_tx:'[{"id":"keep"}]'})){
  const ctx=vm.createContext({JSON,Date,localStorage,window:{},BK_KEYS:['budget_tx','budget_insurances'],confirmSheet:async()=>true,location:{reload:()=>{ctx.reloaded=true;}},showToast:t=>{ctx.toast=t;}});
  const start=html.indexOf('window.restoreAutoBackup=async function()'),end=html.indexOf('  var _sd=',start);vm.runInContext(html.slice(start,end),ctx);return ctx;
