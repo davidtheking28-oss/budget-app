@@ -23,8 +23,9 @@ w.items.forEach(function(id,i){
 var it=DATA.items[id],kind=it.type==='v'?'v':it.type==='p'?'p':'h',nd=it.ready?'':needs(it);
 out+='<div class="c'+(kind==='h'?'':' '+kind)+(saved[id]?' done':'')+'" data-id="'+id+'"><div class="head"><span class="day">'+D[i]+'<small>'+w.dates[i]+'</small></span>'
 +'<label class="done-box"><input type="checkbox" aria-label="הועלה: '+esc(it.title)+'"'+(saved[id]?' checked':'')+'>הועלה</label></div>'
-+'<div class="tags"><span class="tag k">'+({v:'ערך',p:'אישי',h:'חשיפה'}[kind])+'</span><span class="tag f">'+esc(it.fmt)+'</span>'+(it.ready?'<span class="tag f">מוכן</span>':'')+'</div>'
++'<div class="tags"><span class="tag k">'+({v:'ערך',p:'אישי',h:'חשיפה'}[kind])+(it.pillar&&it.pillar!=={v:'ערך',p:'אישי',h:'חשיפה'}[kind]?' · '+esc(it.pillar):'')+'</span><span class="tag f">'+esc(it.fmt)+'</span>'+(it.ready?'<span class="tag f">מוכן</span>':'')+'</div>'
 +'<div class="t">'+esc(it.title)+'</div>'
++(it.what?'<div class="fm">'+esc(it.what)+'</div>':'')
 +(it.formula?'<div class="fm">נוסחה: '+esc(it.formula.replace(/^\d+\.\s*/,''))+'</div>':'')
 +(it.ready?'<div class="nt">'+esc(it.note)+'</div>':'')
 +(nd?'<div class="need">'+nd+'</div>':'')
@@ -76,13 +77,15 @@ function line(kind,t,s){return '<div class="line '+(kind==='x'?'x1':'f1')+'"><sp
 function openS(id,btn){
 var it=DATA.items[id],h='';
 h+='<div class="sh"><div style="display:flex;flex-direction:column;gap:6px"><h2 id="shT">'+esc(it.title)+'</h2><div class="meta"><span>'+esc(it.fmt)+' · '+esc(len(it))+'</span>'+(it.formula?'<span>נוסחה: '+esc(it.formula)+'</span>':'')+(it.ref?'<span>דוגמה: '+esc(it.ref)+'</span>':'')+'</div></div><button class="x" type="button" aria-label="סגירה">×</button></div>';
+if(it.what)h+='<p class="note"><b>'+esc(({v:'ערך',p:'אישי',h:'חשיפה'}[it.type]||'')+(it.pillar&&it.pillar!=={v:'ערך',p:'אישי',h:'חשיפה'}[it.type]?' · '+it.pillar:''))+'</b> · '+esc(it.what)+'</p>';
 if(it.note)h+='<p class="note">'+esc(it.note)+'</p>';
 if(it.screen)h+='<p class="cap">'+esc(it.screen)+'</p>';
 if(it.slides){h+='<div class="blk"><h4>שקפים</h4><ol class="slides">'+it.slides.map(function(s,i){return '<li><b>'+(i+1)+'</b>'+esc(s)+'</li>'}).join('')+'</ol></div>'}
 else{
-h+='<div class="blk"><h4>פתיחה, 0–3 שניות</h4>'+it.open.map(function(t){return line('x',t,'')}).join('')+'</div>';
-h+='<div class="blk"><h4>גוף</h4>'+it.body.map(function(b){return line(b[0],b[1],b[2])}).join('')+'</div>';
-h+='<div class="blk"><h4>סיום</h4>'+it.end.map(function(t){return line('x',t,'')}).join('')+'</div>';
+h+='<div class="blk"><h4>ההוק, 0–3 שניות</h4>'+it.open.map(function(t){return line('x',t,'')}).join('')+'</div>';
+var secs=[];it.body.forEach(function(b){var s=b[3]||'גוף',g=secs[secs.length-1];if(!g||g.s!==s){g={s:s,l:[]};secs.push(g)}g.l.push(b)});
+secs.forEach(function(g){h+='<div class="blk"><h4>'+esc(g.s)+'</h4>'+g.l.map(function(b){return line(b[0],b[1],b[2])}).join('')+'</div>'});
+h+='<div class="blk"><h4>הנעה לפעולה</h4>'+it.end.map(function(t){return line('x',t,'')}).join('')+'</div>';
 }
 if(it.numbers&&it.numbers.length)h+='<div class="blk"><h4>מספרים ומקורות</h4><ul>'+it.numbers.map(function(n){return '<li>'+esc(n)+'</li>'}).join('')+'</ul></div>';
 if(it.caption)h+='<div class="blk"><h4>כיתוב לפוסט</h4><p class="cap">'+esc(it.caption)+'</p></div>';
