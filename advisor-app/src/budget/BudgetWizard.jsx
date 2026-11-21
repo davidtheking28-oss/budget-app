@@ -109,20 +109,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   // (fixed), the same way transactions already resolve against them elsewhere.
   const monthTx = useMemo(() => getMonthTx(draftData.transactions, year, month), [draftData, year, month]);
   const monthlyActual = useMemo(() => budgetActuals(draftData, monthTx), [draftData, monthTx]);
-  const fixedRecorded = monthlyActual.fixed;
-  // A fixed expense is entered once and applies every month, so it counts as this month's
-  // actual even when no transaction was posted for it (same as income sources). A posted
-  // amount at or above the plan wins, so nothing is counted twice.
-  const fixedActual = useMemo(() => {
-    const now = new Date();
-    if (!monthTx.length && !(year === now.getFullYear() && month === now.getMonth())) return fixedRecorded;
-    const map = { ...fixedRecorded };
-    (draftData.fixed_expenses || []).filter(row => !row.savings).forEach(row => {
-      const planned = parseFloat(row.amount) || 0;
-      if (planned > (map[row.id] || 0)) map[row.id] = planned;
-    });
-    return map;
-  }, [fixedRecorded, draftData, monthTx, year, month]);
+  const fixedActual = monthlyActual.fixed;
   const fixedNameSet = useMemo(() => new Set(fixedCatsFor(draftData)), [draftData]);
   const [rowActualEdits, setRowActualEdits] = useState({});
   const [emptyRowsOpen, setEmptyRowsOpen] = useState({});
@@ -293,7 +280,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
     const today = new Date();
     const adjustmentDate = `${monthKeyOf(year, month)}-${year === today.getFullYear() && month === today.getMonth() ? String(today.getDate()).padStart(2, '0') : '01'}`;
     const adjustments = Object.entries(actualEdits)
-      .map(([cat, v]) => { const target = parseFloat(v) || 0; const base = (fixedNameSet.has(cat) ? fixedActual[cat] : variableActualBase[cat]) || 0; const recorded = (fixedNameSet.has(cat) ? fixedRecorded[cat] : variableActualBase[cat]) || 0; return { cat, delta: target - base > 0 ? target - recorded : 0 }; })
+      .map(([cat, v]) => ({ cat, delta: (parseFloat(v) || 0) - ((fixedNameSet.has(cat) ? fixedActual[cat] : variableActualBase[cat]) || 0) }))
       .filter(a => a.delta > 0)
       .map((a, i) => ({ id: 'adj' + Date.now() + '_' + i, type: savingsNames.has(a.cat) ? 'saving' : 'expense', cat: a.cat, desc: 'התאמת ביצוע (אשף תקציב)', amount: Math.round(a.delta * 100) / 100, date: adjustmentDate, recurring: false }));
 
