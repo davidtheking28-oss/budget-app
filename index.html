@@ -4512,16 +4512,18 @@ function _expIncomeSectionHtml(){
   const sources=_incomeSourcesFor(currentYear,currentMonth);
   const rows=sources.map((src,i)=>{
     const amount=parseFloat(src.amount)||0;
-    const body='<div class="budget-tx-empty">'+(src.day?'מתקבל ב-'+esc(String(src.day))+' לחודש':'לא הוגדר יום קבלה')+'</div>';
+    const nm=(src.name||'').trim().toLowerCase();
+    const got=getMonthTx(currentYear,currentMonth).filter(t=>t.type==='income'&&(t.desc||'').trim().toLowerCase()===nm).reduce((s,t)=>s+(+t.amount||0),0);
+    const body='<div class="budget-tx-empty">'+(got?'התקבל בפועל: '+fmt(got)+' · ':'')+(src.day?'מתקבל ב-'+esc(String(src.day))+' לחודש':'לא הוגדר יום קבלה')+'</div>';
     return past
       ?_expRowHtml({key:'inc:'+i,cat:src.name||'הכנסה',iconCat:'שכר',amount,body})
       :_expRowHtml({key:'inc:'+i,cat:src.name||'הכנסה',iconCat:'שכר',amount,editable:true,onEdit:'_expEditIncome('+i+')',onDelete:'_expDeleteIncome('+i+')',body});
   }).join('');
-  return _cfSectionHtml('הכנסות',sources.reduce((s,x)=>s+(parseFloat(x.amount)||0),0),
+  return _cfSectionHtml('הכנסות מתוכננות',sources.reduce((s,x)=>s+(parseFloat(x.amount)||0),0),
     (rows||'<div class="budget-tx-empty">אין מקורות הכנסה מוגדרים</div>')
     +(past?'':'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>'));
 }
-function _incomeFields(src){return [{label:'שם המקור',value:src.name||'',placeholder:'משכורת'},{label:'סכום חודשי (₪)',type:'number',value:src.amount||''},{label:'יום קבלה בחודש (לתזכורת)',type:'number',value:src.day||''}];}
+function _incomeFields(src){return [{label:'שם המקור',value:src.name||'',placeholder:'משכורת'},{label:'סכום מתוכנן לחודש (₪)',type:'number',value:src.amount||''},{label:'יום קבלה בחודש (לתזכורת)',type:'number',value:src.day||''}];}
 function _cloneSources(a){return (a||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
 function _incomeWorkList(){_seedIncomeHistory();return _cloneSources(_incomeSourcesFor(currentYear,currentMonth));}
 function _incomeCommit(list){
@@ -4535,7 +4537,7 @@ function _incomeCommit(list){
 }
 async function _expEditIncome(i){
   const list=_incomeWorkList();const src=list[i];if(!src)return;
-  const v=await promptSheet({title:'עריכת מקור הכנסה',fields:_incomeFields(src)});
+  const v=await promptSheet({title:'עריכת תכנון הכנסה',fields:_incomeFields(src)});
   if(v===null)return;
   const oldName=(src.name||'').trim().toLowerCase();
   src.name=v[0].trim();src.amount=v[1];src.day=v[2];
