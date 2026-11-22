@@ -17,6 +17,8 @@
 .identity { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .identity strong { font-size: var(--text-md); }
 .identity > span { max-width: 230px; overflow: hidden; text-overflow: ellipsis; color: var(--text3); font-size: var(--text-xs); white-space: nowrap; text-align: start; }
+.signedMark { align-self: flex-start; padding: 2px 10px; border-radius: 999px; background: rgba(var(--green-rgb), 0.14); color: var(--green); font-size: var(--text-xs); font-weight: 700; line-height: 1.6; }
+.signedMarkNew { background: var(--green); color: var(--primary-ink); }
 .stage { margin-top: var(--space-2); color: var(--text3); font-size: var(--text-xs); }
 .nextStep { display: flex; align-items: center; gap: var(--space-2); max-width: 240px; padding: 0; border: none; background: none; color: var(--text); font: inherit; font-weight: 600; text-align: start; line-height: 1.5; cursor: pointer; }
 .nextStep > span { color: var(--text3); }

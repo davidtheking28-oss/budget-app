@@ -5221,34 +5221,40 @@ function _docsMissing(rows,months){
 function _docsMonthLabel(mo){const [y,m]=mo.split('-');return DOCS_MONTHS_HE[+m-1]+' '+y;}
 let _docsRows=[];
 let _docsBusy=false;
+let _docsMissingCount=0;
 async function _applyDocsLock(){
   const need=!!_cloudUser&&_docsRequired(_advisorLink);
-  let el=document.getElementById('docsLock');
+  const el=document.getElementById('docsLock');
   if(!need){
-    document.body.classList.remove('docs-locked');
+    _docsMissingCount=0;
     if(el)el.remove();
+    renderTasksPage();_updateTasksBadge();
     return;
   }
   const {data,error}=await _sb.from('client_documents').select('id,kind,period_month,path,file_name').eq('client_id',_cloudUser.id).order('created_at');
   if(error){return;}
   _docsRows=data||[];
   const months=_docsMonths(_advisorLink.created_at);
-  if(!_docsMissing(_docsRows,months).length){
-    document.body.classList.remove('docs-locked');
-    if(el)el.remove();
-    return;
-  }
-  document.body.classList.add('docs-locked');
-  if(!el){
-    el=document.createElement('div');
-    el.id='docsLock';
-    el.setAttribute('role','dialog');
-    el.setAttribute('aria-modal','true');
-    el.setAttribute('aria-label','העלאת מסמכים');
-    el.style.cssText='position:fixed;inset:0;z-index:235;background:var(--bg);display:flex;justify-content:center;padding:24px 16px;overflow-y:auto';
-    document.body.appendChild(el);
-  }
-  _renderDocsLock(el,months);
+  _docsMissingCount=_docsMissing(_docsRows,months).length;
+  if(el){if(_docsMissingCount)_renderDocsLock(el,months);else el.remove();}
+  renderTasksPage();_updateTasksBadge();
+}
+function openDocsTask(){
+  if(!_advisorLink||document.getElementById('docsLock'))return;
+  const el=document.createElement('div');
+  el.id='docsLock';
+  el.setAttribute('role','dialog');
+  el.setAttribute('aria-modal','true');
+  el.setAttribute('aria-label','העלאת מסמכים');
+  el.style.cssText='position:fixed;inset:0;z-index:235;background:var(--bg);display:flex;justify-content:center;padding:24px 16px;overflow-y:auto';
+  document.body.appendChild(el);
+  _renderDocsLock(el,_docsMonths(_advisorLink.created_at));
+}
+function _autoTasks(){
+  const out=[];
+  if(_agreementRequired)out.push({title:'לחתום על הסכם ההתקשרות',action:'openAgreementTask()',button:'לחתימה'});
+  if(_docsMissingCount>0)out.push({title:'להעלות דפי עו"ש ופירוט חיובי אשראי עבור שלושת החודשים המלאים האחרונים',action:'openDocsTask()',button:'להעלאת מסמכים'});
+  return out;
 }
 function _renderDocsLock(el,months){
   const rowsHtml=DOCS_KINDS.map(([kind,label])=>{
@@ -5270,7 +5276,7 @@ function _renderDocsLock(el,months){
     +'<div style="font-size:0.92rem;line-height:1.6;color:var(--text2)">כדי שהיועץ יוכל להתחיל, יש להעלות דפי חשבון עו"ש ופירוט חיובי אשראי עבור שלושת החודשים המלאים האחרונים. אפשר להעלות PDF, צילום מסך, תמונה או קובץ אקסל.</div>'
     +rowsHtml
     +'<input type="file" id="docsFileInput" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,.csv,.xls,.xlsx,application/pdf,image/*,text/csv" style="display:none">'
-    +'<button type="button" id="docsOut" class="btn btn-full" style="margin-top:12px">התנתקות</button>'
+    +'<button type="button" id="docsClose" class="btn btn-full" style="margin-top:12px;min-height:48px">סגירה וחזרה למשימות</button>'
     +'</div>';
   const input=el.querySelector('#docsFileInput');
   let target=null;
@@ -5282,7 +5288,7 @@ function _renderDocsLock(el,months){
     await _docsUpload(kind,mo,files);
   };
   el.querySelectorAll('[data-docs-del]').forEach(b=>{b.onclick=()=>_docsRemove(b.dataset.docsDel);});
-  el.querySelector('#docsOut').onclick=async()=>{try{await _sb.auth.signOut();}catch(e){}};
+  el.querySelector('#docsClose').onclick=()=>el.remove();
 }
 async function _docsUpload(kind,mo,files){
   _docsBusy=true;
@@ -5477,18 +5483,23 @@ function _initSignaturePad(canvas){
 }
 let _agreementCheckedFor=null;
 let _agreementBusy=false;
-async function _ensureClientAgreement(){
+let _agreementRequired=false;
+function openAgreementTask(){_ensureClientAgreement(true);}
+async function _ensureClientAgreement(manual){
   if(_agreementBusy)return;
   _agreementBusy=true;
-  try{await _runClientAgreementCheck();}finally{_agreementBusy=false;}
+  try{await _runClientAgreementCheck(manual);}finally{_agreementBusy=false;}
 }
-async function _runClientAgreementCheck(){
+async function _runClientAgreementCheck(manual){
   if(!_cloudUser||!_sb||_agreementCheckedFor===_cloudUser.id||document.getElementById('agreementGate'))return;
   const uid=_cloudUser.id;
   const {data:st,error:stErr}=await _sb.rpc('client_agreement_status');
   if(stErr||!st)return;
   _refreshMyAgreementButton();
+  _agreementRequired=!!st.required;
+  _updateTasksBadge();renderTasksPage();
   if(!st.required){_agreementCheckedFor=uid;return;}
+  if(!manual)return;
   const {data:offer,error:offerErr}=await _sb.rpc('present_client_agreement');
   if(offerErr||!offer)return;
   const gate=document.createElement('div');
@@ -5512,7 +5523,9 @@ async function _runClientAgreementCheck(){
     +'<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:0.85rem;color:var(--text2)">חתימה</div>'
     +'<canvas id="agCanvas" aria-label="אזור חתימה" style="width:100%;height:170px;border:1px solid var(--border);border-radius:12px;display:block;cursor:crosshair"></canvas>'
     +'<button type="button" id="agClear" class="btn btn-sm" style="align-self:flex-start;min-height:44px">ניקוי החתימה</button></div>'
+    +'<label style="display:flex;gap:10px;align-items:flex-start;font-size:0.86rem;line-height:1.6;color:var(--text);cursor:pointer;min-height:44px"><input id="agCopy" type="checkbox" style="margin-top:4px;width:18px;height:18px;flex:none"><span>שלחו לי עותק חתום למייל</span></label>'
     +'<button type="button" id="agSign" class="btn btn-primary btn-full" style="min-height:48px" disabled>חתימה על ההסכם</button>'
+    +'<button type="button" id="agLater" class="btn btn-full" style="min-height:48px">לא עכשיו, חזרה למשימות</button>'
     +'<button type="button" id="agOut" class="btn btn-full" style="min-height:48px">אני לא מסכים/ה, התנתקות</button>'
     +'</div>';
   document.body.appendChild(gate);
@@ -5549,6 +5562,7 @@ async function _runClientAgreementCheck(){
   gate.addEventListener('change',refresh);
   q('agCanvas').addEventListener('pointerup',refresh);
   q('agClear').onclick=()=>{pad.clear();refresh();};
+  q('agLater').onclick=()=>gate.remove();
   q('agOut').onclick=async()=>{gate.remove();try{await _sb.auth.signOut();}catch(e){}};
   q('agSign').onclick=async()=>{
     const btn=q('agSign');
@@ -5557,16 +5571,26 @@ async function _runClientAgreementCheck(){
     const s=state();
     const {error}=await _sb.rpc('sign_client_agreement',{p_version:offer.version,p_full_name:_agreementCleanName(s.fullName),p_national_id:_normalizeIsraeliId(s.nationalId),p_birth_date:s.birthDate,p_address:s.address.trim(),p_phone:s.phone.trim(),p_signature_png:pad.toDataUrl(),p_confirmed_clauses:s.confirmed});
     if(error){
-      if(String(error.message||'').includes('Agreement not required')){_agreementCheckedFor=uid;gate.remove();return;}
+      if(String(error.message||'').includes('Agreement not required')){_agreementCheckedFor=uid;_agreementRequired=false;gate.remove();renderTasksPage();_updateTasksBadge();return;}
       showToast(_agreementErrorText(error.message),'error');
       refresh();
       return;
     }
+    const copyWanted=q('agCopy').checked;
     _agreementCheckedFor=uid;
+    _agreementRequired=false;
     gate.remove();
+    renderTasksPage();_updateTasksBadge();
     showToast('ההסכם נחתם ונשמר','success');
     _refreshMyAgreementButton();
+    _requestAgreementCopy(copyWanted);
   };
+}
+async function _requestAgreementCopy(wanted){
+  if(!wanted)return;
+  const {data,error}=await _sb.functions.invoke('send-agreement-copy');
+  if(error||!data||!data.ok){showToast('לא הצלחנו לשלוח עותק למייל, ההסכם נשמר','error');return;}
+  showToast('עותק חתום נשלח למייל','success');
 }
 function _agreementAuditHtml(a){
   const row=(label,at,ip,ua)=>'<tr><td>'+label+'</td><td>'+esc(_agreementDateText(at,true))+'</td><td dir="ltr">'+esc(ip||'—')+'</td><td dir="ltr">'+esc(ua||'—')+'</td></tr>';
@@ -5902,7 +5926,7 @@ function _updateTasksBadge(){
   const b=document.getElementById('navTasksBadge');
   const nav=document.getElementById('nav-analytics');
   if(!b)return;
-  const n=_advisorLink?.status==='active'?_unseenAdvisorCount():0;
+  const n=_advisorLink?.status==='active'?_unseenAdvisorCount()+_autoTasks().length:0;
   b.hidden=!n;
   if(nav)nav.setAttribute('aria-label',n?'משימות, '+n+' עדכונים חדשים מהיועץ':'משימות');
 }
@@ -6003,7 +6027,9 @@ function renderTasksPage(){
       +'<button type="button" class="task-tab" aria-pressed="'+(_tab==='open')+'" onclick="setClientTaskTab(\'open\')">משימות פתוחות</button>'
       +'<button type="button" class="task-tab" aria-pressed="'+(_tab==='done')+'" onclick="setClientTaskTab(\'done\')">משימות סגורות</button>'
     +'</div>';
-  tasksList.innerHTML=(_shown.length?_shown.map(t=>_taskCard(t,_tab==='done')).join(''):'<div class="budget-tx-empty">'+(_tab==='done'?'אין משימות סגורות':'אין משימות פתוחות')+'</div>');
+  const _auto=_tab==='open'?_autoTasks():[];
+  const _autoCard=a=>'<div class="task-card"><div class="task-card-status">משימה פתוחה</div><div class="task-card-title">'+esc(a.title)+'</div><button type="button" class="btn btn-primary" style="min-height:44px;cursor:pointer" onclick="'+a.action+'">'+esc(a.button)+'</button></div>';
+  tasksList.innerHTML=_auto.map(_autoCard).join('')+(_shown.length?_shown.map(t=>_taskCard(t,_tab==='done')).join(''):_auto.length?'':'<div class="budget-tx-empty">'+(_tab==='done'?'אין משימות סגורות':'אין משימות פתוחות')+'</div>');
   tasksList.querySelectorAll('[data-task-id]').forEach(el=>{
     el.onchange=()=>toggleAdvisorTask(el.dataset.taskId,el.checked);
   });

@@ -1,5 +1,6 @@
 import { Fragment, useRef, useState } from 'react';
 import { useClientDeals } from './useClientDeals.js';
+import { useAgreementSigns } from './useAgreementSigns.js';
 import { num } from './bizMath.js';
 import ClientCard from './ClientCard.jsx';
 import AddClientModal from './AddClientModal.jsx';
@@ -32,6 +33,7 @@ function formatDay(iso) {
 
 export default function ClientsTable({ advisorId, onOpen, onRemove }) {
   const { rows, loading, error, reload, saveDeal, saveContact, addManual } = useClientDeals(advisorId);
+  const signs = useAgreementSigns(advisorId);
   const [adding, setAdding] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [search, setSearch] = useState('');
@@ -121,7 +123,7 @@ export default function ClientsTable({ advisorId, onOpen, onRemove }) {
                         <td>
                           <button type="button" className={workspace.clientName} aria-label={'פתח כרטיס לקוח: ' + label(r)} onClick={() => setCardId(r.id)}>
                             <span className={workspace.avatar} aria-hidden="true">{(r.name || r.client_email || '?').trim()[0]}</span>
-                            <span className={workspace.identity}><strong><bdi>{r.name || r.client_email || 'ללא שם'}</bdi></strong>{(r.name || !r.client_email) && <span dir="ltr" title={r.client_email}>{r.client_email || 'לקוח ידני'}</span>}</span>
+                            <span className={workspace.identity}><strong><bdi>{r.name || r.client_email || 'ללא שם'}</bdi></strong>{(r.name || !r.client_email) && <span dir="ltr" title={r.client_email}>{r.client_email || 'לקוח ידני'}</span>}{signs.signedClientIds.has(r.client_id) && <b className={workspace.signedMark + (signs.unseenClientIds.has(r.client_id) ? ' ' + workspace.signedMarkNew : '')}>{signs.unseenClientIds.has(r.client_id) ? 'חתם · חדש' : 'חתם'}</b>}</span>
                           </button>
                         </td>
                         <td><select className={styles.pillSelect + (svc.tone ? ' ' + styles[svc.tone] : '')} aria-label={'סטטוס לקוח: ' + label(r)} value={svc.key} onChange={e => saveDeal(r, { service_status: e.target.value })}>{SERVICE_STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}</select><div className={workspace.stage}>{currentStage(r.deal?.journey)}</div></td>

@@ -6,9 +6,10 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import styles from './Business.module.css';
 import css from './ClientAgreement.module.css';
+import { AGREEMENTS_CHANGED } from './useAgreementSigns.js';
 import { agreementPrintHtml, formatAuditEvents, formatBirthDate, whenImagesLoaded } from './agreementAudit.js';
 
-export default function ClientAgreement({ clientId }) {
+export default function ClientAgreement({ clientId, advisorId }) {
   const [record, setRecord] = useState(undefined);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -20,11 +21,15 @@ export default function ClientAgreement({ clientId }) {
     supabase.from('client_agreements').select('*').eq('user_id', clientId).order('signed_at', { ascending: false }).limit(1).maybeSingle()
       .then(({ data, error: err }) => {
         if (cancelled) return;
-        if (err) setError(true);
-        else setRecord(data || null);
+        if (err) { setError(true); return; }
+        setRecord(data || null);
+        if (data && advisorId) {
+          supabase.from('client_agreement_views').upsert({ advisor_id: advisorId, agreement_id: data.id }, { onConflict: 'advisor_id,agreement_id', ignoreDuplicates: true })
+            .then(({ error: viewError }) => { if (!viewError) window.dispatchEvent(new Event(AGREEMENTS_CHANGED)); });
+        }
       });
     return () => { cancelled = true; };
-  }, [clientId, attempt]);
+  }, [clientId, advisorId, attempt]);
 
   async function print() {
     const win = window.open('', '_blank');

@@ -7,6 +7,7 @@ import { useLegalConsent } from './auth/useLegalConsent.js';
 import { useIsAdvisor } from './auth/useIsAdvisor.js';
 import { useAdvisorRequest } from './auth/useAdvisorRequest.js';
 import { usePendingRequestsCount } from './business/usePendingRequestsCount.js';
+import { useAgreementSigns } from './business/useAgreementSigns.js';
 import { useNewClientBookings } from './business/useNewClientBookings.js';
 import Shell from './components/Shell.jsx';
 import Toaster from './components/Toaster.jsx';
@@ -44,6 +45,7 @@ export default function App() {
   const { status: advisorRequestStatus, submit: submitAdvisorRequest } = useAdvisorRequest(!isAdvisor ? session?.user?.id : null);
   const { theme, toggle: toggleTheme } = useTheme();
   const pendingRequests = usePendingRequestsCount(isAdvisor ? session?.user?.id : null);
+  const { unseenCount: newSignatures } = useAgreementSigns(isAdvisor ? session?.user?.id : null);
   const newBookings = useNewClientBookings(isAdvisor ? session?.user?.id : null, homeView === 'planner' && workspace === 'advisor');
 
 
@@ -83,7 +85,7 @@ export default function App() {
   const personal = workspace === 'personal';
   const activePersonal = PERSONAL_KEYS.includes(personalView) ? personalView : 'personal-expenses';
   const personalItem = PERSONAL_NAV.find(n => n.key === activePersonal);
-  const withBadge = n => (n.key === 'client-approvals' && pendingRequests > 0 ? { ...n, badge: pendingRequests } : n.key === 'planner' && newBookings > 0 ? { ...n, badge: newBookings } : n);
+  const withBadge = n => (n.key === 'client-approvals' && pendingRequests > 0 ? { ...n, badge: pendingRequests } : n.key === 'clients' && newSignatures > 0 ? { ...n, badge: newSignatures } : n.key === 'planner' && newBookings > 0 ? { ...n, badge: newBookings } : n);
 
   return (
     <>

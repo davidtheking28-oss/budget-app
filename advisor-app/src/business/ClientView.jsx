@@ -221,7 +221,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
             <div className={styles.stack}>
               <Heading title="מסמכים" text="דפי עו״ש וחיובי אשראי של שלושת החודשים המלאים שלפני תחילת הליווי." />
               <ClientDocuments key={clientIdOrNull} clientId={clientIdOrNull} client={client} />
-              <ClientAgreement key={`agreement:${clientIdOrNull}`} clientId={clientIdOrNull} />
+              <ClientAgreement key={`agreement:${clientIdOrNull}`} clientId={clientIdOrNull} advisorId={advisorId} />
             </div>
           )}
           {view === 'credit' && <Credit key={chip} focus={CHIPS.find(c => c.key === chip)?.focus} clientUserId={clientIdOrNull} advisorId={advisorId} />}

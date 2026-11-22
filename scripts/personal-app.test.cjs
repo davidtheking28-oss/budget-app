@@ -1330,3 +1330,69 @@ test('agreement audit page lists sent opened and signed with network details and
   assert.ok(out.includes('&lt;script&gt;'));
   assert.ok(out.includes('—'));
 });
+test('agreement copy email escapes stored text, embeds the signature by cid and mails only the account address',async()=>{
+  const {buildResendPayload,escapeHtml}=await import(require('node:url').pathToFileURL(path.join(root,'supabase/functions/send-agreement-copy/agreementHtml.js')).href);
+  const record={id:'agr-1',email:'old@x.com',full_name:'דנה <img src=x onerror=alert(1)>',national_id:'000000018',birth_date:'1990-05-04',address:'"><script>x</script>',phone:'050',version:'2026-11',body:'סעיף <b>1</b>',body_sha256:'aaa111',signature_png:'data:image/png;base64,QUJD',presented_at:'2026-11-22T10:26:00Z',presented_ip:'87.1.2.3',presented_user_agent:'Safari <i>',signed_at:'2026-11-22T10:31:00Z',signed_ip:null,signed_user_agent:'Safari',record_sha256:'bbb222'};
+  const p=buildResendPayload(record,'ס <a@b.c>','me@x.com');
+  assert.deepEqual(p.to,['me@x.com']);
+  assert.equal(p.from,'ס <a@b.c>');
+  assert.ok(p.html.includes('src="cid:signature"'));
+  assert.ok(!p.html.includes('<script>')&&!p.html.includes('<img src=x')&&!p.html.includes('<b>1</b>'));
+  for(const word of ['נשלח','נפתח','נחתם','agr-1','aaa111','bbb222','87.1.2.3','04/05/1990','22/11/2026 12:31','דף ביקורת'])assert.ok(p.html.includes(word),word);
+  const inline=p.attachments.find(a=>a.content_id==='signature');
+  assert.equal(inline.content,'QUJD');
+  const doc=Buffer.from(p.attachments.find(a=>a.filename==='agreement.html').content,'base64').toString('utf8');
+  assert.ok(doc.includes('src="data:image/png;base64,QUJD"'));
+  assert.ok(doc.includes('דף ביקורת'));
+  assert.throws(()=>buildResendPayload({...record,signature_png:'javascript:alert(1)'},'a@b.c','me@x.com'));
+  assert.equal(escapeHtml(`<&>"'`),'&lt;&amp;&gt;&quot;&#39;');
+});
+test('signed agreement copy is requested only when the client asked for it',async()=>{
+  const calls=[];const toasts=[];
+  const mk=(result)=>functions(['_requestAgreementCopy'],{_sb:{functions:{invoke:async(n)=>{calls.push(n);return result;}}},showToast:(m,t)=>toasts.push([m,t])});
+  await mk({data:{ok:true},error:null})._requestAgreementCopy(false);
+  assert.deepEqual(calls,[]);
+  await mk({data:{ok:true},error:null})._requestAgreementCopy(true);
+  assert.deepEqual(calls,['send-agreement-copy']);
+  assert.equal(toasts.at(-1)[1],'success');
+  await mk({data:null,error:{message:'x'}})._requestAgreementCopy(true);
+  assert.equal(toasts.at(-1)[1],'error');
+  assert.ok(toasts.at(-1)[0].includes('עותק'));
+});
+test('signature gate offers an unchecked copy-by-email box and asks for the copy after signing',()=>{
+  const gate=html.slice(html.indexOf('async function _runClientAgreementCheck'),html.indexOf('function _agreementAuditHtml'));
+  assert.ok(gate.includes('id="agCopy"'));
+  assert.ok(gate.includes('שלחו לי עותק חתום למייל'));
+  assert.ok(!/id="agCopy"[^>]*checked/.test(gate));
+  assert.ok(gate.includes("_requestAgreementCopy(copyWanted)"));
+});
+test('unsigned agreement and missing documents become automatic client tasks',()=>{
+  const ctx=functions(['_autoTasks'],{_agreementRequired:false,_docsMissingCount:0});
+  assert.equal(ctx._autoTasks().length,0);
+  ctx._agreementRequired=true;
+  assert.equal(JSON.stringify(ctx._autoTasks().map(t=>t.action)),JSON.stringify(['openAgreementTask()']));
+  ctx._docsMissingCount=2;
+  assert.equal(JSON.stringify(ctx._autoTasks().map(t=>t.action)),JSON.stringify(['openAgreementTask()','openDocsTask()']));
+  assert.ok(ctx._autoTasks().every(t=>t.title&&t.button));
+});
+test('an unsigned agreement no longer opens a blocking screen on login, only when the client starts the task',async()=>{
+  const calls=[];
+  const ctx=functions(['_runClientAgreementCheck'],{
+    _cloudUser:{id:'u1'},_agreementCheckedFor:null,_agreementRequired:false,
+    document:{getElementById:()=>null,createElement:()=>{throw new Error('gate opened');}},
+    _refreshMyAgreementButton:()=>{},_updateTasksBadge:()=>{},renderTasksPage:()=>{},
+    _sb:{rpc:async(n)=>{calls.push(n);return n==='client_agreement_status'?{data:{required:true,signed:false,version:'v1'},error:null}:{data:null,error:{message:'stop'}};}},
+  });
+  await ctx._runClientAgreementCheck();
+  assert.deepEqual(calls,['client_agreement_status']);
+  assert.equal(ctx._agreementRequired,true);
+  await ctx._runClientAgreementCheck(true);
+  assert.ok(calls.includes('present_client_agreement'));
+});
+test('documents no longer lock the app: the upload screen can be closed and logout is not forced',()=>{
+  const docs=html.slice(html.indexOf('function _renderDocsLock'),html.indexOf('async function _docsUpload'));
+  assert.ok(docs.includes('id="docsClose"'));
+  assert.ok(!docs.includes('signOut'));
+  const lock=html.slice(html.indexOf('async function _applyDocsLock'),html.indexOf('function openDocsTask'));
+  assert.ok(!lock.includes("classList.add('docs-locked')"));
+});
