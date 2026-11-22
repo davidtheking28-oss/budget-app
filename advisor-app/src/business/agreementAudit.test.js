@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { formatAuditEvents, agreementPrintHtml } from './agreementAudit.js';
+import { formatAuditEvents, agreementPrintHtml, whenImagesLoaded } from './agreementAudit.js';
+
+describe('whenImagesLoaded', () => {
+  it('waits for every image that is not complete yet', async () => {
+    let listeners = 0;
+    const pending = { complete: false, addEventListener: (type, cb) => { listeners += 1; setTimeout(cb, 5); } };
+    await whenImagesLoaded({ querySelectorAll: () => [{ complete: true }, pending] });
+    expect(listeners).toBe(2);
+  });
+  it('resolves at once when there are no images', async () => {
+    await expect(whenImagesLoaded({ querySelectorAll: () => [] })).resolves.toBeUndefined();
+  });
+});
 
 const record = {
   presented_at: '2026-11-22T10:26:00Z',

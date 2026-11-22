@@ -6,7 +6,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import Button from '../components/Button.jsx';
 import styles from './Business.module.css';
 import css from './ClientAgreement.module.css';
-import { agreementPrintHtml, formatAuditEvents, formatBirthDate } from './agreementAudit.js';
+import { agreementPrintHtml, formatAuditEvents, formatBirthDate, whenImagesLoaded } from './agreementAudit.js';
 
 export default function ClientAgreement({ clientId }) {
   const [record, setRecord] = useState(undefined);
@@ -26,11 +26,12 @@ export default function ClientAgreement({ clientId }) {
     return () => { cancelled = true; };
   }, [clientId, attempt]);
 
-  function print() {
+  async function print() {
     const win = window.open('', '_blank');
     if (!win) { toast('הדפדפן חסם את חלון ההדפסה'); return; }
     win.document.write(agreementPrintHtml(record));
     win.document.close();
+    await whenImagesLoaded(win.document);
     win.focus();
     win.print();
   }

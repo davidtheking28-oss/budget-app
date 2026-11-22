@@ -25,6 +25,12 @@ export function formatAuditEvents(record) {
   ];
 }
 
+export function whenImagesLoaded(root) {
+  return Promise.all([...root.querySelectorAll('img')].map(img => (img.complete
+    ? Promise.resolve()
+    : new Promise(resolve => { img.addEventListener('load', resolve); img.addEventListener('error', resolve); })))).then(() => undefined);
+}
+
 export function agreementPrintHtml(record) {
   const details = [
     ['שם מלא', record.full_name],
