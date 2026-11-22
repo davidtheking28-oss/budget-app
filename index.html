@@ -5362,8 +5362,11 @@ function genInviteCode(){
   for(let i=0;i<buf.length;i++) code+=chars[buf[i]%chars.length];
   return code;
 }
+function _israelToday(){
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem'}).format(new Date());
+}
 function _normalizeIsraeliId(raw){
-  const s=String(raw==null?'':raw).replace(/\s+/g,'');
+  const s=String(raw==null?'':raw).replace(/[\s-]+/g,'');
   if(!/^[0-9]{1,9}$/.test(s))return '';
   return s.padStart(9,'0');
 }
@@ -5385,13 +5388,41 @@ function _strokeLength(strokes){
   }
   return len;
 }
+function _agreementBirthProblem(birthDate){
+  const b=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(birthDate||''));
+  if(!b||Number(b[1])<1900)return 'תאריך הלידה אינו תקין';
+  const [y,m,d]=_israelToday().split('-').map(Number);
+  const limit=new Date(Date.UTC(y-18,m-1,d)).toISOString().slice(0,10);
+  return String(birthDate)>limit?'ההסכם מיועד לבני 18 ומעלה':'';
+}
+function _agreementFieldHints(f){
+  const name=String(f.fullName||'').trim();
+  const id=String(f.nationalId||'').trim();
+  return {
+    fullName:name&&name.split(/\s+/).length<2?'יש להקליד שם פרטי ושם משפחה':'',
+    nationalId:id&&!_isValidIsraeliId(id)?'תעודת הזהות אינה תקינה, בדוק את הספרות':'',
+    birthDate:f.birthDate?_agreementBirthProblem(f.birthDate):''
+  };
+}
+function _agreementErrorText(message){
+  const m=String(message||'');
+  if(m.includes('Invalid national id'))return 'תעודת הזהות אינה תקינה';
+  if(m.includes('Must be 18'))return 'ההסכם מיועד לבני 18 ומעלה';
+  if(m.includes('Full name'))return 'יש להקליד שם פרטי ושם משפחה';
+  if(m.includes('Valid signature'))return 'החתימה אינה תקינה, נסה לצייר אותה שוב';
+  if(m.includes('Every clause'))return 'יש לאשר את כל הסעיפים';
+  return 'שגיאה בשמירת החתימה, נסה שוב';
+}
+function _agreementCleanName(raw){
+  return String(raw||'').replace(/[\s ]+/g,' ').trim();
+}
+function _waitForImages(root){
+  return Promise.all([...root.querySelectorAll('img')].map(img=>img.complete?Promise.resolve():new Promise(res=>{img.addEventListener('load',res);img.addEventListener('error',res);})));
+}
 function _agreementFormReady(f){
   if(String(f.fullName||'').trim().split(/\s+/).filter(Boolean).length<2)return false;
   if(!_isValidIsraeliId(f.nationalId))return false;
-  const b=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(f.birthDate||''));
-  if(!b)return false;
-  const now=new Date();
-  if(new Date(Number(b[1])+18,Number(b[2])-1,Number(b[3]))>new Date(now.getFullYear(),now.getMonth(),now.getDate()))return false;
+  if(_agreementBirthProblem(f.birthDate))return false;
   if(!String(f.address||'').trim()||!String(f.phone||'').trim())return false;
   if(!(f.ink>=40))return false;
   return f.required.every(id=>f.confirmed.includes(id));
@@ -5445,7 +5476,13 @@ function _initSignaturePad(canvas){
   return {strokes:()=>strokes,clear:()=>{strokes.length=0;current=null;paint();},toDataUrl:()=>canvas.toDataURL('image/png')};
 }
 let _agreementCheckedFor=null;
+let _agreementBusy=false;
 async function _ensureClientAgreement(){
+  if(_agreementBusy)return;
+  _agreementBusy=true;
+  try{await _runClientAgreementCheck();}finally{_agreementBusy=false;}
+}
+async function _runClientAgreementCheck(){
   if(!_cloudUser||!_sb||_agreementCheckedFor===_cloudUser.id||document.getElementById('agreementGate'))return;
   const uid=_cloudUser.id;
   const {data:st,error:stErr}=await _sb.rpc('client_agreement_status');

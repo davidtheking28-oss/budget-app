@@ -1243,11 +1243,10 @@ test('stroke length ignores a single tap',()=>{
   assert.equal(ctx._strokeLength([[{x:0,y:0},{x:30,y:40}],[{x:0,y:0},{x:0,y:10}]]),60);
 });
 test('agreement form needs every clause and a real signature',()=>{
-  const ctx=functions(['_normalizeIsraeliId','_isValidIsraeliId','_agreementFormReady']);
-  const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const now=new Date();
-  const adultOn=ymd(new Date(now.getFullYear()-18,now.getMonth(),now.getDate()));
-  const adultTomorrow=ymd(new Date(now.getFullYear()-18,now.getMonth(),now.getDate()+1));
+  const ctx=functions(['_israelToday','_normalizeIsraeliId','_isValidIsraeliId','_agreementBirthProblem','_agreementFormReady']);
+  const [ty,tm,td]=ctx._israelToday().split('-').map(Number);
+  const adultOn=new Date(Date.UTC(ty-18,tm-1,td)).toISOString().slice(0,10);
+  const adultTomorrow=new Date(Date.UTC(ty-18,tm-1,td+1)).toISOString().slice(0,10);
   const base={fullName:'Dana Levi',nationalId:'000000018',birthDate:'1990-01-01',address:'Tel Aviv',phone:'0501234567',ink:40,confirmed:['a','b'],required:['a','b']};
   assert.equal(ctx._agreementFormReady(base),true);
   assert.equal(ctx._agreementFormReady({...base,fullName:'Dana'}),false);
@@ -1256,11 +1255,62 @@ test('agreement form needs every clause and a real signature',()=>{
   assert.equal(ctx._agreementFormReady({...base,birthDate:''}),false);
   assert.equal(ctx._agreementFormReady({...base,birthDate:adultOn}),true);
   assert.equal(ctx._agreementFormReady({...base,birthDate:adultTomorrow}),false);
+  assert.equal(ctx._agreementFormReady({...base,birthDate:'1850-01-01'}),false);
+  assert.equal(ctx._agreementFormReady({...base,nationalId:'00000001-8'}),true);
   assert.equal(ctx._agreementFormReady({...base,address:' '}),false);
   assert.equal(ctx._agreementFormReady({...base,phone:''}),false);
   assert.equal(ctx._agreementFormReady({...base,ink:39}),false);
   assert.equal(ctx._agreementFormReady({...base,confirmed:['a']}),false);
   assert.equal(ctx._agreementFormReady({...base,confirmed:['b','a','c']}),true);
+});
+test('israel today matches the Asia/Jerusalem calendar date',()=>{
+  const ctx=functions(['_israelToday']);
+  const expected=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem'}).format(new Date());
+  assert.equal(ctx._israelToday(),expected);
+  assert.match(ctx._israelToday(),/^\d{4}-\d{2}-\d{2}$/);
+});
+test('agreement field hints name the invalid field and stay quiet on empty ones',()=>{
+  const ctx=functions(['_israelToday','_normalizeIsraeliId','_isValidIsraeliId','_agreementBirthProblem','_agreementFieldHints']);
+  const [ty,tm,td]=ctx._israelToday().split('-').map(Number);
+  const under18=new Date(Date.UTC(ty-18,tm-1,td+1)).toISOString().slice(0,10);
+  assert.deepEqual({...ctx._agreementFieldHints({fullName:'',nationalId:'',birthDate:''})},{fullName:'',nationalId:'',birthDate:''});
+  assert.equal(ctx._agreementFieldHints({fullName:'דנה',nationalId:'',birthDate:''}).fullName,'יש להקליד שם פרטי ושם משפחה');
+  assert.equal(ctx._agreementFieldHints({fullName:'דנה לוי',nationalId:'',birthDate:''}).fullName,'');
+  assert.equal(ctx._agreementFieldHints({fullName:'',nationalId:'123456789',birthDate:''}).nationalId,'תעודת הזהות אינה תקינה, בדוק את הספרות');
+  assert.equal(ctx._agreementFieldHints({fullName:'',nationalId:'00000001-8',birthDate:''}).nationalId,'');
+  assert.equal(ctx._agreementFieldHints({fullName:'',nationalId:'',birthDate:under18}).birthDate,'ההסכם מיועד לבני 18 ומעלה');
+  assert.equal(ctx._agreementFieldHints({fullName:'',nationalId:'',birthDate:'1850-01-01'}).birthDate,'תאריך הלידה אינו תקין');
+});
+test('agreement server errors become specific Hebrew messages',()=>{
+  const ctx=functions(['_agreementErrorText']);
+  assert.equal(ctx._agreementErrorText('Invalid national id'),'תעודת הזהות אינה תקינה');
+  assert.equal(ctx._agreementErrorText('Must be 18 or older'),'ההסכם מיועד לבני 18 ומעלה');
+  assert.equal(ctx._agreementErrorText('Full name required'),'יש להקליד שם פרטי ושם משפחה');
+  assert.equal(ctx._agreementErrorText('Valid signature required'),'החתימה אינה תקינה, נסה לצייר אותה שוב');
+  assert.equal(ctx._agreementErrorText('Every clause must be confirmed'),'יש לאשר את כל הסעיפים');
+  assert.equal(ctx._agreementErrorText('something else'),'שגיאה בשמירת החתימה, נסה שוב');
+  assert.equal(ctx._agreementErrorText(undefined),'שגיאה בשמירת החתימה, נסה שוב');
+});
+test('agreement name is cleaned of odd whitespace before it is sent',()=>{
+  const ctx=functions(['_agreementCleanName']);
+  assert.equal(ctx._agreementCleanName('  Dana  Levi  '),'Dana Levi');
+});
+test('two overlapping agreement checks run only once',async()=>{
+  let calls=0;
+  const ctx=functions(['_ensureClientAgreement'],{_agreementBusy:false,_runClientAgreementCheck:async()=>{calls++;await new Promise(r=>setTimeout(r,10));}});
+  await Promise.all([ctx._ensureClientAgreement(),ctx._ensureClientAgreement()]);
+  assert.equal(calls,1);
+  await ctx._ensureClientAgreement();
+  assert.equal(calls,2);
+});
+test('waiting for images resolves once every image is complete or loaded',async()=>{
+  const ctx=functions(['_waitForImages']);
+  let fired=0;
+  const pending={complete:false,addEventListener:(t,cb)=>{fired++;setTimeout(cb,5);}};
+  const root={querySelectorAll:()=>[{complete:true},pending]};
+  await ctx._waitForImages(root);
+  assert.equal(fired,2);
+  await ctx._waitForImages({querySelectorAll:()=>[]});
 });
 test('agreement dates are shown in Israel time as DD/MM/YYYY HH:MM',()=>{
   const ctx=functions(['_agreementDateText']);
