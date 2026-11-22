@@ -2371,7 +2371,7 @@
         <div class="cf-hero-cell cf-hero-cell-inc">
           <span class="cf-hero-cell-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span>
           <div class="cf-hero-cell-text">
-            <div class="cf-hero-cell-label">הכנסות</div>
+            <div class="cf-hero-cell-label" id="txPageIncomeLabel">הכנסות בפועל</div>
             <div id="txPageIncome" class="cf-hero-cell-val">₪0</div>
           </div>
         </div>
@@ -7383,6 +7383,8 @@ function renderTxPage(){
   }
   const incEl=document.getElementById('txPageIncome');const expEl=document.getElementById('txPageExpense');const rngEl=document.getElementById('txRangeExpense');const flowEl=document.getElementById('txPageFlow');
   if(incEl)incEl.textContent=fmt(dispInc);
+  const incLabelEl=document.getElementById('txPageIncomeLabel');
+  if(incLabelEl)incLabelEl.textContent=(!hasRange&&_txFlowView==='plan')?'הכנסות מתוכננות':'הכנסות בפועל';
   if(expEl)expEl.textContent=fmt(dispExp);
   if(rngEl)rngEl.textContent=fmt(exp);
   if(flowEl){
