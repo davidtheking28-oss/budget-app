@@ -27,11 +27,15 @@ const shape = (v: string) => v.slice(0, 24).replace(/[0-9]/g, '9').replace(/[A-Z
 Deno.serve(async (req) => {
   const meta = { ua: (req.headers.get('user-agent') ?? '').slice(0, 60), ct: (req.headers.get('content-type') ?? '').slice(0, 60) }
   if (req.method !== 'POST') { await log('method', { ...meta, method: req.method }); return reply(false, 405) }
-  const token = req.headers.get('x-budget-token') ?? ''
-  if (!/^ab1_[0-9a-f]{64}$/.test(token)) {
-    await log('token_format', { ...meta, len: token.length, ab1: token.startsWith('ab1_'), space: /\s/.test(token), upper: /[A-F]/.test(token) })
-    return reply(false, 400)
+  const sent = req.headers.get('x-budget-token') ?? ''
+  const hex = sent.toLowerCase().match(/(?:^|[^0-9a-f])([0-9a-f]{64})(?:$|[^0-9a-f])/)
+  const token = /^ab1_[0-9a-f]{64}$/.test(sent) ? sent : hex ? 'ab1_' + hex[1] : ''
+  if (token !== sent) {
+    const form = sent.replace(/[0-9a-f]{64}/i, '<64hex>').replace(/[0-9a-fA-F]/g, 'h').slice(0, 40)
+    const odd = [...sent].filter(c => !/[0-9a-zA-Z_]/.test(c)).slice(0, 6).map(c => 'U+' + c.codePointAt(0)!.toString(16))
+    await log(token ? 'token_repaired' : 'token_format', { ...meta, len: sent.length, form, odd })
   }
+  if (!token) return reply(false, 400)
   const tok = await hashPrefix(token)
   const raw = await req.text()
   if (raw.length > 2000) { await log('too_large', { ...meta, tok, len: raw.length }); return reply(false, 413) }
