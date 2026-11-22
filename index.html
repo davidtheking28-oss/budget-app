@@ -1725,6 +1725,21 @@
     .bottom-nav .fab svg{stroke:white;}
     body.dark .bottom-nav .fab svg{stroke:var(--bg);}
     .bottom-nav .nav-item:focus-visible,.bottom-nav .fab:focus-visible{outline:2px solid var(--accent);outline-offset:-3px;}
+    .ag-doc{display:flex;flex-direction:column;gap:14px;font-size:0.86rem;line-height:1.75;color:var(--text);}
+    .ag-doc h2,.ag-doc h3{margin:0;font-size:1rem;color:var(--text);}
+    .ag-doc .ag-text{white-space:pre-wrap;}
+    .ag-doc img{max-width:260px;width:100%;border:1px solid var(--border);border-radius:8px;background:#fff;}
+    .ag-audit{display:flex;flex-direction:column;gap:8px;font-size:0.78rem;color:var(--text2);}
+    .ag-audit table{width:100%;border-collapse:collapse;}
+    .ag-audit th,.ag-audit td{border:1px solid var(--border);padding:6px;text-align:right;word-break:break-word;}
+    #agreementPrint{display:none;}
+    @media print{
+      body.printing-agreement>*:not(#agreementPrint){display:none!important;}
+      body.printing-agreement #agreementPrint{display:block;background:#fff;color:#111;padding:24px;}
+      body.printing-agreement #agreementPrint .ag-doc,body.printing-agreement #agreementPrint .ag-doc h2,body.printing-agreement #agreementPrint .ag-doc h3,body.printing-agreement #agreementPrint .ag-audit{color:#111;}
+      body.printing-agreement #agreementPrint .ag-audit th,body.printing-agreement #agreementPrint .ag-audit td{border-color:#888;}
+      body.printing-agreement #agreementPrint .ag-audit{break-before:page;}
+    }
 
   </style>
 <style>.bottom-nav button.nav-item.active .nav-label{color:var(--accent-text);}
@@ -2747,6 +2762,8 @@
         <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">🔒 מדיניות פרטיות</button>
         <span aria-hidden="true" style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">📄 תנאי שימוש</button>
+        <span id="myAgreementSep" hidden aria-hidden="true" style="color:var(--border);margin:0 6px">·</span>
+        <button id="myAgreementBtn" hidden onclick="openMyAgreement()" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">📝 ההסכם שלי</button>
         <span aria-hidden="true" style="color:var(--border);margin:0 6px">·</span>
         <span style="color:var(--text3);font-size:0.8125rem">v2.8</span>
       </div>
@@ -2906,6 +2923,15 @@
       <div style="font-size:0.75rem;color:var(--text3);line-height:1.6">נשלחים רק הנושא, ההודעה, המייל שהזנת וסוג הדפדפן. הנתונים הפיננסיים שלך לא נשלחים.</div>
       <button class="btn btn-primary btn-full" onclick="sendSupportMessage()">שליחה</button>
     </div>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="myAgreementSheet" onclick="if(event.target===this)closeSheet('myAgreementSheet')">
+  <div class="sheet" style="max-height:90vh">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">📝 ההסכם שלי<button onclick="closeSheet('myAgreementSheet')" aria-label="סגור" class="sheet-close-x">✕</button></div>
+    <div id="myAgreementBody" style="overflow-y:auto;max-height:66vh;padding-bottom:8px;"></div>
+    <button type="button" class="btn btn-primary btn-full" style="min-height:48px;margin-top:10px" onclick="printMyAgreement()">הדפסה / שמירה כמסמך</button>
   </div>
 </div>
 
@@ -5424,6 +5450,7 @@ async function _ensureClientAgreement(){
   const uid=_cloudUser.id;
   const {data:st,error:stErr}=await _sb.rpc('client_agreement_status');
   if(stErr||!st)return;
+  _refreshMyAgreementButton();
   if(!st.required){_agreementCheckedFor=uid;return;}
   const {data:offer,error:offerErr}=await _sb.rpc('present_client_agreement');
   if(offerErr||!offer)return;
@@ -5488,7 +5515,56 @@ async function _ensureClientAgreement(){
     _agreementCheckedFor=uid;
     gate.remove();
     showToast('ההסכם נחתם ונשמר','success');
+    _refreshMyAgreementButton();
   };
+}
+function _agreementAuditHtml(a){
+  const row=(label,at,ip,ua)=>'<tr><td>'+label+'</td><td>'+esc(_agreementDateText(at,true))+'</td><td dir="ltr">'+esc(ip||'—')+'</td><td dir="ltr">'+esc(ua||'—')+'</td></tr>';
+  return '<div class="ag-audit"><h3>דף ביקורת</h3>'
+    +'<div>מזהה הסכם: <span dir="ltr">'+esc(a.id)+'</span></div>'
+    +'<table><thead><tr><th>אירוע</th><th>תאריך ושעה (שעון ישראל)</th><th>כתובת רשת</th><th>מכשיר</th></tr></thead><tbody>'
+    +row('נשלח ללקוח',a.presented_at,null,null)
+    +row('נפתח',a.presented_at,a.presented_ip,a.presented_user_agent)
+    +row('נחתם',a.signed_at,a.signed_ip,a.signed_user_agent)
+    +'</tbody></table>'
+    +'<div>גרסת ההסכם: <span dir="ltr">'+esc(a.version)+'</span></div>'
+    +'<div>טביעת אצבע של הנוסח (SHA-256): <span dir="ltr">'+esc(a.body_sha256)+'</span></div>'
+    +'<div>טביעת אצבע של הרשומה (SHA-256): <span dir="ltr">'+esc(a.record_sha256)+'</span></div></div>';
+}
+async function _refreshMyAgreementButton(){
+  if(!_cloudUser||!_sb)return;
+  const {data,error}=await _sb.from('client_agreements').select('id').eq('user_id',_cloudUser.id).limit(1);
+  const show=!error&&Boolean(data&&data.length);
+  for(const id of ['myAgreementBtn','myAgreementSep']){const el=document.getElementById(id);if(el)el.hidden=!show;}
+}
+async function openMyAgreement(){
+  if(!_cloudUser||!_sb)return;
+  const {data:a,error}=await _sb.from('client_agreements').select('*').eq('user_id',_cloudUser.id).order('signed_at',{ascending:false}).limit(1).maybeSingle();
+  if(error){showToast('שגיאה בטעינת ההסכם','error');return;}
+  if(!a){showToast('לא נמצא הסכם חתום');return;}
+  const rows=[['שם מלא',a.full_name],['תעודת זהות',a.national_id],['תאריך לידה',_agreementDateText(a.birth_date,false)],['כתובת',a.address],['טלפון',a.phone],['דוא"ל',a.email]];
+  const box=document.getElementById('myAgreementBody');
+  box.innerHTML='<div class="ag-doc">'
+    +'<div class="ag-text">'+esc(a.body)+'</div>'
+    +'<h3>פרטי החותם</h3>'
+    +'<div>'+rows.map(r=>esc(r[0])+': <b>'+esc(r[1])+'</b>').join('<br>')+'</div>'
+    +'<div>נשלח ללקוח: <b>'+esc(_agreementDateText(a.presented_at,true))+'</b><br>נחתם: <b>'+esc(_agreementDateText(a.signed_at,true))+'</b></div>'
+    +'<div id="agSignatureHost"></div>'
+    +_agreementAuditHtml(a)+'</div>';
+  const img=document.createElement('img');
+  img.alt='חתימת הלקוח';
+  img.src=a.signature_png;
+  box.querySelector('#agSignatureHost').appendChild(img);
+  openSheet('myAgreementSheet');
+}
+function printMyAgreement(){
+  let host=document.getElementById('agreementPrint');
+  if(!host){host=document.createElement('div');host.id='agreementPrint';document.body.appendChild(host);}
+  host.innerHTML=document.getElementById('myAgreementBody').innerHTML;
+  document.body.classList.add('printing-agreement');
+  const done=()=>{document.body.classList.remove('printing-agreement');host.remove();window.removeEventListener('afterprint',done);};
+  window.addEventListener('afterprint',done);
+  window.print();
 }
 const LEGAL_VERSION='2026-10-12';
 let _legalCheckedFor=null;

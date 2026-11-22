@@ -1271,3 +1271,12 @@ test('agreement dates are shown in Israel time as DD/MM/YYYY HH:MM',()=>{
   assert.equal(ctx._agreementDateText('not a date',true),'—');
   assert.equal(ctx._agreementDateText(null,true),'—');
 });
+test('agreement audit page lists sent opened and signed with network details and escapes stored text',()=>{
+  const ctx=functions(['_agreementDateText','_agreementAuditHtml']);
+  vm.runInContext(html.match(/function esc\(s\)\{[^\n]*\}/)[0],ctx);
+  const out=ctx._agreementAuditHtml({id:'agr-1',version:'2026-11',presented_at:'2026-11-22T10:26:00Z',presented_ip:'87.1.2.3',presented_user_agent:'Safari <script>x</script>',signed_at:'2026-11-22T10:31:00Z',signed_ip:null,signed_user_agent:'Safari',body_sha256:'aaa111',record_sha256:'bbb222'});
+  for(const word of ['נשלח','נפתח','נחתם','agr-1','aaa111','bbb222','87.1.2.3','22/11/2026 12:26','22/11/2026 12:31'])assert.ok(out.includes(word),word);
+  assert.ok(!out.includes('<script>'));
+  assert.ok(out.includes('&lt;script&gt;'));
+  assert.ok(out.includes('—'));
+});
