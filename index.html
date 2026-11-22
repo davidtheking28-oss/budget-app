@@ -6200,7 +6200,7 @@ const AP_GUIDE=[
   {t:'פתח את ההגדרות באפליקציה, ובכרטיס Apple Pay לחץ על "חבר Apple Pay".',img:'ap-1-settings',theme:1},
   {t:'לחץ על "העתק קוד". זה הקוד האישי שלך, אז אל תשלח אותו לאף אחד.',img:'ap-2-copy',theme:1},
   {t:'לחץ על "הוסף קיצור דרך". תיפתח אפליקציית קיצורי הדרך, ושם לחץ על "הגדרת קיצור".',img:'ap-3-open.png',shot:1},
-  {t:'לחץ על המילה האפורה "מלל" בשורה, והדבק שם את הקוד.',img:'ap-4-question.png',shot:1},
+  {t:'לחץ על המילה האפורה "מלל" בשורה, והדבק שם את הקוד. הוא מתחיל ב-ab1_. אם הודבק קישור או משהו אחר, חזור לאפליקציה והעתק את הקוד שוב.',img:'ap-4-question.png',shot:1},
   {t:'לחץ על ה-V במקלדת, ואחר כך על "הוספת קיצור" בתחתית המסך.',img:'ap-5-paste.png',shot:1},
   {t:'בדוק שבראש הקיצור יש את הכרטיס "כאשר מתבצעת קריאה של כל כרטיס", ושהמתג "פעולה אוטומטית" דלוק. אם הכרטיס חסר, גרסת המערכת ישנה: סגור את המדריך ופעל לפי "הגדרה ידנית".',img:'ap-6-auto.png',shot:1},
   {t:'אם בראש המסך מופיע הפס "הפעולה האוטומטית מכובה", לחץ על החץ שליד "כרטיס" והדלק את המתג. בלי זה הקיצור לא ירוץ.',img:'ap-6b-off.png',shot:1},
@@ -6250,6 +6250,7 @@ async function renderApplePaySection(){
   const last=st.last_used_at?new Date(st.last_used_at).toLocaleString('he-IL',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'}):'';
   _applePayShell('<p class="ap-lead">כל תשלום ב-Apple Pay שמבצעים בהצמדת האייפון או השעון נרשם כאן לבד כהוצאה, ומסווג לקטגוריה. קניות באינטרנט ובאפליקציות לא נקלטות. ההגדרה חד־פעמית.</p>'
     +(st.active?'<div class="ap-status">✓ מחובר<small>'+(last?'· תשלום אחרון נקלט: '+esc(last):'· עדיין לא נקלט תשלום')+'</small></div>':'')
+    +(st.active&&!last?'<p class="ap-after">שילמת ולא נקלט? בקיצור, בשורה X-Budget-Token, הקוד צריך להתחיל ב-ab1_. אם יש שם קישור או משהו אחר, צור קוד חדש והדבק אותו.</p>':'')
     +'<button type="button" class="ap-btn'+(st.active?'':' primary')+'" onclick="createApplePayHook()"><span>🔗</span> '+(st.active?'צור קוד חדש (מבטל את הקודם)':'חבר Apple Pay')+'</button>'
     +(APPLE_PAY_SHORTCUT_URL?'<button type="button" class="ap-btn" onclick="openApGuide()"><span>📖</span> מדריך עם תמונות</button>':'')
     +(st.active?'<button type="button" class="ap-btn danger" onclick="revokeApplePayHook()">נתק את Apple Pay</button>':''));
@@ -6267,7 +6268,7 @@ async function createApplePayHook(){
     if(setup)setup.innerHTML=APPLE_PAY_SHORTCUT_URL
       ?'<div class="ap-steps"><div class="ap-steps-title">החיבור נוצר. 3 שלבים באייפון, פעם אחת</div>'
         +'<div class="ap-step"><span class="ap-num">1</span><div class="ap-step-body"><div class="ap-step-text">העתק את הקוד האישי</div></div><button type="button" class="ap-act" onclick="copyApplePay(\'token\')">העתק קוד</button></div>'
-        +'<div class="ap-step"><span class="ap-num">2</span><div class="ap-step-body"><div class="ap-step-text">הוסף את הקיצור</div><div class="ap-step-sub">כשנשאל על הקוד, הדבק אותו ולחץ "הוספת קיצור"</div></div><a class="ap-act" href="'+APPLE_PAY_SHORTCUT_URL+'" rel="noopener">הוסף קיצור</a></div>'
+        +'<div class="ap-step"><span class="ap-num">2</span><div class="ap-step-body"><div class="ap-step-text">הוסף את הקיצור</div><div class="ap-step-sub">הקוד מועתק שוב בלחיצה. כשנשאל, הדבק אותו (מתחיל ב-ab1_) ולחץ "הוספת קיצור"</div></div><a class="ap-act" href="'+APPLE_PAY_SHORTCUT_URL+'" rel="noopener" onclick="return openApplePayShortcut(event)">הוסף קיצור</a></div>'
         +'<div class="ap-step"><span class="ap-num">3</span><div class="ap-step-body"><div class="ap-step-text">בדוק שיש בראש הקיצור "כאשר מתבצעת קריאה" ושהמתג "פעולה אוטומטית" דלוק. אם אין, השתמש בהגדרה ידנית</div></div></div></div>'
         +'<div class="ap-note"><b>יש לך iOS 26 או ישן יותר?</b> הקיצור המוכן לא יוסיף אצלך את ההפעלה האוטומטית. פתח למטה את "הגדרה ידנית" ופעל לפי השלבים שם.</div>'
         +'<div class="ap-note"><b>הקוד מוצג רק עכשיו.</b> אם לא העתקת אותו, צור קוד חדש. מי שמחזיק בו יכול רק להוסיף הוצאות, לא לקרוא מידע. אל תשתף אותו.</div>'
@@ -6277,6 +6278,12 @@ async function createApplePayHook(){
     showToast('✓ נוצר קישור. העתק אותו לקיצור הדרך');
   }catch(e){showToast('❌ לא ניתן ליצור קישור כרגע');}
   finally{_applePayBusy=false;}
+}
+function openApplePayShortcut(e){
+  if(!_applePayToken||!navigator.clipboard)return true;
+  e.preventDefault();
+  navigator.clipboard.writeText(_applePayToken).catch(()=>{}).finally(()=>{location.href=APPLE_PAY_SHORTCUT_URL;});
+  return false;
 }
 async function copyApplePay(kind){
   const value=!_applePayToken?'':kind==='url'?SUPA_URL+'/functions/v1/apple-pay-ingest':_applePayToken;
