@@ -1222,3 +1222,43 @@ test('every category named in the extra dictionary exists in the personal expens
   assert.ok(values.length>50);
   assert.deepEqual(values.filter(v=>!cats.includes(v)),[]);
 });
+test('israeli id check digit',()=>{
+  const ctx=functions(['_normalizeIsraeliId','_isValidIsraeliId']);
+  assert.equal(ctx._isValidIsraeliId('000000018'),true);
+  assert.equal(ctx._isValidIsraeliId('123456789'),false);
+  assert.equal(ctx._isValidIsraeliId('18'),true);
+  assert.equal(ctx._isValidIsraeliId(' 0000 00018 '),true);
+  assert.equal(ctx._isValidIsraeliId('12a456782'),false);
+  assert.equal(ctx._isValidIsraeliId(''),false);
+  assert.equal(ctx._isValidIsraeliId('000000000'),false);
+  assert.equal(ctx._isValidIsraeliId('1234567890'),false);
+  assert.equal(ctx._normalizeIsraeliId(' 18 '),'000000018');
+  assert.equal(ctx._normalizeIsraeliId('12a456782'),'');
+});
+test('stroke length ignores a single tap',()=>{
+  const ctx=functions(['_strokeLength']);
+  assert.equal(ctx._strokeLength([]),0);
+  assert.equal(ctx._strokeLength([[{x:5,y:5}]]),0);
+  assert.equal(ctx._strokeLength([[{x:0,y:0},{x:30,y:40}]]),50);
+  assert.equal(ctx._strokeLength([[{x:0,y:0},{x:30,y:40}],[{x:0,y:0},{x:0,y:10}]]),60);
+});
+test('agreement form needs every clause and a real signature',()=>{
+  const ctx=functions(['_normalizeIsraeliId','_isValidIsraeliId','_agreementFormReady']);
+  const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const now=new Date();
+  const adultOn=ymd(new Date(now.getFullYear()-18,now.getMonth(),now.getDate()));
+  const adultTomorrow=ymd(new Date(now.getFullYear()-18,now.getMonth(),now.getDate()+1));
+  const base={fullName:'Dana Levi',nationalId:'000000018',birthDate:'1990-01-01',address:'Tel Aviv',phone:'0501234567',ink:40,confirmed:['a','b'],required:['a','b']};
+  assert.equal(ctx._agreementFormReady(base),true);
+  assert.equal(ctx._agreementFormReady({...base,fullName:'Dana'}),false);
+  assert.equal(ctx._agreementFormReady({...base,fullName:'   '}),false);
+  assert.equal(ctx._agreementFormReady({...base,nationalId:'123456789'}),false);
+  assert.equal(ctx._agreementFormReady({...base,birthDate:''}),false);
+  assert.equal(ctx._agreementFormReady({...base,birthDate:adultOn}),true);
+  assert.equal(ctx._agreementFormReady({...base,birthDate:adultTomorrow}),false);
+  assert.equal(ctx._agreementFormReady({...base,address:' '}),false);
+  assert.equal(ctx._agreementFormReady({...base,phone:''}),false);
+  assert.equal(ctx._agreementFormReady({...base,ink:39}),false);
+  assert.equal(ctx._agreementFormReady({...base,confirmed:['a']}),false);
+  assert.equal(ctx._agreementFormReady({...base,confirmed:['b','a','c']}),true);
+});

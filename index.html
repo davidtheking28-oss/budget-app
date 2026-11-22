@@ -5336,6 +5336,40 @@ function genInviteCode(){
   for(let i=0;i<buf.length;i++) code+=chars[buf[i]%chars.length];
   return code;
 }
+function _normalizeIsraeliId(raw){
+  const s=String(raw==null?'':raw).replace(/\s+/g,'');
+  if(!/^[0-9]{1,9}$/.test(s))return '';
+  return s.padStart(9,'0');
+}
+function _isValidIsraeliId(raw){
+  const d=_normalizeIsraeliId(raw);
+  if(!d||d==='000000000')return false;
+  let total=0;
+  for(let i=0;i<9;i++){
+    let v=Number(d[i])*(i%2===1?2:1);
+    if(v>9)v-=9;
+    total+=v;
+  }
+  return total%10===0;
+}
+function _strokeLength(strokes){
+  let len=0;
+  for(const stroke of strokes){
+    for(let i=1;i<stroke.length;i++)len+=Math.hypot(stroke[i].x-stroke[i-1].x,stroke[i].y-stroke[i-1].y);
+  }
+  return len;
+}
+function _agreementFormReady(f){
+  if(String(f.fullName||'').trim().split(/\s+/).filter(Boolean).length<2)return false;
+  if(!_isValidIsraeliId(f.nationalId))return false;
+  const b=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(f.birthDate||''));
+  if(!b)return false;
+  const now=new Date();
+  if(new Date(Number(b[1])+18,Number(b[2])-1,Number(b[3]))>new Date(now.getFullYear(),now.getMonth(),now.getDate()))return false;
+  if(!String(f.address||'').trim()||!String(f.phone||'').trim())return false;
+  if(!(f.ink>=40))return false;
+  return f.required.every(id=>f.confirmed.includes(id));
+}
 const LEGAL_VERSION='2026-10-12';
 let _legalCheckedFor=null;
 async function _ensureLegalConsent(){
