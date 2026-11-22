@@ -1262,3 +1262,12 @@ test('agreement form needs every clause and a real signature',()=>{
   assert.equal(ctx._agreementFormReady({...base,confirmed:['a']}),false);
   assert.equal(ctx._agreementFormReady({...base,confirmed:['b','a','c']}),true);
 });
+test('agreement dates are shown in Israel time as DD/MM/YYYY HH:MM',()=>{
+  const ctx=functions(['_agreementDateText']);
+  assert.equal(ctx._agreementDateText('2026-11-22T10:26:00Z',true),'22/11/2026 12:26');
+  assert.equal(ctx._agreementDateText('2026-07-01T10:00:00Z',true),'01/07/2026 13:00');
+  assert.equal(ctx._agreementDateText('2026-11-22T22:00:00Z',true),'23/11/2026 00:00');
+  assert.equal(ctx._agreementDateText('2026-11-22T22:00:00Z',false),'23/11/2026');
+  assert.equal(ctx._agreementDateText('not a date',true),'—');
+  assert.equal(ctx._agreementDateText(null,true),'—');
+});
