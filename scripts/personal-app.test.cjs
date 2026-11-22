@@ -1331,20 +1331,20 @@ test('agreement audit page lists sent opened and signed with network details and
   assert.ok(out.includes('—'));
 });
 test('agreement copy email escapes stored text, embeds the signature by cid and mails only the account address',async()=>{
-  const {buildResendPayload,escapeHtml}=await import(require('node:url').pathToFileURL(path.join(root,'supabase/functions/send-agreement-copy/agreementHtml.js')).href);
+  const {buildMailMessage,escapeHtml}=await import(require('node:url').pathToFileURL(path.join(root,'supabase/functions/send-agreement-copy/agreementHtml.js')).href);
   const record={id:'agr-1',email:'old@x.com',full_name:'דנה <img src=x onerror=alert(1)>',national_id:'000000018',birth_date:'1990-05-04',address:'"><script>x</script>',phone:'050',version:'2026-11',body:'סעיף <b>1</b>',body_sha256:'aaa111',signature_png:'data:image/png;base64,QUJD',presented_at:'2026-11-22T10:26:00Z',presented_ip:'87.1.2.3',presented_user_agent:'Safari <i>',signed_at:'2026-11-22T10:31:00Z',signed_ip:null,signed_user_agent:'Safari',record_sha256:'bbb222'};
-  const p=buildResendPayload(record,'ס <a@b.c>','me@x.com');
-  assert.deepEqual(p.to,['me@x.com']);
+  const p=buildMailMessage(record,'ס <a@b.c>','me@x.com');
+  assert.equal(p.to,'me@x.com');
   assert.equal(p.from,'ס <a@b.c>');
   assert.ok(p.html.includes('src="cid:signature"'));
   assert.ok(!p.html.includes('<script>')&&!p.html.includes('<img src=x')&&!p.html.includes('<b>1</b>'));
   for(const word of ['נשלח','נפתח','נחתם','agr-1','aaa111','bbb222','87.1.2.3','04/05/1990','22/11/2026 12:31','דף ביקורת'])assert.ok(p.html.includes(word),word);
-  const inline=p.attachments.find(a=>a.content_id==='signature');
+  const inline=p.attachments.find(a=>a.cid==='signature'&&a.encoding==='base64');
   assert.equal(inline.content,'QUJD');
   const doc=Buffer.from(p.attachments.find(a=>a.filename==='agreement.html').content,'base64').toString('utf8');
   assert.ok(doc.includes('src="data:image/png;base64,QUJD"'));
   assert.ok(doc.includes('דף ביקורת'));
-  assert.throws(()=>buildResendPayload({...record,signature_png:'javascript:alert(1)'},'a@b.c','me@x.com'));
+  assert.throws(()=>buildMailMessage({...record,signature_png:'javascript:alert(1)'},'a@b.c','me@x.com'));
   assert.equal(escapeHtml(`<&>"'`),'&lt;&amp;&gt;&quot;&#39;');
 });
 test('signed agreement copy is requested only when the client asked for it',async()=>{

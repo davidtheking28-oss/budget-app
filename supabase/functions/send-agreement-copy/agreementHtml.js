@@ -48,18 +48,18 @@ export function utf8ToBase64(text) {
   return btoa(binary)
 }
 
-export function buildResendPayload(record, from, to) {
+export function buildMailMessage(record, from, to) {
   const prefix = 'data:image/png;base64,'
   const sig = String(record.signature_png || '')
   if (!sig.startsWith(prefix)) throw new Error('bad_signature')
   return {
     from,
-    to: [to],
+    to,
     subject: 'עותק חתום של הסכם ההתקשרות',
     html: agreementDocumentHtml(record, 'cid:signature'),
     attachments: [
-      { filename: 'signature.png', content: sig.slice(prefix.length), content_id: 'signature' },
-      { filename: 'agreement.html', content: utf8ToBase64(agreementDocumentHtml(record, sig)), content_type: 'text/html; charset=utf-8' },
+      { filename: 'signature.png', content: sig.slice(prefix.length), encoding: 'base64', cid: 'signature', contentType: 'image/png' },
+      { filename: 'agreement.html', content: utf8ToBase64(agreementDocumentHtml(record, sig)), encoding: 'base64', contentType: 'text/html; charset=utf-8' },
     ],
   }
 }

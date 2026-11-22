@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.108.2'
-import { buildResendPayload } from './agreementHtml.js'
+import nodemailer from 'npm:nodemailer@6.9.16'
+import { buildMailMessage } from './agreementHtml.js'
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://davidtheking28-oss.github.io',
@@ -14,9 +15,10 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'method' }, 405)
 
   try {
-    const resendKey = Deno.env.get('RESEND_API_KEY')
-    const from = Deno.env.get('RESEND_FROM')
-    if (!resendKey || !from) return json({ error: 'not_configured' }, 503)
+    const mailUser = Deno.env.get('GMAIL_USER')
+    const mailPassword = Deno.env.get('GMAIL_APP_PASSWORD')
+    if (!mailUser || !mailPassword) return json({ error: 'not_configured' }, 503)
+    const from = `"שקל שקל" <${mailUser}>`
 
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) return json({ error: 'unauthorized' }, 401)
@@ -56,14 +58,15 @@ Deno.serve(async (req) => {
 
     let failure: string | null = null
     try {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: `Bearer ${resendKey}` },
-        body: JSON.stringify(buildResendPayload(record, from, user.email)),
+      const transport = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user: mailUser, pass: mailPassword },
       })
-      if (!res.ok) failure = `resend_${res.status}: ${(await res.text()).slice(0, 300)}`
+      await transport.sendMail(buildMailMessage(record, from, user.email))
     } catch (err) {
-      failure = `fetch_failed: ${String(err).slice(0, 300)}`
+      failure = `smtp_failed: ${String(err).slice(0, 300)}`
     }
 
     if (failure) {
