@@ -227,6 +227,15 @@ export function makeDb(mode) {
       const month = `${new Date(m.getFullYear(), m.getMonth() - back, 1).getFullYear()}-${pad(new Date(m.getFullYear(), m.getMonth() - back, 1).getMonth() + 1)}-01`;
       return back === 1 ? [] : [{ id: 'doc' + back, client_id: CLIENT_EMPTY, kind: 'bank', period_month: month, path: `${CLIENT_EMPTY}/bank/${month.slice(0, 7)}/a.pdf`, file_name: `עובר_ושב_${month.slice(0, 7)}.pdf`, created_at: iso(1) }];
     }),
+    client_agreements: empty ? [] : [{
+      id: '5b1f6a3e-0c1d-4e57-9a0a-2f5b3c1d9e11', user_id: CLIENT_EMPTY, email: 'new.client@gmail.com', full_name: 'דנה לוי', national_id: '000000018', birth_date: '1990-01-31',
+      address: 'הרצל 1, תל אביב', phone: '050-1234567', version: '2026-11-draft', body: 'הסכם התקשרות\n\n1. היקף השירות\nנותן השירות מלווה את הלקוח בניהול התקציב.\n\n3. אחריות והסתמכות\nכל החלטה כספית היא באחריות הלקוח.',
+      body_sha256: 'a3f1c2d4e5b60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90', confirmed_clauses: ['scope', 'liability'],
+      signature_png: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      presented_at: iso(3), presented_ip: '87.71.32.169', presented_user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Safari/605.1.15',
+      signed_at: iso(3), signed_ip: '87.71.32.169', signed_user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Safari/605.1.15',
+      record_sha256: '9e8d7c6b5a49382716f5e4d3c2b1a09f8e7d6c5b4a39281706f5e4d3c2b1a09f'
+    }],
     advisor_notes: empty ? [] : [
       { id: 'n1', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'הלקוחה מעוניינת להגדיל הפרשה לפנסיה ב-2% החל מהרבעון הבא. לבדוק השלכות מס.', for_client: false, created_at: iso(5) },
       { id: 'n2', advisor_id: ADVISOR, client_id: CLIENT_A, body: 'שיחת טלפון קצרה.', for_client: false, created_at: iso(20) }

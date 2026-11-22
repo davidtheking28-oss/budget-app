@@ -1,0 +1,14 @@
+.card { display: grid; gap: 14px; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.title { margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--text); }
+.details { display: grid; gap: 6px; margin: 0; }
+.detail { display: flex; gap: 8px; font-size: var(--text-sm); }
+.detail dt { color: var(--text2); min-width: 90px; }
+.detail dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+.signature { max-width: 260px; width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.audit { width: 100%; border-collapse: collapse; font-size: var(--text-sm); color: var(--text2); }
+.audit th, .audit td { border: 1px solid var(--border); padding: 6px 8px; text-align: right; overflow-wrap: anywhere; }
+.fingerprint { margin: 0; font-size: var(--text-sm); color: var(--text2); overflow-wrap: anywhere; }
+.bodyBox summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--accent-text); }
+.bodyBox summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.body { white-space: pre-wrap; font-size: var(--text-sm); line-height: 1.75; color: var(--text); max-height: 50vh; overflow-y: auto; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); }

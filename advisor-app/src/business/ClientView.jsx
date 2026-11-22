@@ -9,6 +9,7 @@ import Credit from '../budget/Credit.jsx';
 import ObligationTiles from '../budget/ObligationTiles.jsx';
 import Crm from '../crm/Crm.jsx';
 import ClientDocuments from './ClientDocuments.jsx';
+import ClientAgreement from './ClientAgreement.jsx';
 import MonthNav from '../components/MonthNav.jsx';
 import CategorySelect from '../components/CategorySelect.jsx';
 import Button from '../components/Button.jsx';
@@ -220,6 +221,7 @@ export default function ClientView({ advisorId, clientId, initialTab, onClientCh
             <div className={styles.stack}>
               <Heading title="מסמכים" text="דפי עו״ש וחיובי אשראי של שלושת החודשים המלאים שלפני תחילת הליווי." />
               <ClientDocuments key={clientIdOrNull} clientId={clientIdOrNull} client={client} />
+              <ClientAgreement key={`agreement:${clientIdOrNull}`} clientId={clientIdOrNull} />
             </div>
           )}
           {view === 'credit' && <Credit key={chip} focus={CHIPS.find(c => c.key === chip)?.focus} clientUserId={clientIdOrNull} advisorId={advisorId} />}
