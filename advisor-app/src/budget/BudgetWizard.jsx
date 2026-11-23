@@ -509,12 +509,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   }
 
   function rowList(list, setter, placeholder, suggestions, actualOf, compact = false, dayField = false, editableActual = false) {
-    const dayBox = (r, i) => dayField && (r.daily ? (
-      <div className={styles.itemAmountBox}>
-        <div className={styles.itemAmountBoxLabel}>סוג</div>
-        <div>יומית</div>
-      </div>
-    ) : (
+    const dayBox = (r, i) => dayField && (
       <div className={styles.itemAmountBox}>
         <div className={styles.itemAmountBoxLabel}>יום בחודש</div>
         <input
@@ -530,7 +525,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
           onChange={e => updateRow(setter, i, { day: e.target.value })}
         />
       </div>
-    ));
+    );
 
     const amounts = (r, i) => (
       <>
@@ -604,6 +599,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
                 <DeleteButton title={`מחק · ${r.name || 'שורה'}`} onClick={() => removeRow(setter, i)} />
               </div>
               <div className={styles.itemCardAmounts}>{dayBox(r, i)}{amounts(r, i)}</div>
+              {r.daily && <p className={styles.incomeHint}>הכנסה יומית: הביצוע מצטבר מההזנות של הלקוח</p>}
               {actualOf && transactionDetails(r.name, true)}
             </div>
           ) : (
