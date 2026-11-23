@@ -82,7 +82,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
 
   const [incomes, setIncomes] = useState(() => {
     const existing = incomeSourcesFor(data?.settings, year, month);
-    return (existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '' })) : [{ name: 'שכר', amount: '', day: '' }]).map(trackRow);
+    return (existing.length ? existing.map(s => ({ name: s.name || '', amount: s.amount ?? '', day: s.day ?? '', ...(s.daily ? { daily: true } : {}) })) : [{ name: 'שכר', amount: '', day: '' }]).map(trackRow);
   });
   const [fixed, setFixed] = useState(() => {
     const existing = Object.fromEntries((data?.fixed_expenses || []).map(f => [f.id, f.amount ?? '']));
@@ -243,8 +243,8 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
       invalid('יש להשלים את הסכום בשורה ששונתה. להזנת סכום אפס כתוב 0.');
       return false;
     }
-    const cleanIncomes = incomes.filter(r => r.name.trim() && String(r.amount).trim() !== '' && Number.isFinite(Number(r.amount)) && Number(r.amount) >= 0)
-      .map(r => ({ name: r.name.trim(), amount: parseFloat(r.amount), day: parseInt(r.day, 10) || undefined }));
+    const cleanIncomes = incomes.filter(r => r.name.trim() && (r.daily || String(r.amount).trim() !== '') && Number.isFinite(Number(r.amount)) && Number(r.amount) >= 0)
+      .map(r => ({ name: r.name.trim(), amount: parseFloat(r.amount) || 0, day: r.daily ? undefined : parseInt(r.day, 10) || undefined, ...(r.daily ? { daily: true } : {}) }));
     const cleanFixed = fixed.filter(r => r.name.trim() && parseFloat(r.amount) > 0)
       .map(r => ({ id: r.name.trim(), amount: parseFloat(r.amount), ...(r.savings ? { savings: true } : {}) }));
     const cleanVar = variable.filter(r => r.name.trim() && parseFloat(r.amount) > 0);
@@ -509,7 +509,12 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
   }
 
   function rowList(list, setter, placeholder, suggestions, actualOf, compact = false, dayField = false, editableActual = false) {
-    const dayBox = (r, i) => dayField && (
+    const dayBox = (r, i) => dayField && (r.daily ? (
+      <div className={styles.itemAmountBox}>
+        <div className={styles.itemAmountBoxLabel}>סוג</div>
+        <div>יומית</div>
+      </div>
+    ) : (
       <div className={styles.itemAmountBox}>
         <div className={styles.itemAmountBoxLabel}>יום בחודש</div>
         <input
@@ -525,7 +530,7 @@ export default function BudgetWizard({ data, save, year, month, focusCategory, o
           onChange={e => updateRow(setter, i, { day: e.target.value })}
         />
       </div>
-    );
+    ));
 
     const amounts = (r, i) => (
       <>

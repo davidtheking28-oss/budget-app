@@ -300,3 +300,9 @@ describe('monthly income source persistence', () => {
     expect(incomeSourcePatch(patch, [], 2026, 10, new Date(2026, 10, 6)).incomeSources).toEqual([]);
   });
 });
+
+it('does not count a daily income target as received income', () => {
+  const sources = [{ name: 'עבודה', amount: 10000, daily: true }];
+  expect(effectiveIncome([], sources).income).toBe(0);
+  expect(effectiveIncome([{ type: 'income', desc: 'עבודה', amount: 500 }, { type: 'income', desc: 'עבודה', amount: 450 }], sources).income).toBe(950);
+});

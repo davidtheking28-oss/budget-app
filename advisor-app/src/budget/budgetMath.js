@@ -64,7 +64,7 @@ export function effectiveIncome(transactions, incomeSources) {
   const manualIncome = incomeTx.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
   const postedNames = new Set(incomeTx.map(t => (t.desc || '').trim().toLowerCase()));
   const unpostedIncome = (incomeSources || [])
-    .filter(src => !postedNames.has((src.name || '').trim().toLowerCase()))
+    .filter(src => !src.daily && !postedNames.has((src.name || '').trim().toLowerCase()))
     .reduce((s, src) => s + (parseFloat(src.amount) || 0), 0);
   return { manualIncome, unpostedIncome, income: manualIncome + unpostedIncome };
 }

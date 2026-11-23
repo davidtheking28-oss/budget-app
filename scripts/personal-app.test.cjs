@@ -288,7 +288,7 @@ test('an installment deal is split by the number of payments and drops out of th
 
 test('editing an income source also updates the income it already posted this month',async()=>{
  const src={name:'משכורת שלי',amount:'10000',day:'1'};let saved=0,committed=null;
- const ctx=functions(['_expEditIncome'],{_incomeWorkList:()=>[src],promptSheet:async()=>['משכורת שלי','8055','1'],mk:(y,m)=>y+'-'+String(m+1).padStart(2,'0'),currentYear:2026,currentMonth:10,saveData:()=>{saved++;},_incomeCommit:l=>{committed=l;},_incomeFields:()=>[],
+ const ctx=functions(['_incomeFromPrompt','_incomeDailyError','_expEditIncome'],{_incomeWorkList:()=>[src],promptSheet:async()=>['משכורת שלי','monthly','8055','1'],mk:(y,m)=>y+'-'+String(m+1).padStart(2,'0'),currentYear:2026,currentMonth:10,saveData:()=>{saved++;},_incomeCommit:l=>{committed=l;},_incomeFields:()=>[],
   transactions:[{type:'income',recurring:true,desc:'משכורת שלי',amount:10000,date:'2026-11-01'},{type:'income',recurring:true,desc:'משכורת שלי',amount:10000,date:'2026-10-01'},{type:'income',desc:'בונוס',amount:500,date:'2026-11-05'}]});
  await ctx._expEditIncome(0);
  assert.equal(ctx.transactions[0].amount,8055);assert.equal(ctx.transactions[1].amount,10000);assert.equal(ctx.transactions[2].amount,500);assert.equal(saved,1);assert.ok(committed);
@@ -1395,4 +1395,41 @@ test('documents no longer lock the app: the upload screen can be closed and logo
   assert.ok(!docs.includes('signOut'));
   const lock=html.slice(html.indexOf('async function _applyDocsLock'),html.indexOf('function openDocsTask'));
   assert.ok(!lock.includes("classList.add('docs-locked')"));
+});
+
+test('daily income counts only recorded entries and is never auto-posted',()=>{
+  const now=new Date();const y=now.getFullYear(),m=now.getMonth();const key=y+'-'+String(m+1).padStart(2,'0');
+  const sources=[{name:'עבודה',amount:10000,day:1,daily:true},{name:'קצבה',amount:300}];let tx=[];
+  const income=functions(['monthlyIncomeFor'],{getMonthTx:()=>tx,_incomeSourcesFor:()=>sources});
+  assert.equal(income.monthlyIncomeFor(y,m),300);
+  tx=[{type:'income',desc:'עבודה',amount:500},{type:'income',desc:'עבודה',amount:450}];
+  assert.equal(income.monthlyIncomeFor(y,m),1250);
+  const auto=functions(['checkRecurringIncome'],{currentYear:y,currentMonth:m,mk:()=>key,_modeKey:k=>k,userSettings:{incomeSources:[sources[0]]},transactions:[],localISO:()=>key+'-01',saveData(){},refreshAll(){},showUndoToast(){},esc:s=>s});
+  auto.checkRecurringIncome();assert.equal(auto.transactions.length,0);
+});
+test('daily flag survives cloning of income sources and is absent on monthly sources',()=>{
+  const line=html.match(/function _cloneSources\(a\)\{.*\}/)[0];
+  const ctx=vm.createContext({});vm.runInContext(line,ctx);
+  const out=JSON.parse(JSON.stringify(ctx._cloneSources([{name:'a',amount:1,daily:true},{name:'b',amount:2,day:3}])));
+  assert.deepEqual(out,[{name:'a',amount:1,day:'',daily:true},{name:'b',amount:2,day:3}]);
+});
+test('adding daily income records one entry dated inside the shown month and rejects bad input',async()=>{
+  const now=new Date();const y=now.getFullYear(),m=now.getMonth();const key=y+'-'+String(m+1).padStart(2,'0');const today=key+'-10';
+  let answer;
+  const ctx=functions(['_addDailyIncome'],{currentYear:y,currentMonth:m,_canWriteLocalData:()=>true,_incomeSourcesFor:()=>[{name:'עבודה',daily:true}],mk:()=>key,localISO:()=>today,daysInMonth:()=>30,promptSheet:async()=>answer,transactions:[],saveData(){},refreshAll(){},showToast(){},fmt:String,_incomeEntries:()=>[]});
+  answer=['500',today];await ctx._addDailyIncome(0);
+  assert.equal(ctx.transactions.length,1);assert.equal(ctx.transactions[0].amount,500);assert.equal(ctx.transactions[0].desc,'עבודה');assert.equal(ctx.transactions[0].recurring,false);
+  for(const bad of [['0',today],['',today],['500',key+'-11'],['500','']]){answer=bad;await ctx._addDailyIncome(0);}
+  answer=null;await ctx._addDailyIncome(0);
+  assert.equal(ctx.transactions.length,1);
+});
+
+test('turning a source daily renames this month entries, stops carrying them and keeps their amounts',async()=>{
+  const src={name:'עבודה',amount:'10000',day:'1'};let committed=null;const toasts=[];
+  const ctx=functions(['_incomeFromPrompt','_incomeDailyError','_expEditIncome'],{_incomeWorkList:()=>[src],promptSheet:async()=>['עבודה יומית','daily','9000','1'],mk:(y,m)=>y+'-'+String(m+1).padStart(2,'0'),currentYear:2026,currentMonth:10,saveData(){},_incomeCommit:l=>{committed=l;},_incomeFields:()=>[],_incomeEntries:()=>[{}],showToast:t=>toasts.push(t),
+    transactions:[{type:'income',recurring:true,desc:'עבודה',amount:10000,date:'2026-11-01'},{type:'income',recurring:true,desc:'עבודה',amount:9800,date:'2026-10-01'}]});
+  await ctx._expEditIncome(0);
+  assert.deepEqual(JSON.parse(JSON.stringify(committed)),[{name:'עבודה יומית',amount:'9000',day:'',daily:true}]);
+  assert.equal(ctx.transactions[0].desc,'עבודה יומית');assert.equal(ctx.transactions[0].amount,10000);assert.equal(ctx.transactions[0].recurring,false);
+  assert.equal(ctx.transactions[1].desc,'עבודה');assert.equal(ctx.transactions[1].recurring,false);assert.equal(toasts.length,1);
 });

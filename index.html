@@ -1194,7 +1194,7 @@
     #promptTitle{flex-shrink:0;padding-bottom:12px;border-bottom:1px solid var(--border);margin:0}
     #promptForm{min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scroll-padding-block:12px}
     #promptFields{gap:16px!important;margin:16px 0!important}
-    #promptFields input{min-height:48px;width:100%;min-width:0;font-size:16px;padding:12px;border-radius:12px}
+    #promptFields input,#promptFields select{min-height:48px;width:100%;min-width:0;font-size:16px;padding:12px;border-radius:12px}
     #promptFields input[type="number"]{font-family:var(--font-num);font-size:22px;font-weight:700;direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
     #promptOverlay .confirm-actions{flex-shrink:0;border-top:1px solid var(--border);padding-top:12px}
     .confirm-icon{font-size:2.4rem;line-height:1;margin-bottom:10px;}
@@ -4163,7 +4163,7 @@ function checkRecurringIncome(){
   const monthKey=mk(now.getFullYear(),now.getMonth());
   if(mk(currentYear,currentMonth)!==monthKey)return;
   const todayDay=now.getDate();
-  const sources=(userSettings.incomeSources||[]).filter(s=>s.name&&s.amount&&s.day&&todayDay>=parseInt(s.day));
+  const sources=(userSettings.incomeSources||[]).filter(s=>!s.daily&&s.name&&s.amount&&s.day&&todayDay>=parseInt(s.day));
   if(!sources.length)return;
   const thisMonthIncomeNames=new Set(transactions.filter(t=>t.type==='income'&&(t.date||'').startsWith(monthKey)).map(t=>(t.desc||'').trim().toLowerCase()));
   const pending=sources.filter(s=>{
@@ -4536,7 +4536,21 @@ function renderTxCategorized(byCat){
 function _expIncomeSectionHtml(){
   const past=_viewingPastMonth();
   const sources=_incomeSourcesFor(currentYear,currentMonth);
+  const future=!past&&mk(currentYear,currentMonth)>_curMonthKey();
+  let dailyTotal=0;
+  const dailyRows=sources.map((src,i)=>{
+    if(!src.daily)return '';
+    const entries=_incomeEntries(src.name).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const got=entries.reduce((s,t)=>s+(+t.amount||0),0);
+    const target=parseFloat(src.amount)||0;
+    dailyTotal+=got;
+    return _expRowHtml({key:'inc:'+i,cat:src.name,iconCat:'שכר',amount:got,planAmount:target>0?target:null,editable:!past,onEdit:'_expEditIncome('+i+')',onDelete:'_expDeleteIncome('+i+')',
+      body:entries.map(_incomeEntryHtml).join('')||'<div class="budget-tx-empty">עדיין לא הוזנו הכנסות החודש</div>'})
+      +(future?'':'<button type="button" class="exp-add-row" onclick="_addDailyIncome('+i+')">+ הוסף הכנסה · '+esc(src.name)+'</button>');
+  }).join('');
+  const planned=sources.filter(s=>!s.daily);
   const rows=sources.map((src,i)=>{
+    if(src.daily)return '';
     const amount=parseFloat(src.amount)||0;
     const nm=(src.name||'').trim().toLowerCase();
     const got=getMonthTx(currentYear,currentMonth).filter(t=>t.type==='income'&&(t.desc||'').trim().toLowerCase()===nm).reduce((s,t)=>s+(+t.amount||0),0);
@@ -4545,12 +4559,41 @@ function _expIncomeSectionHtml(){
       ?_expRowHtml({key:'inc:'+i,cat:src.name||'הכנסה',iconCat:'שכר',amount,body})
       :_expRowHtml({key:'inc:'+i,cat:src.name||'הכנסה',iconCat:'שכר',amount,editable:true,onEdit:'_expEditIncome('+i+')',onDelete:'_expDeleteIncome('+i+')',body});
   }).join('');
-  return _cfSectionHtml('הכנסות מתוכננות',sources.reduce((s,x)=>s+(parseFloat(x.amount)||0),0),
+  return (dailyRows?_cfSectionHtml('הכנסות יומיות',dailyTotal,dailyRows):'')+_cfSectionHtml('הכנסות מתוכננות',planned.reduce((s,x)=>s+(parseFloat(x.amount)||0),0),
     (rows||'<div class="budget-tx-empty">אין מקורות הכנסה מוגדרים</div>')
     +(past?'':'<button type="button" class="exp-add-row" onclick="addIncomeSource()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף מקור הכנסה</button>'));
 }
-function _incomeFields(src){return [{label:'שם המקור',value:src.name||'',placeholder:'משכורת'},{label:'סכום מתוכנן לחודש (₪)',type:'number',value:src.amount||''},{label:'יום קבלה בחודש (לתזכורת)',type:'number',value:src.day||''}];}
-function _cloneSources(a){return (a||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
+function _incomeFields(src){return [{label:'שם המקור',value:src.name||'',placeholder:'משכורת'},{label:'סוג ההכנסה',type:'select',value:src.daily?'daily':'monthly',options:[['monthly','חודשית קבועה'],['daily','יומית, מצטברת לפי הזנות']]},{label:'סכום מתוכנן לחודש (₪)',type:'number',value:src.amount||''},{label:'יום קבלה בחודש (להכנסה חודשית בלבד)',type:'number',value:src.day||''}];}
+function _incomeFromPrompt(v){const daily=v[1]==='daily';return {name:v[0].trim(),amount:v[2],day:daily?'':v[3],...(daily?{daily:true}:{})};}
+function _incomeDailyError(list,src,skip){
+  const nm=(src.name||'').trim().toLowerCase();
+  if(src.daily&&!nm)return 'כתוב שם למקור ההכנסה';
+  if(list.some((s,i)=>i!==skip&&(s.daily||src.daily)&&(s.name||'').trim().toLowerCase()===nm))return 'כבר יש מקור הכנסה בשם הזה';
+  return '';
+}
+function _incomeEntries(name){
+  const nm=(name||'').trim().toLowerCase();
+  return getMonthTx(currentYear,currentMonth).filter(t=>t.type==='income'&&(t.desc||'').trim().toLowerCase()===nm);
+}
+function _incomeEntryHtml(t){
+  return '<div class="exp-struct-row" data-txid="'+t.id+'"><button type="button" class="exp-struct-edit" onclick="event.stopPropagation();editTx('+_jsId(t.id)+')" aria-label="ערוך הכנסה '+heDate(t.date)+'">'+heDate(t.date)+(t.note?' · '+esc(t.note):'')+'</button><span class="exp-pay-icons"><bdi dir="ltr" class="exp-amt" style="color:var(--green)">+'+fmt(t.amount)+'</bdi><button type="button" class="exp-icon-sm" onclick="event.stopPropagation();deleteTx('+_jsId(t.id)+')" aria-label="מחק הכנסה '+heDate(t.date)+'">'+_expTrashSvg+'</button></span></div>';
+}
+async function _addDailyIncome(i){
+  if(!_canWriteLocalData())return;
+  const src=_incomeSourcesFor(currentYear,currentMonth)[i];if(!src)return;
+  const key=mk(currentYear,currentMonth),today=localISO();
+  const last=key+'-'+String(daysInMonth(currentYear,currentMonth)).padStart(2,'0');
+  const max=today<last?today:last,min=key+'-01';
+  const v=await promptSheet({title:'הכנסה: '+src.name,confirmText:'הוסף',fields:[{label:'כמה הכנסת? (₪)',type:'number'},{label:'תאריך',type:'date',value:max,min,max}]});
+  if(v===null)return;
+  const amount=Math.round(parseFloat(v[0])*100)/100;
+  if(!(amount>0)){showToast('הזן סכום גדול מאפס');return;}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v[1])||v[1]<min||v[1]>max){showToast('בחר תאריך בחודש המוצג, עד היום');return;}
+  transactions.unshift({id:Date.now()+Math.random(),type:'income',cat:'הכנסה',desc:src.name,amount,date:v[1],recurring:false,fixed:false});
+  saveData();refreshAll();
+  showToast('✓ נוסף '+fmt(amount)+' · סה"כ החודש '+fmt(_incomeEntries(src.name).reduce((s,t)=>s+(+t.amount||0),0)));
+}
+function _cloneSources(a){return (a||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||'',...(s.daily?{daily:true}:{})}));}
 function _incomeWorkList(){_seedIncomeHistory();return _cloneSources(_incomeSourcesFor(currentYear,currentMonth));}
 function _incomeCommit(list){
   if(!userSettings.incomeHistory)userSettings.incomeHistory={};
@@ -4566,27 +4609,39 @@ async function _expEditIncome(i){
   const v=await promptSheet({title:'עריכת תכנון הכנסה',fields:_incomeFields(src)});
   if(v===null)return;
   const oldName=(src.name||'').trim().toLowerCase();
-  src.name=v[0].trim();src.amount=v[1];src.day=v[2];
-  const amt=parseFloat(src.amount);
+  const next=_incomeFromPrompt(v),bad=_incomeDailyError(list,next,i);
+  if(bad){showToast(bad);return;}
+  const turnedDaily=next.daily&&!src.daily;
+  list[i]=next;
+  const amt=parseFloat(next.amount);
   const monthKey=mk(currentYear,currentMonth);
   let synced=false;
-  if(oldName&&amt>0)transactions.forEach(t=>{
-    if(t.type==='income'&&t.recurring&&(t.date||'').startsWith(monthKey)&&(t.desc||'').trim().toLowerCase()===oldName){t.amount=amt;t.desc=src.name;synced=true;}
+  if(next.daily&&oldName)transactions.forEach(t=>{
+    if(t.type!=='income'||(t.desc||'').trim().toLowerCase()!==oldName)return;
+    if(t.recurring){t.recurring=false;synced=true;}
+    if((t.date||'').startsWith(monthKey)&&t.desc!==next.name){t.desc=next.name;synced=true;}
+  });
+  else if(oldName&&amt>0)transactions.forEach(t=>{
+    if(t.type==='income'&&t.recurring&&(t.date||'').startsWith(monthKey)&&(t.desc||'').trim().toLowerCase()===oldName){t.amount=amt;t.desc=next.name;synced=true;}
   });
   if(synced)saveData();
   _incomeCommit(list);
+  if(turnedDaily&&_incomeEntries(next.name).length)showToast('כבר רשומה החודש הכנסה במקור הזה. פתח את השורה ומחק אותה אם עוד לא התקבלה');
 }
 function _expDeleteIncome(i){
   const list=_incomeWorkList();const backup=list[i];if(!backup)return;
   list.splice(i,1);
   _incomeCommit(list);
-  showUndoToast('🗑️ מקור ההכנסה הוסר',()=>{const l=_incomeWorkList();l.splice(i,0,backup);_incomeCommit(l);},()=>{});
+  showUndoToast('🗑️ מקור ההכנסה הוסר'+(backup.daily?'. הסכומים שהוזנו נשמרו':''),()=>{const l=_incomeWorkList();l.splice(i,0,backup);_incomeCommit(l);},()=>{});
 }
 async function addIncomeSource(){
   const v=await promptSheet({title:'מקור הכנסה חדש',fields:_incomeFields({})});
-  if(v===null||(!v[0].trim()&&!v[1]))return;
-  const list=_incomeWorkList();
-  list.push({name:v[0].trim(),amount:v[1],day:v[2]});
+  if(v===null)return;
+  const src=_incomeFromPrompt(v);
+  if(!src.daily&&!src.name&&!src.amount)return;
+  const list=_incomeWorkList(),bad=_incomeDailyError(list,src,-1);
+  if(bad){showToast(bad);return;}
+  list.push(src);
   _incomeCommit(list);
 }
 async function _expEditManual(cat){
@@ -6157,8 +6212,8 @@ if(!userSettings.catRules)      userSettings.catRules      = [];
 if(!userSettings.customFixedCats) userSettings.customFixedCats = [];
 _seedIncomeHistory();
 _syncCurrentIncome();
-function _seedIncomeHistory(){if(!userSettings.incomeHistory&&(userSettings.incomeSources||[]).length)userSettings.incomeHistory={'0000-00':(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}))};}
-function _incomeSnap(){_seedIncomeHistory();if(!userSettings.incomeHistory){if(!(userSettings.incomeSources||[]).length)return;userSettings.incomeHistory={};}userSettings.incomeHistory[_curMonthKey()]=(userSettings.incomeSources||[]).map(s=>({name:s.name||'',amount:s.amount||'',day:s.day||''}));}
+function _seedIncomeHistory(){if(!userSettings.incomeHistory&&(userSettings.incomeSources||[]).length)userSettings.incomeHistory={'0000-00':_cloneSources(userSettings.incomeSources)};}
+function _incomeSnap(){_seedIncomeHistory();if(!userSettings.incomeHistory){if(!(userSettings.incomeSources||[]).length)return;userSettings.incomeHistory={};}userSettings.incomeHistory[_curMonthKey()]=_cloneSources(userSettings.incomeSources);}
 function _syncCurrentIncome(){if(!userSettings.incomeHistory)return;const n=new Date();userSettings.incomeSources=_cloneSources(_incomeSourcesFor(n.getFullYear(),n.getMonth()));}
 function _incomeSourcesFor(y,m){const h=userSettings.incomeHistory;if(!h)return userSettings.incomeSources||[];const key=mk(y,m);const keys=Object.keys(h).filter(k=>k<=key).sort();return keys.length?h[keys[keys.length-1]]:(userSettings.incomeSources||[]);}
 function saveSettingsData(){if(!_canWriteLocalData())return;_incomeSnap();localStorage.setItem(_modeKey('budget_settings'),JSON.stringify(userSettings));localStorage.setItem(_modeKey('budget_settings_ts'),String(Date.now()));scheduleCloudSave();}
@@ -6176,7 +6231,7 @@ function monthlyIncomeFor(y,m){
   const isCurrent=(y===now.getFullYear()&&m===now.getMonth());
   if(!isCurrent&&!monthTx.length)return txIncome;
   const postedNames=new Set(incomeTx.map(t=>(t.desc||'').trim().toLowerCase()));
-  const unpostedSourcesIncome=_incomeSourcesFor(y,m).filter(src=>!postedNames.has((src.name||'').trim().toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
+  const unpostedSourcesIncome=_incomeSourcesFor(y,m).filter(src=>!src.daily&&!postedNames.has((src.name||'').trim().toLowerCase())).reduce((s,src)=>s+(parseFloat(src.amount)||0),0);
   return txIncome+unpostedSourcesIncome;
 }
 function getMonthlyIncome(){return monthlyIncomeFor(currentYear,currentMonth);}
@@ -7382,7 +7437,7 @@ function renderTxPage(){
   // ותקציבי הקטגוריות המשתנות (budgets), אותה נוסחה שמניבה את "תכנון" ב-advisor-app.
   let dispInc=inc, dispExp=exp, dispSav=mTx.filter(t=>t.type==='saving').reduce((s,t)=>s+t.amount,0);
   if(!hasRange&&_txFlowView==='plan'){
-    dispInc=getMonthlyIncome();
+    dispInc=getMonthlyIncome()+_incomeSourcesFor(currentYear,currentMonth).filter(s=>s.daily&&parseFloat(s.amount)>0).reduce((a,s)=>a+parseFloat(s.amount)-_incomeEntries(s.name).reduce((b,t)=>b+(+t.amount||0),0),0);
     let plannedFixed=0;getEffectiveFixedCats().filter(c=>!SAVING_FIXED_CATS.includes(c)).forEach(c=>plannedFixed+=_fxMonthly(c));
     dispSav=SAVING_FIXED_CATS.reduce((a,c)=>a+_fxMonthly(c),0);
     let plannedVar=0;getEffectiveExpenseCats().forEach(c=>{if(budgets[c])plannedVar+=budgets[c];});
@@ -10504,8 +10559,11 @@ setTimeout(autoCarryRecurring,500);
       var inputs=fields.map(function(f,i){
         var ff=document.createElement('div'); ff.className='form-field';
         var lbl=document.createElement('label'); lbl.textContent=f.label||''; lbl.style.fontSize='0.82rem'; lbl.style.fontWeight='600'; lbl.style.color='var(--text2)';
-        var inp=document.createElement('input');
-        inp.type=f.type==='number'?'number':'text';
+        var inp=document.createElement(f.type==='select'?'select':'input');
+        if(f.type==='select')f.options.forEach(function(o){inp.add(new Option(o[1],o[0]));});
+        else inp.type=f.type==='number'||f.type==='date'?f.type:'text';
+        if(f.min)inp.min=f.min;
+        if(f.max)inp.max=f.max;
         if(f.type==='number') inp.inputMode='decimal';
         inp.value=(f.value!=null?f.value:'');
         inp.placeholder=f.placeholder||'';
