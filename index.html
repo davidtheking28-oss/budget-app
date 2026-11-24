@@ -1100,6 +1100,11 @@
     .auth-app-icon{width:108px;height:108px;border-radius:25px;display:block;margin:0 auto 26px;box-shadow:0 0 0 1px rgba(var(--accent-rgb),0.3),0 18px 48px rgba(var(--accent-rgb),0.28),0 4px 14px rgba(0,0,0,0.25);}
     .auth-app-name{font-size:2.2rem;font-weight:800;color:var(--text);letter-spacing:-1px;margin-bottom:8px;line-height:1.1;}
     .auth-app-sub{font-size:0.95rem;color:var(--text2);line-height:1.5;margin-bottom:28px;max-width:220px;}
+    #authScreen.auth-installing .auth-inner{padding-top:max(3vh,24px);padding-bottom:max(3vh,24px)}
+    #authScreen.auth-installing .auth-hero{flex:none;padding-bottom:14px}
+    #authScreen.auth-installing .auth-app-icon{width:64px;height:64px;border-radius:15px;margin-bottom:12px}
+    #authScreen.auth-installing .auth-app-name{font-size:1.6rem;margin-bottom:2px}
+    #authScreen.auth-installing .auth-app-sub,#authScreen.auth-installing .auth-trust-row{display:none}
     .auth-trust-row{display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,16px);}
     .auth-trust-item{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:var(--text2);font-weight:600;white-space:nowrap;}
     .auth-trust-item svg{color:var(--accent);}
@@ -1820,10 +1825,11 @@
     </div>
     <!-- Install-first step (iPhone in the browser) -->
     <div id="authStepInstall" class="auth-cta-section" style="display:none">
-      <div style="font-weight:800;font-size:1.05rem;color:var(--text);text-align:center;margin-bottom:6px">מתקינים קודם, נרשמים בפנים</div>
+      <div id="authInstallTitle" style="font-weight:800;font-size:1.1rem;line-height:1.4;color:var(--text);text-align:center;margin-bottom:6px"></div>
       <div id="authInstallSub" style="font-size:0.85rem;line-height:1.6;color:var(--text2);text-align:center;margin-bottom:14px"></div>
       <div id="authInstallBody"></div>
-      <button type="button" class="auth-skip-btn" onclick="authSkipInstall()">המשך בדפדפן בכל זאת</button>
+      <button type="button" class="btn btn-full" style="margin-top:14px" onclick="authSkipInstall()">המשך בלי להתקין</button>
+      <div style="font-size:0.75rem;line-height:1.6;color:var(--text3);text-align:center;margin-top:8px">אפשר להמשיך בדפדפן, אבל התראות יעבדו רק אחרי ההתקנה.</div>
     </div>
     <!-- Landing step -->
     <div id="authStepLanding" class="auth-cta-section">
@@ -9693,7 +9699,13 @@ function pickMode(mode){
   if(mode!==_activeMode)switchMode(mode);
 }
 // Auth screen
-const _AUTH_INSTALL_IOS='<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px 16px;font-size:0.85rem;line-height:1.9;color:var(--text2);text-align:right">1. לחץ על כפתור השיתוף (ריבוע עם חץ) בתחתית הדפדפן<br>2. בחר "הוסף למסך הבית"<br>3. פתח את האפליקציה מהמסך הבית ורשום את המייל שלך</div>';
+const _AUTH_ICON_CHIP='display:inline-flex;align-items:center;gap:4px;vertical-align:middle;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:2px 8px;color:var(--accent-text);font-weight:700;font-size:0.8125rem';
+const _authStep=(n,html)=>'<div style="display:flex;gap:12px;align-items:flex-start;padding:11px 0"><span style="flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent-solid);color:#fff;font-weight:800;font-size:0.8125rem;display:flex;align-items:center;justify-content:center">'+n+'</span><div style="flex:1;font-size:0.9rem;line-height:1.7;color:var(--text);text-align:right">'+html+'</div></div>';
+const _AUTH_INSTALL_IOS='<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:4px 16px">'
+  +_authStep(1,'לחץ על <span style="'+_AUTH_ICON_CHIP+'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg> תפריט</span> בשורת הכתובת למטה, ואז על <b>שיתוף</b>. אם אתה רואה ישר כפתור <span style="'+_AUTH_ICON_CHIP+'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg> שיתוף</span>, לחץ עליו.')
+  +'<div style="border-top:1px solid var(--border)"></div>'+_authStep(2,'גלול למטה ולחץ <b>הוסף למסך הבית</b>, ואז <b>הוספה</b>.')
+  +'<div style="border-top:1px solid var(--border)"></div>'+_authStep(3,'סגור את הדפדפן ופתח את <b>שקל שקל</b> מהמסך הבית. <b>שם נרשמים.</b>')+'</div>'
+  +'<div style="font-size:0.78rem;line-height:1.6;color:var(--text2);text-align:center;margin-top:10px">ההרשמה חייבת להיעשות מהאפליקציה שבמסך הבית, אחרת היא לא תישמר שם.</div>';
 const _AUTH_INSTALL_ANDROID='<button type="button" class="btn btn-primary btn-full" onclick="triggerInstall()">התקנת האפליקציה</button>';
 function _authNeedsInstall(){
   const ua=navigator.userAgent||'';
@@ -9707,8 +9719,10 @@ function _authNeedsInstall(){
 function _authShowStep(){
   const need=_authNeedsInstall();
   const i=document.getElementById('authStepInstall'),l=document.getElementById('authStepLanding');
+  document.getElementById('authScreen')?.classList.toggle('auth-installing',!!need);
   if(need){
-    document.getElementById('authInstallSub').textContent=need==='ios'?'ככה נרשמים פעם אחת, ההתראות עובדות מההתחלה והאפליקציה נפתחת ישר מהמסך הבית.':'ההתקנה לוקחת שנייה, והאפליקציה נפתחת ישר מהמסך הבית.';
+    document.getElementById('authInstallTitle').textContent='קודם מוסיפים את האפליקציה למסך הבית';
+    document.getElementById('authInstallSub').textContent=need==='ios'?'לוקח חצי דקה. ככה ההרשמה וההתראות עובדות כמו שצריך, והאפליקציה נפתחת בלחיצה אחת.':'לוקח שנייה. אחרי זה האפליקציה נפתחת בלחיצה אחת מהמסך הבית.';
     document.getElementById('authInstallBody').innerHTML=need==='ios'?_AUTH_INSTALL_IOS:_AUTH_INSTALL_ANDROID;
   }
   if(i)i.style.display=need?'':'none';
