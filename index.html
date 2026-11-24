@@ -2759,6 +2759,8 @@
         <button type="button" class="set-dd-opt set-pill-btn set-pill-danger" style="width:100%;color:var(--red)" onclick="deleteAccount()">מחיקת חשבון לצמיתות</button>
       </div>
       <div style="text-align:center;margin-top:14px;padding-bottom:4px">
+        <button onclick="openSheet('welcomeVideoSheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">🎬 סרטון היכרות</button>
+        <span aria-hidden="true" style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">🔒 מדיניות פרטיות</button>
         <span aria-hidden="true" style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">📄 תנאי שימוש</button>
@@ -2859,10 +2861,10 @@
 </div>
 
 <div class="sheet-overlay" id="welcomeVideoSheet" onclick="if(event.target===this)closeWelcomeVideo()">
-  <div class="sheet" style="max-height:92vh">
+  <div class="sheet" style="max-height:98vh;max-height:98dvh">
     <div class="sheet-handle"></div>
     <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">ברוכים הבאים 👋<button onclick="closeWelcomeVideo()" aria-label="סגור" class="sheet-close-x">✕</button></div>
-    <div style="height:min(52vh,480px);aspect-ratio:9/16;max-width:100%;margin:0 auto 14px;border-radius:var(--radius);overflow:hidden;background:var(--surface2)"><video id="wvVideo" src="assets/welcome.mp4" poster="assets/welcome-poster.jpg" controls playsinline preload="none" controlslist="nodownload noremoteplayback" disablepictureinpicture aria-label="סרטון ברוכים הבאים" style="width:100%;height:100%;object-fit:cover;display:block"></video></div>
+    <div style="width:min(100%,calc((100vh - 210px)*9/16));width:min(100%,calc((100dvh - 226px - env(safe-area-inset-bottom,0px))*9/16));aspect-ratio:9/16;margin:0 auto 14px;border-radius:var(--radius);overflow:hidden;background:var(--surface2)"><video id="wvVideo" src="assets/welcome.mp4" poster="assets/welcome-poster.jpg" controls playsinline preload="none" controlslist="nodownload noremoteplayback" disablepictureinpicture aria-label="סרטון ברוכים הבאים" style="width:100%;height:100%;object-fit:cover;display:block"></video></div>
     <button class="btn btn-primary btn-full" onclick="closeWelcomeVideo()">המשך לאפליקציה</button>
   </div>
 </div>
@@ -9164,7 +9166,7 @@ function renderOnboardStep(){
     }
   } else if(onboardStep===2){
     if(_cloudUser)try{localStorage.setItem('welcome_video_seen_'+_cloudUser.id,'1');}catch(e){}
-    el.innerHTML='<div style="text-align:center"><div class="onboard-title">ברוכים הבאים 👋</div><div class="onboard-sub" style="margin-bottom:14px">חצי דקה להיכרות, ואפשר להמשיך.</div><div style="height:min(48vh,460px);aspect-ratio:9/16;max-width:100%;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 2px 14px rgba(0,0,0,0.12)"><video id="obVideo" src="assets/welcome.mp4" poster="assets/welcome-poster.jpg" controls playsinline preload="none" controlslist="nodownload noremoteplayback" disablepictureinpicture aria-label="סרטון ברוכים הבאים" style="width:100%;height:100%;object-fit:cover;display:block"></video></div></div>';
+    el.innerHTML='<div style="text-align:center"><div class="onboard-title">ברוכים הבאים 👋</div><div class="onboard-sub" style="margin-bottom:14px">חצי דקה להיכרות, ואפשר להמשיך.</div><div style="height:max(300px,min(calc(100vh - 340px),640px));height:max(300px,min(calc(100dvh - 340px),640px));aspect-ratio:9/16;max-width:100%;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 2px 14px rgba(0,0,0,0.12)"><video id="obVideo" src="assets/welcome.mp4" poster="assets/welcome-poster.jpg" controls playsinline preload="none" controlslist="nodownload noremoteplayback" disablepictureinpicture aria-label="סרטון ברוכים הבאים" style="width:100%;height:100%;object-fit:cover;display:block"></video></div></div>';
   } else if(onboardStep===3){
     const supported=_pushSupported();
     el.innerHTML='<div class="onboard-title">🔔 רוצה לקבל התראות?</div><div class="onboard-sub">תזכורות לרישום הוצאות, חריגות מתקציב, חידושי מנויים והודעות מהיועץ.'+(supported?'':(/iPhone|iPad/.test(navigator.userAgent)?' באייפון צריך קודם להוסיף את האפליקציה למסך הבית (שיתוף ← הוסף למסך הבית), ואז להפעיל התראות בהגדרות.':' ההתראות אינן נתמכות בדפדפן הזה.'))+'</div>'+(supported?'<div style="display:flex;gap:8px;justify-content:center;margin-top:18px" id="obPushToggle">'+_obToggleHtml(obWantsPush,'obPickPush')+'</div><div style="font-size:0.75rem;color:var(--text3);margin-top:10px;text-align:center">אפשר לשנות בכל רגע בהגדרות</div>':'');
