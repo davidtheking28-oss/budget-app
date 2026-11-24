@@ -1449,3 +1449,20 @@ test('the client is reminded in the app a day before an approved meeting and on 
   seen=false;ctx._renderMeetingAlerts([{id:'a',scheduled_at:at(1),status:'pending',requested_by_client:false}]);
   assert.match(element.innerHTML,/אשר/);assert.doesNotMatch(element.innerHTML,/מחר/);
 });
+
+test('a background refresh never closes or restarts onboarding, and a killed one resumes',()=>{
+  const store=new Map(),classes=new Set();let input={value:''};
+  const overlay={classList:{contains:c=>classes.has(c),add:c=>classes.add(c),remove:c=>classes.delete(c)}};
+  const ctx=functions(['_hasRealData','showOnboarding','skipOnboarding','_decideOnboarding'],{onboardStep:0,userSettings:{name:'',incomeSources:[]},transactions:[],budgets:{},
+    localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
+    document:{getElementById:id=>id==='onboardOverlay'?overlay:id==='obNameInput'?input:null},renderOnboardStep:()=>{},checkFabHint:()=>{},showFabHint:()=>{},setTimeout:()=>0});
+  const open=()=>classes.has('open');
+  ctx._decideOnboarding();assert.equal(open(),true);
+  input.value='דנה';ctx.userSettings.name='דנה';ctx._decideOnboarding();assert.equal(open(),true);
+  input=null;ctx.onboardStep=2;ctx._decideOnboarding();assert.equal(open(),true);assert.equal(ctx.onboardStep,2);
+  classes.clear();ctx.onboardStep=0;ctx._decideOnboarding();assert.equal(open(),true);
+  ctx.skipOnboarding();assert.equal(open(),true);assert.equal(ctx.onboardStep,2);
+  ctx.skipOnboarding();assert.equal(open(),false);ctx._decideOnboarding();assert.equal(open(),false);
+  store.clear();ctx.userSettings.name='';ctx._decideOnboarding();assert.equal(open(),true);
+  ctx.transactions.push({id:1});ctx._decideOnboarding();assert.equal(open(),false);assert.equal(store.has('budget_onboarding'),false);
+});

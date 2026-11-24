@@ -9113,8 +9113,8 @@ let obHasPartner=false;
 let obWantsPush=false;
 const OB_FIXED_DEFAULT=['דיור','ארנונה','חשמל','מים וביוב'];
 
-function showOnboarding(){onboardStep=0;document.getElementById('onboardOverlay').classList.add('open');renderOnboardStep();}
-function skipOnboarding(){document.getElementById('obVideo')?.pause();localStorage.setItem('budget_onboarded','1');document.getElementById('onboardOverlay').classList.remove('open');setTimeout(showFabHint,800);}
+function showOnboarding(){localStorage.setItem('budget_onboarding','1');onboardStep=0;document.getElementById('onboardOverlay').classList.add('open');renderOnboardStep();}
+function skipOnboarding(){if(onboardStep<2){onboardStep=2;renderOnboardStep();return;}document.getElementById('obVideo')?.pause();localStorage.setItem('budget_onboarded','1');localStorage.removeItem('budget_onboarding');document.getElementById('onboardOverlay').classList.remove('open');setTimeout(showFabHint,800);}
 function checkFabHint(){if(transactions.length===0&&localStorage.getItem('budget_onboarded')){triggerFabHint();}}
 
 function renderOnboardDots(){
@@ -9238,6 +9238,7 @@ function finishOnboarding(){
   saveData();
   saveSettingsData();
   localStorage.setItem('budget_onboarded','1');
+  localStorage.removeItem('budget_onboarding');
   document.getElementById('onboardOverlay').classList.remove('open');
   showGif(getConfettiGif(), 2000); showToast('✓ ברוך הבא! האפליקציה מוכנה.');
   haptic(20);
@@ -9587,16 +9588,15 @@ function _hasRealData(){
   return !!(userSettings.name||(userSettings.incomeSources&&userSettings.incomeSources.length)||transactions.length||Object.keys(budgets).length);
 }
 function _decideOnboarding(){
-  if(_hasRealData()){
+  const ov=document.getElementById('onboardOverlay');
+  const nameOnly=!(userSettings.incomeSources&&userSettings.incomeSources.length)&&!transactions.length&&!Object.keys(budgets).length;
+  if(nameOnly&&ov?.classList.contains('open')&&(!userSettings.name||onboardStep>0||document.getElementById('obNameInput')?.value.trim()))return;
+  if(_hasRealData()&&!(nameOnly&&localStorage.getItem('budget_onboarding'))){
     localStorage.setItem('budget_onboarded','1');
-    const ov=document.getElementById('onboardOverlay');
+    localStorage.removeItem('budget_onboarding');
     if(ov&&ov.classList.contains('open'))ov.classList.remove('open');
     try{checkFabHint();}catch(e){}
     return;
-  }
-  if(_cloudUser){
-    const ageMs=Date.now()-new Date(_cloudUser.created_at).getTime();
-    if(ageMs<120000)localStorage.removeItem('budget_onboarded');
   }
   if(!localStorage.getItem('budget_onboarded')){showOnboarding();}
   else{try{checkFabHint();}catch(e){}}
