@@ -1455,7 +1455,7 @@ test('a background refresh never closes or restarts onboarding, and a killed one
   const overlay={classList:{contains:c=>classes.has(c),add:c=>classes.add(c),remove:c=>classes.delete(c)}};
   const ctx=functions(['_hasRealData','showOnboarding','skipOnboarding','_decideOnboarding'],{onboardStep:0,userSettings:{name:'',incomeSources:[]},transactions:[],budgets:{},
     localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
-    document:{getElementById:id=>id==='onboardOverlay'?overlay:id==='obNameInput'?input:null},renderOnboardStep:()=>{},checkFabHint:()=>{},_maybeAskPush:()=>{},showFabHint:()=>{},setTimeout:()=>0});
+    document:{getElementById:id=>id==='onboardOverlay'?overlay:id==='obNameInput'?input:null},renderOnboardStep:()=>{},checkFabHint:()=>{},showFabHint:()=>{},setTimeout:()=>0});
   const open=()=>classes.has('open');
   ctx._decideOnboarding();assert.equal(open(),true);
   input.value='דנה';ctx.userSettings.name='דנה';ctx._decideOnboarding();assert.equal(open(),true);
