@@ -405,7 +405,7 @@ export default function Planner({ advisorId }) {
           {selectedMeeting.o && <p className={business.note}>{selectedMeeting.o}</p>}
           <p className={business.note}>הפגישה מסונכרנת עם כרטיס הלקוח. שינוי מועד או ביטול נעשים בכרטיס הלקוח ומתעדכנים גם כאן. משבצת התצוגה היא שעה.</p>
           <div className={business.formActions + ' ' + styles.meetingActions}>
-            {['pending_advisor', 'pending'].includes(selectedMeeting.status) && <>
+            {selectedMeeting.status === 'pending_advisor' && <>
               <button type="button" className={business.btn} disabled={responding} onClick={() => answerMeeting('confirmed')}>{responding ? 'שומר…' : 'אישור הפגישה'}</button>
               <button type="button" className={business.btnGhost} disabled={responding} onClick={() => answerMeeting('declined')}>דחיית הפגישה</button>
             </>}
