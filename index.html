@@ -1818,6 +1818,13 @@
         </div>
       </div>
     </div>
+    <!-- Install-first step (iPhone in the browser) -->
+    <div id="authStepInstall" class="auth-cta-section" style="display:none">
+      <div style="font-weight:800;font-size:1.05rem;color:var(--text);text-align:center;margin-bottom:6px">מתקינים קודם, נרשמים בפנים</div>
+      <div id="authInstallSub" style="font-size:0.85rem;line-height:1.6;color:var(--text2);text-align:center;margin-bottom:14px"></div>
+      <div id="authInstallBody"></div>
+      <button type="button" class="auth-skip-btn" onclick="authSkipInstall()">המשך בדפדפן בכל זאת</button>
+    </div>
     <!-- Landing step -->
     <div id="authStepLanding" class="auth-cta-section">
       <button id="authGoogleBtn" class="auth-google-btn" onclick="authGoogleSignIn()">
@@ -9667,9 +9674,37 @@ function pickMode(mode){
   if(mode!==_activeMode)switchMode(mode);
 }
 // Auth screen
+const _AUTH_INSTALL_IOS='<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px 16px;font-size:0.85rem;line-height:1.9;color:var(--text2);text-align:right">1. לחץ על כפתור השיתוף (ריבוע עם חץ) בתחתית הדפדפן<br>2. בחר "הוסף למסך הבית"<br>3. פתח את האפליקציה מהמסך הבית ורשום את המייל שלך</div>';
+const _AUTH_INSTALL_ANDROID='<button type="button" class="btn btn-primary btn-full" onclick="triggerInstall()">התקנת האפליקציה</button>';
+function _authNeedsInstall(){
+  const ua=navigator.userAgent||'';
+  const standalone=navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+  if(standalone)return false;
+  try{if(sessionStorage.getItem('auth_install_skip'))return false;}catch(e){}
+  const ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(ios)return _pendingAdvisorRef()?false:'ios';
+  return /Android/i.test(ua)&&window.canPromptInstall&&window.canPromptInstall()?'android':false;
+}
+function _authShowStep(){
+  const need=_authNeedsInstall();
+  const i=document.getElementById('authStepInstall'),l=document.getElementById('authStepLanding');
+  if(need){
+    document.getElementById('authInstallSub').textContent=need==='ios'?'ככה נרשמים פעם אחת, ההתראות עובדות מההתחלה והאפליקציה נפתחת ישר מהמסך הבית.':'ההתקנה לוקחת שנייה, והאפליקציה נפתחת ישר מהמסך הבית.';
+    document.getElementById('authInstallBody').innerHTML=need==='ios'?_AUTH_INSTALL_IOS:_AUTH_INSTALL_ANDROID;
+  }
+  if(i)i.style.display=need?'':'none';
+  if(l)l.style.display=need?'none':'';
+}
+function authSkipInstall(){try{sessionStorage.setItem('auth_install_skip','1');}catch(e){}_authShowStep();}
+function authInstalled(){
+  const sub=document.getElementById('authInstallSub'),body=document.getElementById('authInstallBody');
+  if(!sub||!body||!document.getElementById('authStepInstall')||document.getElementById('authStepInstall').style.display==='none')return;
+  sub.textContent='';body.innerHTML='<div style="text-align:center;font-size:0.95rem;font-weight:700;color:var(--text);line-height:1.7">✓ האפליקציה הותקנה. פתח אותה מהמסך הבית כדי להמשיך.</div>';
+}
 function showAuthScreen(){
   const s=document.getElementById('authScreen');
   if(!s)return;
+  _authShowStep();
   s.classList.remove('hidden');
 }
 let _authEmail='',_authVerifying=false;
@@ -10714,7 +10749,8 @@ setTimeout(autoCarryRecurring,500);
     if(typeof confirmSheet==='function'){ confirmSheet({icon:'📲',title:'התקנת האפליקציה',message:msg,confirmText:'הבנתי',okOnly:true}); }
     else if(typeof showToast==='function'){ showToast(msg); }
   };
-  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred=e; if(window.updateSettingsInstall)updateSettingsInstall(); waitAndShow(); });
+  window.canPromptInstall=function(){ return !!deferred; };
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferred=e; if(window.updateSettingsInstall)updateSettingsInstall(); waitAndShow(); if(typeof _authShowStep==='function'&&!document.getElementById('authScreen').classList.contains('hidden'))_authShowStep(); });
   var _os=window.openSettings; if(typeof _os==='function'){ window.openSettings=function(){ var r=_os.apply(this,arguments); setTimeout(function(){ if(window.updateSettingsInstall)updateSettingsInstall(); },0); return r; }; }
   document.addEventListener('DOMContentLoaded', function(){
     var go=$('installBtn'), x=$('installX');
@@ -10722,7 +10758,7 @@ setTimeout(autoCarryRecurring,500);
     if(x) x.onclick=function(){ hide(); try{localStorage.setItem('budget_install_dismiss','1');}catch(e){} if(window.updateSettingsInstall)updateSettingsInstall(); };
     if(isIOS) waitAndShow();
   });
-  window.addEventListener('appinstalled', function(){ hide(); deferred=null; try{localStorage.setItem('budget_install_dismiss','1');}catch(e){} if(window.updateSettingsInstall)updateSettingsInstall(); });
+  window.addEventListener('appinstalled', function(){ hide(); deferred=null; if(typeof authInstalled==='function')authInstalled(); try{localStorage.setItem('budget_install_dismiss','1');}catch(e){} if(window.updateSettingsInstall)updateSettingsInstall(); });
 })();
 </script>
 <script>

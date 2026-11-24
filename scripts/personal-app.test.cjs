@@ -1466,3 +1466,16 @@ test('a background refresh never closes or restarts onboarding, and a killed one
   store.clear();ctx.userSettings.name='';ctx._decideOnboarding();assert.equal(open(),true);
   ctx.transactions.push({id:1});ctx._decideOnboarding();assert.equal(open(),false);assert.equal(store.has('budget_onboarding'),false);
 });
+test('visitors in the browser get the install-first step on iPhone and on Android with an install prompt, unless installed or arriving from an advisor link on iPhone',()=>{
+  const need=(ua,over={})=>{const store=new Map(over.skip?[['auth_install_skip','1']]:[]);const ctx=functions(['_authNeedsInstall'],{navigator:{userAgent:ua,platform:'iPhone',maxTouchPoints:5,standalone:false,...over},window:{matchMedia:()=>({matches:false}),canPromptInstall:()=>!!over.prompt},_pendingAdvisorRef:()=>over.ref||null,sessionStorage:{getItem:k=>store.get(k)||null}});return ctx._authNeedsInstall();};
+  const iphone='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari',android='Mozilla/5.0 (Linux; Android 14; Pixel 8) Chrome/120 Mobile';
+  assert.equal(need(iphone),'ios');
+  assert.equal(need(iphone,{standalone:true}),false);
+  assert.equal(need(iphone,{skip:true}),false);
+  assert.equal(need(iphone,{ref:'abc'}),false);
+  assert.equal(need(android,{prompt:true}),'android');
+  assert.equal(need(android,{prompt:true,ref:'abc'}),'android');
+  assert.equal(need(android,{prompt:false}),false);
+  assert.equal(need(android,{prompt:true,standalone:true}),false);
+  assert.equal(need('Mozilla/5.0 (Windows NT 10.0) Chrome',{platform:'Win32',maxTouchPoints:0,prompt:true}),false);
+});
