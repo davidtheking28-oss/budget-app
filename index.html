@@ -5377,6 +5377,7 @@ async function _docsUpload(kind,mo,files){
     if(ins.error){failed++;await _sb.storage.from('client-documents').remove([path]);}
   }
   _docsBusy=false;
+  if(files.length>failed)_notifyAdvisorPush('notify-client-documents');
   showToast(failed?'❌ חלק מהקבצים לא הועלו, נסה שוב':'✓ הקובץ הועלה');
   await _applyDocsLock();
 }
@@ -5767,6 +5768,13 @@ function _authSignupData(){
   const ref=_pendingAdvisorRef();
   return ref?{advisor_ref:ref}:{};
 }
+function _notifyAdvisorPush(action){
+  if(!_sb)return;
+  _sb.auth.getSession().then(({data:{session}})=>{
+    if(!session)return;
+    fetch(SUPA_URL+'/functions/v1/budget-push?action='+action,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':SUPA_ANON},body:'{}'}).catch(()=>{});
+  }).catch(()=>{});
+}
 async function _doRequestPendingAdvisor(){
   const ref=_pendingAdvisorRef();
   if(!ref||!_cloudUser||!_sb)return;
@@ -5775,7 +5783,10 @@ async function _doRequestPendingAdvisor(){
   try{localStorage.removeItem('budget_pending_advisor');}catch(e){}
   if(_cloudUser.user_metadata?.advisor_ref)_sb.auth.updateUser({data:{advisor_ref:null}}).catch(()=>{});
   try{const u=new URL(location.href);if(u.searchParams.has('advisor')){u.searchParams.delete('advisor');history.replaceState(null,'',u.pathname+u.search+u.hash);}}catch(e){}
-  if(data==='ok')showToast('✓ הבקשה נשלחה ליועץ, ממתין לאישורו');
+  if(data==='ok'){
+    showToast('✓ הבקשה נשלחה ליועץ, ממתין לאישורו');
+    _notifyAdvisorPush('notify-client-request');
+  }
 }
 async function _promptAdvisorInvite(){
   const l=_advisorLink;

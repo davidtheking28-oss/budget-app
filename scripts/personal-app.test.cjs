@@ -641,9 +641,10 @@ test('a pending advisor invite survives the guest-to-user account switch',()=>{
 
 test('a pending advisor invite sends the request straight away without asking the client',async()=>{
   const localStorage=storage({budget_pending_advisor:'11111111-1111-1111-1111-111111111111'});
-  const calls=[];let toast='';
-  const ctx=functions(['_pendingAdvisorRef','_doRequestPendingAdvisor'],{localStorage,_cloudUser:{id:'u'},_sb:{rpc:async(n,a)=>{calls.push([n,a]);return {data:'ok',error:null};}},showToast:m=>{toast=m;},confirmSheet:()=>{throw new Error('must not ask');}});
+  const calls=[],notified=[];let toast='';
+  const ctx=functions(['_pendingAdvisorRef','_doRequestPendingAdvisor'],{localStorage,_cloudUser:{id:'u'},_sb:{rpc:async(n,a)=>{calls.push([n,a]);return {data:'ok',error:null};}},_notifyAdvisorPush:a=>notified.push(a),showToast:m=>{toast=m;},confirmSheet:()=>{throw new Error('must not ask');}});
   await ctx._doRequestPendingAdvisor();
+  assert.deepEqual(notified,['notify-client-request']);
   assert.equal(JSON.stringify(calls),JSON.stringify([['request_advisor_link',{p_advisor:'11111111-1111-1111-1111-111111111111'}]]));
   assert.equal(localStorage.getItem('budget_pending_advisor'),null);
   assert.match(toast,/הבקשה נשלחה/);
@@ -704,7 +705,7 @@ test('the advisor link survives a lost local copy through the signup metadata, a
     _ADVISOR_REF_RE:/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
     _cloudUser:{id:'u',user_metadata:{advisor_ref:ref}},
     _sb:{rpc:async(n,a)=>{calls.push(a.p_advisor);return {data:'ok',error:null};},auth:{updateUser:async d=>{updates.push(JSON.stringify(d));return {};}}},
-    showToast:()=>{}
+    _notifyAdvisorPush:()=>{},showToast:()=>{}
   });
   assert.equal(ctx._authRedirectUrl(),'https://davidtheking28-oss.github.io/budget-app/?advisor='+ref);
   assert.equal(JSON.stringify(ctx._authSignupData()),JSON.stringify({advisor_ref:ref}));

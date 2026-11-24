@@ -2,7 +2,7 @@
    HTML is network-first (online users always get the latest app; cache is
    the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v114';
+const CACHE = 'budget-app-v115';
 const SHELL = [
   './',
   './index.html',
@@ -57,10 +57,17 @@ self.addEventListener('push', (e) => {
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
+  const target = new URL(e.notification.data?.url || './', self.registration.scope).href;
+  const deep = target !== self.registration.scope;
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      if (deep) {
+        const same = list.find((c) => c.url.split('?')[0] === target.split('?')[0] && 'focus' in c);
+        if (same) return same.focus().then((c) => (c && c.navigate ? c.navigate(target) : c));
+        return clients.openWindow(target);
+      }
       for (const c of list) { if ('focus' in c) return c.focus(); }
-      return clients.openWindow(e.notification.data?.url || './');
+      return clients.openWindow(target);
     })
   );
 });

@@ -1,6 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import * as webpush from 'jsr:@negrel/webpush@0.5.0'
-import { meetingConfirmedNotice, meetingEveNotice } from './notices.ts'
+import { clientDocumentsNotice, clientRequestNotice, meetingConfirmedNotice, meetingEveNotice } from './notices.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://davidtheking28-oss.github.io',
@@ -169,6 +169,102 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ sent }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
   }
 
+  if (url.searchParams.get('action') === 'notify-client-request' && req.method === 'POST') {
+    const authHeader = req.headers.get('Authorization') || ''
+    if (!authHeader) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
+    const userClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authHeader } },
+    })
+    const { data: { user } } = await userClient.auth.getUser()
+    if (!user) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
+    const { data: link } = await userClient.from('advisor_clients')
+      .select('id,advisor_id,name,client_email,invited_email')
+      .eq('client_id', user.id).eq('status', 'pending').eq('requested_by_client', true)
+      .order('created_at', { ascending: false }).limit(1).maybeSingle()
+    if (!link) return new Response(JSON.stringify({ sent: 0 }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
+
+    const { data: allSubs } = await admin.from('push_subscriptions').select('*').eq('user_id', link.advisor_id)
+    const subs = (allSubs || []).filter((sub) => sub.prefs?.advisor !== false)
+    if (!subs.length) return new Response(JSON.stringify({ sent: 0 }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
+
+    const notice = clientRequestNotice(link)
+    const { data: logged } = await admin.from('push_log')
+      .insert({ user_id: link.advisor_id, kind: notice.kind, key: notice.key })
+      .select().maybeSingle()
+    if (!logged) return new Response(JSON.stringify({ sent: 0, duplicate: true }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
+
+    const appServer = await webpush.ApplicationServer.new({
+      contactInformation: 'mailto:davidtheking27@gmail.com',
+      vapidKeys,
+    })
+    const payload = JSON.stringify({ title: notice.title, body: notice.body, url: notice.url })
+    let sent = 0
+    for (const sub of subs) {
+      try {
+        const subscriber = appServer.subscribe({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } })
+        await subscriber.pushTextMessage(payload, {})
+        sent++
+      } catch (err) {
+        const status = (err as { response?: Response })?.response?.status
+        if (status === 404 || status === 410) {
+          await admin.from('push_subscriptions').delete().eq('endpoint', sub.endpoint)
+        }
+      }
+    }
+    if (!sent) await admin.from('push_log').delete().eq('user_id', link.advisor_id).eq('kind', notice.kind).eq('key', notice.key)
+    return new Response(JSON.stringify({ sent }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
+  }
+
+  if (url.searchParams.get('action') === 'notify-client-documents' && req.method === 'POST') {
+    const authHeader = req.headers.get('Authorization') || ''
+    if (!authHeader) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
+    const userClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: { headers: { Authorization: authHeader } },
+    })
+    const { data: { user } } = await userClient.auth.getUser()
+    if (!user) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
+    const none = () => new Response(JSON.stringify({ sent: 0 }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
+    const { count: recent } = await userClient.from('client_documents').select('id', { count: 'exact', head: true })
+      .eq('client_id', user.id).gte('created_at', new Date(Date.now() - 15 * 60000).toISOString())
+    if (!recent) return none()
+    const { data: link } = await userClient.from('advisor_clients')
+      .select('id,advisor_id,client_id,name,client_email,invited_email')
+      .eq('client_id', user.id).in('status', ['active', 'pending'])
+      .order('created_at', { ascending: false }).limit(1).maybeSingle()
+    if (!link) return none()
+
+    const { data: allSubs } = await admin.from('push_subscriptions').select('*').eq('user_id', link.advisor_id)
+    const subs = (allSubs || []).filter((sub) => sub.prefs?.advisor !== false)
+    if (!subs.length) return none()
+
+    const notice = clientDocumentsNotice(link, Math.floor(Date.now() / 600000))
+    const { data: logged } = await admin.from('push_log')
+      .insert({ user_id: link.advisor_id, kind: notice.kind, key: notice.key })
+      .select().maybeSingle()
+    if (!logged) return new Response(JSON.stringify({ sent: 0, duplicate: true }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
+
+    const appServer = await webpush.ApplicationServer.new({
+      contactInformation: 'mailto:davidtheking27@gmail.com',
+      vapidKeys,
+    })
+    const payload = JSON.stringify({ title: notice.title, body: notice.body, url: notice.url })
+    let sent = 0
+    for (const sub of subs) {
+      try {
+        const subscriber = appServer.subscribe({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } })
+        await subscriber.pushTextMessage(payload, {})
+        sent++
+      } catch (err) {
+        const status = (err as { response?: Response })?.response?.status
+        if (status === 404 || status === 410) {
+          await admin.from('push_subscriptions').delete().eq('endpoint', sub.endpoint)
+        }
+      }
+    }
+    if (!sent) await admin.from('push_log').delete().eq('user_id', link.advisor_id).eq('kind', notice.kind).eq('key', notice.key)
+    return new Response(JSON.stringify({ sent }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
+  }
+
   const { data: secretRow } = await admin.from('app_secrets').select('value').eq('key', 'push_cron_secret').maybeSingle()
   if (!secretRow || req.headers.get('x-cron-secret') !== secretRow.value) {
     return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: CORS })
@@ -205,7 +301,7 @@ Deno.serve(async (req) => {
     if (!bd) continue
     const tx: any[] = bd.transactions || []
     const prefs = { daily: true, budget: true, renewals: true, monthly: true, advisor: true, ...(userSubs[0].prefs || {}) }
-    const notifications: { kind: string; key: string; title: string; body: string }[] = []
+    const notifications: { kind: string; key: string; title: string; body: string; url?: string }[] = []
 
     if (prefs.daily) {
       const hasToday = tx.some((t) => t.type === 'expense' && t.date === today)
@@ -268,6 +364,8 @@ Deno.serve(async (req) => {
       for (const n of notesRes.data || []) {
         notifications.push({ kind: 'advisor_note', key: n.id, title: 'הודעה חדשה מהיועץ ✉️', body: n.body.slice(0, 120) })
       }
+      const { data: requests } = await admin.from('advisor_clients').select('id,name,client_email,invited_email').eq('advisor_id', userId).eq('status', 'pending').eq('requested_by_client', true)
+      for (const l of requests || []) notifications.push(clientRequestNotice(l))
     }
 
     if (prefs.monthly && isFirstOfMonth) {
@@ -291,7 +389,7 @@ Deno.serve(async (req) => {
       for (const sub of userSubs) {
         try {
           const subscriber = appServer.subscribe({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } })
-          await subscriber.pushTextMessage(JSON.stringify({ title: n.title, body: n.body, url: './' }), {})
+          await subscriber.pushTextMessage(JSON.stringify({ title: n.title, body: n.body, url: n.url || './' }), {})
           sent++
         } catch (err) {
           const status = (err as { response?: Response })?.response?.status

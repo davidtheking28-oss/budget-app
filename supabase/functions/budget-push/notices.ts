@@ -1,4 +1,4 @@
-export type Notice = { kind: string; key: string; title: string; body: string }
+export type Notice = { kind: string; key: string; title: string; body: string; url?: string }
 
 export type MeetingRow = {
   id: string
@@ -32,5 +32,36 @@ export function meetingEveNotice(m: MeetingRow, tomorrow: string): Notice | null
     key: `${m.id}:${tomorrow}`,
     title: 'תזכורת: פגישה מחר עם היועץ 📅',
     body: `${m.notes || 'פגישת ייעוץ'} · מחר ב-${ilTime(m.scheduled_at)}`,
+  }
+}
+
+export type ClientRequestRow = {
+  id: string
+  name?: string | null
+  client_email?: string | null
+  invited_email?: string | null
+}
+
+export const APPROVALS_URL = '/budget-app/advisor/?dept=manage&view=client-approvals'
+
+export function clientRequestNotice(l: ClientRequestRow): Notice {
+  const who = l.name || l.client_email || l.invited_email || 'לקוח חדש'
+  return {
+    kind: 'advisor_new_client',
+    key: l.id,
+    title: 'בקשת הצטרפות חדשה 👤',
+    body: `${who} מבקש להצטרף. ממתין לאישורך`,
+    url: APPROVALS_URL,
+  }
+}
+
+export function clientDocumentsNotice(l: ClientRequestRow & { client_id: string }, bucket: number): Notice {
+  const who = l.name || l.client_email || l.invited_email || 'לקוח'
+  return {
+    kind: 'advisor_client_docs',
+    key: `${l.client_id}:${bucket}`,
+    title: 'מסמכים חדשים מלקוח 📄',
+    body: `${who} העלה מסמכים`,
+    url: `/budget-app/advisor/?view=client-view&client=${l.client_id}&nav=documents`,
   }
 }

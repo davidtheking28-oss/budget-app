@@ -8,6 +8,7 @@ import { useIsAdvisor } from './auth/useIsAdvisor.js';
 import { useAdvisorRequest } from './auth/useAdvisorRequest.js';
 import { usePendingRequestsCount } from './business/usePendingRequestsCount.js';
 import { useAgreementSigns } from './business/useAgreementSigns.js';
+import { useAutoPush } from './business/useAutoPush.js';
 import { useNewClientBookings } from './business/useNewClientBookings.js';
 import Shell from './components/Shell.jsx';
 import Toaster from './components/Toaster.jsx';
@@ -47,6 +48,7 @@ export default function App() {
   const pendingRequests = usePendingRequestsCount(isAdvisor ? session?.user?.id : null);
   const { unseenCount: newSignatures } = useAgreementSigns(isAdvisor ? session?.user?.id : null);
   const newBookings = useNewClientBookings(isAdvisor ? session?.user?.id : null);
+  useAutoPush(isAdvisor ? session?.user?.id : null);
 
 
 
