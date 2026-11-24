@@ -69,6 +69,13 @@ export default function SiteSettings({ advisorId }) {
         </div>
       </section>
       <section className={styles.card} style={{ padding: 'var(--space-4)' }}>
+        <h2 className={styles.sectionHeading}>סרטון ברוכים הבאים</h2>
+        <p className={styles.cardSub}>הסרטון שכל לקוח רואה באפליקציה אחרי ההתחברות, פעם אחת.</p>
+        <div style={{ width: 'min(100%, 240px)', aspectRatio: '9 / 16', marginTop: 'var(--space-3)', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: 'var(--surface2)' }}>
+          <video src={`${import.meta.env.BASE_URL}welcome.mp4`} poster={`${import.meta.env.BASE_URL}welcome-poster.jpg`} controls playsInline preload="none" controlsList="nodownload noremoteplayback" disablePictureInPicture aria-label="סרטון ברוכים הבאים" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        </div>
+      </section>
+      <section className={styles.card} style={{ padding: 'var(--space-4)' }}>
         <div className={styles.brandingLayout}>
           <h2 className={styles.sectionHeading}>מיתוג</h2>
           <p className={styles.cardSub}>כך העסק שלך יופיע בדוחות שתשתף עם לקוחות.</p>
