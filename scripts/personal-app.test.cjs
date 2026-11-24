@@ -1455,7 +1455,7 @@ test('a background refresh never closes or restarts onboarding, and a killed one
   const overlay={classList:{contains:c=>classes.has(c),add:c=>classes.add(c),remove:c=>classes.delete(c)}};
   const ctx=functions(['_hasRealData','showOnboarding','skipOnboarding','_decideOnboarding'],{onboardStep:0,userSettings:{name:'',incomeSources:[]},transactions:[],budgets:{},
     localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
-    document:{getElementById:id=>id==='onboardOverlay'?overlay:id==='obNameInput'?input:null},renderOnboardStep:()=>{},checkFabHint:()=>{},showFabHint:()=>{},setTimeout:()=>0});
+    document:{getElementById:id=>id==='onboardOverlay'?overlay:id==='obNameInput'?input:null},renderOnboardStep:()=>{},checkFabHint:()=>{},_resyncPush:()=>{},showFabHint:()=>{},setTimeout:()=>0});
   const open=()=>classes.has('open');
   ctx._decideOnboarding();assert.equal(open(),true);
   input.value='דנה';ctx.userSettings.name='דנה';ctx._decideOnboarding();assert.equal(open(),true);
@@ -1479,3 +1479,22 @@ test('visitors in the browser get the install-first step on iPhone and on Androi
   assert.equal(need(android,{prompt:true,standalone:true}),false);
   assert.equal(need('Mozilla/5.0 (Windows NT 10.0) Chrome',{platform:'Win32',maxTouchPoints:0,prompt:true}),false);
 });
+
+test('a device that shows notifications as on is re-registered when the server lost it, and switched off when the browser lost it',async()=>{
+  const run=async({flag=true,sub=true,perm='granted',row=false}={})=>{
+    const log={upserts:0,flag:flag?'1':null,unchecked:false};
+    const subscription={endpoint:'e1',toJSON:()=>({keys:{p256dh:'p',auth:'a'}})};
+    const query={select:()=>query,eq:()=>query,maybeSingle:async()=>({data:row?{endpoint:'e1'}:null})};
+    const ctx=functions(['_resyncPush'],{_pushResyncedFor:null,_cloudUser:{id:'u'},_sb:{from:()=>({...query,upsert:async()=>{log.upserts++;return{}}})},_pushSupported:()=>true,
+      localStorage:{getItem:k=>k==='budget_push_on'?log.flag:null,removeItem:k=>{if(k==='budget_push_on')log.flag=null;}},
+      navigator:{serviceWorker:{ready:Promise.resolve({pushManager:{getSubscription:async()=>sub?subscription:null}})}},Notification:{permission:perm},
+      document:{getElementById:()=>({set checked(v){log.unchecked=!v}})},_renderPushPrefs:()=>{}});
+    await ctx._resyncPush();return log;
+  };
+  assert.equal((await run({flag:false})).upserts,0);
+  assert.equal((await run({row:true})).upserts,0);
+  const lost=await run({});assert.equal(lost.upserts,1);assert.equal(lost.flag,'1');
+  const gone=await run({sub:false});assert.equal(gone.flag,null);assert.equal(gone.upserts,0);
+  assert.equal((await run({perm:'denied'})).flag,null);
+});
+
