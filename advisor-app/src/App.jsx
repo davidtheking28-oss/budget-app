@@ -46,7 +46,7 @@ export default function App() {
   const { theme, toggle: toggleTheme } = useTheme();
   const pendingRequests = usePendingRequestsCount(isAdvisor ? session?.user?.id : null);
   const { unseenCount: newSignatures } = useAgreementSigns(isAdvisor ? session?.user?.id : null);
-  const newBookings = useNewClientBookings(isAdvisor ? session?.user?.id : null, homeView === 'planner' && workspace === 'advisor');
+  const newBookings = useNewClientBookings(isAdvisor ? session?.user?.id : null);
 
 
 
