@@ -4708,8 +4708,12 @@ function _renderMeetingAlerts(meetings){
   const el=document.getElementById('meetingAlerts');
   if(!el)return;
   const todayStr=localISO();
+  const nextDay=new Date();nextDay.setDate(nextDay.getDate()+1);
+  const tomorrowStr=localISO(nextDay);
   const html=meetings.map(m=>{
     const when=new Date(m.scheduled_at);
+    const day=localISO(when);
+    const eve=day===tomorrowStr&&m.status==='confirmed';
     if(m.status==='pending'&&m.requested_by_client)return '';
     if(m.status==='pending'){
       const whenStr=when.toLocaleString('he-IL',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -4722,11 +4726,11 @@ function _renderMeetingAlerts(meetings){
         +'<button type="button" class="meeting-alert-btn decline" onclick="_respondMeeting(\''+m.id+'\',\'declined\')">דחה</button>'
         +'</div></div>';
     }
-    if(localISO(when)===todayStr&&!_meetingReminderDismissed(m.id)){
+    if((day===todayStr||eve)&&!_meetingReminderDismissed(m.id)){
       const hm=when.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
       return '<div class="meeting-alert meeting-alert-reminder" data-meeting="'+m.id+'">'
         +'<div class="meeting-alert-ico">📅</div>'
-        +'<div class="meeting-alert-body"><div class="meeting-alert-title">יש לך פגישה היום עם היועץ, בשעה '+hm+'</div>'
+        +'<div class="meeting-alert-body"><div class="meeting-alert-title">יש לך פגישה '+(eve?'מחר':'היום')+' עם היועץ, בשעה '+hm+'</div>'
         +(m.notes?'<div class="meeting-alert-sub">'+esc(m.notes)+'</div>':'')+'</div>'
         +'<div class="meeting-alert-actions"><button type="button" class="meeting-alert-btn" onclick="_dismissMeetingReminder(\''+m.id+'\')">הבנתי</button></div></div>';
     }

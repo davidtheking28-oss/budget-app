@@ -1433,3 +1433,19 @@ test('turning a source daily renames this month entries, stops carrying them and
   assert.equal(ctx.transactions[0].desc,'עבודה יומית');assert.equal(ctx.transactions[0].amount,10000);assert.equal(ctx.transactions[0].recurring,false);
   assert.equal(ctx.transactions[1].desc,'עבודה');assert.equal(ctx.transactions[1].recurring,false);assert.equal(toasts.length,1);
 });
+
+test('the client is reminded in the app a day before an approved meeting and on the day itself',()=>{
+  const at=days=>{const d=new Date();d.setDate(d.getDate()+days);d.setHours(12,0,0,0);return d.toISOString();};
+  const localISO=d=>{d=d||new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().split('T')[0];};
+  const element={innerHTML:''};let seen=false;
+  const ctx=functions(['_renderMeetingAlerts'],{document:{getElementById:()=>element},localISO,esc:s=>s,_meetingReminderDismissed:()=>seen});
+  ctx._renderMeetingAlerts([{id:'a',scheduled_at:at(1),status:'confirmed',requested_by_client:true}]);
+  assert.match(element.innerHTML,/פגישה מחר עם היועץ, בשעה 12:00/);assert.doesNotMatch(element.innerHTML,/היום/);
+  ctx._renderMeetingAlerts([{id:'a',scheduled_at:at(0),status:'confirmed',requested_by_client:false}]);
+  assert.match(element.innerHTML,/פגישה היום עם היועץ/);
+  ctx._renderMeetingAlerts([{id:'a',scheduled_at:at(2),status:'confirmed',requested_by_client:true}]);assert.equal(element.innerHTML,'');
+  ctx._renderMeetingAlerts([{id:'a',scheduled_at:at(-1),status:'confirmed',requested_by_client:true}]);assert.equal(element.innerHTML,'');
+  seen=true;ctx._renderMeetingAlerts([{id:'a',scheduled_at:at(1),status:'confirmed',requested_by_client:true}]);assert.equal(element.innerHTML,'');
+  seen=false;ctx._renderMeetingAlerts([{id:'a',scheduled_at:at(1),status:'pending',requested_by_client:false}]);
+  assert.match(element.innerHTML,/אשר/);assert.doesNotMatch(element.innerHTML,/מחר/);
+});
