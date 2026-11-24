@@ -16,17 +16,40 @@ vi.mock('../supabaseClient.js', () => ({
   }
 }));
 vi.mock('../toast.js', () => ({ toast: vi.fn() }));
+vi.mock('../crm/useClientCrm.js', () => ({ notifyMeetingInstant: vi.fn() }));
 
 import { toast } from '../toast.js';
+import { notifyMeetingInstant } from '../crm/useClientCrm.js';
 import { respondToMeeting } from './meetingResponse.js';
 
-beforeEach(() => { calls.length = 0; toast.mockClear(); result = { data: { id: 'm', status: 'confirmed' }, error: null }; });
+beforeEach(() => { calls.length = 0; toast.mockClear(); notifyMeetingInstant.mockReset(); result = { data: { id: 'm', status: 'confirmed' }, error: null }; });
 
 describe('advisor answering a pending meeting', () => {
   it('confirms scoped to the advisor and the meeting, then toasts', async () => {
     expect(await respondToMeeting('adv', 'm', 'confirmed')).toBe(true);
     expect(calls).toEqual([['update', 'advisor_meetings', { status: 'confirmed' }], ['eq', 'id', 'm'], ['eq', 'advisor_id', 'adv']]);
     expect(toast).toHaveBeenCalledWith('הפגישה אושרה', 'success');
+  });
+  it('tells the client right away when a meeting is approved, and says so', async () => {
+    notifyMeetingInstant.mockResolvedValue(1);
+    expect(await respondToMeeting('adv', 'm', 'confirmed')).toBe(true);
+    expect(notifyMeetingInstant).toHaveBeenCalledWith('m', 'confirmed');
+    expect(toast).toHaveBeenCalledWith('הפגישה אושרה והלקוח קיבל התראה', 'success');
+  });
+  it('warns the advisor when the client has notifications off', async () => {
+    notifyMeetingInstant.mockResolvedValue(0);
+    await respondToMeeting('adv', 'm', 'confirmed');
+    expect(toast).toHaveBeenCalledWith('הפגישה אושרה. ללקוח לא מופעלות התראות, כדאי לעדכן אותו בעצמך', 'success');
+  });
+  it('does not notify the client of a decline', async () => {
+    result = { data: { id: 'm', status: 'declined' }, error: null };
+    await respondToMeeting('adv', 'm', 'declined');
+    expect(notifyMeetingInstant).not.toHaveBeenCalled();
+  });
+  it('does not notify when the update failed', async () => {
+    result = { data: null, error: { message: 'boom' } };
+    await respondToMeeting('adv', 'm', 'confirmed');
+    expect(notifyMeetingInstant).not.toHaveBeenCalled();
   });
   it('declines with its own message', async () => {
     result = { data: { id: 'm', status: 'declined' }, error: null };

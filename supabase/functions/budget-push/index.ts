@@ -1,5 +1,6 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 import * as webpush from 'jsr:@negrel/webpush@0.5.0'
+import { meetingConfirmedNotice, meetingEveNotice } from './notices.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': 'https://davidtheking28-oss.github.io',
@@ -62,24 +63,31 @@ Deno.serve(async (req) => {
     if (!authHeader) return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: CORS })
     const body = await req.json().catch(() => ({}))
     const meetingId = body?.meetingId
+    const confirmed = body?.event === 'confirmed'
     if (!meetingId) return new Response(JSON.stringify({ error: 'meetingId required' }), { status: 400, headers: CORS })
 
     const userClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
       global: { headers: { Authorization: authHeader } },
     })
     const { data: meeting } = await userClient.from('advisor_meetings')
-      .select('id,client_id,scheduled_at,notes,for_client')
+      .select('id,client_id,scheduled_at,notes,for_client,status')
       .eq('id', meetingId).maybeSingle()
     if (!meeting) return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: CORS })
-    if (!meeting.for_client) return new Response(JSON.stringify({ sent: 0 }), { headers: CORS })
+    if (!meeting.for_client || (confirmed && meeting.status !== 'confirmed')) return new Response(JSON.stringify({ sent: 0 }), { headers: CORS })
 
-    const { data: subs } = await admin.from('push_subscriptions').select('*').eq('user_id', meeting.client_id)
-    if (!subs?.length) return new Response(JSON.stringify({ sent: 0 }), { headers: CORS })
+    const { data: allSubs } = await admin.from('push_subscriptions').select('*').eq('user_id', meeting.client_id)
+    const subs = (allSubs || []).filter((sub) => sub.prefs?.advisor !== false)
+    if (!subs.length) return new Response(JSON.stringify({ sent: 0 }), { headers: CORS })
+
+    const when = new Date(meeting.scheduled_at).toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const notice = confirmed
+      ? meetingConfirmedNotice(meeting)
+      : { kind: 'advisor_meeting', key: meeting.id, title: 'פגישה חדשה מהיועץ — נדרש אישור 🗓️', body: `${meeting.notes || 'פגישת ייעוץ'} · ${when} · אשר בפתיחת האפליקציה` }
 
     // Same (user_id, kind, key) tuple the daily cron uses for this same meeting — whichever
     // path runs first wins the insert, so the two can never both send.
     const { data: logged } = await admin.from('push_log')
-      .insert({ user_id: meeting.client_id, kind: 'advisor_meeting', key: meeting.id })
+      .insert({ user_id: meeting.client_id, kind: notice.kind, key: notice.key })
       .select().maybeSingle()
     if (!logged) return new Response(JSON.stringify({ sent: 0, duplicate: true }), { headers: CORS })
 
@@ -87,8 +95,7 @@ Deno.serve(async (req) => {
       contactInformation: 'mailto:davidtheking27@gmail.com',
       vapidKeys,
     })
-    const when = new Date(meeting.scheduled_at).toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })
-    const payload = JSON.stringify({ title: 'פגישה חדשה מהיועץ — נדרש אישור 🗓️', body: `${meeting.notes || 'פגישת ייעוץ'} · ${when} · אשר בפתיחת האפליקציה`, url: './' })
+    const payload = JSON.stringify({ title: notice.title, body: notice.body, url: './' })
     let sent = 0
     for (const sub of subs) {
       try {
@@ -102,6 +109,7 @@ Deno.serve(async (req) => {
         }
       }
     }
+    if (!sent) await admin.from('push_log').delete().eq('user_id', meeting.client_id).eq('kind', notice.kind).eq('key', notice.key)
     return new Response(JSON.stringify({ sent }), { headers: { ...CORS, 'Content-Type': 'application/json' } })
   }
 
@@ -239,7 +247,7 @@ Deno.serve(async (req) => {
       // no date window needed, and none of these existed before today's for_client rollout
       const [tasksRes, meetingsRes, notesRes] = await Promise.all([
         admin.from('advisor_tasks').select('id,title').eq('client_id', userId).eq('for_client', true).eq('done', false),
-        admin.from('advisor_meetings').select('id,scheduled_at,notes,status').eq('client_id', userId).eq('for_client', true).gte('scheduled_at', new Date().toISOString()),
+        admin.from('advisor_meetings').select('id,scheduled_at,notes,status,requested_by_client').eq('client_id', userId).eq('for_client', true).gte('scheduled_at', new Date().toISOString()),
         admin.from('advisor_notes').select('id,body').eq('client_id', userId).eq('for_client', true),
       ])
       for (const t of tasksRes.data || []) {
@@ -247,7 +255,9 @@ Deno.serve(async (req) => {
       }
       for (const m of meetingsRes.data || []) {
         const when = new Date(m.scheduled_at).toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' })
-        notifications.push({ kind: 'advisor_meeting', key: m.id, title: 'פגישה חדשה מהיועץ — נדרש אישור 🗓️', body: `${m.notes || 'פגישת ייעוץ'} · ${when} · אשר בפתיחת האפליקציה` })
+        if (!m.requested_by_client) notifications.push({ kind: 'advisor_meeting', key: m.id, title: 'פגישה חדשה מהיועץ — נדרש אישור 🗓️', body: `${m.notes || 'פגישת ייעוץ'} · ${when} · אשר בפתיחת האפליקציה` })
+        const eve = meetingEveNotice(m, tomorrow)
+        if (eve) notifications.push(eve)
         // Same-day nudge, separate key so it doesn't collide with the "new meeting"
         // notification above — fires once, the first cron run on the meeting's date.
         if (m.status !== 'declined' && new Date(m.scheduled_at).toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' }) === today) {

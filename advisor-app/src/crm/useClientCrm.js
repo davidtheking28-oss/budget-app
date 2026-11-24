@@ -7,14 +7,14 @@ import { toast } from '../toast.js';
 // normal, not worth surfacing — but a client with no active push subscription
 // (never granted permission, or on desktop) is worth telling the advisor about,
 // so the result is returned instead of swallowed.
-async function notifyMeetingInstant(meetingId) {
+export async function notifyMeetingInstant(meetingId, event) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return null;
     const res = await fetch(SUPA_URL + '/functions/v1/budget-push?action=notify-meeting', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
-      body: JSON.stringify({ meetingId })
+      body: JSON.stringify({ meetingId, event })
     });
     const body = await res.json().catch(() => null);
     return body?.sent ?? null;
