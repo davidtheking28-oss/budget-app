@@ -7,6 +7,7 @@ import business from './Business.module.css';
 import styles from './Planner.module.css';
 import { meetingStatusLabel } from './journeyMath.js';
 import { meetingEvents } from './plannerMeetings.js';
+import { respondToMeeting } from './meetingResponse.js';
 
 const TABLE = 'advisor_biz_records';
 const KIND = 'planner';
@@ -144,6 +145,7 @@ export default function Planner({ advisorId }) {
   const [meetings, setMeetings] = useState([]);
   const [meetingError, setMeetingError] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
+  const [responding, setResponding] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const recordId = useRef(null);
   const latest = useRef(EMPTY);
@@ -246,6 +248,16 @@ export default function Planner({ advisorId }) {
     const eH = Math.min(24, Math.ceil(maxE / 60));
     return { sH, eH, perDay: perDay.map(p => ({ d: p.d, items: layoutDay(p.items) })) };
   }, [data, columns, calendarEvents]);
+
+  async function answerMeeting(status) {
+    const target = selectedMeeting;
+    setResponding(true);
+    const ok = await respondToMeeting(advisorId, target.meetingId, status);
+    setResponding(false);
+    if (!ok) return;
+    setMeetings(prev => status === 'declined' ? prev.filter(m => m.meetingId !== target.meetingId) : prev.map(m => m.meetingId === target.meetingId ? { ...m, status, statusLabel: meetingStatusLabel(status) } : m));
+    setSelectedMeeting(null);
+  }
 
   function openNew(date, start) {
     const s = Math.max(0, Math.min(1380, start));
@@ -392,7 +404,13 @@ export default function Planner({ advisorId }) {
           <strong>{meetingStatusLabel(selectedMeeting.status)}</strong>
           {selectedMeeting.o && <p className={business.note}>{selectedMeeting.o}</p>}
           <p className={business.note}>הפגישה מסונכרנת עם כרטיס הלקוח. שינוי מועד או ביטול נעשים בכרטיס הלקוח ומתעדכנים גם כאן. משבצת התצוגה היא שעה.</p>
-          <button type="button" className={business.btnGhost} onClick={() => setSelectedMeeting(null)}>סגירה</button>
+          <div className={business.formActions + ' ' + styles.meetingActions}>
+            {['pending_advisor', 'pending'].includes(selectedMeeting.status) && <>
+              <button type="button" className={business.btn} disabled={responding} onClick={() => answerMeeting('confirmed')}>{responding ? 'שומר…' : 'אישור הפגישה'}</button>
+              <button type="button" className={business.btnGhost} disabled={responding} onClick={() => answerMeeting('declined')}>דחיית הפגישה</button>
+            </>}
+            <button type="button" className={business.btnGhost} onClick={() => setSelectedMeeting(null)}>סגירה</button>
+          </div>
         </div>
       </Modal>}
       {draft && <EventModal draft={draft} onClose={() => setDraft(null)} onSave={saveEvent} onDelete={deleteEvent} />}

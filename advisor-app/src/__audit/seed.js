@@ -248,6 +248,7 @@ export function makeDb(mode) {
     ],
     advisor_meetings: empty ? [] : [
       { id: 'm1', status: 'pending', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: new Date(Date.now() + 4 * 86400000).toISOString(), notes: 'סקירה רבעונית', for_client: true, created_at: iso(10) },
+      { id: 'm3', status: 'pending', requested_by_client: true, advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: new Date(new Date().setHours(12, 0, 0, 0)).toISOString(), notes: null, for_client: true, created_at: iso(1) },
       { id: 'm2', advisor_id: ADVISOR, client_id: CLIENT_A, scheduled_at: iso(40), notes: 'פגישת היכרות', summary: 'בדיקת הכנסות והתחייבויות', decisions: 'להשוות מסלולי משכנתא', for_client: true, created_at: iso(45) }
     ],
     advisor_leads: empty ? [] : [
