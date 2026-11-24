@@ -15,7 +15,7 @@ export function useClientApprovals(advisorId) {
     setError(null);
     try {
       const [{ data: linkRows, error: linkError }, { data: archiveRows, error: archiveError }] = await Promise.all([
-        supabase.from('advisor_clients').select('id, client_id, client_email, name, invited_email, status, requested_by_client, created_at').eq('advisor_id', advisorId).order('created_at', { ascending: false }),
+        supabase.from('advisor_clients').select('id, client_id, client_email, name, phone, background, invited_email, status, requested_by_client, created_at').eq('advisor_id', advisorId).order('created_at', { ascending: false }),
         supabase.from('advisor_client_archive').select('id, client_email, state, created_at').eq('advisor_id', advisorId).order('created_at', { ascending: false })
       ]);
       if (linkError || archiveError) { setError(linkError || archiveError); return; }

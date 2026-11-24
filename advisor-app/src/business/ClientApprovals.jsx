@@ -4,6 +4,7 @@ import { REQUESTS_CHANGED } from './usePendingRequestsCount.js';
 import { useClientApprovals, TRASH_DAYS } from './useClientApprovals.js';
 import { toast } from '../toast.js';
 import Families from './Families.jsx';
+import EditManualClientModal from './EditManualClientModal.jsx';
 import { signupMessage } from './clientApp.js';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
@@ -25,6 +26,7 @@ const STATUS_TONE = { active: 'tagGood', requested: 'tagWarn', blocked: 'tagHigh
 
 const ACTIONS = {
   approve: { label: 'אישור' },
+  edit: { label: 'עריכת פרטים' },
   end: { label: 'סיום ליווי', confirm: 'לסיים ליווי? החשבון והנתונים של הלקוח נשארים' },
   block: { label: 'חסימה', confirm: 'לחסום? הלקוח יוסר מהרשימה ולא ניתן יהיה להזמין אותו' },
   trash: { label: 'העברה לפח', confirm: 'להעביר לפח? אפשר לשחזר עד ' + TRASH_DAYS + ' יום' },
@@ -35,7 +37,7 @@ const ACTIONS = {
 
 const ROW_ACTIONS = {
   active: ['end', 'block', 'trash'],
-  manual: ['remove'],
+  manual: ['edit', 'remove'],
   requested: ['approve', 'reject', 'block'],
   waitApproval: ['cancel', 'block'],
   waitSignup: ['cancel', 'block'],
@@ -51,13 +53,14 @@ export default function ClientApprovals({ advisorId }) {
   const [selectedKey, setSelectedKey] = useState(null);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState(null);
+  const [editing, setEditing] = useState(null);
 
   if (error) return <ErrorState onRetry={reload} />;
   if (loading) return <Skeleton height="220px" radius="18px" />;
 
   const rows = [
     ...links.map(l => ({
-      key: 'l' + l.id, id: l.id, name: l.name, email: l.client_email || l.invited_email || '', createdAt: l.created_at,
+      key: 'l' + l.id, id: l.id, name: l.name, phone: l.phone, background: l.background, email: l.client_email || l.invited_email || '', createdAt: l.created_at,
       kind: l.status === 'active' ? 'active' : l.status === 'manual' ? 'manual' : l.requested_by_client ? 'requested' : l.client_id ? 'waitApproval' : 'waitSignup'
     })),
     ...archive.map(a => ({ key: 'a' + a.id, id: a.id, email: a.client_email, createdAt: a.created_at, kind: a.state === 'blocked' ? 'blocked' : 'trashed' }))
@@ -97,8 +100,16 @@ export default function ClientApprovals({ advisorId }) {
   const initial = r => ((r.name || r.email || '?').trim()[0] || '?').toUpperCase();
   const panelActions = r => ROW_ACTIONS[r.kind].filter(a => a !== 'block' && a !== 'trash');
   const dangerActions = r => ROW_ACTIONS[r.kind].filter(a => a === 'block' || a === 'trash');
-  const actionHint = { approve: 'ישויך אוטומטית ללקוח ידני עם אותו מייל, אם קיים', end: 'בלי למחוק את החשבון', cancel: 'ההזמנה תוסר מהרשימה', reject: 'הבקשה תוסר מהרשימה', remove: 'פרטי העסקה יימחקו', block: 'אי אפשר להזמין שוב', trash: 'אפשר לשחזר עד ' + TRASH_DAYS + ' יום' };
-  const chooseAction = (r, a) => (a === 'approve' ? run(r, a) : setConfirming({ key: r.key, action: a }));
+  const actionHint = { approve: 'ישויך אוטומטית ללקוח ידני עם אותו מייל, אם קיים', end: 'בלי למחוק את החשבון', cancel: 'ההזמנה תוסר מהרשימה', reject: 'הבקשה תוסר מהרשימה', remove: 'פרטי העסקה יימחקו', edit: 'שם, טלפון, אימייל והערות', block: 'אי אפשר להזמין שוב', trash: 'אפשר לשחזר עד ' + TRASH_DAYS + ' יום' };
+  const chooseAction = (r, a) => (a === 'approve' ? run(r, a) : a === 'edit' ? setEditing(r) : setConfirming({ key: r.key, action: a }));
+
+  async function saveManual(row, form) {
+    const { error } = await supabase.from('advisor_clients').update({ name: form.name, phone: form.phone || null, client_email: form.email, background: form.background || null }).eq('id', row.id).eq('advisor_id', advisorId);
+    if (error) return false;
+    toast('הפרטים נשמרו', 'success');
+    await reload();
+    return true;
+  }
 
   async function restore(row) {
     if (busy) return;
@@ -241,6 +252,7 @@ export default function ClientApprovals({ advisorId }) {
         )}
       </section>
 
+      {editing && <EditManualClientModal client={editing} onSave={form => saveManual(editing, form)} onClose={() => setEditing(null)} />}
       <Families advisorId={advisorId} links={links} />
     </div>
   );
