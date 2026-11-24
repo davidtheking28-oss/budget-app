@@ -2759,8 +2759,6 @@
         <button type="button" class="set-dd-opt set-pill-btn set-pill-danger" style="width:100%;color:var(--red)" onclick="deleteAccount()">מחיקת חשבון לצמיתות</button>
       </div>
       <div style="text-align:center;margin-top:14px;padding-bottom:4px">
-        <button onclick="openSheet('welcomeVideoSheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">🎬 סרטון היכרות</button>
-        <span aria-hidden="true" style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('privacySheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">🔒 מדיניות פרטיות</button>
         <span aria-hidden="true" style="color:var(--border);margin:0 6px">·</span>
         <button onclick="openSheet('termsSheet')" style="background:none;border:none;color:var(--text3);font-size:0.8125rem;cursor:pointer;font-family:inherit;text-decoration:underline;min-height:44px;padding:0 6px">📄 תנאי שימוש</button>
@@ -2857,15 +2855,6 @@
       <button class="btn btn-outline" id="onboardBack" onclick="onboardNav(-1)">אחורה</button>
       <button class="btn btn-primary" id="onboardNext" onclick="onboardNav(1)">הבא ›</button>
     </div>
-  </div>
-</div>
-
-<div class="sheet-overlay" id="welcomeVideoSheet" onclick="if(event.target===this)closeWelcomeVideo()">
-  <div class="sheet" style="max-height:98vh;max-height:98dvh">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title" style="display:flex;align-items:center;justify-content:space-between;">ברוכים הבאים 👋<button onclick="closeWelcomeVideo()" aria-label="סגור" class="sheet-close-x">✕</button></div>
-    <div style="width:min(100%,calc((100vh - 210px)*9/16));width:min(100%,calc((100dvh - 226px - env(safe-area-inset-bottom,0px))*9/16));aspect-ratio:9/16;margin:0 auto 14px;border-radius:var(--radius);overflow:hidden;background:var(--surface2)"><video id="wvVideo" src="assets/welcome.mp4" poster="assets/welcome-poster.jpg" controls playsinline preload="none" controlslist="nodownload noremoteplayback" disablepictureinpicture aria-label="סרטון ברוכים הבאים" style="width:100%;height:100%;object-fit:cover;display:block"></video></div>
-    <button class="btn btn-primary btn-full" onclick="closeWelcomeVideo()">המשך לאפליקציה</button>
   </div>
 </div>
 
@@ -9125,7 +9114,6 @@ let obWantsPush=false;
 const OB_FIXED_DEFAULT=['דיור','ארנונה','חשמל','מים וביוב'];
 
 function showOnboarding(){onboardStep=0;document.getElementById('onboardOverlay').classList.add('open');renderOnboardStep();}
-function closeWelcomeVideo(){document.getElementById('wvVideo')?.pause();closeSheet('welcomeVideoSheet');}
 function skipOnboarding(){document.getElementById('obVideo')?.pause();localStorage.setItem('budget_onboarded','1');document.getElementById('onboardOverlay').classList.remove('open');setTimeout(showFabHint,800);}
 function checkFabHint(){if(transactions.length===0&&localStorage.getItem('budget_onboarded')){triggerFabHint();}}
 
