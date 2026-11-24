@@ -9125,12 +9125,6 @@ let obWantsPush=false;
 const OB_FIXED_DEFAULT=['דיור','ארנונה','חשמל','מים וביוב'];
 
 function showOnboarding(){onboardStep=0;document.getElementById('onboardOverlay').classList.add('open');renderOnboardStep();}
-function _maybeShowWelcomeVideo(){
-  const uid=_cloudUser&&_cloudUser.id;
-  if(!uid||document.querySelector('.onboard-overlay.open,#docsLock'))return;
-  try{if(localStorage.getItem('welcome_video_seen_'+uid))return;localStorage.setItem('welcome_video_seen_'+uid,'1');}catch(e){return;}
-  openSheet('welcomeVideoSheet');
-}
 function closeWelcomeVideo(){document.getElementById('wvVideo')?.pause();closeSheet('welcomeVideoSheet');}
 function skipOnboarding(){document.getElementById('obVideo')?.pause();localStorage.setItem('budget_onboarded','1');document.getElementById('onboardOverlay').classList.remove('open');setTimeout(showFabHint,800);}
 function checkFabHint(){if(transactions.length===0&&localStorage.getItem('budget_onboarded')){triggerFabHint();}}
@@ -9165,7 +9159,6 @@ function renderOnboardStep(){
       setTimeout(()=>document.getElementById('obEmailInput')?.focus(),200);
     }
   } else if(onboardStep===2){
-    if(_cloudUser)try{localStorage.setItem('welcome_video_seen_'+_cloudUser.id,'1');}catch(e){}
     el.innerHTML='<div style="text-align:center"><div class="onboard-title">ברוכים הבאים 👋</div><div class="onboard-sub" style="margin-bottom:14px">חצי דקה להיכרות, ואפשר להמשיך.</div><div style="height:max(300px,min(calc(100vh - 340px),640px));height:max(300px,min(calc(100dvh - 340px),640px));aspect-ratio:9/16;max-width:100%;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 2px 14px rgba(0,0,0,0.12)"><video id="obVideo" src="assets/welcome.mp4" poster="assets/welcome-poster.jpg" controls playsinline preload="none" controlslist="nodownload noremoteplayback" disablepictureinpicture aria-label="סרטון ברוכים הבאים" style="width:100%;height:100%;object-fit:cover;display:block"></video></div></div>';
   } else if(onboardStep===3){
     const supported=_pushSupported();
@@ -9611,7 +9604,6 @@ function _decideOnboarding(){
     const ov=document.getElementById('onboardOverlay');
     if(ov&&ov.classList.contains('open'))ov.classList.remove('open');
     try{checkFabHint();}catch(e){}
-    _maybeShowWelcomeVideo();
     return;
   }
   if(_cloudUser){
@@ -9619,7 +9611,7 @@ function _decideOnboarding(){
     if(ageMs<120000)localStorage.removeItem('budget_onboarded');
   }
   if(!localStorage.getItem('budget_onboarded')){showOnboarding();}
-  else{try{checkFabHint();}catch(e){}_maybeShowWelcomeVideo();}
+  else{try{checkFabHint();}catch(e){}}
 }
 function _proceedToApp(){
   if(!_dashboardStarted){

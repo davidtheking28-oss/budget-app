@@ -1449,13 +1449,3 @@ test('the client is reminded in the app a day before an approved meeting and on 
   seen=false;ctx._renderMeetingAlerts([{id:'a',scheduled_at:at(1),status:'pending',requested_by_client:false}]);
   assert.match(element.innerHTML,/אשר/);assert.doesNotMatch(element.innerHTML,/מחר/);
 });
-
-test('the welcome video opens once per account after sign-in, never over onboarding',()=>{
-  const store=new Map(),opened=[];let blocked=null;
-  const base={localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v)},document:{querySelector:()=>blocked},openSheet:id=>opened.push(id)};
-  let ctx=functions(['_maybeShowWelcomeVideo'],{...base,_cloudUser:null});ctx._maybeShowWelcomeVideo();assert.deepEqual(opened,[]);
-  ctx=functions(['_maybeShowWelcomeVideo'],{...base,_cloudUser:{id:'u1'}});
-  blocked={};ctx._maybeShowWelcomeVideo();assert.deepEqual(opened,[]);assert.equal(store.size,0);
-  blocked=null;ctx._maybeShowWelcomeVideo();ctx._maybeShowWelcomeVideo();assert.deepEqual(opened,['welcomeVideoSheet']);
-  ctx=functions(['_maybeShowWelcomeVideo'],{...base,_cloudUser:{id:'u2'}});ctx._maybeShowWelcomeVideo();assert.equal(opened.length,2);
-});
