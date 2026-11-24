@@ -9114,11 +9114,11 @@ let obWantsPush=false;
 const OB_FIXED_DEFAULT=['דיור','ארנונה','חשמל','מים וביוב'];
 
 function showOnboarding(){onboardStep=0;document.getElementById('onboardOverlay').classList.add('open');renderOnboardStep();}
-function skipOnboarding(){localStorage.setItem('budget_onboarded','1');document.getElementById('onboardOverlay').classList.remove('open');setTimeout(showFabHint,800);}
+function skipOnboarding(){document.getElementById('obVideo')?.pause();localStorage.setItem('budget_onboarded','1');document.getElementById('onboardOverlay').classList.remove('open');setTimeout(showFabHint,800);}
 function checkFabHint(){if(transactions.length===0&&localStorage.getItem('budget_onboarded')){triggerFabHint();}}
 
 function renderOnboardDots(){
-  const steps=['ברוכים','חשבון','התראות','בואו נתחיל'];
+  const steps=['ברוכים','חשבון','היכרות','התראות','בואו נתחיל'];
   document.getElementById('onboardDots').innerHTML=steps.map((s,i)=>'<div class="onboard-dot '+(i===onboardStep?'active':i<onboardStep?'done':'')+'"></div>').join('');
 }
 
@@ -9127,9 +9127,9 @@ function renderOnboardStep(){
   const backBtn=document.getElementById('onboardBack');
   const nextBtn=document.getElementById('onboardNext');
   backBtn.style.display=onboardStep===0?'none':'';
-  nextBtn.textContent=onboardStep===3?'✓ בואו נתחיל!':'הבא ›';
+  nextBtn.textContent=onboardStep===4?'✓ בואו נתחיל!':'הבא ›';
   const skipRow=document.getElementById('onboardSkipRow');
-  if(skipRow)skipRow.style.visibility=onboardStep===3?'hidden':'visible';
+  if(skipRow)skipRow.style.visibility=onboardStep===4?'hidden':'visible';
   const el=document.getElementById('onboardContent');
   if(onboardStep===0){
     const savedName = userSettings.name || '';
@@ -9147,6 +9147,8 @@ function renderOnboardStep(){
       setTimeout(()=>document.getElementById('obEmailInput')?.focus(),200);
     }
   } else if(onboardStep===2){
+    el.innerHTML='<div style="text-align:center"><div class="onboard-title">ברוכים הבאים 👋</div><div class="onboard-sub" style="margin-bottom:14px">חצי דקה להיכרות, ואפשר להמשיך.</div><div style="height:min(48vh,460px);aspect-ratio:9/16;max-width:100%;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 2px 14px rgba(0,0,0,0.12)"><video id="obVideo" src="assets/welcome.mp4" poster="assets/welcome-poster.jpg" controls playsinline preload="none" controlslist="nodownload noremoteplayback" disablepictureinpicture aria-label="סרטון ברוכים הבאים" style="width:100%;height:100%;object-fit:cover;display:block"></video></div></div>';
+  } else if(onboardStep===3){
     const supported=_pushSupported();
     el.innerHTML='<div class="onboard-title">🔔 רוצה לקבל התראות?</div><div class="onboard-sub">תזכורות לרישום הוצאות, חריגות מתקציב, חידושי מנויים והודעות מהיועץ.'+(supported?'':(/iPhone|iPad/.test(navigator.userAgent)?' באייפון צריך קודם להוסיף את האפליקציה למסך הבית (שיתוף ← הוסף למסך הבית), ואז להפעיל התראות בהגדרות.':' ההתראות אינן נתמכות בדפדפן הזה.'))+'</div>'+(supported?'<div style="display:flex;gap:8px;justify-content:center;margin-top:18px" id="obPushToggle">'+_obToggleHtml(obWantsPush,'obPickPush')+'</div><div style="font-size:0.75rem;color:var(--text3);margin-top:10px;text-align:center">אפשר לשנות בכל רגע בהגדרות</div>':'');
   } else {
@@ -9216,14 +9218,15 @@ async function obVerifyOtp(){
 }
 
 function onboardNav(dir){
-  if(dir===1&&onboardStep===3){finishOnboarding();return;}
+  document.getElementById('obVideo')?.pause();
+  if(dir===1&&onboardStep===4){finishOnboarding();return;}
   if(dir===1&&onboardStep===0){
     const inp=document.getElementById('obNameInput');
     if(inp) userSettings.name=inp.value.trim();
     saveSettingsData();
     updateHeaderTitle();
   }
-  onboardStep=Math.max(0,Math.min(3,onboardStep+dir));
+  onboardStep=Math.max(0,Math.min(4,onboardStep+dir));
   document.getElementById('onboardContent')?.style.setProperty('--ob-dx',(dir===1?-28:28)+'px');
   renderOnboardStep();
 }

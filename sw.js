@@ -2,7 +2,7 @@
    HTML is network-first (online users always get the latest app; cache is
    the offline fallback only), static assets cache-first.
    Activates only when the app is served over https:// or localhost. */
-const CACHE = 'budget-app-v103';
+const CACHE = 'budget-app-v104';
 const SHELL = [
   './',
   './index.html',
@@ -75,6 +75,8 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   const appFont = (url.origin === 'https://fonts.googleapis.com' && url.pathname === '/css2' && url.searchParams.get('family')?.startsWith('Assistant:')) || (url.origin === 'https://fonts.gstatic.com' && url.pathname.startsWith('/s/assistant/'));
   if (url.origin !== self.location.origin && !appFont && !SHELL.some(u => u === req.url)) return;
+
+  if (url.pathname.endsWith('.mp4')) return;
 
   const accept = req.headers.get('accept') || '';
   const isHTML = req.mode === 'navigate' || accept.includes('text/html');
