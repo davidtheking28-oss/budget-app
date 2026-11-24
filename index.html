@@ -9149,8 +9149,11 @@ function renderOnboardStep(){
   } else if(onboardStep===2){
     el.innerHTML='<div style="text-align:center"><div class="onboard-title">ברוכים הבאים 👋</div><div class="onboard-sub" style="margin-bottom:14px">חצי דקה להיכרות, ואפשר להמשיך.</div><div style="height:max(300px,min(calc(100vh - 340px),640px));height:max(300px,min(calc(100dvh - 340px),640px));aspect-ratio:9/16;max-width:100%;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 2px 14px rgba(0,0,0,0.12)"><video id="obVideo" src="assets/welcome.mp4" poster="assets/welcome-poster.jpg" controls playsinline preload="none" controlslist="nodownload noremoteplayback" disablepictureinpicture aria-label="סרטון ברוכים הבאים" style="width:100%;height:100%;object-fit:cover;display:block"></video></div></div>';
   } else if(onboardStep===3){
-    const supported=_pushSupported();
-    el.innerHTML='<div class="onboard-title">🔔 רוצה לקבל התראות?</div><div class="onboard-sub">תזכורות לרישום הוצאות, חריגות מתקציב, חידושי מנויים והודעות מהיועץ.'+(supported?'':(/iPhone|iPad/.test(navigator.userAgent)?' באייפון צריך קודם להוסיף את האפליקציה למסך הבית (שיתוף ← הוסף למסך הבית), ואז להפעיל התראות בהגדרות.':' ההתראות אינן נתמכות בדפדפן הזה.'))+'</div>'+(supported?'<div style="display:flex;gap:8px;justify-content:center;margin-top:18px" id="obPushToggle">'+_obToggleHtml(obWantsPush,'obPickPush')+'</div><div style="font-size:0.75rem;color:var(--text3);margin-top:10px;text-align:center">אפשר לשנות בכל רגע בהגדרות</div>':'');
+    const supported=_pushSupported(),ios=/iPhone|iPad/.test(navigator.userAgent);
+    if(supported)try{localStorage.setItem('push_prompt_done','1');}catch(e){}
+    el.innerHTML='<div class="onboard-title">🔔 רוצה לקבל התראות?</div><div class="onboard-sub">תזכורות לרישום הוצאות, חריגות מתקציב, חידושי מנויים והודעות מהיועץ.'+(supported||ios?'':' ההתראות אינן נתמכות בדפדפן הזה.')+'</div>'
+      +(supported?'<div style="display:flex;gap:8px;justify-content:center;margin-top:18px" id="obPushToggle">'+_obToggleHtml(obWantsPush,'obPickPush')+'</div><div style="font-size:0.75rem;color:var(--text3);margin-top:10px;text-align:center">אפשר לשנות בכל רגע בהגדרות</div>':'')
+      +(!supported&&ios?'<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px 16px;font-size:0.85rem;line-height:1.9;color:var(--text2);text-align:right"><b style="color:var(--text)">באייפון ההתראות עובדות מהאפליקציה שבמסך הבית:</b><br>1. לחץ על כפתור השיתוף (ריבוע עם חץ) בתחתית הדפדפן<br>2. בחר "הוסף למסך הבית"<br>3. פתח את האפליקציה משם והתחבר. היא תציע להפעיל התראות בלחיצה אחת</div>':'');
   } else {
     const name = userSettings.name ? ', '+esc(String(userSettings.name)) : '';
     el.innerHTML='<div style="text-align:center;padding:20px 0 10px;"><div style="font-size:3rem;margin-bottom:16px;">🎉</div><div class="onboard-title">הכל מוכן'+(name?name+'!':' !')+'</div><div class="onboard-sub">האפליקציה שלך מוכנה לשימוש.</div></div><div style="background:var(--surface);border-radius:16px;padding:18px 16px;box-shadow:0 2px 14px rgba(0,0,0,0.08);"><div style="font-weight:700;margin-bottom:12px;">כדי להתחיל:</div><div style="display:flex;flex-direction:column;gap:12px;font-size:0.9rem;color:var(--text2);"><div style="display:flex;align-items:center;gap:10px;"><span style="width:26px;height:26px;background:var(--accent);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.8rem;">1</span><span>לחץ על <strong style="color:var(--text);">+</strong> כדי לרשום הוצאה</span></div><div style="display:flex;align-items:center;gap:10px;"><span style="width:26px;height:26px;background:var(--accent);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:0.8rem;">2</span><span>בחר <strong style="color:var(--text);">קטגוריה</strong> ורשום סכום</span></div></div></div>';
@@ -9587,6 +9590,22 @@ function _authGateContinueOffline(){
 function _hasRealData(){
   return !!(userSettings.name||(userSettings.incomeSources&&userSettings.incomeSources.length)||transactions.length||Object.keys(budgets).length);
 }
+function _maybeAskPush(){
+  if(!_cloudUser||!_pushSupported()||document.getElementById('pushPrompt'))return;
+  if(localStorage.getItem('push_prompt_done')||localStorage.getItem('budget_push_on')||Notification.permission!=='default')return;
+  if(document.querySelector('.onboard-overlay.open,#approvalLock,#docsLock,#legalGate,#agreementGate'))return;
+  const el=document.createElement('div');
+  el.id='pushPrompt';el.setAttribute('role','dialog');el.setAttribute('aria-label','הפעלת התראות');
+  el.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(var(--nav-h) + var(--safe-bottom) + 12px);z-index:230;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:0 8px 28px rgba(0,0,0,0.22);display:flex;flex-direction:column;gap:10px;text-align:center';
+  el.innerHTML='<div style="font-weight:800;color:var(--text)">🔔 להפעיל התראות?</div><div style="font-size:0.85rem;line-height:1.6;color:var(--text2)">תזכורות לרישום הוצאות, חריגות מתקציב והודעות מהיועץ.</div><button type="button" class="btn btn-primary btn-full" onclick="answerPushPrompt(true)">הפעל התראות</button><button type="button" class="btn btn-full" onclick="answerPushPrompt(false)">לא עכשיו</button>';
+  document.body.appendChild(el);
+}
+async function answerPushPrompt(on){
+  try{localStorage.setItem('push_prompt_done','1');}catch(e){}
+  const p=document.getElementById('pushPrompt');
+  if(on)await togglePush(true);
+  p?.remove();
+}
 function _decideOnboarding(){
   const ov=document.getElementById('onboardOverlay');
   const nameOnly=!(userSettings.incomeSources&&userSettings.incomeSources.length)&&!transactions.length&&!Object.keys(budgets).length;
@@ -9596,10 +9615,11 @@ function _decideOnboarding(){
     localStorage.removeItem('budget_onboarding');
     if(ov&&ov.classList.contains('open'))ov.classList.remove('open');
     try{checkFabHint();}catch(e){}
+    _maybeAskPush();
     return;
   }
   if(!localStorage.getItem('budget_onboarded')){showOnboarding();}
-  else{try{checkFabHint();}catch(e){}}
+  else{try{checkFabHint();}catch(e){}_maybeAskPush();}
 }
 function _proceedToApp(){
   if(!_dashboardStarted){
