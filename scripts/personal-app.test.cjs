@@ -1499,3 +1499,22 @@ test('a device that shows notifications as on is re-registered when the server l
   assert.equal((await run({perm:'denied'})).flag,null);
 });
 
+test('apple pay status separates never reached, reached without a payment, and paid',()=>{
+  const ctx=functions(['_applePayState','_iosMajor'],{});
+  const none=ctx._applePayState({active:true});
+  assert.equal(none.cls,' wait');assert.match(none.help,/▶/);assert.match(none.help,/iOS 27/);
+  const seen=ctx._applePayState({active:true,last_seen_at:'2026-11-24T10:00:00Z'});
+  assert.equal(seen.cls,'');assert.match(seen.head,/הקיצור מחובר/);assert.match(seen.help,/הפעולה האוטומטית מכובה/);
+  const paid=ctx._applePayState({active:true,last_seen_at:'2026-11-24T10:00:00Z',last_used_at:'2026-11-24T10:00:00Z'});
+  assert.match(paid.sub,/תשלום אחרון נקלט/);assert.equal(paid.help,'');
+  assert.equal(ctx._iosMajor('Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) Version/26.6.2 Mobile/15E148'),26);
+  assert.equal(ctx._iosMajor('Mozilla/5.0 (Windows NT 10.0) Version/27'),0);
+});
+
+test('apple pay setup turns connected once the server saw the shortcut',async()=>{
+  const el={textContent:'',classList:{remove:c=>{el.removed=c;}}};let cleared=0,data={active:true};
+  const ctx=functions(['_applePayCheckTest'],{_applePayWatch:1,document:{hidden:false,getElementById:()=>el},_sb:{rpc:async()=>({data})},_cloudUser:{id:'u'},clearInterval:()=>{cleared++;}});
+  await ctx._applePayCheckTest();assert.equal(el.textContent,'');assert.equal(cleared,0);
+  data={active:true,last_seen_at:'x'};await ctx._applePayCheckTest();
+  assert.match(el.textContent,/הקיצור מחובר/);assert.equal(el.removed,'wait');assert.equal(cleared,1);
+});

@@ -730,6 +730,7 @@
     .apg-nav .btn{flex:1;min-height:52px;border-radius:999px;transition:none}
     .ap-lead{font-size:0.8125rem;line-height:1.6;color:var(--text2);margin:0 2px 12px}
     .ap-status{display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;padding:7px 14px;border-radius:999px;font-size:0.8125rem;font-weight:700;background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--green)}
+    .ap-status.wait{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent-text)}
     .ap-status small{font-weight:600;color:var(--text2)}
     .ap-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;margin-top:8px;border-radius:999px;font:inherit;font-weight:700;font-size:0.9375rem;cursor:pointer;border:1.5px solid var(--border);background:var(--surface2);color:var(--text)}
     .ap-btn.primary{background:var(--accent-solid);border-color:var(--accent-solid);color:#fff}
@@ -6287,7 +6288,7 @@ const AP_GUIDE=[
   {t:'לחץ על ה-V במקלדת, ואחר כך על "הוספת קיצור" בתחתית המסך.',img:'ap-5-paste.png',shot:1},
   {t:'בדוק שבראש הקיצור יש את הכרטיס "כאשר מתבצעת קריאה של כל כרטיס", ושהמתג "פעולה אוטומטית" דלוק. אם הכרטיס חסר, גרסת המערכת ישנה: סגור את המדריך ופעל לפי "הגדרה ידנית".',img:'ap-6-auto.png',shot:1},
   {t:'אם בראש המסך מופיע הפס "הפעולה האוטומטית מכובה", לחץ על החץ שליד "כרטיס" והדלק את המתג. בלי זה הקיצור לא ירוץ.',img:'ap-6b-off.png',shot:1},
-  {t:'עכשיו שלם סכום קטן עם האייפון או השעון, בהצמדה לקופה. תוך דקה ההוצאה תופיע באפליקציה, ובהגדרות יופיע \"תשלום אחרון נקלט\".',img:'ap-7-done',theme:1}
+  {t:'לחץ על ▶ בתחתית הקיצור, ואם האייפון שואל על supabase.co בחר "אפשר תמיד". חזור להגדרות ובדוק שכתוב "הקיצור מחובר". אחר כך שלם סכום קטן עם האייפון או השעון, בהצמדה לקופה. תוך דקה ההוצאה תופיע באפליקציה, ובהגדרות יופיע \"תשלום אחרון נקלט\".',img:'ap-7-done',theme:1}
 ];
 let _apgI=0,_apgBuilt=false,_apgDark=false;
 function _apgBuild(){
@@ -6321,6 +6322,26 @@ function _apgShow(n,d){
 let _applePayToken='';
 let _applePayBusy=false;
 let _applePayPulling=false;
+let _applePayWatch=0;
+function _iosMajor(ua){const m=/iPhone/.test(ua)&&ua.match(/Version\/(\d+)/);return m?+m[1]:0;}
+function _applePayState(st){
+  const last=st.last_used_at?new Date(st.last_used_at).toLocaleString('he-IL',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+  if(last)return {cls:'',head:'✓ מחובר',sub:'תשלום אחרון נקלט: '+last,help:''};
+  if(st.last_seen_at)return {cls:'',head:'✓ הקיצור מחובר',sub:'עדיין לא נקלט תשלום',help:'הקיצור מגיע אלינו והקוד נכון. אם שילמת בהצמדה לקופה ולא נקלט, פתח את הקיצור: אם בראשו כתוב "הפעולה האוטומטית מכובה", לחץ על החץ שליד "כרטיס" והדלק את המתג. תשלום באינטרנט או באפליקציה לא נקלט, זו מגבלה של אפל.'};
+  return {cls:' wait',head:'הקיצור עוד לא מחובר',sub:'הקוד נוצר, ועוד לא הגיעה ממנו בקשה',help:'בדיקה בלי לשלם: פתח את הקיצור באפליקציית קיצורי הדרך ולחץ ▶. אם האייפון שואל על supabase.co, בחר "אפשר תמיד", וחזור לכאן. אם עדיין לא מחובר, מחק את הקיצור, צור קוד חדש והוסף אותו שוב. זה נדרש גם למי שהוסיף את הקיצור לפני שעדכן ל-iOS 27, כי הוא נשאר בלי ההפעלה האוטומטית.'};
+}
+async function _applePayCheckTest(){
+  const el=document.getElementById('apTestState');
+  if(!el||!_sb||!_cloudUser){clearInterval(_applePayWatch);return;}
+  if(document.hidden)return;
+  try{
+    const {data}=await _sb.rpc('expense_hook_status');
+    if(!data?.last_seen_at)return;
+    clearInterval(_applePayWatch);
+    el.textContent='✓ הקיצור מחובר. נשאר רק לשלם בהצמדה';
+    el.classList.remove('wait');
+  }catch(e){}
+}
 function _applePayShell(inner){const box=document.getElementById('applePayBox');if(box)box.innerHTML=inner;}
 async function renderApplePaySection(){
   if(APPLE_PAY_SHORTCUT_URL&&!_apgBuilt)_apgBuild();
@@ -6330,10 +6351,10 @@ async function renderApplePaySection(){
   let st=null;
   try{const {data,error}=await _sb.rpc('expense_hook_status');if(!error&&data)st=data;}catch(e){}
   if(!st){_applePayShell('<p style="font-size:0.8125rem;color:var(--text3);margin:0">לא ניתן לטעון את מצב החיבור כרגע.</p>');return;}
-  const last=st.last_used_at?new Date(st.last_used_at).toLocaleString('he-IL',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+  const ap=_applePayState(st);
   _applePayShell('<p class="ap-lead">כל תשלום ב-Apple Pay שמבצעים בהצמדת האייפון או השעון נרשם כאן לבד כהוצאה, ומסווג לקטגוריה. קניות באינטרנט ובאפליקציות לא נקלטות. ההגדרה חד־פעמית.</p>'
-    +(st.active?'<div class="ap-status">✓ מחובר<small>'+(last?'· תשלום אחרון נקלט: '+esc(last):'· עדיין לא נקלט תשלום')+'</small></div>':'')
-    +(st.active&&!last?'<p class="ap-after">שילמת ולא נקלט? נקלטים רק תשלומים בהצמדת הטלפון או השעון לקופה בחנות. תשלום Apple Pay באינטרנט או באפליקציה לא מפעיל את האוטומציה, זו מגבלה של אפל. אם שילמת בקופה ולא נקלט, פתח את הקיצור: אם כתוב בראשו "הפעולה האוטומטית מכובה", הדלק אותה. אם היא דלוקה, בשורה X-Budget-Token הקוד צריך להתחיל ב-ab1_. אם יש שם קישור או משהו אחר, צור קוד חדש והדבק אותו.</p>':'')
+    +(st.active?'<div class="ap-status'+ap.cls+'">'+ap.head+'<small>· '+esc(ap.sub)+'</small></div>':'')
+    +(st.active&&ap.help?'<p class="ap-after" style="margin:0 4px 12px">'+esc(ap.help)+'</p>':'')
     +'<button type="button" class="ap-btn'+(st.active?'':' primary')+'" onclick="createApplePayHook()"><span>🔗</span> '+(st.active?'צור קוד חדש (מבטל את הקודם)':'חבר Apple Pay')+'</button>'
     +(APPLE_PAY_SHORTCUT_URL?'<button type="button" class="ap-btn" onclick="openApGuide()"><span>📖</span> מדריך עם תמונות</button>':'')
     +(st.active?'<button type="button" class="ap-btn danger" onclick="revokeApplePayHook()">נתק את Apple Pay</button>':''));
@@ -6346,19 +6367,22 @@ async function createApplePayHook(){
     if(error||typeof data!=='string'||!/^ab1_[0-9a-f]{64}$/.test(data))throw error||new Error('bad token');
     _applePayToken=data;
     const setup=document.getElementById('applePaySetup');
+    const ios=_iosMajor(navigator.userAgent);
     const pillBtn='margin-inline-start:6px;border:1px solid var(--accent);background:var(--surface);border-radius:999px;padding:6px 14px;min-height:40px;font:inherit;font-size:0.8125rem;color:var(--accent);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center';
     const manual='<div class="form-stack" style="margin-top:12px"><p style="font-size:0.875rem;line-height:1.6;color:var(--text);margin:0 0 4px"><b>החיבור נוצר. עכשיו 5 שלבים באייפון, פעם אחת:</b></p><ol style="font-size:0.875rem;line-height:1.7;color:var(--text2);margin:0;padding:0;list-style:none"><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">1.</b> בקיצורי דרך: <b>אוטומציה</b> ← <b>+</b> ← <b>עסקה</b>. בחר כרטיסים, סמן <b>הפעל מיד</b> והקש <b>הבא</b>.</li><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">2.</b> הוסף פעולה <b>קבל תוכן של כתובת URL</b>. הדבק בשדה URL: <button type="button" onclick="copyApplePay(\'url\')" style="margin-inline-start:6px;border:1px solid var(--accent);background:var(--surface);border-radius:999px;padding:6px 14px;min-height:40px;font:inherit;font-size:0.8125rem;color:var(--accent);cursor:pointer">העתק כתובת</button><br>הקש <b>הצג עוד</b> ובשיטה בחר <b>POST</b>.</li><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">3.</b> תחת <b>כותרות</b> הוסף כותרת חדשה. בשם כתוב <b dir="ltr">X-Budget-Token</b> ובערך הדבק את הקוד הסודי: <button type="button" onclick="copyApplePay(\'token\')" style="margin-inline-start:6px;border:1px solid var(--accent);background:var(--surface);border-radius:999px;padding:6px 14px;min-height:40px;font:inherit;font-size:0.8125rem;color:var(--accent);cursor:pointer">העתק קוד</button></li><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">4.</b> בגוף הבקשה בחר <b>JSON</b> והוסף שני שדות <b>טקסט</b>:<br>• <b>merchant</b> ← בחירת משתנים ← <b>עסקה</b> ← <b>בית העסק</b><br>• <b>amount</b> ← בחירת משתנים ← <b>עסקה</b> ← <b>כמות</b></li><li style="margin-bottom:14px;list-style:none"><b style="color:var(--accent)">5.</b> הקש <b>סיום</b>. זהו.</li></ol><p style="font-size:0.8125rem;line-height:1.6;color:var(--text2);margin:0">אחרי התשלום הראשון בהצמדה, ההוצאה תופיע באפליקציה עד דקה, ופה יופיע "תשלום אחרון נקלט".</p><p style="font-size:0.8125rem;line-height:1.6;color:var(--text3);margin:0"><b>הקוד הסודי מוצג רק עכשיו.</b> אם לא הספקת להעתיק אותו, צור קישור חדש. מי שמחזיק בו יכול רק להוסיף הוצאות, לא לקרוא מידע. אל תשתף אותו.</p></div>';
     if(setup)setup.innerHTML=APPLE_PAY_SHORTCUT_URL
-      ?'<div class="ap-steps"><div class="ap-steps-title">החיבור נוצר. 4 שלבים באייפון, פעם אחת</div>'
+      ?'<div class="ap-steps"><div class="ap-steps-title">החיבור נוצר. 5 שלבים באייפון, פעם אחת</div>'
         +'<div class="ap-step"><span class="ap-num">1</span><div class="ap-step-body"><div class="ap-step-text">העתק את הקוד האישי</div></div><button type="button" class="ap-act" onclick="copyApplePay(\'token\')">העתק קוד</button></div>'
         +'<div class="ap-step"><span class="ap-num">2</span><div class="ap-step-body"><div class="ap-step-text">הוסף את הקיצור</div><div class="ap-step-sub">הקוד מועתק שוב בלחיצה. כשנשאל, הדבק אותו (מתחיל ב-ab1_) ולחץ "הוספת קיצור"</div></div><a class="ap-act" href="'+APPLE_PAY_SHORTCUT_URL+'" rel="noopener" onclick="return openApplePayShortcut(event)">הוסף קיצור</a></div>'
         +'<div class="ap-step"><span class="ap-num">3</span><div class="ap-step-body"><div class="ap-step-text">הדלק את הפעולה האוטומטית</div><div class="ap-step-sub">פתח את הקיצור. אם כתוב בראשו "הפעולה האוטומטית מכובה", לחץ על החץ שליד "כרטיס" והדלק את המתג. כל עוד היא כבויה, שום תשלום לא נקלט</div></div></div>'
-        +'<div class="ap-step"><span class="ap-num">4</span><div class="ap-step-body"><div class="ap-step-text">ודא שכתוב "כאשר מתבצעת קריאה של כל כרטיס"</div><div class="ap-step-sub">אם השורה לא מופיעה, השתמש בהגדרה הידנית</div></div></div></div>'
-        +'<div class="ap-note"><b>יש לך iOS 26 או ישן יותר?</b> הקיצור המוכן לא יוסיף אצלך את ההפעלה האוטומטית. פתח למטה את "הגדרה ידנית" ופעל לפי השלבים שם.</div>'
+        +'<div class="ap-step"><span class="ap-num">4</span><div class="ap-step-body"><div class="ap-step-text">ודא שכתוב "כאשר מתבצעת קריאה של כל כרטיס"</div><div class="ap-step-sub">אם השורה לא מופיעה, השתמש בהגדרה הידנית</div></div></div>'
+        +'<div class="ap-step"><span class="ap-num">5</span><div class="ap-step-body"><div class="ap-step-text">בדוק את החיבור, בלי לשלם</div><div class="ap-step-sub">לחץ ▶ בתחתית הקיצור. אם האייפון שואל על supabase.co, בחר "אפשר תמיד". אחר כך חזור לכאן</div><div class="ap-status wait" id="apTestState" role="status" style="margin:8px 0 0">מחכה להרצה מהקיצור…</div></div></div></div>'
+        +(ios>=27?'':'<div class="ap-note"><b>'+(ios?'באייפון שלך מותקנת iOS '+ios+'.':'יש לך iOS 26 או ישן יותר?')+'</b> הקיצור המוכן לא יוסיף אצלך את ההפעלה האוטומטית. עדכן ל-iOS 27, או פתח למטה את "הגדרה ידנית" ופעל לפי השלבים שם.</div>')
         +'<div class="ap-note"><b>הקוד מוצג רק עכשיו.</b> אם לא העתקת אותו, צור קוד חדש. מי שמחזיק בו יכול רק להוסיף הוצאות, לא לקרוא מידע. אל תשתף אותו.</div>'
         +'<p class="ap-after">אחרי התשלום הראשון בהצמדה, ההוצאה תופיע באפליקציה תוך דקה, ופה יופיע "תשלום אחרון נקלט".</p>'
-        +'<details class="ap-manual"><summary>הגדרה ידנית (אם הקיצור לא נפתח, או שבראשו אין "כאשר מתבצעת קריאה")</summary>'+manual+'</details>'
+        +'<details class="ap-manual"'+(ios&&ios<27?' open':'')+'><summary>הגדרה ידנית (אם הקיצור לא נפתח, או שבראשו אין "כאשר מתבצעת קריאה")</summary>'+manual+'</details>'
       :manual;
+    clearInterval(_applePayWatch);_applePayWatch=setInterval(_applePayCheckTest,5000);
     showToast('✓ נוצר קישור. העתק אותו לקיצור הדרך');
   }catch(e){showToast('❌ לא ניתן ליצור קישור כרגע');}
   finally{_applePayBusy=false;}
@@ -6432,7 +6456,7 @@ async function pullIncomingExpenses(){
     if(added){refreshAll();showToast('✓ נוספו '+added+(added===1?' הוצאה':' הוצאות')+' מ-Apple Pay');if(!_applePayToken&&document.getElementById('page-settings')?.classList.contains('active'))renderApplePaySection();}
   }catch(e){}finally{_applePayPulling=false;}
 }
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)pullIncomingExpenses();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){pullIncomingExpenses();_applePayCheckTest();}});
 window.addEventListener('online',()=>pullIncomingExpenses());
 setInterval(()=>pullIncomingExpenses(),60000);
 setTimeout(()=>pullIncomingExpenses(),4000);
