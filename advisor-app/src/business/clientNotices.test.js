@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { clientDocumentsNotice, clientRequestNotice } from '../../../supabase/functions/budget-push/notices.ts';
+import { expenseNotice } from '../../../supabase/functions/apple-pay-ingest/notice.ts';
 import { urlBase64ToBytes } from './advisorPush.js';
 
 describe('advisor notices for client activity', () => {
@@ -20,6 +21,10 @@ describe('advisor notices for client activity', () => {
     expect(a.kind).toBe('advisor_client_docs');
     expect(a.key).not.toBe(b.key);
     expect(a.url).toBe('/budget-app/advisor/?view=client-view&client=c1&nav=documents');
+  });
+  it('tells the user about a recorded payment, rounded up', () => {
+    expect(expenseNotice('Market In The City', 8.1)).toEqual({ title: 'נרשמה הוצאה 💳', body: 'Market In The City · ₪9', url: './' });
+    expect(expenseNotice(' ', 12).body).toBe('Apple Pay · ₪12');
   });
   it('decodes the push key', () => {
     expect(Array.from(urlBase64ToBytes('AQID'))).toEqual([1, 2, 3]);

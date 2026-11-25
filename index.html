@@ -2725,6 +2725,7 @@
         </div>
         <div id="pushPrefsWrap" style="display:none;margin-top:6px;padding:4px 2px;">
           <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefDaily" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">תזכורת יומית לרישום הוצאות</label>
+          <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefPayments" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">הוצאה שנרשמה מ-Apple Pay</label>
           <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefBudget" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">התראת חריגה מתקציב</label>
           <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefRenewals" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">תזכורת לפני חידוש מנוי</label>
           <label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.85rem;cursor:pointer;min-height:44px;"><input type="checkbox" id="pushPrefMonthly" checked onchange="savePushPrefs()" style="width:16px;height:16px;accent-color:var(--accent);">סיכום חודשי</label>
@@ -3500,7 +3501,7 @@ function saveDataDebounced(){
 }
 
 function _safeSym(s){return typeof s==='string'&&/^[^<>&"'`\\]{1,4}$/.test(s)?s:'₪';}
-function fmt(n){const sym=_safeSym(typeof userSettings!=='undefined'&&userSettings.currency);const str=Math.round(Math.abs(n)).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});return sym+str.replace(/[-−]/g,'');}
+function fmt(n){const sym=_safeSym(typeof userSettings!=='undefined'&&userSettings.currency);const str=Math.ceil(Math.round(Math.abs(n)*100)/100).toLocaleString('he-IL',{minimumFractionDigits:0,maximumFractionDigits:0});return sym+str.replace(/[-−]/g,'');}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 // ערך בטוח כמחרוזת JS בגרשיים בודדים בתוך מאפיין HTML בגרשיים כפולים
 function attrArg(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -5067,7 +5068,8 @@ function _pushPrefs(){
     budget:document.getElementById('pushPrefBudget')?.checked??true,
     renewals:document.getElementById('pushPrefRenewals')?.checked??true,
     monthly:document.getElementById('pushPrefMonthly')?.checked??true,
-    advisor:document.getElementById('pushPrefAdvisor')?.checked??true
+    advisor:document.getElementById('pushPrefAdvisor')?.checked??true,
+    payments:document.getElementById('pushPrefPayments')?.checked??true
   };
 }
 async function _renderPushPrefs(){
@@ -5080,8 +5082,8 @@ async function _renderPushPrefs(){
     const sub=await reg.pushManager.getSubscription();
     if(!sub)return;
     const {data}=await _sb.from('push_subscriptions').select('prefs').eq('endpoint',sub.endpoint).eq('user_id',_cloudUser.id).maybeSingle();
-    const prefs={daily:true,budget:true,renewals:true,monthly:true,advisor:true,...(data?.prefs||{})};
-    ['daily','budget','renewals','monthly','advisor'].forEach(k=>{
+    const prefs={daily:true,budget:true,renewals:true,monthly:true,advisor:true,payments:true,...(data?.prefs||{})};
+    ['daily','budget','renewals','monthly','advisor','payments'].forEach(k=>{
       const el=document.getElementById('pushPref'+k.charAt(0).toUpperCase()+k.slice(1));
       if(el)el.checked=!!prefs[k];
     });
@@ -6357,6 +6359,7 @@ async function renderApplePaySection(){
     +(st.active?'<div class="ap-status'+ap.cls+'">'+ap.head+'<small>· '+esc(ap.sub)+'</small></div>':'')
     +(st.active&&ap.help?'<p class="ap-after" style="margin:0 4px 12px">'+esc(ap.help)+'</p>':'')
     +'<button type="button" class="ap-btn'+(st.active?'':' primary')+'" onclick="createApplePayHook()"><span>🔗</span> '+(st.active?'צור קוד חדש (מבטל את הקודם)':'חבר Apple Pay')+'</button>'
+    +(st.active&&!localStorage.getItem('budget_push_on')?'<button type="button" class="ap-btn" id="apPushBtn" onclick="enableApplePayPush()"><span>🔔</span> קבל התראה על כל תשלום</button>':'')
     +(APPLE_PAY_SHORTCUT_URL?'<button type="button" class="ap-btn" onclick="openApGuide()"><span>📖</span> מדריך עם תמונות</button>':'')
     +(st.active?'<button type="button" class="ap-btn danger" onclick="revokeApplePayHook()">נתק את Apple Pay</button>':''));
 }
@@ -6398,6 +6401,12 @@ async function copyApplePay(kind){
   const value=!_applePayToken?'':kind==='url'?SUPA_URL+'/functions/v1/apple-pay-ingest':_applePayToken;
   if(!value){showToast('❌ צור קישור חדש כדי להעתיק');return;}
   try{await navigator.clipboard.writeText(value);showToast('✓ הועתק');}catch(e){showToast('❌ ההעתקה נכשלה');}
+}
+async function enableApplePayPush(){
+  await togglePush(true);
+  const on=!!localStorage.getItem('budget_push_on');
+  const cb=document.getElementById('settingPushEnabled');if(cb)cb.checked=on;
+  if(on)document.getElementById('apPushBtn')?.remove();
 }
 async function revokeApplePayHook(){
   if(_applePayBusy||!_sb||!_cloudUser)return;
@@ -9653,7 +9662,7 @@ async function _resyncPush(){
     const {data}=await _sb.from('push_subscriptions').select('endpoint').eq('endpoint',sub.endpoint).eq('user_id',_cloudUser.id).maybeSingle();
     if(data)return;
     const j=sub.toJSON();
-    await _sb.from('push_subscriptions').upsert({user_id:_cloudUser.id,endpoint:sub.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,prefs:{daily:true,budget:true,renewals:true,monthly:true,advisor:true}},{onConflict:'endpoint'});
+    await _sb.from('push_subscriptions').upsert({user_id:_cloudUser.id,endpoint:sub.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,prefs:{daily:true,budget:true,renewals:true,monthly:true,advisor:true,payments:true}},{onConflict:'endpoint'});
   }catch(e){}
 }
 function _decideOnboarding(){

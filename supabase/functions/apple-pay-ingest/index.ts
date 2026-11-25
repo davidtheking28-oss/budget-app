@@ -1,3 +1,7 @@
+import { expenseNotice } from './notice.ts'
+
+declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void }
+
 const OK = { 'Content-Type': 'application/json' }
 const URL_BASE = Deno.env.get('SUPABASE_URL')!
 
@@ -17,9 +21,42 @@ async function log(stage: string, detail: Record<string, unknown>) {
   } catch { /* logging never blocks ingestion */ }
 }
 
-async function hashPrefix(token: string) {
+async function hashToken(token: string) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token))
-  return [...new Uint8Array(digest)].slice(0, 4).map(b => b.toString(16).padStart(2, '0')).join('')
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+async function notify(hash: string, tok: string) {
+  try {
+    const { createClient } = await import('jsr:@supabase/supabase-js@2')
+    const webpush = await import('jsr:@negrel/webpush@0.5.0')
+    const admin = createClient(URL_BASE, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+    const { data: hook } = await admin.from('expense_hooks').select('user_id').eq('token_hash', hash).maybeSingle()
+    if (!hook) return
+    const { data: row } = await admin.from('incoming_expenses').select('merchant,amount').eq('user_id', hook.user_id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+    if (!row) return
+    const { data: all } = await admin.from('push_subscriptions').select('*').eq('user_id', hook.user_id)
+    const subs = (all || []).filter((s) => s.prefs?.payments !== false)
+    if (!subs.length) { await log('push', { tok, subs: 0 }); return }
+    const { data: secret } = await admin.from('app_secrets').select('value').eq('key', 'vapid_keys').maybeSingle()
+    if (!secret) return
+    const vapidKeys = await webpush.importVapidKeys(JSON.parse(secret.value), { extractable: false })
+    const server = await webpush.ApplicationServer.new({ contactInformation: URL_BASE, vapidKeys })
+    const payload = JSON.stringify(expenseNotice(row.merchant, Number(row.amount)))
+    let sent = 0
+    for (const sub of subs) {
+      try {
+        await server.subscribe({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }).pushTextMessage(payload, {})
+        sent++
+      } catch (err) {
+        const status = (err as { response?: Response })?.response?.status
+        if (status === 404 || status === 410) await admin.from('push_subscriptions').delete().eq('endpoint', sub.endpoint)
+      }
+    }
+    await log('push', { tok, subs: subs.length, sent })
+  } catch (err) {
+    await log('push', { tok, error: String(err).slice(0, 120) })
+  }
 }
 
 const shape = (v: string) => v.slice(0, 24).replace(/[0-9]/g, '9').replace(/[A-Za-z֐-׿]/g, 'a')
@@ -36,7 +73,8 @@ Deno.serve(async (req) => {
     await log(token ? 'token_repaired' : 'token_format', { ...meta, len: sent.length, form, odd })
   }
   if (!token) return reply(false, 400)
-  const tok = await hashPrefix(token)
+  const hash = await hashToken(token)
+  const tok = hash.slice(0, 8)
   const raw = await req.text()
   if (raw.length > 2000) { await log('too_large', { ...meta, tok, len: raw.length }); return reply(false, 413) }
   let body: Record<string, unknown> = {}
@@ -59,5 +97,6 @@ Deno.serve(async (req) => {
   const data = await res.json().catch(() => null)
   const ok = !!(data && data.ok)
   await log('result', { ...meta, tok, ok, keys: Object.keys(body).slice(0, 6), merchant_len: merchant.length, amount_type: typeof body.amount, amount_shape: shape(amount) })
+  if (ok && !data.duplicate) EdgeRuntime.waitUntil(notify(hash, tok))
   return reply(ok)
 })

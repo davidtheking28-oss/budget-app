@@ -1524,3 +1524,9 @@ test('expenses of the same day are listed newest first',()=>{
   const list=[{id:'fx|2026-11|x',date:'2026-11-25'},{id:1795586759420.7,date:'2026-11-25'},{id:1795590489209.2,date:'2026-11-25'},{id:1795101148978.8,date:'2026-11-19'}];
   assert.deepEqual(list.sort(ctx._byNewest).map(t=>t.id),[1795590489209.2,1795586759420.7,'fx|2026-11|x',1795101148978.8]);
 });
+
+test('amounts are shown without agorot, rounded up',()=>{
+  const ctx=functions(['fmt'],{_safeSym:()=>'₪',userSettings:{}});
+  assert.equal(ctx.fmt(8.9),'₪9');assert.equal(ctx.fmt(8.1),'₪9');assert.equal(ctx.fmt(12),'₪12');
+  assert.equal(ctx.fmt(0.1+0.2+11.7),'₪12');assert.equal(ctx.fmt(-3.2),'₪4');assert.equal(ctx.fmt(0),'₪0');
+});
