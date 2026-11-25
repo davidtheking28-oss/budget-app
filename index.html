@@ -3527,6 +3527,7 @@ function undoDelete(){
   const t=document.getElementById('undoToast');t.classList.remove('show');
   if(_undoFn){_undoFn();_undoFn=null;}
 }
+function _byNewest(a,b){return (b.date||'').localeCompare(a.date||'')||(parseFloat(b.id)||0)-(parseFloat(a.id)||0);}
 function getMonthTx(y,m){return transactions.filter(t=>(t.date||'').startsWith(mk(y,m)));}
 
 const MOON = `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
@@ -7061,7 +7062,7 @@ const _FOOD_SPLIT={
   'קופיקס':'אוכל בחוץ ובילויים','לנדוור':'אוכל בחוץ ובילויים','גרג':'אוכל בחוץ ובילויים','בית קפה':'אוכל בחוץ ובילויים',
   'קפה':'אוכל בחוץ ובילויים','וולט':'אוכל בחוץ ובילויים','wolt':'אוכל בחוץ ובילויים','תן ביס':'אוכל בחוץ ובילויים',
   'משלוח':'אוכל בחוץ ובילויים','סודה':'אוכל בחוץ ובילויים','שתייה':'אוכל בחוץ ובילויים','קינוח':'אוכל בחוץ ובילויים',
-  'גלידה':'אוכל בחוץ ובילויים',
+  'גלידה':'אוכל בחוץ ובילויים','נקנקיה':'אוכל בחוץ ובילויים','נקנקייה':'אוכל בחוץ ובילויים','נקניקיה':'אוכל בחוץ ובילויים','נקניקייה':'אוכל בחוץ ובילויים','הוט דוג':'אוכל בחוץ ובילויים','הוטדוג':'אוכל בחוץ ובילויים',
   'קצב':'מזון לבית','קצביה':'מזון לבית','אטליז':'מזון לבית','ירקן':'מזון לבית','ירקות':'מזון לבית','פירות':'מזון לבית',
   'מעדנייה':'מזון לבית','מכולת':'מזון לבית','סופר':'מזון לבית','נספרסו':'מזון לבית','מאפיה':'מזון לבית',
   'לחם':'מזון לבית','חלב':'מזון לבית'
@@ -7132,13 +7133,13 @@ function _fixRefinedCats(){
   // learnCat() writes on every save, so a learned entry is not proof the user chose
   // it — the AI's guesses are in there too. Purge the ones the dictionary contradicts
   // once, then the dictionary is authoritative for these exact words.
-  if(localStorage.getItem('budget_refine_fix')!=='1'){
+  if(localStorage.getItem('budget_refine_fix')!=='2'){
     Object.keys(_REFINED_EXACT).forEach(k=>{
       if(learnedCats[k]&&learnedCats[k]!==_REFINED_EXACT[k])delete learnedCats[k];
     });
     try{
       localStorage.setItem('budget_learned_cats',JSON.stringify(learnedCats));
-      localStorage.setItem('budget_refine_fix','1');
+      localStorage.setItem('budget_refine_fix','2');
     }catch(e){}
   }
   let changed=false;
@@ -7413,7 +7414,7 @@ function renderDashboard(){
     paceWrap.style.display='none';
   }
   renderUpcoming();
-  const recentTxAll=[...mTx].filter(t=>t.type==='expense').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const recentTxAll=[...mTx].filter(t=>t.type==='expense').sort(_byNewest);
   const recentTx=_dashRecentExpanded?recentTxAll:recentTxAll.slice(0,4);
   _setTxListHtml(document.getElementById('recentTxList'),recentTx.length?groupedTxHtml(recentTx,true):'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">אין הוצאות החודש</p><p>עדיין לא רשמת הוצאות החודש.<br>לחץ על הפלוס כדי להוסיף הוצאה</p><button class="btn-empty" onclick="openAddTx()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה ראשונה</button></div>');
   const moreBtn=document.getElementById('recentTxMoreBtn');
@@ -7519,7 +7520,7 @@ function renderTxPage(){
   const _txEmpty=_hasFilter
     ?'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p>לא נמצאו תוצאות</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 0">נסה לשנות את מילות החיפוש או הסינון</p></div>'
     :'<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><p style="font-weight:800;font-size:1rem;color:var(--text);margin-bottom:6px">אין הוצאות החודש</p><p>עדיין לא רשמת הוצאות לחודש זה</p><button class="btn-empty" onclick="openAddTx()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף הוצאה</button></div>';
-  list.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  list.sort(_byNewest);
   const _useCategorized=!q&&!fromDate&&!toDate;
   if(_useCategorized){
     const byCat={};list.forEach(t=>{(byCat[t.cat]=byCat[t.cat]||[]).push(t);});

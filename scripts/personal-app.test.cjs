@@ -1518,3 +1518,9 @@ test('apple pay setup turns connected once the server saw the shortcut',async()=
   data={active:true,last_seen_at:'x'};await ctx._applePayCheckTest();
   assert.match(el.textContent,/הקיצור מחובר/);assert.equal(el.removed,'wait');assert.equal(cleared,1);
 });
+
+test('expenses of the same day are listed newest first',()=>{
+  const ctx=functions(['_byNewest'],{});
+  const list=[{id:'fx|2026-11|x',date:'2026-11-25'},{id:1795586759420.7,date:'2026-11-25'},{id:1795590489209.2,date:'2026-11-25'},{id:1795101148978.8,date:'2026-11-19'}];
+  assert.deepEqual(list.sort(ctx._byNewest).map(t=>t.id),[1795590489209.2,1795586759420.7,'fx|2026-11|x',1795101148978.8]);
+});
