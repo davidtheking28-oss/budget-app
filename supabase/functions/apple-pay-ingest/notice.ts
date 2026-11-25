@@ -6,3 +6,9 @@ export function expenseNotice(merchant: string, amount: number) {
     url: './',
   }
 }
+
+export const setupNotice = {
+  title: 'Apple Pay עוד לא מחובר',
+  body: 'ודא שיש לך iOS 27, מחק את הקיצור הישן, ובהגדרות ← Apple Pay צור קוד חדש ועקוב אחרי "מדריך עם תמונות"',
+  url: './',
+}
