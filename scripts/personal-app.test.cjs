@@ -1456,7 +1456,7 @@ test('a background refresh never closes or restarts onboarding, and a killed one
   const overlay={classList:{contains:c=>classes.has(c),add:c=>classes.add(c),remove:c=>classes.delete(c)}};
   const ctx=functions(['_hasRealData','showOnboarding','skipOnboarding','_decideOnboarding'],{onboardStep:0,userSettings:{name:'',incomeSources:[]},transactions:[],budgets:{},
     localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
-    document:{getElementById:id=>id==='onboardOverlay'?overlay:id==='obNameInput'?input:null},renderOnboardStep:()=>{},checkFabHint:()=>{},_resyncPush:()=>{},showFabHint:()=>{},setTimeout:()=>0});
+    document:{getElementById:id=>id==='onboardOverlay'?overlay:id==='obNameInput'?input:null},renderOnboardStep:()=>{},checkFabHint:()=>{},_resyncPush:async()=>{},_autoPush:()=>{},showFabHint:()=>{},setTimeout:()=>0});
   const open=()=>classes.has('open');
   ctx._decideOnboarding();assert.equal(open(),true);
   input.value='דנה';ctx.userSettings.name='דנה';ctx._decideOnboarding();assert.equal(open(),true);
@@ -1529,4 +1529,29 @@ test('amounts are shown without agorot, rounded up',()=>{
   const ctx=functions(['fmt'],{_safeSym:()=>'₪',userSettings:{}});
   assert.equal(ctx.fmt(8.9),'₪9');assert.equal(ctx.fmt(8.1),'₪9');assert.equal(ctx.fmt(12),'₪12');
   assert.equal(ctx.fmt(0.1+0.2+11.7),'₪12');assert.equal(ctx.fmt(-3.2),'₪4');assert.equal(ctx.fmt(0),'₪0');
+});
+
+function autoPushContext(permission,active,store={},ua='iPhone'){
+  const log={sub:0,asked:0,handlers:[]};
+  const Notification={permission,requestPermission:async()=>{log.asked++;Notification.permission='granted';return 'granted';}};
+  const ctx=functions(['_autoPush'],{_autoPushFor:null,_cloudUser:{id:'u'},_sb:{rpc:async()=>({data:{active}})},_pushSupported:()=>true,navigator:{userAgent:ua},Notification,
+    localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v;}},document:{getElementById:()=>null,addEventListener:(n,f)=>log.handlers.push(f),removeEventListener:()=>{log.handlers.length=0;}},
+    _subscribePush:async()=>{log.sub++;},_renderPushPrefs:()=>{},showToast:()=>{}});
+  return {ctx,log,store};
+}
+test('payment notices turn on by themselves once the phone already allowed them',async()=>{
+  const a=autoPushContext('granted',true);await a.ctx._autoPush();assert.equal(a.log.sub,1);assert.equal(a.log.asked,0);
+});
+test('payment notices ask on the first tap, once, and not from the setup buttons',async()=>{
+  const a=autoPushContext('default',true);await a.ctx._autoPush();
+  assert.equal(a.log.asked,0);assert.equal(a.log.handlers.length,1);
+  const tap=a.log.handlers[0];
+  tap({target:{closest:()=>({})}});assert.equal(a.log.asked,0);
+  tap({target:{closest:()=>null}});await new Promise(r=>setTimeout(r,5));
+  assert.equal(a.log.asked,1);assert.equal(a.log.sub,1);assert.equal(a.store.push_auto_asked,'1');
+});
+test('payment notices stay off without Apple Pay, after a refusal, after an opt out, or off the phone',async()=>{
+  for(const a of [autoPushContext('granted',false),autoPushContext('denied',true),autoPushContext('granted',true,{push_opt_out:'1'}),autoPushContext('granted',true,{},'Windows'),autoPushContext('default',true,{push_auto_asked:'1'})]){
+    await a.ctx._autoPush();assert.equal(a.log.sub,0);assert.equal(a.log.handlers.length,0);
+  }
 });

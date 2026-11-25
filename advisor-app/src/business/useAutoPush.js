@@ -5,12 +5,13 @@ export function useAutoPush(advisorId) {
   useEffect(() => {
     if (!advisorId || !pushSupported()) return undefined;
     let done = false;
-    const attempt = () => {
+    const attempt = fromClick => {
       if (done) return;
-      ensurePush(advisorId).then(state => { if (state === 'on' || Notification.permission !== 'default') done = true; }).catch(() => {});
+      ensurePush(advisorId, fromClick).then(state => { if (state === 'on' || Notification.permission !== 'default') done = true; }).catch(() => {});
     };
-    const timer = setTimeout(attempt, 3000);
-    window.addEventListener('pointerdown', attempt, { once: true });
-    return () => { clearTimeout(timer); window.removeEventListener('pointerdown', attempt); };
+    const onClick = () => attempt(true);
+    const timer = setTimeout(() => attempt(false), 3000);
+    window.addEventListener('click', onClick, { once: true, capture: true });
+    return () => { clearTimeout(timer); window.removeEventListener('click', onClick, { capture: true }); };
   }, [advisorId]);
 }

@@ -1,7 +1,7 @@
 import { supabase, SUPA_URL } from '../supabaseClient.js';
 
 const ADVISOR_PREFS = { daily: false, budget: false, renewals: false, monthly: false, advisor: true };
-const ASKED_KEY = 'advisor_push_asked';
+const ASKED_KEY = 'advisor_push_asked_v2';
 
 export const pushSupported = () => typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 
@@ -20,11 +20,14 @@ async function vapidKey() {
   return (await res.json()).publicKey;
 }
 
-export async function ensurePush(userId) {
+export async function ensurePush(userId, fromClick) {
   if (!pushSupported() || Notification.permission === 'denied') return 'off';
   if (Notification.permission === 'default') {
-    try { if (localStorage.getItem(ASKED_KEY)) return 'off'; localStorage.setItem(ASKED_KEY, '1'); } catch { /* storage unavailable */ }
-    if ((await Notification.requestPermission()) !== 'granted') return 'off';
+    if (!fromClick) return 'off';
+    try { if (localStorage.getItem(ASKED_KEY)) return 'off'; } catch { /* storage unavailable */ }
+    const answer = await Notification.requestPermission();
+    try { localStorage.setItem(ASKED_KEY, '1'); } catch { /* storage unavailable */ }
+    if (answer !== 'granted') return 'off';
   }
   await navigator.serviceWorker.register(swUrl(), { scope: swScope() });
   const reg = await navigator.serviceWorker.ready;

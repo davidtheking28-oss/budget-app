@@ -5089,6 +5089,45 @@ async function _renderPushPrefs(){
     });
   }catch(e){_DEBUG&&console.warn('push prefs load',e);}
 }
+async function _subscribePush(){
+  const reg=await navigator.serviceWorker.ready;
+  let sub=await reg.pushManager.getSubscription();
+  if(!sub){
+    sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:_urlB64ToU8(await _getVapidPublic())});
+  }
+  const j=sub.toJSON();
+  const {error}=await _sb.from('push_subscriptions').upsert({user_id:_cloudUser.id,endpoint:sub.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,prefs:_pushPrefs()},{onConflict:'endpoint'});
+  if(error)throw error;
+  localStorage.setItem('budget_push_on','1');
+  localStorage.removeItem('push_opt_out');
+}
+let _autoPushFor=null;
+async function _autoPush(){
+  if(!_cloudUser||!_sb||!_pushSupported()||!/iPhone/.test(navigator.userAgent)||_autoPushFor===_cloudUser.id)return;
+  if(Notification.permission==='denied'||localStorage.getItem('budget_push_on')||localStorage.getItem('push_opt_out'))return;
+  const uid=_cloudUser.id;
+  _autoPushFor=uid;
+  try{
+    const {data}=await _sb.rpc('expense_hook_status');
+    if(!data?.active){_autoPushFor=null;return;}
+    const finish=async()=>{
+      if(_cloudUser?.id!==uid||Notification.permission!=='granted')return;
+      await _subscribePush();
+      const cb=document.getElementById('settingPushEnabled');if(cb)cb.checked=true;
+      document.getElementById('apPushBtn')?.remove();
+      _renderPushPrefs();
+      showToast('🔔 התראות על תשלומים הופעלו');
+    };
+    if(Notification.permission==='granted'){await finish();return;}
+    if(localStorage.getItem('push_auto_asked'))return;
+    const ask=e=>{
+      if(e.target?.closest?.('#applePaySetup,#onboardOverlay'))return;
+      document.removeEventListener('click',ask,true);
+      Notification.requestPermission().then(()=>{localStorage.setItem('push_auto_asked','1');return finish();}).catch(()=>{_autoPushFor=null;});
+    };
+    document.addEventListener('click',ask,true);
+  }catch(e){_autoPushFor=null;}
+}
 async function togglePush(on){
   const cb=document.getElementById('settingPushEnabled');
   try{
@@ -5101,15 +5140,7 @@ async function togglePush(on){
       }
       const perm=await Notification.requestPermission();
       if(perm!=='granted'){showToast('ההרשאה נדחתה — אפשר לאפשר בהגדרות הדפדפן');if(cb)cb.checked=false;return;}
-      const reg=await navigator.serviceWorker.ready;
-      let sub=await reg.pushManager.getSubscription();
-      if(!sub){
-        sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:_urlB64ToU8(await _getVapidPublic())});
-      }
-      const j=sub.toJSON();
-      const {error}=await _sb.from('push_subscriptions').upsert({user_id:_cloudUser.id,endpoint:sub.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,prefs:_pushPrefs()},{onConflict:'endpoint'});
-      if(error)throw error;
-      localStorage.setItem('budget_push_on','1');
+      await _subscribePush();
       showToast('🔔 התראות הופעלו');
     }else{
       if(_pushSupported()){
@@ -5121,6 +5152,7 @@ async function togglePush(on){
         }
       }
       localStorage.removeItem('budget_push_on');
+      localStorage.setItem('push_opt_out','1');
       showToast('✓ התראות כובו');
     }
   }catch(e){
@@ -6284,14 +6316,16 @@ function openSettings(){
 }
 const APPLE_PAY_SHORTCUT_URL='https://www.icloud.com/shortcuts/6ebd088827554071a7ea5565df28c7b9';
 const AP_GUIDE=[
-  {t:'פתח את ההגדרות באפליקציה, ובכרטיס Apple Pay לחץ על "חבר Apple Pay".',img:'ap-1-settings',theme:1},
+  {t:'פתח את ההגדרות באפליקציה, ובכרטיס Apple Pay לחץ על "חבר Apple Pay". המדריך מתאים ל-iOS 27 ומעלה. בגרסה ישנה יותר, עדכן קודם את האייפון.',img:'ap-1-settings',theme:1},
   {t:'לחץ על "העתק קוד". זה הקוד האישי שלך, אז אל תשלח אותו לאף אחד.',img:'ap-2-copy',theme:1},
-  {t:'לחץ על "הוסף קיצור דרך". תיפתח אפליקציית קיצורי הדרך, ושם לחץ על "הגדרת קיצור".',img:'ap-3-open.png',shot:1},
-  {t:'לחץ על המילה האפורה "מלל" בשורה, והדבק שם את הקוד. הוא מתחיל ב-ab1_. אם הודבק קישור או משהו אחר, חזור לאפליקציה והעתק את הקוד שוב.',img:'ap-4-question.png',shot:1},
-  {t:'לחץ על ה-V במקלדת, ואחר כך על "הוספת קיצור" בתחתית המסך.',img:'ap-5-paste.png',shot:1},
-  {t:'בדוק שבראש הקיצור יש את הכרטיס "כאשר מתבצעת קריאה של כל כרטיס", ושהמתג "פעולה אוטומטית" דלוק. אם הכרטיס חסר, גרסת המערכת ישנה: סגור את המדריך ופעל לפי "הגדרה ידנית".',img:'ap-6-auto.png',shot:1},
-  {t:'אם בראש המסך מופיע הפס "הפעולה האוטומטית מכובה", לחץ על החץ שליד "כרטיס" והדלק את המתג. בלי זה הקיצור לא ירוץ.',img:'ap-6b-off.png',shot:1},
-  {t:'לחץ על ▶ בתחתית הקיצור, ואם האייפון שואל על supabase.co בחר "אפשר תמיד". חזור להגדרות ובדוק שכתוב "הקיצור מחובר". אחר כך שלם סכום קטן עם האייפון או השעון, בהצמדה לקופה. תוך דקה ההוצאה תופיע באפליקציה, ובהגדרות יופיע \"תשלום אחרון נקלט\".',img:'ap-7-done',theme:1}
+  {t:'לחץ על "הוסף קיצור". תיפתח אפליקציית קיצורי הדרך, ושם לחץ על "הגדרת קיצור".',img:'ap-3-open.png',shot:1},
+  {t:'לחץ על המילה האפורה "מלל" בשורה, והדבק שם את הקוד.',img:'ap-4-question.png',shot:1},
+  {t:'ודא שהקוד מתחיל ב-ab1_. אם הודבק משהו אחר, חזור לאפליקציה והעתק שוב. לחץ על ה-V במקלדת, ואחר כך על "הוספת קיצור".',img:'ap-5-paste.png',shot:1},
+  {t:'פתח את הקיצור בלחיצה על שלוש הנקודות שלו. כמעט תמיד הוא מגיע כבוי: אם כתוב "הפעולה האוטומטית מכובה", לחץ על החץ שליד "כרטיס". אם אין כרטיס כזה, עדכן את האייפון ל-iOS 27, מחק את הקיצור והוסף אותו שוב.',img:'ap-6b-off.png',shot:1},
+  {t:'הדלק את המתג "פעולה אוטומטית", וודא שהפס "הפעולה האוטומטית מכובה" נעלם. בלי זה שום תשלום לא נרשם.',img:'ap-6-auto.png',shot:1},
+  {t:'לחץ על ▶ בתחתית הקיצור. אם האייפון שואל על supabase.co, בחר "אפשר תמיד".',img:'ap-8-run.png',shot:1},
+  {t:'חזור להגדרות באפליקציה ובדוק שכתוב "הקיצור מחובר". אם לא, צור קוד חדש וחזור על השלבים.',img:'ap-9-connected',theme:1},
+  {t:'שלם סכום קטן עם האייפון או השעון, בהצמדה לקופה. בפתיחה הבאה של האפליקציה ההוצאה תופיע, ובהגדרות יופיע "תשלום אחרון נקלט".',img:'ap-7-done',theme:1}
 ];
 let _apgI=0,_apgBuilt=false,_apgDark=false;
 function _apgBuild(){
@@ -6383,10 +6417,11 @@ async function createApplePayHook(){
         +'<div class="ap-step"><span class="ap-num">5</span><div class="ap-step-body"><div class="ap-step-text">בדוק את החיבור, בלי לשלם</div><div class="ap-step-sub">לחץ ▶ בתחתית הקיצור. אם האייפון שואל על supabase.co, בחר "אפשר תמיד". אחר כך חזור לכאן</div><div class="ap-status wait" id="apTestState" role="status" style="margin:8px 0 0">מחכה להרצה מהקיצור…</div></div></div></div>'
         +(ios>=27?'':'<div class="ap-note"><b>'+(ios?'באייפון שלך מותקנת iOS '+ios+'.':'יש לך iOS 26 או ישן יותר?')+'</b> הקיצור המוכן לא יוסיף אצלך את ההפעלה האוטומטית. עדכן ל-iOS 27, או פתח למטה את "הגדרה ידנית" ופעל לפי השלבים שם.</div>')
         +'<div class="ap-note"><b>הקוד מוצג רק עכשיו.</b> אם לא העתקת אותו, צור קוד חדש. מי שמחזיק בו יכול רק להוסיף הוצאות, לא לקרוא מידע. אל תשתף אותו.</div>'
-        +'<p class="ap-after">אחרי התשלום הראשון בהצמדה, ההוצאה תופיע באפליקציה תוך דקה, ופה יופיע "תשלום אחרון נקלט".</p>'
+        +'<p class="ap-after">אחרי התשלום הראשון בהצמדה, ההוצאה תופיע כשתפתח את האפליקציה, ופה יופיע "תשלום אחרון נקלט".</p>'
         +'<details class="ap-manual"'+(ios&&ios<27?' open':'')+'><summary>הגדרה ידנית (אם הקיצור לא נפתח, או שבראשו אין "כאשר מתבצעת קריאה")</summary>'+manual+'</details>'
       :manual;
     clearInterval(_applePayWatch);_applePayWatch=setInterval(_applePayCheckTest,5000);
+    _autoPush();
     showToast('✓ נוצר קישור. העתק אותו לקיצור הדרך');
   }catch(e){showToast('❌ לא ניתן ליצור קישור כרגע');}
   finally{_applePayBusy=false;}
@@ -9666,7 +9701,7 @@ async function _resyncPush(){
   }catch(e){}
 }
 function _decideOnboarding(){
-  _resyncPush();
+  _resyncPush().then(_autoPush);
   const ov=document.getElementById('onboardOverlay');
   const nameOnly=!(userSettings.incomeSources&&userSettings.incomeSources.length)&&!transactions.length&&!Object.keys(budgets).length;
   if(nameOnly&&ov?.classList.contains('open')&&(!userSettings.name||onboardStep>0||document.getElementById('obNameInput')?.value.trim()))return;
