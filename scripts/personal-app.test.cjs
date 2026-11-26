@@ -223,7 +223,7 @@ test('a successful cloud write leaves the displayed status synchronized rather t
 });
 
 function insuranceContext(){
- const ctx=functions(['_fxUpsert','_fxPushMonth','_expAddInsurance','_expEditInsurance','_expDeleteInsurance','_mergeFixedCatInto','_migrateInsuranceCats'],{transactions:[],insurances:[],fixedExpenses:[],budgets:{},SAVING_FIXED_CATS:[],userSettings:{},_syncMeta:{del:{tx:{}}},_curMonthKey:()=> '2026-10',_fxTxId:(m,c)=>'fx|'+m+'|'+c,renderTxPage:()=>{},showToast:()=>{},promptSheet:async()=>['Health','120']});
+ const ctx=functions(['_fxUpsert','_fxPushMonth','_expAddInsurance','_expEditInsurance','_expDeleteInsurance','_mergeFixedCatInto','_migrateInsuranceCats'],{transactions:[],insurances:[],fixedExpenses:[],budgets:{},_isSavingCat:()=>false,userSettings:{},_syncMeta:{del:{tx:{}}},_curMonthKey:()=> '2026-10',_fxTxId:(m,c)=>'fx|'+m+'|'+c,renderTxPage:()=>{},showToast:()=>{},promptSheet:async()=>['Health','120']});
  ctx._fxMonthly=()=>ctx.insurances.reduce((s,i)=>s+i.monthly,0);ctx.saveData=()=>{ctx.saved=ctx.transactions.reduce((s,t)=>s+t.amount,0);};ctx.showUndoToast=(_,undo)=>{ctx.undo=undo;};return ctx;
 }
 test('insurance add, edit, delete and undo persist the current cash flow immediately',async()=>{
@@ -734,9 +734,10 @@ test('the tasks badge counts only unseen, open advisor items and upcoming meetin
 
 
 function syncedFixedContext() {
-  const ctx=vm.createContext({Date,JSON,Map,Set,Math,Number,parseFloat,transactions:[],fixedExpenses:[],userSettings:{},FIXED_CATS:['חשמל','ביטוחים','החזר הלוואות + חיוב קבוע'],SAVING_FIXED_CATS:[],FIXED_AUTO:{'ביטוחים':()=>300,'החזר הלוואות + חיוב קבוע':()=>900},_syncMeta:{del:{tx:{}}},mk:(y,m)=>y+'-'+String(m+1).padStart(2,'0')});
+  const ctx=vm.createContext({Date,JSON,Map,Set,Math,Number,parseFloat,transactions:[],fixedExpenses:[],userSettings:{},FIXED_CATS:['חשמל','ביטוחים','החזר הלוואות + חיוב קבוע'],FIXED_AUTO:{'ביטוחים':()=>300,'החזר הלוואות + חיוב קבוע':()=>900},_syncMeta:{del:{tx:{}}},mk:(y,m)=>y+'-'+String(m+1).padStart(2,'0')});
   vm.runInContext(html.split('\n').find(line=>line.startsWith('function getEffectiveFixedCats()')),ctx);
   vm.runInContext(html.slice(html.indexOf('function _fxRow('),html.indexOf('function _fxRefreshTotal(')),ctx);
+  for(const name of ['_savingCats','_isSavingCat','_fundPostsTx'])vm.runInContext(html.match(new RegExp('function '+name+'\\([^]*?\\n?\\}'))[0],ctx);
   ctx._curMonthKey=()=> '2026-11';
   return ctx;
 }
@@ -870,7 +871,7 @@ test('summary figures keep savings out of expenses and split fixed from variable
   const ctx=functions(['_sumFigures','_sumFlowOf'],{
     currentYear:2026,currentMonth:10,getMonthTx:()=>tx,isFixed:t=>t.fixed,
     _incomeSourcesFor:()=>[{amount:'11000'}],monthlyIncomeFor:()=>10000,
-    SAVING_FIXED_CATS:['הוראת קבע לחסכון'],getEffectiveFixedCats:()=>['דיור','הוראת קבע לחסכון'],
+    _savingCats:()=>['הוראת קבע לחסכון'],_isSavingCat:c=>c==='הוראת קבע לחסכון',_fundPostsTx:()=>true,getEffectiveFixedCats:()=>['דיור','הוראת קבע לחסכון'],
     _fxMonthly:c=>c==='דיור'?3500:1000,getEffectiveExpenseCats:()=>['מזון לבית','פארם'],budgets:{'מזון לבית':1500}
   });
   const f=ctx._sumFigures();
@@ -886,7 +887,7 @@ test('yearly summary adds the months up to the cutoff and merges categories',()=
   const ctx=functions(['_sumFigures','_sumAddCats','_sumAddSide','_sumFiguresYear'],{
     currentYear:2026,currentMonth:10,transactions:[{date:'2026-01-05'}],getMonthTx:()=>tx,isFixed:t=>t.fixed,
     _incomeSourcesFor:()=>[{amount:'11000'}],monthlyIncomeFor:()=>10000,
-    SAVING_FIXED_CATS:[],getEffectiveFixedCats:()=>['דיור'],
+    _savingCats:()=>[],_isSavingCat:()=>false,_fundPostsTx:()=>true,getEffectiveFixedCats:()=>['דיור'],
     _fxMonthly:()=>3500,getEffectiveExpenseCats:()=>['מזון לבית'],budgets:{'מזון לבית':1500}
   });
   const y=ctx._sumFiguresYear(2026,2);
@@ -1568,4 +1569,23 @@ test('the yearly summary starts at the first month with data, and actual income 
 
 test('the money left this month on the home screen subtracts what went to savings',()=>{
   assert.match(html,/const remaining=income-total-saved;/);
+});
+
+test('savings categories include flagged fixed rows',()=>{
+  const ctx=vm.createContext({fixedExpenses:[{id:'קרן השתלמות',savings:true},{id:'דיור'}]});for(const name of ['_savingCats','_isSavingCat'])vm.runInContext(html.match(new RegExp('function '+name+'\\([^]*?\\n?\\}'))[0],ctx);
+  assert.deepEqual([...ctx._savingCats()],['הוראת קבע לחסכון','קרן השתלמות']);
+  assert.equal(ctx._isSavingCat('דיור'),false);assert.equal(ctx._isSavingCat('קרן השתלמות'),true);
+});
+
+test('a goal deposit is saving, and old ones migrate',()=>{
+  const ctx=insuranceContext();Object.assign(ctx,{FIXED_CATS:['דיור'],EXPENSE_CATS:[],_CAT_MIGRATE:{},subscriptions:[],userSettings:{}});
+  ctx.transactions=[{id:'g1',type:'expense',cat:'חיסכון ליעד',amount:100,goalTx:true,goalId:1}];
+  vm.runInContext(html.match(/function _migrateCats\([^]*?\n\}/)[0],ctx);assert.equal(ctx._migrateCats(),true);assert.equal(ctx.transactions[0].type,'saving');
+  assert.match(html,/type:'saving',cat:'חיסכון ליעד'/);
+});
+
+test('from-salary funds post nothing',()=>{
+  const ctx=syncedFixedContext();ctx.fixedExpenses=[{id:'קופת גמל',amount:500,savings:true,fromSalary:true},{id:'תיק מסחר',amount:300,savings:true}];ctx._fxApply();
+  assert.equal(ctx.transactions.some(t=>t.cat==='קופת גמל'),false);
+  assert.equal(ctx.transactions.find(t=>t.cat==='תיק מסחר').type,'saving');
 });
