@@ -223,7 +223,7 @@ test('a successful cloud write leaves the displayed status synchronized rather t
 });
 
 function insuranceContext(){
- const ctx=functions(['_fxUpsert','_fxPushMonth','_expAddInsurance','_expEditInsurance','_expDeleteInsurance','_mergeFixedCatInto','_migrateInsuranceCats'],{transactions:[],insurances:[],fixedExpenses:[],budgets:{},_isSavingCat:()=>false,userSettings:{},_syncMeta:{del:{tx:{}}},_curMonthKey:()=> '2026-10',_fxTxId:(m,c)=>'fx|'+m+'|'+c,renderTxPage:()=>{},showToast:()=>{},promptSheet:async()=>['Health','120']});
+ const ctx=functions(['_fxUpsert','_fxPushMonth','_expAddInsurance','_expEditInsurance','_expDeleteInsurance','_mergeFixedCatInto','_migrateInsuranceCats'],{transactions:[],insurances:[],fixedExpenses:[],budgets:{},_isSavingCat:()=>false,_fundPostsTx:()=>true,userSettings:{},_syncMeta:{del:{tx:{}}},_curMonthKey:()=> '2026-10',_fxTxId:(m,c)=>'fx|'+m+'|'+c,renderTxPage:()=>{},showToast:()=>{},promptSheet:async()=>['Health','120']});
  ctx._fxMonthly=()=>ctx.insurances.reduce((s,i)=>s+i.monthly,0);ctx.saveData=()=>{ctx.saved=ctx.transactions.reduce((s,t)=>s+t.amount,0);};ctx.showUndoToast=(_,undo)=>{ctx.undo=undo;};return ctx;
 }
 test('insurance add, edit, delete and undo persist the current cash flow immediately',async()=>{
@@ -1646,4 +1646,9 @@ test('a fund from the sheet keeps its fields and stamps the value date',async()=
   await ctx.editFund(null);
   const r=ctx.fixedExpenses[0];
   assert.equal(r.id,'קופת גמל');assert.equal(r.savings,true);assert.equal(r.fromSalary,true);assert.equal(r.amount,800);assert.equal(r.opening,5000);assert.equal(r.value,5600);assert.equal(r.since,'2026-11');assert.match(r.valueDate,/^\d{4}-\d{2}-\d{2}$/);
+});
+
+test('saving a from-salary fund does not post this month',()=>{
+  const ctx=syncedFixedContext();ctx.fixedExpenses=[{id:'קופת גמל',amount:500,savings:true,fromSalary:true}];ctx._fxPushMonth('קופת גמל');
+  assert.equal(ctx.transactions.some(t=>t.cat==='קופת גמל'),false);
 });

@@ -410,6 +410,25 @@
        red/amber states stay for budget overspend, where they mean something. */
     .goal-card .prog-fill.low,.goal-card .prog-fill.mid{background:var(--accent);}
     .prog-label{font-size:0.75rem;color:var(--text3);margin-top:6px;text-align:left;font-weight:600;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .goal-card .prog-wrap{direction:rtl;}
+    .goal-done{opacity:.75;}.goal-done .prog-fill{background:var(--green);}
+    .goal-link{font-size:.75rem;font-weight:700;color:var(--accent-text);background:var(--blue-light);border-radius:999px;padding:3px 10px;white-space:nowrap;}
+    .sv-sum{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:6px;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+    .sv-lbl{color:var(--text2);font-size:.85rem;}
+    .sv-big{font-size:1.6rem;font-weight:800;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .sv-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:4px;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .sv-gain{font-size:.75rem;font-weight:700;}.sv-gain.up{color:var(--green);}.sv-gain.down{color:var(--red);}
+    .sv-warn{margin-top:12px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--red-light);color:var(--red);font-size:.82rem;font-weight:700;}
+    .sv-sec{display:flex;justify-content:space-between;align-items:center;margin:18px 2px 8px;font-size:.95rem;font-weight:800;}
+    .sv-sec button{background:none;border:0;color:var(--accent-text);font:700 .82rem var(--font-sans);min-height:44px;padding:0 4px;cursor:pointer;}
+    .fund-card{display:flex;gap:12px;align-items:center;width:100%;text-align:right;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;box-shadow:0 2px 12px rgba(0,0,0,0.06);color:var(--text);font-family:inherit;cursor:pointer;transition:transform .15s;}
+    .fund-card:active{transform:scale(.98);}
+    .fund-ic{width:42px;height:42px;border-radius:12px;background:var(--blue-light);display:grid;place-items:center;font-size:1.2rem;flex:none;}
+    .fund-main{display:flex;flex-direction:column;min-width:0;flex:1;}
+    .fund-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .fund-card .fsub{font-size:.76rem;color:var(--text3);}
+    .fund-side{display:flex;flex-direction:column;align-items:flex-end;text-align:left;flex:none;font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;}
+    .fund-side b{font-size:1.02rem;}
     .goal-monthly{margin-top:10px;padding:9px 12px;background:var(--blue-light);border-radius:10px;font-size:0.85rem;font-weight:700;color:var(--blue);font-family:var(--font-num);font-variant-numeric:tabular-nums lining-nums;text-align:right;}
 
     /* payments: card per business — a 6-column table cannot fit a phone */
@@ -2231,7 +2250,7 @@
     <div class="dash-goals-card">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <div class="dash-goals-title">התקציב החודשי שלי</div>
-        <button onclick="showPage('goals')" style="background:none;border:none;color:var(--accent-text);font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;padding:8px;margin:-8px;min-height:44px">🎯 יעדי חיסכון</button>
+        <button onclick="showPage('goals')" style="background:none;border:none;color:var(--accent-text);font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit;padding:8px;margin:-8px;min-height:44px">🎯 חיסכון והשקעות</button>
       </div>
       <div class="dash-rings-grid" id="dashRingsGrid"></div>
       <button type="button" class="dash-all-cats" onclick="openVariableBudgets()">כל קטגוריות התקציב ←</button>
@@ -2544,7 +2563,7 @@
   <div id="page-goals" class="page">
     <div class="page-head">
       <button type="button" class="page-back" onclick="showPage('dashboard')" aria-label="חזרה למסך הראשי"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
-      <h2 class="page-head-title">יעדי חיסכון</h2>
+      <h2 class="page-head-title">חיסכון והשקעות</h2>
       <button class="btn btn-primary btn-sm" onclick="openAddGoalSheet()">+ יעד חדש</button>
     </div>
     <div id="goalsList">
@@ -2611,7 +2630,7 @@
       <button onclick="showPage('goals')" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:right;font-family:inherit" class="more-row">
         <div style="width:40px;height:40px;border-radius:12px;background:rgba(234,179,8,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem">🎯</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:0.95rem;font-weight:700;color:var(--text)">יעדי חיסכון</div>
+          <div style="font-size:0.95rem;font-weight:700;color:var(--text)">חיסכון והשקעות</div>
           <div style="font-size:0.75rem;color:var(--text3);margin-top:1px">מעקב התקדמות לעבר יעדים</div>
         </div>
         <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transform:scaleX(-1)"><polyline points="9 18 15 12 9 6"/></svg>
@@ -3751,7 +3770,7 @@ function doSearch(q){
     items.push('<div class="sr-item" onclick="closeSearch();showPage(\'subscriptions\',document.getElementById(\'nav-subscriptions\'))"><div class="sr-icon">'+esc(s.emoji)+'</div><div class="sr-info"><div class="sr-name">'+esc(s.name)+'</div><div class="sr-detail">'+cycleName(s.cycle)+' · '+esc(s.category)+'</div></div><div class="sr-amount" style="color:var(--purple)">'+fmt(s.amount)+'</div></div>');
   });
   goals.filter(g=>g.name.toLowerCase().includes(q)).slice(0,2).forEach(g=>{
-    items.push('<div class="sr-item" onclick="closeSearch();showPage(\'goals\',document.getElementById(\'nav-goals\'))"><div class="sr-icon">🎯</div><div class="sr-info"><div class="sr-name">'+esc(g.name)+'</div><div class="sr-detail">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="sr-amount" style="color:var(--yellow)">'+Math.round(g.saved/g.target*100)+'%</div></div>');
+    items.push('<div class="sr-item" onclick="closeSearch();showPage(\'goals\',document.getElementById(\'nav-goals\'))"><div class="sr-icon">🎯</div><div class="sr-info"><div class="sr-name">'+esc(g.name)+'</div><div class="sr-detail">'+fmt(_goalSaved(g))+' מתוך '+fmt(g.target)+'</div></div><div class="sr-amount" style="color:var(--yellow)">'+Math.round(_goalSaved(g)/g.target*100)+'%</div></div>');
   });
   list.innerHTML=items.length?items.join(''):'<div class="sr-item"><div class="sr-info"><div class="sr-detail">אין תוצאות</div></div></div>';
 }
@@ -4476,7 +4495,7 @@ const _EXP_AUTO_KIND={'החזר הלוואות + חיוב קבוע':'loans','ע�
 function _expRowHtml(opts){
   const key=opts.key,open=_expOpenGroups.has(key),id=encodeURIComponent(key);
   return '<div class="exp-row'+(key.startsWith('inc:')?' exp-row-inc':key.startsWith('sv:')?' exp-row-sv':'')+'"><button type="button" class="exp-row-summary" id="exp-toggle-'+id+'" aria-controls="exp-detail-'+id+'" onclick="toggleExpGroup(\''+attrArg(key)+'\')" aria-expanded="'+open+'">'
-    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catTile(opts.iconCat||opts.cat)+'</span><span class="exp-name">'+esc(opts.label||opts.cat)+(opts.auto?'<span class="exp-auto-badge">אוטומטי</span>':'')+'</span></div>'
+    +'<div class="exp-row-right"><span class="exp-cat-icon">'+catTile(opts.iconCat||opts.cat)+'</span><span class="exp-name">'+esc(opts.label||opts.cat)+(opts.auto?'<span class="exp-auto-badge">אוטומטי</span>':'')+(opts.badge?'<span class="exp-auto-badge">'+esc(opts.badge)+'</span>':'')+'</span></div>'
     +'<div class="exp-row-left">'
       +'<span class="exp-row-value"><bdi dir="ltr" class="exp-amt">'+fmt(opts.amount)+'</bdi>'
       +(opts.planAmount!=null?'<span class="exp-plan-label">מתוך '+fmt(opts.planAmount)+'</span>':(opts.planned?'<span class="exp-plan-label">תכנון</span>':''))
@@ -4498,7 +4517,7 @@ function renderTxCategorized(byCat){
     _funds().forEach(row=>{
       const cat=row.id,amount=_fxMonthly(cat),posts=_fundPostsTx(cat);
       const key='sv:'+cat;
-      const rowHtml=_expRowHtml({key,cat,label:catLabel(cat)+(posts?'':' · מהמשכורת'),amount,editable:!past,
+      const rowHtml=_expRowHtml({key,cat,label:cat,iconCat:'הוראת קבע לחסכון',badge:posts?'':'מהמשכורת',amount,editable:!past,
         onEdit:'editFund(\''+attrArg(cat)+'\')',
         onDelete:'deleteFund(\''+attrArg(cat)+'\')',
         body:_expTxListHtml(cat,byCat)+(past?'':'<button type="button" class="exp-add-row" onclick="event.stopPropagation();editFund(\''+attrArg(cat)+'\')">+ עדכן חיסכון או השקעה</button>')});
@@ -8294,7 +8313,7 @@ function _fxApply(){
 function _fxPushMonth(cat){
   const mkey=_curMonthKey();
   delete _syncMeta.del.tx[_fxTxId(mkey,cat)];
-  _fxUpsert(mkey,cat,_fxMonthly(cat),true);
+  _fxUpsert(mkey,cat,_fundPostsTx(cat)?_fxMonthly(cat):0,true);
 }
 function _fxRefreshTotal(){
   let t=0;getEffectiveFixedCats().filter(c=>!_isSavingCat(c)).forEach(c=>t+=_fxMonthly(c));
@@ -8339,18 +8358,48 @@ function _fillGoalFund(cur){
   _funds().forEach(r=>sel.add(new Option(r.id,r.id)));
   sel.value=cur&&_funds().some(r=>r.id===cur)?cur:'';
 }
+const FUND_ICONS={standing:'🏦',trading:'📈',hishtalmut:'🎓',gemel:'🛡️',other:'💰'};
 function renderGoals(){
   const list=document.getElementById('goalsList');
-  if(!goals.length){list.innerHTML='<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>הגדר יעד חיסכון</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">עקוב אחרי ההתקדמות שלך חודש אחרי חודש</p><button class="btn-empty" onclick="openAddGoalSheet()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד ראשון</button></div>';return;}
-  list.innerHTML=goals.map(g=>{
-    const pct=Math.round(g.saved/g.target*100),done=pct>=100;
-    const progCls=done?'':progState(pct,[[67,''],[33,'mid'],[0,'low']]);
-    const progBar=progBarHTML(pct,{wrapClass:'prog-wrap',fillClass:'prog-fill',stateClass:progCls});
-    const remaining=g.target-g.saved;
-    const monthlyNeeded=g.months&&g.months>0?Math.ceil(remaining/g.months):0;
-    const monthlyStr=monthlyNeeded>0?'<div class="goal-monthly">'+fmt(monthlyNeeded)+' לחודש'+(g.months?' · '+g.months+' חודשים':'')+'</div>':'';
-    return '<div class="goal-card"><div class="goal-card-header"><div style="cursor:pointer" onclick="editGoal('+g.id+')"><div class="goal-name-text">'+(done?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(g.saved)+' מתוך '+fmt(g.target)+'</div></div><div class="goal-actions">'+(g.saved>0?'<button class="btn btn-neutral btn-sm" onclick="withdrawFromGoal('+g.id+')" aria-label="משוך מהחיסכון" title="משוך מהחיסכון">−</button>':'')+'<button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון" title="הוסף לחיסכון">+</button><button class="btn btn-danger btn-sm" onclick="deleteGoal('+g.id+')" aria-label="מחק יעד" title="מחק יעד">✕</button></div></div>'+progBar+'<div class="prog-label">'+pct+'%'+(done?' 🎉':'')+' · נותר '+fmt(remaining)+'</div>'+monthlyStr+'</div>';
-  }).join('');
+  const funds=_funds();
+  if(!goals.length&&!funds.length){list.innerHTML='<div class="empty"><div class="empty-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><p>החיסכון וההשקעות שלך</p><p style="font-size:0.8rem;color:var(--text3);margin:-6px 0 12px">הוסף קופה, כמו תיק מסחר או קרן השתלמות, או יעד שאתה חוסך אליו</p><button class="btn-empty" onclick="addFund()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף קופה</button><button class="btn-empty" style="margin-top:8px" onclick="openAddGoalSheet()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף יעד</button></div>';return;}
+  const stats=funds.map(r=>_fundStats(r));
+  const dep=stats.reduce((a,x)=>a+x.deposited,0);
+  const hasVal=stats.some(x=>x.value!==null);
+  const val=stats.reduce((a,x)=>a+(x.value??x.deposited),0);
+  const active=goals.filter(g=>_goalSaved(g)<g.target),done=goals.filter(g=>_goalSaved(g)>=g.target);
+  const need=active.reduce((a,g)=>a+(g.months>0?Math.ceil((g.target-_goalSaved(g))/g.months):0),0);
+  const planned=_savingCats().reduce((a,c)=>a+_fxMonthly(c),0);
+  const diff=val-dep;
+  const gainHtml=d=>d===0?'':'<span class="sv-gain '+(d>0?'up':'down')+'">'+(d>0?'▲ ':'▼ ')+fmt(Math.abs(d))+'</span>';
+  let html='<div class="sv-sum"><div class="sv-lbl">סך הכול הופקד</div><div class="sv-big">'+fmt(dep)+'</div>'
+    +(hasVal?'<div class="sv-row"><span class="sv-lbl">שווי נוכחי</span><b>'+fmt(val)+' '+gainHtml(diff)+'</b></div>':'')
+    +(need>0?'<div class="sv-row"><span class="sv-lbl">היעדים דורשים בחודש</span><b>'+fmt(need)+'</b></div>':'')
+    +'<div class="sv-row"><span class="sv-lbl">מתוכנן לחיסכון בחודש</span><b>'+fmt(planned)+'</b></div>'
+    +(need>planned?'<div class="sv-warn">היעדים דורשים '+fmt(need)+' בחודש, מתוכננים לחיסכון '+fmt(planned)+'</div>':'')+'</div>';
+  html+='<div class="sv-sec"><span>הקופות שלי</span><button type="button" onclick="addFund()">+ הוסף קופה</button></div>';
+  html+=funds.length?funds.map((r,i)=>{
+    const st=stats[i],kind=r.kind||(r.id==='הוראת קבע לחסכון'?'standing':'other'),amt=_fxMonthly(r.id);
+    const dt=r.valueDate?r.valueDate.slice(8,10).replace(/^0/,'')+'.'+r.valueDate.slice(5,7).replace(/^0/,''):'';
+    const side=st.value!==null
+      ?'<b>'+fmt(st.value)+'</b><span class="fsub">'+(st.gain!==null&&st.gain!==0?gainHtml(st.gain)+' · ':'')+'שווי'+(dt?' '+dt:'')+'</span>'
+      :'<b>'+fmt(st.deposited)+'</b><span class="fsub">הופקד</span>';
+    return '<button type="button" class="fund-card" onclick="editFund(\''+attrArg(r.id)+'\')"><span class="fund-ic" aria-hidden="true">'+(FUND_ICONS[kind]||'💰')+'</span><span class="fund-main"><span class="fund-name">'+esc(r.id)+'</span><span class="fsub">'+(amt>0?fmt(amt)+' בחודש · ':'')+(_fundPostsTx(r.id)?'מהחשבון':'מהמשכורת')+'</span></span><span class="fund-side">'+side+'</span></button>';
+  }).join(''):'<div class="budget-tx-empty">עוד אין קופות. הוסף תיק מסחר, קרן השתלמות או הוראת קבע</div>';
+  const card=g=>{
+    const saved=_goalSaved(g),pct=Math.round(saved/g.target*100),isDone=pct>=100;
+    const linked=g.fund&&funds.some(r=>r.id===g.fund);
+    const progBar=progBarHTML(pct,{wrapClass:'prog-wrap',fillClass:'prog-fill',stateClass:isDone?'':progState(pct,[[67,''],[33,'mid'],[0,'low']])});
+    const remaining=Math.max(0,g.target-saved);
+    const monthlyNeeded=!isDone&&g.months>0?Math.ceil(remaining/g.months):0;
+    const acts=linked?'<span class="goal-link">🔗 '+esc(g.fund)+'</span>':isDone?'':'<div class="goal-actions">'+(saved>0?'<button class="btn btn-neutral btn-sm" onclick="withdrawFromGoal('+g.id+')" aria-label="משוך מהחיסכון" title="משוך מהחיסכון">−</button>':'')+'<button class="btn btn-success btn-sm" onclick="addToGoal('+g.id+')" aria-label="הוסף לחיסכון" title="הוסף לחיסכון">+</button></div>';
+    return '<div class="goal-card'+(isDone?' goal-done':'')+'"><div class="goal-card-header"><div style="cursor:pointer;flex:1" onclick="editGoal('+g.id+')"><div class="goal-name-text">'+(isDone?'✅ ':'')+esc(g.name)+'</div><div class="goal-amounts-text">'+fmt(saved)+' מתוך '+fmt(g.target)+'</div></div>'+acts+'</div>'+progBar
+      +(isDone?'':'<div class="prog-label">'+pct+'% · נותר '+fmt(remaining)+'</div>'+(monthlyNeeded>0?'<div class="goal-monthly">'+fmt(monthlyNeeded)+' לחודש · '+g.months+' חודשים</div>':''))+'</div>';
+  };
+  html+='<div class="sv-sec"><span>יעדים</span></div>';
+  html+=active.length?active.map(card).join(''):'<div class="budget-tx-empty">'+(done.length?'כל היעדים הושלמו 🎉':'עוד אין יעדים')+'</div>';
+  if(done.length)html+='<div class="sv-sec"><span>הושלמו</span></div>'+done.map(card).join('');
+  list.innerHTML=html;
 }
 
 function subME(s){if(!s.active)return 0;return {monthly:s.amount,annual:s.amount/12,weekly:s.amount*4.33}[s.cycle]||s.amount;}
