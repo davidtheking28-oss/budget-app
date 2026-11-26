@@ -3340,7 +3340,7 @@ const INCOME_CATS =['שכר','שכר בן/בת זוג','פרילנס','קצבת 
 const COLORS=['#0078f8','#2dd4bf','#34d399','#4ade80','#a3e635','#fbbf24','#facc15','#fb923c','#f87171','#38bdf8','#818cf8','#a78bfa','#e879f9','#f472b6'];
 
 function _accountKeys(){
-  return Object.keys(localStorage).filter(k=>k.startsWith('budget_')&&!k.startsWith('budget_profile:')&&!['budget_local_owner','budget_account_transition','budget_theme','budget_dark','budget_install_dismiss','budget_vapid_pub','budget_pending_advisor'].includes(k));
+  return Object.keys(localStorage).filter(k=>k.startsWith('budget_')&&!k.startsWith('budget_profile:')&&!['budget_local_owner','budget_account_transition','budget_theme','budget_dark','budget_install_dismiss','budget_vapid_pub','budget_pending_advisor','budget_pending_invite'].includes(k));
 }
 function _switchLocalAccount(next){
   const previous=localStorage.getItem('budget_local_owner')||'guest';
@@ -5860,13 +5860,20 @@ function _pendingAdvisorRef(){
   if(!ref){const m=_cloudUser?.user_metadata?.advisor_ref;if(typeof m==='string'&&_ADVISOR_REF_RE.test(m))ref=m;}
   return ref;
 }
+const _INVITE_RE=/^[A-Za-z0-9_-]{12,40}$/;
+function _pendingInvite(){
+  let inv=null;
+  try{inv=localStorage.getItem('budget_pending_invite');}catch(e){}
+  if(!inv){const m=_cloudUser?.user_metadata?.invite_ref;if(typeof m==='string'&&_INVITE_RE.test(m))inv=m;}
+  return inv;
+}
 function _authRedirectUrl(){
-  const ref=_pendingAdvisorRef();
-  return 'https://davidtheking28-oss.github.io/budget-app/'+(ref?'?advisor='+ref:'');
+  const ref=_pendingAdvisorRef(),inv=_pendingInvite();
+  return 'https://davidtheking28-oss.github.io/budget-app/'+(ref?'?advisor='+ref+(inv?'&inv='+inv:''):'');
 }
 function _authSignupData(){
-  const ref=_pendingAdvisorRef();
-  return ref?{advisor_ref:ref}:{};
+  const ref=_pendingAdvisorRef(),inv=_pendingInvite();
+  return ref?{advisor_ref:ref,...(inv?{invite_ref:inv}:{})}:{};
 }
 function _notifyAdvisorPush(action){
   if(!_sb)return;
@@ -5878,11 +5885,12 @@ function _notifyAdvisorPush(action){
 async function _doRequestPendingAdvisor(){
   const ref=_pendingAdvisorRef();
   if(!ref||!_cloudUser||!_sb)return;
-  const {data,error}=await _sb.rpc('request_advisor_link',{p_advisor:ref});
+  const inv=_pendingInvite();
+  const {data,error}=await _sb.rpc('request_advisor_link',inv?{p_advisor:ref,p_invite:inv}:{p_advisor:ref});
   if(error)return;
-  try{localStorage.removeItem('budget_pending_advisor');}catch(e){}
-  if(_cloudUser.user_metadata?.advisor_ref)_sb.auth.updateUser({data:{advisor_ref:null}}).catch(()=>{});
-  try{const u=new URL(location.href);if(u.searchParams.has('advisor')){u.searchParams.delete('advisor');history.replaceState(null,'',u.pathname+u.search+u.hash);}}catch(e){}
+  try{localStorage.removeItem('budget_pending_advisor');localStorage.removeItem('budget_pending_invite');}catch(e){}
+  if(_cloudUser.user_metadata?.advisor_ref||_cloudUser.user_metadata?.invite_ref)_sb.auth.updateUser({data:{advisor_ref:null,invite_ref:null}}).catch(()=>{});
+  try{const u=new URL(location.href);if(u.searchParams.has('advisor')||u.searchParams.has('inv')){u.searchParams.delete('advisor');u.searchParams.delete('inv');history.replaceState(null,'',u.pathname+u.search+u.hash);}}catch(e){}
   if(data==='ok'){
     showToast('✓ הבקשה נשלחה ליועץ, ממתין לאישורו');
     _notifyAdvisorPush('notify-client-request');
@@ -6293,7 +6301,11 @@ let _gateShown=false;
 document.addEventListener('DOMContentLoaded',function(){
   try{
     const ref=new URLSearchParams(location.search).get('advisor');
-    if(ref&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ref))localStorage.setItem('budget_pending_advisor',ref);
+    if(ref&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ref)){
+      localStorage.setItem('budget_pending_advisor',ref);
+      const inv=new URLSearchParams(location.search).get('inv');
+      if(inv&&_INVITE_RE.test(inv))localStorage.setItem('budget_pending_invite',inv);
+    }
   }catch(e){}
   _sb=window.supabase?.createClient?.(SUPA_URL,SUPA_ANON,{auth:{persistSession:true,autoRefreshToken:true}})||null;
   _errSetSender&&_errSetSender(_errSend);

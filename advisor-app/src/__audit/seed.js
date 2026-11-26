@@ -228,6 +228,11 @@ export function makeDb(mode) {
       const month = `${new Date(m.getFullYear(), m.getMonth() - back, 1).getFullYear()}-${pad(new Date(m.getFullYear(), m.getMonth() - back, 1).getMonth() + 1)}-01`;
       return back === 1 ? [] : [{ id: 'doc' + back, client_id: CLIENT_EMPTY, kind: 'bank', period_month: month, path: `${CLIENT_EMPTY}/bank/${month.slice(0, 7)}/a.pdf`, file_name: `עובר_ושב_${month.slice(0, 7)}.pdf`, created_at: iso(1) }];
     }),
+    advisor_invites: empty ? [] : [
+      { id: 'inv1', advisor_id: ADVISOR, token: 'AbCdEfGhIjKlMn', name: 'יוחאי כהן', phone: '050-448-7878', client_id: null, signed_up_at: null, created_at: iso(2) },
+      { id: 'inv2', advisor_id: ADVISOR, token: 'BbCdEfGhIjKlMn', name: 'רון לוי', phone: '052-111-2233', client_id: 'self-signup-user', signed_up_at: iso(0), created_at: iso(1) },
+      { id: 'inv3', advisor_id: ADVISOR, token: 'CbCdEfGhIjKlMn', name: 'דנה לוי', phone: null, client_id: CLIENT_EMPTY, signed_up_at: iso(3), created_at: iso(4) }
+    ],
     client_agreements: empty ? [] : [{
       id: '5b1f6a3e-0c1d-4e57-9a0a-2f5b3c1d9e11', user_id: CLIENT_EMPTY, email: 'new.client@gmail.com', full_name: 'דנה לוי', national_id: '000000018', birth_date: '1990-01-31',
       address: 'הרצל 1, תל אביב', phone: '050-1234567', version: '2026-11-draft', body: 'הסכם התקשרות\n\n1. היקף השירות\nנותן השירות מלווה את הלקוח בניהול התקציב.\n\n3. אחריות והסתמכות\nכל החלטה כספית היא באחריות הלקוח.',

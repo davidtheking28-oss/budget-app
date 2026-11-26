@@ -642,7 +642,7 @@ test('a pending advisor invite survives the guest-to-user account switch',()=>{
 test('a pending advisor invite sends the request straight away without asking the client',async()=>{
   const localStorage=storage({budget_pending_advisor:'11111111-1111-1111-1111-111111111111'});
   const calls=[],notified=[];let toast='';
-  const ctx=functions(['_pendingAdvisorRef','_doRequestPendingAdvisor'],{localStorage,_cloudUser:{id:'u'},_sb:{rpc:async(n,a)=>{calls.push([n,a]);return {data:'ok',error:null};}},_notifyAdvisorPush:a=>notified.push(a),showToast:m=>{toast=m;},confirmSheet:()=>{throw new Error('must not ask');}});
+  const ctx=functions(['_pendingAdvisorRef','_pendingInvite','_doRequestPendingAdvisor'],{localStorage,_INVITE_RE:/^x$/,_cloudUser:{id:'u'},_sb:{rpc:async(n,a)=>{calls.push([n,a]);return {data:'ok',error:null};}},_notifyAdvisorPush:a=>notified.push(a),showToast:m=>{toast=m;},confirmSheet:()=>{throw new Error('must not ask');}});
   await ctx._doRequestPendingAdvisor();
   assert.deepEqual(notified,['notify-client-request']);
   assert.equal(JSON.stringify(calls),JSON.stringify([['request_advisor_link',{p_advisor:'11111111-1111-1111-1111-111111111111'}]]));
@@ -701,7 +701,7 @@ test('iPhone haptic overlays go on every button once, never on buttons holding i
 test('the advisor link survives a lost local copy through the signup metadata, and is cleared once sent',async()=>{
   const ref='11111111-1111-1111-1111-111111111111';
   const calls=[];const updates=[];
-  const ctx=functions(['_pendingAdvisorRef','_doRequestPendingAdvisor','_authRedirectUrl','_authSignupData'],{
+  const ctx=functions(['_pendingAdvisorRef','_pendingInvite','_doRequestPendingAdvisor','_authRedirectUrl','_authSignupData'],{_INVITE_RE:/^x$/,
     _ADVISOR_REF_RE:/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
     _cloudUser:{id:'u',user_metadata:{advisor_ref:ref}},
     _sb:{rpc:async(n,a)=>{calls.push(a.p_advisor);return {data:'ok',error:null};},auth:{updateUser:async d=>{updates.push(JSON.stringify(d));return {};}}},
@@ -711,11 +711,11 @@ test('the advisor link survives a lost local copy through the signup metadata, a
   assert.equal(JSON.stringify(ctx._authSignupData()),JSON.stringify({advisor_ref:ref}));
   await ctx._doRequestPendingAdvisor();
   assert.deepEqual(calls,[ref]);
-  assert.deepEqual(updates,[JSON.stringify({data:{advisor_ref:null}})]);
+  assert.deepEqual(updates,[JSON.stringify({data:{advisor_ref:null,invite_ref:null}})]);
 });
 
 test('without an invite the sign-in redirect stays plain and no signup metadata is sent',()=>{
-  const ctx=functions(['_pendingAdvisorRef','_authRedirectUrl','_authSignupData'],{_ADVISOR_REF_RE:/^x$/,_cloudUser:null});
+  const ctx=functions(['_pendingAdvisorRef','_pendingInvite','_authRedirectUrl','_authSignupData'],{_INVITE_RE:/^x$/,_ADVISOR_REF_RE:/^x$/,_cloudUser:null});
   assert.equal(ctx._authRedirectUrl(),'https://davidtheking28-oss.github.io/budget-app/');
   assert.equal(JSON.stringify(ctx._authSignupData()),'{}');
 });
@@ -1670,4 +1670,17 @@ test('the tasks sheet waits while another screen covers the app',()=>{
   const ctx=functions(['_maybeTasksPopup'],{_advisorLink:{status:'active'},_advisorTasks:[{id:'t1',done:false}],_advisorSeenSet:()=>new Set(),_autoTasks:()=>[],_tasksPopupOpen:false,
     getComputedStyle:()=>({visibility:'hidden'}),document:{querySelector:()=>({}),getElementById:()=>({classList:{contains:()=>false},style:{}})},confirmSheet:async o=>{shown.push(o);return false;},showPage:()=>{}});
   ctx._maybeTasksPopup();assert.equal(shown.length,0);
+});
+
+test('a personal invite code from the link travels with the advisor request',async()=>{
+  const ref='11111111-1111-1111-1111-111111111111',inv='Ab3dEf6hIj9kLm';
+  const localStorage=storage({budget_pending_advisor:ref,budget_pending_invite:inv});
+  const calls=[];
+  const ctx=functions(['_pendingAdvisorRef','_pendingInvite','_doRequestPendingAdvisor','_authRedirectUrl','_authSignupData'],{localStorage,_ADVISOR_REF_RE:/^[0-9a-f-]{36}$/,_INVITE_RE:/^[A-Za-z0-9_-]{12,40}$/,
+    _cloudUser:{id:'u',user_metadata:{}},_sb:{rpc:async(n,a)=>{calls.push(a);return {data:'ok',error:null};}},_notifyAdvisorPush:()=>{},showToast:()=>{}});
+  assert.equal(ctx._authRedirectUrl(),'https://davidtheking28-oss.github.io/budget-app/?advisor='+ref+'&inv='+inv);
+  assert.equal(JSON.stringify(ctx._authSignupData()),JSON.stringify({advisor_ref:ref,invite_ref:inv}));
+  await ctx._doRequestPendingAdvisor();
+  assert.equal(JSON.stringify(calls),JSON.stringify([{p_advisor:ref,p_invite:inv}]));
+  assert.equal(localStorage.getItem('budget_pending_invite'),null);
 });

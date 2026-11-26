@@ -5,7 +5,7 @@ import { useClientApprovals, TRASH_DAYS } from './useClientApprovals.js';
 import { toast } from '../toast.js';
 import Families from './Families.jsx';
 import EditManualClientModal from './EditManualClientModal.jsx';
-import { signupMessage } from './clientApp.js';
+import InviteTracker from './InviteTracker.jsx';
 import Skeleton from '../components/Skeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import { formatDate } from '../budget/monthUtils.js';
@@ -127,15 +127,6 @@ export default function ClientApprovals({ advisorId }) {
     }
   }
 
-  async function copySignupLink() {
-    const message = signupMessage(advisorId);
-    try {
-      await navigator.clipboard.writeText(message);
-      toast('הודעת ההרשמה הועתקה. אפשר לשלוח ללקוח.', 'success');
-    } catch {
-      window.prompt('העתק את ההודעה ושלח ללקוח:', message);
-    }
-  }
 
   const tiles = [
     { kinds: ['requested'], label: 'ממתינים לאישור', note: 'נרשמו דרך הקישור שלך' },
@@ -153,16 +144,7 @@ export default function ClientApprovals({ advisorId }) {
       </div>
 
       <section className={styles.card + ' ' + layout.inviteCard}>
-        <div className={styles.inviteRow}>
-          <div className={styles.inviteText}>
-            <h2 className={styles.cardTitle}>הזמן לקוח חדש</h2>
-            <p className={styles.note} style={{ margin: 0 }}>שלח ללקוח קישור. הוא נרשם בעצמו, והבקשה שלו מופיעה כאן לאישורך.</p>
-          </div>
-          <div className={styles.toolbar}>
-            <button type="button" className={styles.btn} onClick={copySignupLink}>העתק קישור הזמנה</button>
-            <a className={styles.btnGhost} style={{ textDecoration: 'none' }} href={'https://wa.me/?text=' + encodeURIComponent(signupMessage(advisorId))} target="_blank" rel="noopener noreferrer">שלח בוואטסאפ</a>
-          </div>
-        </div>
+        <InviteTracker advisorId={advisorId} links={links} />
       </section>
 
       <section className={styles.card + ' ' + layout.management}>
