@@ -6112,6 +6112,28 @@ function _updateTasksBadge(){
   const n=_advisorLink?.status==='active'?_unseenAdvisorCount()+_autoTasks().length:0;
   b.hidden=!n;
   if(nav)nav.setAttribute('aria-label',n?'משימות, '+n+' עדכונים חדשים מהיועץ':'משימות');
+  if(n)setTimeout(_maybeTasksPopup,900);
+}
+let _tasksPopupOpen=false;
+function _maybeTasksPopup(){
+  if(_advisorLink?.status!=='active'||_tasksPopupOpen)return;
+  if(document.getElementById('page-analytics')?.classList.contains('active'))return;
+  if(document.querySelector('#docsLock,#agreementGate,#legalGate,#onboardOverlay.open,.sheet-overlay.open,#confirmOverlay.show,#promptOverlay.show,#splashScreen:not(.hidden)'))return;
+  const auth=document.getElementById('authScreen');
+  if(auth&&auth.style.display!=='none'&&getComputedStyle(auth).visibility!=='hidden')return;
+  const seen=_advisorSeenSet();
+  const keys=[..._autoTasks().map(t=>'auto:'+t.title),..._advisorTasks.filter(t=>!t.done&&!seen.has(t.id)).map(t=>String(t.id))];
+  let shown;
+  try{shown=new Set(JSON.parse(localStorage.getItem('budget_tasks_popup')||'[]'));}catch(e){shown=new Set();}
+  const fresh=keys.filter(k=>!shown.has(k));
+  if(!fresh.length)return;
+  keys.forEach(k=>shown.add(k));
+  try{localStorage.setItem('budget_tasks_popup',JSON.stringify([...shown]));}catch(e){}
+  _tasksPopupOpen=true;
+  confirmSheet({icon:'📋',title:'יש לך משימות חדשות מהיועץ',message:fresh.length===1?'מחכה לך משימה חדשה בטאב המשימות':'מחכות לך '+fresh.length+' משימות חדשות בטאב המשימות',confirmText:'קח אותי למשימות',cancelText:'אחר כך'}).then(go=>{
+    _tasksPopupOpen=false;
+    if(go)showPage('analytics',document.getElementById('nav-analytics'));
+  });
 }
 function _markAdvisorItemsSeen(){
   const seen=_advisorSeenSet();

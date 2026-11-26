@@ -1652,3 +1652,22 @@ test('saving a from-salary fund does not post this month',()=>{
   const ctx=syncedFixedContext();ctx.fixedExpenses=[{id:'קופת גמל',amount:500,savings:true,fromSalary:true}];ctx._fxPushMonth('קופת גמל');
   assert.equal(ctx.transactions.some(t=>t.cat==='קופת גמל'),false);
 });
+
+test('new advisor tasks pop a sheet once that leads to the tasks tab',async()=>{
+  const shown=[];let go=true;
+  const ctx=functions(['_maybeTasksPopup'],{_advisorLink:{status:'active'},_advisorTasks:[{id:'t1',done:false},{id:'t2',done:true}],_advisorSeenSet:()=>new Set(),
+    _autoTasks:()=>[{title:'להעלות מסמכים'}],_tasksPopupOpen:false,getComputedStyle:()=>({visibility:'hidden'}),
+    document:{querySelector:()=>null,getElementById:id=>id==='page-analytics'?{classList:{contains:()=>false}}:{style:{}}},
+    confirmSheet:async o=>{shown.push(o);return go;},showPage:p=>{ctx.page=p;}});
+  ctx._maybeTasksPopup();await new Promise(r=>setImmediate(r));
+  assert.equal(shown.length,1);assert.equal(shown[0].title,'יש לך משימות חדשות מהיועץ');assert.equal(shown[0].confirmText,'קח אותי למשימות');assert.equal(ctx.page,'analytics');
+  ctx._maybeTasksPopup();await new Promise(r=>setImmediate(r));assert.equal(shown.length,1);
+  ctx._advisorTasks.push({id:'t3',done:false});ctx._maybeTasksPopup();await new Promise(r=>setImmediate(r));assert.equal(shown.length,2);
+});
+
+test('the tasks sheet waits while another screen covers the app',()=>{
+  const shown=[];
+  const ctx=functions(['_maybeTasksPopup'],{_advisorLink:{status:'active'},_advisorTasks:[{id:'t1',done:false}],_advisorSeenSet:()=>new Set(),_autoTasks:()=>[],_tasksPopupOpen:false,
+    getComputedStyle:()=>({visibility:'hidden'}),document:{querySelector:()=>({}),getElementById:()=>({classList:{contains:()=>false},style:{}})},confirmSheet:async o=>{shown.push(o);return false;},showPage:()=>{}});
+  ctx._maybeTasksPopup();assert.equal(shown.length,0);
+});
