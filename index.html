@@ -8204,6 +8204,26 @@ function removeCustomFixedCat(cat){
 function _fxRow(cat){return fixedExpenses.find(f=>f.id===cat);}
 function _fxRaw(cat){const r=_fxRow(cat);return r&&r.amount?r.amount:'';}
 function _fxMonthly(cat){const row=_fxRow(cat);return row?.linkedSource&&(row.linkedSource==='mapping'||!FIXED_AUTO[cat])?(parseFloat(row.amount)||0):FIXED_AUTO[cat]?FIXED_AUTO[cat]():(parseFloat(row?.amount)||0);}
+function _fundStats(row,now=new Date()){
+  const opening=+row.opening||0;
+  const upTo=end=>{
+    if(row.fromSalary){
+      if(!row.since)return opening;
+      const [y,m]=row.since.split('-').map(Number);
+      const months=(end.getFullYear()-y)*12+end.getMonth()-(m-1)+1;
+      return opening+Math.max(0,months)*(+row.amount||0);
+    }
+    const last=end?end.toISOString().slice(0,10):'9999';
+    return opening+transactions.filter(t=>t.type==='saving'&&t.cat===row.id&&(t.date||'')<=last).reduce((a,t)=>a+(+t.amount||0),0);
+  };
+  const deposited=upTo(row.fromSalary?now:null);
+  const value=row.value===undefined||row.value===null||row.value===''?null:+row.value;
+  const gain=value!==null&&row.valueDate?value-upTo(new Date(row.valueDate+'T12:00:00')):null;
+  return {deposited,value,gain};
+}
+function _funds(){
+  return _savingCats().map(id=>_fxRow(id)||{id}).filter(r=>r.savings||_fxMonthly(r.id)>0);
+}
 function _fxTxId(mkey,cat){return 'fx|'+mkey+'|'+cat;}
 function _curMonthKey(){const n=new Date();return mk(n.getFullYear(),n.getMonth());}
 function _fxUpsert(mkey,cat,amount,overwrite){

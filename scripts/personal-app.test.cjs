@@ -1589,3 +1589,36 @@ test('from-salary funds post nothing',()=>{
   assert.equal(ctx.transactions.some(t=>t.cat==='קופת גמל'),false);
   assert.equal(ctx.transactions.find(t=>t.cat==='תיק מסחר').type,'saving');
 });
+
+function fundContext(rows,tx=[]){
+  const ctx=functions(['_fundStats','_funds'],{fixedExpenses:rows,transactions:tx});
+  for(const name of ['_savingCats','_fundPostsTx'])vm.runInContext(html.match(new RegExp('function '+name+'\\([^]*?\\n?\\}'))[0],ctx);
+  ctx._fxRow=c=>rows.find(r=>r.id===c);ctx._fxMonthly=c=>+(rows.find(r=>r.id===c)?.amount)||0;return ctx;
+}
+const fundTx=[{type:'saving',cat:'X',amount:500,date:'2026-10-01'},{type:'saving',cat:'X',amount:500,date:'2026-11-01'},{type:'expense',cat:'X',amount:999,date:'2026-11-02'}];
+
+test('a fund sums its opening balance and saving deposits',()=>{
+  const s=fundContext([],fundTx)._fundStats({id:'X',opening:1000,savings:true});
+  assert.equal(s.deposited,2000);assert.equal(s.value,null);assert.equal(s.gain,null);
+});
+
+test('a from-salary fund grows by its amount every month since it started',()=>{
+  const s=fundContext([])._fundStats({id:'G',amount:300,fromSalary:true,since:'2026-09',opening:0,savings:true},new Date(2026,10,26));
+  assert.equal(s.deposited,900);
+});
+
+test('a fund value with a date gives the gain against deposits up to that date',()=>{
+  const s=fundContext([],fundTx)._fundStats({id:'X',opening:1000,savings:true,value:2500,valueDate:'2026-10-20'});
+  assert.equal(s.value,2500);assert.equal(s.gain,1000);assert.equal(s.deposited,2000);
+});
+
+test('a fund value without a date shows no gain',()=>{
+  const s=fundContext([],fundTx)._fundStats({id:'X',opening:1000,savings:true,value:2500});
+  assert.equal(s.value,2500);assert.equal(s.gain,null);
+});
+
+test('funds list the savings rows and the standing order',()=>{
+  const ctx=fundContext([{id:'הוראת קבע לחסכון',amount:1000},{id:'תיק מסחר',savings:true,kind:'trading'},{id:'דיור',amount:4000}]);
+  assert.deepEqual([...ctx._funds().map(r=>r.id)],['הוראת קבע לחסכון','תיק מסחר']);
+  assert.equal(fundContext([{id:'דיור',amount:4000}])._funds().length,0);
+});
