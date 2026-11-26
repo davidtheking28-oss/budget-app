@@ -1622,3 +1622,28 @@ test('funds list the savings rows and the standing order',()=>{
   assert.deepEqual([...ctx._funds().map(r=>r.id)],['הוראת קבע לחסכון','תיק מסחר']);
   assert.equal(fundContext([{id:'דיור',amount:4000}])._funds().length,0);
 });
+
+test('a linked goal takes its progress from the fund, and falls back when the fund is gone',()=>{
+  const rows=[{id:'X',savings:true,opening:700}];
+  const ctx=functions(['_goalSaved'],{_funds:()=>rows,_fundStats:r=>({deposited:+r.opening,value:r.value??null,gain:null})});
+  assert.equal(ctx._goalSaved({saved:100,fund:'X'}),700);
+  rows[0].value=900;assert.equal(ctx._goalSaved({saved:100,fund:'X'}),900);
+  rows.length=0;assert.equal(ctx._goalSaved({saved:100,fund:'X'}),100);
+  assert.equal(ctx._goalSaved({saved:50}),50);
+});
+
+test('deleting a fund unlinks its goals and can be undone',()=>{
+  const ctx=functions(['deleteFund'],{fixedExpenses:[{id:'X',savings:true,amount:200},{id:'דיור',amount:4000}],goals:[{id:1,name:'רכב',fund:'X'},{id:2,name:'חופשה'}],
+    _fxPushMonth:()=>{},saveData:()=>{},renderTxPage:()=>{},renderGoals:()=>{},refreshAll:()=>{},showUndoToast:(_,undo)=>{ctx.undo=undo;}});
+  ctx.deleteFund('X');
+  assert.equal(ctx.fixedExpenses.some(r=>r.id==='X'),false);assert.equal(ctx.goals[0].fund,undefined);
+  ctx.undo();assert.equal(ctx.fixedExpenses.some(r=>r.id==='X'),true);assert.equal(ctx.goals[0].fund,'X');
+});
+
+test('a fund from the sheet keeps its fields and stamps the value date',async()=>{
+  const ctx=functions(['editFund'],{fixedExpenses:[],goals:[],transactions:[],FUND_KINDS:{standing:'הוראת קבע לחסכון',trading:'תיק מסחר',hishtalmut:'קרן השתלמות',gemel:'קופת גמל',other:'אחר'},
+    promptSheet:async()=>['','gemel','800','','5000','5600'],_curMonthKey:()=> '2026-11',_fxPushMonth:()=>{},_fxTxId:(m,c)=>'fx|'+m+'|'+c,saveData:()=>{},renderTxPage:()=>{},renderGoals:()=>{},showToast:()=>{}});
+  await ctx.editFund(null);
+  const r=ctx.fixedExpenses[0];
+  assert.equal(r.id,'קופת גמל');assert.equal(r.savings,true);assert.equal(r.fromSalary,true);assert.equal(r.amount,800);assert.equal(r.opening,5000);assert.equal(r.value,5600);assert.equal(r.since,'2026-11');assert.match(r.valueDate,/^\d{4}-\d{2}-\d{2}$/);
+});

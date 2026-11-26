@@ -2013,7 +2013,9 @@
         <div class="form-field"><label for="goalTarget">סכום יעד (₪)</label><input type="number" inputmode="decimal" id="goalTarget" placeholder="10000" min="1" onfocus="this.select()"/></div>
         <div class="form-field"><label for="goalMonths">תקופה (חודשים)</label><input type="number" inputmode="numeric" id="goalMonths" placeholder="12" min="1" max="360" onfocus="this.select()"/></div>
       </div>
+      <div class="form-field"><label for="goalFund">קשר לקופה</label><select id="goalFund"></select></div>
       <button class="btn btn-primary btn-full" id="goalSaveBtn" onclick="addGoal()">הוסף יעד</button>
+      <button type="button" class="btn btn-full" id="goalDeleteBtn" style="display:none;background:none;border:0;color:var(--red);min-height:44px;font-weight:700" onclick="const id=_editingGoalId;closeSheet('addGoalSheet');deleteGoal(id)">מחק יעד</button>
     </div>
   </div>
 </div>
@@ -4493,19 +4495,19 @@ function renderTxCategorized(byCat){
   const past=_viewingPastMonth();
   if(txListFilter!=='variable'){
     const savingEntries=[];
-    allFixed.filter(cat=>_isSavingCat(cat)&&_fxMonthly(cat)>0).forEach(cat=>{
-      const amount=_fxMonthly(cat);
+    _funds().forEach(row=>{
+      const cat=row.id,amount=_fxMonthly(cat),posts=_fundPostsTx(cat);
       const key='sv:'+cat;
-      const rowHtml=_expRowHtml({key,cat,label:catLabel(cat),amount,editable:!past,
-        onEdit:'_expEditManual(\''+attrArg(cat)+'\')',
-        onDelete:'_expDeleteManual(\''+attrArg(cat)+'\')',
-        body:_expTxListHtml(cat,byCat)+(past?'':'<button type="button" class="exp-add-row" onclick="event.stopPropagation();_expEditManual(\''+attrArg(cat)+'\')">+ עדכן סכום חיסכון או השקעה</button>')});
-      savingEntries.push({amount,html:rowHtml});
+      const rowHtml=_expRowHtml({key,cat,label:catLabel(cat)+(posts?'':' · מהמשכורת'),amount,editable:!past,
+        onEdit:'editFund(\''+attrArg(cat)+'\')',
+        onDelete:'deleteFund(\''+attrArg(cat)+'\')',
+        body:_expTxListHtml(cat,byCat)+(past?'':'<button type="button" class="exp-add-row" onclick="event.stopPropagation();editFund(\''+attrArg(cat)+'\')">+ עדכן חיסכון או השקעה</button>')});
+      savingEntries.push({amount:posts?amount:0,html:rowHtml});
     });
     if(savingEntries.length||txListFilter==='all'){
       html+=_cfSectionHtml('חסכונות והשקעות',savingEntries.reduce((s,e)=>s+e.amount,0),
         (savingEntries.map(e=>e.html).join('')||'<div class="budget-tx-empty">אין חסכונות או השקעות עדיין</div>')
-        +((past||savingEntries.length)?'':'<button type="button" class="exp-add-row" onclick="_expEditManual(\''+attrArg('הוראת קבע לחסכון')+'\')"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף חיסכון או השקעה</button>'));
+        +(past?'':'<button type="button" class="exp-add-row" onclick="addFund()"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>הוסף חיסכון או השקעה</button>'));
     }
   }
   if(txListFilter==='all')html+=_expIncomeSectionHtml();
@@ -4674,6 +4676,46 @@ async function _expEditManual(cat){
   _fxPushMonth(cat);
   saveData();
   renderTxPage();
+}
+const FUND_KINDS={standing:'הוראת קבע לחסכון',trading:'תיק מסחר',hishtalmut:'קרן השתלמות',gemel:'קופת גמל',other:'אחר'};
+function addFund(){return editFund(null);}
+async function editFund(id){
+  const row=id==null?null:(fixedExpenses.find(r=>r.id===id)||{id});
+  const kind=row?.kind||(row&&row.id==='הוראת קבע לחסכון'?'standing':row?'other':'trading');
+  const v=await promptSheet({title:row?'עריכת '+row.id:'חיסכון או השקעה חדשה',confirmText:row?'שמור':'הוסף',fields:[
+    {label:'שם',value:row?.id||'',placeholder:'לדוגמה: תיק מסחר'},
+    {label:'סוג',type:'select',value:kind,options:Object.entries(FUND_KINDS)},
+    {label:'הפקדה חודשית (₪)',type:'number',value:row?(_fxRaw(row.id)||''):''},
+    {label:'מאיפה הכסף יוצא',type:'select',value:row?(row.fromSalary?'salary':'account'):'',options:[['','לפי הסוג'],['account','מהחשבון'],['salary','מהמשכורת (לא יורד מהתזרים)']]},
+    {label:'יתרה התחלתית (₪)',type:'number',value:row?.opening||''},
+    {label:'שווי נוכחי (₪, לא חובה)',type:'number',value:row?.value??''}]});
+  if(!v)return;
+  const name=(v[0].trim()||FUND_KINDS[v[1]]).slice(0,40);
+  if(name!==id&&fixedExpenses.some(r=>r.id===name)){showToast('כבר יש חיסכון בשם הזה');return;}
+  let r=id==null?null:fixedExpenses.find(x=>x.id===id);
+  if(!r){r={id:name,since:_curMonthKey()};fixedExpenses.push(r);}
+  if(id!=null&&name!==id){
+    transactions.forEach(t=>{if(t.cat===id&&t.type==='saving'){t.cat=name;t.desc=t.desc===id?name:t.desc;if(t.fx&&String(t.id).startsWith('fx|'))t.id=_fxTxId(String(t.id).split('|')[1],name);}});
+    goals.forEach(g=>{if(g.fund===id)g.fund=name;});
+    r.id=name;
+    _fxPushMonth(id);
+  }
+  r.savings=true;r.kind=v[1];if(!r.since)r.since=_curMonthKey();
+  r.amount=parseFloat(v[2])||0;
+  r.fromSalary=v[3]?v[3]==='salary':(v[1]==='hishtalmut'||v[1]==='gemel');
+  r.opening=parseFloat(v[4])||0;
+  const val=v[5]===''?null:parseFloat(v[5]);
+  if(val!==(r.value??null)){r.value=val;r.valueDate=new Date().toISOString().slice(0,10);}
+  _fxPushMonth(r.id);
+  saveData();renderTxPage();renderGoals();
+  showToast(id==null?'✓ נוסף':'✓ נשמר');
+}
+function deleteFund(id){
+  const idx=fixedExpenses.findIndex(r=>r.id===id);if(idx<0)return;
+  const backup=fixedExpenses[idx];const linked=goals.filter(g=>g.fund===id);
+  fixedExpenses=fixedExpenses.filter(r=>r.id!==id);linked.forEach(g=>{delete g.fund;});
+  _fxPushMonth(id);saveData();renderTxPage();renderGoals();refreshAll();
+  showUndoToast('🗑️ הוסר',()=>{fixedExpenses.splice(idx,0,backup);linked.forEach(g=>{g.fund=id;});_fxPushMonth(id);saveData();renderTxPage();renderGoals();refreshAll();},()=>{});
 }
 function _expDeleteManual(cat){
   fixedExpenses=fixedExpenses.filter(f=>f.id!==cat);
@@ -7908,6 +7950,7 @@ function _clearGoalForm(){
 function openAddGoalSheet(){
   _editingGoalId=null;
   _clearGoalForm();
+  _fillGoalFund('');const del=document.getElementById('goalDeleteBtn');if(del)del.style.display='none';
   const title=document.getElementById('goalSheetTitle');if(title)title.textContent='יעד חיסכון חדש';
   const btn=document.getElementById('goalSaveBtn');if(btn){btn.textContent='הוסף יעד';btn.disabled=false;}
   openSheet('addGoalSheet');
@@ -7918,6 +7961,7 @@ function editGoal(id){
   document.getElementById('goalName').value=g.name||'';
   document.getElementById('goalTarget').value=g.target||'';
   document.getElementById('goalMonths').value=g.months||'';
+  _fillGoalFund(g.fund);const del=document.getElementById('goalDeleteBtn');if(del)del.style.display='';
   const title=document.getElementById('goalSheetTitle');if(title)title.textContent='✏️ עריכת יעד';
   const btn=document.getElementById('goalSaveBtn');if(btn){btn.textContent='שמור שינויים';btn.disabled=false;}
   openSheet('addGoalSheet');
@@ -7928,12 +7972,13 @@ function addGoal(){
   const months=Math.max(0,parseInt(document.getElementById('goalMonths').value)||0);
   if(!name){showToast('✏️ תן שם ליעד החיסכון שלך');return;}
   if(!target||target<=0){showToast('₪ כמה רוצים לחסוך? הזן סכום');return;}
+  const fund=document.getElementById('goalFund')?.value||'';
   const editingId=_editingGoalId;
   if(editingId!=null){
     const g=goals.find(x=>x.id===editingId);
-    if(g){g.name=name;g.target=target;g.months=months;g.saved=Math.min(g.saved,target);}
+    if(g){g.name=name;g.target=target;g.months=months;g.saved=Math.min(g.saved,target);if(fund)g.fund=fund;else delete g.fund;}
   }else{
-    goals.push({id:Date.now(),name,target,months,saved:0});
+    goals.push({id:Date.now(),name,target,months,saved:0,...(fund?{fund}:{})});
   }
   saveData();
   _clearGoalForm();
@@ -8270,6 +8315,7 @@ function renderFixed(){
   if(!body)return;
   const cats=getEffectiveFixedCats();
   body.innerHTML=cats.map((cat,i)=>{
+    if(_fxRow(cat)?.savings)return '';
     const linked=!!_fxRow(cat)?.linkedSource;
     const auto=!!FIXED_AUTO[cat]||linked;
     const isCustom=!FIXED_CATS.includes(cat)&&!linked;
@@ -8280,6 +8326,18 @@ function renderFixed(){
     return '<div class="fx-row"><div class="fx-name"><span>'+esc(catLabel(cat))+'</span>'+(auto?'<span class="fx-auto">אוטומטי</span>':'')+removeBtn+'</div>'+cell+'</div>';
   }).join('');
   _fxRefreshTotal();
+}
+function _goalSaved(g){
+  const f=g.fund&&_funds().find(r=>r.id===g.fund);
+  if(!f)return +g.saved||0;
+  const st=_fundStats(f);
+  return st.value??st.deposited;
+}
+function _fillGoalFund(cur){
+  const sel=document.getElementById('goalFund');if(!sel)return;
+  sel.innerHTML='';sel.add(new Option('ללא, אעדכן ידנית',''));
+  _funds().forEach(r=>sel.add(new Option(r.id,r.id)));
+  sel.value=cur&&_funds().some(r=>r.id===cur)?cur:'';
 }
 function renderGoals(){
   const list=document.getElementById('goalsList');
