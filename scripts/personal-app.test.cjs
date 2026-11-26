@@ -869,7 +869,7 @@ test('summary figures keep savings out of expenses and split fixed from variable
   ];
   const ctx=functions(['_sumFigures','_sumFlowOf'],{
     currentYear:2026,currentMonth:10,getMonthTx:()=>tx,isFixed:t=>t.fixed,
-    _incomeSourcesFor:()=>[{amount:'11000'}],getMonthlyIncome:()=>0,
+    _incomeSourcesFor:()=>[{amount:'11000'}],monthlyIncomeFor:()=>10000,
     SAVING_FIXED_CATS:['הוראת קבע לחסכון'],getEffectiveFixedCats:()=>['דיור','הוראת קבע לחסכון'],
     _fxMonthly:c=>c==='דיור'?3500:1000,getEffectiveExpenseCats:()=>['מזון לבית','פארם'],budgets:{'מזון לבית':1500}
   });
@@ -884,8 +884,8 @@ test('summary figures keep savings out of expenses and split fixed from variable
 test('yearly summary adds the months up to the cutoff and merges categories',()=>{
   const tx=[{type:'income',cat:'שכר',amount:10000},{type:'expense',cat:'דיור',amount:3000,fixed:true},{type:'expense',cat:'מזון לבית',amount:1200,fixed:false}];
   const ctx=functions(['_sumFigures','_sumAddCats','_sumAddSide','_sumFiguresYear'],{
-    currentYear:2026,currentMonth:10,getMonthTx:()=>tx,isFixed:t=>t.fixed,
-    _incomeSourcesFor:()=>[{amount:'11000'}],getMonthlyIncome:()=>0,
+    currentYear:2026,currentMonth:10,transactions:[{date:'2026-01-05'}],getMonthTx:()=>tx,isFixed:t=>t.fixed,
+    _incomeSourcesFor:()=>[{amount:'11000'}],monthlyIncomeFor:()=>10000,
     SAVING_FIXED_CATS:[],getEffectiveFixedCats:()=>['דיור'],
     _fxMonthly:()=>3500,getEffectiveExpenseCats:()=>['מזון לבית'],budgets:{'מזון לבית':1500}
   });
@@ -1554,4 +1554,14 @@ test('payment notices stay off without Apple Pay, after a refusal, after an opt 
   for(const a of [autoPushContext('granted',false),autoPushContext('denied',true),autoPushContext('granted',true,{push_opt_out:'1'}),autoPushContext('granted',true,{},'Windows'),autoPushContext('default',true,{push_auto_asked:'1'})]){
     await a.ctx._autoPush();assert.equal(a.log.sub,0);assert.equal(a.log.handlers.length,0);
   }
+});
+
+test('the yearly summary starts at the first month with data, and actual income matches the home screen',()=>{
+  const calls=[];
+  const ctx=functions(['_sumFiguresYear','_sumAddSide','_sumAddCats'],{transactions:[{date:'2026-05-10'},{date:'2026-11-02'}],
+    _sumFigures:(y,m)=>{calls.push(m);return {planInc:1,planExp:1,actInc:1,actExp:1,plan:{inc:1,fixed:0,vari:1,sav:0,fixedCats:[],varCats:[]},actual:{inc:1,fixed:0,vari:1,sav:0,fixedCats:[],varCats:[]}};}});
+  assert.equal(ctx._sumFiguresYear(2026,10).planInc,7);assert.deepEqual(calls,[4,5,6,7,8,9,10]);
+  calls.length=0;ctx._sumFiguresYear(2027,2);assert.deepEqual(calls,[0,1,2]);
+  calls.length=0;ctx._sumFiguresYear(2025,11);assert.deepEqual(calls,[11]);
+  assert.match(fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8'),/const actInc=monthlyIncomeFor\(y,m\);/);
 });

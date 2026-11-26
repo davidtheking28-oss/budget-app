@@ -7756,7 +7756,7 @@ function _sumFigures(y=currentYear,m=currentMonth){
   const mTx=getMonthTx(y,m);
   const sumOf=list=>list.reduce((s,t)=>s+(+t.amount||0),0);
   const expTx=mTx.filter(t=>t.type==='expense');
-  const actInc=sumOf(mTx.filter(t=>t.type==='income'));
+  const actInc=monthlyIncomeFor(y,m);
   const actSav=sumOf(mTx.filter(t=>t.type==='saving'));
   const byCat=(list)=>{const o={};list.forEach(t=>{o[t.cat]=(o[t.cat]||0)+(+t.amount||0);});return Object.entries(o).map(([label,value])=>({label,value}));};
   const actFixedCats=byCat(expTx.filter(t=>isFixed(t))),actVarCats=byCat(expTx.filter(t=>!isFixed(t)));
@@ -7766,8 +7766,9 @@ function _sumFigures(y=currentYear,m=currentMonth){
   const planSav=SAVING_FIXED_CATS.reduce((s,c)=>s+_fxMonthly(c),0);
   const add=l=>l.reduce((s,c)=>s+c.value,0);
   const planFixed=add(planFixedCats),planVar=add(planVarCats),actFixed=add(actFixedCats),actVar=add(actVarCats);
-  return {planInc:srcInc||getMonthlyIncome(),planExp:planFixed+planVar,actInc,actExp:actFixed+actVar,
-    plan:{inc:srcInc||getMonthlyIncome(),fixed:planFixed,vari:planVar,sav:planSav,fixedCats:planFixedCats,varCats:planVarCats,varLabel:'תקציב משתנה'},
+  const planInc=srcInc||monthlyIncomeFor(y,m);
+  return {planInc,planExp:planFixed+planVar,actInc,actExp:actFixed+actVar,
+    plan:{inc:planInc,fixed:planFixed,vari:planVar,sav:planSav,fixedCats:planFixedCats,varCats:planVarCats,varLabel:'תקציב משתנה'},
     actual:{inc:actInc,fixed:actFixed,vari:actVar,sav:actSav,fixedCats:actFixedCats,varCats:actVarCats,varLabel:'הוצאות משתנות'}};
 }
 let _sumBy='type',_sumPeriod='month';
@@ -7775,8 +7776,10 @@ function setSumPeriod(p){_sumPeriod=p;renderBudget();}
 function _sumAddCats(a,b){const o={};[...a,...b].forEach(c=>{o[c.label]=(o[c.label]||0)+c.value;});return Object.entries(o).map(([label,value])=>({label,value}));}
 function _sumAddSide(a,b){return {...a,inc:a.inc+b.inc,fixed:a.fixed+b.fixed,vari:a.vari+b.vari,sav:a.sav+b.sav,fixedCats:_sumAddCats(a.fixedCats,b.fixedCats),varCats:_sumAddCats(a.varCats,b.varCats)};}
 function _sumFiguresYear(y,upTo){
+  const first=transactions.reduce((a,t)=>t.date&&t.date<a?t.date:a,'9999');
+  const from=first.startsWith(String(y))?+first.slice(5,7)-1:first<String(y)?0:upTo;
   let acc=null;
-  for(let m=0;m<=upTo;m++){
+  for(let m=from;m<=upTo;m++){
     const f=_sumFigures(y,m);
     acc=acc?{planInc:acc.planInc+f.planInc,planExp:acc.planExp+f.planExp,actInc:acc.actInc+f.actInc,actExp:acc.actExp+f.actExp,plan:_sumAddSide(acc.plan,f.plan),actual:_sumAddSide(acc.actual,f.actual)}:f;
   }
