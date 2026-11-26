@@ -6233,7 +6233,7 @@ function renderTasksPage(){
       +'<button type="button" class="task-tab" aria-pressed="'+(_tab==='done')+'" onclick="setClientTaskTab(\'done\')">משימות סגורות</button>'
     +'</div>';
   const _auto=_tab==='open'?_autoTasks():[];
-  const _autoCard=a=>'<div class="task-card"><div class="task-card-status">משימה פתוחה</div><div class="task-card-title">'+esc(a.title)+'</div><button type="button" class="btn btn-primary" style="min-height:44px;cursor:pointer" onclick="'+a.action+'">'+esc(a.button)+'</button></div>';
+  const _autoCard=a=>'<div class="task-card"><div class="task-card-status">משימה פתוחה</div><div class="task-card-title">'+esc(a.title)+'</div><button type="button" class="btn btn-primary" style="min-height:44px;cursor:pointer;margin-top:14px" onclick="'+a.action+'">'+esc(a.button)+'</button></div>';
   tasksList.innerHTML=_auto.map(_autoCard).join('')+(_shown.length?_shown.map(t=>_taskCard(t,_tab==='done')).join(''):_auto.length?'':'<div class="budget-tx-empty">'+(_tab==='done'?'אין משימות סגורות':'אין משימות פתוחות')+'</div>');
   tasksList.querySelectorAll('[data-task-id]').forEach(el=>{
     el.onchange=()=>toggleAdvisorTask(el.dataset.taskId,el.checked);
