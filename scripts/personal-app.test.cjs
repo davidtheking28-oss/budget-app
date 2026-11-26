@@ -1565,3 +1565,7 @@ test('the yearly summary starts at the first month with data, and actual income 
   calls.length=0;ctx._sumFiguresYear(2025,11);assert.deepEqual(calls,[11]);
   assert.match(fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8'),/const actInc=monthlyIncomeFor\(y,m\);/);
 });
+
+test('the money left this month on the home screen subtracts what went to savings',()=>{
+  assert.match(html,/const remaining=income-total-saved;/);
+});

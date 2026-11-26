@@ -2516,8 +2516,8 @@
     </div>
     <div id="chartLoadStatus" role="status" aria-live="polite" hidden style="padding:12px 0;color:var(--text2)"></div>
     <div class="analytics-summary" id="analyticsSummary">
-      <div class="card balance"><span class="card-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span><div class="card-label">שיעור חיסכון</div><div class="card-amount" id="savingsRatePct" style="color:var(--green)">—</div></div>
-      <div class="card avg"><span class="card-icon" style="font-size:1.3rem;font-weight:800;color:var(--accent)">₪</span><div class="card-label">ממוצע יומי</div><div class="card-amount" id="dailyAvgAmt" style="color:var(--purple)">—</div></div>
+      <div class="card balance"><span class="card-icon"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span><div class="card-label">שיעור חיסכון החודש</div><div class="card-amount" id="savingsRatePct" style="color:var(--green)">—</div></div>
+      <div class="card avg"><span class="card-icon" style="font-size:1.3rem;font-weight:800;color:var(--accent)">₪</span><div class="card-label">ממוצע יומי החודש</div><div class="card-amount" id="dailyAvgAmt" style="color:var(--purple)">—</div></div>
     </div>
     <div class="section">
       <div class="section-header"><div class="section-title">הוצאות לפי קטגוריה</div></div>
@@ -7351,7 +7351,8 @@ function renderDashGoals(){
   if(insight&&insightText&&_dashPeriod==='month'&&isCurMonth){
     const income=getMonthlyIncome();
     if(income>0){
-      const remaining=income-total;
+      const saved=getMonthTx(currentYear,currentMonth).filter(t=>t.type==='saving').reduce((a,t)=>a+(+t.amount||0),0);
+      const remaining=income-total-saved;
       const daysLeft=Math.max(1,daysInMonth(currentYear,currentMonth)-now.getDate()+1);
       const perDay=Math.max(0,remaining)/daysLeft;
       insightText.innerHTML='<span class="dash-balance-caption">'+(remaining>=0?'נשאר לך החודש':'חריגה החודש')+'</span><strong class="dash-balance-value" style="color:var(--'+(remaining>=0?'accent':'red')+')"><bdi dir="ltr">'+esc(fmt(Math.abs(remaining)))+'</bdi></strong>'+(remaining>=0?'<span class="dash-balance-daily">כ־<bdi dir="ltr">'+esc(fmt(perDay))+'</bdi> ליום עד סוף החודש</span>':'<span class="dash-balance-daily">ההוצאות גבוהות מההכנסה החודשית</span>');
