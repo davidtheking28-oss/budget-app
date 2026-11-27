@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
     const odd = [...sent].filter(c => !/[0-9a-zA-Z_]/.test(c)).slice(0, 6).map(c => 'U+' + c.codePointAt(0)!.toString(16))
     await log(token ? 'token_repaired' : 'token_format', { ...meta, len: sent.length, form, odd })
   }
-  if (!token) return reply(false, 400)
+  if (!token) { if (!sent) await log('no_token', meta); return reply(false, 400) }
   const hash = await hashToken(token)
   const tok = hash.slice(0, 8)
   const raw = await req.text()
