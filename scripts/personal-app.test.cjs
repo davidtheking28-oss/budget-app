@@ -1707,3 +1707,7 @@ test('after approval the welcome video opens once, only for clients who skipped 
   const ctx2=functions(['_maybeWelcomeVideo','_welcomeReady'],{localStorage:storage({}),_advisorLink:{status:'active'},document:{querySelector:()=>null,getElementById:()=>null,body:{appendChild:el=>shown.push(el)}}});
   ctx2._maybeWelcomeVideo();assert.equal(shown.length,1);
 });
+
+test('finishing onboarding brings up the advisor tasks right after',()=>{
+  assert.match(html,/setTimeout\(\(\)=>\{_maybeWelcomeVideo\(\);_updateTasksBadge\(\);\},2200\);/);
+});

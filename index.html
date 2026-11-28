@@ -9520,7 +9520,7 @@ function finishOnboarding(){
   localStorage.setItem('budget_onboarded','1');
   localStorage.removeItem('budget_onboarding');
   document.getElementById('onboardOverlay').classList.remove('open');
-  setTimeout(_maybeWelcomeVideo,2200);
+  setTimeout(()=>{_maybeWelcomeVideo();_updateTasksBadge();},2200);
   showGif(getConfettiGif(), 2000); showToast('✓ ברוך הבא! האפליקציה מוכנה.');
   haptic(20);
   refreshAll();
