@@ -5368,6 +5368,20 @@ async function _loadAdvisorLink(){
   _applyApprovalLock();
   _applyDocsLock();
   _pollAdvisorItems();
+  _maybeWelcomeVideo();
+}
+function _maybeWelcomeVideo(){
+  if(!_welcomeReady()||document.getElementById('welcomeVideo')||document.querySelector('#onboardOverlay.open,#approvalLock'))return;
+  try{if(localStorage.getItem('budget_welcome_due')!=='1')return;localStorage.removeItem('budget_welcome_due');}catch(e){return;}
+  const el=document.createElement('div');
+  el.id='welcomeVideo';
+  el.setAttribute('role','dialog');
+  el.setAttribute('aria-modal','true');
+  el.setAttribute('aria-label','סרטון ברוכים הבאים');
+  el.style.cssText='position:fixed;inset:0;z-index:600;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:calc(20px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px));overflow-y:auto;text-align:center';
+  el.innerHTML='<div class="onboard-title">ברוכים הבאים 👋</div><div class="onboard-sub">היועץ אישר אותך. חצי דקה להיכרות, ואפשר להמשיך.</div>'+"<div style=\"height:max(300px,min(calc(100vh - 340px),640px));height:max(300px,min(calc(100dvh - 340px),640px));aspect-ratio:9/16;max-width:100%;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 2px 14px rgba(0,0,0,0.12)\"><video id=\"obVideo\" src=\"assets/welcome.mp4\" poster=\"assets/welcome-poster.jpg\" controls playsinline preload=\"none\" controlslist=\"nodownload noremoteplayback\" disablepictureinpicture aria-label=\"סרטון ברוכים הבאים\" style=\"width:100%;height:100%;object-fit:cover;display:block\"></video></div>"+'<button type="button" class="btn btn-primary btn-full" style="max-width:360px;min-height:48px">המשך לאפליקציה</button>';
+  el.querySelector('button').onclick=()=>{el.querySelector('video')?.pause();el.remove();_updateTasksBadge();};
+  document.body.appendChild(el);
 }
 const DOCS_CUTOFF='2026-11-16';
 const DOCS_KINDS=[['bank','עו"ש'],['credit','אשראי']];
@@ -6126,7 +6140,7 @@ let _tasksPopupOpen=false;
 function _maybeTasksPopup(){
   if(_advisorLink?.status!=='active'||_tasksPopupOpen)return;
   if(document.getElementById('page-analytics')?.classList.contains('active'))return;
-  if(document.querySelector('#docsLock,#agreementGate,#legalGate,#onboardOverlay.open,.sheet-overlay.open,#confirmOverlay.show,#promptOverlay.show,#splashScreen:not(.hidden)'))return;
+  if(document.querySelector('#docsLock,#agreementGate,#legalGate,#welcomeVideo,#approvalLock,#onboardOverlay.open,.sheet-overlay.open,#confirmOverlay.show,#promptOverlay.show,#splashScreen:not(.hidden)'))return;
   const auth=document.getElementById('authScreen');
   if(auth&&auth.style.display!=='none'&&getComputedStyle(auth).visibility!=='hidden')return;
   const seen=_advisorSeenSet();
@@ -9375,7 +9389,8 @@ let obWantsPush=false;
 const OB_FIXED_DEFAULT=['דיור','ארנונה','חשמל','מים וביוב'];
 
 function showOnboarding(){localStorage.setItem('budget_onboarding','1');onboardStep=0;document.getElementById('onboardOverlay').classList.add('open');renderOnboardStep();}
-function skipOnboarding(){if(onboardStep<2){onboardStep=2;renderOnboardStep();return;}document.getElementById('obVideo')?.pause();localStorage.setItem('budget_onboarded','1');localStorage.removeItem('budget_onboarding');document.getElementById('onboardOverlay').classList.remove('open');setTimeout(showFabHint,800);}
+function _welcomeReady(){return _advisorLink?.status==='active';}
+function skipOnboarding(){if(onboardStep<2){if(_welcomeReady())onboardStep=2;else{try{localStorage.setItem('budget_welcome_due','1');}catch(e){}onboardStep=3;}renderOnboardStep();return;}document.getElementById('obVideo')?.pause();localStorage.setItem('budget_onboarded','1');localStorage.removeItem('budget_onboarding');document.getElementById('onboardOverlay').classList.remove('open');setTimeout(showFabHint,800);}
 function checkFabHint(){if(transactions.length===0&&localStorage.getItem('budget_onboarded')){triggerFabHint();}}
 
 function renderOnboardDots(){
@@ -9408,6 +9423,7 @@ function renderOnboardStep(){
       setTimeout(()=>document.getElementById('obEmailInput')?.focus(),200);
     }
   } else if(onboardStep===2){
+    try{localStorage.removeItem('budget_welcome_due');}catch(e){}
     el.innerHTML='<div style="text-align:center"><div class="onboard-title">ברוכים הבאים 👋</div><div class="onboard-sub" style="margin-bottom:14px">חצי דקה להיכרות, ואפשר להמשיך.</div><div style="height:max(300px,min(calc(100vh - 340px),640px));height:max(300px,min(calc(100dvh - 340px),640px));aspect-ratio:9/16;max-width:100%;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:var(--surface2);box-shadow:0 2px 14px rgba(0,0,0,0.12)"><video id="obVideo" src="assets/welcome.mp4" poster="assets/welcome-poster.jpg" controls playsinline preload="none" controlslist="nodownload noremoteplayback" disablepictureinpicture aria-label="סרטון ברוכים הבאים" style="width:100%;height:100%;object-fit:cover;display:block"></video></div></div>';
   } else if(onboardStep===3){
     const supported=_pushSupported(),ios=/iPhone|iPad/.test(navigator.userAgent);
@@ -9490,6 +9506,7 @@ function onboardNav(dir){
     updateHeaderTitle();
   }
   onboardStep=Math.max(0,Math.min(4,onboardStep+dir));
+  if(onboardStep===2&&!_welcomeReady()){try{localStorage.setItem('budget_welcome_due','1');}catch(e){}onboardStep+=dir===1?1:-1;}
   document.getElementById('onboardContent')?.style.setProperty('--ob-dx',(dir===1?-28:28)+'px');
   renderOnboardStep();
 }
@@ -9503,6 +9520,7 @@ function finishOnboarding(){
   localStorage.setItem('budget_onboarded','1');
   localStorage.removeItem('budget_onboarding');
   document.getElementById('onboardOverlay').classList.remove('open');
+  setTimeout(_maybeWelcomeVideo,2200);
   showGif(getConfettiGif(), 2000); showToast('✓ ברוך הבא! האפליקציה מוכנה.');
   haptic(20);
   refreshAll();

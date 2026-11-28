@@ -1455,7 +1455,7 @@ test('the client is reminded in the app a day before an approved meeting and on 
 test('a background refresh never closes or restarts onboarding, and a killed one resumes',()=>{
   const store=new Map(),classes=new Set();let input={value:''};
   const overlay={classList:{contains:c=>classes.has(c),add:c=>classes.add(c),remove:c=>classes.delete(c)}};
-  const ctx=functions(['_hasRealData','showOnboarding','skipOnboarding','_decideOnboarding'],{onboardStep:0,userSettings:{name:'',incomeSources:[]},transactions:[],budgets:{},
+  const ctx=functions(['_hasRealData','showOnboarding','skipOnboarding','_decideOnboarding'],{onboardStep:0,_advisorLink:{status:'active'},userSettings:{name:'',incomeSources:[]},transactions:[],budgets:{},
     localStorage:{getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},
     document:{getElementById:id=>id==='onboardOverlay'?overlay:id==='obNameInput'?input:null},renderOnboardStep:()=>{},checkFabHint:()=>{},_resyncPush:async()=>{},_autoPush:()=>{},showFabHint:()=>{},setTimeout:()=>0});
   const open=()=>classes.has('open');
@@ -1683,4 +1683,27 @@ test('a personal invite code from the link travels with the advisor request',asy
   await ctx._doRequestPendingAdvisor();
   assert.equal(JSON.stringify(calls),JSON.stringify([{p_advisor:ref,p_invite:inv}]));
   assert.equal(localStorage.getItem('budget_pending_invite'),null);
+});
+
+test('the welcome video waits until the advisor approves the client',()=>{
+  const localStorage=storage({});let rendered=0;
+  const ctx=functions(['onboardNav','_welcomeReady'],{localStorage,_advisorLink:{status:'pending',requested_by_client:true},onboardStep:1,userSettings:{},
+    document:{getElementById:()=>({pause:()=>{},style:{setProperty:()=>{}},value:''})},saveSettingsData:()=>{},updateHeaderTitle:()=>{},renderOnboardStep:()=>{rendered++;},finishOnboarding:()=>{}});
+  vm.runInContext('var onboardStep=1;',ctx);
+  ctx.onboardNav(1);
+  assert.equal(vm.runInContext('onboardStep',ctx),3);
+  assert.equal(localStorage.getItem('budget_welcome_due'),'1');
+  ctx.onboardNav(-1);
+  assert.equal(vm.runInContext('onboardStep',ctx),1);
+});
+
+test('after approval the welcome video opens once, only for clients who skipped it',()=>{
+  const localStorage=storage({budget_welcome_due:'1'});const shown=[];
+  const ctx=functions(['_maybeWelcomeVideo','_welcomeReady'],{localStorage,_advisorLink:{status:'active'},
+    document:{querySelector:()=>null,getElementById:()=>null,createElement:()=>({style:{},setAttribute(){},querySelector:()=>({onclick:null}),remove(){}}),body:{appendChild:el=>shown.push(el)}}});
+  ctx._maybeWelcomeVideo();ctx._maybeWelcomeVideo();
+  assert.equal(shown.length,1);
+  assert.equal(localStorage.getItem('budget_welcome_due'),null);
+  const ctx2=functions(['_maybeWelcomeVideo','_welcomeReady'],{localStorage:storage({}),_advisorLink:{status:'active'},document:{querySelector:()=>null,getElementById:()=>null,body:{appendChild:el=>shown.push(el)}}});
+  ctx2._maybeWelcomeVideo();assert.equal(shown.length,1);
 });
